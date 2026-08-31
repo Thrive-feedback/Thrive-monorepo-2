@@ -57,6 +57,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Local agent overrides
+CLAUDE.local.md
+
 # Misc
 .DS_Store
 *.pem

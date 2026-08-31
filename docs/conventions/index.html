@@ -1,0 +1,3099 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Project Conventions — Index</title>
+    <meta
+      name="description"
+      content="Index of the project conventions. Humans read it to know what exists; AI agents read it to decide which document to open before touching code."
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fbfbfa;
+        --surface: #ffffff;
+        --surface-2: #f6f5f2;
+        --border: #e4e2dd;
+        --text: #1c1b19;
+        --muted: #6b6862;
+        --accent: #b5522a;
+        --code-bg: #f2f0ec;
+        --p0: #b5522a;
+        --p1: #9a7318;
+        --p2: #3f7a52;
+        --p3: #5b6b8c;
+        --warn-bg: #fdf3ef;
+        --warn-border: #e7bda9;
+        --radius: 10px;
+        --font: ui-sans-serif, -apple-system, "Segoe UI", Inter, system-ui, sans-serif;
+        --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #17161a;
+          --surface: #1e1d22;
+          --surface-2: #24232a;
+          --border: #33313a;
+          --text: #ece9e4;
+          --muted: #9d9890;
+          --accent: #e08a5f;
+          --code-bg: #26242b;
+          --p0: #e08a5f;
+          --p1: #d5b25a;
+          --p2: #7fbf95;
+          --p3: #9db2d8;
+          --warn-bg: #2a2018;
+          --warn-border: #6b4a34;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 0 1.25rem 5rem;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      header.page {
+        padding: 3rem 0 1.5rem;
+        border-bottom: 1px solid var(--border);
+      }
+      h1 {
+        font-size: 2rem;
+        line-height: 1.2;
+        margin: 0 0 0.5rem;
+        letter-spacing: -0.02em;
+      }
+      .lede {
+        color: var(--muted);
+        max-width: 64ch;
+        margin: 0;
+      }
+      h2 {
+        font-size: 1.35rem;
+        margin: 3rem 0 0.25rem;
+        letter-spacing: -0.01em;
+        scroll-margin-top: 4rem;
+      }
+      h2 .count {
+        font-size: 0.8rem;
+        font-weight: 400;
+        color: var(--muted);
+        margin-left: 0.5rem;
+      }
+      .subhead {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 2rem 0 0.75rem;
+        font-weight: 600;
+      }
+      .section-note {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin: 0 0 1.25rem;
+        max-width: 72ch;
+      }
+      code,
+      kbd {
+        font-family: var(--mono);
+        font-size: 0.85em;
+        background: var(--code-bg);
+        padding: 0.1em 0.4em;
+        border-radius: 4px;
+      }
+      a {
+        color: var(--accent);
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.5rem;
+        margin: 1.5rem 0;
+      }
+      .card ol,
+      .card ul {
+        margin: 0.5rem 0 0;
+        padding-left: 1.2rem;
+      }
+      .card li {
+        margin: 0.35rem 0;
+      }
+      .card > p:first-child {
+        margin: 0;
+        font-weight: 600;
+      }
+      .card.hard {
+        background: var(--warn-bg);
+        border-color: var(--warn-border);
+      }
+      .scope {
+        color: var(--muted);
+        font-size: 0.875rem;
+        margin: 0.75rem 0 0;
+      }
+      /* legends */
+      .legend {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 0.75rem;
+        margin: 0 0 1.5rem;
+        padding: 0;
+        list-style: none;
+      }
+      .legend li {
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--tier-color, var(--border));
+        border-radius: var(--radius);
+        background: var(--surface);
+        padding: 0.65rem 0.85rem;
+        font-size: 0.86rem;
+        color: var(--muted);
+      }
+      .legend strong {
+        display: block;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 0.8rem;
+      }
+      /* nav + toolbar */
+      .sticky {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: linear-gradient(var(--bg) 82%, transparent);
+        padding: 0.75rem 0 0.9rem;
+        margin-top: 2rem;
+      }
+      .navrow,
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        align-items: center;
+      }
+      .navrow {
+        margin-bottom: 0.5rem;
+      }
+      .navrow a {
+        font-size: 0.82rem;
+        text-decoration: none;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        border-radius: 999px;
+        padding: 0.25rem 0.75rem;
+        color: var(--muted);
+      }
+      .toolbar input {
+        flex: 1 1 220px;
+        min-width: 0;
+        padding: 0.45rem 0.7rem;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--surface);
+        color: inherit;
+        font: inherit;
+        font-size: 0.9rem;
+      }
+      .toolbar button {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--muted);
+        font: inherit;
+        font-size: 0.82rem;
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      .toolbar button[aria-pressed="true"] {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .toolbar .sep {
+        width: 1px;
+        height: 1.4rem;
+        background: var(--border);
+        margin: 0 0.2rem;
+      }
+      .result {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin: 0.5rem 0 0;
+      }
+      /* entries */
+      .docs {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 0.6rem;
+      }
+      .doc {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.9rem 1.1rem;
+        scroll-margin-top: 5rem;
+      }
+      .doc:target {
+        border-color: var(--accent);
+      }
+      .doc.is-linked {
+        cursor: pointer;
+        transition: border-color 0.12s ease, background 0.12s ease;
+      }
+      .doc.is-linked:hover {
+        border-color: var(--accent);
+        background: var(--surface-2);
+      }
+      .doc.is-linked:focus-within {
+        border-color: var(--accent);
+      }
+      .doc[hidden] {
+        display: none;
+      }
+      .doc-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.5rem 0.65rem;
+      }
+      .doc-id {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .doc-id:hover {
+        color: var(--accent);
+      }
+      .doc-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin: 0;
+        flex: 1 1 auto;
+        line-height: 1.4;
+      }
+      .doc-open {
+        color: inherit;
+        text-decoration: none;
+      }
+      .doc.is-linked:hover .doc-open {
+        color: var(--accent);
+      }
+      .doc-open:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 3px;
+      }
+      .tier {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.04em;
+        padding: 0.1rem 0.45rem;
+        border-radius: 4px;
+        border: 1px solid currentColor;
+      }
+      .tier.P0 {
+        color: var(--p0);
+      }
+      .tier.P1 {
+        color: var(--p1);
+      }
+      .tier.P2 {
+        color: var(--p2);
+      }
+      .tier.P3 {
+        color: var(--p3);
+      }
+      .doc-trigger {
+        margin: 0.45rem 0 0;
+        font-size: 0.88rem;
+      }
+      .doc-trigger b {
+        font-weight: 600;
+      }
+      .doc-summary {
+        margin: 0.3rem 0 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+      .doc-meta {
+        margin: 0.55rem 0 0;
+        font-size: 0.78rem;
+        color: var(--muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem 0.9rem;
+      }
+      .doc-meta .file {
+        font-family: var(--mono);
+      }
+      .doc-meta a {
+        text-decoration: none;
+      }
+      .status {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        opacity: 0.8;
+      }
+      .empty {
+        color: var(--muted);
+        font-size: 0.9rem;
+        padding: 1rem 0;
+      }
+      #selfcheck {
+        margin: 1rem 0;
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--warn-border);
+        background: var(--warn-bg);
+        font-size: 0.85rem;
+      }
+      #selfcheck ul {
+        margin: 0.4rem 0 0;
+        padding-left: 1.2rem;
+      }
+      footer.page {
+        margin-top: 3.5rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      @media (max-width: 640px) {
+        .sticky {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page">
+        <h1>Project Conventions — Index</h1>
+        <p class="lede">
+          The single entry point to this project's conventions. Humans read it to know what exists;
+          AI agents read it to decide which document to open <em>before</em> touching code. Every
+          entry maps to one document in <code>docs/conventions/&lt;AREA&gt;/</code>. Click any entry
+          below to open its document; entries still marked <code>todo</code> have no file yet and do
+          not open.
+        </p>
+      </header>
+
+      <section class="card" aria-labelledby="rules-h">
+        <p id="rules-h">How this index works</p>
+        <ol>
+          <li>
+            Every convention lives in exactly one document, filed under its area:
+            <code>docs/conventions/GEN/</code>, <code>INFRA/</code>, <code>BE/</code> or
+            <code>FE/</code>. An entry's <code>data-file</code> is the bare file name; the folder is
+            its <code>data-area</code>.
+          </li>
+          <li>
+            The id encodes area + read order — <code>BE_01</code> is read before <code>BE_02</code>.
+            The tier says <em>who</em> has to read it; the number says <em>in what order</em>.
+          </li>
+          <li>
+            Nothing in a document may contradict a lower-numbered document of the same area. If it
+            must, change the lower-numbered one and record an ADR (<code>GEN_13</code>).
+          </li>
+          <li>
+            A document's <code>requires</code> may never be a lower tier than the document itself. If
+            it is, one of the two tiers is wrong. This page checks it on load.
+          </li>
+          <li>
+            If the code and a document disagree, the document wins — unless the document is older
+            than the code it describes and unreviewed, in which case stop and ask.
+          </li>
+        </ol>
+        <p class="scope">
+          <strong>Out of scope for this doc set</strong>, on purpose: product process, multi-tenancy,
+          email/notification templates, and anything specific to one product built on this
+          document set. Do not go looking for a document that was never meant to exist — write an
+          ADR in the project that needs it instead.
+        </p>
+      </section>
+
+      <section class="card" aria-labelledby="agent-h">
+        <p id="agent-h">Contract for AI agents working in this repository</p>
+        <ul>
+          <li>
+            <strong>Read set.</strong> Read every <code>P0</code> before any change. Read
+            <code>&lt;AREA&gt;_01</code> through the last <code>P1</code> of an area <em>once</em>,
+            when you start working in that area. Then read any <code>P2</code> whose
+            <b>Open when</b> trigger matches the change in front of you.
+          </li>
+          <li>
+            <code>data-paths</code> on an entry lists the globs it governs. If your change touches a
+            matching file, that document is in your read set regardless of tier.
+          </li>
+          <li>Cite the convention ids you relied on, in your plan and in the PR description.</li>
+          <li>
+            While a document's status is <code>todo</code>, <strong>its index entry is the only
+            binding text</strong>: follow the summary, do not infer beyond it, and say in your plan
+            which <code>todo</code> entries you had to interpret. When two entries conflict, stop and
+            ask.
+          </li>
+          <li>
+            Never weaken a guardrail (lint rule, architecture test, type check, CI gate) to make a
+            change pass.
+          </li>
+          <li>
+            Follow <code>GEN_04</code> for features and <code>GEN_05</code> for bugs. No code before
+            the workflow's first step is done.
+          </li>
+        </ul>
+      </section>
+
+      <section class="card hard" aria-labelledby="hard-h">
+        <p id="hard-h">Hard rules — these five need no document</p>
+        <ul>
+          <li>No secret, token, or credential in source, in a commit, or in a URL.</li>
+          <li>No personal data in logs, traces, analytics payloads, or error messages.</li>
+          <li>No <code>.env</code> committed. <code>.env.example</code> is the only one in git.</li>
+          <li>No design value hardcoded in the frontend — tokens only (<code>FE_03</code>).</li>
+          <li>No cross-module database join or transaction in the backend (<code>BE_03</code>).</li>
+        </ul>
+      </section>
+
+      <p class="subhead" id="tiers">Priority tiers</p>
+      <ul class="legend">
+        <li style="--tier-color: var(--p0)">
+          <strong>P0 · 10 documents</strong> Binds every change, in any area. Adding one means
+          demoting one.
+        </li>
+        <li style="--tier-color: var(--p1)">
+          <strong>P1</strong> The entry path for one area. Read once, when you start working there.
+        </li>
+        <li style="--tier-color: var(--p2)">
+          <strong>P2</strong> Read when its <b>Open when</b> trigger matches your change.
+        </li>
+        <li style="--tier-color: var(--p3)">
+          <strong>P3</strong> Read when the project scales, splits, or breaks.
+        </li>
+      </ul>
+
+      <p class="subhead" id="status">Status vocabulary</p>
+      <ul class="legend">
+        <li><strong>todo</strong> Not written. The index entry is the binding text.</li>
+        <li><strong>draft</strong> Written, not agreed. Follow it, but challenge it in review.</li>
+        <li><strong>stable</strong> Agreed. Changing it needs an ADR.</li>
+        <li><strong>deprecated</strong> Superseded. The entry says by what.</li>
+      </ul>
+
+      <div class="sticky">
+        <nav class="navrow" aria-label="Jump to area">
+          <a href="#gen">General</a><a href="#infra">Infrastructure</a><a href="#be">Backend</a
+          ><a href="#fe">Frontend</a><a href="#tiers">Tiers</a>
+        </nav>
+        <div class="toolbar" role="search">
+          <input
+            id="q"
+            type="search"
+            placeholder="Filter by title, keyword, trigger or id…"
+            aria-label="Filter conventions"
+          />
+          <button type="button" data-filter="area" data-value="all" aria-pressed="true">All areas</button>
+          <button type="button" data-filter="area" data-value="GEN" aria-pressed="false">GEN</button>
+          <button type="button" data-filter="area" data-value="INFRA" aria-pressed="false">INFRA</button>
+          <button type="button" data-filter="area" data-value="BE" aria-pressed="false">BE</button>
+          <button type="button" data-filter="area" data-value="FE" aria-pressed="false">FE</button>
+          <span class="sep" aria-hidden="true"></span>
+          <button type="button" data-filter="tier" data-value="all" aria-pressed="true">All tiers</button>
+          <button type="button" data-filter="tier" data-value="P0" aria-pressed="false">P0</button>
+          <button type="button" data-filter="tier" data-value="P1" aria-pressed="false">P1</button>
+          <button type="button" data-filter="tier" data-value="P2" aria-pressed="false">P2</button>
+          <button type="button" data-filter="tier" data-value="P3" aria-pressed="false">P3</button>
+        </div>
+        <p class="result" id="result" role="status" aria-live="polite"></p>
+      </div>
+
+      <div id="selfcheck" hidden></div>
+
+      <!-- ================================================================= -->
+      <!-- GENERAL                                                            -->
+      <!-- ================================================================= -->
+      <section id="sec-GEN" aria-labelledby="gen">
+        <h2 id="gen">General <span class="count" data-count="GEN"></span></h2>
+        <p class="section-note">
+          Cross-cutting: how we work, how agents work, and the seams that belong to neither backend
+          nor frontend alone. <code>GEN_01</code>–<code>GEN_08</code> are the whole P0 set for people;
+          nobody is exempt from them.
+        </p>
+        <ul class="docs">
+          <li
+            class="doc"
+            id="GEN_01"
+            data-id="GEN_01"
+            data-area="GEN"
+            data-tier="P0"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_01_how-to-use-these-conventions.md"
+            data-see-also="GEN_12,GEN_13"
+            data-paths="docs/conventions/**"
+            data-keywords="index tiers precedence documentation map onboarding"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_01">GEN_01</a>
+              <h3 class="doc-title">[General] How to use these conventions</h3>
+              <span class="tier P0">P0</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> it is your first day in this repo.</p>
+            <p class="doc-summary">
+              The document map, what each tier obliges you to read, the precedence rules when two
+              documents disagree, and how to propose a change to a convention.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_02"
+            data-id="GEN_02"
+            data-area="GEN"
+            data-tier="P0"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_02_ai-agent-ground-rules.md"
+            data-requires="GEN_01"
+            data-see-also="GEN_04,GEN_05,GEN_06"
+            data-paths="AGENTS.md,CLAUDE.md,.claude/**,.cursor/**"
+            data-keywords="ai agent claude cursor guardrails context autonomy prompt"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_02">GEN_02</a>
+              <h3 class="doc-title">[General] Working with AI agents — ground rules &amp; context protocol</h3>
+              <span class="tier P0">P0</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are an AI agent, or you are configuring one for this repo.
+            </p>
+            <p class="doc-summary">
+              What the agent must read first, what it may change autonomously, what always needs a
+              human, and how <code>AGENTS.md</code> / <code>CLAUDE.md</code> point at this folder
+              instead of duplicating it.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_03"
+            data-id="GEN_03"
+            data-area="GEN"
+            data-tier="P0"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_03_starting-a-new-project.md"
+            data-requires="GEN_01"
+            data-see-also="INFRA_01,INFRA_02"
+            data-keywords="boilerplate starter bootstrap rename setup first commit template PROJECT.md clone"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_03">GEN_03</a>
+              <h3 class="doc-title">[General] Starting a new project from this boilerplate</h3>
+              <span class="tier P0">P0</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you have just cloned this repo to start a new project.
+            </p>
+            <p class="doc-summary">
+              Rewriting <code>PROJECT.md</code> — the one file that states what this repository is
+              — then what to rename, what example code to delete, which convention statuses to
+              reset, and the rest of the day-one checklist.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_04"
+            data-id="GEN_04"
+            data-area="GEN"
+            data-tier="P0"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_04_feature-workflow.md"
+            data-requires="GEN_01"
+            data-see-also="GEN_06,GEN_10"
+            data-keywords="feature workflow spec first planning vertical slice prompt template definition of ready"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_04">GEN_04</a>
+              <h3 class="doc-title">[General] Feature workflow (human + AI agent)</h3>
+              <span class="tier P0">P0</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> you are starting any new feature or ticket.</p>
+            <p class="doc-summary">
+              Spec → acceptance criteria → plan → vertical slice → tests → review. When a ticket is
+              ready to start, the prompt templates, and the checkpoints where a human must look.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_05"
+            data-id="GEN_05"
+            data-area="GEN"
+            data-tier="P0"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_05_bugfix-workflow.md"
+            data-requires="GEN_01"
+            data-see-also="GEN_04"
+            data-keywords="bug debugging root cause regression test reproduction incident"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_05">GEN_05</a>
+              <h3 class="doc-title">[General] Bugfix workflow (human + AI agent)</h3>
+              <span class="tier P0">P0</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> something is broken.</p>
+            <p class="doc-summary">
+              Reproduce → failing test first → root cause, not symptom → fix → regression test →
+              a one-paragraph note on why it was possible.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_06"
+            data-id="GEN_06"
+            data-area="GEN"
+            data-tier="P0"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_06_code-review-and-pr.md"
+            data-requires="GEN_01"
+            data-see-also="INFRA_08"
+            data-keywords="code review pull request checklist definition of done merge gate"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_06">GEN_06</a>
+              <h3 class="doc-title">[General] Code review, pull requests &amp; the merge gate</h3>
+              <span class="tier P0">P0</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are opening or reviewing a pull request.
+            </p>
+            <p class="doc-summary">
+              PR size and description format, the definition of done that gates a merge, the human
+              review checklist, the AI reviewer checklist, and what counts as a blocking comment.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_07"
+            data-id="GEN_07"
+            data-area="GEN"
+            data-tier="P0"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_07_typescript-naming-and-documentation.md"
+            data-requires="GEN_01"
+            data-see-also="INFRA_05,BE_24,FE_22"
+            data-paths="**/*.ts,**/*.tsx"
+            data-keywords="typescript naming coding style strict barrel comments tsdoc todo readme"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_07">GEN_07</a>
+              <h3 class="doc-title">[General] TypeScript, naming &amp; code documentation</h3>
+              <span class="tier P0">P0</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> you are writing any TypeScript.</p>
+            <p class="doc-summary">
+              File and symbol naming, module and barrel policy, strictness settings, banned
+              constructs (<code>any</code>, non-null assertion, default export), TSDoc, when a
+              comment is mandatory, the TODO format, and what every package README must contain.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_08"
+            data-id="GEN_08"
+            data-area="GEN"
+            data-tier="P0"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_08_be-fe-contract.md"
+            data-requires="GEN_01"
+            data-see-also="BE_07,BE_08,BE_09,FE_10,INFRA_14"
+            data-paths="packages/api/**,**/openapi.json,**/*.generated.ts"
+            data-keywords="openapi contract codegen shared types error codes correlation id breaking change seam"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_08">GEN_08</a>
+              <h3 class="doc-title">[General] The BE↔FE contract — API types, error codes &amp; correlation ids</h3>
+              <span class="tier P0">P0</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a change crosses the API boundary in either direction.
+            </p>
+            <p class="doc-summary">
+              The backend owns the contract: OpenAPI is generated from it, the typed client and types
+              are generated from OpenAPI, and the frontend never hand-writes a wire type. Also owns
+              the error-code catalogue shared with <code>FE_18</code>, the correlation-id header the
+              frontend must send, and how a breaking change is versioned and rolled out.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_09"
+            data-id="GEN_09"
+            data-area="GEN"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_09_security-and-privacy-baseline.md"
+            data-requires="GEN_01"
+            data-see-also="BE_10,BE_22,INFRA_15"
+            data-keywords="security privacy pii owasp secrets gdpr logging redaction"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_09">GEN_09</a>
+              <h3 class="doc-title">[General] Security &amp; privacy baseline for developers</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you touch secrets, credentials, personal data, or logs.
+            </p>
+            <p class="doc-summary">
+              The five hard rules at the top of this page, expanded: secret handling, PII
+              classification and redaction, OWASP Top 10 as a review lens, and responsible
+              disclosure.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_10"
+            data-id="GEN_10"
+            data-area="GEN"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_10_gherkin-and-the-feature-suite.md"
+            data-requires="GEN_04"
+            data-see-also="BE_13,FE_15"
+            data-paths="features/**,**/*.feature"
+            data-keywords="gherkin cucumber bdd feature file acceptance criteria scenario given when then"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_10">GEN_10</a>
+              <h3 class="doc-title">[General] Gherkin &amp; the shared feature suite</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are writing acceptance criteria or a <code>.feature</code> file.
+            </p>
+            <p class="doc-summary">
+              The single owner of <code>features/</code>: where feature files live, the scenario
+              language rules, naming, tags, and which scenarios run against the API
+              (<code>BE_13</code>) versus the browser (<code>FE_15</code>).
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_11"
+            data-id="GEN_11"
+            data-area="GEN"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_11_data-primitives.md"
+            data-requires="GEN_07"
+            data-see-also="BE_04,BE_08"
+            data-keywords="uuid id date time utc timezone money currency decimal units precision"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_11">GEN_11</a>
+              <h3 class="doc-title">[General] Data primitives — ids, dates, money &amp; units</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are modelling an id, a timestamp, an amount of money, or a
+              quantity.
+            </p>
+            <p class="doc-summary">
+              UUIDv7 for public ids, UTC everywhere with the timezone applied at the edge, money as
+              integer minor units, and the ban on floating-point currency and locale-dependent
+              parsing.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_12"
+            data-id="GEN_12"
+            data-area="GEN"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-25"
+            data-file="GEN_12_how-to-write-a-convention.md"
+            data-requires="GEN_01"
+            data-paths="docs/conventions/**"
+            data-keywords="documentation template rule rationale enforcement authoring style"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_12">GEN_12</a>
+              <h3 class="doc-title">[General] How to write a convention document</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are writing or updating a document in this folder.
+            </p>
+            <p class="doc-summary">
+              The required shape of every document here — Rule, Rationale, Do / Don't with real code,
+              Enforcement, Related — so a human can skim it and an agent can extract the rule without
+              reading the prose. Includes how to add an entry to this index.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_13"
+            data-id="GEN_13"
+            data-area="GEN"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_13_architecture-decision-records.md"
+            data-requires="GEN_01"
+            data-paths="docs/adr/**"
+            data-keywords="adr decision record architecture rfc supersede"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_13">GEN_13</a>
+              <h3 class="doc-title">[General] Architecture Decision Records (ADR)</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are about to make a decision that is expensive to reverse.
+            </p>
+            <p class="doc-summary">
+              When a decision needs an ADR, the template, and how an ADR supersedes another ADR or a
+              convention document.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_14"
+            data-id="GEN_14"
+            data-area="GEN"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_14_glossary-ubiquitous-language.md"
+            data-requires="GEN_07"
+            data-see-also="BE_04"
+            data-keywords="glossary domain language naming ddd ubiquitous terms"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_14">GEN_14</a>
+              <h3 class="doc-title">[General] Glossary &amp; ubiquitous language</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you introduce a new domain term, or meet one you cannot define.
+            </p>
+            <p class="doc-summary">
+              The words the domain uses and the one spelling each is allowed to have in code, DB, API
+              and UI. A project starts with an empty table; the first feature fills it.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="GEN_15"
+            data-id="GEN_15"
+            data-area="GEN"
+            data-tier="P3"
+            data-status="stable"
+            data-updated="2026-08-15"
+            data-file="GEN_15_refactoring-and-deprecation.md"
+            data-see-also="GEN_13,BE_26"
+            data-keywords="refactor deprecation tech debt migration window boy scout rule"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#GEN_15">GEN_15</a>
+              <h3 class="doc-title">[General] Refactoring, deprecation &amp; clean-up policy</h3>
+              <span class="tier P3">P3</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you want to change or delete something other code depends on.
+            </p>
+            <p class="doc-summary">
+              Deprecation markers, migration windows, the boy-scout rule and its limits, and when a
+              refactor must be its own PR.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- INFRASTRUCTURE                                                     -->
+      <!-- ================================================================= -->
+      <section id="sec-INFRA" aria-labelledby="infra">
+        <h2 id="infra">Infrastructure <span class="count" data-count="INFRA"></span></h2>
+        <p class="section-note">
+          The repository itself, the tooling, the pipelines and the runtime.
+          <code>INFRA_01</code>–<code>INFRA_02</code> are P0 because every change lands in this
+          repo and runs on this machine.
+        </p>
+        <ul class="docs">
+          <li
+            class="doc"
+            id="INFRA_01"
+            data-id="INFRA_01"
+            data-area="INFRA"
+            data-tier="P0"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_01_monorepo-structure.html"
+            data-requires="GEN_01"
+            data-see-also="INFRA_03,BE_01,FE_01"
+            data-paths="turbo.json,package.json,apps/**/package.json,packages/**/package.json"
+            data-keywords="turborepo monorepo workspace apps packages structure catalogue shared package"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_01">INFRA_01</a>
+              <h3 class="doc-title">[Infra] Monorepo structure (Turborepo)</h3>
+              <span class="tier P0">P0</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding a workspace, or you do not know where a file belongs.
+            </p>
+            <p class="doc-summary">
+              What lives in <code>apps/</code> vs <code>packages/</code> vs <code>docs/</code>, the
+              anatomy of a package, how a new workspace is created and named, and the catalogue of
+              packages the boilerplate ships with — what each one owns.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_02"
+            data-id="INFRA_02"
+            data-area="INFRA"
+            data-tier="P0"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_02_local-development-and-onboarding.html"
+            data-requires="GEN_01"
+            data-see-also="INFRA_04,INFRA_07,INFRA_10"
+            data-keywords="onboarding setup install dev script getting started seed compose"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_02">INFRA_02</a>
+              <h3 class="doc-title">[Infra] Local development &amp; onboarding</h3>
+              <span class="tier P0">P0</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> you need the project running on your machine.</p>
+            <p class="doc-summary">
+              Zero-to-running in one command: prerequisites, install, compose up, seed data, and the
+              standard task names (<code>dev</code>, <code>build</code>, <code>test</code>,
+              <code>lint</code>) every workspace must expose.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_03"
+            data-id="INFRA_03"
+            data-area="INFRA"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_03_package-boundaries.html"
+            data-requires="INFRA_01"
+            data-see-also="INFRA_06,BE_03,FE_13"
+            data-paths="packages/**,apps/**/package.json"
+            data-keywords="boundaries dependency graph cycles public api layering imports"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_03">INFRA_03</a>
+              <h3 class="doc-title">[Infra] Package boundaries &amp; dependency rules</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you add a dependency between two workspaces, or an import feels like
+              it crosses a line.
+            </p>
+            <p class="doc-summary">
+              The allowed import graph — who may depend on whom — the public API through package
+              entry points, the no-cycles rule, and how all of it is enforced automatically
+              (<code>INFRA_06</code>).
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_04"
+            data-id="INFRA_04"
+            data-area="INFRA"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_04_bun-and-dependency-management.html"
+            data-requires="INFRA_01"
+            data-see-also="INFRA_15"
+            data-paths="bun.lock,package.json,**/package.json"
+            data-keywords="bun node runtime lockfile dependencies versioning catalog workspace protocol"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_04">INFRA_04</a>
+              <h3 class="doc-title">[Infra] Bun runtime &amp; dependency management</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding, upgrading or removing a dependency — or a workspace
+              will not run on Bun.
+            </p>
+            <p class="doc-summary">
+              Bun as runtime and package manager, lockfile policy, version pinning, where a
+              dependency belongs, the rules for adding one, and the per-workspace runtime override
+              for the cases that still need Node.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_05"
+            data-id="INFRA_05"
+            data-area="INFRA"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_05_code-quality-tooling.html"
+            data-requires="GEN_07"
+            data-see-also="INFRA_06"
+            data-paths="biome.json,.prettierrc*,packages/*-config/**,.vscode/**"
+            data-keywords="biome prettier lint format hooks editorconfig pre-commit tooling"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_05">INFRA_05</a>
+              <h3 class="doc-title">[Infra] Code quality tooling — Biome, Prettier, type-check</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a lint rule blocks you, or you want to add or waive one.
+            </p>
+            <p class="doc-summary">
+              Which tool owns what (Biome for lint and format; Prettier only for what Biome cannot
+              handle), the shared config packages, editor setup, pre-commit hooks, and the process
+              for changing a rule.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_06"
+            data-id="INFRA_06"
+            data-area="INFRA"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_06_automated-guardrails.html"
+            data-requires="INFRA_05"
+            data-see-also="INFRA_09,BE_02,FE_02"
+            data-keywords="architecture test dependency cruiser boundaries ci gate type coverage enforcement"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_06">INFRA_06</a>
+              <h3 class="doc-title">[Infra] Automated guardrails — lint, types &amp; architecture tests</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a convention needs teeth, or a guardrail is failing and you are
+              tempted to disable it.
+            </p>
+            <p class="doc-summary">
+              The conventions a machine enforces for both stacks: layer and import-boundary tests
+              that fail CI on an architecture violation, atomic-level rules on the frontend, strict
+              type-checking, and how to add a new guardrail rather than a new paragraph.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_07"
+            data-id="INFRA_07"
+            data-area="INFRA"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_07_environment-and-configuration.html"
+            data-requires="INFRA_02"
+            data-see-also="BE_10,GEN_09"
+            data-paths=".env.example,**/.env*"
+            data-keywords="env configuration secrets 12-factor dotenv environments"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_07">INFRA_07</a>
+              <h3 class="doc-title">[Infra] Environment &amp; configuration management</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding an environment variable or a secret.
+            </p>
+            <p class="doc-summary">
+              The environment matrix, <code>.env</code> conventions and <code>.env.example</code>,
+              what may never be an env var, and how secrets are delivered per environment.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_08"
+            data-id="INFRA_08"
+            data-area="INFRA"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_08_git-and-github.html"
+            data-requires="GEN_06"
+            data-see-also="INFRA_09"
+            data-paths=".github/**,CODEOWNERS"
+            data-keywords="git github branching conventional commits rebase pr template codeowners branch protection"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_08">INFRA_08</a>
+              <h3 class="doc-title">[Infra] Git &amp; GitHub — branching, commits, templates, protection</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are branching, committing, or configuring the repository on
+              GitHub.
+            </p>
+            <p class="doc-summary">
+              Branch naming, trunk-based flow, Conventional Commits, rebase/merge policy, how
+              AI-assisted commits are attributed, plus issue and PR templates, labels, CODEOWNERS,
+              branch protection and required checks.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_09"
+            data-id="INFRA_09"
+            data-area="INFRA"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_09_ci-pipeline.html"
+            data-requires="INFRA_06"
+            data-see-also="INFRA_11,INFRA_13"
+            data-paths=".github/workflows/**"
+            data-keywords="ci github actions pipeline turbo cache affected flaky required checks"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_09">INFRA_09</a>
+              <h3 class="doc-title">[Infra] CI pipeline (GitHub Actions)</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> CI is failing, or you are adding a check.
+            </p>
+            <p class="doc-summary">
+              The job graph (lint → typecheck → unit → build → integration → e2e), affected-only runs
+              through Turbo, cache use, the flaky-test policy, and which checks are required to
+              merge.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_10"
+            data-id="INFRA_10"
+            data-area="INFRA"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_10_docker-images-and-compose.html"
+            data-requires="INFRA_02"
+            data-see-also="INFRA_11,INFRA_12"
+            data-paths="Dockerfile*,docker-compose*.yml,.dockerignore"
+            data-keywords="docker compose dockerfile image container parity multi-stage non-root"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_10">INFRA_10</a>
+              <h3 class="doc-title">[Infra] Docker images &amp; local compose</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are changing a Dockerfile or the local service stack.
+            </p>
+            <p class="doc-summary">
+              Multi-stage Dockerfiles for a Bun monorepo, compose for local backing services, image
+              tagging and size budgets, dev/prod parity, and the non-root runtime rule.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_11"
+            data-id="INFRA_11"
+            data-area="INFRA"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_11_cd-environments-and-release.html"
+            data-requires="INFRA_09"
+            data-see-also="BE_15,BE_18"
+            data-keywords="cd deploy release rollback staging promotion smoke test versioning changelog probes"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_11">INFRA_11</a>
+              <h3 class="doc-title">[Infra] CD, environments &amp; release</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> you are shipping to a real environment.</p>
+            <p class="doc-summary">
+              Promotion path dev → staging → prod, deployment strategy, the migration gate, liveness
+              and readiness probes, rollback and kill-switch, smoke tests after deploy, and how a
+              version and changelog are produced.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_12"
+            data-id="INFRA_12"
+            data-area="INFRA"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_12_backing-services.html"
+            data-requires="INFRA_10"
+            data-see-also="BE_06,BE_19"
+            data-keywords="redis database broker provisioning backup local parity stateful"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_12">INFRA_12</a>
+              <h3 class="doc-title">[Infra] Backing services — Redis, database, broker</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding a stateful dependency or changing how one is
+              provisioned.
+            </p>
+            <p class="doc-summary">
+              How stateful dependencies are provisioned, kept identical between local and cloud,
+              named, sized, backed up and swapped — the database stays pluggable on purpose.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_13"
+            data-id="INFRA_13"
+            data-area="INFRA"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_13_turborepo-pipeline-and-build-cache.html"
+            data-requires="INFRA_01"
+            data-see-also="INFRA_09"
+            data-paths="turbo.json,**/turbo.json"
+            data-keywords="turbo pipeline build cache task graph remote cache dependsOn outputs"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_13">INFRA_13</a>
+              <h3 class="doc-title">[Infra] Turborepo task pipeline &amp; build cache</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding a task to <code>turbo.json</code>, or a build is
+              slower than it should be.
+            </p>
+            <p class="doc-summary">
+              Task graph design, declaring inputs and outputs, cacheable vs non-cacheable tasks,
+              remote cache, and how to debug a cache miss.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_14"
+            data-id="INFRA_14"
+            data-area="INFRA"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_14_observability.html"
+            data-requires="INFRA_11"
+            data-see-also="BE_20"
+            data-keywords="logging tracing opentelemetry metrics correlation id alerting dashboards"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_14">INFRA_14</a>
+              <h3 class="doc-title">[Infra] Observability — logs, traces, metrics</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you need to see what production is doing, or you are adding a signal.
+            </p>
+            <p class="doc-summary">
+              The structured logging schema, OpenTelemetry traces, the correlation-id contract across
+              browser → API → worker (the browser half lives in <code>GEN_08</code>), RED/USE
+              metrics, dashboards and alert thresholds.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_15"
+            data-id="INFRA_15"
+            data-area="INFRA"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_15_supply-chain-security.html"
+            data-requires="INFRA_09"
+            data-see-also="GEN_09"
+            data-keywords="supply chain audit dependabot sast secret scanning sbom image scan"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_15">INFRA_15</a>
+              <h3 class="doc-title">[Infra] Supply-chain &amp; platform security</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> an audit flags something, or you are wiring a new credential into CI.
+            </p>
+            <p class="doc-summary">
+              Dependency audit and update cadence, secret scanning, SAST/DAST, image scanning,
+              least-privilege CI credentials, SBOM.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="INFRA_16"
+            data-id="INFRA_16"
+            data-area="INFRA"
+            data-tier="P3"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="INFRA_16_operating-in-production.html"
+            data-requires="INFRA_14"
+            data-see-also="GEN_05"
+            data-keywords="feature flag toggle rollout canary slo error budget incident runbook on-call postmortem cost"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#INFRA_16">INFRA_16</a>
+              <h3 class="doc-title">[Infra] Operating in production — flags, SLOs &amp; incidents</h3>
+              <span class="tier P3">P3</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> the project has real users — not before.
+            </p>
+            <p class="doc-summary">
+              Feature-flag lifecycle and mandatory removal, latency/availability objectives and error
+              budgets, performance and cost guardrails, and the runbook, severity and blameless
+              postmortem templates.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- BACKEND                                                            -->
+      <!-- ================================================================= -->
+      <section id="sec-BE" aria-labelledby="be">
+        <h2 id="be">Backend <span class="count" data-count="BE"></span></h2>
+        <p class="section-note">
+          NestJS modular monolith, clean architecture, database kept pluggable.
+          <code>BE_01</code>–<code>BE_10</code> is the entry path: structure, layers, boundaries,
+          domain, use case, persistence, API, DTOs, errors, config — in the order you need them to
+          build one correct module. <code>BE_11</code>–<code>BE_13</code> are how you prove it works.
+        </p>
+        <ul class="docs">
+          <li
+            class="doc"
+            id="BE_01"
+            data-id="BE_01"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_01_project-structure.html"
+            data-requires="INFRA_01"
+            data-see-also="BE_02,BE_03"
+            data-paths="apps/api/**"
+            data-keywords="structure folders module anatomy file naming nestjs new module scaffold generator"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_01">BE_01</a>
+              <h3 class="doc-title">[BE] Project structure &amp; module anatomy</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding a module, or you do not know where a backend file
+              belongs.
+            </p>
+            <p class="doc-summary">
+              Folder layout of the API app, the canonical file tree of one module, file naming, where
+              anything new is allowed to go, and the checklist for scaffolding a new module.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_02"
+            data-id="BE_02"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_02_clean-architecture-layers.html"
+            data-requires="BE_01"
+            data-see-also="INFRA_06"
+            data-paths="apps/api/src/**"
+            data-keywords="clean architecture layers hexagonal ports and adapters dependency rule domain application infrastructure"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_02">BE_02</a>
+              <h3 class="doc-title">[BE] Clean architecture — the layers and the dependency rule</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are about to import something across layers.
+            </p>
+            <p class="doc-summary">
+              Definition and responsibility of domain / application / infrastructure / interface,
+              what each may import, and worked examples of a correct and an inverted dependency.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_03"
+            data-id="BE_03"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_03_module-boundaries.html"
+            data-requires="BE_02"
+            data-see-also="INFRA_03,BE_16"
+            data-paths="apps/api/src/modules/**"
+            data-keywords="modular monolith module boundary encapsulation public api coupling independence"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_03">BE_03</a>
+              <h3 class="doc-title">[BE] Module boundaries &amp; independence</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> one module needs something that belongs to another.
+            </p>
+            <p class="doc-summary">
+              What a module owns — its data, its rules — its public surface, the ban on reaching into
+              another module's internals or joining across their tables, and how a genuinely shared
+              concept is resolved.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_04"
+            data-id="BE_04"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_04_domain-modelling.html"
+            data-requires="BE_02"
+            data-see-also="GEN_11,GEN_14"
+            data-paths="apps/api/src/**/domain/**"
+            data-keywords="ddd entity value object aggregate invariant domain model rich model"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_04">BE_04</a>
+              <h3 class="doc-title">[BE] Domain modelling</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are creating or changing a business concept.
+            </p>
+            <p class="doc-summary">
+              Entities, value objects, aggregates and invariants; keeping the domain framework-free;
+              when a rich model is warranted and when a plain service is enough.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_05"
+            data-id="BE_05"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_05_use-cases-commands-queries.html"
+            data-requires="BE_04"
+            data-see-also="BE_14"
+            data-paths="apps/api/src/**/application/**"
+            data-keywords="use case application service cqrs command query orchestration handler"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_05">BE_05</a>
+              <h3 class="doc-title">[BE] Use cases — application services, commands &amp; queries</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are writing the code that performs a business operation.
+            </p>
+            <p class="doc-summary">
+              One use case per file, its signature and orchestration duties, command/query
+              separation, and where cross-cutting concerns hook in.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_06"
+            data-id="BE_06"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_06_persistence-and-repositories.html"
+            data-requires="BE_05"
+            data-see-also="INFRA_12,BE_15"
+            data-paths="apps/api/src/**/infrastructure/**"
+            data-keywords="repository persistence orm port adapter database agnostic mapper query"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_06">BE_06</a>
+              <h3 class="doc-title">[BE] Persistence &amp; the repository pattern</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> you need to read or write data.</p>
+            <p class="doc-summary">
+              Keeping the database pluggable: repository ports in the domain, adapters in
+              infrastructure, no ORM types above the adapter, where a query may live, and the
+              read-model escape hatch.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_07"
+            data-id="BE_07"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_07_api-design-standard.html"
+            data-requires="BE_05,GEN_08"
+            data-see-also="BE_08"
+            data-paths="apps/api/src/**/*.controller.ts"
+            data-keywords="rest api design versioning pagination filtering sorting status codes idempotency envelope"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_07">BE_07</a>
+              <h3 class="doc-title">[BE] API design standard</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding or changing an HTTP endpoint.
+            </p>
+            <p class="doc-summary">
+              Resource and route naming, HTTP verbs and status codes, versioning,
+              pagination/filtering/sorting, idempotency keys, and the response envelope.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_08"
+            data-id="BE_08"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_08_dto-validation-serialization.html"
+            data-requires="BE_07"
+            data-see-also="GEN_11"
+            data-paths="apps/api/src/**/*.dto.ts"
+            data-keywords="dto validation schema serialization mapper whitelist transform"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_08">BE_08</a>
+              <h3 class="doc-title">[BE] DTOs, validation &amp; serialization</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> data enters or leaves the API.
+            </p>
+            <p class="doc-summary">
+              Request DTO vs domain model vs response model, where validation runs, schema
+              conventions, transformation and whitelisting, and never letting an entity reach the
+              wire.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_09"
+            data-id="BE_09"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_09_error-handling.html"
+            data-requires="BE_08"
+            data-see-also="FE_18"
+            data-paths="apps/api/src/**/*.filter.ts,apps/api/src/**/errors/**"
+            data-keywords="errors exception filter problem details error codes taxonomy failure"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_09">BE_09</a>
+              <h3 class="doc-title">[BE] Error handling &amp; error taxonomy</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> something can fail — so, always.
+            </p>
+            <p class="doc-summary">
+              Domain errors vs application errors vs infrastructure failures, the stable error-code
+              catalogue (owned with <code>GEN_08</code>), the exception filter, the wire format, and
+              what is safe to expose.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_10"
+            data-id="BE_10"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_10_configuration-and-secrets.html"
+            data-requires="INFRA_07,GEN_09"
+            data-paths="apps/api/src/config/**"
+            data-keywords="config env secrets validation startup typed config namespace fail fast"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_10">BE_10</a>
+              <h3 class="doc-title">[BE] Configuration &amp; secrets in the application</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> the code needs a value that differs per environment.
+            </p>
+            <p class="doc-summary">
+              The typed, schema-validated config module, fail-fast on boot, the ban on reading
+              <code>process.env</code> anywhere else, and per-module config namespaces.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_11"
+            data-id="BE_11"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_11_unit-testing.html"
+            data-requires="BE_05"
+            data-see-also="BE_12,FE_13"
+            data-paths="apps/api/**/*.spec.ts"
+            data-keywords="unit test mocking test doubles coverage aaa naming domain first"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_11">BE_11</a>
+              <h3 class="doc-title">[BE] Unit testing</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> you wrote domain or use-case code.</p>
+            <p class="doc-summary">
+              What deserves a unit test (domain and use cases first), the runner and its config, test
+              naming, arrange/act/assert, test doubles vs real objects, and coverage expectations
+              with their limits.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_12"
+            data-id="BE_12"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_12_integration-testing-and-test-data.html"
+            data-requires="BE_11,BE_06"
+            data-see-also="INFRA_12"
+            data-paths="apps/api/**/*.integration-spec.ts"
+            data-keywords="integration test testcontainers isolation contract test fixtures factory seed builder"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_12">BE_12</a>
+              <h3 class="doc-title">[BE] Integration testing &amp; test data</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> the thing you wrote touches the database, Redis, or a module
+              boundary.
+            </p>
+            <p class="doc-summary">
+              Module-level tests against a real Redis and database in containers, isolation and
+              cleanup, contract tests at module boundaries, and the object mothers, builders and
+              deterministic fake data every test level draws from.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_13"
+            data-id="BE_13"
+            data-area="BE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_13_gherkin-step-definitions-api.html"
+            data-requires="GEN_10,BE_12"
+            data-see-also="FE_15"
+            data-paths="features/**,apps/api/**/steps/**"
+            data-keywords="gherkin cucumber bdd e2e step definitions api scenario teardown"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_13">BE_13</a>
+              <h3 class="doc-title">[BE] Gherkin step definitions &amp; API scenarios</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a scenario from <code>features/</code> has to run against the API.
+            </p>
+            <p class="doc-summary">
+              Implementing steps against the running API, step reuse, given-state setup, environment
+              and data teardown, and what belongs at this level rather than in
+              <code>BE_11</code>/<code>BE_12</code>.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_14"
+            data-id="BE_14"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_14_transactions-and-unit-of-work.html"
+            data-requires="BE_06"
+            data-see-also="BE_17"
+            data-keywords="transaction unit of work atomicity consistency rollback boundary"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_14">BE_14</a>
+              <h3 class="doc-title">[BE] Transactions &amp; unit of work</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> one operation writes more than once.
+            </p>
+            <p class="doc-summary">
+              Where a transaction begins and ends, how it is passed without leaking the driver, the
+              one-transaction-per-use-case rule, and how it interacts with the outbox.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_15"
+            data-id="BE_15"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_15_migrations-and-schema-evolution.html"
+            data-requires="BE_06"
+            data-paths="apps/api/**/migrations/**"
+            data-keywords="migration schema zero downtime expand contract seed forward only"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_15">BE_15</a>
+              <h3 class="doc-title">[BE] Database migrations &amp; schema evolution</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> the schema has to change.</p>
+            <p class="doc-summary">
+              Migration naming and review, the forward-only policy, expand/contract for zero-downtime
+              deploys, seed vs fixture data, and per-module schema ownership.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_16"
+            data-id="BE_16"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_16_inter-module-communication.html"
+            data-requires="BE_03"
+            data-see-also="BE_17"
+            data-keywords="events coupling anti-corruption layer integration read model cross module"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_16">BE_16</a>
+              <h3 class="doc-title">[BE] Inter-module communication</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a second module exists and the two have to talk.
+            </p>
+            <p class="doc-summary">
+              Direct call vs domain event vs read model, how to choose, anti-corruption layers, and
+              why the forbidden cross-module join has no exception.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_17"
+            data-id="BE_17"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_17_outbox-pattern.html"
+            data-requires="BE_14,BE_16"
+            data-see-also="BE_18"
+            data-paths="apps/api/**/outbox/**"
+            data-keywords="outbox reliable messaging idempotency dlq retry eventual consistency relay event schema"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_17">BE_17</a>
+              <h3 class="doc-title">[BE] Outbox pattern &amp; reliable messaging</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> something must happen after a write, reliably, but not inside the
+              request.
+            </p>
+            <p class="doc-summary">
+              The transactional outbox table and its relay, event schema and versioning,
+              at-least-once delivery, consumer idempotency, retries, DLQ and poison-message handling.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_18"
+            data-id="BE_18"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_18_background-jobs.html"
+            data-requires="BE_17"
+            data-see-also="INFRA_11"
+            data-paths="apps/api/**/jobs/**,apps/worker/**"
+            data-keywords="queue worker cron scheduler background job concurrency timeout drain shutdown"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_18">BE_18</a>
+              <h3 class="doc-title">[BE] Background jobs &amp; scheduling</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding a queue consumer or a scheduled job.
+            </p>
+            <p class="doc-summary">
+              Queue and job naming, worker process topology, concurrency and rate limits,
+              scheduled/cron jobs, timeouts and cancellation, draining in-flight work on shutdown,
+              and the observability of a job.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_19"
+            data-id="BE_19"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_19_application-caching-with-redis.html"
+            data-requires="BE_06"
+            data-see-also="INFRA_12,BE_25"
+            data-keywords="redis cache ttl invalidation cache aside stampede distributed lock key naming"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_19">BE_19</a>
+              <h3 class="doc-title">[BE] Application caching with Redis</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are about to cache something, or a cached value went stale.
+            </p>
+            <p class="doc-summary">
+              Key naming and namespacing, TTL policy, cache-aside vs read-through, invalidation on
+              write, stampede protection, distributed locks, and what must never be cached.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_20"
+            data-id="BE_20"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_20_logging-and-request-lifecycle.html"
+            data-requires="BE_09,INFRA_14"
+            data-paths="apps/api/src/**/*.interceptor.ts,apps/api/src/**/*.middleware.ts"
+            data-keywords="logging interceptor middleware guard pipe async local storage correlation id levels"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_20">BE_20</a>
+              <h3 class="doc-title">[BE] Logging, tracing &amp; the request lifecycle</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding a middleware, guard, interceptor, pipe or filter — or
+              a log line.
+            </p>
+            <p class="doc-summary">
+              The order those run in, request-context propagation, correlation ids, log levels, and
+              what must never be logged.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_21"
+            data-id="BE_21"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_21_authn-and-authz.html"
+            data-requires="BE_20"
+            data-see-also="FE_19"
+            data-paths="apps/api/src/**/*.guard.ts,apps/api/src/**/auth/**"
+            data-keywords="auth jwt session rbac abac guard permission current user policy"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_21">BE_21</a>
+              <h3 class="doc-title">[BE] Authentication &amp; authorization</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> an endpoint must know who is calling, or refuse them.
+            </p>
+            <p class="doc-summary">
+              Token/session strategy, guards and decorators, where RBAC/ABAC policy lives,
+              propagating the current actor into the domain, and how permissions are tested.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_22"
+            data-id="BE_22"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_22_security-hardening.html"
+            data-requires="BE_21,GEN_09"
+            data-keywords="security rate limit cors helmet injection ssrf upload audit log mass assignment"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_22">BE_22</a>
+              <h3 class="doc-title">[BE] Application security hardening</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> the API is about to face the internet, or you accept user-supplied
+              input or files.
+            </p>
+            <p class="doc-summary">
+              Rate limiting, CORS, headers, input sanitization, mass assignment, SSRF and injection
+              defenses, file-upload rules, audit trail.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_23"
+            data-id="BE_23"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_23_external-integrations.html"
+            data-requires="BE_06"
+            data-see-also="BE_25"
+            data-keywords="third party sdk webhook signature replay file storage signed url outbound client"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_23">BE_23</a>
+              <h3 class="doc-title">[BE] External integrations — outbound clients, webhooks &amp; file storage</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you call a third party, receive a webhook, or store a file.
+            </p>
+            <p class="doc-summary">
+              Wrapping third-party SDKs behind a port, timeouts and retries on outbound calls,
+              inbound webhook signature verification and replay protection, and signed-URL uploads.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_24"
+            data-id="BE_24"
+            data-area="BE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_24_coding-style.html"
+            data-requires="GEN_07"
+            data-paths="apps/api/**/*.ts"
+            data-keywords="coding style nestjs di injection token async immutability guard clause function size"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_24">BE_24</a>
+              <h3 class="doc-title">[BE] Backend coding style</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a review comment says "that is not how we write it here".
+            </p>
+            <p class="doc-summary">
+              Nest-specific idioms on top of <code>GEN_07</code>: providers and injection tokens,
+              async/await and error propagation, immutability, guard clauses, function size.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_25"
+            data-id="BE_25"
+            data-area="BE"
+            data-tier="P3"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_25_performance-and-resilience.html"
+            data-see-also="INFRA_16"
+            data-keywords="performance timeout retry backoff circuit breaker bulkhead n+1 pooling profiling"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_25">BE_25</a>
+              <h3 class="doc-title">[BE] Performance &amp; resilience</h3>
+              <span class="tier P3">P3</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> something is slow under load, or a dependency's failure took you down
+              with it.
+            </p>
+            <p class="doc-summary">
+              Timeouts, retries with backoff, circuit breakers, bulkheads, N+1 and pagination limits,
+              connection pooling, and profiling before optimizing.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="BE_26"
+            data-id="BE_26"
+            data-area="BE"
+            data-tier="P3"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="BE_26_evolving-the-monolith.html"
+            data-see-also="GEN_15"
+            data-keywords="microservice extraction strangler decomposition modular monolith split retire"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#BE_26">BE_26</a>
+              <h3 class="doc-title">[BE] Evolving the monolith — splitting, retiring &amp; extracting a module</h3>
+              <span class="tier P3">P3</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a module has outgrown the monolith, or is dead and should go.
+            </p>
+            <p class="doc-summary">
+              The signals that a module is too big, how to split or delete one cleanly, and the exit
+              path to a separate service: readiness criteria, data-ownership split, replacing
+              in-process events with transport, and the strangler steps.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- FRONTEND                                                           -->
+      <!-- ================================================================= -->
+      <section id="sec-FE" aria-labelledby="fe">
+        <h2 id="fe">Frontend <span class="count" data-count="FE"></span></h2>
+        <p class="section-note">
+          Next.js App Router, atomic design, Figma-driven tokens. <code>FE_01</code>–<code>FE_10</code>
+          is the minimum before your first component; <code>FE_11</code>–<code>FE_14</code> before
+          your first page ships.
+        </p>
+        <ul class="docs">
+          <li
+            class="doc"
+            id="FE_01"
+            data-id="FE_01"
+            data-area="FE"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-25"
+            data-file="FE_01_project-structure.md"
+            data-requires="INFRA_01"
+            data-see-also="FE_02,FE_13"
+            data-paths="apps/web/**"
+            data-keywords="structure app router folders colocation file naming placement"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_01">FE_01</a>
+              <h3 class="doc-title">[FE] Project structure</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you do not know where a frontend file belongs.
+            </p>
+            <p class="doc-summary">
+              The App Router tree, feature colocation vs the shared UI package, where atoms,
+              molecules and organisms physically live, file naming, and the decision rule for placing
+              a new file.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_02"
+            data-id="FE_02"
+            data-area="FE"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-25"
+            data-file="FE_02_atomic-design.md"
+            data-requires="FE_01"
+            data-see-also="INFRA_06,FE_21"
+            data-paths="apps/web/components/**,packages/ui/**"
+            data-keywords="atomic design atoms molecules organisms templates pages promotion layer"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_02">FE_02</a>
+              <h3 class="doc-title">[FE] Atomic design — layer definitions &amp; rules</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are creating a component and must decide what it is.
+            </p>
+            <p class="doc-summary">
+              Exact criteria for atom / molecule / organism / template / page, what each layer may
+              know — no data fetching or business logic below organism — and how a component is
+              promoted or demoted.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_03"
+            data-id="FE_03"
+            data-area="FE"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-25"
+            data-file="FE_03_design-tokens-theming-and-figma.md"
+            data-requires="FE_02"
+            data-see-also="FE_04,FE_06"
+            data-paths="packages/tokens/**,**/tokens/**,**/*.css"
+            data-keywords="design tokens figma variables theme dark mode sync design system icons assets"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_03">FE_03</a>
+              <h3 class="doc-title">[FE] Design tokens, theming &amp; the Figma pipeline</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you need a color, a spacing, a font, an icon — or a designer changed
+              one.
+            </p>
+            <p class="doc-summary">
+              Token taxonomy (primitive → semantic → component), the Figma → code sync pipeline and
+              the naming contract with designers, the semantic layer as the only theming seam
+              (dark mode is a token mode, not an architecture), the icon set generated from Figma,
+              and the absolute ban on hardcoded design values.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_04"
+            data-id="FE_04"
+            data-area="FE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_04_tailwind-conventions.html"
+            data-requires="FE_03"
+            data-paths="apps/web/**/*.tsx,packages/ui/**/*.tsx,tailwind.config.*"
+            data-keywords="tailwind cva class order variants responsive utility arbitrary values merge"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_04">FE_04</a>
+              <h3 class="doc-title">[FE] Tailwind CSS conventions</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> you are styling anything.</p>
+            <p class="doc-summary">
+              Token-backed theme only, no arbitrary values, variant handling with cva, class ordering
+              and merging, the responsive strategy, and the rare case where a component may own CSS.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_05"
+            data-id="FE_05"
+            data-area="FE"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-25"
+            data-file="FE_05_component-api.md"
+            data-requires="FE_02"
+            data-see-also="FE_06"
+            data-keywords="props composition forwardref component api slots polymorphic controlled uncontrolled"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_05">FE_05</a>
+              <h3 class="doc-title">[FE] Component API conventions</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are deciding what props a component takes.
+            </p>
+            <p class="doc-summary">
+              Prop naming and shape, composition over configuration, controlled vs uncontrolled, ref
+              forwarding, polymorphic components, and passing accessibility attributes through.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_06"
+            data-id="FE_06"
+            data-area="FE"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-25"
+            data-file="FE_06_accessibility.md"
+            data-requires="FE_05"
+            data-see-also="FE_16"
+            data-keywords="accessibility a11y wcag aria keyboard focus contrast semantic html screen reader"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_06">FE_06</a>
+              <h3 class="doc-title">[FE] Accessibility standard</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you render anything interactive — a control, a dialog, a form field.
+            </p>
+            <p class="doc-summary">
+              WCAG 2.2 AA as the baseline, semantic HTML first, keyboard and focus management, the
+              ARIA rules, contrast guaranteed by tokens, and how accessibility is tested and
+              enforced.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_07"
+            data-id="FE_07"
+            data-area="FE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_07_building-a-component-end-to-end.html"
+            data-requires="FE_06"
+            data-see-also="FE_14,FE_21"
+            data-keywords="walkthrough recipe figma frame to component checklist example junior"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_07">FE_07</a>
+              <h3 class="doc-title">[FE] Building a component end to end</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you have been handed a Figma frame and told to build it.
+            </p>
+            <p class="doc-summary">
+              The one worked path from frame to merged component — token check, atomic level,
+              component API, story, test, accessibility pass — with the real code at each step. Read
+              this instead of re-deriving <code>FE_02</code>–<code>FE_06</code> every time.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_08"
+            data-id="FE_08"
+            data-area="FE"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-25"
+            data-file="FE_08_server-vs-client-components.md"
+            data-requires="FE_01"
+            data-see-also="FE_09,FE_20"
+            data-paths="apps/web/app/**"
+            data-keywords="rsc use client server components boundary next.js hydration serialization"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_08">FE_08</a>
+              <h3 class="doc-title">[FE] Server vs Client components</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are about to write <code>'use client'</code>.
+            </p>
+            <p class="doc-summary">
+              Default to server, where the boundary belongs, what may cross it, and the common
+              mistakes that drag the whole tree to the client.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_09"
+            data-id="FE_09"
+            data-area="FE"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-25"
+            data-file="FE_09_data-fetching-and-request-caching.md"
+            data-requires="FE_08"
+            data-see-also="FE_10,FE_17"
+            data-keywords="fetch revalidate tags server actions request cache suspense streaming dedupe"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_09">FE_09</a>
+              <h3 class="doc-title">[FE] Data fetching &amp; Next.js request caching</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> a view needs data from the API.</p>
+            <p class="doc-summary">
+              Server fetch with revalidation and tags, server actions for mutations, when a client
+              query library is allowed, request deduplication, and streaming with Suspense.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_10"
+            data-id="FE_10"
+            data-area="FE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_10_api-client.html"
+            data-requires="GEN_08,FE_09"
+            data-paths="apps/web/**/api/**,**/*.generated.ts"
+            data-keywords="api client openapi codegen typed client adapter view model correlation id"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_10">FE_10</a>
+              <h3 class="doc-title">[FE] Typed API client &amp; contract consumption</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are calling the backend, or the contract changed under you.
+            </p>
+            <p class="doc-summary">
+              The generated client from the OpenAPI contract, the ban on raw <code>fetch</code> and
+              hand-written wire types in components, sending the correlation id, mapping responses to
+              view models, and surviving a contract version bump.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_11"
+            data-id="FE_11"
+            data-area="FE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_11_routing-and-navigation.html"
+            data-requires="FE_08"
+            data-see-also="FE_12,FE_18"
+            data-paths="apps/web/app/**/page.tsx,apps/web/app/**/layout.tsx"
+            data-keywords="routing app router layout route group params navigation redirect search params"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_11">FE_11</a>
+              <h3 class="doc-title">[FE] Routing &amp; navigation</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> you are adding or restructuring a route.</p>
+            <p class="doc-summary">
+              Route groups and layouts, dynamic segments, the loading/error/not-found files, parallel
+              and intercepting routes, search-param contracts, and redirects.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_12"
+            data-id="FE_12"
+            data-area="FE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_12_seo-standard.html"
+            data-requires="FE_11"
+            data-see-also="FE_20"
+            data-paths="apps/web/app/**/sitemap.ts,apps/web/app/**/robots.ts"
+            data-keywords="seo metadata sitemap robots structured data open graph canonical hreflang isr ssg"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_12">FE_12</a>
+              <h3 class="doc-title">[FE] SEO standard</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding a page that search engines should see.
+            </p>
+            <p class="doc-summary">
+              Metadata per route, canonical URLs, sitemap and robots generation, structured data,
+              Open Graph, hreflang, and the rendering choice (SSG / ISR / SSR) per page type.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_13"
+            data-id="FE_13"
+            data-area="FE"
+            data-tier="P1"
+            data-status="stable"
+            data-updated="2026-08-25"
+            data-file="FE_13_shared-ui-package.md"
+            data-requires="FE_02,INFRA_03"
+            data-paths="packages/ui/**"
+            data-keywords="shared ui package design system package promotion reuse public api"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_13">FE_13</a>
+              <h3 class="doc-title">[FE] The shared UI package (packages/ui)</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding to <code>packages/ui</code>, or wondering whether a
+              component belongs there.
+            </p>
+            <p class="doc-summary">
+              When a component graduates from an app into the shared package, that package's public
+              API and how it is versioned, and how app-specific concerns are kept out of it.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_14"
+            data-id="FE_14"
+            data-area="FE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_14_unit-and-component-testing.html"
+            data-requires="FE_05"
+            data-see-also="FE_15,FE_21"
+            data-paths="apps/web/**/*.test.tsx,packages/ui/**/*.test.tsx"
+            data-keywords="testing library rtl component test unit test msw hooks queries by role"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_14">FE_14</a>
+              <h3 class="doc-title">[FE] Unit &amp; component testing</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> you wrote a component or a hook.</p>
+            <p class="doc-summary">
+              Testing behaviour, not implementation; queries by role; what to mock (the network, not
+              components); hook testing; and the coverage expectation per atomic level.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_15"
+            data-id="FE_15"
+            data-area="FE"
+            data-tier="P1"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_15_gherkin-step-definitions-browser.html"
+            data-requires="GEN_10,FE_14"
+            data-paths="features/**,apps/web/**/steps/**"
+            data-keywords="e2e playwright gherkin page object data-testid flaky browser scenario"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_15">FE_15</a>
+              <h3 class="doc-title">[FE] Gherkin step definitions &amp; browser scenarios</h3>
+              <span class="tier P1">P1</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a scenario from <code>features/</code> has to run in a browser.
+            </p>
+            <p class="doc-summary">
+              Implementing steps against the running app, page-object conventions, the selector
+              policy (<code>data-testid</code>), auth and data setup, handling flakiness, and what
+              deserves a browser scenario at all.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_16"
+            data-id="FE_16"
+            data-area="FE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_16_forms-and-validation.html"
+            data-requires="FE_10"
+            data-see-also="FE_18"
+            data-keywords="forms react hook form validation schema server action errors pending accessible fields"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_16">FE_16</a>
+              <h3 class="doc-title">[FE] Forms &amp; validation</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger"><b>Open when:</b> the user has to type something.</p>
+            <p class="doc-summary">
+              Form library conventions, deriving the form schema from the generated contract types
+              (<code>GEN_08</code> — the backend stays the source of truth), progressive enhancement
+              with server actions, error and pending states, and accessible field markup.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_17"
+            data-id="FE_17"
+            data-area="FE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_17_state-management.html"
+            data-requires="FE_09"
+            data-keywords="state url state context store client state escalation ladder"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_17">FE_17</a>
+              <h3 class="doc-title">[FE] State management</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> local state is no longer enough and you are reaching for context or a
+              store.
+            </p>
+            <p class="doc-summary">
+              Server state vs URL state vs UI state, the escalation ladder (local → URL → context →
+              store), and the rule against duplicating server data in a client store.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_18"
+            data-id="FE_18"
+            data-area="FE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_18_error-handling-and-ui-states.html"
+            data-requires="FE_10"
+            data-keywords="error boundary empty state skeleton loading toast fallback error code mapping"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_18">FE_18</a>
+              <h3 class="doc-title">[FE] Error handling &amp; UI states</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a view can be empty, slow, or fail — so, every data-driven view.
+            </p>
+            <p class="doc-summary">
+              Mapping the backend error codes from <code>BE_09</code> to user-facing messages, error
+              boundaries and recovery, and the mandatory loading / empty / error / partial states.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_19"
+            data-id="FE_19"
+            data-area="FE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_19_auth-and-protected-routes.html"
+            data-requires="FE_11"
+            data-paths="apps/web/middleware.ts"
+            data-keywords="auth session middleware protected route cookies permissions ssr redirect"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_19">FE_19</a>
+              <h3 class="doc-title">[FE] Authentication &amp; protected routes</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a route or a piece of UI is only for signed-in users.
+            </p>
+            <p class="doc-summary">
+              SSR-safe session handling, middleware-based route protection, token storage rules,
+              redirect-after-login, and rendering by permission without leaking the data you hid.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_20"
+            data-id="FE_20"
+            data-area="FE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_20_performance-and-web-vitals.html"
+            data-requires="FE_09"
+            data-see-also="INFRA_16"
+            data-keywords="performance core web vitals lcp inp cls bundle size images fonts code splitting"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_20">FE_20</a>
+              <h3 class="doc-title">[FE] Performance &amp; Core Web Vitals</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a page feels slow, or the bundle budget check failed.
+            </p>
+            <p class="doc-summary">
+              LCP/INP/CLS targets, the image and font strategy, bundle budgets enforced in CI, code
+              splitting and lazy boundaries, and how to avoid client-side waterfalls.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_21"
+            data-id="FE_21"
+            data-area="FE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_21_storybook-docs-and-visual-regression.html"
+            data-requires="FE_14"
+            data-keywords="storybook stories component docs design review catalog visual regression snapshot baseline"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_21">FE_21</a>
+              <h3 class="doc-title">[FE] Storybook, component docs &amp; visual regression</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> you are adding a reusable component, or a screenshot diff failed.
+            </p>
+            <p class="doc-summary">
+              Which atomic levels require stories and the states each story must show, Storybook as
+              the hand-off surface with design, and visual regression on top of it: the viewport and
+              theme matrix, deterministic rendering, and baseline approval.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_22"
+            data-id="FE_22"
+            data-area="FE"
+            data-tier="P2"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_22_coding-style.html"
+            data-requires="GEN_07"
+            data-paths="apps/web/**/*.tsx"
+            data-keywords="coding style react hooks conventions imports component size early return"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_22">FE_22</a>
+              <h3 class="doc-title">[FE] Frontend coding style</h3>
+              <span class="tier P2">P2</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a review comment says "that is not how we write it here".
+            </p>
+            <p class="doc-summary">
+              React idioms on top of <code>GEN_07</code>: hook rules and custom-hook extraction,
+              component size, early returns over nested ternaries, import order, prop-drilling
+              limits.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_23"
+            data-id="FE_23"
+            data-area="FE"
+            data-tier="P3"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_23_internationalization.html"
+            data-see-also="FE_12"
+            data-keywords="i18n l10n locale translation rtl formatting pluralization"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_23">FE_23</a>
+              <h3 class="doc-title">[FE] Internationalization &amp; localization</h3>
+              <span class="tier P3">P3</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> a second language is actually coming.
+            </p>
+            <p class="doc-summary">
+              Routing per locale, translation key naming and ownership, pluralization,
+              date/number/currency formatting, RTL support, and never concatenating translated
+              strings.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+
+          <li
+            class="doc"
+            id="FE_24"
+            data-id="FE_24"
+            data-area="FE"
+            data-tier="P3"
+            data-status="todo"
+            data-updated="2026-08-13"
+            data-file="FE_24_analytics-and-consent.html"
+            data-see-also="GEN_09"
+            data-keywords="analytics tracking events consent gdpr telemetry taxonomy"
+          >
+            <div class="doc-head">
+              <a class="doc-id" href="#FE_24">FE_24</a>
+              <h3 class="doc-title">[FE] Analytics, tracking &amp; consent</h3>
+              <span class="tier P3">P3</span>
+            </div>
+            <p class="doc-trigger">
+              <b>Open when:</b> someone wants to measure user behaviour.
+            </p>
+            <p class="doc-summary">
+              Event naming taxonomy, where tracking calls may live, consent gating, and keeping
+              personal data out of analytics payloads.
+            </p>
+            <p class="doc-meta"></p>
+          </li>
+        </ul>
+      </section>
+
+      <p class="empty" id="empty" hidden>No convention matches that filter.</p>
+
+      <footer class="page">
+        <p>
+          <span id="total"></span> · <span id="statuses"></span> · While an entry is
+          <code>todo</code> its document does not exist and the entry itself is the binding text.
+          Add or rename a document and this index changes in the same PR; the page validates its own
+          relations, tiers and counts on load.
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        var docs = Array.prototype.slice.call(document.querySelectorAll(".doc"));
+        var sections = Array.prototype.slice.call(document.querySelectorAll("section[id^='sec-']"));
+        var q = document.getElementById("q");
+        var empty = document.getElementById("empty");
+        var result = document.getElementById("result");
+        var buttons = Array.prototype.slice.call(document.querySelectorAll(".toolbar button"));
+        var TIER_RANK = { P0: 0, P1: 1, P2: 2, P3: 3 };
+        var byId = {};
+        var state = { area: "all", tier: "all" };
+
+        var list = (doc, attr) =>
+          (doc.dataset[attr] || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+
+        docs.forEach((doc) => (byId[doc.dataset.id] = doc));
+
+        // --- relations: declared once, rendered undirected (symmetry by construction)
+        var inbound = {};
+        docs.forEach((doc) =>
+          list(doc, "seeAlso").forEach((id) => {
+            (inbound[id] = inbound[id] || []).push(doc.dataset.id);
+          })
+        );
+
+        function link(id) {
+          return byId[id] ? '<a href="#' + id + '">' + id + "</a>" : id + " (missing)";
+        }
+
+        // --- documents live in their area folder; data-file stays the bare file name
+        function path(doc) {
+          return doc.dataset.area + "/" + doc.dataset.file;
+        }
+
+        docs.forEach(function (doc) {
+          var requires = list(doc, "requires");
+          var seeAlso = list(doc, "seeAlso")
+            .concat(inbound[doc.dataset.id] || [])
+            .filter((id, i, all) => all.indexOf(id) === i && requires.indexOf(id) === -1)
+            .sort();
+          var written = doc.dataset.status !== "todo";
+          var href = path(doc);
+          var file = written ? '<a href="' + href + '">' + href + "</a>" : href;
+          var bits = ['<span class="file">' + file + "</span>"];
+          if (requires.length) bits.push("<span>requires " + requires.map(link).join(", ") + "</span>");
+          if (seeAlso.length) bits.push("<span>see also " + seeAlso.map(link).join(", ") + "</span>");
+          bits.push('<span class="status">' + doc.dataset.status + "</span>");
+          doc.querySelector(".doc-meta").innerHTML = bits.join(" ");
+
+          // The whole card opens the document. The title carries the real anchor, so
+          // keyboard, middle-click and "copy link address" all behave; the card click
+          // below just follows it. A todo entry has no file, so it stays inert.
+          if (!written) return;
+          var title = doc.querySelector(".doc-title");
+          var anchor = document.createElement("a");
+          anchor.className = "doc-open";
+          anchor.href = href;
+          while (title.firstChild) anchor.appendChild(title.firstChild);
+          title.appendChild(anchor);
+          doc.classList.add("is-linked");
+        });
+
+        document.addEventListener("click", function (event) {
+          var card = event.target.closest && event.target.closest(".doc.is-linked");
+          if (!card || event.defaultPrevented || event.button !== 0) return;
+          if (event.target.closest("a")) return; // the id permalink and meta links win
+          var selection = window.getSelection();
+          if (selection && String(selection).length) return; // a click that ends a selection
+          var open = card.querySelector(".doc-open");
+          if (event.metaKey || event.ctrlKey) window.open(open.href, "_blank", "noopener");
+          else window.location.href = open.href;
+        });
+
+        // --- self-check: the drift guard, since this index is hand-maintained
+        var problems = [];
+        docs.forEach(function (doc) {
+          var id = doc.dataset.id;
+          list(doc, "requires")
+            .concat(list(doc, "seeAlso"))
+            .forEach(function (ref) {
+              if (!byId[ref]) problems.push(id + " points at " + ref + ", which does not exist");
+            });
+          list(doc, "requires").forEach(function (ref) {
+            if (byId[ref] && TIER_RANK[byId[ref].dataset.tier] > TIER_RANK[doc.dataset.tier]) {
+              problems.push(
+                id +
+                  " (" +
+                  doc.dataset.tier +
+                  ") requires " +
+                  ref +
+                  " (" +
+                  byId[ref].dataset.tier +
+                  ") — a lower tier. One of the two is wrong (rule 4)."
+              );
+            }
+          });
+          if (!/^[A-Z]+_\d\d_/.test(doc.dataset.file) || doc.dataset.file.indexOf(id + "_") !== 0) {
+            problems.push(id + " has a filename that does not start with its id: " + doc.dataset.file);
+          }
+          // the folder is derived from data-area, so the two must agree or the link is dead
+          if (id.split("_")[0] !== doc.dataset.area) {
+            problems.push(
+              id + " is filed under data-area " + doc.dataset.area + ", so it would link to " + path(doc)
+            );
+          }
+        });
+        var p0 = docs.filter((d) => d.dataset.tier === "P0").length;
+        if (p0 > 10) problems.push("P0 has " + p0 + " documents; the budget is 10 (see the tier legend).");
+        if (problems.length) {
+          var box = document.getElementById("selfcheck");
+          box.innerHTML =
+            "<strong>This index is inconsistent:</strong><ul><li>" +
+            problems.join("</li><li>") +
+            "</li></ul>";
+          box.hidden = false;
+        }
+
+        // --- filtering
+        function apply() {
+          var term = q.value.trim().toLowerCase();
+          var visible = 0;
+
+          docs.forEach(function (doc) {
+            var ok =
+              (state.area === "all" || doc.dataset.area === state.area) &&
+              (state.tier === "all" || doc.dataset.tier === state.tier);
+            if (ok && term) {
+              ok = (doc.textContent + " " + (doc.dataset.keywords || "") + " " + (doc.dataset.paths || ""))
+                .toLowerCase()
+                .indexOf(term) !== -1;
+            }
+            doc.hidden = !ok;
+            if (ok) visible++;
+          });
+
+          sections.forEach(function (section) {
+            var area = section.id.slice(4);
+            var shown = docs.filter((d) => d.dataset.area === area && !d.hidden).length;
+            var total = docs.filter((d) => d.dataset.area === area).length;
+            section.hidden = shown === 0;
+            var counter = section.querySelector("[data-count]");
+            if (counter) {
+              counter.textContent =
+                area + " · " + (shown === total ? total + " documents" : shown + " of " + total);
+            }
+          });
+
+          empty.hidden = visible !== 0;
+          result.textContent =
+            visible + " of " + docs.length + " documents" + (visible === docs.length ? "" : " shown");
+        }
+
+        q.addEventListener("input", apply);
+
+        buttons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            var group = button.dataset.filter;
+            var value = button.dataset.value;
+            // area and tier are radio groups
+            state[group] = value;
+            buttons
+              .filter((b) => b.dataset.filter === group)
+              .forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.value === state[group])));
+            apply();
+          });
+        });
+
+        document.getElementById("total").textContent = docs.length + " documents";
+        var statuses = {};
+        docs.forEach(function (doc) {
+          statuses[doc.dataset.status] = (statuses[doc.dataset.status] || 0) + 1;
+        });
+        document.getElementById("statuses").textContent = Object.keys(statuses)
+          .sort()
+          .map(function (key) {
+            return statuses[key] + " " + key;
+          })
+          .join(", ");
+        apply();
+      })();
+    </script>
+  </body>
+</html>
