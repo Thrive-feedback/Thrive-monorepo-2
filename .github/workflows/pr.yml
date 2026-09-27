@@ -1,0 +1,53 @@
+# INFRA_09 — the pipeline every merge candidate runs. Ordered cheapest and broadest first
+# (R2): code style and types catch most mistakes in seconds without building anything.
+# Every job runs a task a developer runs locally with the same arguments (R6) — `bun run
+# check` is both jobs back to back.
+#
+# Tests, builds and deploys are deliberately absent: they are out of scope for #44. The
+# architecture guardrail joins this workflow as its own job in #46.
+name: PR
+
+on:
+  pull_request:
+    branches: [main]
+
+# R9 — least privilege. These jobs read the code and publish nothing.
+permissions:
+  contents: read
+
+# R8 — a second push makes the first run's result worthless. Superseded runs cancel.
+concurrency:
+  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  style:
+    # The name the merge gate requires and the PM reads on the pull request.
+    name: Code style
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.0.2
+        with:
+          # The version `devEngines.packageManager` pins, so CI and a laptop agree.
+          bun-version-file: package.json
+      # R4 — a pipeline never resolves a version.
+      - run: bun install --frozen-lockfile
+      # Biome: formatting, lint and import sorting. `--error-on-warnings` because a
+      # warning nobody must act on is not a guardrail (INFRA_06 R3).
+      - run: bun run check:style
+
+  types:
+    name: Types
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.0.2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      # INFRA_05 R8 — type-checking is a task, run at the strictest setting the code
+      # sustains, in every workspace.
+      - run: bun run check:types
