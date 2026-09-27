@@ -3,8 +3,8 @@
 # Every job runs a task a developer runs locally with the same arguments (R6) — `bun run
 # check` is both jobs back to back.
 #
-# Tests, builds and deploys are deliberately absent: they are out of scope for #44. The
-# architecture guardrail joins this workflow as its own job in #46.
+# Tests, builds and deploys are deliberately absent: they were out of scope for #44 and
+# hosting is PROJECT.md §5 decision 5.
 name: PR
 
 on:
@@ -51,3 +51,18 @@ jobs:
       # INFRA_05 R8 — type-checking is a task, run at the strictest setting the code
       # sustains, in every workspace.
       - run: bun run check:types
+
+  architecture:
+    name: Architecture
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.0.2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      # The import graph (INFRA_06 R4), then the proof that each rule still fires
+      # (INFRA_06 R8), then the API's specifier-level rules. Runs under Bun, so the command
+      # is the same on a laptop whatever Node version happens to be on PATH.
+      - run: bun run check:arch
