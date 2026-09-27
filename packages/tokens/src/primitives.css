@@ -1,0 +1,134 @@
+/*
+ * Layer 1 of 3 — primitives. These name values and nothing else (`FE_03` R2).
+ *
+ * A component may never reference anything in this file: `FE_03` R2 says components see the
+ * semantic layer only, because a component reaching for `--primary-500` has asserted that this
+ * button is purple in every theme, which is the assertion the layering exists to prevent.
+ *
+ * Where these values come from: the retired `Thrive-feedback/thrive-monorepo` build, read as a
+ * specification (`docs/adr/0009`). They are Thrive's real ramps, in OKLCH, not invented
+ * placeholders — but they are values, not decisions. `FE_03` R6 makes this file the source of
+ * record only until a design source exists; Spike #43 decides how Figma and code exchange them,
+ * and the change introducing that pipeline migrates these rather than re-deciding them.
+ *
+ * Twelve steps per ramp, including the 750 the old build used for pressed states.
+ */
+:root {
+  /* primary: Purple — the brand ramp */
+  --primary-50: oklch(95.81% 0.0109 317.81);
+  --primary-100: oklch(91.66% 0.0249 317.61);
+  --primary-200: oklch(83.41% 0.0562 317.12);
+  --primary-300: oklch(75.18% 0.0879 316.52);
+  --primary-400: oklch(63.21% 0.1323 315.35);
+  --primary-500: oklch(58.83% 0.1485 314.78);
+  --primary-600: oklch(50.08% 0.1363 314.51);
+  --primary-700: oklch(41.14% 0.1119 314.52);
+  --primary-750: oklch(36.67% 0.0998 314.51);
+  --primary-800: oklch(32.15% 0.085 314.62);
+  --primary-900: oklch(23.13% 0.0552 314.97);
+  --primary-950: oklch(18.24% 0.0424 318.67);
+
+  /* secondary: Amber — the accent ramp */
+  --secondary-50: oklch(95.76% 0.0136 41.92);
+  --secondary-100: oklch(91.55% 0.0321 42.01);
+  --secondary-200: oklch(83.19% 0.077 42.04);
+  --secondary-300: oklch(74.92% 0.128 41.41);
+  --secondary-400: oklch(69.56% 0.1633 40.1);
+  --secondary-500: oklch(58.11% 0.169 38.18);
+  --secondary-600: oklch(49.31% 0.1433 38.19);
+  --secondary-700: oklch(40.48% 0.1157 38.39);
+  --secondary-750: oklch(36.05% 0.0995 38.77);
+  --secondary-800: oklch(31.58% 0.08 39.8);
+  --secondary-900: oklch(22.63% 0.0402 46.25);
+  --secondary-950: oklch(17.8% 0.026 51.73);
+
+  /* neutral: Warm grey — surfaces, text, borders */
+  --neutral-50: oklch(95.68% 0.0026 83.92);
+  --neutral-100: oklch(91.37% 0.0039 83.99);
+  --neutral-200: oklch(82.73% 0.0076 84.22);
+  --neutral-300: oklch(74.12% 0.0068 84.22);
+  --neutral-400: oklch(65.49% 0.0076 84.33);
+  --neutral-500: oklch(56.87% 0.0073 84.39);
+  --neutral-600: oklch(48.26% 0.0055 84.32);
+  --neutral-700: oklch(39.64% 0.0034 84.19);
+  --neutral-750: oklch(35.34% 0.0026 84.14);
+  --neutral-800: oklch(31.03% 0.0026 84.18);
+  --neutral-900: oklch(23.54% 0.0041 84.59);
+  --neutral-950: oklch(17.67% 0.006 85.72);
+
+  /* success: Green */
+  --success-50: oklch(95.19% 0.0433 150.36);
+  --success-100: oklch(90.15% 0.1097 150.6);
+  --success-200: oklch(81.26% 0.1349 150.76);
+  --success-300: oklch(68.72% 0.1177 150.78);
+  --success-400: oklch(64.3% 0.1099 150.77);
+  --success-500: oklch(55.84% 0.0956 150.78);
+  --success-600: oklch(47.38% 0.0808 150.77);
+  --success-700: oklch(38.92% 0.0666 150.77);
+  --success-750: oklch(34.69% 0.0593 150.77);
+  --success-800: oklch(30.48% 0.0504 150.75);
+  --success-900: oklch(22.05% 0.0323 150.03);
+  --success-950: oklch(17.44% 0.0223 149.47);
+
+  /* caution: Amber-yellow */
+  --caution-50: oklch(95.65% 0.0234 77.26);
+  --caution-100: oklch(91.29% 0.0571 78.71);
+  --caution-200: oklch(83.25% 0.1407 81.56);
+  --caution-300: oklch(74.06% 0.1306 81.64);
+  --caution-400: oklch(65.45% 0.1155 81.64);
+  --caution-500: oklch(56.83% 0.1002 81.64);
+  --caution-600: oklch(48.22% 0.0852 81.64);
+  --caution-700: oklch(39.61% 0.0698 81.64);
+  --caution-750: oklch(35.31% 0.0613 81.61);
+  --caution-800: oklch(31% 0.0505 81.49);
+  --caution-900: oklch(22.37% 0.0286 82.67);
+  --caution-950: oklch(17.65% 0.0199 83.5);
+
+  /* danger: Red */
+  --danger-50: oklch(95.82% 0.0132 12.69);
+  --danger-100: oklch(91.68% 0.0312 12.62);
+  --danger-200: oklch(83.48% 0.0751 12.41);
+  --danger-300: oklch(75.36% 0.1259 12.11);
+  --danger-400: oklch(64.73% 0.2041 11.45);
+  --danger-500: oklch(58.87% 0.1995 11.34);
+  --danger-600: oklch(49.96% 0.1694 11.34);
+  --danger-700: oklch(41.03% 0.139 11.34);
+  --danger-750: oklch(36.58% 0.1242 11.34);
+  --danger-800: oklch(32.08% 0.1057 11.38);
+  --danger-900: oklch(23.08% 0.0681 11.86);
+  --danger-950: oklch(18.17% 0.0513 16.63);
+
+  /* info: Blue */
+  --info-50: oklch(95.78% 0.0138 278.5);
+  --info-100: oklch(91.58% 0.0314 277.51);
+  --info-200: oklch(83.25% 0.0719 274.78);
+  --info-300: oklch(74.96% 0.1139 271.01);
+  --info-400: oklch(64.83% 0.1665 264.29);
+  --info-500: oklch(58.38% 0.1863 259.97);
+  --info-600: oklch(49.54% 0.158 259.98);
+  --info-700: oklch(40.69% 0.1297 259.98);
+  --info-750: oklch(36.27% 0.1156 259.99);
+  --info-800: oklch(31.81% 0.0981 260.73);
+  --info-900: oklch(22.91% 0.0632 262.99);
+  --info-950: oklch(18.09% 0.0484 266.18);
+
+  /* The ends of the neutral ramp. Page backgrounds and text on a filled control need them,
+     and neither is a step on the 50–950 scale. */
+  --neutral-0: oklch(100% 0 0);
+  --neutral-1000: oklch(0% 0 0);
+
+  /* Spacing is one multiplier, not a bespoke scale: Tailwind derives its whole spacing
+     vocabulary from it (`FE_04` R1), so there is nothing to keep in sync. */
+  --space-unit: 0.25rem;
+
+  /* Radii. Three steps is what the old build used once its calc() chain is flattened. */
+  --radius-1: 0.375rem;
+  --radius-2: 0.625rem;
+  --radius-3: 1rem;
+
+  /* Inter only. The old build also used Cooper for display, which is licensed, so it is left
+     out until Thrive's licence is confirmed — see the README. */
+  --family-sans:
+    var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --family-mono: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+}
