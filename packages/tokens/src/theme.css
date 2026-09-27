@@ -1,0 +1,49 @@
+/*
+ * Layer 3 of 3 — the Tailwind theme, generated from the semantic layer (`FE_04` R1: a utility
+ * that is not token-backed does not exist).
+ *
+ * `@theme inline` means the utilities resolve to `var(--…)` rather than to a copy of the value,
+ * so a theme mode overriding the semantic layer changes what every utility paints without
+ * regenerating anything (`FE_03` R7).
+ *
+ * The two sides differ by one prefix on purpose. Tailwind's theme namespaces are `--color-*`,
+ * `--radius-*`, `--font-*`, so the semantic layer uses bare role names — `--surface`, `--action`.
+ * Without that split a theme variable would refer to itself.
+ *
+ * Only semantic tokens appear here. Exposing a primitive would put `bg-primary-500` in reach of
+ * every component and quietly undo `FE_03` R2.
+ */
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-on-action: var(--foreground-on-action);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-action: var(--action);
+  --color-action-hover: var(--action-hover);
+  --color-action-pressed: var(--action-pressed);
+  --color-action-subtle: var(--action-subtle);
+  --color-accent: var(--accent);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-caution: var(--caution);
+  --color-caution-subtle: var(--caution-subtle);
+  --color-danger: var(--danger);
+  --color-danger-subtle: var(--danger-subtle);
+  --color-info: var(--info);
+  --color-info-subtle: var(--info-subtle);
+  --color-focus: var(--focus);
+
+  --radius-control: var(--shape-control);
+  --radius-surface: var(--shape-surface);
+
+  --font-sans: var(--family-sans);
+  --font-mono: var(--family-mono);
+
+  --spacing: var(--space-unit);
+}

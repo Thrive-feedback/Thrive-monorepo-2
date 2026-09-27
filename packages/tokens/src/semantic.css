@@ -1,0 +1,60 @@
+/*
+ * Layer 2 of 3 — semantic tokens. These name intent in terms of primitives (`FE_03` R2), and
+ * they are the only layer a component may reference.
+ *
+ * Every name states a role, never an appearance (`FE_03` R3): `--danger`, not
+ * `--color-red`. The day danger stops being red, a role name is still true and an appearance
+ * name is a lie that every consumer repeats.
+ *
+ * `FE_03` R9 asks for token names to be agreed with design before they exist in either place.
+ * There is no design source yet, so **this vocabulary is a proposal** — the roles Thrive's
+ * current screens need and no more (`PROJECT.md` §2: solve today's problem). Spike #43 is what
+ * turns it into an agreement.
+ *
+ * Dark mode is deliberately absent — it is out of scope for #47. `FE_03` R7 makes a theme a
+ * second set of values for *this* layer and nothing else, so when it arrives it attaches here,
+ * as `:root[data-theme='dark'] { … }` overriding these same names. No component changes, and
+ * nothing below this file moves.
+ */
+:root {
+  /* Surfaces, from furthest back to nearest front. */
+  --surface: var(--neutral-0);
+  --surface-raised: var(--neutral-50);
+  --surface-sunken: var(--neutral-100);
+
+  /* Text and icons. `on-action` is for content sitting on a filled action. */
+  --foreground: var(--neutral-900);
+  --foreground-muted: var(--neutral-600);
+  --foreground-on-action: var(--neutral-0);
+
+  /* Lines: dividers and control outlines. */
+  --line: var(--neutral-200);
+  --line-strong: var(--neutral-300);
+
+  /* The primary action, and the states it has to have to be usable. */
+  --action: var(--primary-500);
+  --action-hover: var(--primary-600);
+  --action-pressed: var(--primary-700);
+  --action-subtle: var(--primary-50);
+
+  /* The accent. Emphasis that is not an action. */
+  --accent: var(--secondary-500);
+  --accent-subtle: var(--secondary-50);
+
+  /* Status. Each has a fill for icons and text, and a subtle wash for backgrounds. */
+  --success: var(--success-600);
+  --success-subtle: var(--success-50);
+  --caution: var(--caution-600);
+  --caution-subtle: var(--caution-50);
+  --danger: var(--danger-600);
+  --danger-subtle: var(--danger-50);
+  --info: var(--info-600);
+  --info-subtle: var(--info-50);
+
+  /* Focus. One token, because `FE_06` wants focus visible on every interactive element. */
+  --focus: var(--primary-400);
+
+  /* Shape. Two roles: things you operate, and things that hold content. */
+  --shape-control: var(--radius-2);
+  --shape-surface: var(--radius-3);
+}

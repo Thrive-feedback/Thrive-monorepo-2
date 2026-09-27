@@ -51,6 +51,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@repo/api": "workspace:*",
+        "@repo/tokens": "workspace:*",
         "@repo/ui": "workspace:*",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -103,6 +104,14 @@
         "@biomejs/biome": "catalog:",
       },
     },
+    "packages/tokens": {
+      "name": "@repo/tokens",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@biomejs/biome": "catalog:",
+        "@repo/biome-config": "workspace:*",
+      },
+    },
     "packages/typescript-config": {
       "name": "@repo/typescript-config",
       "version": "0.0.0",
@@ -111,6 +120,7 @@
       "name": "@repo/ui",
       "version": "0.0.0",
       "dependencies": {
+        "@repo/tokens": "workspace:*",
         "react": "catalog:",
         "react-dom": "catalog:",
       },
@@ -475,6 +485,8 @@
     "@repo/api": ["@repo/api@workspace:packages/api"],
 
     "@repo/biome-config": ["@repo/biome-config@workspace:packages/biome-config"],
+
+    "@repo/tokens": ["@repo/tokens@workspace:packages/tokens"],
 
     "@repo/typescript-config": ["@repo/typescript-config@workspace:packages/typescript-config"],
 
