@@ -3,7 +3,8 @@
  * here is API; everything else is internal, including the generated module, which is
  * re-exported only as types.
  */
-export { createApiClient, unwrap, CORRELATION_ID_HEADER } from './client';
+
+export { API_UNREACHABLE, ApiError } from './api-error';
 export type { ApiClient, ApiClientConfig } from './client';
-export { ApiError, API_UNREACHABLE } from './api-error';
+export { CORRELATION_ID_HEADER, createApiClient, unwrap } from './client';
 export type { components, operations, paths } from './generated/schema';

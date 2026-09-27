@@ -5,12 +5,13 @@
  * INFRA_06 — several BE rules are marked `review` only because nothing enforced them.
  * These are the ones a machine can decide. Run with `bun run check-arch`.
  */
-import { readFileSync } from 'node:fs';
-import { globSync } from 'node:fs';
-import { relative, resolve } from 'node:path';
+import { globSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 const SRC = resolve(import.meta.dirname, '..', 'src');
-const files = globSync('**/*.ts', { cwd: SRC }).filter((f) => !f.endsWith('spec.ts'));
+const files = globSync('**/*.ts', { cwd: SRC }).filter(
+  (f) => !f.endsWith('spec.ts'),
+);
 
 const findings = [];
 const report = (rule, file, detail) => findings.push({ rule, file, detail });
@@ -22,15 +23,35 @@ function importsOf(source) {
 
 /** Which layer a path sits in, if any. */
 function layerOf(file) {
-  const m = file.match(/^modules\/[^/]+\/(domain|application|infrastructure|presentation)\//);
+  const m = file.match(
+    /^modules\/[^/]+\/(domain|application|infrastructure|presentation)\//,
+  );
   return m ? m[1] : null;
 }
 
 const ROLE_SUFFIXES = [
-  '.use-case.ts', '.controller.ts', '.port.ts', '.adapter.ts', '.repository.ts',
-  '.entity.ts', '.vo.ts', '.mapper.ts', '.errors.ts', '.dto.ts', '.module.ts',
-  '.service.ts', '.store.ts', '.query.ts', '.record.ts', '.types.ts', '.views.ts',
-  '.schema.ts', '.filter.ts', '.middleware.ts', 'index.ts', 'configuration.ts',
+  '.use-case.ts',
+  '.controller.ts',
+  '.port.ts',
+  '.adapter.ts',
+  '.repository.ts',
+  '.entity.ts',
+  '.vo.ts',
+  '.mapper.ts',
+  '.errors.ts',
+  '.dto.ts',
+  '.module.ts',
+  '.service.ts',
+  '.store.ts',
+  '.query.ts',
+  '.record.ts',
+  '.types.ts',
+  '.views.ts',
+  '.schema.ts',
+  '.filter.ts',
+  '.middleware.ts',
+  'index.ts',
+  'configuration.ts',
 ];
 
 for (const file of files) {
@@ -40,7 +61,10 @@ for (const file of files) {
 
   // BE_01 R6 — every file carries its role suffix. BE_01 R1 exempts the bootstrap
   // files, and R6 describes the module tree, so `shared/` and `config/` are outside it.
-  if (file.startsWith('modules/') && !ROLE_SUFFIXES.some((suffix) => file.endsWith(suffix))) {
+  if (
+    file.startsWith('modules/') &&
+    !ROLE_SUFFIXES.some((suffix) => file.endsWith(suffix))
+  ) {
     report('BE_01 R6', file, 'no role suffix');
   }
 
@@ -49,7 +73,7 @@ for (const file of files) {
     const moduleName = file.split('/').slice(0, 2).join('/');
     for (const spec of imports) {
       if (!spec.startsWith('.')) continue;
-      const target = resolve('/' + file, '..', spec).slice(1);
+      const target = resolve(`/${file}`, '..', spec).slice(1);
       if (!target.startsWith(moduleName)) {
         report('BE_01 R9', file, `relative import escapes the module: ${spec}`);
       }
@@ -60,7 +84,8 @@ for (const file of files) {
   if (layer === 'domain') {
     for (const spec of imports) {
       const isFramework = !spec.startsWith('.') && !spec.startsWith('@app/');
-      const leavesDomain = spec.startsWith('@app/') && !spec.includes('/domain/');
+      const leavesDomain =
+        spec.startsWith('@app/') && !spec.includes('/domain/');
       if (isFramework || leavesDomain) {
         // The shared error base is pure domain code with no runtime dependency.
         if (spec === '@app/shared/errors/coded-error') continue;
@@ -79,9 +104,16 @@ for (const file of files) {
   }
 
   // BE_02 R2 — nothing imports presentation or infrastructure from outside itself.
-  if (layer !== 'infrastructure' && layer !== 'presentation' && !file.endsWith('.module.ts')) {
+  if (
+    layer !== 'infrastructure' &&
+    layer !== 'presentation' &&
+    !file.endsWith('.module.ts')
+  ) {
     for (const spec of imports) {
-      if (/\/(infrastructure|presentation)\//.test(spec) && !spec.startsWith('@app/shared/')) {
+      if (
+        /\/(infrastructure|presentation)\//.test(spec) &&
+        !spec.startsWith('@app/shared/')
+      ) {
         report('BE_02 R2', file, `imports an end of the graph: ${spec}`);
       }
     }
@@ -99,8 +131,16 @@ for (const file of files) {
   }
 
   // BE_09 R5 — no HTTP exception below the controller.
-  if (layer && layer !== 'presentation' && /HttpException|BadRequestException|NotFoundException/.test(source)) {
-    report('BE_09 R5', file, 'constructs an HTTP exception below the controller');
+  if (
+    layer &&
+    layer !== 'presentation' &&
+    /HttpException|BadRequestException|NotFoundException/.test(source)
+  ) {
+    report(
+      'BE_09 R5',
+      file,
+      'constructs an HTTP exception below the controller',
+    );
   }
 
   // BE_10 R1 — process.env is read in exactly one file.
@@ -109,8 +149,10 @@ for (const file of files) {
   }
 
   // GEN_07 R3/R4 — no default export, no `any`, no non-null assertion.
-  if (/^export default/m.test(source)) report('GEN_07 R3', file, 'default export');
-  if (/:\s*any\b|<any>|as any/.test(source)) report('GEN_07 R4', file, 'uses `any`');
+  if (/^export default/m.test(source))
+    report('GEN_07 R3', file, 'default export');
+  if (/:\s*any\b|<any>|as any/.test(source))
+    report('GEN_07 R4', file, 'uses `any`');
 }
 
 if (findings.length === 0) {
