@@ -85,7 +85,7 @@ A package declares what it exports, and that declaration is its API: anything re
 
 Apps are the other end of the graph: they are consumed by users, not by code, so they export nothing and nothing imports them.
 
-**Enforcement:** review — deep imports are detectable from the import graph ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** partly automated — the *Architecture* check fails a path-based reach past a package's entry point; [INFRA_03#R3](../index.html#INFRA_03) states what it does and does not catch.
 
 ### [R6](#R6) The direction of the graph
 
@@ -93,7 +93,7 @@ Packages may not import apps, and apps may not import each other. Both are the s
 
 Two apps that need to agree on something meet in a package. That is the *only* meeting point, and it is what keeps them independently releasable. What that shared package may contain is [INFRA_03](../index.html#INFRA_03)'s, and for the API-to-web seam specifically, [GEN_08](../index.html#GEN_08)'s.
 
-**Enforcement:** review — this is the highest-value import-graph check in the repository ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** automated — `no-package-imports-app` and `no-app-imports-app` fail the *Architecture* check ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R7](#R7) Uniform tasks
 

@@ -80,7 +80,7 @@ Most of the architecture in this set is a statement about which file may import 
 
 These come first because they are cheap — a graph the tooling already computes — and their violations are the most expensive to unwind, since a leaked import spreads through everything that touches it.
 
-**Enforcement:** unenforced — this is the queue, not a description of what runs today.
+**Enforcement:** partly automated — three of the four rows run today as the *Architecture* check: cycles, module and package boundaries, and layer direction (the API's by `apps/api/scripts/check-architecture.mjs`, the frontend ladder by dependency-cruiser). Per-directory allow-lists are still unenforced and are the next row in this queue.
 
 ### [R5](#R5) The compiler is a guardrail
 
@@ -138,8 +138,8 @@ Then the pressure test. Someone needs a generated identifier in an entity and im
 
 ## Open questions
 
-- This document describes a system that does not exist yet, which makes every enforcement line in it `review` or `unenforced` — including its own. The bootstrap order that buys the most is: cycles, then layer direction, then boundaries and deep imports, then the per-directory allow-lists.
-- Which tools do the checking is deliberately unnamed, because it is a project fact and because the rules outlive any of them. The first implementation should record the choice in an ADR ([GEN_13](../index.html#GEN_13)).
+- The bootstrap order this document recommended — cycles, layer direction, boundaries and deep imports, then per-directory allow-lists — has been followed as far as the third item. The allow-lists are the remaining row, and they are the one that needs a vocabulary per stack rather than a single graph query.
+- Which tools do the checking stays out of the rules themselves, because it is a project fact and because the rules outlive any tool. The choice is recorded in an ADR ([GEN_13](../index.html#GEN_13)); enforcement lines name the mechanism so a reader can find it, which is as far as that goes.
 - Nothing measures whether a guardrail is worth its runtime. A check that has never failed may be preventing violations or may be checking something nobody would do; the two are indistinguishable without a record of what it caught.
 
 ## Related

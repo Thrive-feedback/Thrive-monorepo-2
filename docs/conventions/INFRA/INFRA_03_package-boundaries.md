@@ -50,7 +50,7 @@ If two workspaces need each other, one of three things is true: the dependency r
 
 Cycles inside a workspace matter too — a module cycle produces partially initialized imports, which fail in ways unrelated to their cause. Both are detectable from the import graph, which is why this is the first rule a guardrail should enforce ([INFRA_06](../index.html#INFRA_06)).
 
-**Enforcement:** review — a cycle check over the workspace and module graphs is the cheapest high-value guardrail available ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** automated — dependency-cruiser's `no-cycles` rule fails the *Architecture* check on any cycle in the workspace or module graph ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R2](#R2) Import what you declare
 
@@ -82,7 +82,7 @@ import { internalThing } from '@repo/ui/dist/internal/thing';
 
 A package whose entry point exposes every file — a wildcard over its source — has declared no surface at all, which is the same as having none. Exports are chosen.
 
-**Enforcement:** review — deep imports match a path pattern and are a strong candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** partly automated — `no-reaching-past-a-package-entry-point` and `no-reaching-into-another-package` fail a path-based reach into another package's `src/`, and `not-unresolvable` fails a specifier the export map refuses to resolve. Whether the map itself exposes too much stays review ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R4](#R4) and [R6](#R6) Direction, and what a shared package may know
 
@@ -97,7 +97,7 @@ The subtler rule is [R6](#R6): a shared package may not name a consumer. Not in 
 const items = isAdminApp ? ADMIN_LINKS : WEB_LINKS;   // the package knows its callers
 ```
 
-**Enforcement:** review — an app name appearing in `packages/**` is greppable and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** partly automated — `no-package-imports-app` and `no-app-imports-app` fail an import that points the wrong way. An app *name* appearing in `packages/**` without an import is still review ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R7](#R7) Configuration packages stay inert
 
@@ -147,7 +147,7 @@ Later someone proposes a helper in the shared package that formats a value "the 
 
 ## Open questions
 
-- Every rule here is checkable and none is checked, which makes this the document with the largest gap between what it says and what happens. The cycle check and the deep-import check are the two highest-value items in [INFRA_06](../index.html#INFRA_06)'s queue.
+- The two highest-value items are now checked: cycles ([R1](#R1)) and reaching past an entry point ([R3](#R3), [R5](#R5)), along with direction ([R4](#R4)). What remains unchecked is manifest-level: [R2](#R2) declaring what you import, [R8](#R8) workspace versions and [R9](#R9) unused dependencies — all three readable from the manifests without a graph.
 - Whether a package may export its source directly or must export a build output is unsettled, and the two coexist badly: a consumer's type-checking and bundling behave differently for each. It should be one policy, decided in an ADR.
 - [R6](#R6) has no answer for a package that legitimately serves two consumers with different defaults. Passing configuration in is the intended answer, but no pattern for it is written down.
 
