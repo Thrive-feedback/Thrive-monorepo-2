@@ -7,7 +7,7 @@
     ".": "./src/entry.ts"
   },
   "scripts": {
-    "lint": "eslint \"src/**/*.ts\"",
+    "lint": "biome check .",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
@@ -15,10 +15,10 @@
     "uuid": "^11.1.1"
   },
   "devDependencies": {
-    "@repo/eslint-config": "*",
+    "@biomejs/biome": "2.5.14",
+    "@repo/biome-config": "workspace:*",
     "@repo/typescript-config": "*",
     "@types/node": "^22.19.3",
-    "eslint": "^9.39.2",
     "typescript": "5.8.2"
   }
 }
