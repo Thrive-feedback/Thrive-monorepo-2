@@ -16,7 +16,7 @@
     "check-types": "tsc --noEmit",
     "test:integration": "echo 'No integration suite yet. BE_12 R10 needs it separately runnable; bun test cannot select \"*.integration-spec.ts\" by filter \u2014 see PROJECT.md \u00a75 decision 2.'",
     "test:bdd": "cucumber-js --config cucumber.cjs",
-    "check-arch": "node scripts/check-architecture.mjs"
+    "check-arch": "bun scripts/check-architecture.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.11",

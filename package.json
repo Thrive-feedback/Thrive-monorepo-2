@@ -11,14 +11,16 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "format": "biome format --write .",
-    "check": "bun run check:style && bun run check:types",
+    "check": "bun run check:style && bun run check:types && bun run check:arch",
     "check:style": "biome check --error-on-warnings .",
-    "check:types": "turbo run check-types"
+    "check:types": "turbo run check-types",
+    "check:arch": "bun --bun depcruise apps packages --config .dependency-cruiser.cjs --output-type err && bun scripts/verify-arch-fixtures.mjs && turbo run check-arch"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
     "@repo/biome-config": "workspace:*",
     "@repo/typescript-config": "*",
+    "dependency-cruiser": "18.4.0",
     "turbo": "^2.10.9"
   },
   "engines": {

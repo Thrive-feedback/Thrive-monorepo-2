@@ -112,7 +112,7 @@ import { formatMoney } from '@/lib/format/money';
 import { OrderTable } from '@/app/orders/_components/order-table';
 ```
 
-**Enforcement:** unenforced — an import-boundary rule per rung is the highest-value guardrail this document wants ([INFRA_06](../index.html#INFRA_06)); see **Open questions**.
+**Enforcement:** partly automated — three rules fail the *Architecture* check: `fe-components-never-import-app`, plus `fe-private-folder-is-private` and `fe-private-folder-not-reachable-from-outside-app` for reaching into a route's private folder. They match routes one segment deep, so a nested route's private folder is still review, and the graduation to the shared package is [FE_13](../index.html#FE_13)'s ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R6](#R6) The level is the directory
 
@@ -212,7 +212,8 @@ The table does not move, and neither does the transform: one route renders each,
 
 ## Open questions
 
-- [R5](#R5) and [R9](#R9) are the two rules most worth automating and the two nothing catches. Both are ordinary import-boundary checks — [INFRA_06](../index.html#INFRA_06) owns adding them.
+- [R5](#R5) is now checked, with one gap: the private-folder rules match routes one segment deep, so `app/orders/detail/_components/` is not covered. Deepening them needs the rule to know where a route ends, which the path alone does not say.
+- [R9](#R9) is still the rule most worth automating and nothing catches it. A ban on parent-relative specifiers is one lint rule — [INFRA_06](../index.html#INFRA_06) owns adding it.
 - ~~[R9](#R9) needs the app's TypeScript config to map the alias to the app root.~~ Closed: the web app declares `@/*`, so the imports shown here resolve. It was the one open item that blocked work rather than improving it.
 - [R6](#R6) puts the level in the path, so reclassifying a component touches every call site. [FE_02](../index.html#FE_02) should say whether that cost is acceptable at the atom/molecule line, where it happens most.
 
