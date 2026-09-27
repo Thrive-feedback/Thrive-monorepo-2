@@ -5,8 +5,14 @@
     "outDir": "./dist",
     "strictNullChecks": true,
     "paths": {
-      "@app/*": ["src/*"],
-      "@test/*": ["test/*"]
-    }
+      "@app/*": [
+        "src/*"
+      ],
+      "@test/*": [
+        "test/*"
+      ]
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   }
 }

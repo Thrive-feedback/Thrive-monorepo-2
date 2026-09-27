@@ -72,12 +72,12 @@ and propose the addition — do not quietly install it.
 | Concern                                  | Status      | Notes                                                                                                                                                                  |
 | ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Turborepo, Bun workspaces                | **present** | turbo 2.10, bun 1.3.14                                                                                                                                                 |
-| Bun as runtime                           | _planned_   | Decided 2026-09-27 (naroebordin.w), not yet applied: everything still runs on **Node** (`start:prod` is `node dist/main`). `apps/web` stays on Node permanently — Next.js does not support Bun as a production runtime — so this becomes the per-workspace override `INFRA_04` R10 describes, inverted from how that document reads today. **Known blocker, measured:** Nest's decorators throw `descriptor.value` errors under Bun because it applies TC39 decorators; `experimentalDecorators` and `emitDecoratorMetadata` must be declared in `apps/api/tsconfig.json` *itself*, as Bun does not resolve them through a tsconfig `extends` into `@repo/typescript-config`. With that, DI resolves and `bun test` runs the suite |
+| Bun as runtime                           | **present** | `apps/api` runs on Bun (ADR 0011). **`apps/web` runs on Node** — Next.js does not support Bun in production; declared as the per-workspace override `INFRA_04` R10 describes, with no removal condition. **`experimentalDecorators` and `emitDecoratorMetadata` are declared in `apps/api/tsconfig.json` itself and must stay there** — Bun does not resolve them through a tsconfig `extends` into `@repo/typescript-config`, and Nest's decorators throw `descriptor.value` errors without them. A documented exception to `INFRA_03`'s shared-config pattern; deleting the duplication breaks the app |
 | NestJS 11 API                            | **present** | `apps/api`, listens on `:3000`                                                                                                                                         |
 | Next.js 16 App Router, React 19          | **present** | `apps/web` on `:3001`                                                                                                                                                  |
 | Jest 30 (+ ts-jest, supertest)           | **present** | shared bases in `@repo/jest-config`; **API only**. Unit, integration (`*.integration-spec.ts`) and e2e run as separate tasks                                           |
 | Vitest 3 + Testing Library + MSW         | **present** | shared base in `@repo/vitest-config`; **web only**. Split by workspace on purpose (ADR 0007). Runs with `--passWithNoTests` while the web app has no tests — **drop that flag with the first one**, or a broken glob passes silently |
-| ESLint 9 flat config + Prettier          | **present** | see open decision 1                                                                                                                                                    |
+| ESLint 9 flat config + Prettier          | **present** | **being replaced by Biome** — decided in the brain's `ADR-0015`, not yet done. Tracked as `FD-0001` (#44)                                                              |
 | Zod 4 + `nestjs-zod` 5                   | **present** | API only. One schema per operation, type derived (`BE_08` R3)                                                                                                          |
 | `@nestjs/swagger` 11 + Scalar            | **present** | API only. OpenAPI generated from the app at `/openapi.json`; Scalar UI at `/reference`. Pinned to 11.x — v12 needs NestJS 12                                           |
 | `uuid` 11                                | **present** | UUIDv7 (`GEN_11`)                                                                                                                                                      |
@@ -86,7 +86,7 @@ and propose the addition — do not quietly install it.
 | Tailwind CSS 4                           | **present** | `apps/web` only, with `class-variance-authority` and `tailwind-merge` (ADR 0008)                                                                                       |
 | Authorization                            | **present** | enforced in the application layer (`BE_21`). **Postgres RLS is deliberately not used** — see §5 note                                                                    |
 | Design tokens                            | _planned_   | `packages/tokens` was the example's token layer and went with it. Thrive writes its own; `FE_03` R6 makes the token files the source of record                          |
-| Biome                                    | _planned_   | see open decision 1                                                                                                                                                    |
+| Biome                                    | _planned_   | decided (brain `ADR-0015`); replaces ESLint + Prettier. `INFRA_05` and `INFRA_06` already assume it. Tracked as `FD-0001` (#44)                                        |
 | Auth provider                            | _planned_   | **open decision 4 — kritpavin.** See `auth-decision-brief.md` in the brain                                                                                              |
 | Database, ORM, migrations                | _planned_   | **open decision 3.** Schema starts from scratch, derived from `domain-map.md`; the old repo's migrations are reference only                                            |
 | Object storage                           | _planned_   | Epic #10 gives `Profile` a photo. Falls out of decisions 3 and 4                                                                                                        |
@@ -99,8 +99,11 @@ and propose the addition — do not quietly install it.
 Load-bearing and unresolved. If your task depends on one, stop and raise it — do not
 settle it on your own. Record the answer as an ADR (`GEN_13`) and delete the row.
 
-1. **ESLint → Biome.** The intended stack is Biome; the repository is wired for ESLint 9
-   with per-workspace flat configs plus Prettier. `INFRA_05` and `INFRA_06` assume Biome.
+1. **The API's test runner.** Jest runs the API suite on Node while the app ships on Bun —
+   a runtime mismatch of exactly the kind that produced ADR 0011's decorator bug. `bun test` ran
+   the same suite in 241ms with no configuration and would remove `jest`, `ts-jest`,
+   `@jest/globals`, `ts-node` and `tsconfig-paths`. Against: ADR 0007 split the runners by
+   workspace deliberately, and `@repo/jest-config` plus the Cucumber wiring assume Jest.
    *(naroebordin.w)*
 2. **The 404 a streamed route cannot answer.** `FE_11` R6 wants a missing resource to carry
    a 404. `FE_11` R5 and `FE_09` R7 each make the response stream, and a streamed response has
