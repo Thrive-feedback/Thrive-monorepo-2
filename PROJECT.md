@@ -75,7 +75,7 @@ and propose the addition — do not quietly install it.
 | Bun as runtime                           | **present** | `apps/api` runs on Bun (ADR 0011). **`apps/web` runs on Node** — Next.js does not support Bun in production; declared as the per-workspace override `INFRA_04` R10 describes, with no removal condition. **`experimentalDecorators` and `emitDecoratorMetadata` are declared in `apps/api/tsconfig.json` itself and must stay there** — Bun does not resolve them through a tsconfig `extends` into `@repo/typescript-config`, and Nest's decorators throw `descriptor.value` errors without them. A documented exception to `INFRA_03`'s shared-config pattern; deleting the duplication breaks the app |
 | NestJS 11 API                            | **present** | `apps/api`, listens on `:3000`                                                                                                                                         |
 | Next.js 16 App Router, React 19          | **present** | `apps/web` on `:3001`                                                                                                                                                  |
-| Jest 30 (+ ts-jest, supertest)           | **present** | shared bases in `@repo/jest-config`; **API only**. Unit, integration (`*.integration-spec.ts`) and e2e run as separate tasks                                           |
+| `bun test`                               | **present** | **API only** (ADR 0012) — same runtime the app ships on. The fast suite excludes `*.integration-spec.ts` via `--path-ignore-patterns`; selecting only the integration suite is open decision 1. `@repo/jest-config` is now unreferenced and should be deleted |
 | Vitest 3 + Testing Library + MSW         | **present** | shared base in `@repo/vitest-config`; **web only**. Split by workspace on purpose (ADR 0007). Runs with `--passWithNoTests` while the web app has no tests — **drop that flag with the first one**, or a broken glob passes silently |
 | ESLint 9 flat config + Prettier          | **present** | **being replaced by Biome** — decided in the brain's `ADR-0015`, not yet done. Tracked as `FD-0001` (#44)                                                              |
 | Zod 4 + `nestjs-zod` 5                   | **present** | API only. One schema per operation, type derived (`BE_08` R3)                                                                                                          |
@@ -99,12 +99,18 @@ and propose the addition — do not quietly install it.
 Load-bearing and unresolved. If your task depends on one, stop and raise it — do not
 settle it on your own. Record the answer as an ADR (`GEN_13`) and delete the row.
 
-1. **The API's test runner.** Jest runs the API suite on Node while the app ships on Bun —
-   a runtime mismatch of exactly the kind that produced ADR 0011's decorator bug. `bun test` ran
-   the same suite in 241ms with no configuration and would remove `jest`, `ts-jest`,
-   `@jest/globals`, `ts-node` and `tsconfig-paths`. Against: ADR 0007 split the runners by
-   workspace deliberately, and `@repo/jest-config` plus the Cucumber wiring assume Jest.
-   *(naroebordin.w)*
+1. **How the integration suite is named, so `bun test` can select it.** The API moved to
+   `bun test` (ADR 0012) and the unit suite runs. `BE_12` R10 requires the integration suite to be
+   separately named *and separately runnable*, and that second half is currently unmet: `BE_12`
+   names these files `*.integration-spec.ts`, and bun's positional filter only matches paths
+   containing `.test`, `.spec`, `_test_` or `_spec_` — a hyphen before `spec` is collected when
+   scanning a directory but cannot be selected by filter. `--path-ignore-patterns` excludes them
+   from the fast suite correctly, so only the integration-only run is blocked.
+
+   The cheap fix is renaming to `*.integration.spec.ts`, which makes both filters work — but that
+   amends `BE_12`, needs its own ADR, and `GEN_13` R9 puts the document change in the same pull
+   request. Until then `test:integration` is a stub that says so. No integration tests exist yet,
+   so nothing is silently skipped. *(naroebordin.w)*
 2. **The 404 a streamed route cannot answer.** `FE_11` R6 wants a missing resource to carry
    a 404. `FE_11` R5 and `FE_09` R7 each make the response stream, and a streamed response has
    already been sent as 200 by the time `notFound()` runs. The fix is an existence check at the
