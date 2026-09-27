@@ -1,10 +1,9 @@
 import { Global, Module } from '@nestjs/common';
+
 import {
   CONFIGURATION,
   type Configuration,
   HttpConfig,
-  PaginationConfig,
-  StorageConfig,
   loadConfiguration,
 } from './configuration';
 
@@ -17,14 +16,12 @@ import {
   providers: [
     { provide: CONFIGURATION, useFactory: () => loadConfiguration() },
     // BE_10 R7 — parsed once above; each namespace is a projection of that one value.
-    { provide: HttpConfig, useFactory: (config: Configuration) => config.http, inject: [CONFIGURATION] },
-    { provide: StorageConfig, useFactory: (config: Configuration) => config.storage, inject: [CONFIGURATION] },
     {
-      provide: PaginationConfig,
-      useFactory: (config: Configuration) => config.pagination,
+      provide: HttpConfig,
+      useFactory: (config: Configuration) => config.http,
       inject: [CONFIGURATION],
     },
   ],
-  exports: [HttpConfig, StorageConfig, PaginationConfig],
+  exports: [HttpConfig],
 })
 export class ConfigModule {}

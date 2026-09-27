@@ -205,8 +205,6 @@ The escape hatch: when a projection is too expensive to assemble per request, th
 
 Requires [BE_05](../index.html#BE_05). See also [INFRA_12](../index.html#INFRA_12), [BE_15](../index.html#BE_15).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/modules/todo/infrastructure/`, `apps/api/src/modules/todo/domain/repository/`
-
 ---
 
 [← All conventions](../index.html)

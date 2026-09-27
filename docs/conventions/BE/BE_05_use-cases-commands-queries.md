@@ -181,8 +181,6 @@ Its read sibling, `GetArticleDetailUseCase`, injects one narrow contract ([R5](#
 
 Requires [BE_04](../index.html#BE_04). See also [BE_14](../index.html#BE_14).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/modules/todo/application/use-cases/`, `apps/api/src/modules/todo/application/service/`
-
 ---
 
 [← All conventions](../index.html)

@@ -1,16 +1,13 @@
-import { redirect } from 'next/navigation';
-
 /**
- * FE_11 R9 — the redirect is decided on the server, as early as it can be decided. A
- * redirect decided in a client effect ships the page, runs it, and only then moves the
- * user: the flash of the wrong page is the visible half and the wasted request is the
- * other.
- *
- * This is a temporary move rather than a permanent one: `/` is not a URL that has been
- * retired, it is a URL that does not yet have a home page. `redirect` answers 307, which
- * browsers do not cache — using the permanent status here is the mistake that would
- * outlive the decision.
+ * The landing route. Deliberately empty of product: `GEN_03` R5 requires the web app to
+ * render its own page once the example is gone, and `PROJECT.md` §2 says to solve today's
+ * problem rather than the general case. The first real route replaces this.
  */
-export default function HomePage() {
-  redirect('/todo-lists');
+export default function Home() {
+  return (
+    <main>
+      <h1>Thrive</h1>
+      <p>Ask for, give and act on feedback.</p>
+    </main>
+  );
 }

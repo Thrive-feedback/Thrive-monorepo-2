@@ -192,8 +192,6 @@ The entity gets its own suite, smaller and faster still: the transition table, t
 
 Requires [BE_05](../index.html#BE_05). See also [BE_12](../index.html#BE_12), [FE_13](../index.html#FE_13).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/modules/todo/domain/entity/todo-list.entity.spec.ts`, `apps/api/test/support/`
-
 ---
 
 [← All conventions](../index.html)

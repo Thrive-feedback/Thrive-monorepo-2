@@ -185,8 +185,6 @@ The second version is faster to build once and wrong for every consumer after th
 
 Requires [GEN_01](../index.html#GEN_01). See also [BE_07](../index.html#BE_07), [BE_08](../index.html#BE_08), [BE_09](../index.html#BE_09), [FE_10](../index.html#FE_10), [INFRA_14](../index.html#INFRA_14).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/openapi.json`, `packages/api/`, `apps/web/lib/api/`
-
 ---
 
 [← All conventions](../index.html)

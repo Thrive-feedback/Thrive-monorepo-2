@@ -176,8 +176,6 @@ Later a second surface renders the table over a customer's orders, which it alre
 
 Requires [FE_01](../index.html#FE_01). See also [INFRA_06](../index.html#INFRA_06), [FE_21](../index.html#FE_21).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/web/components/`, `apps/web/app/todo-lists/_components/`
-
 ---
 
 [← All conventions](../index.html)

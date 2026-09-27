@@ -172,8 +172,6 @@ One thing does need CSS ([R9](#R9)): the pending state's spinner animation is a 
 
 Requires [FE_03](../index.html#FE_03).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `packages/tokens/src/theme.css`, `apps/web/components/`, `apps/web/lib/cn.util.ts`
-
 ---
 
 [← All conventions](../index.html)

@@ -10,10 +10,7 @@
       "env": [
         "API_BASE_URL",
         "NODE_ENV",
-        "PORT",
-        "TODO_DATA_DIR",
-        "TODO_DEFAULT_PAGE_SIZE",
-        "TODO_MAX_PAGE_SIZE"
+        "PORT"
       ]
     },
     "build": {
@@ -29,10 +26,7 @@
       "env": [
         "API_BASE_URL",
         "NODE_ENV",
-        "PORT",
-        "TODO_DATA_DIR",
-        "TODO_DEFAULT_PAGE_SIZE",
-        "TODO_MAX_PAGE_SIZE"
+        "PORT"
       ]
     },
     "contract:generate": {
@@ -42,18 +36,6 @@
     "test": {
       "env": [
         "API_BASE_URL",
-        "NODE_ENV",
-        "PORT",
-        "TODO_DATA_DIR",
-        "TODO_DEFAULT_PAGE_SIZE",
-        "TODO_MAX_PAGE_SIZE"
-      ]
-    },
-    "test:e2e": {
-      "env": [
-        "TODO_DATA_DIR",
-        "TODO_DEFAULT_PAGE_SIZE",
-        "TODO_MAX_PAGE_SIZE",
         "NODE_ENV",
         "PORT"
       ]
@@ -68,9 +50,6 @@
         "^build"
       ],
       "env": [
-        "TODO_DATA_DIR",
-        "TODO_DEFAULT_PAGE_SIZE",
-        "TODO_MAX_PAGE_SIZE",
         "NODE_ENV",
         "PORT"
       ]
@@ -80,9 +59,6 @@
         "^build"
       ],
       "env": [
-        "TODO_DATA_DIR",
-        "TODO_DEFAULT_PAGE_SIZE",
-        "TODO_MAX_PAGE_SIZE",
         "NODE_ENV",
         "PORT"
       ]

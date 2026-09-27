@@ -185,8 +185,6 @@ The browser half of this feature — if the same capability is also exercised th
 
 Requires [GEN_10](../index.html#GEN_10), [BE_12](../index.html#BE_12). See also [FE_15](../index.html#FE_15).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/test/steps/todo-list.steps.ts`, `features/todo-list.feature`
-
 ---
 
 [← All conventions](../index.html)

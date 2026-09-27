@@ -1,4 +1,4 @@
-# my-fullstack-bp
+# Thrive
 
 **A boilerplate: a starter for a Next.js + NestJS monorepo that ships with a complete
 written convention set, built to be read by AI coding agents as much as by people.**

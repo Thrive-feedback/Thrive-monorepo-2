@@ -152,8 +152,6 @@ A frame for an order row: avatar, customer name, status pill, amount, a menu but
 
 Requires [FE_06](../index.html#FE_06). See also [FE_14](../index.html#FE_14), [FE_21](../index.html#FE_21).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/web/components/atoms/badge.tsx` with `apps/web/components/atoms/badge.test.tsx`
-
 ---
 
 [← All conventions](../index.html)

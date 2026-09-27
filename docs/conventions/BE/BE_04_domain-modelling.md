@@ -198,8 +198,6 @@ Finally, the counter-example. The article's *category* is a name and a code, rea
 
 Requires [BE_02](../index.html#BE_02). See also [GEN_11](../index.html#GEN_11), [GEN_14](../index.html#GEN_14).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/modules/todo/domain/`
-
 ---
 
 [← All conventions](../index.html)

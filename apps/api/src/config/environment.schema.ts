@@ -11,13 +11,6 @@ export const environmentSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
   PORT: z.coerce.number().int().min(1).max(65_535).default(3000),
-
-  /** Directory the file-backed store writes to. Relative paths resolve from the app root. */
-  TODO_DATA_DIR: z.string().min(1).default('.data'),
-
-  TODO_DEFAULT_PAGE_SIZE: z.coerce.number().int().min(1).max(200).default(20),
-
-  TODO_MAX_PAGE_SIZE: z.coerce.number().int().min(1).max(200).default(100),
 });
 
 export type Environment = z.infer<typeof environmentSchema>;

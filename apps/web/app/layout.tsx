@@ -13,10 +13,10 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Todo',
-    template: '%s · Todo',
+    default: 'Thrive',
+    template: '%s · Thrive',
   },
-  description: 'Keep lists of things you mean to do.',
+  description: 'Ask for, give and act on feedback.',
 };
 
 /**
@@ -35,9 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-dvh bg-surface text-body`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-dvh`}>
         {children}
       </body>
     </html>

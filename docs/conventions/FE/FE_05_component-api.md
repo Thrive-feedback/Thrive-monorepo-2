@@ -261,8 +261,6 @@ Two months on, every caller passes `dismissible={false}`. That is not a decision
 
 Requires [FE_02](../index.html#FE_02). See also [FE_06](../index.html#FE_06).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/web/components/atoms/`, `apps/web/components/molecules/page-header.tsx`
-
 ---
 
 [← All conventions](../index.html)

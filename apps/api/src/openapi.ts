@@ -19,8 +19,8 @@ export function buildOpenApiDocument(
     SwaggerModule.createDocument(
       app,
       new DocumentBuilder()
-        .setTitle('Todo API')
-        .setDescription('Reference implementation of the BE conventions.')
+        .setTitle('Thrive API')
+        .setDescription('Thrive — an employee feedback platform.')
         .setVersion('1.0')
         .build(),
     ),

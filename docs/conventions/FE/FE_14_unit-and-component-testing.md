@@ -157,8 +157,6 @@ What is deliberately absent: no test that the child row component received the r
 
 Requires [FE_05](../index.html#FE_05). See also [FE_15](../index.html#FE_15), [FE_21](../index.html#FE_21).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/web/lib/test/`, `apps/web/components/atoms/badge.test.tsx`, `apps/web/app/todo-lists/[listId]/_components/todo-item-list/todo-item-row.test.tsx`
-
 ---
 
 [← All conventions](../index.html)

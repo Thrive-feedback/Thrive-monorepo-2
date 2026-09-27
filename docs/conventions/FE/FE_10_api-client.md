@@ -143,8 +143,6 @@ Then the backend renames a field. The contract regenerates in its own change ([R
 
 Requires [GEN_08](../index.html#GEN_08), [FE_09](../index.html#FE_09).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `packages/api/`, `apps/web/lib/api/`
-
 ---
 
 [← All conventions](../index.html)

@@ -206,8 +206,6 @@ Later, the page needs a toast after an action. The temptation is a directive on 
 
 Requires [FE_01](../index.html#FE_01). See also [FE_09](../index.html#FE_09), [FE_20](../index.html#FE_20).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/web/app/todo-lists/`
-
 ---
 
 [← All conventions](../index.html)

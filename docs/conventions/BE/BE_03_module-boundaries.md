@@ -181,8 +181,6 @@ The tempting shortcut is one query joining reports to articles, ordered and pagi
 
 Requires [BE_02](../index.html#BE_02). See also [INFRA_03](../index.html#INFRA_03), [BE_16](../index.html#BE_16).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/modules/activity-log/index.ts`, `apps/api/src/modules/todo/todo.module.ts`
-
 ---
 
 [← All conventions](../index.html)

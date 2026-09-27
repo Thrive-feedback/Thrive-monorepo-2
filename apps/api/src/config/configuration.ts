@@ -1,4 +1,3 @@
-import { isAbsolute, resolve } from 'node:path';
 import { environmentSchema } from './environment.schema';
 
 /**
@@ -9,21 +8,8 @@ export class HttpConfig {
   constructor(readonly port: number) {}
 }
 
-export class StorageConfig {
-  constructor(readonly dataDir: string) {}
-}
-
-export class PaginationConfig {
-  constructor(
-    readonly defaultPageSize: number,
-    readonly maxPageSize: number,
-  ) {}
-}
-
 export interface Configuration {
   readonly http: HttpConfig;
-  readonly storage: StorageConfig;
-  readonly pagination: PaginationConfig;
 }
 
 /** Injection token for the whole parsed configuration, from which each namespace is projected. */
@@ -33,7 +19,9 @@ export const CONFIGURATION = Symbol('CONFIGURATION');
  * BE_10 R1 — the only file in the application that reads `process.env`.
  * Everywhere else configuration arrives as an injected value.
  */
-export function loadConfiguration(env: NodeJS.ProcessEnv = process.env): Configuration {
+export function loadConfiguration(
+  env: NodeJS.ProcessEnv = process.env,
+): Configuration {
   const parsed = environmentSchema.safeParse(env);
 
   if (!parsed.success) {
@@ -46,21 +34,5 @@ export function loadConfiguration(env: NodeJS.ProcessEnv = process.env): Configu
     process.exit(1);
   }
 
-  const value = parsed.data;
-
-  if (value.TODO_MAX_PAGE_SIZE < value.TODO_DEFAULT_PAGE_SIZE) {
-    process.stderr.write(
-      'Invalid environment configuration:\n  TODO_MAX_PAGE_SIZE must be >= TODO_DEFAULT_PAGE_SIZE\n',
-    );
-    process.exit(1);
-  }
-
-  return {
-    http: new HttpConfig(value.PORT),
-    // BE_10 R7 — the absolute path is derived once here, not recomputed per call.
-    storage: new StorageConfig(
-      isAbsolute(value.TODO_DATA_DIR) ? value.TODO_DATA_DIR : resolve(process.cwd(), value.TODO_DATA_DIR),
-    ),
-    pagination: new PaginationConfig(value.TODO_DEFAULT_PAGE_SIZE, value.TODO_MAX_PAGE_SIZE),
-  };
+  return { http: new HttpConfig(parsed.data.PORT) };
 }

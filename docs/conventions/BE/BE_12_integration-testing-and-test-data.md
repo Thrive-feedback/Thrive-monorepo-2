@@ -173,8 +173,6 @@ What is not here: whether an article may be published, who may publish it, what 
 
 Requires [BE_11](../index.html#BE_11), [BE_06](../index.html#BE_06). See also [INFRA_12](../index.html#INFRA_12).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/modules/todo/infrastructure/repository/file-todo-list.repository.integration-spec.ts`
-
 ---
 
 [← All conventions](../index.html)

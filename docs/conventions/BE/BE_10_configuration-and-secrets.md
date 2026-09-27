@@ -169,8 +169,6 @@ Finally, what the change looks like in review: a schema entry, an example entry,
 
 Requires [INFRA_07](../index.html#INFRA_07), [GEN_09](../index.html#GEN_09).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/config/`
-
 ---
 
 [← All conventions](../index.html)

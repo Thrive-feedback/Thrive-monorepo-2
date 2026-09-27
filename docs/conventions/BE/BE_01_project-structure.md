@@ -175,8 +175,6 @@ When billing later grows its own aggregate, the directory becomes `modules/subsc
 
 Requires [INFRA_01](../index.html#INFRA_01). See also [BE_02](../index.html#BE_02), [BE_03](../index.html#BE_03).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/modules/todo/`, `apps/api/src/modules/activity-log/`
-
 ---
 
 [← All conventions](../index.html)

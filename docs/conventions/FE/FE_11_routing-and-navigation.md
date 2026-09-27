@@ -166,8 +166,6 @@ Two decisions worth noting. The layout holds the chrome and no order data, even 
 
 Requires [FE_08](../index.html#FE_08). See also [FE_12](../index.html#FE_12), [FE_18](../index.html#FE_18).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/web/app/`
-
 ---
 
 [← All conventions](../index.html)

@@ -220,8 +220,6 @@ The table does not move, and neither does the transform: one route renders each,
 
 Requires [INFRA_01](../index.html#INFRA_01). See also [FE_02](../index.html#FE_02), [FE_13](../index.html#FE_13).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/web/app/todo-lists/`, `apps/web/components/`, `apps/web/lib/`
-
 ---
 
 [← All conventions](../index.html)

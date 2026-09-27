@@ -184,8 +184,6 @@ expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus();
 
 Requires [FE_05](../index.html#FE_05). See also [FE_16](../index.html#FE_16).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/web/app/todo-lists/[listId]/_components/`, `apps/web/app/globals.css`
-
 ---
 
 [← All conventions](../index.html)

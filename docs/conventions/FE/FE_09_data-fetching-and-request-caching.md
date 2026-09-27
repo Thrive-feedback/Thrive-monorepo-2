@@ -221,8 +221,6 @@ One read deliberately breaks the pattern: the signed-in user's own drafts in the
 
 Requires [FE_08](../index.html#FE_08). See also [FE_10](../index.html#FE_10), [FE_17](../index.html#FE_17).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/web/lib/api/todo.service.ts`, `apps/web/app/todo-lists/_lib/todo-list.action.ts`, `apps/web/app/todo-lists/[listId]/_lib/todo-item.action.ts`
-
 ---
 
 [← All conventions](../index.html)

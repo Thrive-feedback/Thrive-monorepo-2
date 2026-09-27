@@ -185,8 +185,6 @@ One boundary is easy to forget. The same article is also published by a schedule
 
 Requires [BE_07](../index.html#BE_07). See also [GEN_11](../index.html#GEN_11).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/modules/todo/presentation/dto/`
-
 ---
 
 [← All conventions](../index.html)

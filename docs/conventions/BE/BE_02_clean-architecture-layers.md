@@ -214,8 +214,6 @@ Now the inverted version, which is what this document exists to prevent. Someone
 
 Requires [BE_01](../index.html#BE_01). See also [INFRA_06](../index.html#INFRA_06).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/modules/todo/`
-
 ---
 
 [← All conventions](../index.html)

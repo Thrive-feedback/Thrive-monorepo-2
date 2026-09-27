@@ -193,8 +193,6 @@ A week later the amber fails a contrast check. The fix lands in the design sourc
 
 Requires [FE_02](../index.html#FE_02). See also [FE_04](../index.html#FE_04), [FE_06](../index.html#FE_06).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `packages/tokens/`
-
 ---
 
 [← All conventions](../index.html)

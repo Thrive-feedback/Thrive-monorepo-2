@@ -212,8 +212,6 @@ The deletion is worth one note. `DELETE` returns `204` whether or not the articl
 
 Requires [BE_05](../index.html#BE_05), [GEN_08](../index.html#GEN_08). See also [BE_08](../index.html#BE_08).
 
-Reference implementation, where `PROJECT.md` §3 still lists it: `apps/api/src/modules/todo/presentation/todo-list.controller.ts`
-
 ---
 
 [← All conventions](../index.html)
