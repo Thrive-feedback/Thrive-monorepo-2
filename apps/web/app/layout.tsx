@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
-import localFont from 'next/font/local';
+import { Inter } from 'next/font/google';
 import './globals.css';
 
-const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
-  variable: '--font-geist-sans',
-});
-const geistMono = localFont({
-  src: './fonts/GeistMonoVF.woff',
-  variable: '--font-geist-mono',
+/**
+ * The token layer names the family (`--family-sans`); this loads it. Inter carries everything
+ * for now — the old build's display face is licensed, so it waits on that being confirmed.
+ */
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
 });
 
 export const metadata: Metadata = {
@@ -35,9 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-dvh`}>
-        {children}
-      </body>
+      <body className={`${inter.variable} min-h-dvh`}>{children}</body>
     </html>
   );
 }

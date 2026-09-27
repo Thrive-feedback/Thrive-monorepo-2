@@ -1,12 +1,12 @@
 /*
- * Tailwind first, then the token layer. The token files are the source of record for every
- * design value; Thrive has not written them yet, so nothing is imported after Tailwind.
+ * Tailwind first, then the token layer, which is where the theme comes from. Every utility
+ * resolves to a token, so no literal color, length, shadow or duration belongs in this file.
  *
- * No literal color, length, shadow or duration belongs below this line — each one is a
- * token. The `@source` entries only tell the scanner where classes are written.
+ * The `@source` entries only tell the scanner where classes are written.
  */
 
 @import 'tailwindcss';
+@import '@repo/tokens/tokens.css';
 
 @source '../app';
 @source '../../../packages/ui/src';
@@ -15,5 +15,17 @@
   html {
     /* Lets form controls and scrollbars follow the mode the tokens are in. */
     color-scheme: light dark;
+  }
+
+  body {
+    background: var(--surface);
+    color: var(--foreground);
+    font-family: var(--family-sans);
+  }
+
+  /* Focus stays visible on every interactive element, from one token. */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
   }
 }
