@@ -1,0 +1,51 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "extends": ["@repo/biome-config/base"],
+  "overrides": [
+    {
+      "includes": ["apps/web/**"],
+      "linter": {
+        "domains": {
+          "next": "recommended",
+          "react": "recommended"
+        },
+        "rules": {
+          "nursery": {
+            "useSortedClasses": {
+              "level": "on",
+              "options": {
+                "functions": ["clsx", "cva", "cn", "twMerge"]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/ui/**"],
+      "linter": {
+        "domains": {
+          "react": "recommended"
+        },
+        "rules": {
+          "nursery": {
+            "useSortedClasses": {
+              "level": "on",
+              "options": {
+                "functions": ["clsx", "cva", "cn", "twMerge"]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/**"],
+      "linter": {
+        "domains": {
+          "test": "recommended"
+        }
+      }
+    }
+  ]
+}
