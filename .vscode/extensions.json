@@ -1,0 +1,5 @@
+{
+  "//": "INFRA_05 R9 — the extensions that make the committed settings work. Biome for everything it parses.",
+  "recommendations": ["biomejs.biome"],
+  "unwantedRecommendations": ["dbaeumer.vscode-eslint"]
+}
