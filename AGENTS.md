@@ -93,6 +93,8 @@ in `package.json` and in [`PROJECT.md`](PROJECT.md).
 ```bash
 bun install            # install workspace dependencies
 bun run dev            # all apps in watch mode
+bun run dev:web        # only the web app (Next.js, port 3001)
+bun run dev:api        # only the API
 bun run build          # build everything, respecting the task graph
 bun run test           # unit tests
 bun run test:e2e       # end-to-end tests
