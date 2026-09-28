@@ -106,7 +106,9 @@ module.exports = {
   ],
   options: {
     doNotFollow: { path: 'node_modules' },
-    exclude: { path: '(^|/)scripts/arch-fixtures/' },
+    exclude: {
+      path: '(^|/)(scripts/arch-fixtures/|apps/api/(src|dist)/infrastructure/database/generated/)',
+    },
     // The fixtures under `scripts/arch-fixtures/` are cruised with their own directory as
     // the working directory, so their paths match the rules above. They have no tsconfig,
     // and naming one that does not exist is a fatal error rather than a skipped option.

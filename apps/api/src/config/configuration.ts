@@ -8,8 +8,13 @@ export class HttpConfig {
   constructor(readonly port: number) {}
 }
 
+export class DatabaseConfig {
+  constructor(readonly url: string) {}
+}
+
 export interface Configuration {
   readonly http: HttpConfig;
+  readonly database: DatabaseConfig;
 }
 
 /** Injection token for the whole parsed configuration, from which each namespace is projected. */
@@ -34,5 +39,12 @@ export function loadConfiguration(
     process.exit(1);
   }
 
-  return { http: new HttpConfig(parsed.data.PORT) };
+  return {
+    http: new HttpConfig(parsed.data.PORT),
+    database: new DatabaseConfig(parsed.data.DATABASE_URL),
+  };
+}
+
+export function getMigrationDatabaseUrl(): string {
+  return process.env.DATABASE_MIGRATION_URL ?? '';
 }

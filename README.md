@@ -42,9 +42,13 @@ Bun is the package manager and Turborepo runs every task. The pinned versions ar
 `package.json`.
 
 ```bash
-bun install
 bun run dev
 ```
+
+This installs from the lockfile, creates the API's ignored local environment file if
+needed, starts the local database, applies checked-in migrations, then starts both apps.
+Docker must be running. For database commands and schema changes, see
+[`apps/api/README.md`](apps/api/README.md).
 
 The full command list — build, test, lint, format, and how to scope a task to one
 workspace — is in [`AGENTS.md`](AGENTS.md) §4. Do not add a script to a workspace
