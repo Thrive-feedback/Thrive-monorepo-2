@@ -11,6 +11,10 @@
  * record only until a design source exists; Spike #43 decides how Figma and code exchange them,
  * and the change introducing that pipeline migrates these rather than re-deciding them.
  *
+ * TODO(kritpavin, #43): generate this file from the team Figma's variables once that file is
+ * ready, record it as the design source in `PROJECT.md`, and add the generated-file header
+ * (`FE_03` R5). Until then these values are hand-written and this file is the source of record.
+ *
  * Twelve steps per ramp, including the 750 the old build used for pressed states.
  */
 :root {

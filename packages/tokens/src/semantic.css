@@ -11,6 +11,9 @@
  * current screens need and no more (`PROJECT.md` §2: solve today's problem). Spike #43 is what
  * turns it into an agreement.
  *
+ * TODO(kritpavin, #43): agree these role names with design in the team Figma (`FE_03` R9), then
+ * generate this file from its semantic variables rather than editing it by hand (`FE_03` R5).
+ *
  * Dark mode is deliberately absent — it is out of scope for #47. `FE_03` R7 makes a theme a
  * second set of values for *this* layer and nothing else, so when it arrives it attaches here,
  * as `:root[data-theme='dark'] { … }` overriding these same names. No component changes, and
