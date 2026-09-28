@@ -4,22 +4,6 @@
  */
 
 export interface paths {
-    "/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["AppController_getHello"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/todo-lists": {
         parameters: {
             query?: never;
@@ -273,6 +257,9 @@ export interface components {
                 /** Format: date-time */
                 occurredAt: string;
             }[];
+            total: number;
+            page: number;
+            pageSize: number;
         };
     };
     responses: never;
@@ -283,23 +270,6 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    AppController_getHello: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     TodoListController_list: {
         parameters: {
             query?: {
@@ -596,7 +566,10 @@ export interface operations {
     };
     TodoListController_activity: {
         parameters: {
-            query?: never;
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
             header?: never;
             path: {
                 listId: string;

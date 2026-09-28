@@ -1,5 +1,5 @@
 import type {
-  ActivityEntryView,
+  ActivityPageView,
   RecordActivityCommand,
 } from '@app/modules/activity-log';
 import { ReadActivityPort, RecordActivityPort } from '@app/modules/activity-log';
@@ -59,11 +59,15 @@ export class RecordingActivityPort extends RecordActivityPort {
   async record(command: RecordActivityCommand): Promise<void> {
     this.recorded.push(command);
   }
+
+  async recordAll(commands: readonly RecordActivityCommand[]): Promise<void> {
+    this.recorded.push(...commands);
+  }
 }
 
 export class EmptyReadActivityPort extends ReadActivityPort {
-  async recentFor(): Promise<ActivityEntryView[]> {
-    return [];
+  async pageFor(): Promise<ActivityPageView> {
+    return { items: [], total: 0 };
   }
 }
 

@@ -3,7 +3,7 @@ title: "GEN_17 · Code comments"
 id: "GEN_17"
 area: "GEN"
 tier: "P1"
-status: "draft"
+status: "stable"
 updated: "2026-09-28"
 requires: [GEN_07]
 see_also: [GEN_06, GEN_12]
@@ -13,7 +13,7 @@ see_also: [GEN_06, GEN_12]
 
 # [General] Code comments
 
-`P1` · `GEN_17` · `draft` · `updated 2026-09-28`
+`P1` · `GEN_17` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are writing, editing or reviewing a comment in code.
 
@@ -24,7 +24,7 @@ When code earns a comment and when it must explain itself instead, what a commen
 If you read nothing else:
 
 1. <a id="R1"></a>Make the code explain itself first — rename, extract or type it — and comment only what is still unclear.
-2. <a id="R2"></a>Leave a simple function uncommented. Comment one whose logic its body does not show: an algorithm, an ordering that matters, an outside constraint, a workaround.
+2. <a id="R2"></a>Leave a simple function uncommented, apart from the TSDoc [GEN_07#R8](../index.html#GEN_07) requires. Comment one whose logic its body does not show: an algorithm, an ordering that matters, an outside constraint, a workaround.
 3. <a id="R3"></a>Write the reason itself. A reader must understand the comment without opening another file.
 4. <a id="R4"></a>Do not cite a convention id in a comment, unless the code would look like a mistake without it.
 5. <a id="R5"></a>Cite the id in code whose job is to enforce a convention — a guardrail, a rule report — because there the id is the subject.
@@ -101,13 +101,13 @@ Some code exists to enforce a convention: an architecture check, a custom lint r
 
 ### [R6](#R6) Example code is exempt
 
-The reference implementation exists to demonstrate the conventions, and each document points back at it ([GEN_12#R6](../index.html#GEN_12)). A reader studying it is often looking for the rule a line satisfies, so an id there is useful rather than noise. Citing is allowed, not required: new example code may follow [R3](#R3) instead, and a rewrite of an example comment may drop its id. The exemption covers comments only — [R7](#R7) still applies. It ends the moment `PROJECT.md` §3 stops listing the code as example code.
+Code that `PROJECT.md` §3 lists as example code exists to demonstrate the conventions, and a document may point back at it ([GEN_12#R6](../index.html#GEN_12)). A reader studying it is often looking for the rule a line satisfies, so an id there is useful rather than noise. Citing is allowed, not required: new example code may follow [R3](#R3) instead, and a rewrite of an example comment may drop its id. The exemption covers comments only — [R7](#R7) still applies. It ends the moment `PROJECT.md` §3 stops listing the code as example code.
 
 **Enforcement:** review.
 
 ### [R7](#R7) Nothing ships an id
 
-An API description, an error message, a log line or UI copy leaves the repository. Its reader has no index, and a published contract that says `BE_07 R8 — replaying a create…` has leaked an internal document's numbering to every consumer. Write the behavior the reader can rely on, and nothing else. For generated artifacts, fix the source and regenerate; never edit the output.
+An API description, an error message, a log line or UI copy leaves the repository. Its reader has no index, and a published contract that says `BE_07 R8 — replaying a create…` has leaked an internal document's numbering to every consumer. Write the behavior the reader can rely on, and nothing else. For generated artifacts, the fix goes in the source ([GEN_08#R4](../index.html#GEN_08)).
 
 **Enforcement:** review — see Open questions.
 
@@ -135,14 +135,15 @@ Four ids, and a reader still has to open a document to learn which parts matter.
 
 ```
 /**
- * Every request carries a correlation id, set here so no call site
- * can forget it. Every failure leaves as an `ApiError` with a code,
- * so callers never interpret an HTTP status.
+ * Built once per runtime from configuration; a component never
+ * calls this. Every request carries a correlation id, set here so
+ * no call site can forget it. Every failure leaves as an `ApiError`
+ * with a code, so callers never interpret an HTTP status.
  */
 export function createApiClient(config: ApiClientConfig): ApiClient { … }
 ```
 
-The rewrite is shorter, it survives the conventions being renumbered, and it tells a caller the two things that change how they write code against it.
+The rewrite is shorter, it survives the conventions being renumbered, and it tells a caller the three things that change how they write code against it.
 
 ## Checklist
 

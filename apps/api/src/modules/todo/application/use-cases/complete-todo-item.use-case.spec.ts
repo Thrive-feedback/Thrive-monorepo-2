@@ -1,3 +1,4 @@
+import { PassThroughUnitOfWork } from '@test/support/shared.fakes';
 import { InMemoryTodoListRepository, RecordingActivityPort } from '@test/support/todo.fakes';
 import { aTitle, aTodoList, anItemId, anId } from '@test/support/todo.builders';
 import { TodoListId } from '../../domain/value-object/todo-list-id.vo';
@@ -6,7 +7,7 @@ import { TodoListNotFoundError } from '../todo.errors';
 import { CompleteTodoItemUseCase } from './complete-todo-item.use-case';
 import { describe, it, expect } from '@jest/globals';
 
-describe('CompleteTodoItemUseCase', () => {
+describe('completing a todo item', () => {
   async function build() {
     const repository = new InMemoryTodoListRepository();
     const activity = new RecordingActivityPort();
@@ -16,7 +17,7 @@ describe('CompleteTodoItemUseCase', () => {
     await repository.save(list);
 
     return {
-      useCase: new CompleteTodoItemUseCase(new TodoListMutationService(repository), activity),
+      useCase: new CompleteTodoItemUseCase(new TodoListMutationService(repository, new PassThroughUnitOfWork()), activity),
       repository,
       activity,
       listId: list.identity().toString(),

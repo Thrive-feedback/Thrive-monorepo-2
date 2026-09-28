@@ -1,13 +1,12 @@
 'use client';
 
-import { ApiError } from '@repo/api';
 import { Button } from '@/components/atoms/button';
 
 /**
  * FE_11 R5 — this route can fail, so it has an error file, and it offers a retry.
  *
- * FE_10 R5 — the correlation id is surfaced so a person can quote it. That single string
- * is what turns "it broke" into one log search.
+ * FE_10 R5 — the digest is surfaced so a person can quote it; the server logs the API's
+ * correlation id against it (see instrumentation.ts).
  */
 export default function TodoListError({
   error,
@@ -16,8 +15,7 @@ export default function TodoListError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const correlationId =
-    error instanceof ApiError ? error.correlationId : error.digest;
+  const reference = error.digest;
 
   return (
     <main className="mx-auto w-full max-w-3xl p-4 sm:p-8">
@@ -31,10 +29,10 @@ export default function TodoListError({
         <p className="mt-2 text-sm text-body">
           Nothing on it has been changed.
         </p>
-        {correlationId === undefined ? null : (
+        {reference === undefined ? null : (
           <p className="mt-4 text-sm text-muted">
             Quote this if you report it:{' '}
-            <code className="font-mono">{correlationId}</code>
+            <code className="font-mono">{reference}</code>
           </p>
         )}
         <Button onClick={reset} className="mt-6">

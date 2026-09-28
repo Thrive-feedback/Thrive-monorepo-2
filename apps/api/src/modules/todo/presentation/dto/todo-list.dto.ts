@@ -4,6 +4,7 @@ import {
   pageSchemaOf,
   paginationQueryShape,
   sortDirectionSchema,
+  titleSchema,
   uuidSchema,
 } from './shared.schema';
 
@@ -16,10 +17,6 @@ import {
  *
  * BE_08 R10 — one request DTO and one response DTO per operation, named after it.
  */
-
-// BE_08 R7 — length and format live here; whether a *title is already taken* is a
-// business rule and lives in the domain or the use case, never in a schema.
-const titleSchema = z.string().trim().min(1).max(120);
 
 /* ── path parameters ───────────────────────────────────────────────────────── */
 // BE_08 R2 — path parameters are values from outside, so they are validated too.

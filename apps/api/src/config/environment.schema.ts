@@ -18,6 +18,9 @@ export const environmentSchema = z.object({
   TODO_DEFAULT_PAGE_SIZE: z.coerce.number().int().min(1).max(200).default(20),
 
   TODO_MAX_PAGE_SIZE: z.coerce.number().int().min(1).max(200).default(100),
+}).refine((env) => env.TODO_MAX_PAGE_SIZE >= env.TODO_DEFAULT_PAGE_SIZE, {
+  path: ['TODO_MAX_PAGE_SIZE'],
+  message: 'must be >= TODO_DEFAULT_PAGE_SIZE',
 });
 
 export type Environment = z.infer<typeof environmentSchema>;

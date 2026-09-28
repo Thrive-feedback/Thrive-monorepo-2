@@ -1,11 +1,10 @@
-import type { ActivityEntryRecord } from '../types/activity.record';
+import type { ActivityEntry } from '../types/activity-entry.types';
 
 /**
- * BE_02 R6 — this module's own outward dependency. Internal: it is deliberately
- * not re-exported from the barrel, so no other module can reach the store shape.
+ * BE_02 R6 — this module's own outward dependency for writes. Internal: it is deliberately
+ * not re-exported from the barrel, so no other module can reach it.
  */
 export abstract class ActivityStore {
-  abstract append(entry: ActivityEntryRecord): Promise<void>;
-
-  abstract readBySubject(subjectId: string, limit: number): Promise<ActivityEntryRecord[]>;
+  /** Appends every entry in one write, however many there are (BE_06 R9). */
+  abstract appendAll(entries: readonly ActivityEntry[]): Promise<void>;
 }

@@ -4,8 +4,11 @@ import { join } from 'node:path';
 import { FixedClock } from '@test/support/shared.fakes';
 import { aTitle, anItemId, anId } from '@test/support/todo.builders';
 import { StorageConfig } from '@app/config/configuration';
-import { storeMetrics } from '@app/shared/infrastructure/json-file.store';
+import { storeMetrics } from '@app/infrastructure/json-file.store';
+import { SerialUnitOfWork } from '@app/infrastructure/serial-unit-of-work.adapter';
+import { TodoListMutationService } from '../../application/service/todo-list-mutation.service';
 import { TodoList } from '../../domain/entity/todo-list.entity';
+import type { TodoListRepository } from '../../domain/repository/todo-list.repository.port';
 import { DueDate } from '../../domain/value-object/due-date.vo';
 import { TodoListId } from '../../domain/value-object/todo-list-id.vo';
 import { FileTodoQuery } from '../query/file-todo.query';
@@ -22,7 +25,7 @@ import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 describe('FileTodoListRepository', () => {
   const clock = new FixedClock(new Date('2026-09-19T10:00:00.000Z'));
   let dataDir: string;
-  let repository: FileTodoListRepository;
+  let repository: TodoListRepository;
   let query: FileTodoQuery;
 
   beforeEach(async () => {
@@ -37,6 +40,21 @@ describe('FileTodoListRepository', () => {
 
   afterEach(async () => {
     await rm(dataDir, { recursive: true, force: true });
+  });
+
+  it('keeps both changes when two commands change one list at the same time', async () => {
+    const list = TodoList.create(TodoListId.of(anId(10)), aTitle('Trip'));
+    await repository.save(list);
+    const lists = new TodoListMutationService(repository, new SerialUnitOfWork());
+    const listId = list.identity().toString();
+
+    await Promise.all([
+      lists.apply(listId, (current) => current.addItem(anItemId(), aTitle('Book flights'), null)),
+      lists.apply(listId, (current) => current.addItem(anItemId(), aTitle('Pack bags'), null)),
+    ]);
+
+    const saved = await repository.findById(list.identity());
+    expect(saved?.snapshot().items.map((item) => item.title).sort()).toEqual(['Book flights', 'Pack bags']);
   });
 
   it('returns null for a list that was never saved', async () => {

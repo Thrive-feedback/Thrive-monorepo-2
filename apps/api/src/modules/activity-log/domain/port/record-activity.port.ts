@@ -9,4 +9,7 @@ import type { RecordActivityCommand } from '../types/activity.types';
  */
 export abstract class RecordActivityPort {
   abstract record(command: RecordActivityCommand): Promise<void>;
+
+  /** Records several at once, in one write. */
+  abstract recordAll(commands: readonly RecordActivityCommand[]): Promise<void>;
 }

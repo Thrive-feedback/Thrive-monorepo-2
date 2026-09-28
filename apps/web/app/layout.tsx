@@ -17,6 +17,9 @@ export const metadata: Metadata = {
     template: '%s · Todo',
   },
   description: 'Keep lists of things you mean to do.',
+  // FE_12 R5 — todo lists are a person's own app state, not content for search, so no
+  // route is indexable. This one decision covers every page below.
+  robots: { index: false, follow: false },
 };
 
 /**

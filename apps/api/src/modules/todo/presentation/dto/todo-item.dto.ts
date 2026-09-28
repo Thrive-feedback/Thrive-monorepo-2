@@ -4,11 +4,10 @@ import {
   pageSchemaOf,
   paginationQueryShape,
   sortDirectionSchema,
+  titleSchema,
   uuidSchema,
 } from './shared.schema';
 import { todoItemViewSchema } from './todo-list.dto';
-
-const titleSchema = z.string().trim().min(1).max(120);
 
 /* ── path parameters ───────────────────────────────────────────────────────── */
 export class TodoItemParamsDto extends createZodDto(
@@ -55,15 +54,16 @@ export const bulkCompleteItemsResponseSchema = z.object({
 export class BulkCompleteItemsResponseDto extends createZodDto(bulkCompleteItemsResponseSchema) {}
 
 /* ── activity ──────────────────────────────────────────────────────────────── */
-export const listActivityResponseSchema = z.object({
-  items: z.array(
-    z.object({
-      id: uuidSchema,
-      subjectId: uuidSchema,
-      action: z.string(),
-      detail: z.string().nullable(),
-      occurredAt: z.iso.datetime(),
-    }),
-  ),
-});
+export const listActivityQuerySchema = z.object(paginationQueryShape);
+export class ListActivityQueryDto extends createZodDto(listActivityQuerySchema) {}
+
+export const listActivityResponseSchema = pageSchemaOf(
+  z.object({
+    id: uuidSchema,
+    subjectId: uuidSchema,
+    action: z.string(),
+    detail: z.string().nullable(),
+    occurredAt: z.iso.datetime(),
+  }),
+);
 export class ListActivityResponseDto extends createZodDto(listActivityResponseSchema) {}

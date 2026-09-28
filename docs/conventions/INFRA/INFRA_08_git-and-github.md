@@ -3,8 +3,8 @@ title: "INFRA_08 · Git & GitHub — branching, commits, templates, protection"
 id: "INFRA_08"
 area: "INFRA"
 tier: "P1"
-status: "draft"
-updated: "2026-09-06"
+status: "stable"
+updated: "2026-09-28"
 requires: [GEN_06]
 see_also: [INFRA_09]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_09]
 
 # [Infra] Git & GitHub — branching, commits, templates, protection
 
-`P1` · `INFRA_08` · `draft` · `updated 2026-09-06`
+`P1` · `INFRA_08` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are branching, committing, or configuring the repository on GitHub.
 
@@ -26,13 +26,13 @@ If you read nothing else:
 1. <a id="R1"></a>One long-lived branch. Everything else is short-lived and merges back within days.
 2. <a id="R2"></a>Name a branch `<type>/<short-description>`, with the ticket where one exists.
 3. <a id="R3"></a>Write Conventional Commits, and make the subject say what changed for a reader.
-4. <a id="R4"></a>One logical change per commit, one concern per pull request.
+4. <a id="R4"></a>One logical change per commit.
 5. <a id="R5"></a>Update a branch by rebasing onto the default branch. Never merge the default branch into it.
 6. <a id="R6"></a>Never force-push a branch someone else is on, and never rewrite the default branch.
 7. <a id="R7"></a>Attribute AI-assisted work in the commit trailer.
-8. <a id="R8"></a>Templates and CODEOWNERS are checked in, and every path has an owner.
+8. <a id="R8"></a>Templates, labels and CODEOWNERS are checked in, and every path has an owner.
 9. <a id="R9"></a>Protect the default branch: no direct pushes, review required, checks required, up to date before merge.
-10. <a id="R10"></a>Never merge red, and never bypass protection to do it.
+10. <a id="R10"></a>Never bypass branch protection; if it is wrong, change it in the open.
 
 ## Why
 
@@ -62,7 +62,7 @@ docs/be-conventions
 
 Conventional Commits give the type, an optional scope, and a subject. The type is what makes history filterable and changelogs derivable; the subject is what makes it readable. Write the subject for someone scanning a list a year from now, in the imperative, saying the effect rather than the mechanism.
 
-The body carries what the diff cannot: why this approach, what was rejected, what the change does not do. That is where the conventions you relied on are cited ([GEN_01#R6](../index.html#GEN_01)), and a breaking change is marked so a release can find it.
+The body carries what the diff cannot: why this approach, what was rejected, what the change does not do. A breaking change is marked there so a release can find it; the conventions you relied on are cited in the pull request ([GEN_01#R6](../index.html#GEN_01)).
 
 Where the project tracks work in tickets, put the ticket in the **scope** rather than only in the branch name — `feat(abc-123): …` — and use the same subject for the pull request title. The scope is the part that survives into the squashed commit and the generated changelog, so every released line traces back to the request that caused it; a ticket that lives only in a branch name is gone the moment the branch is deleted.
 
@@ -85,9 +85,9 @@ feat: changes           # type without meaning
 update OrderService.ts  # names the file, not the change
 ```
 
-One logical change per commit is what makes a revert or a bisect land on something coherent. A pull request carries one concern — a refactor that came along for the ride belongs in its own ([GEN_15#R2](../index.html#GEN_15)).
+One logical change per commit is what makes a revert or a bisect land on something coherent. One idea per pull request is [GEN_06#R1](../index.html#GEN_06)'s rule, and a refactor that came along for the ride belongs in its own ([GEN_15#R2](../index.html#GEN_15)).
 
-**Enforcement:** partly automated — a commit-message linter enforces the format; whether the subject is meaningful is review.
+**Enforcement:** review — a commit-msg hook running a commit-message linter is the candidate guardrail ([INFRA_05](../index.html#INFRA_05)).
 
 ### [R5](#R5) and [R6](#R6) Rebase, and what may never be rewritten
 
@@ -97,7 +97,7 @@ Rewriting is fine on your own branch and forbidden everywhere else. Never force-
 
 How the branch finally lands — squash, rebase, or a merge commit — is one policy for the repository, chosen once and enforced by the platform, not per pull request.
 
-**Enforcement:** partly automated — branch protection can forbid force-pushes to the default branch; the merge method is a repository setting.
+**Enforcement:** review — branch protection that forbids force-pushes is the candidate guardrail ([R9](#R9)).
 
 ### [R7](#R7) Attribution
 
@@ -107,21 +107,21 @@ Work done with an AI assistant is attributed in the commit trailer, as a co-auth
 
 ### [R8](#R8) Templates and ownership
 
-The pull request template asks for what a review needs: what changed, why, the conventions relied on, how it was verified, and what is deliberately not done ([GEN_06](../index.html#GEN_06)). The issue templates separate a defect from a request, because they need different information.
+The pull request template asks for what a review needs: what changed, why, the conventions relied on, how it was verified, and what is deliberately not done ([GEN_06](../index.html#GEN_06)). The issue templates separate a defect from a request, because they need different information. Labels are defined in a checked-in file and synced to the platform, so a copied project gets the same triage vocabulary.
 
 CODEOWNERS names a reviewer for every path, with a catch-all so nothing is unowned. The point is routing, not gatekeeping: an unowned path is one where nobody is notified, and changes there get the least scrutiny precisely because nobody is watching.
 
-**Enforcement:** partly automated — the platform can require review from code owners; template completeness is review.
+**Enforcement:** review — requiring code-owner review in branch protection is the candidate guardrail.
 
 ### [R9](#R9) and [R10](#R10) Protection, and the line
 
 The default branch requires: no direct pushes, at least one approving review, the required checks green, and the branch up to date with the default before merging. The last one matters more than it looks — two changes that each pass alone can fail together, and being up to date is what catches it before the merge rather than after.
 
-Required checks are the ones that would let a defect through: lint, types, tests, build, the guardrails ([INFRA_06](../index.html#INFRA_06), [INFRA_09](../index.html#INFRA_09)). Not every job needs to be required, but every required job must be reliable — a flaky required check teaches people to re-run until green, which is how a real intermittent failure gets merged ([BE_11#R10](../index.html#BE_11)).
+Required checks are the ones that would let a defect through: lint, types, tests, build, the guardrails ([INFRA_06](../index.html#INFRA_06), [INFRA_09](../index.html#INFRA_09)). Not every job needs to be required, but every required job must be reliable — a flaky required check teaches people to re-run until green, which is how a real intermittent failure gets merged ([BE_11#R8](../index.html#BE_11)).
 
-Never merge red, and never use an administrative bypass to do it. If protection is genuinely wrong, change the protection in the open. Bypassing it silently removes the only control that does not depend on someone remembering.
+Merging red is already forbidden ([GEN_06#R10](../index.html#GEN_06)); never use an administrative bypass to do it. If protection is genuinely wrong, change the protection in the open. Bypassing it silently removes the only control that does not depend on someone remembering.
 
-**Enforcement:** automated — branch protection is enforced by the platform once configured; that the configuration matches this rule is review.
+**Enforcement:** review — platform branch protection with required checks is the candidate guardrail; it needs a pipeline first ([INFRA_09](../index.html#INFRA_09)).
 
 ## Worked example
 
@@ -130,8 +130,8 @@ A defect: enrolling twice creates two records.
 The branch is `fix/1284-duplicate-enrolment` ([R2](#R2)), cut from the default branch that morning. The work is two commits, because it is two things: a failing test that reproduces the defect, then the fix ([R4](#R4), [GEN_05](../index.html#GEN_05)). Splitting them means the test can be verified to fail without the fix — which is the only proof the test tests anything.
 
 ```
-test(enrolment): reproduce duplicate enrolment on repeat submit
-fix(enrolment): reject a second enrolment for the same learner
+test(1284): reproduce duplicate enrolment on repeat submit
+fix(1284): reject a second enrolment for the same learner
 ```
 
 The fix's body says the uniqueness rule moved to the aggregate, cites the convention, and notes that the existing duplicates are not cleaned up by this change ([R3](#R3)). The trailer attributes the AI assistance ([R7](#R7)).
@@ -146,15 +146,16 @@ The one thing that does not happen: nobody uses an administrative merge because 
 
 - The branch is short-lived, cut from the default branch, and named to the pattern ([R1](#R1), [R2](#R2)).
 - Commits follow Conventional Commits, carry the ticket in the scope, and say why in the body ([R3](#R3)).
-- One logical change per commit; one concern per pull request ([R4](#R4)).
+- One logical change per commit ([R4](#R4)); one idea per pull request is [GEN_06#R1](../index.html#GEN_06).
 - The branch was rebased, not merged into ([R5](#R5)); no shared branch was force-pushed ([R6](#R6)).
 - AI-assisted work is attributed in the trailer ([R7](#R7)).
 - The pull request template is filled in, and CODEOWNERS routes the review ([R8](#R8)).
-- Required checks are green and the branch is up to date ([R9](#R9)); nothing was bypassed ([R10](#R10)).
+- Required checks are green and the branch is up to date ([R9](#R9)); no protection was bypassed ([R10](#R10)).
 
 ## Open questions
 
 - The merge method ([R5](#R5)) is stated as "one policy" without naming it, because squash and rebase trade differently against [R4](#R4)'s per-commit discipline: squashing discards the two-commit structure the worked example depends on. It should be decided in an ADR.
+- Commit format ([R3](#R3)) and branch names ([R2](#R2)) are unenforced by tooling; a commit-msg linter and a pipeline branch-name check are the candidate guardrails.
 - Nothing here defines a hotfix path. Every rule above assumes there is time; the one case where there is not is exactly where bypasses happen, and it deserves a written procedure rather than an improvisation.
 - Whether release tagging and changelog generation derive from the commit types is assumed but unowned — it belongs with [INFRA_11](../index.html#INFRA_11), and until it exists the Conventional Commit types buy less than they could.
 

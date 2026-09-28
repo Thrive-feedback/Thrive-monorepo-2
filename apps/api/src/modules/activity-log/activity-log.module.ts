@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ActivityStore } from './application/port/activity-store.port';
+import { ActivityQuery } from './application/query-port/activity.query-port';
 import { ReadActivityPort } from './domain/port/read-activity.port';
+import { ReadActivityAdapter } from './application/adapter/read-activity.adapter';
 import { ReadActivityUseCase } from './application/use-cases/read-activity.use-case';
 import { RecordActivityPort } from './domain/port/record-activity.port';
+import { RecordActivityAdapter } from './application/adapter/record-activity.adapter';
 import { RecordActivityUseCase } from './application/use-cases/record-activity.use-case';
+import { FileActivityQuery } from './infrastructure/query/file-activity.query';
 import { FileActivityStore } from './infrastructure/repository/file-activity.store';
 
 /**
@@ -13,8 +17,11 @@ import { FileActivityStore } from './infrastructure/repository/file-activity.sto
 @Module({
   providers: [
     { provide: ActivityStore, useClass: FileActivityStore },
-    { provide: RecordActivityPort, useClass: RecordActivityUseCase },
-    { provide: ReadActivityPort, useClass: ReadActivityUseCase },
+    { provide: ActivityQuery, useClass: FileActivityQuery },
+    RecordActivityUseCase,
+    ReadActivityUseCase,
+    { provide: RecordActivityPort, useClass: RecordActivityAdapter },
+    { provide: ReadActivityPort, useClass: ReadActivityAdapter },
   ],
   exports: [RecordActivityPort, ReadActivityPort],
 })

@@ -8,7 +8,7 @@ import type { ListStatusName } from '../../domain/value-object/list-status.vo';
  * BE_06 R7 — read projections. A query service returns these; a repository never does.
  */
 
-export interface TodoItemView {
+export interface TodoItemProjection {
   readonly id: string;
   readonly title: string;
   readonly status: ItemStatusName;
@@ -16,7 +16,7 @@ export interface TodoItemView {
   readonly isOverdue: boolean;
 }
 
-export interface TodoListSummaryView {
+export interface TodoListSummaryProjection {
   readonly id: string;
   readonly title: string;
   readonly status: ListStatusName;
@@ -25,8 +25,8 @@ export interface TodoListSummaryView {
   readonly createdAt: string;
 }
 
-export interface TodoListDetailView extends TodoListSummaryView {
-  readonly items: TodoItemView[];
+export interface TodoListDetailProjection extends TodoListSummaryProjection {
+  readonly items: TodoItemProjection[];
 }
 
 /** BE_07 R5 — one page shape, used by every collection route. */

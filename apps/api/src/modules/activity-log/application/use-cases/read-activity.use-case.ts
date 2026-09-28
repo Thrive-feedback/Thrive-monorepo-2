@@ -1,28 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { ActivityStore } from '../port/activity-store.port';
-import type { ActivityEntryView } from '../../domain/types/activity.types';
-import { ReadActivityPort } from '../../domain/port/read-activity.port';
+import { ActivityQuery } from '../query-port/activity.query-port';
+import type {
+  ActivityPageRequest,
+  ActivityPageView,
+} from '../../domain/types/activity.types';
+
+export interface ReadActivityInput extends ActivityPageRequest {
+  readonly subjectId: string;
+}
 
 /**
  * BE_05 R3 — a query: it answers a question and changes nothing.
- * BE_06 R8 — returns a projection or `[]`, never a stored record and never a throw.
+ * BE_05 R4 — it reads through a query contract, never the write-side store.
  */
 @Injectable()
-export class ReadActivityUseCase extends ReadActivityPort {
-  constructor(private readonly store: ActivityStore) {
-    super();
-  }
+export class ReadActivityUseCase {
+  constructor(private readonly query: ActivityQuery) {}
 
-  async recentFor(subjectId: string, limit: number): Promise<ActivityEntryView[]> {
-    const records = await this.store.readBySubject(subjectId, limit);
+  async execute(input: ReadActivityInput): Promise<ActivityPageView> {
+    const { items, total } = await this.query.pageBySubject(input.subjectId, input);
 
-    // BE_03 R6 — the stored record is mapped to the published view before it leaves.
-    return records.map((record) => ({
-      id: record.id,
-      subjectId: record.subjectId,
-      action: record.action,
-      detail: record.detail,
-      occurredAt: record.occurredAt,
-    }));
+    // BE_03 R6 — the internal projection is mapped to the published view before it leaves.
+    return {
+      items: items.map((item) => ({
+        id: item.id,
+        subjectId: item.subjectId,
+        action: item.action,
+        detail: item.detail,
+        occurredAt: item.occurredAt,
+      })),
+      total,
+    };
   }
 }

@@ -34,3 +34,15 @@ export interface ActivityEntryView {
   /** ISO-8601 UTC instant (GEN_11). */
   readonly occurredAt: string;
 }
+
+/** Which slice of a subject's activity to read, most recent first. */
+export interface ActivityPageRequest {
+  readonly page: number;
+  readonly pageSize: number;
+}
+
+/** One page of a subject's activity, and how many entries it has in total. */
+export interface ActivityPageView {
+  readonly items: ActivityEntryView[];
+  readonly total: number;
+}

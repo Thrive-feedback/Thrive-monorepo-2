@@ -10,5 +10,7 @@ module.exports = {
     paths: ['../../features/**/*.feature'],
     tags: '@api',
     format: ['summary'],
+    // Surfaces a scenario that only passes because another ran first.
+    order: 'random',
   },
 };

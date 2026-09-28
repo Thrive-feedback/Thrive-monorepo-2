@@ -3,8 +3,8 @@ title: "FE_15 · Gherkin step definitions & browser scenarios"
 id: "FE_15"
 area: "FE"
 tier: "P1"
-status: "draft"
-updated: "2026-08-31"
+status: "stable"
+updated: "2026-09-28"
 requires: [GEN_10, FE_14]
 ---
 
@@ -12,7 +12,7 @@ requires: [GEN_10, FE_14]
 
 # [FE] Gherkin step definitions & browser scenarios
 
-`P1` · `FE_15` · `draft` · `updated 2026-08-31`
+`P1` · `FE_15` · `stable` · `updated 2026-09-28`
 
 **Open when:** a scenario from `features/` has to run in a browser.
 
@@ -24,14 +24,14 @@ If you read nothing else:
 
 1. <a id="R1"></a>A browser scenario earns its place only if it proves something no cheaper test can. Everything else stays below.
 2. <a id="R2"></a>Drive the real application in a real browser, through the interface a user has.
-3. <a id="R3"></a>Keep every selector, URL and wait inside the step definitions. The feature file stays in the product's words.
+3. <a id="R3"></a>Keep every selector, URL and wait inside the step definitions, so the feature file can meet [GEN_10#R2](../index.html#GEN_10).
 4. <a id="R4"></a>Find elements the way a user does — by role and accessible name. Fall back to a test id only when nothing user-visible identifies it.
 5. <a id="R5"></a>A test id names the thing, is stable, and is never a class, a position, or a generated string.
 6. <a id="R6"></a>Put the knowledge of one screen in one page object, and keep assertions out of it.
 7. <a id="R7"></a>Establish sign-in and starting data through the fastest honest path, and prove that path in one scenario.
 8. <a id="R8"></a>Every scenario creates its own data with unique values and cleans up after itself.
 9. <a id="R9"></a>Never wait for a duration. Wait for the condition you actually need.
-10. <a id="R10"></a>A flaky scenario is quarantined with an owner and a deadline, never re-run until it passes.
+10. <a id="R10"></a>Fix a flaky scenario by finding the condition it should have waited for or the step that acts before the app settles, never by lengthening a wait; what happens to it meanwhile is [INFRA_09#R7](../index.html#INFRA_09)'s.
 
 ## Why
 
@@ -120,7 +120,7 @@ The same applies to data: create it through the fastest reliable path, but creat
 
 Never sleep. Wait for the condition: this element is visible, this text has changed, this request has settled, this URL is current. A duration is a guess that is too long on a fast machine and too short on a busy one, and a suite full of them is slow *and* flaky at the same time.
 
-When a scenario is flaky anyway, it is telling you something — usually about a race in the application, which is a defect, not a test problem. Quarantine it with an owner and a date, and fix or delete it by then. What you must never do is add a retry until it passes: that converts a real intermittent bug into a permanently green build, and the next person to see it will be a user ([GEN_05](../index.html#GEN_05)).
+When a scenario is flaky anyway, it is telling you something — usually about a race in the application, which is a defect, not a test problem. Open it as a bug ([GEN_05](../index.html#GEN_05)) and read the failure: most browser flakes are a wait on the wrong condition, or a step that acts before the app has settled. Fix that before merging. Quarantining, skipping or retrying it is disabling a test ([INFRA_09#R7](../index.html#INFRA_09)): it converts a real intermittent bug into a permanently green build, and the next person to see it will be a user. ADR 0010 has the reasoning.
 
 **Enforcement:** review — a sleep call in a step file is greppable and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
@@ -129,10 +129,11 @@ When a scenario is flaky anyway, it is telling you something — usually about a
 `checkout.feature`, one scenario, tagged for the browser layer ([GEN_10](../index.html#GEN_10)).
 
 ```
+@browser
 Scenario: A customer buys a product from the catalog
   Given a signed-in customer
   And a product available to buy
-  When the customer adds it to the cart and checks out
+  When the customer buys the product
   Then the order appears in their order history
 ```
 
@@ -140,7 +141,7 @@ Scenario: A customer buys a product from the catalog
 
 `And a product available to buy` creates the product through the API and records its id on the scenario's context for teardown ([R8](#R8)).
 
-`When the customer adds it to the cart and checks out` calls two page objects — the catalog and the checkout — each finding its controls by role and name ([R4](#R4)). The only test id in the whole scenario is on the order summary region, which has no heading a user could name ([R5](#R5)).
+`When the customer buys the product` calls two page objects — the catalog and the checkout — each finding its controls by role and name ([R4](#R4)). The only test id in the whole scenario is on the order summary region, which has no heading a user could name ([R5](#R5)).
 
 `Then the order appears in their order history` navigates to the history page and looks for the order by the product's name. It does not read a store, query the database, or assert a status code ([R2](#R2)) — it checks the thing the customer would check.
 
@@ -158,12 +159,12 @@ What is deliberately not here: that the card field rejects a bad number, that th
 - Session and data setup use a fast path, and the real sign-in path is covered once ([R7](#R7)).
 - Data is unique per scenario and cleaned up ([R8](#R8)).
 - Every wait is a condition ([R9](#R9)).
-- No flaky scenario is left re-running; each is quarantined with an owner and a date ([R10](#R10)).
+- Each flake was traced to a wrong wait condition or an early step and fixed there ([R10](#R10)).
 
 ## Open questions
 
 - Where step definitions and page objects live, and whether they share the scenario context shape with the API layer ([BE_13](../index.html#BE_13)), is unresolved in both documents. The same feature file is meant to be driven from both layers, and nothing says how the setup is shared rather than duplicated.
-- [R10](#R10) describes quarantine but names no mechanism — a tag, a list, a dashboard. Without one, a quarantined scenario is a deleted scenario with extra steps.
+- A flake that reaches the default branch blocks everyone. Whether the escape valve is reverting the change that introduced it belongs to [INFRA_09](../index.html#INFRA_09).
 - Nothing here covers visual comparison, deliberately: it belongs with the component surface in [FE_21](../index.html#FE_21). If browser scenarios later grow screenshots, the two documents will need a boundary.
 
 ## Related

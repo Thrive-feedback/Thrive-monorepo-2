@@ -3,8 +3,8 @@ title: "INFRA_07 · Environment & configuration management"
 id: "INFRA_07"
 area: "INFRA"
 tier: "P1"
-status: "draft"
-updated: "2026-08-31"
+status: "stable"
+updated: "2026-09-28"
 requires: [INFRA_02]
 see_also: [BE_10, GEN_09]
 ---
@@ -13,7 +13,7 @@ see_also: [BE_10, GEN_09]
 
 # [Infra] Environment & configuration management
 
-`P1` · `INFRA_07` · `draft` · `updated 2026-08-31`
+`P1` · `INFRA_07` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are adding an environment variable or a secret.
 
@@ -25,9 +25,9 @@ If you read nothing else:
 
 1. <a id="R1"></a>Environments are a named, fixed set. Code never branches on which one it is in.
 2. <a id="R2"></a>The example file is the contract: every variable appears there, with a safe placeholder, in the change that introduces it.
-3. <a id="R3"></a>A real environment file is never committed, and never leaves the machine it belongs to.
+3. <a id="R3"></a>A real environment file never leaves the machine it belongs to; that none is committed is a hard rule (`AGENTS.md` §6).
 4. <a id="R4"></a>A secret is delivered by the platform's secret store, per environment, and exists nowhere else.
-5. <a id="R5"></a>Never put a secret in a build argument, an image layer, a URL, a log line, or a client-visible variable.
+5. <a id="R5"></a>Never put a secret in a build argument, an image layer, or a client-visible variable; source, URLs, logs and errors are [GEN_09#R1](../index.html#GEN_09)'s.
 6. <a id="R6"></a>Only values that genuinely differ per environment are variables. Everything else is a constant in code.
 7. <a id="R7"></a>Name variables in one scheme, scoped by the concern they configure.
 8. <a id="R8"></a>Anything reaching the browser is marked public by its name, and nothing else ever is.
@@ -58,9 +58,9 @@ The example file lists every variable the applications read, with a placeholder 
 
 The rule that keeps it true is that a variable and its example line land in the same change. There is no "add it later": the next person's first run fails, and the failure looks like a bug in the code they just pulled.
 
-A real environment file is never committed — not in a branch, not commented out, not "temporarily". Git remembers it, and a repository that has ever contained one has leaked it. Ignore rules should make committing one hard rather than possible-but-discouraged.
+A real environment file is never committed — not in a branch, not commented out, not "temporarily". Git remembers it, and a repository that has ever contained one has leaked it. Ignore rules exclude every real environment file by pattern and re-include the example file by name, so committing a real one is hard and committing the example is the default.
 
-**Enforcement:** partly automated — secret scanning catches many committed credentials, and an ignore rule prevents the common case; that every new variable reaches the example file is review, and is checkable ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** partly automated — ignore rules keep the common real-file names out of git; other names, a secret pasted into a tracked file, and whether every new variable reaches the example file are review. Secret scanning and an example-file parity check are candidate guardrails ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R4](#R4) and [R5](#R5) Where secrets live, and where they may not
 
@@ -76,13 +76,13 @@ Five paths leak them, and all five are ordinary:
 
 A leaked secret is rotated first and cleaned up second ([GEN_09#R2](../index.html#GEN_09)).
 
-**Enforcement:** partly automated — secret scanning covers the repository; the image, log and URL paths are review, and image scanning is [INFRA_15](../index.html#INFRA_15)'s.
+**Enforcement:** review — no secret scanner runs today; repository secret scanning is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)), and image scanning is [INFRA_15](../index.html#INFRA_15)'s.
 
 ### [R6](#R6) and [R7](#R7) What is a variable, and what it is called
 
 A variable exists because the value genuinely differs between environments. A timeout that is the same everywhere is a constant in code, where it can be typed, documented and refactored; making it configurable adds a thing to set correctly in four places and to get wrong in one.
 
-Naming is one scheme, consistently: upper snake case, prefixed by the concern being configured — the store, the cache, the mail provider, the auth system. The prefix is what lets a namespace be handed to the module that owns it ([BE_10#R4](../index.html#BE_10)) and what makes a stray variable visible.
+Naming is one scheme, consistently: upper snake case, prefixed by the concern being configured — the store, the cache, the mail provider, the auth system. Names a platform or runtime reserves, such as `PORT` and `NODE_ENV`, keep their reserved form; they are the only exception, and `NODE_ENV` selects tooling behavior, never application behavior ([R1](#R1)). The prefix is what lets a namespace be handed to the module that owns it ([BE_10#R4](../index.html#BE_10)) and what makes a stray variable visible.
 
 **Do**
 

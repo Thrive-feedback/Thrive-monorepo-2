@@ -3,8 +3,8 @@ title: 'FE_04 · Tailwind CSS conventions'
 id: 'FE_04'
 area: 'FE'
 tier: 'P1'
-status: 'draft'
-updated: '2026-09-22'
+status: 'stable'
+updated: '2026-09-28'
 requires: [FE_03]
 ---
 
@@ -12,7 +12,7 @@ requires: [FE_03]
 
 # [FE] Tailwind CSS conventions
 
-`P1` · `FE_04` · `draft` · `updated 2026-09-22`
+`P1` · `FE_04` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are styling anything.
 
@@ -27,9 +27,9 @@ If you read nothing else:
 3. <a id="R3"></a>Write class names in full, statically. Never assemble one from pieces at runtime.
 4. <a id="R4"></a>Express a component's visual options as declared variants, not as conditionals over class strings.
 5. <a id="R5"></a>Merge incoming classes with a conflict-aware merge, so the caller's class wins deterministically.
-6. <a id="R6"></a>Class order is the formatter's job. Never argue about it or hand-sort.
+6. <a id="R6"></a>Let the formatter's class sorter order every class list. Never commit an order it would change.
 7. <a id="R7"></a>Style mobile first and step up at the token breakpoints. Never write a one-off media query.
-8. <a id="R8"></a>Express a theme as a mode of the token layer. Never as a variant repeated per component.
+8. <a id="R8"></a>Never write a theme variant such as `dark:` in a component's classes; the theme is a token mode ([FE_03#R7](../index.html#FE_03)).
 9. <a id="R9"></a>Write CSS only for what utilities cannot express, colocated with the component and still token-backed.
 10. <a id="R10"></a>Never build a component class out of utilities.
 
@@ -63,7 +63,7 @@ Which is why arbitrary values are banned outright. An arbitrary value is a hardc
 
 When the value you need does not exist, that is the useful signal: either round to the scale, or the design needs a new token agreed at its source ([FE_03#R9](../index.html#FE_03)). Neither answer is a bracket.
 
-**Enforcement:** review — arbitrary-value syntax is a trivial pattern match and is the single highest-value guardrail this document wants ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** [R1](#R1) partly automated — once the theme clears the framework's defaults, a utility with no token behind it generates no CSS, but silently; nothing fails the build. [R2](#R2) review — arbitrary values still compile; the syntax is a trivial pattern match and the single highest-value guardrail this document wants ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R3](#R3) Classes are static strings
 
@@ -119,7 +119,7 @@ Class order carries no meaning, so it is the formatter's, exactly as file format
 
 Layout is mobile first: the unprefixed classes describe the narrow case and each breakpoint adds what changes. The breakpoints come from the tokens and are the same everywhere; a bespoke media query for one component is a second, invisible breakpoint set that nothing else respects ([FE_03](../index.html#FE_03)).
 
-**Enforcement:** partly automated — the class sorter enforces order where it is wired; the breakpoint rule is review.
+**Enforcement:** partly automated — the formatter's class sorter rewrites order whenever the formatter runs; nothing yet fails a change that skipped it, or a workspace that does not register the sorter ([INFRA_05](../index.html#INFRA_05)). The breakpoint rule is review.
 
 ### [R8](#R8) Themes are token modes
 
@@ -165,7 +165,6 @@ One thing does need CSS ([R9](#R9)): the pending state's spinner animation is a 
 ## Open questions
 
 - [R2](#R2) is the rule the whole document rests on and it is the easiest to break under deadline pressure. Until the arbitrary-value check exists ([INFRA_06](../index.html#INFRA_06)), this convention is one hurried change away from being decorative.
-- ~~The document names variant and merge tooling by role rather than by package; the first implementation sets the precedent and it should be recorded in an ADR.~~ Recorded in [ADR 0008](../../adr/0008-tailwind-with-cva-and-tailwind-merge.md). The document still names them by role, which is correct — the ADR is where the packages belong.
 - Where a shared component's variant map lives when both apps need the same options is unresolved, and interacts with [FE_13](../index.html#FE_13). Duplicating the map is the likely accident.
 
 ## Related

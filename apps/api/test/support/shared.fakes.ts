@@ -1,5 +1,6 @@
 import { Clock } from '@app/shared/application/clock.port';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
+import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 
 /**
  * BE_11 R5 — unit tests substitute *ports* and use the real domain objects. These fakes
@@ -12,6 +13,11 @@ import { IdGenerator } from '@app/shared/application/id-generator.port';
  */
 
 let sequence = 0;
+
+/** Restarts unseeded ids for each test, so a test's ids never depend on which ran first. */
+export function resetIds(): void {
+  sequence = 0;
+}
 
 /**
  * A valid, deterministic UUIDv7-shaped id. Unique per call within a test run.
@@ -48,5 +54,12 @@ export class SequenceIdGenerator extends IdGenerator {
     }
     this.index += 1;
     return id;
+  }
+}
+
+/** Runs the work directly. A unit test has one caller, so there is nothing to serialize. */
+export class PassThroughUnitOfWork extends UnitOfWork {
+  run<T>(work: () => Promise<T>): Promise<T> {
+    return work();
   }
 }

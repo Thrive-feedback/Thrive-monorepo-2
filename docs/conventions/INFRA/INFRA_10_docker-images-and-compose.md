@@ -3,8 +3,8 @@ title: "INFRA_10 · Docker images & local compose"
 id: "INFRA_10"
 area: "INFRA"
 tier: "P1"
-status: "draft"
-updated: "2026-09-06"
+status: "stable"
+updated: "2026-09-28"
 requires: [INFRA_02]
 see_also: [INFRA_11, INFRA_12]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_11, INFRA_12]
 
 # [Infra] Docker images & local compose
 
-`P1` · `INFRA_10` · `draft` · `updated 2026-09-06`
+`P1` · `INFRA_10` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are changing a Dockerfile or the local service stack.
 
@@ -26,12 +26,12 @@ If you read nothing else:
 1. <a id="R1"></a>One image per deployable. Never one image that can be several things.
 2. <a id="R2"></a>Build in stages, and ship a runtime stage that carries no toolchain and no sources.
 3. <a id="R3"></a>Copy manifests and the lockfile, install, then copy source — in that order.
-4. <a id="R4"></a>Install from the lockfile in frozen mode, and prune to runtime dependencies for the final stage.
+4. <a id="R4"></a>Prune the build to the one app's subset with the task runner, and ship only its runtime dependencies in the final stage.
 5. <a id="R5"></a>Run as a non-root user, on a read-only filesystem wherever the process allows it.
-6. <a id="R6"></a>No secret in a build argument, an image layer, or the image at all.
+6. <a id="R6"></a>Pass a build-time credential only through the builder's secret mount; every other secret rule is [INFRA_07#R5](../index.html#INFRA_07).
 7. <a id="R7"></a>Maintain an ignore file so the build context carries no dependencies, history, build output or environment files.
 8. <a id="R8"></a>Tag every image with the commit it was built from. `latest` is never a deployment target.
-9. <a id="R9"></a>Use compose for local backing services, at the versions the deployed environments run. Never to build the app.
+9. <a id="R9"></a>Use compose only for local backing services, at the versions [INFRA_02#R4](../index.html#INFRA_02) requires. Never to build the app.
 10. <a id="R10"></a>Give the runtime image a size budget, and say why when a change exceeds it.
 
 ## Why
@@ -50,7 +50,7 @@ Each app in the repository that deploys gets its own image, containing only what
 
 Stages separate the toolchain from the result. A build stage installs everything and produces the artifact; the runtime stage starts from a minimal base and copies in only the artifact and the runtime dependencies. Nothing else — no compiler, no test runner, no source, no development dependency. If the runtime stage can run the tests, it is carrying things it does not need.
 
-**Enforcement:** review — a single-stage Dockerfile is visible in the diff; image scanning catches some of what it carries ([INFRA_15](../index.html#INFRA_15)).
+**Enforcement:** review — a single-stage Dockerfile is visible in the diff; image scanning is a candidate guardrail for what it carries ([INFRA_15](../index.html#INFRA_15)).
 
 ### [R3](#R3) and [R4](#R4) Layer order, frozen installs, pruned runtime
 
@@ -59,9 +59,7 @@ The order is fixed by how often each input changes:
 **Do**
 
 ```
-COPY package.json bun.lock ./
-COPY apps/api/package.json apps/api/
-COPY packages/*/package.json packages/
+COPY --from=pruner /app/out/json/ .
 RUN bun install --frozen-lockfile      # cached until a manifest changes
 
 COPY . .                                # changes on every commit
@@ -106,7 +104,7 @@ The process runs as a non-root user created in the image, owning only what it mu
 
 Secrets never enter the image. Not as build arguments — those persist in layer metadata and survive the line that used them — not as copied files, and not baked into a configuration. Configuration arrives at run time from the platform ([INFRA_07#R4](../index.html#INFRA_07)). Where a build genuinely needs a credential, use the builder's secret mounting so it never lands in a layer.
 
-**Enforcement:** partly automated — image scanning detects a root user and many embedded credentials, where it runs ([INFRA_15](../index.html#INFRA_15)); the build-argument path is review.
+**Enforcement:** review — image scanning that would catch a root user and embedded credentials is a candidate guardrail ([INFRA_15](../index.html#INFRA_15)).
 
 ### [R7](#R7) The build context
 
@@ -138,7 +136,7 @@ Finally, the runtime image has a stated size budget. Images grow silently — a 
 
 Containerizing the API app.
 
-The Dockerfile has three stages. A base stage pins the runtime version — the same one the repository declares, so the image and a developer's machine agree ([INFRA_02](../index.html#INFRA_02)). A build stage copies every workspace manifest and the lockfile, installs frozen, then copies the sources and builds only the API's task graph ([R3](#R3), [R4](#R4)). A runtime stage starts from the minimal base, creates a non-root user, and copies in the build output plus runtime dependencies ([R2](#R2), [R5](#R5)).
+The Dockerfile prunes to the API's subset, installs frozen from the pruned manifests and lockfile, then copies the pruned sources and builds only the API's task graph. A base stage pins the runtime version — the same one the repository declares, so the image and a developer's machine agree ([INFRA_02](../index.html#INFRA_02)) ([R3](#R3), [R4](#R4)). A runtime stage starts from the minimal base, creates a non-root user, and copies in the build output plus runtime dependencies ([R2](#R2), [R5](#R5)).
 
 The ignore file keeps installed dependencies, git history, build outputs and environment files out of the context ([R7](#R7)). The image contains no configuration: the database URL and every secret arrive at run time from the platform ([R6](#R6), [INFRA_07](../index.html#INFRA_07)).
 
@@ -153,7 +151,7 @@ Then the size budget is exceeded. The cause is that the build stage's pruning mi
 - One image per deployable ([R1](#R1)), built in stages with no toolchain in the runtime ([R2](#R2)).
 - The build prunes to the app's subset; manifests precede source; the install is frozen and pruned ([R3](#R3), [R4](#R4)).
 - The process runs as a non-root user ([R5](#R5)).
-- No secret in a build argument, a layer, or the image ([R6](#R6)).
+- Build-time credentials use a secret mount only ([R6](#R6)).
 - The ignore file excludes dependencies, history, build output and environment files ([R7](#R7)).
 - The image is tagged with its commit; no deployment references a moving tag ([R8](#R8)).
 - Compose defines services only, at deployed versions, each with a health check ([R9](#R9)).

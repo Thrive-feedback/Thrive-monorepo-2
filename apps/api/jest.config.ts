@@ -8,6 +8,9 @@ import { nestConfig } from '@repo/jest-config';
 export default {
   ...nestConfig,
   testPathIgnorePatterns: ['\\.integration-spec\\.ts$'],
+  // Surfaces any test that only passes because another ran first.
+  randomize: true,
+  setupFilesAfterEnv: ['<rootDir>/../test/support/reset-ids.ts'],
   moduleNameMapper: {
     '^@app/(.*)$': '<rootDir>/$1',
     '^@test/(.*)$': '<rootDir>/../test/$1',

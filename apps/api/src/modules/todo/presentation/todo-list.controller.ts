@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   HttpCode,
   HttpStatus,
   Param,
@@ -13,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiHeader, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import { ReadActivityPort } from '@app/modules/activity-log';
+import { ValidatedHeader } from '@app/shared/presentation/validated-header.decorator';
 import { AddTodoItemUseCase } from '../application/use-cases/add-todo-item.use-case';
 import { ArchiveTodoListUseCase } from '../application/use-cases/archive-todo-list.use-case';
 import { BulkCompleteTodoItemsUseCase } from '../application/use-cases/bulk-complete-todo-items.use-case';
@@ -22,6 +21,7 @@ import { CreateTodoListUseCase } from '../application/use-cases/create-todo-list
 import { DeleteTodoListUseCase } from '../application/use-cases/delete-todo-list.use-case';
 import { GetTodoListUseCase } from '../application/use-cases/get-todo-list.use-case';
 import { ListTodoItemsUseCase } from '../application/use-cases/list-todo-items.use-case';
+import { ListTodoListActivityUseCase } from '../application/use-cases/list-todo-list-activity.use-case';
 import { ListTodoListsUseCase } from '../application/use-cases/list-todo-lists.use-case';
 import { RemoveTodoItemUseCase } from '../application/use-cases/remove-todo-item.use-case';
 import { RenameTodoItemUseCase } from '../application/use-cases/rename-todo-item.use-case';
@@ -32,6 +32,7 @@ import {
   AddTodoItemResponseDto,
   BulkCompleteItemsRequestDto,
   BulkCompleteItemsResponseDto,
+  ListActivityQueryDto,
   ListActivityResponseDto,
   ListTodoItemsQueryDto,
   ListTodoItemsResponseDto,
@@ -47,8 +48,7 @@ import {
   TodoListDetailResponseDto,
   TodoListParamsDto,
 } from './dto/todo-list.dto';
-
-const ACTIVITY_PAGE_SIZE = 20;
+import { idempotencyKeySchema } from './dto/shared.schema';
 
 /**
  * BE_07 R1 — the path names a resource, as a plural noun. The four `POST` routes that
@@ -78,8 +78,7 @@ export class TodoListController {
     private readonly reopenTodoItem: ReopenTodoItemUseCase,
     private readonly removeTodoItem: RemoveTodoItemUseCase,
     private readonly bulkCompleteTodoItems: BulkCompleteTodoItemsUseCase,
-    // BE_03 R10 — the port, never `ActivityLogModule`, which is named only in todo.module.ts.
-    private readonly readActivity: ReadActivityPort,
+    private readonly listTodoListActivity: ListTodoListActivityUseCase,
   ) {}
 
   /* ── lists ──────────────────────────────────────────────────────────────── */
@@ -104,7 +103,7 @@ export class TodoListController {
   @ZodResponse({ status: HttpStatus.CREATED, type: CreateTodoListResponseDto })
   async create(
     @Body() body: CreateTodoListRequestDto,
-    @Headers('idempotency-key') idempotencyKey?: string,
+    @ValidatedHeader('idempotency-key', idempotencyKeySchema) idempotencyKey?: string,
   ) {
     return this.createTodoList.execute({ title: body.title, idempotencyKey });
   }
@@ -217,8 +216,7 @@ export class TodoListController {
   @Get(':listId/activity')
   @ApiOperation({ summary: 'Read recent activity for a list' })
   @ZodResponse({ status: HttpStatus.OK, type: ListActivityResponseDto })
-  async activity(@Param() params: TodoListParamsDto) {
-    // BE_03 R6 — plain data comes back across the port; no entity of another module.
-    return { items: await this.readActivity.recentFor(params.listId, ACTIVITY_PAGE_SIZE) };
+  async activity(@Param() params: TodoListParamsDto, @Query() query: ListActivityQueryDto) {
+    return this.listTodoListActivity.execute({ listId: params.listId, ...query });
   }
 }

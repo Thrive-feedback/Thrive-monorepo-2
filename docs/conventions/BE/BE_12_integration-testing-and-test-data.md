@@ -3,8 +3,8 @@ title: "BE_12 · Integration testing & test data"
 id: "BE_12"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [BE_11, BE_06]
 see_also: [INFRA_12]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_12]
 
 # [BE] Integration testing & test data
 
-`P1` · `BE_12` · `draft` · `updated 2026-09-19`
+`P1` · `BE_12` · `stable` · `updated 2026-09-28`
 
 **Open when:** the thing you wrote touches the database, Redis, or a module boundary.
 
@@ -68,7 +68,7 @@ Each test creates its own rows with its own identifiers and cleans up afterwards
 
 The habit to break is the shared fixture loaded once for the file. It saves a few seconds and produces the worst failure mode in a test suite: a test that passes alone and fails in the suite, or the reverse, with no relationship to the change that revealed it.
 
-**Enforcement:** partly automated — running the suite in a randomized order surfaces most violations; nothing checks cleanup itself.
+**Enforcement:** partly automated — the integration runner randomizes test order, which surfaces most violations; nothing checks cleanup itself.
 
 ### [R5](#R5) Through the port
 
@@ -115,7 +115,7 @@ const queries = await countQueries(() => listArticles.execute({ page: 1, limit: 
 expect(queries).toBe(3);   // page + total + one batched author lookup
 ```
 
-**Enforcement:** review — the counter is a test helper someone has to write; it is worth writing once for the whole suite.
+**Enforcement:** review — the counter is one helper shared by the whole suite; whether a read over a collection asserts a count is checked in review.
 
 ### [R9](#R9) One place owns test data
 
@@ -129,7 +129,7 @@ Values are deterministic. Randomly generated data produces failures that cannot 
 
 These tests are named and configured apart from unit tests, so that the fast suite runs on a machine with no services, on every save, in seconds — and the slow one runs as its own pipeline job with its containers ([INFRA_09](../index.html#INFRA_09)). Mixing them means the fast suite is only as fast, and only as available, as the slowest thing it touches.
 
-**Enforcement:** review — the file-name pattern is a runner configuration, which makes this automatic the moment the runner is configured for it ([INFRA_09](../index.html#INFRA_09)).
+**Enforcement:** partly automated — the unit runner config ignores the integration file-name pattern and the integration config runs only that pattern, so the split holds by name; whether a test that touches a store carries the suffix is review.
 
 ## Worked example
 
@@ -165,7 +165,7 @@ What is not here: whether an article may be published, who may publish it, what 
 
 ## Open questions
 
-- [R8](#R8) needs a query-counting helper that does not exist; until it is written, the rule is aspirational and the N+1 guardrail in [BE_06](../index.html#BE_06) has no teeth at any level.
+- Nothing checks that a read over a collection has an [R8](#R8) assertion at all; until something does, the N+1 guardrail in [BE_06](../index.html#BE_06) holds only where someone wrote the test.
 - Where shared builders physically live — beside the module, or in one test-support package shared with the acceptance suite — is not decided, and deciding it late means moving every fixture.
 - Whether migrations are run per suite or a schema snapshot is loaded is a speed/fidelity trade-off with no answer here; it interacts with [BE_15](../index.html#BE_15) and belongs to an ADR once migrations exist.
 

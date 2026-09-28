@@ -6,8 +6,6 @@ import {
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
 import { ConfigModule } from './config/config.module';
 import { TodoModule } from './modules/todo';
 import { SharedModule } from './shared/shared.module';
@@ -16,9 +14,7 @@ import { CorrelationIdMiddleware } from './shared/presentation/correlation-id.mi
 
 @Module({
   imports: [ConfigModule, SharedModule, TodoModule],
-  controllers: [AppController],
   providers: [
-    AppService,
     // Every value entering from outside is validated here, so a use case can assume its
     // input already matched a schema.
     { provide: APP_PIPE, useClass: ZodValidationPipe },

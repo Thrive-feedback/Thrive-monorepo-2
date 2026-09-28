@@ -3,8 +3,8 @@ title: "BE_08 · DTOs, validation & serialization"
 id: "BE_08"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [BE_07]
 see_also: [GEN_11]
 ---
@@ -13,7 +13,7 @@ see_also: [GEN_11]
 
 # [BE] DTOs, validation & serialization
 
-`P1` · `BE_08` · `draft` · `updated 2026-09-19`
+`P1` · `BE_08` · `stable` · `updated 2026-09-28`
 
 **Open when:** data enters or leaves the API.
 
@@ -29,10 +29,10 @@ If you read nothing else:
 4. <a id="R4"></a>Reject or strip unknown fields. A use case receives validated data or nothing.
 5. <a id="R5"></a>Never let a domain entity or a persistence record reach the wire.
 6. <a id="R6"></a>Choose every exposed field deliberately. Never spread an object into a response.
-7. <a id="R7"></a>Keep business rules out of the schema, and format checks out of the domain.
-8. <a id="R8"></a>Normalize once, at the boundary. Nothing downstream re-parses or re-trims.
-9. <a id="R9"></a>A DTO holds data only — no methods, no framework or persistence concerns, no defaults that carry business meaning.
-10. <a id="R10"></a>One request DTO and one response DTO per operation, named after it. Never reuse a DTO across operations.
+7. <a id="R7"></a>Keep business rules out of the schema; never drop a value object's own checks because a schema exists.
+8. <a id="R8"></a>Normalize at the boundary. Downstream, only a value object's factory may normalize again.
+9. <a id="R9"></a>A DTO holds data only — no methods, no persistence concerns, no defaults that carry business meaning.
+10. <a id="R10"></a>Give each operation its own body, query and response DTO, named after it. Only a path-parameter DTO may be shared, by routes that declare the same path parameters.
 
 ## Why
 
@@ -46,7 +46,7 @@ Validation is the other half. Everything from outside is hostile until parsed ([
 
 The request DTO is what a client is permitted to send. The domain model is what the business is ([BE_04](../index.html#BE_04)). The response model is what a client is permitted to see. They overlap today and will not tomorrow: the first grows optional fields for clients, the second grows internal state, the third grows fields assembled from several sources.
 
-Request DTOs live in `application/dto/request/`, response DTOs in `application/dto/response/` ([BE_01](../index.html#BE_01)). Neither is a domain type, and neither is a persistence record.
+Where each lives is [BE_01](../index.html#BE_01)'s. Neither is a domain type, and neither is a persistence record.
 
 **Enforcement:** review.
 
@@ -127,7 +127,7 @@ The second version also fails loudly when a field disappears, which is the behav
 
 The schema decides whether the input is *well formed*: type, length bounds, format, enumerated membership, required and optional. The domain decides whether it is *allowed*: whether this title may be used, whether this transition is legal, whether this actor may do it ([BE_04](../index.html#BE_04)).
 
-Putting a business rule in a schema hides it from every non-HTTP caller and makes it unavailable to the model. Putting format checking in the domain forces every entity to defend against strings that should never have got that far. The dividing question: would this check still make sense if the operation arrived from a queue rather than a request? If yes, it is the domain's.
+Putting a business rule in a schema hides it from every non-HTTP caller and makes it unavailable to the model. A value object may repeat a format check; it protects callers that never pass a schema ([BE_04](../index.html#BE_04)). The dividing question: can the check be decided from the value alone? If yes, the schema makes it; if it needs state, the store or the actor, only the domain can.
 
 **Enforcement:** review.
 
@@ -172,14 +172,13 @@ One boundary is easy to forget. The same article is also published by a schedule
 - No entity or persistence record appears in a response ([R5](#R5)).
 - Every response field is written out explicitly; nothing is spread ([R6](#R6)).
 - Schemas check shape; the domain checks rules ([R7](#R7)).
-- Normalization happens once, in the schema ([R8](#R8)).
+- Normalization happens at the boundary, and again only in a value object's factory ([R8](#R8)).
 - DTOs carry no behavior ([R9](#R9)) and are not shared across operations ([R10](#R10)).
 
 ## Open questions
 
-- Where the schemas physically live once the contract direction in `PROJECT.md` §5 is settled is not decided here: a shared package makes the client reuse them, generation from the specification makes the API the source. [GEN_08](../index.html#GEN_08) owns the decision; this document's rules hold either way.
 - [R5](#R5) and [R6](#R6) are the rules whose breach is a privacy incident rather than a bug, and both are review-only. A response-shape assertion in the acceptance suite ([BE_13](../index.html#BE_13)) would be cheap and is not yet written.
-- Nothing checks that a schema's bounds exist at all, so an unbounded array or string can ship silently ([R4](#R4)).
+- Nothing checks that a schema's bounds exist at all, so an unbounded array or string can ship silently ([R7](#R7)).
 
 ## Related
 

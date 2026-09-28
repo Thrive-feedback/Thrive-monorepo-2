@@ -3,7 +3,6 @@ import { Clock } from '@app/shared/application/clock.port';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
 import { ActivityStore } from '../port/activity-store.port';
 import type { RecordActivityCommand } from '../../domain/types/activity.types';
-import { RecordActivityPort } from '../../domain/port/record-activity.port';
 
 /**
  * BE_05 R1 — one use case, one public method.
@@ -12,22 +11,25 @@ import { RecordActivityPort } from '../../domain/port/record-activity.port';
  *   layer that enforces nothing.
  */
 @Injectable()
-export class RecordActivityUseCase extends RecordActivityPort {
+export class RecordActivityUseCase {
   constructor(
     private readonly store: ActivityStore,
     private readonly clock: Clock,
     private readonly idGenerator: IdGenerator,
-  ) {
-    super();
-  }
+  ) {}
 
-  async record(command: RecordActivityCommand): Promise<void> {
-    await this.store.append({
-      id: this.idGenerator.next(),
-      subjectId: command.subjectId,
-      action: command.action,
-      detail: command.detail ?? null,
-      occurredAt: this.clock.now().toISOString(),
-    });
+  /** Records every command in one write, so a batch costs one round trip (BE_06 R9). */
+  async execute(commands: readonly RecordActivityCommand[]): Promise<void> {
+    const occurredAt = this.clock.now().toISOString();
+
+    await this.store.appendAll(
+      commands.map((command) => ({
+        id: this.idGenerator.next(),
+        subjectId: command.subjectId,
+        action: command.action,
+        detail: command.detail ?? null,
+        occurredAt,
+      })),
+    );
   }
 }

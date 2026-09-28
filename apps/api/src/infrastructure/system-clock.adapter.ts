@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Clock } from '../application/clock.port';
+import { Clock } from '@app/shared/application/clock.port';
 
 /** BE_02 R6 — the outward end of {@link Clock}. */
 @Injectable()
