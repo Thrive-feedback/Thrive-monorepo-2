@@ -3,14 +3,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 /**
- * GEN_08 R2 — the OpenAPI document is *generated from* the API app, never hand-written.
- * `cleanupOpenApiDoc` resolves the zod schemas the DTOs declared, so BE_07 R10's "declare
- * every route's types so they reach the specification" holds without a second description
- * of the same shapes.
+ * The OpenAPI document is *generated from* the API app, never hand-written.
+ * `cleanupOpenApiDoc` resolves the zod schemas the DTOs declared, so every route's types
+ * reach the specification without a second description of the same shapes.
  *
- * GEN_16 R5 — it is built here rather than in `main.ts`, because two callers need it: the
- * running app serves it at `/openapi.json`, and `scripts/emit-openapi.ts` writes it to
- * disk for the generator. One description, two consumers.
+ * Built here rather than in `main.ts` because two callers need it: the running app serves
+ * it at `/openapi.json`, and `scripts/emit-openapi.ts` writes it to disk for the generator.
  */
 export function buildOpenApiDocument(
   app: INestApplication,

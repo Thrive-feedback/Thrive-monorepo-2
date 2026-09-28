@@ -3,8 +3,8 @@ title: "FE_12 · SEO standard"
 id: "FE_12"
 area: "FE"
 tier: "P1"
-status: "draft"
-updated: "2026-08-31"
+status: "stable"
+updated: "2026-09-28"
 requires: [FE_11]
 see_also: [FE_20]
 ---
@@ -13,7 +13,7 @@ see_also: [FE_20]
 
 # [FE] SEO standard
 
-`P1` · `FE_12` · `draft` · `updated 2026-08-31`
+`P1` · `FE_12` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are adding a page that search engines should see.
 
@@ -32,7 +32,7 @@ If you read nothing else:
 7. <a id="R7"></a>Give every page a social preview, from the same source as its metadata.
 8. <a id="R8"></a>Add structured data only where the page really is that thing, and keep it consistent with what the page shows.
 9. <a id="R9"></a>Where a page exists in more than one language or region, declare the alternates in both directions.
-10. <a id="R10"></a>One `h1` per page, headings in order, and links that say where they go.
+10. <a id="R10"></a>Give every page one `h1`, and make it name what the page's title names.
 
 ## Why
 
@@ -94,9 +94,9 @@ Structured data is a claim about what the page *is* — a product, an article, a
 
 Where the same content exists per language or region, each version lists all of them, including itself, and every one points back — one-directional declarations are ignored. Which locales exist and how routing expresses them is [FE_23](../index.html#FE_23)'s.
 
-The last rule is the oldest and the most often broken by component composition: one `h1` per page, heading levels in order with none skipped, and link text that says where it goes. These are accessibility rules first ([FE_06](../index.html#FE_06)) and they are the same rules search engines read the page with — which is the useful thing to know about search: almost everything it rewards is something a person using a screen reader needed anyway.
+The last rule is the one most often broken by component composition: a section that picks an `h1` for its size gives the page two topics, and an `h1` that disagrees with the title gives it two names. Heading order and link text are accessibility requirements that [FE_06](../index.html#FE_06) owns, and they are the same rules search engines read the page with — which is the useful thing to know about search: almost everything it rewards is something a person using a screen reader needed anyway.
 
-**Enforcement:** review — heading order and empty link text are checkable by accessibility linting ([FE_06](../index.html#FE_06)).
+**Enforcement:** review — a second `h1` in a rendered page is detectable and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
 ## Worked example
 
@@ -122,7 +122,7 @@ The detail page adds product structured data — name, image, price, availabilit
 - The social preview derives from the page metadata ([R7](#R7)).
 - Structured data is true, complete for what it claims, and consistent with the page ([R8](#R8)).
 - Locale alternates are declared in both directions ([R9](#R9)).
-- One `h1`, headings in order, links that name their destination ([R10](#R10)).
+- One `h1`, naming what the title names ([R10](#R10)).
 
 ## Open questions
 

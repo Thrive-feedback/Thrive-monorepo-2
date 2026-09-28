@@ -3,8 +3,8 @@ title: "BE_13 · Gherkin step definitions & API scenarios"
 id: "BE_13"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [GEN_10, BE_12]
 see_also: [FE_15]
 ---
@@ -13,7 +13,7 @@ see_also: [FE_15]
 
 # [BE] Gherkin step definitions & API scenarios
 
-`P1` · `BE_13` · `draft` · `updated 2026-09-19`
+`P1` · `BE_13` · `stable` · `updated 2026-09-28`
 
 **Open when:** a scenario from `features/` has to run against the API.
 
@@ -24,11 +24,11 @@ Implementing steps against the running API, step reuse, given-state setup, envir
 If you read nothing else:
 
 1. <a id="R1"></a>Drive an `@api` scenario over HTTP against the running application. Never call a use case, repository or service directly.
-2. <a id="R2"></a>Keep every HTTP detail inside the step definition. Routes, payloads, headers and status codes never appear in a feature file.
+2. <a id="R2"></a>Keep every HTTP detail — route, payload, header, status code — inside the step definition, so the feature file can meet [GEN_10](../index.html#GEN_10) R2.
 3. <a id="R3"></a>Establish given-state through the API where an endpoint exists, and through shared builders where none does.
 4. <a id="R4"></a>One implementation per step phrase, shared across features. Never duplicate a phrase to change its behavior.
 5. <a id="R5"></a>Pass state between steps through a per-scenario context. No module-level mutable state.
-6. <a id="R6"></a>Give each scenario its own actors and data, with unique identifiers, and remove them afterwards.
+6. <a id="R6"></a>Give each scenario its own actors and data — unique identifiers in a shared environment, or an environment of its own — and remove them afterwards.
 7. <a id="R7"></a>Assert the product outcome. Assert response mechanics only when the contract itself is the subject.
 8. <a id="R8"></a>Never read the database to assert something the API can report.
 9. <a id="R9"></a>Run the application wired as it ships. Substitute only third-party providers, at their ports.
@@ -48,7 +48,7 @@ It is also the slowest suite you own, and its cost grows with every scenario. Th
 
 A step calls the API the way a client does. Reaching into the container to invoke a use case skips exactly the things this suite exists to check — the route, the guard, the pipe, the filter — while looking like a passing test.
 
-The application under test is started once for the suite, against real backing services in containers ([BE_12](../index.html#BE_12)). Whether the client is an HTTP library or the framework's test client does not matter, as long as the request travels the real pipeline.
+The application under test runs against real backing services, never an imitation of them ([BE_12](../index.html#BE_12)). Whether the client is an HTTP library or the framework's test client does not matter, as long as the request travels the real pipeline.
 
 **Enforcement:** review — an import of anything under `src/modules/**/application/**` in a step file is checkable and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
@@ -90,19 +90,19 @@ Where no endpoint can produce the state (a record only a migration or another sy
 
 ### [R4](#R4) One phrase, one implementation
 
-Step reuse is what keeps the suite from becoming a thousand bespoke functions. Before writing a step, search for the phrase; if a near-identical one exists, use it rather than adding a variant that differs by a word. Two phrasings of the same action drift, and nobody discovers it until one is fixed.
+Step reuse is what keeps the suite from becoming a thousand bespoke functions. Exact reuse of wording is [GEN_10](../index.html#GEN_10)'s rule (R6); this is its other half — the phrase has one definition, and every feature calls that one.
 
 The corollary is that a step is written to be reusable: parameterized by the actor and the subject, without assumptions about which scenario is running.
 
-**Enforcement:** review.
+**Enforcement:** partly automated — the runner fails on two definitions matching the same step text; a near-duplicate phrase is review.
 
 ### [R5](#R5) and [R6](#R6) A scenario owns its world
 
 Each scenario gets a fresh context object holding its actors, the identifiers it created, and the last response. Steps read and write only that. Module-level variables shared between scenarios produce order-dependent failures that are almost impossible to attribute ([BE_12](../index.html#BE_12)).
 
-Data is unique per scenario — generated identifiers, generated email addresses — so scenarios can run beside each other, and it is removed afterwards. Independence is [GEN_10](../index.html#GEN_10)'s rule; this is how it is honored at this level.
+Data is unique per scenario — generated identifiers and email addresses in a shared environment, or a fresh environment per scenario — so scenarios can run beside each other, and it is removed afterwards. Independence is [GEN_10](../index.html#GEN_10)'s rule; this is how it is honored at this level.
 
-**Enforcement:** partly automated — running scenarios in a randomized order surfaces shared state; cleanup itself is review.
+**Enforcement:** partly automated — the runner executes scenarios in a random order, which surfaces shared state; cleanup itself is review.
 
 ### [R7](#R7) and [R8](#R8) Assert what the product promised
 
@@ -124,7 +124,7 @@ Third-party providers are the exception, substituted at their ports ([BE_03](../
 
 ### [R10](#R10) Main flows only
 
-Two to five scenarios per capability, covering what the product promises: the happy path, and the refusals that are themselves business rules a stakeholder would name. Every additional branch — each invariant, each edge of a transition table — belongs in the fast suite where it costs milliseconds ([BE_11](../index.html#BE_11)).
+How many scenarios a capability gets is [GEN_10](../index.html#GEN_10)'s rule (R8); at this level, cover what the product promises: the happy path, and the refusals that are themselves business rules a stakeholder would name. Every additional branch — each invariant, each edge of a transition table — belongs in the fast suite where it costs milliseconds ([BE_11](../index.html#BE_11)).
 
 The test for a proposed scenario: would a stakeholder recognize it as a promise the product makes? If it only makes sense to someone who has read the code, it is a unit test wearing a costume.
 
@@ -170,7 +170,7 @@ The browser half of this feature — if the same capability is also exercised th
 - Preconditions use the API where an endpoint exists ([R3](#R3)).
 - The step phrase is reused, not duplicated ([R4](#R4)).
 - State passes through the scenario context only ([R5](#R5)).
-- Data is unique per scenario and cleaned up ([R6](#R6)).
+- Data is isolated per scenario and cleaned up ([R6](#R6)).
 - Assertions are product outcomes, except where the contract is the subject ([R7](#R7), [R8](#R8)).
 - The application is wired as it ships; only third-party providers are substituted ([R9](#R9)).
 - The capability has a handful of scenarios, not a branch inventory ([R10](#R10)).

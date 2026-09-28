@@ -3,8 +3,8 @@ title: 'FE_10 · Typed API client & contract consumption'
 id: 'FE_10'
 area: 'FE'
 tier: 'P1'
-status: 'draft'
-updated: '2026-09-22'
+status: 'stable'
+updated: '2026-09-28'
 requires: [GEN_08, FE_09]
 ---
 
@@ -12,7 +12,7 @@ requires: [GEN_08, FE_09]
 
 # [FE] Typed API client & contract consumption
 
-`P1` · `FE_10` · `draft` · `updated 2026-09-22`
+`P1` · `FE_10` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are calling the backend, or the contract changed under you.
 
@@ -24,14 +24,14 @@ If you read nothing else:
 
 1. <a id="R1"></a>The generated client is the only way this app talks to the backend.
 2. <a id="R2"></a>Never write a wire type by hand, and never call the API with a raw request.
-3. <a id="R3"></a>Generated files are build output: committed, regenerated, never edited.
+3. <a id="R3"></a>Never copy, re-declare or edit a generated type; derive from it ([GEN_08#R4](../index.html#GEN_08)).
 4. <a id="R4"></a>Construct the client once per runtime, from configuration. Components never build one.
 5. <a id="R5"></a>Send a correlation id on every request, and surface it when something fails.
 6. <a id="R6"></a>Map wire shapes to view models at the boundary. No component renders a wire type.
 7. <a id="R7"></a>Branch on the error code from the catalogue. Never on a message or a raw status.
 8. <a id="R8"></a>Keep credentials on the server. A browser request carries only what the browser is allowed to hold.
-9. <a id="R9"></a>When the contract and the client disagree, regenerate. Never patch the client.
-10. <a id="R10"></a>Land a contract bump before the code that uses it, in its own change.
+9. <a id="R9"></a>When a regeneration breaks the build, fix the mapper. Never the generated file, never a cast.
+10. <a id="R10"></a>Commit a regeneration with only the fixes it forces. No feature work in the same change.
 
 ## Why
 
@@ -70,9 +70,9 @@ Because reads happen on the server by default ([FE_09](../index.html#FE_09)), th
 
 Every request carries a correlation id, generated where the work starts and propagated onward; the backend accepts it, threads it through, and returns it ([GEN_08#R6](../index.html#GEN_08), [BE_09](../index.html#BE_09)). Put it in the client so no call site can forget.
 
-Then use it: when a request fails, the id is what a user can quote and what turns "it broke" into one log search. Surface it in the error state — small, copyable, not a stack trace ([FE_18](../index.html#FE_18) owns what the user sees).
+Then use it: when a request fails, the id is what a user can quote and what turns "it broke" into one log search. Surface it in the error state — small, copyable, not a stack trace ([FE_18](../index.html#FE_18) owns what the user sees). A read that fails during a server render reaches the error boundary sanitized, with only the framework's digest; log the correlation id against that digest on the server, and surface the digest.
 
-**Enforcement:** review — a header set centrally is either there or not, and is checkable in the client's tests ([FE_14](../index.html#FE_14)).
+**Enforcement:** partly automated — the client's test suite asserts the header is set ([FE_14](../index.html#FE_14)); that a failure surfaces it is review.
 
 ### [R6](#R6) Map at the boundary
 
@@ -109,7 +109,7 @@ When the client and the contract disagree, the fix is to regenerate. Patching th
 
 A contract bump lands in its own change, before the code that consumes it ([GEN_08#R8](../index.html#GEN_08)). That way the regeneration's compile errors are the complete list of what the change affects, reviewed as a unit rather than mixed into feature work. Additions compile silently; a removal, rename or narrowing surfaces as type errors, which is exactly the value being bought — and it is why nobody may work around one with an assertion or a cast ([GEN_07#R4](../index.html#GEN_07)).
 
-**Enforcement:** partly automated — the type-checker fails on a breaking regeneration; that the client was regenerated rather than patched is review.
+**Enforcement:** review — the type-checker lists what a breaking regeneration affects, but nothing detects a patched generated file or a regeneration mixed into feature work; a regenerate-and-diff check is a candidate guardrail ([INFRA_09](../index.html#INFRA_09)).
 
 ## Worked example
 
@@ -131,13 +131,14 @@ Then the backend renames a field. The contract regenerates in its own change ([R
 - Requests carry a correlation id, and failures surface it ([R5](#R5)).
 - Components receive view models, never wire types ([R6](#R6)).
 - Error handling branches on codes ([R7](#R7)).
-- The client was regenerated rather than patched ([R9](#R9)), in its own change ([R10](#R10)).
+- A breaking regeneration was fixed in the mapper, never in the generated file or with a cast ([R9](#R9)), and carries only the fixes it forces ([R10](#R10)).
 
 ## Open questions
 
-- Where view-model mappers live — beside the client, beside the feature, or beside the route — is undecided, and the first two features will choose differently. It should be settled with [FE_01](../index.html#FE_01)'s ladder in mind. The reference implementation puts them beside the client, in `lib/api/`, because the mapper is what a contract change lands on and keeping it next to the client keeps that blast radius one directory wide — one data point, not a decision.
+- Where view-model mappers live — beside the client, beside the feature, or beside the route — is undecided, and the first two features will choose differently. It should be settled with [FE_01](../index.html#FE_01)'s ladder in mind.
+- Where the contract does not describe the error body or enumerate its codes, the client's error envelope is hand-written and codes are untyped literals; [R2](#R2) and [R7](#R7) hold fully only once the API publishes both ([BE_09](../index.html#BE_09)).
 - Nothing here says how a client-side call, where one is justified ([FE_09#R9](../index.html#FE_09)), obtains the correlation id started on the server. The two halves are meant to share one id per user action, and the mechanism is unwritten.
-- ~~Contract generation depends on an unresolved decision in `PROJECT.md` about which side owns the contract in this repository today.~~ Closed by [ADR 0006](../../adr/0006-the-contract-is-generated-from-the-api-app.md): the client is generated and committed. [R2](#R2) is no longer at risk of being broken quietly, but nothing yet fails a build when the committed output is stale — the drift check is [INFRA_09](../index.html#INFRA_09)'s and does not exist.
+- A stale or patched committed output is caught only by review until a pipeline runs [INFRA_09](../index.html#INFRA_09)'s drift check.
 
 ## Related
 

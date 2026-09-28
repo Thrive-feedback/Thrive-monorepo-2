@@ -1,7 +1,6 @@
 /**
- * The landing route. Deliberately empty of product: `GEN_03` R5 requires the web app to
- * render its own page once the example is gone, and `PROJECT.md` §2 says to solve today's
- * problem rather than the general case. The first real route replaces this.
+ * The landing route, deliberately empty of product: the web app renders a page of its own,
+ * and nothing is built ahead of the first real feature. The first real route replaces this.
  */
 export default function Home() {
   return (

@@ -7,6 +7,6 @@
     "./base": "./base.json"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14"
+    "@biomejs/biome": "catalog:"
   }
 }

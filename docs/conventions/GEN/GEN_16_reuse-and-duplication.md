@@ -3,8 +3,8 @@ title: "GEN_16 · Reuse, duplication & deleting what you replaced"
 id: "GEN_16"
 area: "GEN"
 tier: "P1"
-status: "draft"
-updated: "2026-08-31"
+status: "stable"
+updated: "2026-09-28"
 requires: [GEN_01]
 see_also: [GEN_15, FE_01, BE_03]
 ---
@@ -13,7 +13,7 @@ see_also: [GEN_15, FE_01, BE_03]
 
 # [General] Reuse, duplication & deleting what you replaced
 
-`P1` · `GEN_16` · `draft` · `updated 2026-08-31`
+`P1` · `GEN_16` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are about to write a component, hook, util, type or constant — or your change replaces one.
 
@@ -27,11 +27,11 @@ If you read nothing else:
 2. <a id="R2"></a>Search for the concept — *duration*, *debounce*, *status*, *empty* — never for the file name you were going to create.
 3. <a id="R3"></a>State the outcome in the pull request: reused X, extended X with Y, or new because Z.
 4. <a id="R4"></a>Where a thing lives is decided by how many consumers it has today, never by reuse you expect.
-5. <a id="R5"></a>Write it once. At the second occurrence, extract it to the nearest common owner, in that same change.
+5. <a id="R5"></a>Write it once. At the second occurrence, extract it to the nearest common owner before the second use merges; a move out of another file is its own pull request ([GEN_15#R2](../index.html#GEN_15)).
 6. <a id="R6"></a>Never copy a shared thing's body to change one line. Extend it, or write something genuinely different.
 7. <a id="R7"></a>A thing that needs a flag to serve both callers is two things. Do not merge them.
 8. <a id="R8"></a>A change that replaces, generalizes, renames or moves something deletes the original in the same change. No alias, no re-export shim.
-9. <a id="R9"></a>Sweep what the deletion made dead: exports, props nobody passes, tests, fixtures, and every document the change falsified.
+9. <a id="R9"></a>Sweep what the deletion made dead: exports, props nobody passes, tests and fixtures — and fix the documents it falsified ([GEN_04#R7](../index.html#GEN_04)).
 10. <a id="R10"></a>Prove it is dead before deleting, and put the evidence in the pull request.
 
 ## Why
@@ -46,7 +46,7 @@ What works is discoverability. Where these conventions come from, primitives nam
 
 Three steps, before adding any component, hook, util, type, constant or transform.
 
-1. **The catalog.** Each shared package and directory documents what it holds and what each entry replaces ([GEN_07#R10](../index.html#GEN_07)). Look up the *symptom* — "truncate text to n lines", "color for a status" — not the name you had in mind.
+1. **The catalog.** Each package README says what the package owns and exports ([GEN_07#R10](../index.html#GEN_07)); read it, and the README of any shared directory that has one. Look up the *symptom* — "truncate text to n lines", "color for a status" — not the name you had in mind.
 2. **The shared entry points.** The shared package exports, and the shared directories of the app or service you are in.
 3. **The siblings.** The other features, routes and modules. This is the step people skip, and where the expensive duplicates come from.
 
@@ -79,7 +79,7 @@ Promotion is a step, not a rename: it is when a constant gains its exhaustive ke
 | Occurrence | What to do |
 | --- | --- |
 | First | Write it where it is used |
-| Second | Extract to the nearest common owner, in that change |
+| Second | Extract to the nearest common owner before the second use merges |
 | Third | It is a shared concept: promote a level, migrate the copies you touch |
 
 The second occurrence is the whole rule. Extracting then costs minutes with both call sites in front of you; later it costs an archaeology session. "I'll extract it at three" is how one debounce delay gets written ten times.
@@ -126,9 +126,9 @@ A page needs to show `2h 14m` under a video.
 
 The search runs in order ([R1](#R1)). The catalog has no duration entry; the shared entry points have nothing under *duration*, *length* or *format*. The third step — the siblings — hits: another feature already renders a runtime through a local `toHms`. That is the step that would have been skipped, and the one that found the answer.
 
-`toHms` had one consumer, so it lived there ([R4](#R4)). This change makes a second, so it moves now rather than in a follow-up ([R5](#R5)). The move tightens it: the promoted version takes seconds and returns a string, and the page-specific "ago" suffix stays at the call site that wanted it.
+`toHms` had one consumer, so it lived there ([R4](#R4)). This change makes a second, so it moves now rather than in a follow-up ([R5](#R5)), in a pull request of its own that changes no behavior ([GEN_15#R2](../index.html#GEN_15)) and deletes the old helper rather than aliasing or re-exporting it ([R8](#R8)). The feature change then extends it, and the page-specific "ago" suffix stays at the call site that wanted it.
 
-The pull request says `extended toHms with a compact option, promoted from the media feature` ([R3](#R3)), and the old helper is gone from the diff — not aliased, not re-exported ([R8](#R8)). Its test moved with it; the sibling test covering it in place is deleted rather than left duplicating the new one ([R9](#R9)).
+The feature's pull request says `extended toHms with a compact option` ([R3](#R3)). Its test moved with it; the sibling test covering it in place is deleted rather than left duplicating the new one ([R9](#R9)).
 
 Now the counter-example, because this document is as much about not extracting. The same page renders an empty state, and so does a page in another area — identical icon, heading, one line of copy. Extracting them buys a shared component with a flag for the call to action, then one for an optional heading, then one for tone: eight behaviors, two of them tested ([R7](#R7)). Different copy, audience and reason to exist: they stay separate, and a third with the same shape is the moment to look again ([R5](#R5)).
 

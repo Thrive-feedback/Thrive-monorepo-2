@@ -12,13 +12,13 @@
   },
   "dependencies": {
     "openapi-fetch": "^0.14.0",
-    "uuid": "^11.1.1"
+    "uuid": "catalog:"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14",
+    "@biomejs/biome": "catalog:",
     "@repo/biome-config": "workspace:*",
-    "@repo/typescript-config": "*",
-    "@types/node": "^22.19.3",
-    "typescript": "5.8.2"
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }

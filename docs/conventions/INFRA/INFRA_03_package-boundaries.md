@@ -3,8 +3,8 @@ title: "INFRA_03 · Package boundaries & dependency rules"
 id: "INFRA_03"
 area: "INFRA"
 tier: "P1"
-status: "draft"
-updated: "2026-08-31"
+status: "stable"
+updated: "2026-09-28"
 requires: [INFRA_01]
 see_also: [INFRA_06, BE_03, FE_13]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_06, BE_03, FE_13]
 
 # [Infra] Package boundaries & dependency rules
 
-`P1` · `INFRA_03` · `draft` · `updated 2026-08-31`
+`P1` · `INFRA_03` · `stable` · `updated 2026-09-28`
 
 **Open when:** you add a dependency between two workspaces, or an import feels like it crosses a line.
 
@@ -24,14 +24,14 @@ The allowed import graph — who may depend on whom — the public API through p
 If you read nothing else:
 
 1. <a id="R1"></a>The workspace graph is acyclic. A cycle is a defect, never a configuration to work around.
-2. <a id="R2"></a>Declare every workspace you import as a dependency of the workspace that imports it.
-3. <a id="R3"></a>Import a package through its entry point. Never reach past it into a file.
-4. <a id="R4"></a>Dependencies point toward the reusable end: apps depend on packages, never the reverse, and never on each other.
+2. <a id="R2"></a>Declare every workspace you use — by import, config extends, or tool reference — as a dependency of the workspace that uses it.
+3. <a id="R3"></a>Import a package only through a subpath its export map names; the deep-import ban itself is [GEN_07#R6](../index.html#GEN_07)'s.
+4. <a id="R4"></a>Hold the direction [INFRA_01#R6](../index.html#INFRA_01) sets in manifests as well as imports: no package declares an app, no app declares another.
 5. <a id="R5"></a>A package's export map is its API. Adding to it is a decision; removing from it is breaking.
 6. <a id="R6"></a>A shared package names no app and knows no app's configuration.
 7. <a id="R7"></a>A configuration package exports configuration. It runs nothing at import time.
-8. <a id="R8"></a>Reference an internal workspace by its workspace version, never by a published range.
-9. <a id="R9"></a>Depend on a package because you import it, not because it is convenient to have.
+8. <a id="R8"></a>Reference an internal workspace with the workspace: protocol (`workspace:*`), never a bare range such as `*`.
+9. <a id="R9"></a>Depend on a package because your code or configuration uses it, not because it is convenient to have.
 10. <a id="R10"></a>Never widen a boundary rule to make a change compile.
 
 ## Why
@@ -69,7 +69,7 @@ Two consequences. Anything reachable through the entry point is public and chang
 **Do**
 
 ```
-import { Button } from '@repo/ui';
+import { Button } from '@repo/ui/button';
 ```
 
 **Don't**
@@ -109,7 +109,7 @@ The reason is that these packages are imported by tools during startup, often be
 
 ### [R8](#R8) and [R9](#R9) Versions and honesty
 
-An internal workspace is referenced as a workspace dependency, so the local source is always what is used. A published version range for an internal package means a consumer can silently resolve to a registry copy that does not exist or is stale.
+An internal workspace is referenced with the workspace: protocol, so the local source is always what is used. A published version range for an internal package means a consumer can silently resolve to a registry copy that does not exist or is stale.
 
 And a dependency exists because code imports it. "We might use it", "it came with the template", and "the other app has it" are not reasons; each one is an install cost, an audit surface ([INFRA_15](../index.html#INFRA_15)), and a node in a graph someone will have to reason about.
 

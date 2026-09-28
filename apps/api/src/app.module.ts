@@ -10,8 +10,8 @@ import { ConfigModule } from './config/config.module';
   controllers: [AppController],
   providers: [
     AppService,
-    // BE_08 R2 — every value entering from outside is validated at the boundary, so a
-    // use case can assume its input already matched a schema.
+    // Every value entering from outside is validated here, so a use case can assume its
+    // input already matched a schema.
     { provide: APP_PIPE, useClass: ZodValidationPipe },
   ],
 })

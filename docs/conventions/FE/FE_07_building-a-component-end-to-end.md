@@ -3,8 +3,8 @@ title: 'FE_07 · Building a component end to end'
 id: 'FE_07'
 area: 'FE'
 tier: 'P1'
-status: 'draft'
-updated: '2026-09-22'
+status: 'stable'
+updated: '2026-09-28'
 requires: [FE_06]
 see_also: [FE_14, FE_21]
 ---
@@ -13,7 +13,7 @@ see_also: [FE_14, FE_21]
 
 # [FE] Building a component end to end
 
-`P1` · `FE_07` · `draft` · `updated 2026-09-22`
+`P1` · `FE_07` · `stable` · `updated 2026-09-28`
 
 **Open when:** you have been handed a Figma frame and told to build it.
 
@@ -25,11 +25,11 @@ If you read nothing else:
 
 1. <a id="R1"></a>Search for the component before you design one. The frame is a request, not proof that nothing exists.
 2. <a id="R2"></a>Reconcile every value in the frame against the tokens before writing a line, and raise the ones that do not resolve.
-3. <a id="R3"></a>Decide the atomic level from what the component is allowed to know, and put it where that level lives.
+3. <a id="R3"></a>Decide the atomic level ([FE_02#R1](../index.html#FE_02)) before you write its props.
 4. <a id="R4"></a>Design the props from the states in the frame, not from the one screen you were given.
-5. <a id="R5"></a>Build the states the frame does not draw: empty, loading, error, too-long, too-many.
+5. <a id="R5"></a>Build every state the frame does not draw that belongs to this component — empty, loading, error, too-long, too-many.
 6. <a id="R6"></a>Reach the keyboard and the accessible name before you reach the styling.
-7. <a id="R7"></a>Write the story as you build, one per state you claimed to support.
+7. <a id="R7"></a>Where `PROJECT.md` lists a story tool as present, write the story as you build, one per state you claimed to support.
 8. <a id="R8"></a>Test the behavior you promised, through the interface a user has.
 9. <a id="R9"></a>Run the accessibility pass on the built component, not on the frame.
 10. <a id="R10"></a>Say in the pull request what you reused, which tokens were missing, and which states you did not build.
@@ -54,7 +54,7 @@ Then reconcile the frame's values against the tokens. Every color, spacing step,
 
 ### [R3](#R3) The level, then the location
 
-Ask what the component is allowed to know, not how big it is ([FE_02](../index.html#FE_02)). Does it render at a URL, arrange sections, name a domain concept or read data, compose other components, or none of those? That answer fixes the directory ([FE_01](../index.html#FE_01)) and, with it, what the component may import.
+Ask what the component is allowed to know, not how big it is ([FE_02](../index.html#FE_02)). Does it render at a URL, arrange sections, name a domain concept or read data, compose other components, or none of those? That answer fixes what the component may import. Where the file goes is [FE_01](../index.html#FE_01)'s: a new component starts in the private folder of the route that needs it, whatever its level.
 
 Do this before writing, because the level constrains the props. An atom cannot take an `order` prop; if the frame implies it needs one, you are building an organism, and knowing that now is worth an hour later.
 
@@ -64,7 +64,7 @@ Do this before writing, because the level constrains the props. An atom cannot t
 
 A frame shows one state of one instance. The component's props are the states it must express, which is a wider set than what was drawn: the item with a very long name, the list with one item and with forty, the value that is missing, the action that is in flight, the thing the user is not allowed to do.
 
-Design the props from that list, following [FE_05](../index.html#FE_05) — required data first, callbacks last, one `variant` union rather than three booleans that are never independently true. Then build the states the frame skipped. Empty, loading and error are the three that get discovered in production, and the fix at that point is a different component.
+Design the props from that list, following [FE_05#R2](../index.html#FE_05) for order, [FE_05#R3](../index.html#FE_05) for naming and [FE_05#R9](../index.html#FE_05) for variants. Then build the states the frame skipped. Empty, loading and error are the three that get discovered in production, and the fix at that point is a different component.
 
 **Do**
 
@@ -95,7 +95,7 @@ Build the semantic markup first: the element that already means what you mean, r
 
 The practical test at this step is to use the thing with the mouse unplugged before it looks finished.
 
-**Enforcement:** review — accessibility linting catches some of it; focus order and name quality are review ([FE_06](../index.html#FE_06)).
+**Enforcement:** review — nothing checks markup-before-styling mechanically; an accessibility lint plugin would catch the common element substitutions where `PROJECT.md` records one ([FE_06](../index.html#FE_06)).
 
 ### [R7](#R7) and [R8](#R8) Story and test, as you go
 
@@ -104,6 +104,12 @@ Write the story for each state as you build that state, not afterward. A story w
 The test asserts the promise, not the implementation: what a user can see, name and do. Query the way a user finds things, assert the accessible name and the announced state, and mock the network rather than the components under it ([FE_14](../index.html#FE_14) owns the how).
 
 **Enforcement:** review — a missing story or spec is detectable per atomic level and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
+
+### [R9](#R9) The pass runs on what was built
+
+A frame cannot show focus order, announced state or real contrast; only the rendered component can. Run [FE_06](../index.html#FE_06)'s checks against it before the pull request opens.
+
+**Enforcement:** review — checklist item in [GEN_06](../index.html#GEN_06).
 
 ### [R10](#R10) The three sentences at the end
 
@@ -119,7 +125,7 @@ A frame for an order row: avatar, customer name, status pill, amount, a menu but
 
 **Tokens.** Everything resolves except the pill's amber, which is two steps off the warning token, and a 14px gap that is not on the spacing scale. The amber is a drawing artifact and uses the token; the gap is a real question, so it is raised with design before the build rather than rounded silently ([R2](#R2)).
 
-**Level.** It names `order` and takes an `OrderSummary`, so it is an organism, and it lives under the organism directory ([R3](#R3), [FE_02](../index.html#FE_02)).
+**Level.** It names `order` and takes an `OrderSummary`, so it is an organism ([R3](#R3), [FE_02](../index.html#FE_02)); it starts in the private folder of the route that renders it and moves up only when a second route imports it ([FE_01](../index.html#FE_01)).
 
 **API.** From the states, not the frame: a `compact` variant for the dense list, `onSelect`, and no boolean pair ([R4](#R4)). The amount is already formatted by the caller — formatting is a shared concern, not this component's.
 
@@ -139,7 +145,7 @@ A frame for an order row: avatar, customer name, status pill, amount, a menu but
 - Props express the states, with no boolean pair and no prop named for its false state ([R4](#R4)).
 - Empty, loading, error and the overflow cases are built or explicitly deferred ([R5](#R5)).
 - The component is usable from the keyboard and has an accessible name ([R6](#R6)).
-- One story per claimed state ([R7](#R7)); the test asserts behavior through the user's interface ([R8](#R8)).
+- One story per claimed state, where a story tool is present ([R7](#R7)); the test asserts behavior through the user's interface ([R8](#R8)).
 - The accessibility pass ran against the built component ([R9](#R9)).
 
 ## Open questions

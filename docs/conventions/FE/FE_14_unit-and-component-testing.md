@@ -3,8 +3,8 @@ title: 'FE_14 · Unit & component testing'
 id: 'FE_14'
 area: 'FE'
 tier: 'P1'
-status: 'draft'
-updated: '2026-09-22'
+status: 'stable'
+updated: '2026-09-28'
 requires: [FE_05]
 see_also: [FE_15, FE_21]
 ---
@@ -13,7 +13,7 @@ see_also: [FE_15, FE_21]
 
 # [FE] Unit & component testing
 
-`P1` · `FE_14` · `draft` · `updated 2026-09-22`
+`P1` · `FE_14` · `stable` · `updated 2026-09-28`
 
 **Open when:** you wrote a component or a hook.
 
@@ -28,11 +28,10 @@ If you read nothing else:
 3. <a id="R3"></a>Render the real component tree. Never substitute a child component.
 4. <a id="R4"></a>Mock the network, and nothing below it.
 5. <a id="R5"></a>Drive the component through real user events, not by calling its handlers.
-6. <a id="R6"></a>Assert the accessible name and the announced state, not only the text.
+6. <a id="R6"></a>Replace a server action at its module, and replace nothing else there: it is the network.
 7. <a id="R7"></a>Test a hook through a component that uses it.
 8. <a id="R8"></a>Cover by atomic level: every state at the bottom, every behaviour in the middle, nothing at the top.
 9. <a id="R9"></a>Keep tests deterministic: fixed data, controlled time, no real network.
-10. <a id="R10"></a>Never skip, delete or weaken a test to make a build pass.
 
 ## Why
 
@@ -68,21 +67,21 @@ expect(wrapper.state('submitted')).toBe(true);
 
 **Enforcement:** review — container and class-name queries are greppable and are a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
-### [R3](#R3) and [R4](#R4) The mocking boundary
+### [R3](#R3), [R4](#R4) and [R6](#R6) The mocking boundary
 
 Render the real tree. A mocked child turns the test into an assertion about a fake, and it hides the integration that is usually where the defect is — a prop renamed on one side only, a callback never wired.
 
 Mock at the network instead, with request handlers that return realistic payloads for the endpoints under exercise ([FE_10](../index.html#FE_10)). That keeps the client, the mapping to view models and the rendering all real, which is nearly all of what can break.
 
-Two other things stay real unless the test is about them: routing, and any provider the tree needs. Wrapping in the app's real providers once, in a shared render helper, is cheaper than mocking them and far more faithful.
+Two other things stay real unless the test is about them: routing, and any provider the tree needs. Wrapping in the app's real providers once, in a shared render helper, is cheaper than mocking them and far more faithful. A server action compiles to an endpoint the browser posts to ([FE_09#R5](../index.html#FE_09)), and its module cannot load in a test process, so replacing that module is mocking the network, not substituting a child.
 
 **Enforcement:** review — a module mock of a component path is greppable ([INFRA_06](../index.html#INFRA_06)).
 
-### [R5](#R5) and [R6](#R6) Real events, and the assertions people forget
+### [R5](#R5) Real events, and the assertions people forget
 
 Drive the component the way a browser does — typing that fires each key, clicks that focus first, tabbing that respects order. Calling a handler directly skips exactly what breaks: the disabled attribute, the element that intercepts the click, the field that never received focus.
 
-Then assert more than text. A control's accessible name, an expanded or checked or busy state, an error associated with its field, focus after a dialog closes — these are the product's actual promises to a large group of users ([FE_06#R10](../index.html#FE_06)), and this suite is the only place they are checked automatically.
+Then make the assertions [FE_06#R10](../index.html#FE_06) requires. This suite is where they run.
 
 **Enforcement:** review.
 
@@ -109,11 +108,11 @@ No global percentage target is set, deliberately. A number is satisfiable by tes
 
 **Enforcement:** review — a missing spec for a shared component is detectable per level and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
-### [R9](#R9) and [R10](#R10) Determinism, and the red test
+### [R9](#R9) Determinism, and the red test
 
 Fixed data from shared builders, controlled time, no real network, no dependence on test order ([BE_12#R9](../index.html#BE_12) is the same rule server-side). A flaky component test is almost always an unawaited async update, and the fix is to await the assertion rather than to add a delay.
 
-And the hard rule: never skip, delete or weaken a test to go green. If the behaviour changed on purpose, the test changes in that same change, with the reason. If it did not, the test found something ([GEN_05](../index.html#GEN_05)).
+The hard rules in `AGENTS.md` still bind a red test. If the behaviour changed on purpose, the test changes in that same change, with the reason. If it did not, the test found something ([GEN_05](../index.html#GEN_05)).
 
 **Enforcement:** review — a skipped or focused test is greppable and is a candidate CI gate ([INFRA_06](../index.html#INFRA_06)).
 
@@ -125,11 +124,11 @@ The suite is named for the capability, and each test for a promise ([BE_11#R2](.
 
 _It shows the order's total and status._ Found by role and text, asserting the formatted total — which proves the mapper ran ([FE_10#R6](../index.html#FE_10)), not just that a string appeared.
 
-_Cancelling asks for confirmation, then reports success._ A real click on the button found by its accessible name ([R2](#R2), [R5](#R5)); the dialog is asserted by its role and its own accessible name; confirming triggers the request the handler serves, and the success message is asserted as a live region rather than as text on the page ([R6](#R6)).
+_Cancelling asks for confirmation, then reports success._ A real click on the button found by its accessible name ([R2](#R2), [R5](#R5)); the dialog is asserted by its role and its own accessible name; confirming triggers the request the handler serves, and the success message is asserted as a live region rather than as text on the page ([FE_06#R10](../index.html#FE_06)).
 
 _A shipped order cannot be cancelled._ The handler returns the error code from the catalogue, and the test asserts what the user sees — the reason, and that the row is still there ([FE_10#R7](../index.html#FE_10)). It does not assert the code, which is the client's concern, not the user's.
 
-_Focus returns to the cancel button when the dialog closes._ One line, and the only automated check that this works at all ([R6](#R6), [FE_06](../index.html#FE_06)).
+_Focus returns to the cancel button when the dialog closes._ One line, and the only automated check that this works at all ([FE_06#R10](../index.html#FE_06)).
 
 What is deliberately absent: no test that the child row component received the right props ([R3](#R3)), no snapshot standing in for an assertion, and no test of the checkout flow that follows — that is one browser scenario, not twenty component tests ([R8](#R8), [FE_15](../index.html#FE_15)).
 
@@ -139,19 +138,16 @@ What is deliberately absent: no test that the child row component received the r
 - Elements are found by role and accessible name; test ids are a documented last resort ([R2](#R2)).
 - The real tree renders; no child component is mocked ([R3](#R3)); mocking happens at the network ([R4](#R4)).
 - Interactions use real user events ([R5](#R5)).
-- Accessible names, states and focus are asserted, not only text ([R6](#R6)).
+- Only a server action's module is replaced, nothing else ([R6](#R6)).
 - Hooks are exercised through a component ([R7](#R7)).
 - Coverage matches the component's atomic level ([R8](#R8)).
 - Data and time are fixed; nothing depends on order ([R9](#R9)).
-- No test was skipped, deleted or weakened ([R10](#R10)).
 
 ## Open questions
 
 - [R8](#R8) sets expectations per level with nothing to enforce them, and the level is derivable from the path ([FE_01#R6](../index.html#FE_01)) — so "a shared component with no spec" is checkable and is not checked.
-- The shared render helper and the request handlers are assumed to exist without a home. Where they live, and whether the handlers are shared with the browser suite ([FE_15](../index.html#FE_15)), should be decided before the second feature copies them.
-- ~~No runner is named, because it is an open decision in `PROJECT.md`.~~ Closed by [ADR 0007](../../adr/0007-vitest-is-the-web-test-runner.md). The document still names no runner, which is right; the project file does.
-- [R3](#R3) bans substituting a child component and [R4](#R4) puts the seam at the network, but a server action is neither and both: it is an HTTP endpoint the browser posts to ([FE_09#R5](../index.html#FE_09)), so replacing it is mocking the network — and it is also a module the component imports, so replacing it looks exactly like the thing [R3](#R3) forbids. The distinction matters because the action's module cannot be loaded in a test process at all. The reference implementation replaces the module and says why; the rule should say it rather than leaving each author to argue it.
-- [R8](#R8) puts nothing at the template and page level, and the runner cannot render an async server component, so a data-reading organism is covered by neither this suite nor — until [FE_15](../index.html#FE_15) has an implementation — any other.
+- Whether the request handlers are shared with the browser suite ([FE_15](../index.html#FE_15)) is undecided.
+- [R8](#R8) puts nothing at the template and page level, and the runner cannot render an async server component, so a data-reading organism is covered by neither this suite nor any other, wherever `PROJECT.md` lists no browser suite ([FE_15](../index.html#FE_15)).
 
 ## Related
 
