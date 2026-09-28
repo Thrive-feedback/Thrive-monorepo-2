@@ -3,6 +3,7 @@ import { Global, Module } from '@nestjs/common';
 import {
   CONFIGURATION,
   type Configuration,
+  DatabaseConfig,
   HttpConfig,
   loadConfiguration,
 } from './configuration';
@@ -21,7 +22,12 @@ import {
       useFactory: (config: Configuration) => config.http,
       inject: [CONFIGURATION],
     },
+    {
+      provide: DatabaseConfig,
+      useFactory: (config: Configuration) => config.database,
+      inject: [CONFIGURATION],
+    },
   ],
-  exports: [HttpConfig],
+  exports: [HttpConfig, DatabaseConfig],
 })
 export class ConfigModule {}

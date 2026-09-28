@@ -6,9 +6,9 @@
   "author": "",
   "license": "UNLICENSED",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "bun scripts/start-dev.mjs",
     "dev:web": "turbo run dev --filter=web",
-    "dev:api": "turbo run dev --filter=api",
+    "dev:api": "bun scripts/start-dev.mjs api",
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",

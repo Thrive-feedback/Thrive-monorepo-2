@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17.11
+    environment:
+      POSTGRES_DB: thrive
+      POSTGRES_USER: thrive
+      POSTGRES_PASSWORD: local_only
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - thrive_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U thrive -d thrive"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  thrive_postgres:

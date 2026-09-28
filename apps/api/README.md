@@ -1,26 +1,24 @@
-# With-NestJs | API
+# API development
 
-## Getting Started
+The current stack and deployment status live in [`PROJECT.md`](../../PROJECT.md).
 
-First, run the development server:
+From the repository root, `bun run dev` starts local Postgres and both applications.
+The first run copies `.env.example` to an ignored `.env`; use separate credentials for
+application queries and migrations in a deployed environment.
+
+Schema changes use the checked-in Prisma schema and SQL migration history:
 
 ```bash
-pnpm run dev
-# Also works with NPM, YARN, BUN, ...
+cd apps/api
+bun run db:migrate:dev --name describe_the_change
+bun run db:generate
 ```
 
-By default, your server will run at [localhost:3000](http://localhost:3000). You can use your favorite API platform like [Insomnia](https://insomnia.rest/) or [Postman](https://www.postman.com/) to test your APIs
+Review the generated SQL before committing it. Each migration changes one module's
+tables. `db:migrate:dev` is for local development only. Deployment runs
+`bun run db:migrate:deploy` once before the new API version starts; it never runs from
+the API startup path. The first migration belongs to the first domain model, so there
+is no migration file while the schema has no models.
 
-You can start editing the demo **APIs** by modifying [linksService](./src/links/links.service.ts) provider.
-
-### Important Note 🚧
-
-If you plan to `build` or `test` the app. Please make sure to build the `packages/*` first.
-
-## Learn More
-
-Learn more about `NestJs` with following resources:
-
-- [Official Documentation](https://docs.nestjs.com) - A progressive Node.js framework for building efficient, reliable and scalable server-side applications.
-- [Official NestJS Courses](https://courses.nestjs.com) - Learn everything you need to master NestJS and tackle modern backend applications at any scale.
-- [GitHub Repo](https://github.com/nestjs/nest)
+To stop the local database from the repository root, run `docker compose down`. The
+named volume retains local data; `docker compose down --volumes` deletes it.

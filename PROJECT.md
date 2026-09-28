@@ -114,15 +114,16 @@ and propose the addition — do not quietly install it.
 | shadcn/ui on Radix, sonner               | **present** | `apps/web` only (ADR 0021). Components are copied in with `bunx --bun shadcn@latest add` (the CLI is not installed; `apps/web/components.json` configures it) and rewritten to token utilities before they land. `radix-ui` for primitives, `sonner` for toasts, mounted once in the root layout. Every component is shown at `/ui-showcase` |
 | `lucide-react` icons                     | **present** | **interim**, until #43 generates an icon set from Figma (`FE_03` R8, ADR 0022). Imported only inside `apps/web/components/` and `/ui-showcase` |
 | Design tokens                            | **present** | `packages/tokens` — three layers (`FE_03` R2): seven OKLCH ramps as primitives, role-named semantic tokens, and a Tailwind `@theme inline` built from the roles. Values were read out of the retired build (`docs/adr/0009`), so they are real rather than placeholders, and `FE_03` R6 keeps this package the source of record **only until a design source exists** — Spike #43. The theme resets Tailwind's defaults (`--*: initial`) and exposes no colour primitive, so neither `bg-primary-500` nor `bg-red-500` is a class that exists; type is the design's text styles as roles (`text-display1`…`text-caption`, ADR 0023); weight, width and breakpoint scales are Tailwind v4's values copied in as tokens, provisional under #43. **No dark mode yet** (out of scope in #47); it attaches to the semantic layer as `:root[data-theme='dark']`. **Fonts:** Google Sans (Google Fonts, via `next/font/google`) and Cooper SemiBold for display, committed under SIL OFL 1.1 with its licence in `apps/web/app/_lib/fonts/cooper/` (ADR 0024) |
-| Auth provider                            | _planned_   | **open decision 3 — kritpavin.** See `auth-decision-brief.md` in the brain                                                                                              |
-| Database, ORM, migrations                | _planned_   | **open decision 2.** Schema starts from scratch, derived from `domain-map.md`; the old repo's migrations are reference only                                            |
-| Object storage                           | _planned_   | Epic #10 gives `Profile` a photo. Falls out of decisions 3 and 4                                                                                                        |
-| Redis, outbox, background jobs           | _planned_   | `BE_17`–`BE_19` are `todo`; no backing services, no Docker, no compose                                                                                                 |
-| CI (GitHub Actions)                      | **present** | `.github/workflows/pr.yml` — five jobs on every pull request to `main`: *Code style*, *Types*, *Architecture*, *Tests*, and *Build* (affected workspaces). The first four are required by branch protection; *Build* becomes required after this workflow lands on `main`. No deploys in CI |
+| Auth provider                            | _planned_   | **open decision 2 — kritpavin.** See `auth-decision-brief.md` in the brain                                                                                              |
+| Database host                            | _planned_   | Supabase Postgres 17 in Singapore is chosen (ADR 0020), but no shared project is provisioned. Local compose runs PostgreSQL 17.11. |
+| ORM and migrations                       | **present** | Prisma ORM 7.10.0 with PostgreSQL adapter (ADR 0021), Prisma Migrate as sole DDL owner (ADR 0022). `apps/api/prisma/schema.prisma` has no domain models yet, so no migration exists. The first model and migration follow `domain-map.md`; old migrations are reference only |
+| Object storage                           | _planned_   | Epic #10 gives `Profile` a photo. Its provider remains unchosen; the database host in ADR 0020 does not choose storage or auth |
+| Redis, outbox, background jobs           | _planned_   | `BE_17`–`BE_19` are `todo`; local compose contains only Postgres, with no Redis or broker yet |
+| CI (GitHub Actions)                      | **present** | `.github/workflows/pr.yml` — five jobs on every pull request to `main`: *Code style*, *Types*, *Architecture*, *Tests*, and *Build* (affected workspaces). The first four are required by branch protection; *Build* is not yet required. No deploys in CI |
 | dependency-cruiser 18                    | **present** | the import-graph guardrails (ADR 0014): cycles, app and package direction, reaching past an entry point, and `FE_01`'s ladder. Config at `.dependency-cruiser.cjs`; it resolves through the **root** `tsconfig.json`, which therefore mirrors the web app's `@/*` alias — change one, change both; every rule has a fixture under `scripts/arch-fixtures/` that `scripts/verify-arch-fixtures.mjs` proves still fails. `apps/api/scripts/check-architecture.mjs` keeps the specifier-level `BE_*` rules |
 | Install constraints                      | _planned_   | no `bunfig.toml` maturity window and no `trustedDependencies`; install scripts follow Bun's default list (`INFRA_04` R6) |
 | Git hooks                                | _planned_   | no hook manager (`INFRA_05` R9) |
-| Hosting / CD                             | _planned_   | **open decision 4**. `INFRA_11` is `todo` and no workflow deploys anything |
+| Hosting / CD                             | _planned_   | **open decision 3**. `INFRA_11` is `todo` and no workflow deploys anything |
 | Playwright / browser Gherkin             | _planned_   | `FE_15` has no implementation                                                                                                                                          |
 
 ## 5. Open decisions
@@ -135,15 +136,11 @@ settle it on your own. Record the answer as an ADR (`GEN_13`) and delete the row
    already been sent as 200 by the time `notFound()` runs. The fix is an existence check at the
    edge, which costs an API call on every request to the route. Logged in `FE_11`'s open
    questions. *(naroebordin.w)*
-2. **Database host, ORM and migration tool.** Nothing is installed. Supabase Postgres in the
-   Singapore region is the current lean, not a decision; Neon and Railway were the alternatives
-   weighed. `BE_15` is `todo`, so the migration convention has to be written alongside. `BE_06`
-   R4's mapper rule should inform the ORM choice. *(naroebordin.w)*
-3. **Auth provider.** Shortlist: Better Auth, Clerk, Supabase Auth. Auth0, Auth.js, Keycloak and
+2. **Auth provider.** Shortlist: Better Auth, Clerk, Supabase Auth. Auth0, Auth.js, Keycloak and
    WorkOS are recorded as rejected with reasons. Blocks Epic #9 and nothing else. The brief, the
    constraints and the Google Calendar dependency are in `auth-decision-brief.md` in the brain.
    *(kritpavin)*
-4. **Where the API runs, and how it gets there.** Railway is the assumption inherited from the
+3. **Where the API runs, and how it gets there.** Railway is the assumption inherited from the
    retired repo; nothing is decided. `INFRA_11` CD is `todo`. *(naroebordin.w)*
 
 **Settled alongside these, not open:** authorization is enforced in the application layer and

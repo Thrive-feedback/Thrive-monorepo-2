@@ -10,7 +10,9 @@ import { resolve } from 'node:path';
 
 const SRC = resolve(import.meta.dirname, '..', 'src');
 const files = globSync('**/*.ts', { cwd: SRC }).filter(
-  (f) => !f.endsWith('spec.ts'),
+  (f) =>
+    !f.endsWith('spec.ts') &&
+    !f.startsWith('infrastructure/database/generated/'),
 );
 
 const findings = [];
