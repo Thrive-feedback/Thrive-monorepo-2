@@ -74,16 +74,14 @@ export class TodoList {
    * that can see every item at once. Contrast with the *list* title uniqueness rule,
    * which spans aggregates and so belongs to a use case (BE_05 R6).
    */
-  addItem(id: TodoItemId, title: TodoTitle, dueDate: DueDate | null): TodoItem {
+  addItem(id: TodoItemId, title: TodoTitle, dueDate: DueDate | null): void {
     this.refuseWhenArchived();
 
     if (this.items.some((item) => item.hasTitle(title))) {
       throw new DuplicateTodoItemTitleError();
     }
 
-    const item = TodoItem.add(id, title, dueDate);
-    this.items.push(item);
-    return item;
+    this.items.push(TodoItem.add(id, title, dueDate));
   }
 
   completeItem(itemId: TodoItemId): void {

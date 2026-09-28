@@ -27,9 +27,9 @@ function layerOf(file) {
 }
 
 const ROLE_SUFFIXES = [
-  '.use-case.ts', '.controller.ts', '.port.ts', '.adapter.ts', '.repository.ts',
+  '.use-case.ts', '.controller.ts', '.port.ts', '.query-port.ts', '.adapter.ts', '.repository.ts',
   '.entity.ts', '.vo.ts', '.mapper.ts', '.errors.ts', '.dto.ts', '.module.ts',
-  '.service.ts', '.store.ts', '.query.ts', '.record.ts', '.types.ts', '.views.ts',
+  '.service.ts', '.store.ts', '.query.ts', '.record.ts', '.types.ts',
   '.schema.ts', '.filter.ts', '.middleware.ts', 'index.ts', 'configuration.ts',
 ];
 

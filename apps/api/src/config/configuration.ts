@@ -48,13 +48,6 @@ export function loadConfiguration(env: NodeJS.ProcessEnv = process.env): Configu
 
   const value = parsed.data;
 
-  if (value.TODO_MAX_PAGE_SIZE < value.TODO_DEFAULT_PAGE_SIZE) {
-    process.stderr.write(
-      'Invalid environment configuration:\n  TODO_MAX_PAGE_SIZE must be >= TODO_DEFAULT_PAGE_SIZE\n',
-    );
-    process.exit(1);
-  }
-
   return {
     http: new HttpConfig(value.PORT),
     // BE_10 R7 — the absolute path is derived once here, not recomputed per call.

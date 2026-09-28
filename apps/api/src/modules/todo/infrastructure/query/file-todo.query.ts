@@ -1,36 +1,28 @@
 import { join } from 'node:path';
 import { Injectable } from '@nestjs/common';
 import { StorageConfig } from '@app/config/configuration';
-import { readJsonFile } from '@app/shared/infrastructure/json-file.store';
+import { readJsonFile } from '@app/infrastructure/json-file.store';
 import type {
   ListTodoItemsCriteria,
   ListTodoListsCriteria,
-} from '../../application/query-port/todo-query.port';
-import { TodoQuery } from '../../application/query-port/todo-query.port';
+} from '../../application/query-port/todo.query-port';
+import { TodoQuery } from '../../application/query-port/todo.query-port';
 import type {
   Page,
-  TodoItemView,
-  TodoListDetailView,
-  TodoListSummaryView,
-} from '../../application/types/todo.views';
+  TodoItemProjection,
+  TodoListDetailProjection,
+  TodoListSummaryProjection,
+} from '../../application/types/todo-projection.types';
 import type { TodoItemRecord, TodoListRecord, TodoListRecords } from '../entity/todo-list.record';
 
-/**
- * The read side.
- *
- * BE_06 R7 places a query service in `application/`, and BE_06 R5 lets one name the
- * store. Doing that would make the application layer import infrastructure, which
- * BE_02 R1 forbids. GEN_01 R7 breaks the tie for the lower-numbered document, so the
- * contract stays in `application/query-port/` and this implementation lives out here.
- * Reported as a BE_06 finding rather than resolved silently.
- */
+/** The read side: implements the query contract behind BE_06 R7. */
 @Injectable()
 export class FileTodoQuery extends TodoQuery {
   constructor(private readonly storage: StorageConfig) {
     super();
   }
 
-  async findListDetail(listId: string, now: Date): Promise<TodoListDetailView | null> {
+  async findListDetail(listId: string, now: Date): Promise<TodoListDetailProjection | null> {
     const record = (await this.readAll())[listId];
     if (record === undefined) {
       return null;
@@ -42,7 +34,7 @@ export class FileTodoQuery extends TodoQuery {
     };
   }
 
-  async listSummaries(criteria: ListTodoListsCriteria): Promise<Page<TodoListSummaryView>> {
+  async listSummaries(criteria: ListTodoListsCriteria): Promise<Page<TodoListSummaryProjection>> {
     const all = Object.values(await this.readAll()).filter(
       (record) => criteria.status === undefined || record.status === criteria.status,
     );
@@ -58,7 +50,7 @@ export class FileTodoQuery extends TodoQuery {
     return paginate(sorted.map(summaryOf), criteria.page, criteria.pageSize);
   }
 
-  async listItems(criteria: ListTodoItemsCriteria, now: Date): Promise<Page<TodoItemView> | null> {
+  async listItems(criteria: ListTodoItemsCriteria, now: Date): Promise<Page<TodoItemProjection> | null> {
     const record = (await this.readAll())[criteria.listId];
     if (record === undefined) {
       return null;
@@ -88,7 +80,7 @@ export class FileTodoQuery extends TodoQuery {
   }
 }
 
-function summaryOf(record: TodoListRecord): TodoListSummaryView {
+function summaryOf(record: TodoListRecord): TodoListSummaryProjection {
   return {
     id: record.id,
     title: record.title,
@@ -99,7 +91,7 @@ function summaryOf(record: TodoListRecord): TodoListSummaryView {
   };
 }
 
-function itemViewOf(record: TodoItemRecord, now: Date): TodoItemView {
+function itemViewOf(record: TodoItemRecord, now: Date): TodoItemProjection {
   return {
     id: record.id,
     title: record.title,

@@ -11,6 +11,13 @@ import { z } from 'zod';
 
 export const uuidSchema = z.uuid();
 
+// BE_08 R7 — length and format live here; whether a *title is already taken* is a
+// business rule and lives in the domain or the use case, never in a schema.
+export const titleSchema = z.string().trim().min(1).max(120);
+
+/** A client-chosen retry key. Bounded so a header cannot carry an unbounded payload. */
+export const idempotencyKeySchema = z.string().min(1).max(200).optional();
+
 /** BE_07 R6 — filtering and sorting come from a closed set, declared once. */
 export const sortDirectionSchema = z.enum(['asc', 'desc']).default('desc');
 

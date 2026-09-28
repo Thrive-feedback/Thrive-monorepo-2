@@ -73,7 +73,7 @@ export class ArchivedTodoListNotModifiableError extends DomainError {
   readonly category = 'conflict' as const;
 
   constructor() {
-    super('An archived list cannot be changed. Reopen it first.');
+    super('An archived list cannot be changed.');
   }
 }
 

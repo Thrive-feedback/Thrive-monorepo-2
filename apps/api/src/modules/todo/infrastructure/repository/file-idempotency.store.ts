@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { Injectable } from '@nestjs/common';
 import { StorageConfig } from '@app/config/configuration';
-import { mutateJsonFile, readJsonFile } from '@app/shared/infrastructure/json-file.store';
+import { mutateJsonFile, readJsonFile } from '@app/infrastructure/json-file.store';
 import {
   type IdempotentResult,
   IdempotencyStore,

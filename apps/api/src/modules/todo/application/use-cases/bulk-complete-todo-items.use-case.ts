@@ -31,13 +31,9 @@ export class BulkCompleteTodoItemsUseCase {
     const completed = await this.lists.apply(input.listId, (list) => list.completeItems(itemIds));
 
     const completedIds = completed.map((id) => id.toString());
-    for (const id of completedIds) {
-      await this.activity.record({
-        subjectId: input.listId,
-        action: 'todo-item.completed',
-        detail: id,
-      });
-    }
+    await this.activity.recordAll(
+      completedIds.map((id) => ({ subjectId: input.listId, action: 'todo-item.completed', detail: id })),
+    );
 
     return { completedIds };
   }

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PaginationConfig } from '@app/config/configuration';
-import type { SortDirection, TodoListSort } from '../query-port/todo-query.port';
-import { TodoQuery } from '../query-port/todo-query.port';
-import type { Page, TodoListSummaryView } from '../types/todo.views';
+import type { SortDirection, TodoListSort } from '../query-port/todo.query-port';
+import { TodoQuery } from '../query-port/todo.query-port';
+import type { Page, TodoListSummaryProjection } from '../types/todo-projection.types';
 
 export interface ListTodoListsInput {
   readonly page?: number | undefined;
@@ -21,7 +21,7 @@ export class ListTodoListsUseCase {
     private readonly pagination: PaginationConfig,
   ) {}
 
-  async execute(input: ListTodoListsInput): Promise<Page<TodoListSummaryView>> {
+  async execute(input: ListTodoListsInput): Promise<Page<TodoListSummaryProjection>> {
     return this.query.listSummaries({
       page: input.page ?? 1,
       pageSize: Math.min(input.pageSize ?? this.pagination.defaultPageSize, this.pagination.maxPageSize),

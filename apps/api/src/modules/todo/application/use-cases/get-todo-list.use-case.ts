@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Clock } from '@app/shared/application/clock.port';
-import { TodoQuery } from '../query-port/todo-query.port';
+import { TodoQuery } from '../query-port/todo.query-port';
 import { TodoListNotFoundError } from '../todo.errors';
-import type { TodoListDetailView } from '../types/todo.views';
+import type { TodoListDetailProjection } from '../types/todo-projection.types';
 
 export interface GetTodoListInput {
   readonly listId: string;
@@ -20,7 +20,7 @@ export class GetTodoListUseCase {
     private readonly clock: Clock,
   ) {}
 
-  async execute(input: GetTodoListInput): Promise<TodoListDetailView> {
+  async execute(input: GetTodoListInput): Promise<TodoListDetailProjection> {
     // BE_02 R3 — "now" is read here and passed down, because the domain may not have a clock.
     const detail = await this.query.findListDetail(input.listId, this.clock.now());
 

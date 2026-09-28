@@ -1,6 +1,5 @@
 'use client';
 
-import { ApiError } from '@repo/api';
 import { Button } from '@/components/atoms/button';
 
 /**
@@ -8,9 +7,9 @@ import { Button } from '@/components/atoms/button';
  * only an apology. It is a client boundary by nature: the framework needs a component it
  * can re-render in place.
  *
- * FE_10 R5 — the correlation id is surfaced. It is what turns "it broke" into one log
- * search, so it is shown small and copyable, next to the apology rather than instead of
- * a stack trace.
+ * FE_10 R5 — a server-render failure arrives here sanitized, carrying only a digest.
+ * The server logs the API's correlation id against that digest (see instrumentation.ts),
+ * so the digest is what a person quotes: shown small and copyable, next to the apology.
  */
 export default function TodoListsError({
   error,
@@ -19,11 +18,7 @@ export default function TodoListsError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  // FE_10 R7 — branch on the code, never on the message.
-  const isUnreachable =
-    error instanceof ApiError && error.code === 'API_UNREACHABLE';
-  const correlationId =
-    error instanceof ApiError ? error.correlationId : error.digest;
+  const reference = error.digest;
 
   return (
     <main className="mx-auto w-full max-w-3xl p-4 sm:p-8">
@@ -36,17 +31,15 @@ export default function TodoListsError({
         className="rounded-lg border border-subtle bg-surface-danger p-6"
       >
         <h1 className="text-lg font-semibold text-danger">
-          {isUnreachable ? 'Cannot reach the server' : 'Something went wrong'}
+          Something went wrong
         </h1>
         <p className="mt-2 text-sm text-body">
-          {isUnreachable
-            ? 'Your lists are fine — this browser just could not reach the API.'
-            : 'Your lists could not be loaded.'}
+          Your lists could not be loaded.
         </p>
-        {correlationId === undefined ? null : (
+        {reference === undefined ? null : (
           <p className="mt-4 text-sm text-muted">
             Quote this if you report it:{' '}
-            <code className="font-mono">{correlationId}</code>
+            <code className="font-mono">{reference}</code>
           </p>
         )}
         <Button onClick={reset} className="mt-6">

@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { Injectable } from '@nestjs/common';
 import { StorageConfig } from '@app/config/configuration';
 import { Clock } from '@app/shared/application/clock.port';
-import { mutateJsonFile, readJsonFile } from '@app/shared/infrastructure/json-file.store';
+import { mutateJsonFile, readJsonFile } from '@app/infrastructure/json-file.store';
 import { TodoListRepository } from '../../domain/repository/todo-list.repository.port';
 import type { TodoList } from '../../domain/entity/todo-list.entity';
 import { TodoTitle } from '../../domain/value-object/todo-title.vo';

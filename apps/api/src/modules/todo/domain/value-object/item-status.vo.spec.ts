@@ -3,7 +3,7 @@ import { ItemStatus } from './item-status.vo';
 import { describe, it, expect } from '@jest/globals';
 
 /** BE_04 R6 — the declared transitions are the thing under test. */
-describe('ItemStatus', () => {
+describe('an item status', () => {
   it('moves an open item to completed', () => {
     expect(ItemStatus.open().complete().isCompleted).toBe(true);
   });

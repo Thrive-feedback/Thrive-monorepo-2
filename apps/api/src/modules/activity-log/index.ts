@@ -11,5 +11,7 @@ export { ReadActivityPort } from './domain/port/read-activity.port';
 export type {
   ActivityAction,
   ActivityEntryView,
+  ActivityPageRequest,
+  ActivityPageView,
   RecordActivityCommand,
 } from './domain/types/activity.types';

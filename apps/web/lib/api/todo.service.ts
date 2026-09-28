@@ -1,5 +1,5 @@
 import 'server-only';
-import { unwrap } from '@repo/api';
+import { type operations, unwrap } from '@repo/api';
 import { apiClient } from '@/lib/api/api.client';
 import type {
   PageView,
@@ -34,7 +34,9 @@ export const todoTags = {
 
 export interface ListTodoListsCriteria {
   readonly page?: number;
-  readonly status?: 'active' | 'archived';
+  readonly status?: NonNullable<
+    operations['TodoListController_list']['parameters']['query']
+  >['status'];
 }
 
 export async function listTodoLists(

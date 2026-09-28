@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { RecordActivityPort } from '@app/modules/activity-log';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
+import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { TodoListRepository } from '../../domain/repository/todo-list.repository.port';
 import { TodoList } from '../../domain/entity/todo-list.entity';
 import { TodoListId } from '../../domain/value-object/todo-list-id.vo';
@@ -32,6 +33,7 @@ export class CreateTodoListUseCase {
     private readonly idGenerator: IdGenerator,
     private readonly idempotency: IdempotencyStore,
     private readonly activity: RecordActivityPort,
+    private readonly unitOfWork: UnitOfWork,
   ) {}
 
   async execute(input: CreateTodoListInput): Promise<CreateTodoListResult> {
@@ -39,24 +41,34 @@ export class CreateTodoListUseCase {
     const title = TodoTitle.of(input.title);
     const fingerprint = fingerprintOf(title);
 
-    const replayed = await this.replayOf(input.idempotencyKey, fingerprint);
-    if (replayed !== null) {
-      return replayed;
-    }
+    // BE_05 R8 — the replay check, the uniqueness check and both writes are one unit,
+    // so two concurrent creates cannot both pass the checks.
+    const created = await this.unitOfWork.run(async () => {
+      const replayed = await this.replayOf(input.idempotencyKey, fingerprint);
+      if (replayed !== null) {
+        return { ...replayed, replayed: true };
+      }
 
-    // BE_05 R6 — uniqueness across aggregates is a workflow decision, so it is an
-    // application error. A single list cannot see its siblings to decide this itself.
-    if ((await this.repository.findByTitle(title)) !== null) {
-      throw new DuplicateTodoListTitleError();
-    }
+      // BE_05 R6 — uniqueness across aggregates is a workflow decision, so it is an
+      // application error. A single list cannot see its siblings to decide this itself.
+      if ((await this.repository.findByTitle(title)) !== null) {
+        throw new DuplicateTodoListTitleError();
+      }
 
-    const list = TodoList.create(TodoListId.of(this.idGenerator.next()), title);
-    await this.repository.save(list);
+      const list = TodoList.create(TodoListId.of(this.idGenerator.next()), title);
+      await this.repository.save(list);
 
-    const id = list.identity().toString();
-    if (input.idempotencyKey !== undefined) {
-      await this.idempotency.remember(input.idempotencyKey, { resourceId: id, fingerprint });
+      const listId = list.identity().toString();
+      if (input.idempotencyKey !== undefined) {
+        await this.idempotency.remember(input.idempotencyKey, { resourceId: listId, fingerprint });
+      }
+      return { id: listId, replayed: false };
+    });
+
+    if (created.replayed) {
+      return { id: created.id };
     }
+    const id = created.id;
 
     // BE_05 R9 — an effect that may safely be retried goes *after* the write. Losing
     // an activity line must never cost the list that was created.

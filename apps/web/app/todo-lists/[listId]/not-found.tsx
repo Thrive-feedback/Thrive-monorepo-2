@@ -1,9 +1,8 @@
 import Link from 'next/link';
 
 /**
- * FE_11 R6 — the framework's not-found path, so the response carries a 404. A "nothing
- * here" page returned with a success status is a page search engines index and monitoring
- * never counts as a failure.
+ * FE_11 R6 — the framework's not-found path. This route streams, so it answers a soft 404:
+ * the not-found UI under a 200 with noindex. See PROJECT.md §5, open decision 2.
  *
  * It sits in this segment rather than only at the root because the root one would render
  * its own chrome inside whatever the segment above already drew.

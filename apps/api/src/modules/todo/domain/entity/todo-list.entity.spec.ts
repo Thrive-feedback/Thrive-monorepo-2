@@ -14,7 +14,7 @@ import { describe, it, expect } from '@jest/globals';
  * BE_11 R2 — each name reads as actor, action, observable outcome, in business words.
  * BE_11 R4 — every assertion goes through the public surface, via `snapshot()`.
  */
-describe('TodoList', () => {
+describe('todo list', () => {
   describe('adding an item', () => {
     it('puts the item in the list as open', () => {
       const list = TodoList.create(aListId(), aTitle('Trip'));
@@ -100,12 +100,17 @@ describe('TodoList', () => {
       expect(() => list.archive()).toThrow(TodoListAlreadyArchivedError);
     });
 
-    it('refuses every change once the list is archived', () => {
+    it('refuses a new item once the list is archived', () => {
       const list = aTodoList({ items: ['Pack'], archived: true });
 
       expect(() => list.addItem(anItemId(), aTitle('Book'), null)).toThrow(
         ArchivedTodoListNotModifiableError,
       );
+    });
+
+    it('refuses a rename once the list is archived', () => {
+      const list = aTodoList({ items: ['Pack'], archived: true });
+
       expect(() => list.rename(aTitle('New name'))).toThrow(ArchivedTodoListNotModifiableError);
     });
   });

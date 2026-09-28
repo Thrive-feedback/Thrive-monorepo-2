@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { ActivityLogModule } from '@app/modules/activity-log';
 import { TodoListRepository } from './domain/repository/todo-list.repository.port';
 import { IdempotencyStore } from './application/port/idempotency-store.port';
-import { TodoQuery } from './application/query-port/todo-query.port';
+import { TodoQuery } from './application/query-port/todo.query-port';
 import { TodoListMutationService } from './application/service/todo-list-mutation.service';
 import { AddTodoItemUseCase } from './application/use-cases/add-todo-item.use-case';
 import { ArchiveTodoListUseCase } from './application/use-cases/archive-todo-list.use-case';
@@ -13,6 +13,7 @@ import { CreateTodoListUseCase } from './application/use-cases/create-todo-list.
 import { DeleteTodoListUseCase } from './application/use-cases/delete-todo-list.use-case';
 import { GetTodoListUseCase } from './application/use-cases/get-todo-list.use-case';
 import { ListTodoItemsUseCase } from './application/use-cases/list-todo-items.use-case';
+import { ListTodoListActivityUseCase } from './application/use-cases/list-todo-list-activity.use-case';
 import { ListTodoListsUseCase } from './application/use-cases/list-todo-lists.use-case';
 import { RemoveTodoItemUseCase } from './application/use-cases/remove-todo-item.use-case';
 import { RenameTodoItemUseCase } from './application/use-cases/rename-todo-item.use-case';
@@ -49,6 +50,7 @@ import { TodoListController } from './presentation/todo-list.controller';
     RemoveTodoItemUseCase,
     BulkCompleteTodoItemsUseCase,
     ListTodoItemsUseCase,
+    ListTodoListActivityUseCase,
   ],
 })
 export class TodoModule {}

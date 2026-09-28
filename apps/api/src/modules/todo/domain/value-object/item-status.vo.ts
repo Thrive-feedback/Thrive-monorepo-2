@@ -1,3 +1,4 @@
+import type { DomainError } from '@app/shared/errors/coded-error';
 import { TodoItemAlreadyCompletedError, TodoItemNotCompletedError } from '../todo.errors';
 
 export type ItemStatusName = 'open' | 'completed';
@@ -37,17 +38,11 @@ export class ItemStatus {
    * rather than returning a boolean the caller might ignore.
    */
   complete(): ItemStatus {
-    if (this.isCompleted) {
-      throw new TodoItemAlreadyCompletedError();
-    }
-    return this.transitionTo('completed');
+    return this.transitionTo('completed', () => new TodoItemAlreadyCompletedError());
   }
 
   reopen(): ItemStatus {
-    if (!this.isCompleted) {
-      throw new TodoItemNotCompletedError();
-    }
-    return this.transitionTo('open');
+    return this.transitionTo('open', () => new TodoItemNotCompletedError());
   }
 
   equals(other: ItemStatus): boolean {
@@ -59,9 +54,11 @@ export class ItemStatus {
   }
 
   // BE_04 R5 — a transition returns a replacement; a value object is never mutated.
-  private transitionTo(next: ItemStatusName): ItemStatus {
+  // The table is the only authority on which moves are legal; the caller names the
+  // refusal, so each illegal move reports its own condition (BE_04 R7).
+  private transitionTo(next: ItemStatusName, refusal: () => DomainError): ItemStatus {
     if (!ItemStatus.TRANSITIONS[this.value].includes(next)) {
-      throw new TodoItemAlreadyCompletedError();
+      throw refusal();
     }
     return new ItemStatus(next);
   }

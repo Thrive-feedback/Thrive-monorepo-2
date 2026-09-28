@@ -2,8 +2,13 @@ import { TodoListAlreadyArchivedError } from '../todo.errors';
 
 export type ListStatusName = 'active' | 'archived';
 
-/** BE_04 R6 — see {@link ItemStatus}. A list archives once and reopens from archive. */
+/** BE_04 R6 — see {@link ItemStatus}. A list archives once; there is no way back. */
 export class ListStatus {
+  private static readonly TRANSITIONS: Readonly<Record<ListStatusName, readonly ListStatusName[]>> = {
+    active: ['archived'],
+    archived: [],
+  };
+
   private constructor(private readonly value: ListStatusName) {}
 
   static active(): ListStatus {
@@ -24,7 +29,7 @@ export class ListStatus {
   }
 
   archive(): ListStatus {
-    if (this.isArchived) {
+    if (!ListStatus.TRANSITIONS[this.value].includes('archived')) {
       throw new TodoListAlreadyArchivedError();
     }
     return new ListStatus('archived');

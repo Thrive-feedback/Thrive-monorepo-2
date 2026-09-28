@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PaginationConfig } from '@app/config/configuration';
 import { Clock } from '@app/shared/application/clock.port';
 import type { ItemStatusName } from '../../domain/value-object/item-status.vo';
-import type { SortDirection, TodoItemSort } from '../query-port/todo-query.port';
-import { TodoQuery } from '../query-port/todo-query.port';
+import type { SortDirection, TodoItemSort } from '../query-port/todo.query-port';
+import { TodoQuery } from '../query-port/todo.query-port';
 import { TodoListNotFoundError } from '../todo.errors';
-import type { Page, TodoItemView } from '../types/todo.views';
+import type { Page, TodoItemProjection } from '../types/todo-projection.types';
 
 export interface ListTodoItemsInput {
   readonly listId: string;
@@ -24,7 +24,7 @@ export class ListTodoItemsUseCase {
     private readonly clock: Clock,
   ) {}
 
-  async execute(input: ListTodoItemsInput): Promise<Page<TodoItemView>> {
+  async execute(input: ListTodoItemsInput): Promise<Page<TodoItemProjection>> {
     const page = await this.query.listItems(
       {
         listId: input.listId,

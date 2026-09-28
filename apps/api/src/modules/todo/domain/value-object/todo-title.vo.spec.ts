@@ -2,7 +2,7 @@ import { TodoTitleEmptyError, TodoTitleTooLongError } from '../todo.errors';
 import { TodoTitle } from './todo-title.vo';
 import { describe, it, expect } from '@jest/globals';
 
-describe('TodoTitle', () => {
+describe('a todo title', () => {
   it('collapses surrounding and repeated whitespace', () => {
     // BE_08 R8 — normalizing once here is what lets everything downstream assume the
     // value is already clean.

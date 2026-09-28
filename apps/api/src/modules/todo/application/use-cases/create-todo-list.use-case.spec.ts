@@ -1,4 +1,4 @@
-import { SequenceIdGenerator } from '@test/support/shared.fakes';
+import { PassThroughUnitOfWork, SequenceIdGenerator } from '@test/support/shared.fakes';
 import {
   InMemoryIdempotencyStore,
   InMemoryTodoListRepository,
@@ -10,7 +10,7 @@ import { DuplicateTodoListTitleError, IdempotencyKeyConflictError } from '../tod
 import { CreateTodoListUseCase } from './create-todo-list.use-case';
 import { describe, it, expect } from '@jest/globals';
 
-describe('CreateTodoListUseCase', () => {
+describe('creating a todo list', () => {
   const firstId = anId(1);
   const secondId = anId(2);
 
@@ -24,6 +24,7 @@ describe('CreateTodoListUseCase', () => {
       new SequenceIdGenerator([firstId, secondId]),
       idempotency,
       activity,
+      new PassThroughUnitOfWork(),
     );
     return { useCase, repository, activity };
   }

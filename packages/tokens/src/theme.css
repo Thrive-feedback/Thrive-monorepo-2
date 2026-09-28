@@ -9,7 +9,18 @@
  * any component knowing (FE_03 R7).
  *
  * This file must be imported *after* `tailwindcss`.
+ *
+ * The first block clears the framework's default scale, so a utility with no token behind
+ * it generates nothing rather than silently falling back to a value nobody chose.
  */
+
+@theme {
+  --*: initial;
+
+  /* A media query cannot read a custom property, so the breakpoint is the one token
+     written as a value here; it must equal `--breakpoint-sm` in primitive.css. */
+  --breakpoint-sm: 40rem;
+}
 
 @theme inline {
   /* surfaces → bg-surface, bg-surface-raised, … */
@@ -46,6 +57,17 @@
   --spacing-8: var(--space-8);
   --spacing-12: var(--space-12);
 
+  /* sizes → h-5, h-7, h-10, min-h-5, w-24, w-48, w-64, min-w-60, max-w-3xl */
+  --height-5: var(--size-5);
+  --height-7: var(--size-7);
+  --height-10: var(--size-10);
+  --min-height-5: var(--size-5);
+  --width-24: var(--size-24);
+  --width-48: var(--size-48);
+  --width-64: var(--size-64);
+  --min-width-60: var(--size-60);
+  --container-3xl: var(--measure-3xl);
+
   /* radii → rounded-sm … rounded-full */
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -56,10 +78,20 @@
   --text-base: var(--font-size-base);
   --text-lg: var(--font-size-lg);
   --text-xl: var(--font-size-xl);
+  --text-sm--line-height: var(--line-height-sm);
+  --text-base--line-height: var(--line-height-base);
+  --text-lg--line-height: var(--line-height-lg);
+  --text-xl--line-height: var(--line-height-xl);
+
+  /* weights → font-medium, font-semibold */
+  --font-weight-medium: var(--font-weight-medium);
+  --font-weight-semibold: var(--font-weight-semibold);
 
   /* motion → duration-fast, duration-base */
-  --animate-duration-fast: var(--duration-fast);
-  --animate-duration-base: var(--duration-base);
+  --transition-duration-fast: var(--duration-fast);
+  --transition-duration-base: var(--duration-base);
+  --default-transition-duration: var(--duration-default);
+  --default-transition-timing-function: var(--ease-standard);
 
   /* fonts the app registers on :root */
   --font-sans: var(--font-geist-sans);

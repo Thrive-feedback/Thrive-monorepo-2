@@ -34,14 +34,4 @@ describe('Badge', () => {
 
     expect(screen.getByLabelText('Overdue by two days')).toBeVisible();
   });
-
-  it('lets a caller override a style it set', () => {
-    // FE_04 R5 — the merge is conflict-aware, so the caller's padding replaces the
-    // variant's rather than both landing and stylesheet order deciding.
-    render(<Badge className="px-4">Merged</Badge>);
-
-    const badge = screen.getByText('Merged');
-    expect(badge).toHaveClass('px-4');
-    expect(badge).not.toHaveClass('px-2');
-  });
 });

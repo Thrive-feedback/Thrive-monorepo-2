@@ -45,10 +45,10 @@ shape as a convention unless a document in `docs/conventions/` says so.
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/api/src/modules/todo/**`                     | **The BE reference implementation.** Demonstrates `BE_01`–`BE_13`; the convention documents point back at it (ADR 0004)                                       |
 | `apps/api/src/modules/activity-log/**`             | Second module, so `BE_03`'s cross-module ports have something to show                                                                                         |
-| `apps/api/src/shared/**`, `apps/api/src/config/**` | Supporting layers of the same example — clock and id ports, file store, error filter, config                                                                  |
+| `apps/api/src/shared/**`, `apps/api/src/infrastructure/**`, `apps/api/src/config/**` | Supporting layers of the same example — clock, id and unit-of-work ports, their adapters, the file store, error filter, config |
 | `apps/api/test/**`, `features/todo-list.feature`   | Its unit, integration, e2e and Gherkin suites                                                                                                                 |
 | `apps/web/app/**`                                  | **The FE reference implementation.** The todo UI the BE example serves. Demonstrates `FE_01`–`FE_11` and `FE_14`; those documents point back at it (ADR 0004) |
-| `apps/web/components/**`, `apps/web/lib/**`        | Its shared components, typed client, view models and mappers                                                                                                  |
+| `apps/web/components/**`, `apps/web/lib/**`, `apps/web/instrumentation.ts` | Its shared components, typed client, view models, mappers, and the boot-time environment check |
 | `apps/web/lib/test/**`                             | Its Vitest harness — the render helper and the MSW handlers                                                                                                   |
 | `packages/tokens/**`                               | The token layer it consumes. Hand-written; see ADR 0008                                                                                                       |
 | `packages/ui/src/{button,card,code}.tsx`           | Example shared components. Predate the conventions; `apps/web/components/` is the pattern to copy                                                             |
@@ -74,7 +74,7 @@ and propose the addition — do not quietly install it.
 | Jest 30 (+ ts-jest, supertest)           | **present** | shared bases in `@repo/jest-config`; **API only**. Unit, integration (`*.integration-spec.ts`) and e2e run as separate tasks                                              |
 | Vitest 3 + Testing Library + MSW         | **present** | shared base in `@repo/vitest-config`; **web only**. The two runners are split by workspace on purpose (ADR 0007)                                                          |
 | ESLint 9 flat config + Prettier          | **present** | see open decision 2                                                                                                                                                       |
-| Zod 4 + `nestjs-zod` 5                   | **present** | API only. One schema per operation, type derived (`BE_08` R3)                                                                                                             |
+| Zod 4 + `nestjs-zod` 5                   | **present** | Zod in the API and the web app; `nestjs-zod` in the API only. One schema per operation, type derived (`BE_08` R3)                                                     |
 | `@nestjs/swagger` 11 + Scalar            | **present** | API only. OpenAPI generated from the app at `/openapi.json`; Scalar UI at `/reference`. Pinned to the 11.x line — v12 needs NestJS 12                                     |
 | `uuid` 11                                | **present** | UUIDv7 (`GEN_11`). v14 is ESM-only and cannot be required from the Jest CommonJS runtime                                                                                  |
 | `openapi-typescript` + `openapi-fetch`   | **present** | the contract pipeline. `turbo run contract:generate --filter=api` writes `apps/api/openapi.json` and `packages/api/src/generated/schema.ts`, both committed (ADR 0006)    |
@@ -87,6 +87,8 @@ and propose the addition — do not quietly install it.
 | Playwright / browser Gherkin             | _planned_   | `features/` scenarios are `@api`-only; `FE_15` has no implementation                                                                                                      |
 | Redis, database, outbox, background jobs | _planned_   | no backing services, no Docker, no compose                                                                                                                                |
 | CI/CD                                    | _planned_   | no `.github/workflows`                                                                                                                                                    |
+| Install constraints                      | _planned_   | no `bunfig.toml` maturity window and no `trustedDependencies`; install scripts follow Bun's default list (`INFRA_04` R6)                                                |
+| Editor settings, git hooks               | _planned_   | no `.vscode/`, no hook manager (`INFRA_05` R9)                                                                                                                             |
 
 ## 5. Open decisions
 

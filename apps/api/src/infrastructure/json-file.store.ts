@@ -53,6 +53,8 @@ export async function writeJsonFile(filePath: string, value: unknown): Promise<v
     await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
     await rename(temporaryPath, filePath);
   } catch (error) {
+    // Cleanup is best-effort: the temporary file may never have been created, and a
+    // failure here must not replace the write error the caller needs to see.
     await unlink(temporaryPath).catch(() => undefined);
     throw error;
   }
@@ -68,6 +70,8 @@ export async function mutateJsonFile<T>(
 ): Promise<void> {
   const previous = writeQueues.get(filePath) ?? Promise.resolve();
 
+  // The previous mutation's failure belonged to its own caller, who already received
+  // it; this one must still run.
   const next = previous
     .catch(() => undefined)
     .then(async () => {

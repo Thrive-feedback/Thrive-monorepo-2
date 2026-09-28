@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { TodoListRepository } from '../../domain/repository/todo-list.repository.port';
 import type { TodoList } from '../../domain/entity/todo-list.entity';
 import { TodoListId } from '../../domain/value-object/todo-list-id.vo';
@@ -9,13 +10,16 @@ import { TodoListNotFoundError } from '../todo.errors';
  * or refuse, change it, save it. A use case may not call another use case, so the
  * shared workflow becomes this application service instead.
  *
- * BE_05 R8 — the load-change-save cycle is the single write per use case. The file
- * store serializes it (see `json-file.store.ts`), which is this project's stand-in for
- * a transaction.
+ * BE_05 R8 — the load-change-save cycle is the single write per use case, and it runs
+ * inside one unit of work, so a concurrent command cannot load the same version and
+ * overwrite this one's change.
  */
 @Injectable()
 export class TodoListMutationService {
-  constructor(private readonly repository: TodoListRepository) {}
+  constructor(
+    private readonly repository: TodoListRepository,
+    private readonly unitOfWork: UnitOfWork,
+  ) {}
 
   /**
    * Loads the aggregate, applies `change`, and saves the result.
@@ -23,11 +27,13 @@ export class TodoListMutationService {
    * BE_05 R6 — absence is decided here, as an application error. The repository
    * itself returns `null` and throws nothing (BE_06 R2).
    */
-  async apply<T>(rawListId: string, change: (list: TodoList) => T): Promise<T> {
-    const list = await this.loadOrThrow(rawListId);
-    const result = change(list);
-    await this.repository.save(list);
-    return result;
+  apply<T>(rawListId: string, change: (list: TodoList) => T): Promise<T> {
+    return this.unitOfWork.run(async () => {
+      const list = await this.loadOrThrow(rawListId);
+      const result = change(list);
+      await this.repository.save(list);
+      return result;
+    });
   }
 
   async loadOrThrow(rawListId: string): Promise<TodoList> {
