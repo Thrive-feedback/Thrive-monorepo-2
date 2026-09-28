@@ -66,7 +66,6 @@ packages/
   ui/           @repo/ui — shared React components
   eslint-config/      shared flat lint configs
   typescript-config/  shared tsconfig bases
-  jest-config/        shared test-runner bases (API)
   vitest-config/      shared test-runner bases (web)
 docs/
   conventions/  index.html + the documents + assets/doc.css
