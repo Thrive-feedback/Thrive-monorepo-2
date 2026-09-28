@@ -19,10 +19,10 @@ import { CorrelationIdMiddleware } from './shared/presentation/correlation-id.mi
   controllers: [AppController],
   providers: [
     AppService,
-    // BE_08 R2 — every value entering from outside is validated at the boundary, so a
-    // use case can assume its input already matched a schema.
+    // Every value entering from outside is validated here, so a use case can assume its
+    // input already matched a schema.
     { provide: APP_PIPE, useClass: ZodValidationPipe },
-    // BE_09 R8 — errors become responses in one filter and nowhere else.
+    // Errors become responses in this one filter and nowhere else.
     { provide: APP_FILTER, useClass: CodedErrorFilter },
   ],
 })

@@ -47,7 +47,7 @@ Check it; do not assume. **While an entry is `todo` its document does not exist,
 > entries conflict, stop and ask.
 
 Cite the convention ids you relied on (e.g. `BE_07`, `FE_03`) in your plan and in the PR
-description.
+description — not in code comments (`GEN_17`).
 
 ---
 

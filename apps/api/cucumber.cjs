@@ -1,7 +1,7 @@
 /**
- * BE_13 R1 — the `@api` scenarios run here, over HTTP against the application.
- * GEN_10 R9 — the feature files belong to everyone and live at the repository root;
- * these step definitions belong to this stack and live with it.
+ * The `@api` scenarios run here, over HTTP against the application. The feature files are
+ * shared by every stack and live at the repository root; these step definitions belong to
+ * this app and live with it.
  */
 module.exports = {
   default: {

@@ -1,10 +1,9 @@
 /**
- * GEN_08 R5 — a failure crosses the wire as a stable code from one catalogue. The message
- * beside it is prose for humans and may be reworded freely, which is exactly why nothing
- * may match on it.
+ * A failure crosses the wire as a stable code from one catalogue. The message beside it is
+ * prose for humans and may be reworded freely, which is exactly why nothing may match on it.
  *
- * FE_10 R7 — normalizing here means every call site sees one error shape, and an unknown
- * code falls through to the generic case rather than crashing.
+ * Normalizing here means every call site sees one error shape, and an unknown code falls
+ * through to the generic case rather than crashing.
  */
 
 /** The body `CodedErrorFilter` produces for every failure the API answers with. */
@@ -20,8 +19,8 @@ interface WireErrorBody {
 /**
  * The single error shape this package throws.
  *
- * `correlationId` is on the error rather than only in a log, because FE_10 R5 wants it
- * quotable by the person who hit the failure.
+ * `correlationId` is on the error rather than only in a log, so the person who hit the
+ * failure can quote it.
  */
 export class ApiError extends Error {
   readonly code: string;
@@ -47,12 +46,12 @@ export class ApiError extends Error {
 
 /**
  * The code used when the API could not be reached, or answered something that is not a
- * coded error body. Callers branch on it like any other code (FE_10 R7) rather than
+ * coded error body. Callers branch on it like any other code rather than
  * checking whether the failure "looks like" a network problem.
  */
 export const API_UNREACHABLE = 'API_UNREACHABLE';
 
-/** GEN_07 R4 — narrowed, never asserted: the body is whatever the server sent. */
+/** Narrowed, never asserted: the body is whatever the server sent. */
 function isWireErrorBody(value: unknown): value is WireErrorBody {
   if (typeof value !== 'object' || value === null || !('error' in value))
     return false;
