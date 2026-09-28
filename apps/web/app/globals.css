@@ -1,10 +1,9 @@
 /*
- * FE_04 R1 — Tailwind first, then the token layer. The token layer went with the example
- * at initialization (PROJECT.md §3); Thrive writes its own, and `FE_03` R6 makes those
- * token files the source of record. Until they exist there is nothing to import here.
+ * Tailwind first, then the token layer. The token files are the source of record for every
+ * design value; Thrive has not written them yet, so nothing is imported after Tailwind.
  *
- * FE_03 R1 — no literal color, length, shadow or duration belongs below this line. The
- * `@source` entries only tell the scanner where classes are written.
+ * No literal color, length, shadow or duration belongs below this line — each one is a
+ * token. The `@source` entries only tell the scanner where classes are written.
  */
 
 @import 'tailwindcss';
@@ -14,7 +13,7 @@
 
 @layer base {
   html {
-    /* Lets form controls and scrollbars follow the mode the tokens are in (FE_03 R7). */
+    /* Lets form controls and scrollbars follow the mode the tokens are in. */
     color-scheme: light dark;
   }
 }

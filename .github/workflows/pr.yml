@@ -1,7 +1,7 @@
-# INFRA_09 — the pipeline every merge candidate runs. Ordered cheapest and broadest first
-# (R2): code style and types catch most mistakes in seconds without building anything.
-# Every job runs a task a developer runs locally with the same arguments (R6) — `bun run
-# check` is both jobs back to back.
+# The pipeline every merge candidate runs. Ordered cheapest and broadest first: code style
+# and types catch most mistakes in seconds without building anything. Every job runs a
+# task a developer runs locally with the same arguments, so a red job reproduces on a
+# laptop — `bun run check` is the first three jobs back to back.
 #
 # Builds and deploys are absent: hosting is PROJECT.md §5 decision 5.
 name: PR
@@ -10,11 +10,11 @@ on:
   pull_request:
     branches: [main]
 
-# R9 — least privilege. These jobs read the code and publish nothing.
+# Least privilege: these jobs read the code and publish nothing.
 permissions:
   contents: read
 
-# R8 — a second push makes the first run's result worthless. Superseded runs cancel.
+# A second push makes the first run's result worthless, so superseded runs cancel.
 concurrency:
   group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -31,10 +31,10 @@ jobs:
         with:
           # The version `devEngines.packageManager` pins, so CI and a laptop agree.
           bun-version-file: package.json
-      # R4 — a pipeline never resolves a version.
+      # The lockfile is the only source of versions; CI never resolves a new one.
       - run: bun install --frozen-lockfile
       # Biome: formatting, lint and import sorting. `--error-on-warnings` because a
-      # warning nobody must act on is not a guardrail (INFRA_06 R3).
+      # warning nobody must act on gets ignored, and then it guards nothing.
       - run: bun run check:style
 
   types:
@@ -47,8 +47,8 @@ jobs:
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
-      # INFRA_05 R8 — type-checking is a task, run at the strictest setting the code
-      # sustains, in every workspace.
+      # Type-checking is its own task, run at the strictest setting the code sustains,
+      # in every workspace.
       - run: bun run check:types
 
   architecture:
@@ -61,8 +61,8 @@ jobs:
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
-      # The import graph (INFRA_06 R4), then the proof that each rule still fires
-      # (INFRA_06 R8), then the API's specifier-level rules. Runs under Bun, so the command
+      # The import graph, then the proof that each rule still fires, then the API's
+      # specifier-level rules. Runs under Bun, so the command
       # is the same on a laptop whatever Node version happens to be on PATH.
       - run: bun run check:arch
 
