@@ -3,8 +3,8 @@ title: "BE_01 · Project structure & module anatomy"
 id: "BE_01"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [INFRA_01]
 see_also: [BE_02, BE_03]
 ---
@@ -13,7 +13,7 @@ see_also: [BE_02, BE_03]
 
 # [BE] Project structure & module anatomy
 
-`P1` · `BE_01` · `draft` · `updated 2026-09-19`
+`P1` · `BE_01` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are adding a module, or you do not know where a backend file belongs.
 
@@ -28,10 +28,10 @@ If you read nothing else:
 3. <a id="R3"></a>A module's only top-level directories are `domain/`, `application/`, `infrastructure/`, `presentation/`. Create one when it has a file, not before.
 4. <a id="R4"></a>Every module declares its Nest module in `<name>.module.ts` and its public surface in `index.ts`, both at the module root.
 5. <a id="R5"></a>Inside a layer, group files by the role they play, using the role folders in the tree under [R3](#R3) and no others.
-6. <a id="R6"></a>Suffix every file with its role — `.use-case.ts`, `.controller.ts`, `.port.ts`, `.adapter.ts`, `.repository.ts`, `.entity.ts`, `.vo.ts`, `.mapper.ts`, `.errors.ts`, `.dto.ts`.
+6. <a id="R6"></a>Suffix every file under `modules/` with its role — `.use-case.ts`, `.controller.ts`, `.port.ts`, `.adapter.ts`, `.repository.ts`, `.entity.ts`, `.vo.ts`, `.mapper.ts`, `.errors.ts`, `.dto.ts`, `.module.ts`, `.service.ts`, `.store.ts`, `.query.ts`, `.record.ts`, `.types.ts`, `.schema.ts`, `.query-port.ts`.
 7. <a id="R7"></a>Split a module into submodules under one context directory when it owns a second aggregate; concepts both submodules need live in `<context>/shared/domain/`.
-8. <a id="R8"></a>Put a file in `shared/` only when a second module already imports it, and in `infrastructure/` only when it wraps a provider rather than a business capability.
-9. <a id="R9"></a>Reach another module only through its barrel, through the app's path alias. Never `../` out of your own module.
+8. <a id="R8"></a>Put a module's concept in `shared/` only when a second module already imports it — the cross-cutting pieces [R1](#R1) lists belong there from the start — and in `infrastructure/` only when it wraps a provider rather than a business capability.
+9. <a id="R9"></a>Import across a module boundary through the app's path alias, never by `../` out of your own module; what you may import is [BE_03](../index.html#BE_03)'s.
 10. <a id="R10"></a>Scaffold a module with every item on the checklist below, or not at all.
 
 ## Why
@@ -44,7 +44,7 @@ The second half of the layout is the part people skip: a module needs a *stated*
 
 ### [R1](#R1) Four areas
 
-`modules/` holds capabilities and is where nearly everything you write goes. `shared/` holds code that is genuinely common to modules and belongs to none of them — the base error classes, cross-cutting guards, pipes, filters and interceptors, the transaction boundary abstraction. `infrastructure/` holds an integration with one technical provider that no single capability owns — the logger, the cache client, the storage client. `config/` is [BE_10](../index.html#BE_10)'s subject. Alongside them sit the files the framework dictates: the bootstrap entry point and the root application module, which imports every module and nothing else.
+`modules/` holds capabilities and is where nearly everything you write goes. `shared/` holds code that is genuinely common to modules and belongs to none of them — the base error classes, cross-cutting guards, pipes, filters, interceptors and decorators, the transaction boundary abstraction. `infrastructure/` holds an integration with one technical provider that no single capability owns — the logger, the cache client, the storage client. `config/` is [BE_10](../index.html#BE_10)'s subject. Alongside them sit the files the framework dictates: the bootstrap entry point and the root application module, which imports the modules and the app-wide wiring and holds no capability of its own.
 
 A fifth area means one of the four is wrong, which is a change to this document ([GEN_01#R10](../index.html#GEN_01)) and not a directory you create quietly. Where the app itself sits in the workspace is [INFRA_01](../index.html#INFRA_01)'s.
 
@@ -62,26 +62,27 @@ modules/<capability>/
                                 repository/ port/ types/
                                 <name>.errors.ts
 
+  application/                  use-cases/ query-port/ port/
+                                service/ types/ adapter/
+                                <name>.errors.ts
+  infrastructure/               entity/ mapper/ repository/ query/
+  presentation/                 dto/ <name>.controller.ts
+
 modules/<context>/              a context with more than one aggregate
   shared/domain/                concepts both submodules own
   shared/application/           read contracts both submodules use
   <submodule>/                  the anatomy above, per aggregate
-  application/                  use-cases/ dto/ query-port/ port/
-                                service/ types/ adapter/
-                                <name>.errors.ts
-  infrastructure/               entity/ mapper/ repository/ query/
-  presentation/                 <name>.controller.ts
 ```
 
 What each layer may import is [BE_02](../index.html#BE_02); what `domain/port/` means next to `domain/repository/` is [BE_03](../index.html#BE_03) and [BE_06](../index.html#BE_06). Here they are only places. An empty role folder is noise — add it with its first file.
 
-Four of these were added after the first module was built, because the original list had nowhere to put things the other documents require: `application/port/` for an outbound contract that is not a query ([BE_02#R6](../index.html#BE_02)), `application/service/` for the application service [BE_05#R10](../index.html#BE_05) creates when two use cases share a workflow, `application/types/` for the projections a query contract returns, and `infrastructure/query/` for the implementation behind that contract ([BE_06#R7](../index.html#BE_06)).
+Four of these exist because other documents require a place for them: `application/port/` for an outbound contract that is not a query ([BE_02#R6](../index.html#BE_02)), `application/service/` for the application service [BE_05#R10](../index.html#BE_05) creates when two use cases share a workflow, `application/types/` for the projections a query contract returns, and `infrastructure/query/` for the implementation behind that contract ([BE_06#R7](../index.html#BE_06)).
 
 **Enforcement:** review — the folder vocabulary is checkable and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R6](#R6) The role suffix
 
-Casing and naming a file after its export are [GEN_07](../index.html#GEN_07)'s. The suffix is this document's, because it is what makes a violation visible in a diff: a `.controller.ts` importing a `.repository.ts` is wrong at a glance, with no need to open either file. One exported class per file, named for the file.
+Casing and naming a file after its export are [GEN_07](../index.html#GEN_07)'s. The suffix is this document's, because it is what makes a violation visible in a diff: a `.controller.ts` importing a `.repository.ts` is wrong at a glance, with no need to open either file.
 
 **Do**
 
@@ -99,7 +100,7 @@ domain/helpers.ts                   // a drawer, not a role
 infrastructure/index.ts             // an internal barrel (GEN_07#R6)
 ```
 
-**Enforcement:** automated — `apps/api/scripts/check-architecture.mjs` checks every file under `modules/` for its role suffix ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** partly automated — the architecture check ([INFRA_06](../index.html#INFRA_06)) rejects a file under `modules/` without a role suffix, but only when someone runs it; putting it in a pipeline is [INFRA_09](../index.html#INFRA_09)'s.
 
 ### [R7](#R7) Submodules and the shared kernel
 
@@ -119,7 +120,7 @@ The failure this prevents is a `shared/utils/` that becomes the place code goes 
 
 ### [R10](#R10) Scaffolding is all-or-nothing
 
-A half-scaffolded module is worse than none, because the next person copies it. Everything on the checklist exists before the pull request opens, including the vertical slice: one route reaching one use case reaching one port with one test at each end. If a piece is genuinely not needed yet — no persistence, no cross-module port — leave the folder out ([R3](#R3)) rather than leaving it empty.
+A half-scaffolded module is worse than none, because the next person copies it. Everything on the checklist exists before the pull request opens, including the vertical slice: one entry point — a route, or a port the barrel publishes — reaching one use case reaching one port, with one test at each end. If a piece is genuinely not needed yet — no persistence, no cross-module port — leave the folder out ([R3](#R3)) rather than leaving it empty.
 
 **Enforcement:** review — checklist item in [GEN_06](../index.html#GEN_06).
 
@@ -139,17 +140,17 @@ apps/api/src/modules/subscriptions/
   application/
     use-cases/start-subscription.use-case.ts
     use-cases/start-subscription.use-case.spec.ts
-    dto/request/start-subscription.request.dto.ts
-    dto/response/start-subscription.response.dto.ts
     subscription.errors.ts
   infrastructure/
     entity/subscription.record.ts
     mapper/subscription.mapper.ts
     repository/subscription.repository.ts
-  presentation/subscription.controller.ts
+  presentation/
+    dto/start-subscription.dto.ts
+    subscription.controller.ts
 ```
 
-There is no `domain/port/` and no `application/adapter/`: nothing outside the module calls it yet, so it publishes nothing ([BE_03](../index.html#BE_03)). There is no `query-service/`: the one route is a command. Both appear the day something needs them, and not before ([R3](#R3)).
+There is no `domain/port/` and no `application/adapter/`: nothing outside the module calls it yet, so it publishes nothing ([BE_03](../index.html#BE_03)). There is no `query-port/`: the one route is a command. Both appear the day something needs them, and not before ([R3](#R3)).
 
 `index.ts` exports `SubscriptionsModule` and nothing else. `SubscriptionRepositoryPort` stays unexported — it is an internal persistence contract, and exporting it would hand every other module write access to this aggregate ([BE_06](../index.html#BE_06)). The root application module imports `SubscriptionsModule`; no other module does.
 
@@ -168,7 +169,7 @@ When billing later grows its own aggregate, the directory becomes `modules/subsc
 
 ## Open questions
 
-- Every rule here is a path shape, and path shapes are the cheapest thing a machine can check. [R6](#R6) and [R9](#R9) are now checked by `apps/api/scripts/check-architecture.mjs` ([INFRA_06](../index.html#INFRA_06)); the rest remain review rules and are the next highest-value guardrails the backend has.
+- [R1](#R1), [R3](#R3), [R5](#R5), [R6](#R6) and [R9](#R9) are path shapes, the cheapest thing a machine can check; until a gate every change passes checks them, they are review rules ([INFRA_06](../index.html#INFRA_06)).
 - Where a module's Gherkin step definitions live is unsettled — beside the module or in the app's test root. [BE_13](../index.html#BE_13) decides it; this document follows.
 
 ## Related

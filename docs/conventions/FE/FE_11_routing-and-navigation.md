@@ -3,8 +3,8 @@ title: 'FE_11 · Routing & navigation'
 id: 'FE_11'
 area: 'FE'
 tier: 'P1'
-status: 'draft'
-updated: '2026-09-22'
+status: 'stable'
+updated: '2026-09-28'
 requires: [FE_08]
 see_also: [FE_12, FE_18]
 ---
@@ -13,7 +13,7 @@ see_also: [FE_12, FE_18]
 
 # [FE] Routing & navigation
 
-`P1` · `FE_11` · `draft` · `updated 2026-09-22`
+`P1` · `FE_11` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are adding or restructuring a route.
 
@@ -77,9 +77,9 @@ Changing a shipped URL is breaking. If it must change, the old one redirects per
 
 A layout renders around its routes and does not re-render as the user moves between them. That makes it the right home for chrome — navigation, shells, providers — and the wrong home for anything that varies per page: a title, a breadcrumb, page-specific data. Data read in a layout is read for every route beneath it, including the ones that do not need it.
 
-A layout is also a server component by default, and it stays one. Needing a provider does not convert it; the provider goes in a thin client wrapper the layout renders ([FE_08](../index.html#FE_08)).
+Whether a layout may carry a client directive is [FE_08](../index.html#FE_08)'s R7.
 
-**Enforcement:** review — a client directive on a layout file is greppable ([FE_08](../index.html#FE_08)).
+**Enforcement:** review.
 
 ### [R4](#R4) Dynamic segments
 
@@ -93,7 +93,7 @@ The value is user input: it arrives from a typed URL as easily as from a link. V
 
 A route that awaits data gets a loading file whose fallback reserves the space the content will take, so the page does not jump when it arrives ([FE_09](../index.html#FE_09) owns the finer-grained Suspense boundaries inside a page). A route that can fail gets an error file, which is a client boundary by nature and offers a retry rather than only an apology.
 
-A missing resource is not an error. Use the framework's not-found path so the response carries the right status — a soft "nothing here" page returned with a success status is a page search engines index and monitoring never counts ([FE_12](../index.html#FE_12)). Place a not-found boundary in each group whose layout already draws the shell, or the root one renders its own chrome inside that group's and the page gets two of everything. What those pages say is [FE_18](../index.html#FE_18)'s.
+A missing resource is not an error. Use the framework's not-found path. On a response that has not begun streaming it carries a 404; on one that has, it renders the not-found UI under a 200 with a noindex tag, which covers search engines but not monitoring — see Open questions. An empty page with no not-found call is wrong either way ([FE_12](../index.html#FE_12)). Place a not-found boundary in each group whose layout already draws the shell, or the root one renders its own chrome inside that group's and the page gets two of everything. What those pages say is [FE_18](../index.html#FE_18)'s.
 
 **Enforcement:** review.
 
@@ -118,7 +118,7 @@ export const OrdersSearchParams = schema.object({
 
 Use the framework's link component for anything a user clicks, so it prefetches, preserves scroll behavior, and stays a real anchor a user can open in a new tab. Assigning to the browser's location throws away the client router and reloads the app. Programmatic navigation after an action uses the router API, not a location assignment.
 
-Decide redirects as early as they can be decided: a permanent URL move in the routing configuration, an access decision at the edge or in a layout, never after a page has already rendered and fetched. A redirect decided in a client effect ships the page, runs it, and then moves the user — the flash of the wrong page is the visible half, and the wasted request is the other. Permanent moves and temporary ones are different status codes, and using the permanent one for an access redirect is a mistake browsers cache.
+Decide redirects as early as they can be decided: a permanent URL move in the routing configuration, an access decision before the page renders ([FE_19](../index.html#FE_19) owns where), never after a page has already rendered and fetched. A redirect decided in a client effect ships the page, runs it, and then moves the user — the flash of the wrong page is the visible half, and the wasted request is the other. Permanent moves and temporary ones are different status codes, and using the permanent one for an access redirect is a mistake browsers cache.
 
 **Enforcement:** review — a location assignment is greppable and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
@@ -136,7 +136,7 @@ Orders: a filtered list, a detail page, and a detail modal opened from the list.
 
 The list lives at `/orders` inside the signed-in group, so it inherits the app chrome from that group's layout without the group appearing in the URL ([R2](#R2)). The status filter and page number are search params with a declared schema, so a link to "open orders, page 2" works when pasted into a colleague's browser and the back button steps through filter changes ([R7](#R7)).
 
-The detail is `/orders/[orderId]` ([R4](#R4)). The segment is validated before it reaches the data layer; a value that is not an order id resolves to not-found rather than a failed query, and a real id that no longer exists resolves the same way with a correct status ([R6](#R6)). The route has a loading file that renders the row skeleton at the real row height, and an error file offering a retry ([R5](#R5)).
+The detail is `/orders/[orderId]` ([R4](#R4)). The segment is validated before it reaches the data layer; a value that is not an order id resolves to not-found rather than a failed query, and a real id that no longer exists resolves the same way ([R6](#R6)). The route has a loading file that renders the row skeleton at the real row height, and an error file offering a retry ([R5](#R5)).
 
 The modal is the case for interception ([R10](#R10)): clicking a row from the list opens the detail over the list at `/orders/abc123`, while opening that URL directly renders the full page. Both render one component; only the frame differs. The pull request says so, because without that sentence the next reader sees two routes for one thing.
 
@@ -149,7 +149,7 @@ Two decisions worth noting. The layout holds the chrome and no order data, even 
 - The layout holds only what persists across its routes ([R3](#R3)).
 - Dynamic segments are named for their content and validated before use ([R4](#R4)).
 - Loading and error files exist wherever the route can wait or fail ([R5](#R5)).
-- A missing resource returns the framework's not-found, with the right status ([R6](#R6)).
+- A missing resource calls the framework's not-found path, never an empty page; its status is 404 unless the route streams (see Open questions) ([R6](#R6)).
 - Shareable state is in the URL, with a declared and parsed schema ([R7](#R7)).
 - Navigation uses the framework's link and router; no location assignment ([R8](#R8)).
 - Redirects are decided server-side, with the right permanence ([R9](#R9)).
@@ -160,7 +160,7 @@ Two decisions worth noting. The layout holds the chrome and no order data, even 
 - [R7](#R7) says a schema per route but does not say where it lives or whether the client and server share one parser. The first two routes will answer it differently unless someone decides; it interacts with [FE_10](../index.html#FE_10)'s client.
 - Nothing here covers route-level authorization — where the decision is made, and how a redirect avoids leaking whether a resource exists. That is [FE_19](../index.html#FE_19)'s, and until it exists [R9](#R9) is the only guidance.
 - Whether URL moves are kept in the routing configuration forever or expire is undecided, and the list only grows.
-- [R5](#R5) and [R6](#R6) cannot both hold on a route that streams, and [R5](#R5) is one of the two things that makes a route stream. A segment's error file is a client boundary and a slow section's Suspense boundary ([FE_09#R7](../index.html#FE_09)) is another; with either present the response has already been sent as `200` by the time `notFound()` runs, so the not-found UI renders under a success status. Measured on the reference implementation, not inferred: removing the error boundary alone restores the `404`. The framework injects `noindex`, which covers [R6](#R6)'s search-engine reasoning but not its monitoring reasoning. The available fix — checking existence at the edge, before the response streams — buys the status with an API call on every request to the route. This document should say which way that trade goes rather than leaving each route to decide.
+- [R5](#R5) and [R6](#R6) cannot both hold on a route that streams: an error file or a slow section's Suspense boundary ([FE_09#R7](../index.html#FE_09)) sends the response as `200` before `notFound()` runs. The fix — checking existence at the edge, before the response streams — buys the status with an API call on every request to the route. This document should say which way that trade goes rather than leaving each route to decide.
 
 ## Related
 

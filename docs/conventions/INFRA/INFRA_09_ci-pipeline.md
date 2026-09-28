@@ -3,8 +3,8 @@ title: "INFRA_09 · CI pipeline (GitHub Actions)"
 id: "INFRA_09"
 area: "INFRA"
 tier: "P1"
-status: "draft"
-updated: "2026-09-06"
+status: "stable"
+updated: "2026-09-28"
 requires: [INFRA_06]
 see_also: [INFRA_11, INFRA_13]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_11, INFRA_13]
 
 # [Infra] CI pipeline (GitHub Actions)
 
-`P1` · `INFRA_09` · `draft` · `updated 2026-09-06`
+`P1` · `INFRA_09` · `stable` · `updated 2026-09-28`
 
 **Open when:** CI is failing, or you are adding a check.
 
@@ -26,10 +26,10 @@ If you read nothing else:
 1. <a id="R1"></a>Every merge candidate runs the same pipeline, from a clean checkout, on pinned versions.
 2. <a id="R2"></a>Order jobs cheapest and broadest first, so the common failure is reported in a minute.
 3. <a id="R3"></a>Run only what the change affects, using the task graph rather than a hand-written list of paths.
-4. <a id="R4"></a>Install from the lockfile in frozen mode. A pipeline never resolves a version.
+4. <a id="R4"></a>Run every install frozen, as [INFRA_04#R2](../index.html#INFRA_04) requires; no job adds a step that resolves or updates a version.
 5. <a id="R5"></a>Cache only what is deterministic, keyed by its inputs. Never cache a result you have not proven.
 6. <a id="R6"></a>Every job runs a command a developer can run locally, with the same arguments.
-7. <a id="R7"></a>Never merge red and never re-run a job to pass. Quarantine a flake with an owner and a date.
+7. <a id="R7"></a>Never re-run a job or add a retry to make it pass. A flaky test is a defect to fix before merging.
 8. <a id="R8"></a>Bound every job with a timeout, cancel superseded runs, and split a suite that outgrows its runner.
 9. <a id="R9"></a>Give the pipeline the least privilege it needs, and take its secrets from the platform's store.
 10. <a id="R10"></a>Land a pipeline change with the change that needs it, and review it as code.
@@ -59,7 +59,7 @@ Order by how cheap the feedback is and how many failures it catches:
 | Integration | Adapters against real backing services ([BE_12](../index.html#BE_12)) |
 | Acceptance / browser | Whole flows, on the built artifact ([BE_13](../index.html#BE_13), [FE_15](../index.html#FE_15)) |
 
-Run independent jobs in parallel; keep the dependency edges that matter, so a compile error is not discovered by a browser suite twenty minutes in.
+Run independent jobs in parallel; keep the dependency edges that matter, so a compile error is not discovered by a browser suite twenty minutes in. Every stage in the table is a required check ([INFRA_08#R9](../index.html#INFRA_08)). A required job always starts and reports; affected-only narrows what it executes, never whether it runs, because a required check that never starts leaves the merge waiting forever ([R3](#R3)).
 
 **Enforcement:** review.
 
@@ -69,11 +69,11 @@ A change to one workspace does not need every workspace's tests. Let the task ru
 
 One exception: on the default branch and before a release, run everything. Affected-only optimizes feedback speed; it is not a statement that the repository is healthy.
 
-**Enforcement:** partly automated — the task runner computes the affected set; that the pipeline uses it rather than a path filter is review.
+**Enforcement:** review — a path filter in a job trigger is visible in the pipeline definition and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R4](#R4) and [R5](#R5) Frozen installs, honest caches
 
-Install in a mode that fails when the lockfile and the manifests disagree ([INFRA_04#R3](../index.html#INFRA_04)). A pipeline that resolves versions tests something other than what was committed, and its green result means less than it appears to.
+Install in a mode that fails when the lockfile and the manifests disagree ([INFRA_04#R2](../index.html#INFRA_04)). A pipeline that resolves versions tests something other than what was committed, and its green result means less than it appears to.
 
 Cache aggressively but only what is deterministic, keyed by everything that can change the output: the lockfile for dependencies, the task's declared inputs for its outputs — **including the environment variables the task reads**, which are the input people forget. A task whose behavior depends on an undeclared variable will be served a cached result computed under a different one, which is a green pipeline that tested something else. If a task's inputs cannot be stated precisely, it is not cacheable yet ([INFRA_13](../index.html#INFRA_13)).
 
@@ -87,17 +87,17 @@ Every job runs a task the repository already exposes, with the arguments a perso
 
 ### [R7](#R7) Red means red
 
-A red pipeline blocks the merge, and the response is to fix the cause. Re-running until green is the single most damaging habit available here: it converts an intermittent defect into a permanently green build, and the next person to see that defect is a user ([BE_11#R10](../index.html#BE_11)).
+A red pipeline blocks the merge ([GEN_06#R10](../index.html#GEN_06)), and the response is to fix the cause. Re-running until green is the single most damaging habit available here: it converts an intermittent defect into a permanently green build, and the next person to see that defect is a user ([BE_11#R8](../index.html#BE_11)).
 
-When a test is genuinely flaky, it is telling you about a race — usually in the application, not the test. Quarantine it in the change that noticed it, with an owner and a date, so the suite goes green honestly and the problem stays visible. What is not acceptable is an automatic retry wrapper around the suite, which hides the same information permanently.
+When a test is genuinely flaky, it is telling you about a race — usually in the application, not the test. Fix the race before merging. Skipping the test to go green is disabling it, which the hard rules forbid, and an automatic retry wrapper hides the same information permanently. ADR 0010 records why there is no quarantine.
 
-**Enforcement:** review — an automatic retry setting is visible in the pipeline configuration and should be treated as a change to this rule.
+**Enforcement:** review — an automatic retry setting is visible in the pipeline configuration and is a change to this rule.
 
 ### [R8](#R8) Job hygiene: bound, cancel, split
 
 Three settings that decide whether the pipeline stays usable as it grows, and all three are one line each.
 
-**A timeout on every job.** A job with no bound does not fail — it hangs, holds a runner, and is eventually killed by a platform limit twenty minutes later with no useful output. Set the timeout a little above the job's honest worst case, so a hang is reported as a hang. It is also the only mechanism that makes [R9](#R9)'s time budget real: a job that outgrows its timeout forces the conversation rather than quietly costing everyone four minutes.
+**A timeout on every job.** A job with no bound does not fail — it hangs, holds a runner, and is eventually killed by a platform limit twenty minutes later with no useful output. Set the timeout a little above the job's honest worst case, so a hang is reported as a hang. It is also the only mechanism that bounds pipeline time today: a job that outgrows its timeout forces the conversation rather than quietly costing everyone four minutes.
 
 **Cancel superseded runs.** When a branch is pushed twice, the first run's result is worthless before it finishes. Group runs by branch and cancel the in-flight one on a new push. This is pure saving — shorter queues for everyone — with one exception: never cancel runs on the default branch, where each commit's result is a fact someone may need.
 
@@ -111,7 +111,7 @@ The pipeline holds credentials, so it is a target. Give each job least privilege
 
 Pipeline definitions are code: reviewed, changed with the work that needs them, never edited on the default branch to "just try something". A pipeline change that cannot be tested before merging argues for thinner jobs ([R6](#R6)).
 
-**Enforcement:** partly automated — permissions are declared per job and enforced by the platform; least privilege is review.
+**Enforcement:** review — a job with no explicit permissions block, or an action pinned to a tag, is detectable in the pipeline definition and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
 ## Worked example
 
@@ -132,7 +132,7 @@ Meanwhile the pipeline change itself: the integration job needs the cache servic
 - Job selection comes from the task graph, not a path filter ([R3](#R3)).
 - Installs are frozen ([R4](#R4)); new caches are keyed by their real inputs ([R5](#R5)).
 - Every job runs a task a developer can run locally ([R6](#R6)).
-- Nothing was merged red, no job was re-run to pass, and any flake is quarantined with an owner and a date ([R7](#R7)).
+- Nothing was merged red, no job was re-run to pass, and no flake was skipped or retried ([R7](#R7)).
 - Every new job has a timeout; superseded runs cancel; no suite is silently over budget ([R8](#R8)).
 - New jobs declare least privilege and take secrets from the store ([R9](#R9)).
 - The pipeline change landed with the work that needed it ([R10](#R10)).
@@ -140,9 +140,9 @@ Meanwhile the pipeline change itself: the integration job needs the cache servic
 ## Open questions
 
 - No total time budget is stated for the pipeline. Per-job timeouts ([R8](#R8)) bound the worst case but do not stop the sum creeping up one job at a time, and nothing reports the trend.
-- [R7](#R7) names quarantine but no mechanism; without a tag and a visible list, a quarantined test is a deleted test.
 - Sharding ([R8](#R8)) has no stated threshold — how slow a suite must be before it is split, and how the slices are balanced, will be decided by whoever hits it first.
 - Whether the default branch runs the full suite on every merge or on a schedule is undecided, and it trades merge latency against how quickly a cross-workspace breakage is found ([R3](#R3)).
+- A flake that reaches the default branch blocks every merge until it is fixed ([R7](#R7)). Reverting the change that introduced it is the likely escape valve, but who reverts, and when, is left for the first real case (ADR 0010).
 
 ## Related
 

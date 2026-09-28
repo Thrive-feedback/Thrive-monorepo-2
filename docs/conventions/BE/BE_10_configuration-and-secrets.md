@@ -3,8 +3,8 @@ title: "BE_10 · Configuration & secrets in the application"
 id: "BE_10"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [INFRA_07, GEN_09]
 ---
 
@@ -12,7 +12,7 @@ requires: [INFRA_07, GEN_09]
 
 # [BE] Configuration & secrets in the application
 
-`P1` · `BE_10` · `draft` · `updated 2026-09-19`
+`P1` · `BE_10` · `stable` · `updated 2026-09-28`
 
 **Open when:** the code needs a value that differs per environment.
 
@@ -30,7 +30,7 @@ If you read nothing else:
 6. <a id="R6"></a>Never branch on the environment name in business code. Express the difference as a configuration value.
 7. <a id="R7"></a>Derive computed values once, at boot, inside the config layer.
 8. <a id="R8"></a>Keep configuration out of the domain entirely. A rule that varies takes its value as an argument.
-9. <a id="R9"></a>Ship a new variable's schema entry and its example entry in the same change.
+9. <a id="R9"></a>A new variable's example line is [INFRA_07#R2](../index.html#INFRA_07)'s; the schema entry is already required by [R1](#R1) and [R2](#R2).
 10. <a id="R10"></a>Never log a configuration value, return one from an endpoint, or put one in an error message.
 
 ## Why
@@ -49,11 +49,11 @@ One file in `config/` touches `process.env`; every other file receives values th
 
 The rule extends to indirect reads: no framework helper that resolves a variable by name at a call site, and no library configured with a bare environment lookup somewhere in a module file.
 
-**Enforcement:** automated — `apps/api/scripts/check-architecture.mjs` flags a `process.env` read outside `config/configuration.ts` ([INFRA_06](../index.html#INFRA_06)); the boundary file itself carries the single documented exception.
+**Enforcement:** partly automated — an architecture check flags a literal `process.env` read outside the boundary file, but only when someone runs it, and it cannot see indirect lookups ([INFRA_06](../index.html#INFRA_06)); the rest is review.
 
 ### [R2](#R2) Fail fast, at boot
 
-Parse the environment against the schema before the application is constructed, and exit non-zero with the list of what failed — every failure at once, not the first. A configuration mistake is then a startup log a human can read and a deployment that never takes traffic.
+Parse the environment against the schema before the application takes traffic, and exit non-zero with the list of what failed — every failure at once, not the first. A configuration mistake is then a startup log a human can read and a deployment that never takes traffic.
 
 What must not happen is a partial start: parsed lazily on first use, or with a warning and a fallback. Both convert a config error into a runtime incident, and the fallback path is the one nobody tested.
 
@@ -111,7 +111,7 @@ And the domain never sees any of it. A rule that depends on a configured number 
 
 ### [R9](#R9) The variable and its example ship together
 
-A new variable that is not in the example file breaks every other developer's next start, and the breakage looks like a bug in the code they just pulled. The schema entry, the example entry and the code that uses it belong to one change. What the example file may contain — a placeholder, never a real value — and how secrets reach each environment are [INFRA_07](../index.html#INFRA_07)'s.
+This rule is a pointer, kept so its id stays stable. When a variable's example line ships, what it may hold — a placeholder, never a real value — and how secrets reach each environment are [INFRA_07](../index.html#INFRA_07)'s.
 
 **Enforcement:** review.
 
@@ -127,7 +127,7 @@ The exception is a deliberate, curated startup line — the values chosen for it
 
 The API app's configuration, end to end.
 
-`config/env.ts` is the only file that mentions `process.env` ([R1](#R1)). It parses one schema per namespace and exits on failure ([R2](#R2)):
+One boundary file is the only one that mentions `process.env` ([R1](#R1)). It parses one schema, exits on failure ([R2](#R2)), and projects each namespace from the result ([R4](#R4)):
 
 ```
 export const ApiEnvSchema = schema.object({
@@ -161,7 +161,7 @@ Finally, what the change looks like in review: a schema entry, an example entry,
 
 ## Open questions
 
-- [R1](#R1) is the rule this document exists for and the one most easily broken by a single convenient line; it is now checked by `apps/api/scripts/check-architecture.mjs` ([INFRA_06](../index.html#INFRA_06)).
+- [R1](#R1) is the rule this document exists for and the one most easily broken by a single convenient line; running its check on every change is the highest-value guardrail this document wants ([INFRA_06](../index.html#INFRA_06)).
 - Secret rotation without a restart has no answer here: every value is parsed at boot, so rotating one means a deploy. That is acceptable at small scale and should be revisited when a secrets manager is introduced ([INFRA_07](../index.html#INFRA_07)).
 - Whether feature flags are configuration or their own subsystem is unresolved ([R6](#R6) pushes toward configuration); [INFRA_16](../index.html#INFRA_16) owns their lifecycle and the boundary between the two is not drawn.
 

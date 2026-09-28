@@ -3,8 +3,8 @@ title: "BE_03 · Module boundaries & independence"
 id: "BE_03"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [BE_02]
 see_also: [INFRA_03, BE_16]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_03, BE_16]
 
 # [BE] Module boundaries & independence
 
-`P1` · `BE_03` · `draft` · `updated 2026-09-19`
+`P1` · `BE_03` · `stable` · `updated 2026-09-28`
 
 **Open when:** one module needs something that belongs to another.
 
@@ -26,13 +26,13 @@ If you read nothing else:
 1. <a id="R1"></a>A module owns its data and every rule over it. No other module reads or writes that data directly.
 2. <a id="R2"></a>The module's barrel is its entire public surface: its Nest module, its published ports, and the types those ports use.
 3. <a id="R3"></a>Never export an entity, repository port, use case, query contract, DTO or error class from the barrel.
-4. <a id="R4"></a>Never import another module's `application/`, `infrastructure/` or `presentation/`. The barrel or nothing.
+4. <a id="R4"></a>Import another module only through its barrel — never a path beneath its root.
 5. <a id="R5"></a>Declare a cross-module need as a port in the *provider*, named for the fact or the action the consumer wants.
 6. <a id="R6"></a>A port returns plain data — never a domain entity, never a persistence record.
 7. <a id="R7"></a>Never join, transact, or migrate across two modules' tables.
 8. <a id="R8"></a>Add a port where the boundary buys something. Where it buys nothing, do not create the boundary.
 9. <a id="R9"></a>Resolve a concept two modules both need by giving it one owner or one shared home — never by copying it.
-10. <a id="R10"></a>Name the provider module only in your module file. Everywhere else, depend on the port.
+10. <a id="R10"></a>Import the provider's Nest module only in your module file. Everywhere else, depend on the port.
 
 ## Why
 
@@ -85,6 +85,12 @@ Exporting a repository hands another module write access to your aggregate in a 
 
 **Enforcement:** review — checkable from the source folder of each exported symbol ([INFRA_06](../index.html#INFRA_06)).
 
+### [R4](#R4) The barrel or nothing
+
+A path beneath another module's root, `domain/` included, is a dependency on how it works rather than on what it offers.
+
+**Enforcement:** partly automated — the architecture check ([INFRA_06](../index.html#INFRA_06)) rejects an alias import past another module's barrel and a relative import out of the module. It catches nothing until someone runs it; putting it in a pipeline is [INFRA_09](../index.html#INFRA_09)'s.
+
 ### [R5](#R5) The port lives in the provider, named by the consumer's need
 
 A port belongs to the module that can honor it, not the one that wants it — otherwise every module accumulates contracts describing its neighbours. Name it for the fact or the action, in verb form, not for the mechanism: `ResolveAuthorProfilesPort`, `SuspendAccountPort`, `FindPublishedArticlePort`. Avoid a generic `execute()`; the method name is where the meaning is.
@@ -92,11 +98,9 @@ A port belongs to the module that can honor it, not the one that wants it — ot
 The mechanics, which are worth fixing once so every port reads the same way:
 
 - `domain/port/<name>.port.ts` declares an abstract class and nothing else; its input, result and view types live beside it in `domain/types/<name>.types.ts`.
-- An adapter `implements` the port; it never `extends` it. Extending inherits an abstract class as a base and silently loses the contract check.
 - One adapter may satisfy several ports. Bind each token to that one instance rather than registering the class twice, and export the tokens — not the adapter.
-- A consumer injects the port type and keeps the `Port` suffix on the parameter name, so the call site says which contract it is using.
 
-An adapter that duplicates a use case is the failure to watch for. If the logic it needs is already a use case or query service the provider's own routes call, delegate to it; if nothing else uses it, let the adapter own the logic outright and delete the use case that existed only to be wrapped.
+An adapter that duplicates a use case is the failure to watch for. The adapter lives in `application/adapter/`, holds no logic, and delegates to the provider's use case — the same one its own routes call, if any — so the workflow has one implementation.
 
 **Do**
 
@@ -114,7 +118,7 @@ constructor(private readonly findPublishedArticle: FindPublishedArticlePort) {}
 
 ```
 // consumer reaches in and re-implements the owner's rules
-import { ArticleRepository } from '@/modules/articles/infrastructure/repository/article.repository';
+import { ArticleRepository } from '@app/modules/articles/infrastructure/repository/article.repository';
 
 const row = await this.articleRepo.findById(id);
 if (row.status === 'PUBLISHED' && !row.deletedAt) { … }
@@ -156,9 +160,9 @@ The reported article is a *fact* moderation reads. Articles declares `FindPublis
 
 The takedown is an *action*, and this is where the boundary earns its cost. Moderation must not set a status column: whether an article can be withdrawn, what that does to its publish state, and what it emits are articles' rules. So articles declares `WithdrawArticlePort`, and its adapter delegates to the same use case the author's own route calls. One rule, one implementation, two callers.
 
-Moderation's module file imports `ArticlesModule` and injects both ports ([R10](#R10)). Nothing else in moderation names articles. Its use-case tests substitute the two ports and run with no article code loaded at all ([BE_11](../index.html#BE_11)) — the practical proof that the boundary is real.
+Moderation's module file imports `ArticlesModule` and injects both ports ([R10](#R10)). Nothing else in moderation imports `ArticlesModule`. Its use-case tests substitute the two ports and run with no article code loaded at all ([BE_11](../index.html#BE_11)) — the practical proof that the boundary is real.
 
-The tempting shortcut is one query joining reports to articles, ordered and paginated in the database. It is faster to write, and it makes the two schemas one schema ([R7](#R7)). The composition that survives is: page the reports moderation owns, then resolve that page's article ids in a single batched call ([R6](#R6)) — a fixed number of queries, no join, and either side free to move.
+The tempting shortcut is one query joining reports to articles, ordered and paginated in the database. It is faster to write, and it makes the two schemas one schema ([R7](#R7)). The composition that survives is: page the reports moderation owns, then resolve that page's article ids in one call to a port that accepts a list of ids ([BE_06#R9](../index.html#BE_06)) — a fixed number of queries, no join, and either side free to move.
 
 ## Checklist
 
@@ -173,7 +177,7 @@ The tempting shortcut is one query joining reports to articles, ordered and pagi
 
 ## Open questions
 
-- [R2](#R2) and [R3](#R3) are decidable from the export list and remain unchecked today; the barrel diff is review's only signal. [R4](#R4) is now checked by `apps/api/scripts/check-architecture.mjs` ([INFRA_06](../index.html#INFRA_06)).
+- [R2](#R2) and [R3](#R3) are decidable from the export list; until the architecture check covers them, the barrel diff is review's only signal ([INFRA_06](../index.html#INFRA_06)).
 - [R7](#R7) is invisible to an import-graph check, because the coupling lives in a query string. Detecting it needs schema ownership recorded somewhere a linter can read — unsolved, and worth an ADR when it is solved.
 - [R8](#R8) has no threshold, deliberately. Whether a tiering scheme is worth writing down should be revisited once a project has enough modules to disagree about it.
 

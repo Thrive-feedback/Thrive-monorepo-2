@@ -3,8 +3,8 @@ title: "INFRA_04 · Bun runtime & dependency management"
 id: "INFRA_04"
 area: "INFRA"
 tier: "P1"
-status: "draft"
-updated: "2026-09-06"
+status: "stable"
+updated: "2026-09-28"
 requires: [INFRA_01]
 see_also: [INFRA_15]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_15]
 
 # [Infra] Bun runtime & dependency management
 
-`P1` · `INFRA_04` · `draft` · `updated 2026-09-06`
+`P1` · `INFRA_04` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are adding, upgrading or removing a dependency — or a workspace will not run on Bun.
 
@@ -36,9 +36,9 @@ If you read nothing else:
 
 ## Why
 
-Dependencies are the largest thing in the repository nobody wrote, and their failures are quiet. Versions drift between two machines or two workspaces, and the difference surfaces as a bug that reproduces for one person. Packages accrete: each arrives solving a real problem and stays forever, carrying transitive dependencies, install time, bundle size, a licence, and an attack surface someone else maintains.
+Dependencies are the largest thing in the repository nobody wrote, and their failures are quiet. Versions drift between two machines or two workspaces, and the difference surfaces as a bug that reproduces for one person. Packages accrete: each arrives solving a real problem and stays forever, carrying transitive weight and an attack surface someone else maintains.
 
-The third failure is the most expensive. Installing a package runs someone else's code on your machine and in your pipeline, before any review — so a compromised release executes before anyone has read a diff. Most are caught and pulled within days, which is what makes [R6](#R6)'s two defenses effective for their cost: refuse install scripts you did not opt into, and refuse versions younger than the window in which those incidents get caught.
+The third is the most expensive. Installing a package runs someone else's code on your machine and in your pipeline, before any review — so a compromised release executes before anyone has read a diff. Most are caught and pulled within days, which is what makes [R6](#R6)'s two defenses effective for their cost: refuse install scripts you did not opt into, and refuse versions younger than the window in which those incidents get caught.
 
 The rest is determinism. A committed lockfile plus frozen installs means what ran in the pipeline is what runs in the image; one declared version per dependency means two workspaces cannot disagree about what they compile against.
 
@@ -52,7 +52,7 @@ The lockfile is at the root, covers every workspace, and is committed — the re
 
 Automated environments install frozen, failing when the lockfile and manifests disagree. A build that resolves versions tests something other than what you committed ([INFRA_09](../index.html#INFRA_09), [INFRA_10](../index.html#INFRA_10)).
 
-**Enforcement:** partly automated — a frozen install fails on drift wherever it is used; that every environment uses it is review.
+**Enforcement:** review — a frozen install fails on drift only where an environment runs it, and nothing detects a second lockfile. A pipeline gate that installs frozen and rejects any other lockfile is the candidate guardrail ([INFRA_06](../index.html#INFRA_06), [INFRA_09](../index.html#INFRA_09)).
 
 ### [R3](#R3) and [R4](#R4) Where a dependency lives
 
@@ -64,15 +64,16 @@ The runtime/development split turns on one question: does production need this a
 
 ### [R5](#R5) One version, declared once
 
-Two workspaces on two versions of the same library is the monorepo's characteristic dependency bug: the type packages disagree, two copies land in one bundle, and identity checks across the boundary fail for reasons that look impossible. Declare the version **once**, in a shared catalog the workspaces reference by name, so upgrading is one edit and drift is not expressible.
+Two workspaces on two versions of the same library is the monorepo's characteristic dependency bug: the type packages disagree, two copies land in one bundle, and identity checks across the boundary fail for reasons that look impossible. Declare the version **once**, in a shared catalog the workspaces reference by name, so upgrading is one edit and drift is not expressible. ADR 0011 records the catalog and the toolchain pins.
 
 **Do**
 
 ```
-# the catalog — one declared version for the whole repository
-catalog:
-  zod: 3.25.76
-  typescript: ^6.0.3
+# the catalog, in the root package.json — one declared version for the whole repository
+"workspaces": {
+  "packages": ["apps/*", "packages/*"],
+  "catalog": { "zod": "^4.6.5", "typescript": "5.8.2" }
+}
 
 # a workspace references it by name, never by version
 "dependencies": { "zod": "catalog:" }
@@ -97,25 +98,24 @@ Two settings, both cheap, both defending against the same thing: code that execu
 
 **Install scripts run by allow-list.** Install hooks are arbitrary code running with your credentials. Default to running none and opt in per package — the handful that genuinely compile something. The allow-list also makes the set visible: a new entry is a line someone approves.
 
-**No version younger than the maturity window.** A compromised release is usually discovered and pulled within days, so refusing anything published more recently than a fixed window — a week is a reasonable default — means the repository is never the one that finds out first.
+**No version younger than the maturity window.** A compromised release is usually discovered and pulled within days, so refusing anything published more recently than a fixed window means the repository is never the one that finds out first.
 
 Exceptions matter as much as the rule. A security fix is often newer than the window, so each exclusion is listed with a comment naming the advisory and why it cannot wait ([INFRA_15](../index.html#INFRA_15) owns the audit that finds them). That comment is the difference between a considered exception and a hole.
 
 **Do**
 
 ```
-minimumReleaseAge: 10080          # one week, in minutes
+# bunfig.toml
+[install]
+minimumReleaseAge = 604800             # one week, in seconds
+# GHSA-xxxx-… middleware bypass, fixed in 16.2.11 — newer than the window.
+minimumReleaseAgeExcludes = ["next"]
 
-minimumReleaseAgeExclude:
-  # GHSA-xxxx-… middleware bypass, fixed in 16.2.11 — newer than the window.
-  - "next"
-
-allowBuilds:
-  sharp: true                     # native image codecs, genuinely needed
-  "@scarf/scarf": false           # telemetry on install
+# package.json — the only dependencies whose install scripts run
+"trustedDependencies": ["sharp"]
 ```
 
-**Enforcement:** partly automated — the package manager enforces both once configured; that every exclusion carries a reason is review.
+**Enforcement:** partly automated — the package manager runs no dependency install script outside `trustedDependencies` (or, where that field is absent, its own built-in default list, which is wider than this rule allows). The maturity window holds only where it is set, and nothing fails when it is missing. That every exclusion carries a reason is review.
 
 ### [R7](#R7) and [R8](#R8) The cost of one more
 
@@ -171,6 +171,8 @@ Two months later a major version appears. It lands on its own branch with nothin
 - [R6](#R6)'s window has no stated length here because it trades responsiveness against exposure; a week is the common choice and should be recorded in an ADR once set, along with who may add an exclusion.
 - Nothing says what to do about an unmaintained dependency that still works. A staleness signal in the audit ([INFRA_15](../index.html#INFRA_15)) would surface it; the policy for acting on it is unwritten.
 - Whether automated update proposals are wanted — and grouped how — is undecided, and interacts directly with [R9](#R9)'s one-at-a-time rule and with [R6](#R6)'s window.
+- Nothing fails when the maturity window or the install-script allow-list is missing; a check for both is [R6](#R6)'s candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
+- [R10](#R10) assumes the non-standard runtime is the exception. Where every deployable needs it, a root-level engine declaration is either the override or a violation; decide which before the first workspace-level override is written.
 
 ## Related
 

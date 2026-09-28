@@ -3,8 +3,8 @@ title: "BE_09 · Error handling & error taxonomy"
 id: "BE_09"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [BE_08]
 see_also: [FE_18]
 ---
@@ -13,7 +13,7 @@ see_also: [FE_18]
 
 # [BE] Error handling & error taxonomy
 
-`P1` · `BE_09` · `draft` · `updated 2026-09-19`
+`P1` · `BE_09` · `stable` · `updated 2026-09-28`
 
 **Open when:** something can fail — so, always.
 
@@ -25,14 +25,14 @@ If you read nothing else:
 
 1. <a id="R1"></a>Every deliberate failure is one of three kinds: a domain error, an application error, or an infrastructure failure.
 2. <a id="R2"></a>Every domain and application error is a class carrying a stable code and a category.
-3. <a id="R3"></a>Codes come from one catalogue, are never renamed once shipped, and are never matched on by message text.
+3. <a id="R3"></a>Declare each domain or application error's code once, on its class; the catalogue's stability rules are [GEN_08](../index.html#GEN_08)'s (R5, R7).
 4. <a id="R4"></a>Map category to HTTP status in exactly one place.
 5. <a id="R5"></a>Never construct or throw an HTTP exception below the controller.
 6. <a id="R6"></a>Keep domain errors in `domain/*.errors.ts` and application errors in `application/*.errors.ts`.
 7. <a id="R7"></a>Name an error for the exact condition that failed. No catch-all error classes.
 8. <a id="R8"></a>Translate errors to responses in an exception filter, and nowhere else.
 9. <a id="R9"></a>Return nothing internal. An unexpected failure is logged in full and answered with a generic error and the correlation id.
-10. <a id="R10"></a>Never swallow an error. Catch only to add meaning or to translate, then rethrow.
+10. <a id="R10"></a>Never swallow an error. Catch only to translate it into a declared error or a value the caller's contract names, or to make an optional step optional with a comment saying why.
 
 ## Why
 
@@ -71,7 +71,7 @@ export abstract class DomainError extends Error {
 }
 ```
 
-The category is how the failure is answered; the code is what it *is*. Codes live in one catalogue shared with the client ([GEN_08](../index.html#GEN_08)), in one format — `article.not_found`, `article.invalid_transition` — and they are permanent. Renaming a shipped code breaks every client branching on it, silently, because the new code simply never matches.
+The category is how the failure is answered; the code is what it *is*. Each code is declared once, on the error class that raises it, in one format — `ARTICLE_NOT_FOUND`, `ARTICLE_INVALID_TRANSITION` — and it is permanent ([GEN_08](../index.html#GEN_08)). Renaming a shipped code breaks every client branching on it, silently, because the new code simply never matches.
 
 The message is for humans reading logs. It is never a control surface: no client and no test asserts on message text.
 
@@ -101,7 +101,7 @@ A framework HTTP exception in a use case, a domain object, a repository or a job
 ```
 // application/article.errors.ts
 export class ArticleNotFoundError extends ApplicationError {
-  readonly code = ErrorCodes.ARTICLE_NOT_FOUND;
+  readonly code = 'ARTICLE_NOT_FOUND';
   readonly category = 'not_found' as const;
   constructor(id: string) { super(`Article ${id} not found`); }
 }
@@ -115,7 +115,7 @@ if (!article) throw new NotFoundException('Article not found');
 // unusable from a job, unsearchable by code, and 404 is now decided here
 ```
 
-**Enforcement:** automated — `apps/api/scripts/check-architecture.mjs` flags a framework HTTP exception constructed outside `presentation/` ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** partly automated — the architecture check in [INFRA_06](../index.html#INFRA_06) flags three named HTTP exceptions inside module layers when it is run; other exception classes, code outside modules, and running it at all are review.
 
 ### [R7](#R7) Name the condition
 
@@ -127,10 +127,10 @@ The corollary is that the error is thrown where the condition is detected, not c
 
 ### [R8](#R8) Filters translate, once
 
-Exception filters live in `shared/filters/` and are the only code that turns an error into a response: one per declared base class, plus a catch-all. The body is the same everywhere, so a client parses it once:
+Exception filters live where [BE_02](../index.html#BE_02) R9 puts them and are the only code that turns an error into a response: one catch-all filter that recognizes each declared base class. The body is the same everywhere, so a client parses it once:
 
 ```
-{ "error": { "code": "article.not_found", "message": "Article … not found" } }
+{ "error": { "code": "ARTICLE_NOT_FOUND", "message": "Article … not found", "correlationId": "…" } }
 ```
 
 Handlers therefore contain no `try`/`catch` for the purpose of shaping a response, and no route builds an error body by hand ([BE_07](../index.html#BE_07)).
@@ -147,7 +147,7 @@ The correlation id is what makes this workable: the client can quote it, and the
 
 ### [R10](#R10) Do not swallow
 
-An empty `catch`, a `catch` that logs and continues, or a `catch (e) { return null }` turns a failure into wrong data, which is discovered much later and much further away. Catch for one of two reasons only: to add meaning by translating a low-level failure into a declared error, or to make a genuinely optional operation optional on purpose — with a comment saying why, and a log line proving it happened ([GEN_07](../index.html#GEN_07)).
+An empty `catch`, a `catch` that logs and continues, or a `catch (e) { return null }` turns a failure into wrong data, which is discovered much later and much further away. Catch for one of two reasons only: to add meaning by translating a low-level failure into a declared error, or to make a genuinely optional operation optional on purpose — with a comment saying why ([GEN_07](../index.html#GEN_07)).
 
 **Enforcement:** review — an empty catch block is trivially detectable and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
@@ -155,7 +155,7 @@ An empty `catch`, a `catch` that logs and continues, or a `catch (e) { return nu
 
 Publishing an article, and its four failures.
 
-The article does not exist. The use case throws `ArticleNotFoundError` — application, `not_found` — because absence is a workflow fact, not a rule of the concept ([R1](#R1)). The filter answers `404` with `article.not_found`.
+The article does not exist. The use case throws `ArticleNotFoundError` — application, `not_found` — because absence is a workflow fact, not a rule of the concept ([R1](#R1)). The filter answers `404` with `ARTICLE_NOT_FOUND`.
 
 The actor is not the author. The *aggregate* refuses, because ownership is a rule about articles: `ArticleNotOwnedByActorError` — domain, `forbidden` ([BE_04](../index.html#BE_04)). Note that the same rule reached from a scheduled job produces the same error object with no HTTP anywhere in the stack.
 
@@ -165,7 +165,7 @@ The store is unreachable. Nobody declared this. It reaches the catch-all filter,
 
 Four failures, four codes, one response shape, and no status code written anywhere but the mapping table ([R4](#R4)). The frontend's half of this — how a client turns a code into something a person reads — is [FE_18](../index.html#FE_18)'s.
 
-A last note on validation. A request that fails schema parsing never reaches a use case, so it is not a domain or application error at all ([BE_08](../index.html#BE_08)); its filter answers `400` in the same body shape, and its code is the validation code from the catalogue. That symmetry is deliberate: a client handles one error format regardless of how far the request got.
+A last note on validation. A request that fails schema parsing never reaches a use case, so it is not a domain or application error at all ([BE_08](../index.html#BE_08)); its filter answers `400` in the same body shape, and its code is the one validation code the filter declares. That symmetry is deliberate: a client handles one error format regardless of how far the request got.
 
 ## Checklist
 
@@ -179,7 +179,7 @@ A last note on validation. A request that fails schema parsing never reaches a u
 
 ## Open questions
 
-- The catalogue's location depends on the contract decision in `PROJECT.md` §5 — shared package or generated from the specification — and until it is settled, codes risk being declared twice.
+- Where codes are not part of the generated contract ([GEN_08](../index.html#GEN_08) R2), the client re-declares them. Exporting them into the OpenAPI document would close this.
 - Nothing prevents a shipped code from being renamed ([R3](#R3)), which is the highest-consequence silent break in this document. A test asserting the catalogue against a committed snapshot would close it and does not exist.
 - Retry and backoff for infrastructure failures are out of scope here and unowned: [BE_17](../index.html#BE_17) covers retries for messaging, but a failed provider call inside a request has no stated policy.
 

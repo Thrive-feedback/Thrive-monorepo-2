@@ -3,8 +3,8 @@ title: "BE_02 · Clean architecture — the layers and the dependency rule"
 id: "BE_02"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [BE_01]
 see_also: [INFRA_06]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_06]
 
 # [BE] Clean architecture — the layers and the dependency rule
 
-`P1` · `BE_02` · `draft` · `updated 2026-09-19`
+`P1` · `BE_02` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are about to import something across layers.
 
@@ -23,9 +23,9 @@ Definition and responsibility of domain / application / infrastructure / interfa
 
 If you read nothing else:
 
-1. <a id="R1"></a>Imports point inward only: presentation → application → domain, and infrastructure → domain.
-2. <a id="R2"></a>Nothing imports a file from `presentation/` or `infrastructure/`. Both are ends of the graph.
-3. <a id="R3"></a>The domain layer imports nothing outside itself — no framework, no persistence library, no HTTP, no configuration, no clock, no logger.
+1. <a id="R1"></a>Imports point inward only: presentation → application → domain, and infrastructure → application and domain.
+2. <a id="R2"></a>Only the module file, or a file in the same layer, imports from `presentation/` or `infrastructure/`. Both are ends of the graph.
+3. <a id="R3"></a>The domain layer imports nothing outside itself except the shared error base ([BE_09](../index.html#BE_09)) — no framework, no persistence library, no HTTP, no configuration, no clock, no logger.
 4. <a id="R4"></a>The application layer may use the framework's dependency injection and nothing else the framework offers.
 5. <a id="R5"></a>Presentation handles transport only: validate, call one use case, return its result.
 6. <a id="R6"></a>Invert every outward dependency: declare an abstract class in the layer that needs it, implement it further out.
@@ -49,8 +49,8 @@ The cost is real: an interface you have to define, a binding you have to write, 
 | Layer | Owns | May import |
 | --- | --- | --- |
 | `domain/` | Business concepts, invariants, transitions, contracts it needs | Its own layer only |
-| `application/` | Workflow: orchestration, authorization context, transactions | `domain/`, framework DI |
-| `infrastructure/` | Implementations: persistence, providers, mappers | `domain/`, its libraries |
+| `application/` | Workflow: orchestration, authorization context, transactions | `domain/`, framework DI, `shared/` contracts, injected config namespaces ([BE_10](../index.html#BE_10)), other modules' barrels ([BE_03](../index.html#BE_03)) |
+| `infrastructure/` | Implementations: persistence, providers, mappers | `domain/`, `application/` contracts, its libraries |
 | `presentation/` | Transport: routes, request/response shapes, status codes | `application/`, `domain/` types |
 
 `shared/` and `infrastructure/` at the app level ([BE_01](../index.html#BE_01)) sit outside a module and follow the same direction: a module may use them, they never import a module.
@@ -68,7 +68,7 @@ The table above says what may import what. The question that actually comes up i
 
 When two answers seem to fit, the code is doing two things. Split it before deciding where it lives.
 
-**Enforcement:** automated — `apps/api/scripts/check-architecture.mjs` checks the import graph for layer direction ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** partly automated — the architecture check ([INFRA_06](../index.html#INFRA_06)) catches `application/` importing `infrastructure/` or `presentation/`, and [R2](#R2) violations outside those layers; imports between `presentation/` and `infrastructure/` are review; nothing gates on it until [INFRA_09](../index.html#INFRA_09) runs it.
 
 ### [R3](#R3) The domain imports nothing
 
@@ -103,13 +103,13 @@ export class Article {
 }
 ```
 
-**Enforcement:** automated — `apps/api/scripts/check-architecture.mjs` enforces the import allow-list for `**/domain/**` ([INFRA_06](../index.html#INFRA_06)).
+**Enforcement:** partly automated — the architecture check ([INFRA_06](../index.html#INFRA_06)) rejects any non-domain import under `domain/` when it is run; ambient dependencies such as `new Date()` are review.
 
 ### [R4](#R4) The application layer uses DI, and stops there
 
 A use case is a class the container can construct: `@Injectable()`, constructor injection, nothing else. No request or response object, no HTTP exception, no decorator that reads a header, no module-lifecycle hook. The framework is how the object is built, not what it does — which is what keeps a use case callable from a queue consumer, a scheduled job or a test with no HTTP anywhere in the stack.
 
-Two files in `application/` are allowed to reach persistence directly, because reading the store *is* their job: a query service assembling a read projection ([BE_06](../index.html#BE_06)), and an adapter implementing a published port ([BE_03](../index.html#BE_03)). Both convert at the boundary and return plain data, so [R7](#R7) still holds for everything that leaves them. Nothing else in `application/` — no use case, no application service, no DTO — may import the module's `infrastructure/` or the persistence library.
+A query service reads the store, so it lives in `infrastructure/` behind a contract declared further in ([BE_06](../index.html#BE_06)). An adapter answering a published port only delegates to a use case, so it lives in `application/adapter/` ([BE_03](../index.html#BE_03)).
 
 **Enforcement:** review.
 
@@ -142,7 +142,7 @@ constructor(private readonly repo: ArticleRepository) {}
 // the use case now depends on the driver, and its test needs one
 ```
 
-**Enforcement:** partly automated — the type-checker rejects an implementation that drifts from its port; nothing yet rejects an import of the concrete class.
+**Enforcement:** partly automated — the type-checker rejects an implementation that drifts from its port; the architecture check rejects an import of the concrete class from `domain/` or `application/`; one from `presentation/` is review.
 
 ### [R7](#R7) Library types stop at their layer
 
@@ -186,7 +186,7 @@ The use case orchestrates ([R4](#R4)): load through the port, let the entity dec
 const article = await this.articles.findById(input.articleId);
 if (!article) throw new ArticleNotFoundError(input.articleId);
 article.assertCanPublishBy(input.actorId);
-article.publish(new Date());
+article.publish(this.clock.now());
 await this.articles.save(article);
 ```
 
@@ -207,8 +207,7 @@ Now the inverted version, which is what this document exists to prevent. Someone
 
 ## Open questions
 
-- [R1](#R1) and [R3](#R3) are now checked by `apps/api/scripts/check-architecture.mjs` ([INFRA_06](../index.html#INFRA_06)). [R2](#R2) — nothing imports `presentation/` or `infrastructure/` — is not yet, and this is the document whose violations are most expensive to unwind later, since one leaked type spreads through every file that touches it.
-- The adapter exception in [R4](#R4) is a real hole in the layer rule, kept because moving adapters to `infrastructure/` costs a delegation layer for cross-module reads. It should be revisited once more than one module publishes ports.
+- [R1](#R1) is checked only for `application/`; [R2](#R2) is not checked for `presentation/` and `infrastructure/` themselves. Closing both gaps and gating on the architecture check is the highest-value backend guardrail.
 
 ## Related
 

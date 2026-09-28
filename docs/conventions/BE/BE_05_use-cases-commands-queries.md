@@ -3,8 +3,8 @@ title: "BE_05 · Use cases — application services, commands & queries"
 id: "BE_05"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [BE_04]
 see_also: [BE_14]
 ---
@@ -13,7 +13,7 @@ see_also: [BE_14]
 
 # [BE] Use cases — application services, commands & queries
 
-`P1` · `BE_05` · `draft` · `updated 2026-09-19`
+`P1` · `BE_05` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are writing the code that performs a business operation.
 
@@ -90,7 +90,7 @@ The rule that keeps them honest is that a query returns without writing. A "read
 
 ### [R5](#R5) Inject the narrow contract
 
-A read use case depends on the *question*, not on the class that answers it. Declare a small contract — one method, the shape this use case needs — and inject that; the query service implementing it may answer several such contracts, and the module file binds them ([BE_02](../index.html#BE_02)).
+A read use case depends on the *question*, not on the class that answers it. Declare a contract scoped to one read model — the questions asked about it, nothing else — and inject that; one query service may implement several such contracts, and the module file binds them ([BE_02](../index.html#BE_02)).
 
 This is what keeps a use case's test small: substituting one method is a line, substituting a service with eleven is a fixture. It also keeps the blast radius of a query change to the contracts that actually named it.
 
@@ -110,7 +110,7 @@ The input is an interface declared next to the use case; the result is plain dat
 
 Validation of transport input has already happened by the time `execute` runs ([BE_08](../index.html#BE_08)), so the input type is trusted — but only in shape. A use case therefore never re-parses its own input: a schema call inside `execute` means either the boundary is not doing its job, or the use case is being handed raw outside data by a caller that skipped one. Rules about the *values* are a different matter and still belong to the domain.
 
-**Enforcement:** partly automated — the type-checker catches a transport type in the signature once it is declared; nothing prevents declaring it.
+**Enforcement:** partly automated — the architecture check for [BE_02](../index.html#BE_02) R1 flags an `application/` file importing from `presentation/` or `infrastructure/`; it cannot see a framework or library type, such as a request object, imported directly.
 
 ### [R8](#R8) and [R9](#R9) One transaction, and what sits outside it
 
@@ -132,7 +132,7 @@ The same applies across modules, more strongly: another module's use case is not
 
 `PublishArticleUseCase`, in full shape.
 
-It injects four things: the article repository port, a port to another module for a fact it needs, the unit of work, and the outbox recorder. It injects no query service — this is a command ([R4](#R4)) — and no logger-driven branching.
+It injects six things: the article repository port, a port to another module for a fact it needs, the unit of work, the outbox recorder, the clock and the cache. It injects no query service — this is a command ([R4](#R4)) — and no logger-driven branching.
 
 ```
 async execute(input: PublishArticleInput): Promise<PublishArticleResult> {
