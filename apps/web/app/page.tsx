@@ -15,7 +15,7 @@ export default function Home() {
         Ask for, give and act on feedback.
       </p>
       <Link
-        href="/tokens"
+        href="/ui-showcase/tokens"
         className="bg-action hover:bg-action-hover active:bg-action-pressed text-foreground-on-action rounded-control w-fit px-4 py-2 font-medium text-sm"
       >
         See the design tokens
