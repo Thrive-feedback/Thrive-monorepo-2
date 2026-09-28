@@ -16,7 +16,7 @@
     "check": "bun run check:style && bun run check:types && bun run check:arch",
     "check:style": "biome check --error-on-warnings .",
     "check:types": "turbo run check-types",
-    "check:arch": "bun --bun depcruise apps packages --config .dependency-cruiser.cjs --output-type err && bun scripts/verify-arch-fixtures.mjs && turbo run check-arch"
+    "check:arch": "bun run --cwd apps/api db:generate && bun --bun depcruise apps packages --config .dependency-cruiser.cjs --output-type err && bun scripts/verify-arch-fixtures.mjs && turbo run check-arch"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
