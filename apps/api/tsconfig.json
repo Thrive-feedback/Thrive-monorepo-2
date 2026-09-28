@@ -3,7 +3,6 @@
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist",
-    "strictNullChecks": true,
     "paths": {
       "@app/*": ["src/*"],
       "@test/*": ["test/*"]
