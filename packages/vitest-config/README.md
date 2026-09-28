@@ -1,6 +1,7 @@
 # `@repo/vitest-config`
 
-The shared Vitest base for component suites, beside `@repo/jest-config`'s Node bases.
+The shared Vitest base for component suites. The API has no config package: it runs on
+`bun test`, which needs none (ADR 0012).
 
 ## What it owns
 
