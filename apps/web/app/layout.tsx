@@ -5,6 +5,10 @@ import './globals.css';
 /**
  * The token layer names the family (`--family-sans`); this loads it. Inter carries everything
  * for now — the old build's display face is licensed, so it waits on that being confirmed.
+ *
+ * The variable goes on `<html>`, not `<body>`: `--family-sans` is declared on `:root` and
+ * resolves `var(--font-inter)` there, so on `<body>` it would be undefined at the point of use
+ * and the page would silently fall back to the system font.
  */
 const inter = Inter({
   subsets: ['latin'],
@@ -35,8 +39,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} min-h-dvh`}>{children}</body>
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-dvh">{children}</body>
     </html>
   );
 }

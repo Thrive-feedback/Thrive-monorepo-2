@@ -5,9 +5,9 @@ Thrive's design tokens, in the three layers `FE_03` R2 requires, all in one pack
 
 | File | Layer | What belongs in it |
 | --- | --- | --- |
-| `src/primitives.css` | values | Seven OKLCH ramps, the spacing multiplier, radii, font families. Names a value, never an intent. |
+| `src/primitives.css` | values | Seven OKLCH ramps, the spacing multiplier, radii, stroke, font families, and the type, weight and width scales. Names a value, never an intent. |
 | `src/semantic.css` | roles | `--surface`, `--action`, `--danger`… Each points at a primitive. **The only layer a component may reference.** |
-| `src/theme.css` | Tailwind | `@theme inline`, mapping roles onto Tailwind's namespaces so every utility is token-backed (`FE_04` R1). |
+| `src/theme.css` | Tailwind | `@theme inline`, which resets Tailwind's default theme (`--*: initial`) and then maps roles and scales onto its namespaces, so every utility that exists is token-backed (`FE_04` R1). |
 
 An app imports `@repo/tokens/tokens.css`, which pulls all three in the order they have to load.
 
@@ -15,7 +15,11 @@ An app imports `@repo/tokens/tokens.css`, which pulls all three in the order the
 
 - **A component never references a primitive** (`FE_03` R2). `bg-action`, never `bg-primary-500` —
   and the theme deliberately does not expose the ramps, so the second one does not exist as a
-  utility.
+  utility. Nor do Tailwind's defaults: the theme resets them, so `bg-red-500`, `rounded-md` and
+  `shadow-md` are not classes either. A utility you need that is missing wants a token first.
+- **Colours and shapes are roles; sizes are scales.** Spacing, type size, weight, width and
+  breakpoint map straight from their primitives, the way `--spacing` does. Breakpoints are
+  literal values in `theme.css`, because a media query cannot read a custom property.
 - **Names state roles, not appearances** (`FE_03` R3). `--danger`, never `--red`. The day danger
   stops being red, a role name is still true.
 - **A theme is a mode of the semantic layer** (`FE_03` R7), attached as

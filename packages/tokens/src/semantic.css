@@ -56,6 +56,8 @@
 
   /* Focus. One token, because `FE_06` wants focus visible on every interactive element. */
   --focus: var(--primary-400);
+  --focus-ring-width: var(--stroke-2);
+  --focus-ring-offset: var(--stroke-2);
 
   /* Shape. Two roles: things you operate, and things that hold content. */
   --shape-control: var(--radius-2);
