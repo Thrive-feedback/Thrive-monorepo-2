@@ -3,8 +3,8 @@ title: "BE_06 · Persistence & the repository pattern"
 id: "BE_06"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [BE_05]
 see_also: [INFRA_12, BE_15]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_12, BE_15]
 
 # [BE] Persistence & the repository pattern
 
-`P1` · `BE_06` · `draft` · `updated 2026-09-19`
+`P1` · `BE_06` · `stable` · `updated 2026-09-28`
 
 **Open when:** you need to read or write data.
 
@@ -30,7 +30,7 @@ If you read nothing else:
 5. <a id="R5"></a>Name the store in `infrastructure/` only — a repository, a query implementation, or an adapter. Nowhere else.
 6. <a id="R6"></a>One repository per aggregate root, loading and saving the whole aggregate.
 7. <a id="R7"></a>A read projection is answered by a query contract declared in `application/query-port/` and implemented in `infrastructure/`, never by a repository.
-8. <a id="R8"></a>A query service returns a projection, `null` or `[]` — never a record, never an entity, and never a thrown error.
+8. <a id="R8"></a>A query service returns a `Projection`, `null` or `[]` — never a record, never an entity, and never a thrown workflow error.
 9. <a id="R9"></a>Keep the number of queries independent of the number of rows. Batch by ids; never query inside a loop.
 10. <a id="R10"></a>Derive the schema from the domain. Never let the store's shape dictate the model.
 
@@ -86,15 +86,13 @@ One file per aggregate translates both ways: record to entity through the rehydr
 
 ### [R5](#R5) Store-aware places, and no others
 
-An earlier wording put a query service in `application/` and let it name the store. That made the application layer import infrastructure, which [BE_02#R1](../index.html#BE_02) forbids; [GEN_01#R7](../index.html#GEN_01) resolves the clash for the lower-numbered document, so the contract stays in `application/query-port/` and every store-aware file lives in `infrastructure/`.
-
 Persistence records live in `infrastructure/entity/`, declared separately from the domain entity even when the fields match today — once the two are one class, the coupling in [R10](#R10) is invisible.
 
 Three kinds of file may name the store, because querying it is their job, and all three live in `infrastructure/`:
 
 - A repository and its mapper, in `infrastructure/repository/` and `infrastructure/mapper/`.
 - A query implementation in `infrastructure/query/`, assembling a read projection behind the contract its use case depends on ([R7](#R7)).
-- An adapter in `infrastructure/`, implementing a port this module published ([BE_03](../index.html#BE_03)).
+- An adapter in `infrastructure/`, implementing an internal port this module declared ([BE_02#R6](../index.html#BE_02)). A published port's adapter lives in `application/adapter/`, delegates to a use case, and never names the store ([BE_03](../index.html#BE_03)).
 
 Everything else is out: no persistence import in a use case, application service, DTO, controller or anything under `domain/`; no schema decorator on a domain class; no store type in a port or a projection. [BE_02#R7](../index.html#BE_02) is the general form of this rule.
 
@@ -116,7 +114,7 @@ One question decides it: does the call cross a module boundary?
 | Read a projection inside your own module or context | No | `application/query-port/<name>.query-port.ts` + a query service | `Projection` |
 | Read a fact or trigger an action in another module | Yes | `domain/port/<name>.port.ts` + an adapter ([BE_03](../index.html#BE_03)) | `View` |
 
-A query service may do what an aggregate makes awkward: join within the module, sort, paginate, read audit columns. It must not validate inputs, decide policy, or throw — a use case gives it valid instructions and interprets what comes back ([BE_05](../index.html#BE_05)).
+A query service may do what an aggregate makes awkward: join within the module, sort, paginate, read audit columns. It must not validate inputs, decide policy, or throw a workflow error — a use case gives it valid instructions and interprets what comes back ([BE_05](../index.html#BE_05)).
 
 **Enforcement:** review.
 
@@ -129,11 +127,11 @@ Four names carry the whole read vocabulary, and using them consistently means a 
 | Name | Is | Crosses |
 | --- | --- | --- |
 | `Row` | A raw result of one query | Nothing — local to a query or mapper |
-| `Projection` | An internal read model | Module or context |
+| `Projection` | An internal read model | Stays within its module or context |
 | `View` | What a published port returns | Module boundary |
 | `Result` | A wrapper such as a page plus its total | Wherever its contents do |
 
-Name the read *contract* for the question (`FindArticleDetailQuery`) and its implementation for what it reads (`ArticleQueryService`). One service usually satisfies several contracts; use cases inject the contract ([BE_05](../index.html#BE_05)).
+Name the read *contract* for the read model it answers questions about (`ArticleQuery`) and its implementation for what it reads (`FileArticleQuery`). One service may satisfy several contracts; use cases inject the contract ([BE_05](../index.html#BE_05)).
 
 **Enforcement:** review.
 

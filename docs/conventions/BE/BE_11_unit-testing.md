@@ -3,8 +3,8 @@ title: "BE_11 · Unit testing"
 id: "BE_11"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [BE_05]
 see_also: [BE_12, FE_13]
 ---
@@ -13,7 +13,7 @@ see_also: [BE_12, FE_13]
 
 # [BE] Unit testing
 
-`P1` · `BE_11` · `draft` · `updated 2026-09-19`
+`P1` · `BE_11` · `stable` · `updated 2026-09-28`
 
 **Open when:** you wrote domain or use-case code.
 
@@ -32,7 +32,7 @@ If you read nothing else:
 7. <a id="R7"></a>Build test data with factories, not with literals copied between tests.
 8. <a id="R8"></a>Keep every test deterministic: inject the clock and the identifiers, no sleeps, no shared state, no dependence on order.
 9. <a id="R9"></a>Write no unit test for code with no logic — a pass-through, a projection query, a DTO.
-10. <a id="R10"></a>Never skip, delete or weaken a test to make a build pass.
+10. <a id="R10"></a>Change a test's expectation only in the change that changes the behavior, and say why.
 
 ## Why
 
@@ -131,7 +131,7 @@ Name the factory for the state it produces — `publishedArticle()`, `draftArtic
 
 A flaky test is worse than no test: it trains everyone to re-run the build. The usual causes are all avoidable at this level. Time comes in as an argument or an injected clock, never `new Date()` inside the code under test ([BE_04](../index.html#BE_04)). Identifiers are supplied. There is no `sleep`, no shared mutable module state between tests, and no test that depends on another having run first — each arranges what it needs.
 
-**Enforcement:** partly automated — the runner can randomize test order, which surfaces inter-test dependencies; the rest is review.
+**Enforcement:** partly automated — the runner randomizes test order, which surfaces inter-test dependencies; shared state that happens to survive a shuffle is review.
 
 ### [R9](#R9) Do not test the absence of logic
 
@@ -139,11 +139,11 @@ A test for a use case that forwards one argument, a query service that only shap
 
 The judgment is "could this be wrong in a way the type-checker would not catch". If not, skip it. Behavior that only exists once the pieces are wired together is covered a level up ([BE_12](../index.html#BE_12), [BE_13](../index.html#BE_13)).
 
-**Enforcement:** review — a coverage target would actively fight this rule, which is why none is set.
+**Enforcement:** review — set no coverage threshold; a target would actively fight this rule.
 
 ### [R10](#R10) A red test is information
 
-Never skip, delete, loosen an assertion, or widen a matcher to make a build pass; that is a hard rule of the repository. If the test is wrong, fix the test in a change that says so and explains why the old expectation was mistaken. If the behavior changed on purpose, the test change is part of that change and belongs in its diff. And a bug gets a failing test before it gets a fix ([GEN_05](../index.html#GEN_05)).
+Disabling a test to go green is already forbidden by the hard rules; loosening an assertion or widening a matcher is the same act. If the test is wrong, fix the test in a change that says so and explains why the old expectation was mistaken. If the behavior changed on purpose, the test change is part of that change and belongs in its diff. And a bug gets a failing test before it gets a fix ([GEN_05](../index.html#GEN_05)).
 
 **Enforcement:** review — a skipped or focused test is trivially greppable and is a candidate CI gate ([INFRA_06](../index.html#INFRA_06)).
 
@@ -180,11 +180,11 @@ The entity gets its own suite, smaller and faster still: the transition table, t
 - Arrangements use factories ([R7](#R7)).
 - Time and identifiers are injected; no sleeps, no shared state ([R8](#R8)).
 - No test added for code with no logic ([R9](#R9)).
-- No test skipped, deleted or weakened to go green ([R10](#R10)).
+- Every changed expectation ships with the behavior change that caused it, and says why ([R10](#R10)).
 
 ## Open questions
 
-- No coverage threshold is set, deliberately ([R9](#R9)) — but nothing replaces it as a signal that a rule shipped untested. Mutation testing on the domain folder is the better instrument and has no owner.
+- This document sets no coverage threshold, deliberately ([R9](#R9)) — but nothing replaces it as a signal that a rule shipped untested. Mutation testing on the domain folder is the better instrument and has no owner.
 - [R2](#R2) is the rule most often broken by generated test scaffolding, which names tests after classes by default. Whether the project should ship a template that starts from behavior naming is unresolved.
 - The boundary between this document and [BE_12](../index.html#BE_12) is stated by dependency, not by folder; two suites in one directory with different runtime needs will eventually confuse the pipeline ([INFRA_09](../index.html#INFRA_09)).
 

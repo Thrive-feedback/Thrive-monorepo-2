@@ -3,8 +3,8 @@ title: "INFRA_06 · Automated guardrails — lint, types & architecture tests"
 id: "INFRA_06"
 area: "INFRA"
 tier: "P1"
-status: "draft"
-updated: "2026-08-31"
+status: "stable"
+updated: "2026-09-28"
 requires: [INFRA_05]
 see_also: [INFRA_09, BE_02, FE_02]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_09, BE_02, FE_02]
 
 # [Infra] Automated guardrails — lint, types & architecture tests
 
-`P1` · `INFRA_06` · `draft` · `updated 2026-08-31`
+`P1` · `INFRA_06` · `stable` · `updated 2026-09-28`
 
 **Open when:** a convention needs teeth, or a guardrail is failing and you are tempted to disable it.
 
@@ -29,7 +29,7 @@ If you read nothing else:
 4. <a id="R4"></a>Check the import graph in both stacks: layer direction, module and package boundaries, cycles, deep imports.
 5. <a id="R5"></a>Type-check at the strictest setting the code sustains. The compiler is the cheapest guardrail you own.
 6. <a id="R6"></a>Never disable a guardrail, narrow its scope, or add an exclusion to make a change pass.
-7. <a id="R7"></a>A waiver names its reason and its owner, and appears in the pull request.
+7. <a id="R7"></a>A waiver of any guardrail meets [INFRA_05#R6](../index.html#INFRA_05), names an owner, and is called out in the pull request.
 8. <a id="R8"></a>A new guardrail lands with the rule it enforces, an example that fails it, and the fixes it demands.
 9. <a id="R9"></a>Keep guardrails fast enough to run before a push; run the slow ones once per pipeline.
 10. <a id="R10"></a>When a rule graduates to a guardrail, update the enforcement line in the document it came from.
@@ -92,7 +92,7 @@ Better still are conventions enforceable *in the type system*: an exhaustive rec
 
 ### [R6](#R6) and [R7](#R7) Guardrails do not bend
 
-Never disable a check, exclude a path from it, widen its allow-list, or suppress its finding to make a change pass. This is a hard rule of the repository and it has no exception. When a guardrail blocks you, exactly two things can be true: the change is wrong, or the rule is wrong — and the second is settled by changing the rule and its document in the open ([GEN_01#R10](../index.html#GEN_01)), not by editing a configuration file inside an unrelated pull request.
+Never disable a check, exclude a path from it, widen its allow-list, or suppress its finding to make a change pass. It extends a hard rule of the repository. A waiver ([R7](#R7)) is not an exception to it: it records the exception in the open, where it applies. When a guardrail blocks you, exactly two things can be true: the change is wrong, or the rule is wrong — and the second is settled by changing the rule and its document in the open ([GEN_01#R10](../index.html#GEN_01)), not by editing a configuration file inside an unrelated pull request.
 
 A genuinely warranted exception is a waiver, not a hole: narrow to where it applies, carrying a reason and an owner, and called out in the pull request ([INFRA_05#R6](../index.html#INFRA_05)). An exclusion added to a guardrail's configuration is the most invisible change in this repository, and reviewers should treat it as a change to the convention it silences.
 
@@ -116,9 +116,9 @@ The reverse holds too: if a check is removed, its document goes back to `review`
 
 ## Worked example
 
-Promoting one rule: `BE_02#R3`, the domain layer imports nothing outside itself.
+Promoting one rule — take `BE_02#R3`, the domain layer imports nothing outside itself, as it stood before any check existed.
 
-Today it is `review`. It is a statement about import edges from files under a domain directory ([R4](#R4)), so it is checkable, which by [R1](#R1) means it should be checked.
+Suppose its enforcement line says `review`. It is a statement about import edges from files under a domain directory ([R4](#R4)), so it is checkable, which by [R1](#R1) means it should be checked.
 
 The check is one rule in the import-graph tool: from any path matching a module's domain directory, to any framework, persistence, transport or configuration package — forbidden, severity error ([R3](#R3)). It is named for the rule it enforces and its message quotes it ([R2](#R2)).
 

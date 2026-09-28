@@ -11,13 +11,13 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/typescript-config": "*",
-    "@types/node": "^22.19.3",
-    "typescript": "5.8.2"
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
+    "vitest": "catalog:"
   }
 }

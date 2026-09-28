@@ -17,11 +17,11 @@
     "check:arch": "bun --bun depcruise apps packages --config .dependency-cruiser.cjs --output-type err && bun scripts/verify-arch-fixtures.mjs && turbo run check-arch"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14",
+    "@biomejs/biome": "catalog:",
     "@repo/biome-config": "workspace:*",
-    "@repo/typescript-config": "*",
+    "@repo/typescript-config": "workspace:*",
     "dependency-cruiser": "18.4.0",
-    "turbo": "^2.10.9"
+    "turbo": "catalog:"
   },
   "engines": {
     "bun": ">=1.3.14",
@@ -33,8 +33,25 @@
       "version": "1.3.14"
     }
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "@biomejs/biome": "2.5.14",
+      "@types/node": "^22.19.3",
+      "@types/react": "19.1.0",
+      "@types/react-dom": "19.1.1",
+      "jest": "30.4.2",
+      "next": "16.3.0",
+      "react": "^19.1.0",
+      "react-dom": "^19.1.0",
+      "turbo": "2.10.9",
+      "typescript": "5.8.2",
+      "uuid": "^11.1.1",
+      "vitest": "3.2.7",
+      "zod": "^4.6.5"
+    }
+  }
 }

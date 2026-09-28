@@ -3,8 +3,8 @@ title: "BE_04 · Domain modelling"
 id: "BE_04"
 area: "BE"
 tier: "P1"
-status: "draft"
-updated: "2026-09-19"
+status: "stable"
+updated: "2026-09-28"
 requires: [BE_02]
 see_also: [GEN_11, GEN_14]
 ---
@@ -13,7 +13,7 @@ see_also: [GEN_11, GEN_14]
 
 # [BE] Domain modelling
 
-`P1` · `BE_04` · `draft` · `updated 2026-09-19`
+`P1` · `BE_04` · `stable` · `updated 2026-09-28`
 
 **Open when:** you are creating or changing a business concept.
 
@@ -25,13 +25,13 @@ If you read nothing else:
 
 1. <a id="R1"></a>A business concept with rules is a class under `domain/` that holds its own state and enforces its own invariants.
 2. <a id="R2"></a>Construct through a named static factory. Keep the constructor private and validate before it returns.
-3. <a id="R3"></a>Keep every field private. Expose behavior, and expose data only through an explicit snapshot.
+3. <a id="R3"></a>Keep every field private. Expose behavior, an accessor only where a caller needs the value, and every other read through one explicit snapshot.
 4. <a id="R4"></a>Name a method after the business action it performs, in the words of the glossary.
 5. <a id="R5"></a>A value with rules is an immutable value object: validated on creation, compared by value, replaced rather than mutated.
 6. <a id="R6"></a>Model status as a value object with declared transitions. Never compare status strings in a use case.
-7. <a id="R7"></a>Refuse an illegal operation by throwing a domain error that names the exact condition that failed.
+7. <a id="R7"></a>Refuse an illegal operation by throwing a domain error. Never return a flag the caller can ignore.
 8. <a id="R8"></a>Give each consistency boundary one aggregate root, and change everything inside it through that root.
-9. <a id="R9"></a>Keep store-assigned ids, audit timestamps, decorators and framework types out of the domain.
+9. <a id="R9"></a>Keep store-assigned ids and audit timestamps out of the domain.
 10. <a id="R10"></a>Where a concept carries no rules, write no entity for it.
 
 ## Why
@@ -48,7 +48,7 @@ The cost is ceremony, and it is not always worth paying. A concept with no rules
 
 A private constructor plus named static factories means an instance cannot exist in an invalid state, anywhere, ever. That is a stronger guarantee than validating in the caller, and it removes the defensive checks the rest of the code would otherwise carry.
 
-Name factories for how the thing comes into being: `createDraft` for a new one with the rules of creation, `create` (or `rehydrate`) for one being rebuilt from stored state by a mapper ([BE_06](../index.html#BE_06)). Both validate; they differ in what they are allowed to accept.
+Name factories for how the thing comes into being: `createDraft` for a new one with the rules of creation, `restore` for one being rebuilt from stored state by a mapper ([BE_06](../index.html#BE_06)). Both validate; they differ in what they are allowed to accept.
 
 **Do**
 
@@ -56,9 +56,9 @@ Name factories for how the thing comes into being: `createDraft` for a new one w
 export class Article {
   private constructor(private props: ArticleProps) {}
 
-  static createDraft(data: CreateDraftArticle): Article {
+  static createDraft(id: ArticleId, data: CreateDraftArticle): Article {
     if (!data.title.trim()) throw new ArticleTitleRequiredError();
-    return new Article({ ...data, id: newId(), status: ArticleStatusVO.Draft });
+    return new Article({ ...data, id, status: ArticleStatusVO.Draft });
   }
 }
 ```
@@ -147,9 +147,9 @@ Draw the boundary at what must be *immediately* consistent, and keep it small. S
 
 ### [R9](#R9) Nothing from the store, nothing from the framework
 
-Identifiers are generated in the domain, not assigned by the database, so an entity is complete before it is saved and its identity is stable in a test ([GEN_11](../index.html#GEN_11)). Audit columns — created, updated, deleted timestamps — belong to the persistence layer, not the model, unless a business rule reads them; then it is a real field with a business name, not a column that leaked upward.
+Identifiers are minted before the entity is built and passed in, never assigned by the database, so an entity is complete before it is saved and its identity is stable in a test ([GEN_11](../index.html#GEN_11), [BE_11](../index.html#BE_11)). Audit columns — created, updated, deleted timestamps — belong to the persistence layer, not the model, unless a business rule reads them; then it is a real field with a business name, not a column that leaked upward.
 
-**Enforcement:** review — an import allow-list under `**/domain/**` would catch the framework half ([INFRA_06](../index.html#INFRA_06)); the audit-field half is review.
+**Enforcement:** review. Keeping frameworks out of the domain is [BE_02](../index.html#BE_02) R3, with its own enforcement.
 
 ## Worked example
 
@@ -171,7 +171,7 @@ publish(at: Date): void {
 }
 ```
 
-Three things are worth noticing. The clock is an argument, because the domain may not reach one ([R9](#R9)). Ownership is asserted by the aggregate, since it is the thing that knows who owns it — the use case supplies the actor but does not know the rule ([BE_05](../index.html#BE_05)). And the illegal transition is refused by the status object, so the same refusal covers the scheduled publisher and the bulk importer without either repeating it.
+Three things are worth noticing. The clock is an argument, because the domain may not reach one ([BE_02](../index.html#BE_02)). Ownership is asserted by the aggregate, since it is the thing that knows who owns it — the use case supplies the actor but does not know the rule ([BE_05](../index.html#BE_05)). And the illegal transition is refused by the status object, so the same refusal covers the scheduled publisher and the bulk importer without either repeating it.
 
 The rule that does *not* live here: whether the article's images have finished processing. That is another module's fact, so the use case fetches it through a port and applies the policy ([BE_03](../index.html#BE_03)). If the policy itself is intricate — several facts, one business rule — it becomes a domain service in `domain/service/`: a stateless object, still framework-free, that takes plain inputs and decides. What it must not become is a private method on the use case, where the next caller will not find it.
 
@@ -185,9 +185,9 @@ Finally, the counter-example. The article's *category* is a name and a code, rea
 - Method names are business actions in glossary words ([R4](#R4), [GEN_14](../index.html#GEN_14)).
 - Values with rules are immutable value objects; values without rules are not wrapped ([R5](#R5), [R10](#R10)).
 - Status transitions are declared once, inside the domain ([R6](#R6)).
-- Each refusal throws a domain error naming its exact condition ([R7](#R7)).
+- Each refusal throws a domain error rather than returning a flag ([R7](#R7), [BE_09](../index.html#BE_09)).
 - Children are created and changed through their root ([R8](#R8)).
-- No decorator, store-assigned id or audit timestamp in `domain/` ([R9](#R9)).
+- No store-assigned id or audit timestamp in `domain/` ([R9](#R9)); no framework import ([BE_02](../index.html#BE_02)).
 
 ## Open questions
 

@@ -3,8 +3,8 @@ title: "INFRA_05 · Code quality tooling — Biome, Prettier, type-check"
 id: "INFRA_05"
 area: "INFRA"
 tier: "P1"
-status: "draft"
-updated: "2026-09-06"
+status: "stable"
+updated: "2026-09-28"
 requires: [GEN_07]
 see_also: [INFRA_06]
 ---
@@ -13,7 +13,7 @@ see_also: [INFRA_06]
 
 # [Infra] Code quality tooling — Biome, Prettier, type-check
 
-`P1` · `INFRA_05` · `draft` · `updated 2026-09-06`
+`P1` · `INFRA_05` · `stable` · `updated 2026-09-28`
 
 **Open when:** a lint rule blocks you, or you want to add or waive one.
 
@@ -29,8 +29,8 @@ If you read nothing else:
 4. <a id="R4"></a>Configuration lives in shared config packages. A workspace extends; it never forks.
 5. <a id="R5"></a>A rule is on for everyone or off for everyone.
 6. <a id="R6"></a>A waiver is inline, narrow, and states the reason. A file-wide or repo-wide disable is not a waiver.
-7. <a id="R7"></a>Never weaken a rule to make a change pass.
-8. <a id="R8"></a>Type-checking is a task like any other, run locally and in the pipeline, at the strictest setting the code sustains.
+7. <a id="R7"></a>Loosen a rule, a compiler flag or a waiver policy only through [R10](#R10), never inside the change it unblocks ([INFRA_06#R6](../index.html#INFRA_06)).
+8. <a id="R8"></a>Type-checking is a task like any other, run locally and in the pipeline; how strict it runs is [INFRA_06#R5](../index.html#INFRA_06)'s.
 9. <a id="R9"></a>Commit the editor settings and the git hooks, so a fresh clone formats, lints and pushes like everyone else's.
 10. <a id="R10"></a>Changing a rule is a repository decision, and a change that rewrites existing code carries an ADR.
 
@@ -50,7 +50,7 @@ Three jobs, three owners. The formatter decides layout. The linter decides patte
 
 Formatting is therefore not a review topic ([R2](#R2)): a review comment about layout is a bug report against the formatter's configuration, not feedback on the change. And a second formatter is kept only for file types the primary one does not support — named explicitly, scoped to those files, never overlapping. Which tools this project uses, and whether a second is needed at all, is a fact in `PROJECT.md`; the entry for this document names the intended ones, and where the repository has not caught up, that gap belongs in `PROJECT.md`, not here.
 
-**Enforcement:** partly automated — a formatting check in the pipeline enforces [R2](#R2); tool ownership and overlap are review.
+**Enforcement:** review — layout drift, tool ownership and overlap are caught in review. A formatter check run as a task and in the pipeline would make [R2](#R2) automated, and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R4](#R4) and [R5](#R5) Shared configuration, uniform rules
 
@@ -67,27 +67,30 @@ A legitimate waiver is a single line, at the place it applies, naming the rule a
 **Do**
 
 ```
+// where PROJECT.md lists Biome present:
 // biome-ignore lint/suspicious/noExplicitAny: third-party callback is typed as any upstream
+// where PROJECT.md lists ESLint present:
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- third-party callback is typed as any upstream
 ```
 
 **Don't**
 
 ```
 /* eslint-disable */                    // the whole file, no reason, forever
-"rules": { "noExplicitAny": "off" }     // the whole repository, to fix one call site
+"@typescript-eslint/no-explicit-any": "off" // the whole repository, to fix one call site
 ```
 
 The difference is scope and evidence. An inline waiver is visible where the exception lives, expires when the line is deleted, and can be counted. A file-level or repository-level disable removes the rule from code nobody was thinking about, and it never comes back.
 
-[R7](#R7) is the hard rule behind that: never weaken a rule — or a type, or a guardrail — to make your change pass. Fix the change, or raise the rule for discussion in the open ([R10](#R10)). This is the one place where "it was blocking me" is not a reason, because that is what the rule is for.
+[R7](#R7) is the rule behind that: a rule, a type or a guardrail is never loosened inside the change it was blocking. Fix the change, or raise the rule for discussion in the open ([R10](#R10)). This is the one place where "it was blocking me" is not a reason, because that is what the rule is for.
 
 **Enforcement:** review — added waivers and any loosened rule in a config package are visible in the diff; counting waivers over time is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R8](#R8) Type-checking is a task
 
-The type-checker is not something the editor does; it is a task every workspace exposes ([INFRA_01#R7](../index.html#INFRA_01)), run locally and in the pipeline ([INFRA_09](../index.html#INFRA_09)). An editor checks the file you have open; a task checks the repository, including the file your change broke three packages away.
+The type-checker is not something the editor does; it is a task declared in the pipeline like [INFRA_01#R7](../index.html#INFRA_01)'s standard verbs, run locally and in the pipeline ([INFRA_09](../index.html#INFRA_09)). An editor checks the file you have open; a task checks the repository, including the file your change broke three packages away.
 
-Run it at the strictest setting the code sustains, and treat loosening a compiler flag exactly as [R7](#R7) treats a lint rule — a repository decision, not a local unblock. The rules about what the types themselves must look like are [GEN_07](../index.html#GEN_07)'s.
+How strict it runs is [INFRA_06#R5](../index.html#INFRA_06)'s rule; loosening a compiler flag is [R7](#R7)'s case — a repository decision, not a local unblock. The rules about what the types themselves must look like are [GEN_07](../index.html#GEN_07)'s.
 
 **Enforcement:** partly automated — the task fails on error; the strictness setting itself is review.
 
@@ -105,7 +108,7 @@ Hooks are the same idea at the other end, and their division of labour is decide
 
 The pre-push filter is what makes this bearable: scoping to the affected workspaces means a one-package change does not run the repository ([INFRA_09#R3](../index.html#INFRA_09)). Hooks never replace the pipeline — they can be skipped, and they run on a machine nobody controls ([INFRA_09#R1](../index.html#INFRA_09)) — but a hook that catches a failure before a push saves a full pipeline round trip, which is the cheapest feedback in this document.
 
-**Enforcement:** partly automated — the hook manager installs the hooks from a committed configuration; that a developer has not bypassed them is not checkable, which is why the pipeline repeats the same checks.
+**Enforcement:** review — whether editor settings and a hook configuration are committed is visible in the tree; a hook manager installing them from that configuration would automate the first part. A bypass is not checkable, which is why the pipeline repeats the same checks.
 
 ### [R10](#R10) Changing a rule
 
@@ -117,7 +120,7 @@ Changing a rule follows the same path as changing any convention ([GEN_01#R10](.
 
 A rule fires on a change: the linter rejects a non-null assertion, which [GEN_07#R4](../index.html#GEN_07) also bans.
 
-The tempting fixes are both forbidden. Adding a repository-level disable turns the rule off for code nobody is looking at ([R6](#R6)); adding an inline waiver "for now" is a waiver with no reason, which is the same thing at smaller scale ([R7](#R7)).
+The tempting fixes are both forbidden. Adding a repository-level disable turns the rule off for code nobody is looking at ([R6](#R6)); adding an inline waiver "for now" is a waiver with no reason, which is the same thing at smaller scale ([R6](#R6)).
 
 The real fix is usually that the type is wrong: the value is optional because the function that produced it can genuinely return nothing, and the assertion was hiding that. Handling the absent case satisfies the linter and fixes a defect that had not happened yet.
 

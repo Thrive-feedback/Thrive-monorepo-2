@@ -13,35 +13,35 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@repo/api": "*",
-    "@repo/ui": "*",
+    "@repo/api": "workspace:*",
+    "@repo/ui": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "next": "16.3.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.3.1",
-    "zod": "^4.6.5"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14",
+    "@biomejs/biome": "catalog:",
     "@repo/biome-config": "workspace:*",
-    "@repo/typescript-config": "*",
-    "@repo/vitest-config": "*",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.1.14",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^22.15.3",
-    "@types/react": "19.1.0",
-    "@types/react-dom": "19.1.1",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "jsdom": "^26.1.0",
     "msw": "^2.11.5",
     "tailwindcss": "^4.1.14",
-    "typescript": "5.8.2",
-    "vitest": "^3.2.4"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "engines": {
     "node": ">=20"
