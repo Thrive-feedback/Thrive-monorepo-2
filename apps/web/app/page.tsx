@@ -4,8 +4,8 @@ import Link from 'next/link';
  * The landing route, deliberately empty of product: the web app renders a page of its own,
  * and nothing is built ahead of the first real feature. The first real route replaces this.
  *
- * Every class resolves to a token. `bg-primary-500` is not a class that exists, because the
- * theme exposes colour only as roles.
+ * Every class resolves to a token: a role for colour and shape, a scale for size and weight.
+ * `bg-primary-500` is not a class that exists, because the theme exposes colour only as roles.
  */
 export default function Home() {
   return (
@@ -16,7 +16,7 @@ export default function Home() {
       </p>
       <Link
         href="/ui-showcase/tokens"
-        className="bg-action hover:bg-action-hover active:bg-action-pressed text-foreground-on-action rounded-control w-fit px-4 py-2 font-medium text-sm"
+        className="w-fit rounded-control bg-action px-4 py-2 font-medium text-foreground-on-action text-sm hover:bg-action-hover active:bg-action-pressed"
       >
         See the design tokens
       </Link>

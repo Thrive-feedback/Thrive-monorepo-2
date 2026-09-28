@@ -13,8 +13,12 @@
 
 @layer base {
   html {
-    /* Lets form controls and scrollbars follow the mode the tokens are in. */
-    color-scheme: light dark;
+    /*
+     * Tells form controls and scrollbars which modes the tokens support. Light only, because
+     * the semantic layer has no dark mode yet; claiming `light dark` would paint dark
+     * scrollbars on a light page.
+     */
+    color-scheme: light;
   }
 
   body {
@@ -25,7 +29,7 @@
 
   /* Focus stays visible on every interactive element, from one token. */
   :focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
+    outline: var(--focus-ring-width) solid var(--focus);
+    outline-offset: var(--focus-ring-offset);
   }
 }

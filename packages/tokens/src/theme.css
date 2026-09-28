@@ -10,11 +10,20 @@
  * `--radius-*`, `--font-*`, so the semantic layer uses bare role names — `--surface`, `--action`.
  * Without that split a theme variable would refer to itself.
  *
- * Only semantic tokens appear here. Exposing a primitive would put `bg-primary-500` in reach of
- * every component and quietly undo `FE_03` R2.
+ * `--*: initial` removes Tailwind's whole default theme first. Without it `bg-red-500`,
+ * `rounded-md` and `shadow-md` all exist beside ours, and R1 is a rule to remember rather than
+ * a fact of the build. Only what is declared below generates a utility.
+ *
+ * Colours and shapes appear only as semantic tokens: exposing a colour primitive would put
+ * `bg-primary-500` in reach of every component and quietly undo `FE_03` R2. Spacing, type,
+ * weight, breakpoint and width are scales rather than roles, so they map straight from their
+ * primitives, as `--spacing` always has. There are no shadows, durations or easings yet, so
+ * those utilities do not exist until a token does.
  */
 
 @theme inline {
+  --*: initial;
+
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-surface-sunken: var(--surface-sunken);
@@ -44,6 +53,42 @@
 
   --font-sans: var(--family-sans);
   --font-mono: var(--family-mono);
+  /* Preflight reads these for the document and for `code`; the reset above drops them. */
+  --default-font-family: var(--family-sans);
+  --default-mono-font-family: var(--family-mono);
 
   --spacing: var(--space-unit);
+
+  --text-xs: var(--size-xs);
+  --text-xs--line-height: var(--size-xs-leading);
+  --text-sm: var(--size-sm);
+  --text-sm--line-height: var(--size-sm-leading);
+  --text-base: var(--size-base);
+  --text-base--line-height: var(--size-base-leading);
+  --text-lg: var(--size-lg);
+  --text-lg--line-height: var(--size-lg-leading);
+  --text-xl: var(--size-xl);
+  --text-xl--line-height: var(--size-xl-leading);
+  --text-2xl: var(--size-2xl);
+  --text-2xl--line-height: var(--size-2xl-leading);
+  --text-3xl: var(--size-3xl);
+  --text-3xl--line-height: var(--size-3xl-leading);
+  --text-4xl: var(--size-4xl);
+  --text-4xl--line-height: var(--size-4xl-leading);
+
+  --font-weight-normal: var(--weight-normal);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+  --font-weight-bold: var(--weight-bold);
+
+  --container-2xl: var(--measure-2xl);
+  --container-5xl: var(--measure-5xl);
+
+  /* Literal on purpose: a media query cannot read a custom property, so these are the one
+     token set that has to be written where Tailwind compiles it. Mobile first (`FE_04` R7). */
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 96rem;
 }

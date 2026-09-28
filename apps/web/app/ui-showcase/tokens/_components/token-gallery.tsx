@@ -68,7 +68,7 @@ export function TokenGallery() {
         description="Backgrounds, from furthest back to nearest front."
       >
         <Swatch name="bg-surface" usage="the page">
-          <div className="h-full w-full border-line border-b-0 bg-surface" />
+          <div className="h-full w-full bg-surface" />
         </Swatch>
         <Swatch name="bg-surface-raised" usage="cards, sheets, menus">
           <div className="h-full w-full bg-surface-raised" />
@@ -80,7 +80,7 @@ export function TokenGallery() {
 
       <Section
         title="Text and icons"
-        description="Foreground content. `on-action` is for content sitting on a filled action."
+        description="Foreground content. On-action is for content sitting on a filled action."
       >
         <Swatch name="text-foreground" usage="body and headings">
           <span className="text-foreground text-lg">Ask for feedback</span>
@@ -168,9 +168,12 @@ export function TokenGallery() {
 
       <Section
         title="Focus"
-        description="One token, because FE_06 wants focus visible on everything interactive. Tab to the button."
+        description="Applied globally, because FE_06 wants focus visible on everything interactive: one colour and the ring width and offset. Tab to the button."
       >
-        <Swatch name="outline-focus" usage="keyboard focus ring">
+        <Swatch
+          name="--focus (global :focus-visible)"
+          usage="keyboard focus ring"
+        >
           <button
             type="button"
             className="rounded-control border border-line-strong px-3 py-1.5 text-sm"
