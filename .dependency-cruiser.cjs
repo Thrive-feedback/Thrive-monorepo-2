@@ -107,7 +107,16 @@ module.exports = {
   options: {
     doNotFollow: { path: 'node_modules' },
     exclude: {
-      path: '(^|/)(scripts/arch-fixtures/|apps/api/(src|dist)/infrastructure/database/generated/)',
+      path: [
+        '(^|/)scripts/arch-fixtures/',
+        '(^|/)apps/api/(src|dist)/infrastructure/database/generated/',
+        // Next generates `next-env.d.ts` and gitignores it. It imports
+        // `./.next/types/*`, which exist only after a build, so cruising it reports
+        // `not-unresolvable` on a clean checkout and resolves after `bun run build` —
+        // a guardrail that answers differently depending on whether someone has built
+        // is worse than one that does not look at a generated file nobody writes.
+        '^apps/web/next-env\\.d\\.ts$',
+      ].join('|'),
     },
     // The fixtures under `scripts/arch-fixtures/` are cruised with their own directory as
     // the working directory, so their paths match the rules above. They have no tsconfig,
