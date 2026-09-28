@@ -19,7 +19,7 @@ edited around. `GEN_03` is the checklist.
 | ------------ | --------------------------------------------------------------------------------- |
 | **Name**     | `thrive`                                                                            |
 | **Kind**     | `product` — Thrive, an employee feedback platform                                   |
-| **Stage**    | pre-launch; no users, no revenue, no deployment, no CI                              |
+| **Stage**    | pre-launch; no users, no revenue, no deployment                                      |
 | **Upstream** | `soizensun/fullstack-bp` @ `9492d6a1bc278f53a37b98c84dcb4ee223190852`, remote `boilerplate` |
 
 The reference implementation this project was initialized from — the `todo` and `activity-log`
@@ -91,7 +91,7 @@ and propose the addition — do not quietly install it.
 | Database, ORM, migrations                | _planned_   | **open decision 2.** Schema starts from scratch, derived from `domain-map.md`; the old repo's migrations are reference only                                            |
 | Object storage                           | _planned_   | Epic #10 gives `Profile` a photo. Falls out of decisions 3 and 4                                                                                                        |
 | Redis, outbox, background jobs           | _planned_   | `BE_17`–`BE_19` are `todo`; no backing services, no Docker, no compose                                                                                                 |
-| CI (GitHub Actions)                      | **present** | `.github/workflows/pr.yml` — four jobs on every pull request to `main`, which is protected: *Code style*, *Types* and *Architecture* are **required**; *Tests* runs but is **not yet required**. No builds or deploys in CI |
+| CI (GitHub Actions)                      | **present** | `.github/workflows/pr.yml` — five jobs on every pull request to `main`: *Code style*, *Types*, *Architecture*, *Tests*, and *Build* (affected workspaces). The first four are required by branch protection; *Build* becomes required after this workflow lands on `main`. No deploys in CI |
 | dependency-cruiser 18                    | **present** | the import-graph guardrails (ADR 0014): cycles, app and package direction, reaching past an entry point, and `FE_01`'s ladder. Config at `.dependency-cruiser.cjs`; every rule has a fixture under `scripts/arch-fixtures/` that `scripts/verify-arch-fixtures.mjs` proves still fails. `apps/api/scripts/check-architecture.mjs` keeps the specifier-level `BE_*` rules |
 | Install constraints                      | _planned_   | no `bunfig.toml` maturity window and no `trustedDependencies`; install scripts follow Bun's default list (`INFRA_04` R6) |
 | Git hooks                                | _planned_   | no hook manager (`INFRA_05` R9) |
