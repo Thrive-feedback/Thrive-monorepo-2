@@ -4,19 +4,19 @@ import { API_UNREACHABLE, ApiError, toApiError } from './api-error';
 import type { paths } from './generated/schema';
 
 /**
- * GEN_08 R6 — the header the API app accepts, propagates and returns. Named once here so
- * no caller spells it differently.
+ * The header the API app accepts, propagates and returns. Named once here so no caller
+ * spells it differently.
  */
 export const CORRELATION_ID_HEADER = 'x-correlation-id';
 
 export interface ApiClientConfig {
-  /** Where the API app is reachable. INFRA_07 R6 — it differs per environment, so it is configuration. */
+  /** Where the API app is reachable. It differs per environment, so it is configuration. */
   readonly baseUrl: string;
   /**
    * Supplies the correlation id for one request.
    *
-   * FE_10's open questions note that nothing yet says how a server render and a later
-   * client call share one id per user action. Until that is settled, a caller that holds
+   * Nothing yet decides how a server render and a later client call share one id per
+   * user action. Until that is settled, a caller that holds
    * an id passes a function returning it; the default mints a fresh one so the trace is
    * never missing entirely.
    */
@@ -26,11 +26,11 @@ export interface ApiClientConfig {
 export type ApiClient = Client<paths>;
 
 /**
- * FE_10 R1 — the one way this repository talks to the backend.
- * FE_10 R4 — constructed once per runtime from configuration. A component never calls this.
- * FE_10 R5 — the correlation id is set here, so no call site can forget it.
- * FE_10 R7 — a failure leaves this function as an `ApiError` carrying a code, never as a
- * status a caller has to interpret.
+ * Built once per runtime from configuration; a component never calls this.
+ *
+ * Every request carries a correlation id, set here so no call site can forget it. Every
+ * failure leaves as an `ApiError` carrying a code, never as a status a caller has to
+ * interpret.
  */
 export function createApiClient(config: ApiClientConfig): ApiClient {
   const nextCorrelationId = config.correlationId ?? uuidv7;
@@ -51,7 +51,7 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
       );
     },
     onError({ error }) {
-      // The request never reached the API. It still leaves here as one shape (FE_10 R7).
+      // The request never reached the API. It still leaves here as one shape.
       if (error instanceof ApiError) return error;
       return new ApiError({
         code: API_UNREACHABLE,
@@ -72,7 +72,7 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
  * The middleware above throws on every response that is not ok, so a successful result
  * always carries `data`. `openapi-fetch`'s signature cannot know that — it describes a
  * client without the middleware — so the type stays optional and every caller would
- * otherwise reach for a non-null assertion, which GEN_07 R4 forbids.
+ * otherwise reach for a non-null assertion.
  *
  * This is the check instead of the assertion: one runtime guard, in one place, that turns
  * the impossible case into an `ApiError` like any other rather than into `undefined`

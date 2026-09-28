@@ -3,14 +3,11 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
 
 /**
- * The shared base for component suites (FE_14).
+ * The shared base for component suites.
  *
- * INFRA_03 R7 — a configuration package exports configuration and runs nothing at import
- * time. This is a function returning a config object; importing it starts no watcher,
- * reads no environment, and touches no disk.
- *
- * INFRA_01 R8 — configuration two workspaces would otherwise copy lives in a package.
- * There is one consumer today; the second is the reason this is not inlined in it.
+ * A function returning a config object, so importing it starts no watcher, reads no
+ * environment, and touches no disk. It lives in a package, not inline in its one consumer
+ * today, so a second workspace shares it rather than copying it.
  */
 export function reactTestConfig(
   options: { setupFiles?: string[] } = {},
@@ -18,13 +15,13 @@ export function reactTestConfig(
   return defineConfig({
     plugins: [react(), tsconfigPaths()],
     test: {
-      // FE_14 R2 — queries go through the accessibility tree, which needs a DOM.
+      // Queries go through the accessibility tree, which needs a DOM.
       environment: 'jsdom',
-      // GEN_07 R3 has no exception for tests: `describe` and `it` are imported, not global.
+      // Tests import `describe` and `it` like any other module; nothing is injected as a global.
       globals: false,
       setupFiles: options.setupFiles ?? [],
       css: false,
-      // FE_14 R9 — nothing may depend on test order.
+      // Shuffled so no test can come to depend on another running first.
       sequence: { shuffle: true },
       clearMocks: true,
       restoreMocks: true,

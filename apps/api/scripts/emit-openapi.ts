@@ -6,8 +6,6 @@ import { AppModule } from '../src/app.module';
 import { buildOpenApiDocument } from '../src/openapi';
 
 /**
- * GEN_08 R2 — serializes the contract the API app already owns.
- *
  * The document is a property of the route metadata, not of a running server, so the app
  * is created and closed without ever listening. ADR 0006 records why the file is
  * committed: a checkout regenerates the client without starting the API.

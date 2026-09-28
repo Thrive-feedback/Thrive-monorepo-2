@@ -103,7 +103,7 @@
             "name": "idempotency-key",
             "required": false,
             "in": "header",
-            "description": "BE_07 R8 — replaying a create with the same key returns the first result.",
+            "description": "Replaying a create with the same key returns the first result.",
             "schema": {
               "type": "string"
             }

@@ -329,7 +329,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description BE_07 R8 — replaying a create with the same key returns the first result. */
+                /** @description Replaying a create with the same key returns the first result. */
                 "idempotency-key"?: string;
             };
             path?: never;

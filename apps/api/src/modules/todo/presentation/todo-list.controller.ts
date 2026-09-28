@@ -99,7 +99,7 @@ export class TodoListController {
   @ApiHeader({
     name: 'idempotency-key',
     required: false,
-    description: 'BE_07 R8 — replaying a create with the same key returns the first result.',
+    description: 'Replaying a create with the same key returns the first result.',
   })
   @ZodResponse({ status: HttpStatus.CREATED, type: CreateTodoListResponseDto })
   async create(
