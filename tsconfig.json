@@ -1,6 +1,12 @@
 {
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    // Read by dependency-cruiser, which takes one tsconfig for the whole repository. It
+    // mirrors the web app's own `@/*` so those imports resolve there; the web app's compiler
+    // still uses apps/web/tsconfig.json. Change one and change the other.
+    "paths": {
+      "@/*": ["./apps/web/*"]
+    }
   }
 }

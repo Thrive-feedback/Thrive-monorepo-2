@@ -86,10 +86,12 @@ module.exports = {
         "FE_01 R5 — nothing outside a route reaches into that route's private folder. A " +
         'sideways import means the file belongs one rung up, so promote it.',
       severity: 'error',
-      from: { path: '^apps/web/app/([^/]+)/' },
+      // The segment is captured without its parentheses, because a route group's `(name)`
+      // pasted into `pathNot` would be read as a regex group and match `name/` instead.
+      from: { path: '^apps/web/app/\\(?([^/()]+)\\)?/' },
       to: {
         path: '^apps/web/app/[^/]+/_[^/]+/',
-        pathNot: '^apps/web/app/$1/',
+        pathNot: '^apps/web/app/\\(?$1\\)?/',
       },
     },
     {
