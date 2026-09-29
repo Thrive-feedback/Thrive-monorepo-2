@@ -25,10 +25,24 @@
   --surface-raised: var(--neutral-50);
   --surface-sunken: var(--neutral-100);
 
+  /* The page behind everything: a wash from the surface down into a hint of the brand. */
+  --backdrop: var(--neutral-0);
+  --backdrop-tint: var(--primary-100);
+
+  /* A surface that floats over the backdrop, letting it show through. */
+  --surface-floating: color-mix(in oklch, var(--neutral-0) 40%, transparent);
+  --elevation-floating: var(--shadow-1);
+
   /* Text and icons. `on-action` is for content sitting on a filled action. */
   --foreground: var(--neutral-900);
   --foreground-muted: var(--neutral-600);
   --foreground-on-action: var(--neutral-0);
+
+  /* Brand-coloured text that is not an action. A step darker than the logo's fill, because
+     small text needs 4.5:1 contrast and the logo's shade reaches only 2.9:1 on the backdrop. */
+  --brand: var(--primary-600);
+
+  --link: var(--primary-600);
 
   /* Lines: dividers and control outlines. */
   --line: var(--neutral-200);
@@ -59,7 +73,8 @@
   --focus-ring-width: var(--stroke-2);
   --focus-ring-offset: var(--stroke-2);
 
-  /* Shape. Two roles: things you operate, and things that hold content. */
+  /* Shape. Things you operate, things that hold content, and things that float over the page. */
   --shape-control: var(--radius-2);
   --shape-surface: var(--radius-3);
+  --shape-floating: var(--radius-4);
 }
