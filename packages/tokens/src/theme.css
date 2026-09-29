@@ -17,8 +17,8 @@
  * Colours and shapes appear only as semantic tokens: exposing a colour primitive would put
  * `bg-primary-500` in reach of every component and quietly undo `FE_03` R2. Spacing, type,
  * weight, breakpoint and width are scales rather than roles, so they map straight from their
- * primitives, as `--spacing` always has. There are no shadows, durations or easings yet, so
- * those utilities do not exist until a token does.
+ * primitives, as `--spacing` always has. Shadows appear only as elevation roles. There are no
+ * durations or easings yet, so those utilities do not exist until a token does.
  */
 
 @theme inline {
@@ -27,6 +27,11 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-surface-sunken: var(--surface-sunken);
+  --color-surface-floating: var(--surface-floating);
+  --color-backdrop: var(--backdrop);
+  --color-backdrop-tint: var(--backdrop-tint);
+  --color-brand: var(--brand);
+  --color-link: var(--link);
   --color-foreground: var(--foreground);
   --color-foreground-muted: var(--foreground-muted);
   --color-foreground-on-action: var(--foreground-on-action);
@@ -50,6 +55,9 @@
 
   --radius-control: var(--shape-control);
   --radius-surface: var(--shape-surface);
+  --radius-floating: var(--shape-floating);
+
+  --shadow-floating: var(--elevation-floating);
 
   --font-sans: var(--family-sans);
   --font-mono: var(--family-mono);

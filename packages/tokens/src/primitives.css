@@ -125,10 +125,19 @@
      vocabulary from it (`FE_04` R1), so there is nothing to keep in sync. */
   --space-unit: 0.25rem;
 
-  /* Radii. Three steps is what the old build used once its calc() chain is flattened. */
+  /* Radii. Three steps is what the old build used once its calc() chain is flattened; the
+     fourth is the design's rounder corner for surfaces that float over the page. */
   --radius-1: 0.375rem;
   --radius-2: 0.625rem;
   --radius-3: 1rem;
+  --radius-4: 1.5rem;
+
+  /* Shadows, tinted with the brand rather than grey, as the design draws them. */
+  --shadow-1:
+    0 0.5rem 1.5rem -0.25rem
+    color-mix(in oklch, var(--primary-500) 16%, transparent),
+    0 0.375rem 0.75rem -0.375rem
+    color-mix(in oklch, var(--primary-500) 20%, transparent);
 
   /* Stroke widths, for outlines that are not borders. */
   --stroke-2: 0.125rem;

@@ -76,6 +76,20 @@ export function TokenGallery() {
         <Swatch name="bg-surface-sunken" usage="wells and inset areas">
           <div className="h-full w-full bg-surface-sunken" />
         </Swatch>
+        <Swatch
+          name="from-backdrop to-backdrop-tint"
+          usage="the wash behind a page"
+        >
+          <div className="h-full w-full bg-linear-to-b from-backdrop to-backdrop-tint" />
+        </Swatch>
+        <Swatch
+          name="bg-surface-floating shadow-floating"
+          usage="a panel over the backdrop"
+        >
+          <div className="flex h-full w-full items-center justify-center bg-linear-to-b from-backdrop to-backdrop-tint">
+            <div className="h-10 w-24 rounded-floating bg-surface-floating shadow-floating" />
+          </div>
+        </Swatch>
       </Section>
 
       <Section
@@ -95,6 +109,12 @@ export function TokenGallery() {
           <span className="rounded-control bg-action px-3 py-1.5 text-foreground-on-action">
             Send
           </span>
+        </Swatch>
+        <Swatch name="text-brand" usage="brand text that is not an action">
+          <span className="text-brand text-lg">Thrive</span>
+        </Swatch>
+        <Swatch name="text-link" usage="inline links">
+          <span className="text-link text-lg underline">Privacy Policy</span>
         </Swatch>
       </Section>
 
@@ -185,13 +205,16 @@ export function TokenGallery() {
 
       <Section
         title="Shape and type"
-        description="Two radius roles: things you operate, and things that hold content."
+        description="Three radius roles: things you operate, things that hold content, and things that float over the page."
       >
         <Swatch name="rounded-control" usage="buttons, inputs, chips">
           <div className="h-10 w-32 rounded-control bg-surface-sunken" />
         </Swatch>
         <Swatch name="rounded-surface" usage="cards, sheets, dialogs">
           <div className="h-10 w-32 rounded-surface bg-surface-sunken" />
+        </Swatch>
+        <Swatch name="rounded-floating" usage="panels over the backdrop">
+          <div className="h-10 w-32 rounded-floating bg-surface-sunken" />
         </Swatch>
         <Swatch name="font-sans" usage="everything">
           <span className="font-sans text-lg">Thrive</span>
