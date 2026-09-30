@@ -3,8 +3,8 @@ title: "BE_21 · Authentication & authorization"
 id: "BE_21"
 area: "BE"
 tier: "P2"
-status: "draft"
-updated: "2026-09-27"
+status: "stable"
+updated: "2026-10-01"
 requires: [BE_20]
 see_also: [FE_19, GEN_09]
 ---
@@ -13,7 +13,7 @@ see_also: [FE_19, GEN_09]
 
 # [BE] Authentication & authorization
 
-`P2` · `BE_21` · `draft` · `updated 2026-09-27`
+`P2` · `BE_21` · `stable` · `updated 2026-10-01`
 
 **Open when:** an endpoint must know who is calling, or refuse them.
 
