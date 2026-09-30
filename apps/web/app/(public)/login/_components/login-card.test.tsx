@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { LoginCard } from './login-card';
+
+vi.mock('@/app/(public)/_lib/mock-session.service', () => ({
+  signIn: vi.fn(),
+}));
 
 describe('LoginCard', () => {
   it('welcomes the visitor and offers the one way in', () => {
