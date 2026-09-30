@@ -1,8 +1,8 @@
 import Image from 'next/image';
 
 /**
- * The wordmark keeps the design's lighter brand shade, baked into the SVG. Contrast minimums
- * do not apply to a logotype, which is why brand-coloured text uses a darker shade than this.
+ * The black wordmark, exported unchanged from the design's logo page. It is a file rather than
+ * a token-coloured SVG because a logotype is artwork: its colour is part of the mark.
  */
 export function Logo() {
   return (
