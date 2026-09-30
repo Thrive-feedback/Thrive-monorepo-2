@@ -3,8 +3,8 @@ title: "BE_20 · Logging, tracing & the request lifecycle"
 id: "BE_20"
 area: "BE"
 tier: "P2"
-status: "draft"
-updated: "2026-09-27"
+status: "stable"
+updated: "2026-10-01"
 requires: [BE_09, INFRA_14]
 see_also: [GEN_09, BE_02]
 ---
@@ -13,7 +13,7 @@ see_also: [GEN_09, BE_02]
 
 # [BE] Logging, tracing & the request lifecycle
 
-`P2` · `BE_20` · `draft` · `updated 2026-09-27`
+`P2` · `BE_20` · `stable` · `updated 2026-10-01`
 
 **Open when:** you are adding a middleware, guard, interceptor, pipe or filter — or a log line.
 
