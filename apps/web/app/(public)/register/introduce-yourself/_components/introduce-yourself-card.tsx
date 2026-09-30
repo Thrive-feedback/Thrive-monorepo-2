@@ -10,7 +10,11 @@ export type IntroduceYourselfCardProps = {
 
 export function IntroduceYourselfCard({ email }: IntroduceYourselfCardProps) {
   return (
-    <Card title="Introduce yourself" titleAs="h2" className="max-w-110">
+    <Card
+      title="Introduce yourself"
+      titleAs="h2"
+      className="max-w-110 justify-self-center md:justify-self-end"
+    >
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <Text variant="body2" tone="muted">
           Signed in as{' '}

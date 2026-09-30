@@ -3,7 +3,8 @@ import { SiteNavbar } from './_components/site-navbar';
 
 /**
  * The main region is a flex column so a page can centre itself in the space between navbar
- * and footer with `m-auto`, without the layout knowing what it holds.
+ * and footer with `m-auto`, without the layout knowing what it holds. Its side padding steps up
+ * with the navbar's and footer's, so page content lines up with the logo at every width.
  */
 export default function PublicLayout({
   children,
@@ -13,7 +14,9 @@ export default function PublicLayout({
   return (
     <div className="flex min-h-dvh flex-col bg-linear-to-b from-backdrop to-backdrop-tint">
       <SiteNavbar />
-      <main className="flex flex-1 flex-col px-4 py-12">{children}</main>
+      <main className="flex flex-1 flex-col px-4 py-12 md:px-10">
+        {children}
+      </main>
       <SiteFooter />
     </div>
   );
