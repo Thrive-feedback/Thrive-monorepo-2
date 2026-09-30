@@ -21,7 +21,7 @@ export default async function IntroduceYourselfPage() {
   }
 
   return (
-    <div className="m-auto grid w-full max-w-5xl items-center gap-12 md:grid-cols-2">
+    <div className="m-auto grid w-full max-w-5xl items-center gap-10 md:grid-cols-2 md:gap-12">
       <IntroduceYourselfHero />
       <IntroduceYourselfCard email={account.email} />
     </div>

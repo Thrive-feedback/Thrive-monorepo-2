@@ -1,9 +1,10 @@
 import { Text } from '@/components/atoms/text';
 
+/** Centred over the card while the two stack; beside it, from `md` up, it reads from the left. */
 export function IntroduceYourselfHero() {
   return (
-    <div className="flex flex-col gap-4">
-      <Text variant="display3" as="h1">
+    <div className="flex flex-col gap-4 text-center md:text-start">
+      <Text variant="display5" as="h1" className="md:text-display3">
         Let’s make it official.
       </Text>
       <Text variant="body2" tone="muted">
