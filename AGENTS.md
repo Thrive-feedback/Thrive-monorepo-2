@@ -50,6 +50,16 @@ Check it; do not assume. **While an entry is `todo` its document does not exist,
 > infer past it. In your plan, name which `todo` entries you had to interpret. If two
 > entries conflict, stop and ask.
 
+**How deeply to read** (`GEN_01#R1`). The read set says *which* documents; this says how much
+of each:
+
+- **To build** — read a document's head (**Open when**, summary) and its **The rules** list, and
+  stop at *Why*. That list is written to stand alone.
+- **When a rule's one-liner leaves you unsure, or you are about to depart from it** — open that
+  rule's *Rule detail* section, not the whole document.
+- **In full** — only when you are asked to review against a document, or when you author or
+  change one (`GEN_12`, which is itself read in full first).
+
 Cite the convention ids you relied on (e.g. `BE_07`, `FE_03`) in your plan and in the PR
 description — not in code comments (`GEN_17`).
 

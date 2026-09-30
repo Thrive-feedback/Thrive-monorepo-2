@@ -18,6 +18,11 @@ entries of the areas you are touching, and any entry whose **Open when** trigger
 the document does not exist and the index entry is the binding text — name any entry you
 had to interpret.
 
+Read that set **shallow by default** (`GEN_01#R1`): each document's head and **The rules**, stopping
+at `## Why` — Grep for the heading and Read only up to it. Open one rule's *Rule detail* when its
+one-liner is unclear. Read a document in full only when the user asks you to review, or when you
+are authoring or changing it.
+
 Before authoring a convention document, read `GEN_12` in full — it is the authoring
 contract, and its worked example holds the exact prompt to use, so documents come out
 consistent regardless of which model wrote them.
