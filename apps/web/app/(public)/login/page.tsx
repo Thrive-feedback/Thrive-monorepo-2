@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { LoginCard } from './_components/login-card';
+import { SignInPrompt } from './_components/sign-in-prompt';
 
-const title = 'Welcome to Thrive';
+const title = 'Are you ready to Thrive?';
 const description = 'Sign in to Thrive with your Google account.';
 
 /**
@@ -19,5 +19,5 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return <LoginCard />;
+  return <SignInPrompt />;
 }
