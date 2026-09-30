@@ -9,6 +9,7 @@
 @import '@repo/tokens/tokens.css';
 
 @source '../app';
+@source '../components';
 @source '../../../packages/ui/src';
 
 @layer base {

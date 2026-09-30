@@ -1,7 +1,11 @@
 import Image from 'next/image';
+import { Button, type ButtonProps } from '@/components/atoms/button';
 import { cn } from '@/lib/cn.util';
 
-export type GoogleSignInButtonProps = React.ComponentPropsWithRef<'button'>;
+export type GoogleSignInButtonProps = Omit<
+  ButtonProps,
+  'children' | 'tone' | 'size'
+>;
 
 /**
  * The label is fixed; every other button prop passes through to the `<button>`, including
@@ -16,14 +20,7 @@ export function GoogleSignInButton({
   ...rest
 }: GoogleSignInButtonProps) {
   return (
-    <button
-      type="button"
-      className={cn(
-        'inline-flex w-full items-center justify-center gap-3 rounded-control border border-line bg-surface px-5.5 py-3 font-semibold text-foreground text-sm hover:bg-surface-raised active:bg-surface-sunken',
-        className,
-      )}
-      {...rest}
-    >
+    <Button className={cn('w-full', className)} {...rest}>
       {/* `width` and `height` only reserve space; `size-5` sets the rendered size. */}
       <Image
         src="/brand/google-g.svg"
@@ -33,6 +30,6 @@ export function GoogleSignInButton({
         className="size-5"
       />
       Continue with Google
-    </button>
+    </Button>
   );
 }
