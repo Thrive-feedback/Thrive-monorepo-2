@@ -3,6 +3,12 @@ import { notFound } from 'next/navigation';
 import { ComponentPage } from '@/app/ui-showcase/_components/component-page';
 import { COMPONENT_CATALOG } from '@/app/ui-showcase/_lib/component-catalog.constant';
 
+// Typed here rather than with Next's generated `PageProps`, which exists only after a build
+// or dev server has run, so a clean checkout's type-check would not find it.
+type ComponentShowcasePageProps = {
+  params: Promise<{ component: string }>;
+};
+
 /** Every page is built ahead of time; a slug that is not in the catalog is a 404. */
 export const dynamicParams = false;
 
@@ -12,7 +18,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({
   params,
-}: PageProps<'/ui-showcase/[component]'>): Promise<Metadata> {
+}: ComponentShowcasePageProps): Promise<Metadata> {
   const { component } = await params;
   const entry = COMPONENT_CATALOG.find(({ slug }) => slug === component);
   return {
@@ -28,7 +34,7 @@ export async function generateMetadata({
  */
 export default async function ComponentShowcasePage({
   params,
-}: PageProps<'/ui-showcase/[component]'>) {
+}: ComponentShowcasePageProps) {
   const { component } = await params;
   const index = COMPONENT_CATALOG.findIndex(({ slug }) => slug === component);
   const entry = COMPONENT_CATALOG[index];
