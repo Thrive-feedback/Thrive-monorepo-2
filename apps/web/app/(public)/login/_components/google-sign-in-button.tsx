@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn.util';
 
 export type GoogleSignInButtonProps = Omit<
   ButtonProps,
-  'children' | 'tone' | 'size'
+  'children' | 'variant' | 'size' | 'asChild'
 >;
 
 /**

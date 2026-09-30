@@ -25,7 +25,7 @@ export function Card({
       {...rest}
     >
       <header className="border-line border-b px-6 pt-6 pb-4">
-        <Title className="text-center font-medium text-xl">{title}</Title>
+        <Title className="text-center text-subtitle2">{title}</Title>
       </header>
       <div className="p-6">{children}</div>
     </section>

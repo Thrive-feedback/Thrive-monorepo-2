@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/atoms/button';
-import { TextField } from './text-field';
+import { TextField } from '@/components/molecules/text-field';
 
 function firstWord(value: string): string {
   return value.trim().split(/\s+/)[0] ?? '';
@@ -59,7 +59,7 @@ export function IntroduceYourselfForm() {
       />
       <Button
         type="submit"
-        tone="primary"
+        variant="primary"
         disabled={!canContinue}
         className="mt-2 w-full"
       >

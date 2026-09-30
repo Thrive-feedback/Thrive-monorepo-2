@@ -14,11 +14,13 @@
  * `rounded-md` and `shadow-md` all exist beside ours, and R1 is a rule to remember rather than
  * a fact of the build. Only what is declared below generates a utility.
  *
- * Colours and shapes appear only as semantic tokens: exposing a colour primitive would put
- * `bg-primary-500` in reach of every component and quietly undo `FE_03` R2. Spacing, type,
- * weight, breakpoint and width are scales rather than roles, so they map straight from their
- * primitives, as `--spacing` always has. Shadows appear only as elevation roles. There are no
- * durations or easings yet, so those utilities do not exist until a token does.
+ * Colours, shapes and type appear only as semantic tokens: exposing a colour primitive would
+ * put `bg-primary-500` in reach of every component and quietly undo `FE_03` R2, and a type
+ * utility is one of the design's text styles (`text-h1`, `text-body2`), never a bare size.
+ * Spacing, weight, breakpoint and width are scales rather than roles, so they map straight
+ * from their primitives, as `--spacing` always has. Shadows appear only as elevation roles. Motion appears only
+ * as the two loops the loading indicators need; transitions have no tokens, so no transition
+ * utility carries a duration.
  */
 
 @theme inline {
@@ -53,13 +55,30 @@
   --color-info-subtle: var(--info-subtle);
   --color-focus: var(--focus);
 
+  --radius-indicator: var(--shape-indicator);
   --radius-control: var(--shape-control);
   --radius-surface: var(--shape-surface);
   --radius-floating: var(--shape-floating);
 
   --shadow-floating: var(--elevation-floating);
 
+  --animate-spin: spin var(--motion-spin);
+  --animate-pulse: pulse var(--motion-pulse);
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes pulse {
+    50% {
+      opacity: 0.5;
+    }
+  }
+
   --font-sans: var(--family-sans);
+  --font-display: var(--family-display);
   --font-mono: var(--family-mono);
   /* Preflight reads these for the document and for `code`; the reset above drops them. */
   --default-font-family: var(--family-sans);
@@ -67,22 +86,102 @@
 
   --spacing: var(--space-unit);
 
-  --text-xs: var(--size-xs);
-  --text-xs--line-height: var(--size-xs-leading);
-  --text-sm: var(--size-sm);
-  --text-sm--line-height: var(--size-sm-leading);
-  --text-base: var(--size-base);
-  --text-base--line-height: var(--size-base-leading);
-  --text-lg: var(--size-lg);
-  --text-lg--line-height: var(--size-lg-leading);
-  --text-xl: var(--size-xl);
-  --text-xl--line-height: var(--size-xl-leading);
-  --text-2xl: var(--size-2xl);
-  --text-2xl--line-height: var(--size-2xl-leading);
-  --text-3xl: var(--size-3xl);
-  --text-3xl--line-height: var(--size-3xl-leading);
-  --text-4xl: var(--size-4xl);
-  --text-4xl--line-height: var(--size-4xl-leading);
+  --text-display1: var(--type-display1-size);
+  --text-display1--line-height: var(--type-display1-leading);
+  --text-display1--letter-spacing: var(--type-display1-tracking);
+  --text-display1--font-weight: var(--type-display1-weight);
+  --text-display2: var(--type-display2-size);
+  --text-display2--line-height: var(--type-display2-leading);
+  --text-display2--letter-spacing: var(--type-display2-tracking);
+  --text-display2--font-weight: var(--type-display2-weight);
+  --text-display3: var(--type-display3-size);
+  --text-display3--line-height: var(--type-display3-leading);
+  --text-display3--letter-spacing: var(--type-display3-tracking);
+  --text-display3--font-weight: var(--type-display3-weight);
+  --text-display4: var(--type-display4-size);
+  --text-display4--line-height: var(--type-display4-leading);
+  --text-display4--letter-spacing: var(--type-display4-tracking);
+  --text-display4--font-weight: var(--type-display4-weight);
+  --text-display5: var(--type-display5-size);
+  --text-display5--line-height: var(--type-display5-leading);
+  --text-display5--letter-spacing: var(--type-display5-tracking);
+  --text-display5--font-weight: var(--type-display5-weight);
+  --text-display6: var(--type-display6-size);
+  --text-display6--line-height: var(--type-display6-leading);
+  --text-display6--letter-spacing: var(--type-display6-tracking);
+  --text-display6--font-weight: var(--type-display6-weight);
+  --text-h1: var(--type-h1-size);
+  --text-h1--line-height: var(--type-h1-leading);
+  --text-h1--letter-spacing: var(--type-h1-tracking);
+  --text-h1--font-weight: var(--type-h1-weight);
+  --text-h2: var(--type-h2-size);
+  --text-h2--line-height: var(--type-h2-leading);
+  --text-h2--letter-spacing: var(--type-h2-tracking);
+  --text-h2--font-weight: var(--type-h2-weight);
+  --text-h3: var(--type-h3-size);
+  --text-h3--line-height: var(--type-h3-leading);
+  --text-h3--letter-spacing: var(--type-h3-tracking);
+  --text-h3--font-weight: var(--type-h3-weight);
+  --text-h4: var(--type-h4-size);
+  --text-h4--line-height: var(--type-h4-leading);
+  --text-h4--letter-spacing: var(--type-h4-tracking);
+  --text-h4--font-weight: var(--type-h4-weight);
+  --text-h5: var(--type-h5-size);
+  --text-h5--line-height: var(--type-h5-leading);
+  --text-h5--letter-spacing: var(--type-h5-tracking);
+  --text-h5--font-weight: var(--type-h5-weight);
+  --text-h6: var(--type-h6-size);
+  --text-h6--line-height: var(--type-h6-leading);
+  --text-h6--letter-spacing: var(--type-h6-tracking);
+  --text-h6--font-weight: var(--type-h6-weight);
+  --text-subtitle1: var(--type-subtitle1-size);
+  --text-subtitle1--line-height: var(--type-subtitle1-leading);
+  --text-subtitle1--letter-spacing: var(--type-subtitle1-tracking);
+  --text-subtitle1--font-weight: var(--type-subtitle1-weight);
+  --text-subtitle2: var(--type-subtitle2-size);
+  --text-subtitle2--line-height: var(--type-subtitle2-leading);
+  --text-subtitle2--letter-spacing: var(--type-subtitle2-tracking);
+  --text-subtitle2--font-weight: var(--type-subtitle2-weight);
+  --text-subtitle3: var(--type-subtitle3-size);
+  --text-subtitle3--line-height: var(--type-subtitle3-leading);
+  --text-subtitle3--letter-spacing: var(--type-subtitle3-tracking);
+  --text-subtitle3--font-weight: var(--type-subtitle3-weight);
+  --text-subtitle4: var(--type-subtitle4-size);
+  --text-subtitle4--line-height: var(--type-subtitle4-leading);
+  --text-subtitle4--letter-spacing: var(--type-subtitle4-tracking);
+  --text-subtitle4--font-weight: var(--type-subtitle4-weight);
+  --text-body1: var(--type-body1-size);
+  --text-body1--line-height: var(--type-body1-leading);
+  --text-body1--letter-spacing: var(--type-body1-tracking);
+  --text-body1--font-weight: var(--type-body1-weight);
+  --text-body2: var(--type-body2-size);
+  --text-body2--line-height: var(--type-body2-leading);
+  --text-body2--letter-spacing: var(--type-body2-tracking);
+  --text-body2--font-weight: var(--type-body2-weight);
+  --text-body3: var(--type-body3-size);
+  --text-body3--line-height: var(--type-body3-leading);
+  --text-body3--letter-spacing: var(--type-body3-tracking);
+  --text-body3--font-weight: var(--type-body3-weight);
+  --text-caption: var(--type-caption-size);
+  --text-caption--line-height: var(--type-caption-leading);
+  --text-caption--letter-spacing: var(--type-caption-tracking);
+  --text-caption--font-weight: var(--type-caption-weight);
+  --text-overline: var(--type-overline-size);
+  --text-overline--line-height: var(--type-overline-leading);
+  --text-overline--letter-spacing: var(--type-overline-tracking);
+  --text-overline--font-weight: var(--type-overline-weight);
+  --text-button-large: var(--type-button-large-size);
+  --text-button-large--line-height: var(--type-button-large-leading);
+  --text-button-large--letter-spacing: var(--type-button-large-tracking);
+  --text-button-large--font-weight: var(--type-button-large-weight);
+  --text-button-medium: var(--type-button-medium-size);
+  --text-button-medium--line-height: var(--type-button-medium-leading);
+  --text-button-medium--letter-spacing: var(--type-button-medium-tracking);
+  --text-button-medium--font-weight: var(--type-button-medium-weight);
+  --text-button-small: var(--type-button-small-size);
+  --text-button-small--line-height: var(--type-button-small-leading);
+  --text-button-small--letter-spacing: var(--type-button-small-tracking);
+  --text-button-small--font-weight: var(--type-button-small-weight);
 
   --font-weight-normal: var(--weight-normal);
   --font-weight-medium: var(--weight-medium);
