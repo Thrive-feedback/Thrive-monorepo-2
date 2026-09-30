@@ -73,8 +73,115 @@
   --focus-ring-width: var(--stroke-2);
   --focus-ring-offset: var(--stroke-2);
 
-  /* Shape. Things you operate, things that hold content, and things that float over the page. */
+  /* Shape. Things you operate, things that hold content, and things that float over the page.
+     `indicator` is the small mark inside a control, such as a checkbox's box. */
+  --shape-indicator: var(--radius-1);
   --shape-control: var(--radius-2);
   --shape-surface: var(--radius-3);
   --shape-floating: var(--radius-4);
+
+  /* Motion. A spinner turns; a placeholder breathes while its content loads. */
+  --motion-spin: var(--duration-1000) linear infinite;
+  --motion-pulse: var(--duration-2000) var(--easing-standard) infinite;
+
+  /* Type. One role per text style in the design, named as the design names it, each a size,
+     line height, letter spacing and weight. `display*` is set in the display family; every
+     other role is the body family. The family is chosen by `font-display` (or the `Text`
+     component), because a Tailwind type utility cannot carry one. */
+  --type-display1-size: var(--size-72);
+  --type-display1-leading: var(--leading-72);
+  --type-display1-tracking: var(--tracking-n3);
+  --type-display1-weight: var(--weight-semibold);
+  --type-display2-size: var(--size-64);
+  --type-display2-leading: var(--leading-64);
+  --type-display2-tracking: var(--tracking-n3);
+  --type-display2-weight: var(--weight-semibold);
+  --type-display3-size: var(--size-48);
+  --type-display3-leading: var(--leading-56);
+  --type-display3-tracking: var(--tracking-n3);
+  --type-display3-weight: var(--weight-semibold);
+  --type-display4-size: var(--size-40);
+  --type-display4-leading: var(--leading-48);
+  --type-display4-tracking: var(--tracking-n0-3);
+  --type-display4-weight: var(--weight-semibold);
+  --type-display5-size: var(--size-32);
+  --type-display5-leading: var(--leading-40);
+  --type-display5-tracking: var(--tracking-n0-2);
+  --type-display5-weight: var(--weight-semibold);
+  --type-display6-size: var(--size-28);
+  --type-display6-leading: var(--leading-36);
+  --type-display6-tracking: var(--tracking-n0-2);
+  --type-display6-weight: var(--weight-semibold);
+  --type-h1-size: var(--size-72);
+  --type-h1-leading: var(--leading-72);
+  --type-h1-tracking: var(--tracking-n3);
+  --type-h1-weight: var(--weight-medium);
+  --type-h2-size: var(--size-64);
+  --type-h2-leading: var(--leading-64);
+  --type-h2-tracking: var(--tracking-n3);
+  --type-h2-weight: var(--weight-medium);
+  --type-h3-size: var(--size-48);
+  --type-h3-leading: var(--leading-56);
+  --type-h3-tracking: var(--tracking-n3);
+  --type-h3-weight: var(--weight-medium);
+  --type-h4-size: var(--size-40);
+  --type-h4-leading: var(--leading-48);
+  --type-h4-tracking: var(--tracking-n0-3);
+  --type-h4-weight: var(--weight-medium);
+  --type-h5-size: var(--size-32);
+  --type-h5-leading: var(--leading-40);
+  --type-h5-tracking: var(--tracking-n0-2);
+  --type-h5-weight: var(--weight-medium);
+  --type-h6-size: var(--size-28);
+  --type-h6-leading: var(--leading-36);
+  --type-h6-tracking: var(--tracking-n0-2);
+  --type-h6-weight: var(--weight-medium);
+  --type-subtitle1-size: var(--size-24);
+  --type-subtitle1-leading: var(--leading-32);
+  --type-subtitle1-tracking: var(--tracking-n0-5);
+  --type-subtitle1-weight: var(--weight-medium);
+  --type-subtitle2-size: var(--size-20);
+  --type-subtitle2-leading: var(--leading-28);
+  --type-subtitle2-tracking: var(--tracking-n0-5);
+  --type-subtitle2-weight: var(--weight-medium);
+  --type-subtitle3-size: var(--size-16);
+  --type-subtitle3-leading: var(--leading-24);
+  --type-subtitle3-tracking: var(--tracking-n0-3);
+  --type-subtitle3-weight: var(--weight-medium);
+  --type-subtitle4-size: var(--size-14);
+  --type-subtitle4-leading: var(--leading-20);
+  --type-subtitle4-tracking: var(--tracking-0);
+  --type-subtitle4-weight: var(--weight-medium);
+  --type-body1-size: var(--size-16);
+  --type-body1-leading: var(--leading-24);
+  --type-body1-tracking: var(--tracking-0);
+  --type-body1-weight: var(--weight-normal);
+  --type-body2-size: var(--size-14);
+  --type-body2-leading: var(--leading-20);
+  --type-body2-tracking: var(--tracking-0);
+  --type-body2-weight: var(--weight-normal);
+  --type-body3-size: var(--size-12);
+  --type-body3-leading: var(--leading-18);
+  --type-body3-tracking: var(--tracking-0);
+  --type-body3-weight: var(--weight-normal);
+  --type-caption-size: var(--size-12);
+  --type-caption-leading: var(--leading-20);
+  --type-caption-tracking: var(--tracking-0);
+  --type-caption-weight: var(--weight-normal);
+  --type-overline-size: var(--size-12);
+  --type-overline-leading: var(--leading-20);
+  --type-overline-tracking: var(--tracking-0);
+  --type-overline-weight: var(--weight-medium);
+  --type-button-large-size: var(--size-15);
+  --type-button-large-leading: var(--leading-20);
+  --type-button-large-tracking: var(--tracking-0);
+  --type-button-large-weight: var(--weight-medium);
+  --type-button-medium-size: var(--size-14);
+  --type-button-medium-leading: var(--leading-20);
+  --type-button-medium-tracking: var(--tracking-0);
+  --type-button-medium-weight: var(--weight-medium);
+  --type-button-small-size: var(--size-13);
+  --type-button-small-leading: var(--leading-20);
+  --type-button-small-tracking: var(--tracking-0);
+  --type-button-small-weight: var(--weight-medium);
 }

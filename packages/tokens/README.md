@@ -5,7 +5,7 @@ Thrive's design tokens, in the three layers `FE_03` R2 requires, all in one pack
 
 | File | Layer | What belongs in it |
 | --- | --- | --- |
-| `src/primitives.css` | values | Seven OKLCH ramps, the spacing multiplier, radii, stroke, font families, and the type, weight and width scales. Names a value, never an intent. |
+| `src/primitives.css` | values | Seven OKLCH ramps, the spacing multiplier, radii, stroke, the two loading-loop durations, font families, the design's type values (size, line height, letter spacing in px-named rem), and the weight and width scales. Names a value, never an intent. |
 | `src/semantic.css` | roles | `--surface`, `--action`, `--danger`… Each points at a primitive. **The only layer a component may reference.** |
 | `src/theme.css` | Tailwind | `@theme inline`, which resets Tailwind's default theme (`--*: initial`) and then maps roles and scales onto its namespaces, so every utility that exists is token-backed (`FE_04` R1). |
 
@@ -17,8 +17,10 @@ An app imports `@repo/tokens/tokens.css`, which pulls all three in the order the
   and the theme deliberately does not expose the ramps, so the second one does not exist as a
   utility. Nor do Tailwind's defaults: the theme resets them, so `bg-red-500`, `rounded-md` and
   `shadow-md` are not classes either. A utility you need that is missing wants a token first.
-- **Colours and shapes are roles; sizes are scales.** Spacing, type size, weight, width and
-  breakpoint map straight from their primitives, the way `--spacing` does. Breakpoints are
+- **Colours, shapes and type are roles; sizes are scales.** A type utility is one of the
+  design's text styles — `text-h1`, `text-body2`, `text-caption` — carrying size, line height,
+  letter spacing and weight together; display styles add `font-display`. Spacing, weight, width
+  and breakpoint map straight from their primitives, the way `--spacing` does. Breakpoints are
   literal values in `theme.css`, because a media query cannot read a custom property.
 - **Names state roles, not appearances** (`FE_03` R3). `--danger`, never `--red`. The day danger
   stops being red, a role name is still true.
@@ -41,6 +43,8 @@ Two things are therefore provisional:
    exist in either place, and there is no designer in the loop yet. These are the roles Thrive's
    current screens need and no more (`PROJECT.md` §2).
 
-The old build also used **Cooper** for display type. It is a licensed typeface and its `.woff2`
-files live in the retired repository, so it is deliberately left out until Thrive's licence is
-confirmed to cover embedding it in a public repository. Inter carries everything for now.
+**Type** follows the design's text styles one for one (`docs/adr/0023`, faces in `docs/adr/0024`). **Google Sans** carries
+every role but display and loads from Google Fonts. **Cooper**, the display face, is SIL OFL 1.1,
+so it is committed — SemiBold only, the one weight the design uses — with its licence beside it
+in `apps/web/app/_lib/fonts/cooper/`. A new role here needs the same name added to `cn`'s list in
+`apps/web/lib/cn.util.ts`, or `tailwind-merge` will read it as a colour.

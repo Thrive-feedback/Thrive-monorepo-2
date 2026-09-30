@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import Link from 'next/link';
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from './button';
 
@@ -51,5 +52,35 @@ describe('Button', () => {
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(handleClick).not.toHaveBeenCalled();
+  });
+
+  it('is busy and cannot be pressed while loading, and keeps its name', async () => {
+    const user = userEvent.setup();
+    const handleClick = vi.fn();
+    render(
+      <Button loading onClick={handleClick}>
+        Save
+      </Button>,
+    );
+
+    const button = screen.getByRole('button', { name: 'Save' });
+    await user.click(button);
+
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    expect(button).toBeDisabled();
+    expect(handleClick).not.toHaveBeenCalled();
+  });
+
+  it('can paint a link as a button without turning it into one', () => {
+    render(
+      <Button asChild variant="primary">
+        <Link href="/ui-showcase">See the components</Link>
+      </Button>,
+    );
+
+    expect(
+      screen.getByRole('link', { name: 'See the components' }),
+    ).toHaveAttribute('href', '/ui-showcase');
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });
