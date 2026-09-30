@@ -3,8 +3,8 @@ title: "BE_15 · Database migrations & schema evolution"
 id: "BE_15"
 area: "BE"
 tier: "P2"
-status: "draft"
-updated: "2026-09-27"
+status: "stable"
+updated: "2026-10-01"
 requires: [BE_06]
 see_also: [BE_12, GEN_15]
 ---
@@ -13,7 +13,7 @@ see_also: [BE_12, GEN_15]
 
 # [BE] Database migrations & schema evolution
 
-`P2` · `BE_15` · `draft` · `updated 2026-09-27`
+`P2` · `BE_15` · `stable` · `updated 2026-10-01`
 
 **Open when:** the schema has to change.
 
