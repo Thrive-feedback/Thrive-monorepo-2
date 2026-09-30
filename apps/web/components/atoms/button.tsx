@@ -6,10 +6,13 @@ const button = cva(
   {
     variants: {
       tone: {
+        primary:
+          'bg-action text-foreground-on-action enabled:active:bg-action-pressed enabled:hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-foreground-muted',
         secondary:
           'border border-line bg-surface text-foreground hover:bg-surface-raised active:bg-surface-sunken',
       },
       size: {
+        sm: 'px-3 py-1.5',
         md: 'px-5.5 py-3',
       },
     },
