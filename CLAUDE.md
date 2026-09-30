@@ -35,6 +35,10 @@ Everything else lives in `AGENTS.md`. These are the parts that only apply here:
   copied rather than contained — the plan is worth more than the speed.
 - **Prefer the file tools** (Read, Edit, Write, Grep, Glob) over shell equivalents. Bash is
   for Bun and Turbo.
+- **Read the knowledge repository in place.** When `PROJECT.md` names one, open the local clone of
+  that repository with Read and Grep. Do not fetch it from GitHub. If you cannot find the clone, ask
+  where it is. Any edit you make there
+  follows that repository's own `CLAUDE.md` and `AGENTS.md`, not this file.
 - **Never run `git commit` or `git push` unless asked.** Branch first if you are on `main`.
 - **Subagents only when asked for one by name.** Tasks here are small and convention-bound;
   a cold agent re-derives context you already have and tends to miss the conventions index.

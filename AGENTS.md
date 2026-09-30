@@ -22,6 +22,10 @@ What is true regardless of the project:
   change the convention in the open (`GEN_01#R10`).
 - **Project facts belong in `PROJECT.md`, never in a convention document.** If you find one
   leaking, move it and link.
+- **Product facts may live outside this repository.** If `PROJECT.md` names a knowledge
+  repository, that is where the why, the domain language and the product decisions are kept.
+  Read what `PROJECT.md` routes you to before naming anything in the domain; never restate its
+  facts here. Code and stack decisions stay in this repository, as ADRs under `docs/adr/`.
 
 ---
 
