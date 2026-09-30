@@ -1,6 +1,7 @@
 import { Spinner } from '@/components/atoms/spinner';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
+import { Palette } from './palette';
 
 /**
  * Every semantic token, shown with the name a component uses to reach it.
@@ -9,8 +10,9 @@ import { cn } from '@/lib/cn.util';
  * names and building `bg-${name}` would produce classes the scanner cannot see, so half of this
  * page would render unstyled. The repetition is the rule working, not a smell.
  *
- * Nothing here references a primitive (`FE_03` R2), which is why the ramps do not appear: the
- * theme deliberately does not expose them, so `bg-primary-500` is not a class that exists.
+ * The swatches below reference only semantic tokens. The primitive ramps are shown once, in
+ * `Palette`, which paints them through inline custom properties: the theme deliberately does
+ * not expose them, so `bg-primary-500` is not a class that exists.
  *
  * The grid steps up at Tailwind's own breakpoints rather than using an arbitrary
  * `repeat(auto-fill, …)` template, because `FE_04` R2 allows no arbitrary value in a class and
@@ -200,6 +202,8 @@ export function TokenGallery() {
           are a proposal until design agrees them, so expect both to move.
         </Text>
       </header>
+
+      <Palette />
 
       <Section
         title="Surfaces"
