@@ -33,13 +33,38 @@ git ls-tree -r --name-only boilerplate/main apps/api/src/modules/todo
 
 **What Thrive is.** A global HRD platform; phase 1 is feedback culture — helping people inside a
 company ask for, give and act on feedback. Sold to founders of 20–50 person startups. The durable
-record lives in the **brain**, `Thrive-feedback/Thrive-brain`: `vision.md` for why, `glossary.md` for
-the ubiquitous language, `domain-map.md` for the bounded contexts, `STATE.md` for what is true now.
-Never restate a product fact here; link to the brain.
+record lives in the **brain**. Never restate a product fact here; link to the brain.
+
+**The brain** is this project's knowledge repository — the why, the domain language and the product
+decisions. It is not code and has nothing to build.
+
+|                    |                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| **Repository**     | `Thrive-feedback/Thrive-brain` (private)                                                |
+| **Local checkout** | wherever each person cloned `Thrive-brain` — not fixed. If you cannot find it, ask where it is |
+| **Its rules**      | its own `AGENTS.md`. Read `handoff.md` there first and update it last; never commit there unasked |
+
+| Before you…                                          | Read, in the brain                                                    |
+| ---------------------------------------------------- | --------------------------------------------------------------------- |
+| name a domain noun — a type, table, route or module  | `glossary.md`, the `In code` column exactly. Never `User`             |
+| add a module or decide which one owns something      | `domain-map.md` — one module per bounded context (§2)                 |
+| decide scope or behaviour of a product Task          | the Epic's `Brain:` link, then its ADR — `ADR-0020` Auth and Workspace, `ADR-0022` Feedback |
+| state what is true about the product right now       | `STATE.md` — never answer it from this repository                     |
+| rebuild something the retired build already did     | `research/2026-09-26-legacy-thrive-monorepo-as-built.md`              |
+
+What flows back:
+
+- **A new domain noun** is a row in `glossary.md` before the pull request merges (§2).
+- **A product decision** — what the product does, for whom, what it will not do — is an ADR in the
+  brain's `decisions/`.
+- **A code or stack decision** is an ADR in `docs/adr/` here, never in the brain. The brain links to
+  it.
+- **A stack fact** is a row in §4 here. The brain's `STATE.md` points at this file rather than
+  repeating it.
 
 **A previous implementation exists and is being retired.** `Thrive-feedback/thrive-monorepo` — a Go
 API and Next.js web app, dormant since 2026-05-31 — is read as a specification, never ported. The
-feature-by-feature account is `as-built-inventory.md` in the brain.
+feature-by-feature account is `research/2026-09-26-legacy-thrive-monorepo-as-built.md` in the brain.
 
 ## 2. What this means for your work
 
