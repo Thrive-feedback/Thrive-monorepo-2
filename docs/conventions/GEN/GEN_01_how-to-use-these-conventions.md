@@ -4,7 +4,7 @@ id: "GEN_01"
 area: "GEN"
 tier: "P0"
 status: "stable"
-updated: "2026-08-15"
+updated: "2026-09-30"
 see_also: [GEN_12, GEN_13]
 ---
 
@@ -12,17 +12,17 @@ see_also: [GEN_12, GEN_13]
 
 # [General] How to use these conventions
 
-`P0` · `GEN_01` · `stable` · `updated 2026-08-15`
+`P0` · `GEN_01` · `stable` · `updated 2026-09-30`
 
 **Open when:** it is your first day in this repo.
 
-The document map, what each tier obliges you to read, the precedence rules when two documents disagree, and how to propose a change to a convention.
+The document map, what each tier obliges you to read and how deeply, the precedence rules when two documents disagree, and how to propose a change to a convention.
 
 ## The rules
 
 If you read nothing else:
 
-1. <a id="R1"></a>Read all ten `P0` documents before you change anything, in any area.
+1. <a id="R1"></a>Read all ten `P0` documents before you change anything, in any area — and read every document to the depth the task needs: its rules to build, all of it to review.
 2. <a id="R2"></a>Read `<AREA>_01` through the last `P1` of an area when you start working there — once per area, not once per change.
 3. <a id="R3"></a>Open a `P2` when its **Open when** trigger matches the change in front of you; leave `P3` closed until the project scales, splits, or breaks.
 4. <a id="R4"></a>Add any entry whose `data-paths` glob matches a file you are about to edit, whatever its tier.
@@ -43,9 +43,11 @@ It is also more than anyone can hold. The tiers exist so you never read all of i
 
 ## Rule detail
 
-### [R1](#R1) Read all ten P0 documents before you change anything
+### [R1](#R1) Read all ten P0 documents, to the depth the task needs
 
 `P0` is a fixed budget of ten — how we work, how agents work, the BE↔FE seam, the repository layout, how to run it. Filter the index to `P0` to see which ten they are today. Adding an eleventh means demoting one; the index self-check fails the page above the budget, so the number cannot drift unnoticed.
+
+The tiers decide *which* documents you read; depth decides how much of each. Every document opens with its head — **Open when**, summary — and **The rules**, and `GEN_12` requires that list to stand alone. **To build, read the head and the rules and stop at *Why*.** Open one rule's *Rule detail* when its one-liner leaves you unsure or you are about to depart from it — that rule, not the whole document. Read a document **in full** when you are asked to review against it, and when you author or change it (`GEN_12`). A full read of every document in a read set costs more than the change it guards, and buys nothing the rules list did not already say (ADR 0020).
 
 **Enforcement:** review — checklist item in `GEN_06`, via the ids you cite under [R6](#R6).
 
@@ -141,7 +143,7 @@ PR: "added `style={{ background: '#f6f5f2' }}`
 
 You are asked to add an *archive* endpoint to a module in the API app — call it `orders`. Build the read set before you open an editor.
 
-1. **R1** — the ten `P0` documents. You read them once, on your first day.
+1. **R1** — the ten `P0` documents. You read them once, on your first day, head and rules only.
 2. **R2** — you are in BE, so the entry path is `BE_01` through the last BE `P1`. Read it now if this is your first change in the API app.
 3. **R4** — you will touch `apps/api/src/orders/*.ts`, which matches `GEN_07`, `BE_01` and `BE_02`. All already in the set.
 4. **R3** — the endpoint changes the wire shape, so `GEN_08`'s trigger fires. It is `P0`, so you have it. No `P2` triggers: no transaction, no cache, no new integration.
@@ -155,11 +157,11 @@ Interpreted: BE_07 and BE_09 were todo — followed their index summaries.
              BE_07 gave no pagination rule; none needed here.
 ```
 
-Nine documents, not the whole set. That is the tier system working.
+Nine documents, not the whole set — and the rules of each, not every page. Had one rule's one-liner left you unsure, its *Rule detail* is the only other part you would open. That is the tier system working.
 
 ## Checklist
 
-- All ten `P0` documents read ([R1](#R1)).
+- All ten `P0` documents read; rules skimmed to build, read in full only to review or author ([R1](#R1)).
 - Entry path read for every area this change touches ([R2](#R2)).
 - Every matching **Open when** trigger followed; no `P3` opened without cause ([R3](#R3)).
 - Changed files matched against `data-paths` ([R4](#R4)).
