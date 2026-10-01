@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { TextField } from '@/components/molecules/text-field';
@@ -13,6 +14,7 @@ function firstWord(value: string): string {
  * from then on it is theirs, even if they clear it.
  */
 export function IntroduceYourselfForm() {
+  const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [isDisplayNameEdited, setIsDisplayNameEdited] = useState(false);
@@ -32,8 +34,9 @@ export function IntroduceYourselfForm() {
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    // TODO(kritpavin, #71): save the Profile and move on to Create a Workspace.
+    // TODO(kritpavin, #71): save the Profile before moving on.
     event.preventDefault();
+    router.push('/register/create-workspace');
   }
 
   return (
