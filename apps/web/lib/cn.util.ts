@@ -34,8 +34,19 @@ const TYPE_ROLES = [
   'button-small',
 ];
 
+/**
+ * The same gap for shape: `rounded-control` is unknown to tailwind-merge, so a caller's
+ * `rounded-full` would land beside it rather than replace it. Mirrors the `--radius-*` roles.
+ */
+const SHAPE_ROLES = ['indicator', 'control', 'surface', 'floating'];
+
 const twMerge = extendTailwindMerge({
-  extend: { classGroups: { 'font-size': [{ text: TYPE_ROLES }] } },
+  extend: {
+    classGroups: {
+      'font-size': [{ text: TYPE_ROLES }],
+      rounded: [{ rounded: SHAPE_ROLES }],
+    },
+  },
 });
 
 /**

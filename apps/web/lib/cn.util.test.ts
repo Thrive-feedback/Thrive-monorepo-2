@@ -15,4 +15,9 @@ describe('cn', () => {
   it('lets the caller’s padding replace the component’s', () => {
     expect(cn('p-4', 'p-6')).toBe('p-6');
   });
+
+  it('lets the caller’s radius replace a shape role', () => {
+    expect(cn('rounded-control', 'rounded-full')).toBe('rounded-full');
+    expect(cn('rounded-full', 'rounded-floating')).toBe('rounded-floating');
+  });
 });
