@@ -4,7 +4,7 @@ import { Slot } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
 
 const buttonVariants = cva(
-  'inline-flex shrink-0 items-center justify-center gap-3 whitespace-nowrap rounded-control disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-sunken disabled:text-foreground-muted',
+  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-3 whitespace-nowrap rounded-control disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-sunken disabled:text-foreground-muted',
   {
     variants: {
       variant: {
