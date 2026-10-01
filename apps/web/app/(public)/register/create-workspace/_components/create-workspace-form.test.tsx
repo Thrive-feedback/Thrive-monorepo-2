@@ -21,18 +21,18 @@ describe('CreateWorkspaceForm', () => {
     expect(fields().workspaceName).toBeRequired();
   });
 
-  it('refuses Create with no name, says why and focuses the field', async () => {
+  it('keeps Create disabled until the Workspace has a name', async () => {
     const user = userEvent.setup();
     render(<CreateWorkspaceForm />);
     const { workspaceName, createButton } = fields();
 
-    await user.click(createButton);
+    expect(createButton).toBeDisabled();
 
-    expect(workspaceName).toBeInvalid();
-    expect(workspaceName).toHaveAccessibleDescription(
-      'Give your Workspace a name.',
-    );
-    expect(workspaceName).toHaveFocus();
+    await user.type(workspaceName, 'Stark Industries');
+    expect(createButton).toBeEnabled();
+
+    await user.clear(workspaceName);
+    expect(createButton).toBeDisabled();
   });
 
   it('treats a name of only spaces as no name', async () => {
@@ -41,35 +41,29 @@ describe('CreateWorkspaceForm', () => {
     const { workspaceName, createButton } = fields();
 
     await user.type(workspaceName, '   ');
-    await user.click(createButton);
 
-    expect(workspaceName).toBeInvalid();
+    expect(createButton).toBeDisabled();
   });
 
-  it('clears the refusal once a name is typed and accepts it', async () => {
-    const user = userEvent.setup();
-    render(<CreateWorkspaceForm />);
-    const { workspaceName, createButton } = fields();
-
-    await user.click(createButton);
-    await user.type(workspaceName, 'Stark Industries');
-    await user.click(createButton);
-
-    expect(workspaceName).toBeValid();
-    expect(
-      screen.queryByText('Give your Workspace a name.'),
-    ).not.toBeInTheDocument();
-    expect(push).toHaveBeenCalledWith('/register/invite-teammates');
-  });
-
-  it('stays on the page when Create is refused', async () => {
+  it('does not submit on Enter while there is no name', async () => {
     const user = userEvent.setup();
     push.mockClear();
     render(<CreateWorkspaceForm />);
 
-    await user.click(fields().createButton);
+    await user.type(fields().workspaceName, '   {Enter}');
 
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it('moves on to Invite your teammates once named', async () => {
+    const user = userEvent.setup();
+    render(<CreateWorkspaceForm />);
+    const { workspaceName, createButton } = fields();
+
+    await user.type(workspaceName, 'Stark Industries');
+    await user.click(createButton);
+
+    expect(push).toHaveBeenCalledWith('/register/invite-teammates');
   });
 
   it('offers four optional Team sizes with none chosen', () => {

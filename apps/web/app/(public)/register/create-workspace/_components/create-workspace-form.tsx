@@ -1,42 +1,32 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { TextField } from '@/components/molecules/text-field';
 import { type TeamSize, TeamSizeOptions } from './team-size-options';
 
-/**
- * Create stays enabled so pressing it with no name says why it was refused. `noValidate` lets
- * that message show in the field instead of the browser's own tooltip.
- */
+/** Create is disabled until the Workspace has a name; a name of only spaces is no name. */
 export function CreateWorkspaceForm() {
   const router = useRouter();
-  const nameRef = useRef<HTMLInputElement>(null);
   const [workspaceName, setWorkspaceName] = useState('');
   const [teamSize, setTeamSize] = useState<TeamSize | null>(null);
-  const [isNameMissing, setIsNameMissing] = useState(false);
+
+  const canCreate = workspaceName.trim() !== '';
 
   function handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
     setWorkspaceName(event.target.value);
-    setIsNameMissing(false);
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (workspaceName.trim() === '') {
-      setIsNameMissing(true);
-      nameRef.current?.focus();
-      return;
-    }
     // TODO(kritpavin, #72): save the Workspace before moving on.
+    event.preventDefault();
     router.push('/register/invite-teammates');
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <TextField
-        ref={nameRef}
         label="Workspace name"
         name="workspaceName"
         autoComplete="organization"
@@ -44,14 +34,18 @@ export function CreateWorkspaceForm() {
         required
         value={workspaceName}
         onChange={handleNameChange}
-        errorMessage={isNameMissing ? 'Give your Workspace a name.' : undefined}
       />
       <TeamSizeOptions
         name="teamSize"
         value={teamSize}
         onChange={setTeamSize}
       />
-      <Button type="submit" variant="primary" className="mt-2 w-full">
+      <Button
+        type="submit"
+        variant="primary"
+        disabled={!canCreate}
+        className="mt-2 w-full"
+      >
         Create Workspace
       </Button>
     </form>
