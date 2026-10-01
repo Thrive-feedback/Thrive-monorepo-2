@@ -31,7 +31,7 @@ export function RadioGroupItem({ className, ...rest }: RadioGroupItemProps) {
     <RadioGroupPrimitive.Item
       data-slot="radio-group-item"
       className={cn(
-        'peer size-4 shrink-0 rounded-full border border-line-strong bg-surface disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-sunken aria-invalid:border-danger data-[state=checked]:border-action',
+        'peer size-4 shrink-0 cursor-pointer rounded-full border border-line-strong bg-surface disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-sunken aria-invalid:border-danger data-[state=checked]:border-action',
         className,
       )}
       {...rest}

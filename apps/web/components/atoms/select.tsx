@@ -52,7 +52,7 @@ export function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        'flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line-strong bg-surface px-3 py-2.5 text-body1 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-foreground-muted aria-invalid:border-danger data-placeholder:text-foreground-muted',
+        'flex w-full cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line-strong bg-surface px-3 py-2.5 text-body1 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-foreground-muted aria-invalid:border-danger data-placeholder:text-foreground-muted',
         className,
       )}
       {...rest}
@@ -118,7 +118,7 @@ export function SelectItem({ className, children, ...rest }: SelectItemProps) {
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        'relative flex w-full cursor-default select-none items-center gap-2 rounded-control py-2 pr-8 pl-2 text-body2 outline-hidden data-disabled:pointer-events-none data-highlighted:bg-action-subtle data-disabled:text-foreground-muted',
+        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-control py-2 pr-8 pl-2 text-body2 outline-hidden data-disabled:pointer-events-none data-highlighted:bg-action-subtle data-disabled:text-foreground-muted',
         className,
       )}
       {...rest}

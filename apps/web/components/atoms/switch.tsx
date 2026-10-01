@@ -5,7 +5,7 @@ import { Switch as SwitchPrimitive } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
 
 const track = cva(
-  'peer group inline-flex shrink-0 items-center rounded-full p-0.5 disabled:cursor-not-allowed disabled:bg-surface-sunken data-[state=checked]:bg-action data-[state=unchecked]:bg-line-strong',
+  'peer group inline-flex shrink-0 cursor-pointer items-center rounded-full p-0.5 disabled:cursor-not-allowed disabled:bg-surface-sunken data-[state=checked]:bg-action data-[state=unchecked]:bg-line-strong',
   {
     variants: {
       size: {
