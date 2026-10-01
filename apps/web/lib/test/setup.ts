@@ -12,8 +12,9 @@ afterEach(() => {
   cleanup();
 });
 
-// jsdom leaves out layout and pointer APIs that Radix calls: the Select measures its trigger
-// and captures the pointer, and Checkbox and Switch watch their size. These stand-ins do
+// jsdom leaves out layout and pointer APIs that Radix and sonner call: the Select measures its
+// trigger and captures the pointer, Checkbox and Switch watch their size, and a toast captures
+// the pointer on press so it can be swiped away. These stand-ins do
 // nothing, because jsdom has no layout for them to report.
 if (!globalThis.ResizeObserver) {
   globalThis.ResizeObserver = class {
@@ -23,5 +24,6 @@ if (!globalThis.ResizeObserver) {
   };
 }
 Element.prototype.hasPointerCapture ??= () => false;
+Element.prototype.setPointerCapture ??= () => {};
 Element.prototype.releasePointerCapture ??= () => {};
 Element.prototype.scrollIntoView ??= () => {};
