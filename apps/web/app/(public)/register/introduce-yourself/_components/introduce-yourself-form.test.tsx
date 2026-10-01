@@ -24,7 +24,7 @@ describe('IntroduceYourselfForm', () => {
     expect(fullName).toBeRequired();
     expect(displayName).toBeRequired();
     expect(displayName).toHaveAccessibleDescription(
-      'This will appear on your desk and Kudo cards.',
+      'This is how your name will show up in the system.',
     );
   });
 

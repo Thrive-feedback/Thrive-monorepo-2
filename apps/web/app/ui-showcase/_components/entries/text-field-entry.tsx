@@ -48,7 +48,7 @@ export function TextFieldEntry() {
         <TextField
           label="What should we call you?"
           placeholder="e.g. Ton, P'Mod, Tony"
-          helperText="This will appear on your desk and Kudo cards."
+          helperText="This is how your name will show up in the system."
           required
         />
       </StateCell>

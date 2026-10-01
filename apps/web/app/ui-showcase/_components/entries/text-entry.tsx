@@ -71,7 +71,7 @@ export function TextEntry() {
         <div className="flex flex-col gap-1">
           <Text variant="subtitle2">Introduce yourself</Text>
           <Text variant="body2" tone="muted">
-            This will appear on your desk and Kudo cards.
+            This is how your name will show up in the system.
           </Text>
         </div>
       </StateCell>
