@@ -17,11 +17,14 @@ const buttonVariants = cva(
           'text-brand enabled:active:bg-surface-sunken enabled:hover:bg-action-subtle',
         danger:
           'bg-danger text-foreground-on-action enabled:active:bg-danger/80 enabled:hover:bg-danger/90',
+        'ghost-danger':
+          'text-danger enabled:active:bg-surface-sunken enabled:hover:bg-danger-subtle',
       },
       size: {
         sm: 'px-3 py-1.5 text-button-small',
         md: 'px-5.5 py-3 text-button-medium',
         lg: 'px-6 py-3.5 text-button-large',
+        icon: 'size-9 rounded-full',
       },
     },
     defaultVariants: { variant: 'secondary', size: 'md' },

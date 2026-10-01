@@ -83,4 +83,16 @@ describe('Button', () => {
     ).toHaveAttribute('href', '/ui-showcase');
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
+
+  it('is named by its aria-label when it holds only an icon', () => {
+    render(
+      <Button variant="ghost-danger" size="icon" aria-label="Remove row">
+        <svg aria-hidden="true" />
+      </Button>,
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Remove row' }),
+    ).toBeInTheDocument();
+  });
 });
