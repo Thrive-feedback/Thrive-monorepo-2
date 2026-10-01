@@ -1,7 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { IntroduceYourselfForm } from './introduce-yourself-form';
+
+const push = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 function fields() {
   return {
@@ -82,5 +85,16 @@ describe('IntroduceYourselfForm', () => {
     await user.type(displayName, '   ');
 
     expect(continueButton).toBeDisabled();
+  });
+
+  it('moves on to Create a Workspace', async () => {
+    const user = userEvent.setup();
+    render(<IntroduceYourselfForm />);
+    const { fullName, continueButton } = fields();
+
+    await user.type(fullName, 'Tony Stark');
+    await user.click(continueButton);
+
+    expect(push).toHaveBeenCalledWith('/register/create-workspace');
   });
 });

@@ -5,6 +5,7 @@ import { IntroduceYourselfCard } from './introduce-yourself-card';
 vi.mock('@/app/(public)/_lib/mock-session.service', () => ({
   signOut: vi.fn(),
 }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 describe('IntroduceYourselfCard', () => {
   it('says who is signed in and offers a way out', () => {
