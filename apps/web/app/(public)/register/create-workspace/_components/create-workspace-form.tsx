@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { TextField } from '@/components/molecules/text-field';
@@ -10,6 +11,7 @@ import { type TeamSize, TeamSizeOptions } from './team-size-options';
  * that message show in the field instead of the browser's own tooltip.
  */
 export function CreateWorkspaceForm() {
+  const router = useRouter();
   const nameRef = useRef<HTMLInputElement>(null);
   const [workspaceName, setWorkspaceName] = useState('');
   const [teamSize, setTeamSize] = useState<TeamSize | null>(null);
@@ -27,7 +29,8 @@ export function CreateWorkspaceForm() {
       nameRef.current?.focus();
       return;
     }
-    // TODO(kritpavin, #63): move on to Invite your team. Saving the Workspace is #72.
+    // TODO(kritpavin, #72): save the Workspace before moving on.
+    router.push('/register/invite-teammates');
   }
 
   return (

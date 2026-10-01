@@ -1,7 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CreateWorkspaceForm } from './create-workspace-form';
+
+const push = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 function fields() {
   return {
@@ -56,6 +59,17 @@ describe('CreateWorkspaceForm', () => {
     expect(
       screen.queryByText('Give your Workspace a name.'),
     ).not.toBeInTheDocument();
+    expect(push).toHaveBeenCalledWith('/register/invite-teammates');
+  });
+
+  it('stays on the page when Create is refused', async () => {
+    const user = userEvent.setup();
+    push.mockClear();
+    render(<CreateWorkspaceForm />);
+
+    await user.click(fields().createButton);
+
+    expect(push).not.toHaveBeenCalled();
   });
 
   it('offers four optional Team sizes with none chosen', () => {

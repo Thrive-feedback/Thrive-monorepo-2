@@ -2,17 +2,15 @@ import { WorkspaceSetupStepCount } from '@/app/(public)/register/_components/wor
 import { Text } from '@/components/atoms/text';
 
 /** Centred over the card while the two stack; beside it, from `md` up, it reads from the left. */
-export function CreateWorkspaceHero() {
+export function InviteTeammatesHero() {
   return (
     <div className="flex flex-col gap-4 text-center md:text-start">
-      <WorkspaceSetupStepCount currentStep="create-workspace" />
+      <WorkspaceSetupStepCount currentStep="invite-teammates" />
       <Text variant="display5" as="h1" className="md:text-display3">
-        Welcome! Let’s set up your team’s home.
+        Thrive is better together
       </Text>
       <Text variant="body2" tone="muted">
-        Give your new Workspace a name.
-        <br />
-        You can invite your team in the next step.
+        Who else deserves a kudo today? Invite them in.
       </Text>
     </div>
   );
