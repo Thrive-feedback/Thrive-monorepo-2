@@ -1,3 +1,4 @@
+import { Trash2Icon } from 'lucide-react';
 import NextLink from 'next/link';
 import {
   ShowcaseEntry,
@@ -30,16 +31,17 @@ export function ButtonEntry() {
       props={[
         {
           name: 'variant',
-          type: "'primary' | 'secondary' | 'soft' | 'ghost' | 'danger'",
+          type: "'primary' | 'secondary' | 'soft' | 'ghost' | 'danger' | 'ghost-danger'",
           defaultValue: "'secondary'",
           description:
-            'How loud the action is. Danger is for actions that destroy something.',
+            'How loud the action is. Danger is for actions that destroy something; ghost-danger is the quiet one, such as removing a row.',
         },
         {
           name: 'size',
-          type: "'sm' | 'md' | 'lg'",
+          type: "'sm' | 'md' | 'lg' | 'icon'",
           defaultValue: "'md'",
-          description: 'Padding and type size.',
+          description:
+            'Padding and type size. Icon is a round button holding only an icon, and needs aria-label.',
         },
         {
           name: 'loading',
@@ -80,6 +82,7 @@ export function ButtonEntry() {
         <Button variant="soft">Soft</Button>
         <Button variant="ghost">Ghost</Button>
         <Button variant="danger">Danger</Button>
+        <Button variant="ghost-danger">Ghost danger</Button>
       </StateCell>
       <StateCell label="Sizes">
         <Button variant="primary" size="sm">
@@ -90,6 +93,9 @@ export function ButtonEntry() {
         </Button>
         <Button variant="primary" size="lg">
           Large
+        </Button>
+        <Button variant="ghost-danger" size="icon" aria-label="Remove">
+          <Trash2Icon aria-hidden="true" className="size-4" />
         </Button>
       </StateCell>
       <StateCell label="Focused">
