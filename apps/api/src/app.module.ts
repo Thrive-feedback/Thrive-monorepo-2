@@ -1,19 +1,34 @@
-import { Module } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
+import {
+  type MiddlewareConsumer,
+  Module,
+  type NestModule,
+} from '@nestjs/common';
+import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
+import { CodedErrorFilter } from './shared/presentation/coded-error.filter';
+import { CorrelationIdMiddleware } from './shared/presentation/correlation-id.middleware';
+import { SharedModule } from './shared/shared.module';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule],
+  imports: [ConfigModule, SharedModule, DatabaseModule],
   controllers: [AppController],
   providers: [
     AppService,
     // Every value entering from outside is validated here, so a use case can assume its
     // input already matched a schema.
     { provide: APP_PIPE, useClass: ZodValidationPipe },
+    // Errors become responses in this one filter and nowhere else.
+    { provide: APP_FILTER, useClass: CodedErrorFilter },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    // `{*splat}` rather than `*`: Express 5 resolves paths with path-to-regexp 8, which
+    // rejects a bare wildcard.
+    consumer.apply(CorrelationIdMiddleware).forRoutes('{*splat}');
+  }
+}
