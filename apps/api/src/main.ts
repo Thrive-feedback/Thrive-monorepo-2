@@ -8,7 +8,15 @@ import { buildOpenApiDocument } from './openapi';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  const http = app.get(HttpConfig);
+
+  // Without this, a provider's `onModuleDestroy` never runs on SIGTERM, so the database
+  // connections stay open on the server's side of every restart and deploy.
+  app.enableShutdownHooks();
+
+  // Only the origins configured for this environment. A browser calling from anywhere
+  // else is refused, which is the point: the list is the allowlist.
+  app.enableCors({ origin: [...http.allowedOrigins] });
 
   const document = buildOpenApiDocument(app);
 
@@ -17,7 +25,7 @@ async function bootstrap() {
   });
   app.use('/reference', apiReference({ content: document }));
 
-  await app.listen(app.get(HttpConfig).port);
+  await app.listen(http.port);
 }
 
 void bootstrap();

@@ -78,7 +78,7 @@ packages/
   api/          @repo/api — the generated contract client for the API↔web seam
   tokens/       @repo/tokens — the design token layer
   ui/           @repo/ui — shared React components
-  eslint-config/      shared flat lint configs
+  biome-config/       shared lint, format and import-sorting rules
   typescript-config/  shared tsconfig bases
   vitest-config/      shared test-runner bases (web)
 docs/

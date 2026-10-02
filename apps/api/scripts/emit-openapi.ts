@@ -11,9 +11,11 @@ import { buildOpenApiDocument } from '../src/openapi';
  * committed: a checkout regenerates the client without starting the API.
  */
 async function emit(): Promise<void> {
-  // Nest creates the app's providers while reading route metadata. The database is
-  // never connected because this command does not initialize or listen on the app.
+  // Nest creates the app's providers while reading route metadata, so the configuration
+  // has to parse — but nothing here connects or serves. The database is never reached,
+  // and an empty origin list is the honest value for a command that answers no request.
   process.env.DATABASE_URL = 'postgresql://unused@127.0.0.1:1/unused';
+  process.env.CORS_ALLOWED_ORIGINS = '';
   const app = await NestFactory.create(AppModule, { logger: false });
   const target = resolve(__dirname, '..', 'openapi.json');
 
