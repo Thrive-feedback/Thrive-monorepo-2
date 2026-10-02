@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { readMockAccount } from '@/app/(public)/_lib/mock-session.service';
+import { readSession } from '@/app/(public)/_lib/session.service';
 import { InviteTeammatesCard } from './_components/invite-teammates-card';
 import { InviteTeammatesHero } from './_components/invite-teammates-hero';
 
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
  * navigates between the pages under it.
  */
 export default async function InviteTeammatesPage() {
-  const account = await readMockAccount();
-  if (!account) {
+  const session = await readSession();
+  if (!session) {
     redirect('/login');
   }
 

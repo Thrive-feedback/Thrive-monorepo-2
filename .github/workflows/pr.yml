@@ -117,3 +117,7 @@ jobs:
           node-version-file: .nvmrc
       - run: bun install --frozen-lockfile
       - run: bun run build --affected
+        env:
+          # The web build writes the API's address into its callback rewrite. CI deploys
+          # nothing, so any well-formed address will do.
+          API_BASE_URL: http://localhost:3000

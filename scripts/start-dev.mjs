@@ -4,14 +4,17 @@ import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const api = resolve(root, 'apps/api');
-const localEnvironment = resolve(api, '.env');
+const web = resolve(root, 'apps/web');
 const devTask =
   process.argv[2] === 'api'
     ? ['turbo', 'run', 'dev', '--filter=api']
     : ['turbo', 'run', 'dev'];
 
-if (!existsSync(localEnvironment)) {
-  copyFileSync(resolve(api, '.env.example'), localEnvironment);
+for (const app of [api, web]) {
+  const localEnvironment = resolve(app, '.env');
+  if (!existsSync(localEnvironment)) {
+    copyFileSync(resolve(app, '.env.example'), localEnvironment);
+  }
 }
 
 for (const [command, args, cwd] of [

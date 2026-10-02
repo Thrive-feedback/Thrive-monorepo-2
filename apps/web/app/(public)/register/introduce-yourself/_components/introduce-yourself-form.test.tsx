@@ -97,4 +97,13 @@ describe('IntroduceYourselfForm', () => {
 
     expect(push).toHaveBeenCalledWith('/register/create-workspace');
   });
+
+  it('starts from the name it is given, and Display name from its first word', () => {
+    render(<IntroduceYourselfForm defaultFullName="Tony Stark" />);
+    const { fullName, displayName, continueButton } = fields();
+
+    expect(fullName).toHaveValue('Tony Stark');
+    expect(displayName).toHaveValue('Tony');
+    expect(continueButton).toBeEnabled();
+  });
 });

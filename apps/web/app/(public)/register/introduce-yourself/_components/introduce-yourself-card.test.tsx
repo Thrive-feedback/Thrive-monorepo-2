@@ -2,21 +2,30 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { IntroduceYourselfCard } from './introduce-yourself-card';
 
-vi.mock('@/app/(public)/_lib/mock-session.service', () => ({
+vi.mock('@/app/(public)/_lib/session-actions.service', () => ({
   signOut: vi.fn(),
 }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 describe('IntroduceYourselfCard', () => {
   it('says who is signed in and offers a way out', () => {
-    render(<IntroduceYourselfCard email="tony@stark.com" />);
+    render(<IntroduceYourselfCard email="tony@stark.com" name="Tony Stark" />);
 
     expect(
       screen.getByRole('heading', { level: 2, name: 'Introduce yourself' }),
     ).toBeInTheDocument();
     expect(screen.getByText('tony@stark.com')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Not you?' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Not you?' })).toHaveAttribute(
+      'type',
+      'submit',
+    );
+  });
+
+  it('starts Full Name from the name Google gave', () => {
+    render(<IntroduceYourselfCard email="tony@stark.com" name="Tony Stark" />);
+
+    expect(screen.getByRole('textbox', { name: 'Full Name' })).toHaveValue(
+      'Tony Stark',
+    );
   });
 });
