@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 
 import {
+  AuthConfig,
   CONFIGURATION,
   type Configuration,
   DatabaseConfig,
@@ -27,7 +28,12 @@ import {
       useFactory: (config: Configuration) => config.database,
       inject: [CONFIGURATION],
     },
+    {
+      provide: AuthConfig,
+      useFactory: (config: Configuration) => config.auth,
+      inject: [CONFIGURATION],
+    },
   ],
-  exports: [HttpConfig, DatabaseConfig],
+  exports: [HttpConfig, DatabaseConfig, AuthConfig],
 })
 export class ConfigModule {}

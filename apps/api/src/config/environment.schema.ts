@@ -51,6 +51,12 @@ export const environmentSchema = z.object({
   DATABASE_URL: postgresUrl,
 
   CORS_ALLOWED_ORIGINS: originList,
+
+  // Signs and encrypts sessions. Better Auth requires at least 32 characters.
+  BETTER_AUTH_SECRET: z.string().min(32),
+
+  // The public origin Better Auth builds its callback and redirect URLs from.
+  BETTER_AUTH_URL: z.url(),
 });
 
 export type Environment = z.infer<typeof environmentSchema>;
