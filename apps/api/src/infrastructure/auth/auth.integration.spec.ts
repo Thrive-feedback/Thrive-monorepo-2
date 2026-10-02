@@ -3,13 +3,14 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { version as uuidVersion, v7 as uuidv7 } from 'uuid';
 import { loadConfiguration } from '../../config/configuration';
 import { PrismaClient } from '../database/generated/client';
+import { UuidIdGenerator } from '../uuid-id-generator.adapter';
 import { createAuth } from './auth';
 
 const configuration = loadConfiguration();
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: configuration.database.url }),
 });
-const auth = createAuth(prisma, configuration.auth);
+const auth = createAuth(prisma, configuration.auth, new UuidIdGenerator());
 
 describe('createAuth against Postgres', () => {
   const createdAccountIds: string[] = [];
