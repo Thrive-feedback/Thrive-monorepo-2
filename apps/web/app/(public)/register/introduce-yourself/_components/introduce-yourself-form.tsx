@@ -9,14 +9,21 @@ function firstWord(value: string): string {
   return value.trim().split(/\s+/)[0] ?? '';
 }
 
+export type IntroduceYourselfFormProps = {
+  /** Where Full name starts, such as the name Google gave. Display name starts from it too. */
+  defaultFullName?: string;
+};
+
 /**
  * Display name follows the first word of Full name until the person types in Display name;
  * from then on it is theirs, even if they clear it.
  */
-export function IntroduceYourselfForm() {
+export function IntroduceYourselfForm({
+  defaultFullName = '',
+}: IntroduceYourselfFormProps) {
   const router = useRouter();
-  const [fullName, setFullName] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [fullName, setFullName] = useState(defaultFullName);
+  const [displayName, setDisplayName] = useState(firstWord(defaultFullName));
   const [isDisplayNameEdited, setIsDisplayNameEdited] = useState(false);
 
   const canContinue = fullName.trim() !== '' && displayName.trim() !== '';

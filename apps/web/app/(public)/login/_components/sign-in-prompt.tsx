@@ -1,4 +1,5 @@
-import { signIn } from '@/app/(public)/_lib/mock-session.service';
+import { OneTimeToast } from '@/app/(public)/_components/one-time-toast';
+import { signIn } from '@/app/(public)/_lib/session-actions.service';
 import { Text } from '@/components/atoms/text';
 import { GoogleSignInButton } from './google-sign-in-button';
 
@@ -7,7 +8,12 @@ import { GoogleSignInButton } from './google-sign-in-button';
  * its line share Introduce yourself's type, so the two steps of sign-in read as one flow; the
  * heading steps down a display size on narrow screens.
  */
-export function SignInPrompt() {
+export type SignInPromptProps = {
+  /** Google or the API turned the last attempt back, and the visitor should know. */
+  didSignInFail?: boolean;
+};
+
+export function SignInPrompt({ didSignInFail = false }: SignInPromptProps) {
   return (
     <div className="m-auto flex w-full max-w-2xl flex-col items-center gap-8 text-center">
       <div className="flex flex-col gap-3">
@@ -18,11 +24,16 @@ export function SignInPrompt() {
           sign in or sign up
         </Text>
       </div>
-      {/* TODO(kritpavin, #70): sign in with Google once an auth provider is chosen. Until then
-          the button signs in as a sample Account. */}
       <form action={signIn} className="w-full max-w-110">
         <GoogleSignInButton type="submit" />
       </form>
+      {didSignInFail && (
+        <OneTimeToast
+          type="error"
+          message="Sign-in didn't finish. Try again."
+          then="/login"
+        />
+      )}
     </div>
   );
 }

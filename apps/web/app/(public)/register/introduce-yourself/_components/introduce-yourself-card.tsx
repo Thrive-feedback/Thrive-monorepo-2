@@ -1,4 +1,4 @@
-import { signOut } from '@/app/(public)/_lib/mock-session.service';
+import { signOut } from '@/app/(public)/_lib/session-actions.service';
 import { Button } from '@/components/atoms/button';
 import { Card } from '@/components/atoms/card';
 import { Text } from '@/components/atoms/text';
@@ -6,9 +6,14 @@ import { IntroduceYourselfForm } from './introduce-yourself-form';
 
 export type IntroduceYourselfCardProps = {
   email: string;
+  /** The name Google gave, offered as the Full Name to start from. */
+  name: string;
 };
 
-export function IntroduceYourselfCard({ email }: IntroduceYourselfCardProps) {
+export function IntroduceYourselfCard({
+  email,
+  name,
+}: IntroduceYourselfCardProps) {
   return (
     <Card
       title="Introduce yourself"
@@ -28,7 +33,7 @@ export function IntroduceYourselfCard({ email }: IntroduceYourselfCardProps) {
           </Button>
         </form>
       </div>
-      <IntroduceYourselfForm />
+      <IntroduceYourselfForm defaultFullName={name} />
     </Card>
   );
 }

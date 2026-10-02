@@ -172,7 +172,7 @@ describe('InviteTeammatesForm', () => {
     expect(await screen.findByText('Invitations sent')).toBeInTheDocument();
     expect(screen.getByText('We invited 2 teammates.')).toBeInTheDocument();
     expect(screen.queryByText(/@stark\.com/)).not.toBeInTheDocument();
-    expect(push).toHaveBeenCalledWith('/');
+    expect(push).toHaveBeenCalledWith('/home');
   });
 
   it('goes Home on Skip & Done', async () => {
@@ -181,6 +181,6 @@ describe('InviteTeammatesForm', () => {
 
     await user.click(button('Skip & Done'));
 
-    expect(push).toHaveBeenCalledWith('/');
+    expect(push).toHaveBeenCalledWith('/home');
   });
 });
