@@ -5,8 +5,8 @@ import {
   type DBAdapterInstance,
 } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { v7 as uuidv7 } from 'uuid';
 import type { AuthConfig } from '../../config/configuration';
+import type { IdGenerator } from '../../shared/application/id-generator.port';
 import type { PrismaClient } from '../database/generated/client';
 
 /**
@@ -14,11 +14,19 @@ import type { PrismaClient } from '../database/generated/client';
  * the connection pool rather than opening a second one. Configuration arrives as an
  * argument; Better Auth is never left to read the environment itself.
  */
-export function createAuth(prisma: PrismaClient, config: AuthConfig): Auth {
-  return betterAuth(authOptions(prisma, config));
+export function createAuth(
+  prisma: PrismaClient,
+  config: AuthConfig,
+  ids: IdGenerator,
+): Auth {
+  return betterAuth(authOptions(prisma, config, ids));
 }
 
-function authOptions(prisma: PrismaClient, config: AuthConfig) {
+function authOptions(
+  prisma: PrismaClient,
+  config: AuthConfig,
+  ids: IdGenerator,
+) {
   const database: DBAdapterInstance = prismaAdapter(prisma, {
     provider: 'postgresql',
   });
@@ -44,7 +52,8 @@ function authOptions(prisma: PrismaClient, config: AuthConfig) {
     // by those names before any rename, so reusing one for another model breaks lookups.
     // They are the provider's tables; domain code never names them.
     advanced: {
-      database: { generateId: () => uuidv7() },
+      // Accounts and sessions take their ids from the same source as everything else.
+      database: { generateId: () => ids.next() },
       // Names the session cookie `thrive.session_token`, which the web app checks for
       // before asking the API. Better Auth adds `__Secure-` in front of it on https.
       cookiePrefix: 'thrive',

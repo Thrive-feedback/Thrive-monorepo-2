@@ -2,6 +2,7 @@ import { afterAll, describe, expect, it } from 'bun:test';
 import { loadConfiguration } from '@app/config/configuration';
 import { createAuth } from '@app/infrastructure/auth/auth';
 import { PrismaClient } from '@app/infrastructure/database/generated/client';
+import { UuidIdGenerator } from '@app/infrastructure/uuid-id-generator.adapter';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { makeSignature } from 'better-auth/crypto';
 import { v7 as uuidv7 } from 'uuid';
@@ -12,7 +13,7 @@ const configuration = loadConfiguration();
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: configuration.database.url }),
 });
-const auth = createAuth(prisma, configuration.auth);
+const auth = createAuth(prisma, configuration.auth, new UuidIdGenerator());
 const identity: IdentityPort = new BetterAuthIdentityAdapter(auth);
 
 const createdAccountIds: string[] = [];
