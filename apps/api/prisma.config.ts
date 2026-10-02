@@ -7,6 +7,11 @@ export default defineConfig({
     path: 'prisma/migrations',
   },
   datasource: {
-    url: getMigrationDatabaseUrl(),
+    // A getter, so the connection string is demanded by the commands that connect and not
+    // by `prisma generate` — which needs no database, and runs in CI, where this variable
+    // is deliberately absent.
+    get url() {
+      return getMigrationDatabaseUrl();
+    },
   },
 });
