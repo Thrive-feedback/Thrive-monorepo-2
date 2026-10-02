@@ -1,17 +1,25 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/": {
+    "/health": {
       "get": {
-        "operationId": "AppController_getHello",
+        "operationId": "HealthController_check",
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponseDto_Output"
+                }
+              }
+            }
           }
         },
+        "summary": "Report that the API is up",
         "tags": [
-          "App"
+          "health"
         ]
       }
     }
@@ -25,6 +33,22 @@
   "tags": [],
   "servers": [],
   "components": {
-    "schemas": {}
+    "schemas": {
+      "HealthResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      }
+    }
   }
 }

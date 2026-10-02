@@ -9,7 +9,11 @@ import {
  * needs. Each class doubles as its injection token.
  */
 export class HttpConfig {
-  constructor(readonly port: number) {}
+  constructor(
+    readonly port: number,
+    /** The origins a browser may call this API from. Empty means none. */
+    readonly allowedOrigins: readonly string[],
+  ) {}
 }
 
 export class DatabaseConfig {
@@ -49,7 +53,7 @@ export function loadConfiguration(
   }
 
   return {
-    http: new HttpConfig(parsed.data.PORT),
+    http: new HttpConfig(parsed.data.PORT, parsed.data.CORS_ALLOWED_ORIGINS),
     database: new DatabaseConfig(parsed.data.DATABASE_URL),
   };
 }

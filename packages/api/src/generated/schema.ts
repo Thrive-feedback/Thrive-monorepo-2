@@ -4,14 +4,15 @@
  */
 
 export interface paths {
-    "/": {
+    "/health": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["AppController_getHello"];
+        /** Report that the API is up */
+        get: operations["HealthController_check"];
         put?: never;
         post?: never;
         delete?: never;
@@ -23,7 +24,12 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        HealthResponseDto_Output: {
+            /** @enum {string} */
+            status: "ok";
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -32,7 +38,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    AppController_getHello: {
+    HealthController_check: {
         parameters: {
             query?: never;
             header?: never;
@@ -45,7 +51,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["HealthResponseDto_Output"];
+                };
             };
         };
     };
