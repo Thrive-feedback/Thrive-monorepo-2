@@ -4,7 +4,9 @@ import { environmentSchema } from './environment.schema';
 const validEnvironment = {
   DATABASE_URL: 'postgresql://thrive:local_only@127.0.0.1:54329/thrive',
   BETTER_AUTH_SECRET: 'a'.repeat(32),
-  BETTER_AUTH_URL: 'http://localhost:3000',
+  BETTER_AUTH_URL: 'http://localhost:3001',
+  GOOGLE_CLIENT_ID: 'client-id.apps.googleusercontent.com',
+  GOOGLE_CLIENT_SECRET: 'client-secret',
 };
 
 function failedPaths(env: Record<string, string | undefined>): string[] {
@@ -36,4 +38,13 @@ describe('environmentSchema', () => {
       failedPaths({ ...validEnvironment, BETTER_AUTH_URL: 'localhost' }),
     ).toEqual(['BETTER_AUTH_URL']);
   });
+
+  it.each(['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'])(
+    'refuses a missing %s',
+    (name) => {
+      expect(failedPaths({ ...validEnvironment, [name]: undefined })).toEqual([
+        name,
+      ]);
+    },
+  );
 });
