@@ -12,7 +12,7 @@ import { HealthResponseDto } from './dto/health.dto';
 @Controller({ path: 'health' })
 export class HealthController {
   @Get()
-  @ApiOperation({ summary: 'Report that the API is up' })
+  @ApiOperation({ summary: 'Say whether the API is up' })
   @ZodResponse({ status: HttpStatus.OK, type: HealthResponseDto })
   check(): { status: 'ok' } {
     return { status: 'ok' };
