@@ -24,6 +24,8 @@ export class AuthConfig {
   constructor(
     readonly secret: string,
     readonly baseUrl: string,
+    readonly googleClientId: string,
+    readonly googleClientSecret: string,
   ) {}
 }
 
@@ -66,6 +68,8 @@ export function loadConfiguration(
     auth: new AuthConfig(
       parsed.data.BETTER_AUTH_SECRET,
       parsed.data.BETTER_AUTH_URL,
+      parsed.data.GOOGLE_CLIENT_ID,
+      parsed.data.GOOGLE_CLIENT_SECRET,
     ),
   };
 }
