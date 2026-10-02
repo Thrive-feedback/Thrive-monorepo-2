@@ -22,6 +22,83 @@
           "health"
         ]
       }
+    },
+    "/v1/sessions/google": {
+      "post": {
+        "operationId": "SessionController_startGoogle",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartGoogleSignInResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Start signing in with Google",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/v1/sessions/current": {
+      "get": {
+        "operationId": "SessionController_current",
+        "parameters": [
+          {
+            "name": "cookie",
+            "required": false,
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCurrentSessionResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Read who the caller is signed in as",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "delete": {
+        "operationId": "SessionController_end",
+        "parameters": [
+          {
+            "name": "cookie",
+            "required": false,
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Sign out of the current session",
+        "tags": [
+          "sessions"
+        ]
+      }
     }
   },
   "info": {
@@ -46,6 +123,47 @@
         },
         "required": [
           "status"
+        ],
+        "additionalProperties": false
+      },
+      "StartGoogleSignInResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      },
+      "GetCurrentSessionResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email",
+              "name"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "account"
         ],
         "additionalProperties": false
       }
