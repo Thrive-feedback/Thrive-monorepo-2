@@ -21,6 +21,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/sessions/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start signing in with Google */
+        post: operations["SessionController_startGoogle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sessions/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read who the caller is signed in as */
+        get: operations["SessionController_current"];
+        put?: never;
+        post?: never;
+        /** Sign out of the current session */
+        delete: operations["SessionController_end"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -28,6 +63,17 @@ export interface components {
         HealthResponseDto_Output: {
             /** @enum {string} */
             status: "ok";
+        };
+        StartGoogleSignInResponseDto_Output: {
+            /** Format: uri */
+            url: string;
+        };
+        GetCurrentSessionResponseDto_Output: {
+            account: {
+                /** Format: email */
+                email: string;
+                name: string;
+            } | null;
         };
     };
     responses: never;
@@ -54,6 +100,67 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HealthResponseDto_Output"];
                 };
+            };
+        };
+    };
+    SessionController_startGoogle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StartGoogleSignInResponseDto_Output"];
+                };
+            };
+        };
+    };
+    SessionController_current: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetCurrentSessionResponseDto_Output"];
+                };
+            };
+        };
+    };
+    SessionController_end: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
