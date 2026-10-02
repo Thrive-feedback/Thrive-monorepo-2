@@ -93,11 +93,11 @@ export function InviteTeammatesForm() {
     toast.success('Invitations sent', {
       description: invitedCount(check.emails.length),
     });
-    router.push('/');
+    router.push('/home');
   }
 
   function handleSkip() {
-    router.push('/');
+    router.push('/home');
   }
 
   return (
