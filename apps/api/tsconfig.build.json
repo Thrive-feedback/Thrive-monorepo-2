@@ -5,6 +5,7 @@
     "test",
     "dist",
     "scripts",
+    "prisma.config.ts",
     "**/*spec.ts",
     ".prettierrc.mjs",
     "eslint.config.mjs",

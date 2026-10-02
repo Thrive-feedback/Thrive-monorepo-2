@@ -18,6 +18,11 @@ entries of the areas you are touching, and any entry whose **Open when** trigger
 the document does not exist and the index entry is the binding text — name any entry you
 had to interpret.
 
+Read that set **shallow by default** (`GEN_01#R1`): each document's head and **The rules**, stopping
+at `## Why` — Grep for the heading and Read only up to it. Open one rule's *Rule detail* when its
+one-liner is unclear. Read a document in full only when the user asks you to review, or when you
+are authoring or changing it.
+
 Before authoring a convention document, read `GEN_12` in full — it is the authoring
 contract, and its worked example holds the exact prompt to use, so documents come out
 consistent regardless of which model wrote them.
@@ -35,6 +40,10 @@ Everything else lives in `AGENTS.md`. These are the parts that only apply here:
   copied rather than contained — the plan is worth more than the speed.
 - **Prefer the file tools** (Read, Edit, Write, Grep, Glob) over shell equivalents. Bash is
   for Bun and Turbo.
+- **Read the knowledge repository in place.** When `PROJECT.md` names one, open the local clone of
+  that repository with Read and Grep. Do not fetch it from GitHub. If you cannot find the clone, ask
+  where it is. Any edit you make there
+  follows that repository's own `CLAUDE.md` and `AGENTS.md`, not this file.
 - **Never run `git commit` or `git push` unless asked.** Branch first if you are on `main`.
 - **Subagents only when asked for one by name.** Tasks here are small and convention-bound;
   a cold agent re-derives context you already have and tends to miss the conventions index.

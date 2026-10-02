@@ -142,31 +142,56 @@
   /* Stroke widths, for outlines that are not borders. */
   --stroke-2: 0.125rem;
 
-  /* Inter only. The old build also used Cooper for display, which is licensed, so it is left
-     out until Thrive's licence is confirmed — see the README. */
+  /* Motion. Only the loops the loading indicators need; interface transitions have no tokens
+     yet, so nothing animates between states. */
+  --duration-1000: 1000ms;
+  --duration-2000: 2000ms;
+  --easing-standard: cubic-bezier(0.4, 0, 0.6, 1);
+
+  /* Two families, both from the design's type styles. Google Sans carries every role but
+     Display; Cooper is the display face. `--font-google-sans` and `--font-cooper` are set by the
+     web app's root layout, which loads the files. Cooper is SIL OFL 1.1, bundled with its
+     licence in `apps/web/app/_lib/fonts/cooper/`. */
   --family-sans:
-    var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    var(--font-google-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --family-display: var(--font-cooper), Georgia, 'Times New Roman', serif;
   --family-mono: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
 
-  /* Type, layout and breakpoint scales. The retired build recorded none of these, so they are
-     Tailwind v4's own defaults, copied in so the theme can reset Tailwind's and still keep the
-     sizes the current screens use. Provisional under the same TODO(kritpavin, #43) as above. */
-  --size-xs: 0.75rem;
-  --size-xs-leading: calc(1 / 0.75);
-  --size-sm: 0.875rem;
-  --size-sm-leading: calc(1.25 / 0.875);
-  --size-base: 1rem;
-  --size-base-leading: 1.5;
-  --size-lg: 1.125rem;
-  --size-lg-leading: calc(1.75 / 1.125);
-  --size-xl: 1.25rem;
-  --size-xl-leading: calc(1.75 / 1.25);
-  --size-2xl: 1.5rem;
-  --size-2xl-leading: calc(2 / 1.5);
-  --size-3xl: 1.875rem;
-  --size-3xl-leading: calc(2.25 / 1.875);
-  --size-4xl: 2.25rem;
-  --size-4xl-leading: calc(2.5 / 2.25);
+  /* Type values, read off the design's text styles in pixels and written in rem. The name is
+     the pixel value, because these are the design's own numbers and nothing else. */
+  --size-12: 0.75rem;
+  --size-13: 0.8125rem;
+  --size-14: 0.875rem;
+  --size-15: 0.9375rem;
+  --size-16: 1rem;
+  --size-20: 1.25rem;
+  --size-24: 1.5rem;
+  --size-28: 1.75rem;
+  --size-32: 2rem;
+  --size-40: 2.5rem;
+  --size-48: 3rem;
+  --size-64: 4rem;
+  --size-72: 4.5rem;
+
+  --leading-18: 1.125rem;
+  --leading-20: 1.25rem;
+  --leading-24: 1.5rem;
+  --leading-28: 1.75rem;
+  --leading-32: 2rem;
+  --leading-36: 2.25rem;
+  --leading-40: 2.5rem;
+  --leading-48: 3rem;
+  --leading-56: 3.5rem;
+  --leading-64: 4rem;
+  --leading-72: 4.5rem;
+
+  /* Letter spacing; `n` is negative, so `--tracking-n0-5` is -0.5px. */
+  --tracking-n3: -0.1875rem;
+  --tracking-n0-5: -0.03125rem;
+  --tracking-n0-3: -0.01875rem;
+  --tracking-n0-2: -0.0125rem;
+  --tracking-0: 0;
 
   --weight-normal: 400;
   --weight-medium: 500;

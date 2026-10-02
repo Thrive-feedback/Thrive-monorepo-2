@@ -4,9 +4,10 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from './config/config.module';
+import { DatabaseModule } from './infrastructure/database/database.module';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, DatabaseModule],
   controllers: [AppController],
   providers: [
     AppService,

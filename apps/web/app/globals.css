@@ -9,6 +9,7 @@
 @import '@repo/tokens/tokens.css';
 
 @source '../app';
+@source '../components';
 @source '../../../packages/ui/src';
 
 @layer base {
@@ -27,8 +28,11 @@
     font-family: var(--family-sans);
   }
 
-  /* Focus stays visible on every interactive element, from one token. */
-  :focus-visible {
+  /* Focus stays visible on every interactive element, from one token. `data-focus-preview`
+     paints the same ring on a control that is not focused, so the component showcase can show
+     the focused state beside the others instead of asking the reader to tab to it. */
+  :focus-visible,
+  [data-focus-preview] {
     outline: var(--focus-ring-width) solid var(--focus);
     outline-offset: var(--focus-ring-offset);
   }

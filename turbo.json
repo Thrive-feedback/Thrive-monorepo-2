@@ -5,29 +5,43 @@
     "dev": {
       "cache": false,
       "persistent": true,
+      "dependsOn": ["db:generate"],
       "env": ["API_BASE_URL", "NODE_ENV", "PORT"]
     },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "db:generate"],
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"],
       "env": ["API_BASE_URL", "NODE_ENV", "PORT"]
     },
     "contract:generate": {
-      "cache": false
+      "cache": false,
+      "dependsOn": ["db:generate"]
     },
     "lint": {},
     "test": {
+      "dependsOn": ["db:generate"],
       "env": ["API_BASE_URL", "NODE_ENV", "PORT"]
     },
     "check-types": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "db:generate"]
+    },
+    "db:generate": {
+      "outputs": ["src/infrastructure/database/generated/**"]
+    },
+    "db:migrate:dev": {
+      "cache": false,
+      "env": ["DATABASE_MIGRATION_URL"]
+    },
+    "db:migrate:deploy": {
+      "cache": false,
+      "env": ["DATABASE_MIGRATION_URL"]
     },
     "test:integration": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "db:generate"],
       "env": ["NODE_ENV", "PORT"]
     },
     "test:bdd": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "db:generate"],
       "env": ["NODE_ENV", "PORT"]
     },
     "check-arch": {}

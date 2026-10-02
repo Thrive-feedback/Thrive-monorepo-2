@@ -1,5 +1,53 @@
 import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { extendTailwindMerge } from 'tailwind-merge';
+
+/*
+ * tailwind-merge only knows Tailwind's default type scale. Our type utilities are the design's
+ * roles (`text-body2`, `text-h1`), and an unknown `text-*` reads to it as a colour — so
+ * `text-body2 text-foreground-muted` would lose its size. Naming the roles as font sizes keeps
+ * both. The list mirrors the `--text-*` roles in `@repo/tokens`' theme.
+ */
+const TYPE_ROLES = [
+  'display1',
+  'display2',
+  'display3',
+  'display4',
+  'display5',
+  'display6',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'subtitle1',
+  'subtitle2',
+  'subtitle3',
+  'subtitle4',
+  'body1',
+  'body2',
+  'body3',
+  'caption',
+  'overline',
+  'button-large',
+  'button-medium',
+  'button-small',
+];
+
+/**
+ * The same gap for shape: `rounded-control` is unknown to tailwind-merge, so a caller's
+ * `rounded-full` would land beside it rather than replace it. Mirrors the `--radius-*` roles.
+ */
+const SHAPE_ROLES = ['indicator', 'control', 'surface', 'floating'];
+
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      'font-size': [{ text: TYPE_ROLES }],
+      rounded: [{ rounded: SHAPE_ROLES }],
+    },
+  },
+});
 
 /**
  * Joins class lists and resolves Tailwind conflicts, so a caller passing `p-6` replaces a

@@ -22,6 +22,10 @@ What is true regardless of the project:
   change the convention in the open (`GEN_01#R10`).
 - **Project facts belong in `PROJECT.md`, never in a convention document.** If you find one
   leaking, move it and link.
+- **Product facts may live outside this repository.** If `PROJECT.md` names a knowledge
+  repository, that is where the why, the domain language and the product decisions are kept.
+  Read what `PROJECT.md` routes you to before naming anything in the domain; never restate its
+  facts here. Code and stack decisions stay in this repository, as ADRs under `docs/adr/`.
 
 ---
 
@@ -45,6 +49,16 @@ Check it; do not assume. **While an entry is `todo` its document does not exist,
 > The index entry **is** the binding text. Follow its summary and its trigger. Do not
 > infer past it. In your plan, name which `todo` entries you had to interpret. If two
 > entries conflict, stop and ask.
+
+**How deeply to read** (`GEN_01#R1`). The read set says *which* documents; this says how much
+of each:
+
+- **To build** — read a document's head (**Open when**, summary) and its **The rules** list, and
+  stop at *Why*. That list is written to stand alone.
+- **When a rule's one-liner leaves you unsure, or you are about to depart from it** — open that
+  rule's *Rule detail* section, not the whole document.
+- **In full** — only when you are asked to review against a document, or when you author or
+  change one (`GEN_12`, which is itself read in full first).
 
 Cite the convention ids you relied on (e.g. `BE_07`, `FE_03`) in your plan and in the PR
 description — not in code comments (`GEN_17`).

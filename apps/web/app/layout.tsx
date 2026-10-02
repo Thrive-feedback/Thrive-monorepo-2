@@ -1,19 +1,30 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Google_Sans } from 'next/font/google';
+import localFont from 'next/font/local';
+import { Toaster } from '@/components/atoms/toaster';
 import './globals.css';
 
 /**
- * The token layer names the family (`--family-sans`); this loads it. Inter carries everything
- * for now — the old build's display face is licensed, so it waits on that being confirmed.
+ * The token layer names the families (`--family-sans`, `--family-display`); this loads them.
+ * Google Sans is the body face and comes from Google Fonts. Cooper is the display face, used
+ * only at SemiBold, so that is the one file shipped; it is SIL OFL 1.1 and its licence sits
+ * beside it, which the licence requires of anything redistributing it.
  *
- * The variable goes on `<html>`, not `<body>`: `--family-sans` is declared on `:root` and
- * resolves `var(--font-inter)` there, so on `<body>` it would be undefined at the point of use
+ * The variables go on `<html>`, not `<body>`: the families are declared on `:root` and
+ * resolve these variables there, so on `<body>` they would be undefined at the point of use
  * and the page would silently fall back to the system font.
  */
-const inter = Inter({
+const googleSans = Google_Sans({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-google-sans',
+});
+
+const cooper = localFont({
+  src: './_lib/fonts/cooper/Cooper-SemiBold.woff2',
+  weight: '600',
+  display: 'swap',
+  variable: '--font-cooper',
 });
 
 export const metadata: Metadata = {
@@ -29,6 +40,9 @@ export const metadata: Metadata = {
  * the font variables, the token host. It reads nothing, because a read here is a read for
  * every route beneath it including the ones that do not need it.
  *
+ * `Toaster` is here because a toast raised on one route may outlive it: it has to be mounted
+ * above every route to stay on screen through a navigation.
+ *
  * It stays a server component. When a provider is needed it goes in a thin
  * client wrapper this renders, never here: a layout is the highest node in its subtree, so
  * a directive on it hands the whole route group to the browser.
@@ -39,8 +53,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="min-h-dvh">{children}</body>
+    <html lang="en" className={`${googleSans.variable} ${cooper.variable}`}>
+      <body className="min-h-dvh">
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }
