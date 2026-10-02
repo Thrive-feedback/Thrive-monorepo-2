@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { toNodeHandler } from 'better-auth/node';
 import { AuthConfig } from '../../config/configuration';
+import { IdGenerator } from '../../shared/application/id-generator.port';
 import { DatabaseModule } from '../database/database.module';
 import { PrismaService } from '../database/prisma.service';
 import { AUTH, type Auth, createAuth } from './auth';
@@ -16,9 +17,12 @@ import { AUTH, type Auth, createAuth } from './auth';
   providers: [
     {
       provide: AUTH,
-      useFactory: (prisma: PrismaService, config: AuthConfig) =>
-        createAuth(prisma, config),
-      inject: [PrismaService, AuthConfig],
+      useFactory: (
+        prisma: PrismaService,
+        config: AuthConfig,
+        ids: IdGenerator,
+      ) => createAuth(prisma, config, ids),
+      inject: [PrismaService, AuthConfig, IdGenerator],
     },
   ],
   exports: [AUTH],
