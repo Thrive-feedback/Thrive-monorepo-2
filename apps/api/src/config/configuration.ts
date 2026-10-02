@@ -20,9 +20,17 @@ export class DatabaseConfig {
   constructor(readonly url: string) {}
 }
 
+export class AuthConfig {
+  constructor(
+    readonly secret: string,
+    readonly baseUrl: string,
+  ) {}
+}
+
 export interface Configuration {
   readonly http: HttpConfig;
   readonly database: DatabaseConfig;
+  readonly auth: AuthConfig;
 }
 
 /** Injection token for the whole parsed configuration, from which each namespace is projected. */
@@ -55,6 +63,10 @@ export function loadConfiguration(
   return {
     http: new HttpConfig(parsed.data.PORT, parsed.data.CORS_ALLOWED_ORIGINS),
     database: new DatabaseConfig(parsed.data.DATABASE_URL),
+    auth: new AuthConfig(
+      parsed.data.BETTER_AUTH_SECRET,
+      parsed.data.BETTER_AUTH_URL,
+    ),
   };
 }
 
