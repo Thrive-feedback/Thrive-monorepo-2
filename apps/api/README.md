@@ -6,6 +6,13 @@ From the repository root, `bun run dev` starts local Postgres and both applicati
 The first run copies `.env.example` to an ignored `.env`; use separate credentials for
 application queries and migrations in a deployed environment.
 
+Signing in needs a Google OAuth client. Put its `GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET` in `.env`, taking them from the team's secret store, never from chat
+or git. The client's authorised redirect URI is
+`http://localhost:3001/api/auth/callback/google`. `BETTER_AUTH_URL` is the **web** app's
+origin, `http://localhost:3001`, because the browser reaches Better Auth through the web
+app (ADR 0026).
+
 Schema changes use the checked-in Prisma schema and SQL migration history:
 
 ```bash
