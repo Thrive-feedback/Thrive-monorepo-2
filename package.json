@@ -13,10 +13,11 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "format": "biome format --write .",
-    "check": "bun run check:style && bun run check:types && bun run check:arch",
+    "check": "bun run check:style && bun run check:types && bun run check:arch && bun run check:contract",
     "check:style": "biome check --error-on-warnings .",
     "check:types": "turbo run check-types",
-    "check:arch": "bun run --cwd apps/api db:generate && bun --bun depcruise apps packages --config .dependency-cruiser.cjs --output-type err && bun scripts/verify-arch-fixtures.mjs && turbo run check-arch"
+    "check:arch": "bun run --cwd apps/api db:generate && bun --bun depcruise apps packages --config .dependency-cruiser.cjs --output-type err && bun scripts/verify-arch-fixtures.mjs && turbo run check-arch",
+    "check:contract": "bun scripts/check-contract.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

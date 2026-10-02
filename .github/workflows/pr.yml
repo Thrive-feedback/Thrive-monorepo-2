@@ -1,9 +1,9 @@
 # The pipeline every merge candidate runs. Ordered cheapest and broadest first: code style
 # and types catch most mistakes in seconds without building anything. Every job runs a
 # task a developer runs locally with the same arguments, so a red job reproduces on a
-# laptop — `bun run check` is the first three jobs back to back.
+# laptop — `bun run check` is the first four jobs back to back.
 #
-# Deploys are absent: hosting is PROJECT.md §5 decision 4.
+# Deploys are absent: hosting is PROJECT.md §5 decision 3.
 name: PR
 
 on:
@@ -65,6 +65,21 @@ jobs:
       # specifier-level rules. Runs under Bun, so the command
       # is the same on a laptop whatever Node version happens to be on PATH.
       - run: bun run check:arch
+
+  contract:
+    name: Contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.0.2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      # Regenerates the contract from the API app's route metadata and fails if the
+      # committed output moves. Needs no database and no listening server, so it sits with
+      # the cheap checks rather than with the suites.
+      - run: bun run check:contract
 
   tests:
     name: Tests
