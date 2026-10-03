@@ -1,6 +1,6 @@
-import { OneTimeToast } from '@/app/(public)/_components/one-time-toast';
-import { signIn } from '@/app/(public)/_lib/session-actions.service';
+import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Text } from '@/components/atoms/text';
+import { signIn } from '@/lib/session/session-actions.service';
 import { GoogleSignInButton } from './google-sign-in-button';
 
 /**
