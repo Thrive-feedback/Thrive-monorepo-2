@@ -57,8 +57,22 @@ The decision is recorded before anything builds on it (`GEN_04`).
   response exactly, without re-encoding signed values.
 - The callback route is the one Better Auth endpoint outside the contract. Changing its path means
   changing the rewrite, Google Console and this ADR together.
-- Requests reach the API from the web server, so the IP address Better Auth stores on a session is
-  the web server's until forwarded headers are trusted.
+- The IP address Better Auth stores on a session is the browser's. Next sets `x-forwarded-for` from
+  the incoming connection before the rewrite forwards the callback, and Better Auth reads that
+  header. It also keys Better Auth's per-client rate limit, which is why IP tracking stays on. A
+  client can send its own `X-Forwarded-For`, so the value is an audit and rate-limit key, not a
+  security decision, until `trustedProxies` is set with hosting.
+- **Session lifetime.** A session ends after 7 days without use; using Thrive pushes it forward,
+  at most once a day.
+  - Reading a session never writes (`deferSessionRefresh`): `GET /v1/sessions/current` reports
+    `needsRefresh`.
+  - Pushing it forward is its own command, `POST /v1/sessions/current/refresh`. The web runs it
+    from a server action, because only an action can hand the browser the renewed cookie, so the
+    cookie's expiry always matches the database's.
+  - There is no absolute limit yet: an active session can live indefinitely. The OWASP session
+    guidance recommends one; it belongs with the `BE_22` hardening.
+  - Expired session rows are deleted only when a refresh meets them, so a periodic clean-up
+    belongs with background jobs (`BE_18`).
 - Each Google OAuth client registers `<web origin>/api/auth/callback/google`, one per environment.
 
 Supersedes: —
