@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
-import { apiBaseUrl } from '@/lib/api-client.service';
+import { apiBaseUrl } from '@/lib/api-base-url.util';
 
 /**
  * The public landing route, deliberately empty of product: nothing is built ahead of the
