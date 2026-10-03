@@ -31,7 +31,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Start signing in with Google */
-        post: operations["SessionController_startGoogle"];
+        post: operations["SessionController_startGoogleSignIn"];
         delete?: never;
         options?: never;
         head?: never;
@@ -46,11 +46,11 @@ export interface paths {
             cookie?: never;
         };
         /** Read who the caller is signed in as */
-        get: operations["SessionController_current"];
+        get: operations["SessionController_getCurrentSession"];
         put?: never;
         post?: never;
         /** Sign out of the current session */
-        delete: operations["SessionController_end"];
+        delete: operations["SessionController_signOut"];
         options?: never;
         head?: never;
         patch?: never;
@@ -103,7 +103,7 @@ export interface operations {
             };
         };
     };
-    SessionController_startGoogle: {
+    SessionController_startGoogleSignIn: {
         parameters: {
             query?: never;
             header?: never;
@@ -122,7 +122,7 @@ export interface operations {
             };
         };
     };
-    SessionController_current: {
+    SessionController_getCurrentSession: {
         parameters: {
             query?: never;
             header?: {
@@ -144,7 +144,7 @@ export interface operations {
             };
         };
     };
-    SessionController_end: {
+    SessionController_signOut: {
         parameters: {
             query?: never;
             header?: {
