@@ -1,8 +1,17 @@
+/**
+ * @vitest-environment node
+ *
+ * Server code, so it is tested where it runs: in jsdom, MSW would keep a browser cookie jar
+ * and send one test's cookies with the next test's requests.
+ */
+import { ApiError } from '@repo/api';
+import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { server, TEST_API_BASE_URL } from '@/lib/test/msw-server';
 
-const GET = vi.fn();
 const requestHeaders = new Headers();
 
+vi.stubEnv('API_BASE_URL', TEST_API_BASE_URL);
 vi.mock('server-only', () => ({}));
 vi.mock('react', async (actual) => ({
   ...(await actual<typeof import('react')>()),
@@ -10,39 +19,69 @@ vi.mock('react', async (actual) => ({
   cache: <T>(fn: T) => fn,
 }));
 vi.mock('next/headers', () => ({ headers: async () => requestHeaders }));
-vi.mock('@/lib/api-client.service', () => ({ apiClient: () => ({ GET }) }));
 
 const { readSession } = await import('./session.service');
 
+const CURRENT_SESSION = `${TEST_API_BASE_URL}/v1/sessions/current`;
+
 describe('readSession', () => {
   beforeEach(() => {
-    GET.mockReset();
     requestHeaders.delete('cookie');
   });
 
-  it("asks the API with the browser's cookie and never caches the answer", async () => {
+  it("asks the API with the browser's cookie and a correlation id", async () => {
     requestHeaders.set('cookie', 'thrive.session_token=abc');
-    GET.mockResolvedValue({
-      data: { account: { email: 'ann@acme.test', name: 'Ann Lee' } },
-    });
+    const seen: Request[] = [];
+    server.use(
+      http.get(CURRENT_SESSION, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json({
+          account: { email: 'ann@acme.test', name: 'Ann Lee' },
+        });
+      }),
+    );
 
     expect(await readSession()).toEqual({
       email: 'ann@acme.test',
       name: 'Ann Lee',
     });
-    expect(GET).toHaveBeenCalledWith('/v1/sessions/current', {
-      params: { header: { cookie: 'thrive.session_token=abc' } },
-      cache: 'no-store',
-    });
+    expect(seen[0]?.headers.get('cookie')).toBe('thrive.session_token=abc');
+    expect(seen[0]?.headers.get('x-correlation-id')).toBeTruthy();
   });
 
   it('is null when the API says nobody is signed in', async () => {
-    GET.mockResolvedValue({ data: { account: null } });
+    const seen: Request[] = [];
+    server.use(
+      http.get(CURRENT_SESSION, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json({ account: null });
+      }),
+    );
 
     expect(await readSession()).toBeNull();
-    expect(GET).toHaveBeenCalledWith('/v1/sessions/current', {
-      params: { header: { cookie: undefined } },
-      cache: 'no-store',
+    expect(seen[0]?.headers.has('cookie')).toBe(false);
+  });
+
+  it("fails with the API's error code when the API fails", async () => {
+    server.use(
+      http.get(CURRENT_SESSION, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: 'INTERNAL_ERROR',
+              message: 'Something went wrong.',
+              correlationId: 'c-1',
+            },
+          },
+          { status: 500 },
+        ),
+      ),
+    );
+
+    await expect(readSession()).rejects.toMatchObject({
+      constructor: ApiError,
+      code: 'INTERNAL_ERROR',
+      correlationId: 'c-1',
     });
   });
 });
