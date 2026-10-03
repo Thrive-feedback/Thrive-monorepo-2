@@ -10,3 +10,8 @@ export function toSession(wire: CurrentSessionWire): Session | null {
     ? { email: wire.account.email, name: wire.account.name }
     : null;
 }
+
+/** The session has been in use long enough that it should be pushed forward. */
+export function toNeedsRefresh(wire: CurrentSessionWire): boolean {
+  return wire.account !== null && wire.needsRefresh;
+}
