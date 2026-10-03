@@ -3,10 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 import LoginPage from './page';
 
 const readSession = vi.fn();
-vi.mock('@/app/(public)/_lib/session.service', () => ({
+vi.mock('@/lib/session/session.service', () => ({
   readSession: () => readSession(),
 }));
-vi.mock('@/app/(public)/_lib/session-actions.service', () => ({
+vi.mock('@/lib/session/session-actions.service', () => ({
   signIn: vi.fn(),
 }));
 vi.mock('next/navigation', () => ({
@@ -14,7 +14,7 @@ vi.mock('next/navigation', () => ({
     throw new Error(`redirect:${url}`);
   }),
 }));
-vi.mock('@/app/(public)/_components/one-time-toast', () => ({
+vi.mock('@/components/atoms/one-time-toast', () => ({
   OneTimeToast: ({ type, message }: { type: string; message: string }) => (
     <output>{`${type} toast: ${message}`}</output>
   ),
