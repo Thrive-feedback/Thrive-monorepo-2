@@ -71,7 +71,7 @@
             }
           }
         },
-        "summary": "Read who the caller is signed in as",
+        "summary": "Read who the caller is signed in as, without changing anything",
         "tags": [
           "sessions"
         ]
@@ -95,6 +95,31 @@
           }
         },
         "summary": "Sign out of the current session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/v1/sessions/current/refresh": {
+      "post": {
+        "operationId": "SessionController_refreshSession",
+        "parameters": [
+          {
+            "name": "cookie",
+            "required": false,
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Push the current session forward and reissue its cookie",
         "tags": [
           "sessions"
         ]
@@ -160,10 +185,14 @@
             ],
             "additionalProperties": false,
             "nullable": true
+          },
+          "needsRefresh": {
+            "type": "boolean"
           }
         },
         "required": [
-          "account"
+          "account",
+          "needsRefresh"
         ],
         "additionalProperties": false
       }
