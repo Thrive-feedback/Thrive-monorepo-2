@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { ROUTES } from '@/lib/routes.constant';
 import { readSession } from '@/lib/session/session.service';
 import { InviteTeammatesCard } from './_components/invite-teammates-card';
 import { InviteTeammatesHero } from './_components/invite-teammates-hero';
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 export default async function InviteTeammatesPage() {
   const session = await readSession();
   if (!session) {
-    redirect('/login');
+    redirect(ROUTES.login);
   }
 
   return (

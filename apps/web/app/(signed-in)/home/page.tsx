@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Button } from '@/components/atoms/button';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Text } from '@/components/atoms/text';
+import { ROUTES } from '@/lib/routes.constant';
 import { readSession } from '@/lib/session/session.service';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
 
@@ -22,7 +23,7 @@ type HomeProps = {
 export default async function Home({ searchParams }: HomeProps) {
   const session = await readSession();
   if (!session) {
-    redirect('/login');
+    redirect(ROUTES.login);
   }
   const { signedIn } = HomeSearchParams.parse(await searchParams);
 
@@ -32,7 +33,7 @@ export default async function Home({ searchParams }: HomeProps) {
         <OneTimeToast
           type="success"
           message={`Signed in as ${session.email}`}
-          then="/home"
+          then={ROUTES.home}
         />
       )}
       <Text variant="display5" as="h1">
@@ -40,7 +41,7 @@ export default async function Home({ searchParams }: HomeProps) {
       </Text>
       <Text tone="muted">Ask for, give and act on feedback.</Text>
       <Button asChild variant="primary" size="sm" className="w-fit">
-        <Link href="/ui-showcase">See the components</Link>
+        <Link href={ROUTES.uiShowcase.index}>See the components</Link>
       </Button>
     </div>
   );

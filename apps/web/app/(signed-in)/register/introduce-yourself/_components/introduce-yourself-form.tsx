@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { TextField } from '@/components/molecules/text-field';
+import { ROUTES } from '@/lib/routes.constant';
 
 function firstWord(value: string): string {
   return value.trim().split(/\s+/)[0] ?? '';
@@ -43,7 +44,7 @@ export function IntroduceYourselfForm({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     // TODO(kritpavin, #71): save the Profile before moving on.
     event.preventDefault();
-    router.push('/register/create-workspace');
+    router.push(ROUTES.register.createWorkspace);
   }
 
   return (

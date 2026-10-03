@@ -5,6 +5,7 @@ import {
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
 import { Button } from '@/components/atoms/button';
+import { ROUTES } from '@/lib/routes.constant';
 
 const USAGE = `import { Button } from '@/components/atoms/button';
 
@@ -118,7 +119,7 @@ export function ButtonEntry() {
       </StateCell>
       <StateCell label="As a link" hint="asChild around next/link">
         <Button asChild variant="soft">
-          <NextLink href="/ui-showcase/tokens">See the tokens</NextLink>
+          <NextLink href={ROUTES.uiShowcase.tokens}>See the tokens</NextLink>
         </Button>
       </StateCell>
     </ShowcaseEntry>

@@ -1,5 +1,6 @@
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Text } from '@/components/atoms/text';
+import { ROUTES } from '@/lib/routes.constant';
 import { signIn } from '@/lib/session/session-actions.service';
 import { GoogleSignInButton } from './google-sign-in-button';
 
@@ -31,7 +32,7 @@ export function SignInPrompt({ didSignInFail = false }: SignInPromptProps) {
         <OneTimeToast
           type="error"
           message="Sign-in didn't finish. Try again."
-          then="/login"
+          then={ROUTES.login}
         />
       )}
     </div>

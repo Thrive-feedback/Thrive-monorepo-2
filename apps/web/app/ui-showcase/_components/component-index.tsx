@@ -4,6 +4,7 @@ import {
 } from '@/app/ui-showcase/_lib/component-catalog.constant';
 import { Link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
+import { ROUTES } from '@/lib/routes.constant';
 import { LevelBadge } from './level-badge';
 
 /**
@@ -22,7 +23,7 @@ export function ComponentIndex() {
           Every shared component a screen is built from. Open one to see each of
           its states, its props and the code to use it. Search here before
           building a new one, and take colours from the{' '}
-          <Link href="/ui-showcase/tokens">design tokens</Link>.
+          <Link href={ROUTES.uiShowcase.tokens}>design tokens</Link>.
         </Text>
         <Text variant="body2" tone="muted">
           Adding one from shadcn:{' '}
@@ -66,7 +67,7 @@ export function ComponentIndex() {
                   </div>
                   <div className="flex items-center justify-between gap-2 border-line border-t bg-surface-raised px-4 py-3">
                     <Link
-                      href={`/ui-showcase/${slug}`}
+                      href={ROUTES.uiShowcase.component(slug)}
                       className="font-semibold text-foreground after:absolute after:inset-0"
                     >
                       {name}

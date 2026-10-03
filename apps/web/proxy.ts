@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { ROUTES } from '@/lib/routes.constant';
 
 /**
  * Better Auth's session cookie (ADR 0026). It carries the `__Secure-` prefix on https.
@@ -20,9 +21,11 @@ export function proxy(request: NextRequest) {
   if (hasSessionCookie) {
     return NextResponse.next();
   }
-  return NextResponse.redirect(new URL('/login', request.url));
+  return NextResponse.redirect(new URL(ROUTES.login, request.url));
 }
 
 export const config = {
+  // Literals, not ROUTES: Next reads the matcher at build time and accepts only constants.
+  // Keep it in step with ROUTES.home and ROUTES.register.
   matcher: ['/home', '/register/:path*'],
 };
