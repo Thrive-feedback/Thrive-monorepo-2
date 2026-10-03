@@ -45,12 +45,29 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read who the caller is signed in as */
+        /** Read who the caller is signed in as, without changing anything */
         get: operations["SessionController_getCurrentSession"];
         put?: never;
         post?: never;
         /** Sign out of the current session */
         delete: operations["SessionController_signOut"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sessions/current/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Push the current session forward and reissue its cookie */
+        post: operations["SessionController_refreshSession"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -74,6 +91,7 @@ export interface components {
                 email: string;
                 name: string;
             } | null;
+            needsRefresh: boolean;
         };
     };
     responses: never;
@@ -145,6 +163,26 @@ export interface operations {
         };
     };
     SessionController_signOut: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SessionController_refreshSession: {
         parameters: {
             query?: never;
             header?: {
