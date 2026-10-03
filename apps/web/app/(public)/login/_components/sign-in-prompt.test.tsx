@@ -2,10 +2,10 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { SignInPrompt } from './sign-in-prompt';
 
-vi.mock('@/app/(public)/_lib/session-actions.service', () => ({
+vi.mock('@/lib/session/session-actions.service', () => ({
   signIn: vi.fn(),
 }));
-vi.mock('@/app/(public)/_components/one-time-toast', () => ({
+vi.mock('@/components/atoms/one-time-toast', () => ({
   OneTimeToast: ({ type, message }: { type: string; message: string }) => (
     <output>{`${type} toast: ${message}`}</output>
   ),
