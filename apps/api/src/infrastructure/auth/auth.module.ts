@@ -18,10 +18,10 @@ import { AUTH, type Auth, createAuth } from './auth';
     {
       provide: AUTH,
       useFactory: (
-        prisma: PrismaService,
-        config: AuthConfig,
-        ids: IdGenerator,
-      ) => createAuth(prisma, config, ids),
+        prismaService: PrismaService,
+        authConfig: AuthConfig,
+        idGenerator: IdGenerator,
+      ) => createAuth(prismaService, authConfig, idGenerator),
       inject: [PrismaService, AuthConfig, IdGenerator],
     },
   ],

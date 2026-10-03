@@ -14,7 +14,7 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: configuration.database.url }),
 });
 const auth = createAuth(prisma, configuration.auth, new UuidIdGenerator());
-const identity: IdentityPort = new BetterAuthIdentityAdapter(auth);
+const identityPort: IdentityPort = new BetterAuthIdentityAdapter(auth);
 
 const createdAccountIds: string[] = [];
 const createdStates: string[] = [];
@@ -50,7 +50,7 @@ describe('Better Auth identity, through the port', () => {
   it('answers the Account behind a live session cookie', async () => {
     const { email, credential } = await aSignedInAccount();
 
-    expect(await identity.currentAccount(credential)).toEqual({
+    expect(await identityPort.currentAccount(credential)).toEqual({
       email,
       name: 'Ann Lee',
     });
@@ -59,7 +59,7 @@ describe('Better Auth identity, through the port', () => {
   it('ends the session and returns a clearing cookie', async () => {
     const { session, credential } = await aSignedInAccount();
 
-    const { sessionCookies } = await identity.signOut(credential);
+    const { sessionCookies } = await identityPort.signOut(credential);
 
     expect(
       await prisma.session.findUnique({ where: { id: session.id } }),
@@ -70,7 +70,7 @@ describe('Better Auth identity, through the port', () => {
   });
 
   it('starts Google sign-in with a state and a PKCE challenge', async () => {
-    const { url, sessionCookies } = await identity.startGoogleSignIn();
+    const { url, sessionCookies } = await identityPort.startGoogleSignIn();
 
     const google = new URL(url);
     const state = google.searchParams.get('state') ?? '';
@@ -88,14 +88,14 @@ describe('Better Auth identity, through the port', () => {
 
   describe('answers null', () => {
     it('without a cookie', async () => {
-      expect(await identity.currentAccount('')).toBeNull();
+      expect(await identityPort.currentAccount('')).toBeNull();
     });
 
     it('for a tampered signature', async () => {
       const { session } = await aSignedInAccount();
       const forged = `thrive.session_token=${encodeURIComponent(`${session.token}.forged`)}`;
 
-      expect(await identity.currentAccount(forged)).toBeNull();
+      expect(await identityPort.currentAccount(forged)).toBeNull();
     });
 
     it('for an expired session', async () => {
@@ -105,14 +105,14 @@ describe('Better Auth identity, through the port', () => {
         data: { expiresAt: new Date(Date.now() - 60_000) },
       });
 
-      expect(await identity.currentAccount(credential)).toBeNull();
+      expect(await identityPort.currentAccount(credential)).toBeNull();
     });
 
     it('for a signed-out session', async () => {
       const { credential } = await aSignedInAccount();
-      await identity.signOut(credential);
+      await identityPort.signOut(credential);
 
-      expect(await identity.currentAccount(credential)).toBeNull();
+      expect(await identityPort.currentAccount(credential)).toBeNull();
     });
   });
 });
