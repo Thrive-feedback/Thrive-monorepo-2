@@ -20,7 +20,9 @@ vi.mock('react', async (actual) => ({
 }));
 vi.mock('next/headers', () => ({ headers: async () => requestHeaders }));
 
-const { readSession } = await import('./session.service');
+const { readSession, readSessionNeedsRefresh } = await import(
+  './session.service'
+);
 
 const CURRENT_SESSION = `${TEST_API_BASE_URL}/v1/sessions/current`;
 
@@ -37,6 +39,7 @@ describe('readSession', () => {
         seen.push(request);
         return HttpResponse.json({
           account: { email: 'ann@acme.test', name: 'Ann Lee' },
+          needsRefresh: false,
         });
       }),
     );
@@ -54,7 +57,7 @@ describe('readSession', () => {
     server.use(
       http.get(CURRENT_SESSION, ({ request }) => {
         seen.push(request);
-        return HttpResponse.json({ account: null });
+        return HttpResponse.json({ account: null, needsRefresh: false });
       }),
     );
 
@@ -83,5 +86,18 @@ describe('readSession', () => {
       code: 'INTERNAL_ERROR',
       correlationId: 'c-1',
     });
+  });
+
+  it('says when the session is due a refresh', async () => {
+    server.use(
+      http.get(CURRENT_SESSION, () =>
+        HttpResponse.json({
+          account: { email: 'ann@acme.test', name: 'Ann Lee' },
+          needsRefresh: true,
+        }),
+      ),
+    );
+
+    expect(await readSessionNeedsRefresh()).toBe(true);
   });
 });
