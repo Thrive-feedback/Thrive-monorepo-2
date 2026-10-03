@@ -3,6 +3,7 @@ import { environmentSchema } from './environment.schema';
 
 const validEnvironment = {
   DATABASE_URL: 'postgresql://thrive:local_only@127.0.0.1:54329/thrive',
+  CORS_ALLOWED_ORIGINS: 'http://localhost:3001',
   BETTER_AUTH_SECRET: 'a'.repeat(32),
   BETTER_AUTH_URL: 'http://localhost:3001',
   GOOGLE_CLIENT_ID: 'client-id.apps.googleusercontent.com',
