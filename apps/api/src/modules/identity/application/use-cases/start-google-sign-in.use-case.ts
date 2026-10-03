@@ -7,9 +7,9 @@ import { type GoogleSignIn, IdentityPort } from '../port/identity.port';
  */
 @Injectable()
 export class StartGoogleSignInUseCase {
-  constructor(private readonly identity: IdentityPort) {}
+  constructor(private readonly identityPort: IdentityPort) {}
 
   execute(): Promise<GoogleSignIn> {
-    return this.identity.startGoogleSignIn();
+    return this.identityPort.startGoogleSignIn();
   }
 }

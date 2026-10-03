@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { IdentityPort } from '../port/identity.port';
 import { GetCurrentAccountUseCase } from './get-current-account.use-case';
 
-class FakeIdentity extends IdentityPort {
+class FakeIdentityPort extends IdentityPort {
   readonly askedWith: string[] = [];
 
   constructor(private readonly sessions: Record<string, string>) {
@@ -26,18 +26,18 @@ class FakeIdentity extends IdentityPort {
 
 describe('reading the current Account', () => {
   it('answers the Account behind the credential', async () => {
-    const identity = new FakeIdentity({ 'cookie-a': 'ann@acme.test' });
-    const useCase = new GetCurrentAccountUseCase(identity);
+    const identityPort = new FakeIdentityPort({ 'cookie-a': 'ann@acme.test' });
+    const useCase = new GetCurrentAccountUseCase(identityPort);
 
     expect(await useCase.execute({ credential: 'cookie-a' })).toEqual({
       email: 'ann@acme.test',
       name: 'Ann Lee',
     });
-    expect(identity.askedWith).toEqual(['cookie-a']);
+    expect(identityPort.askedWith).toEqual(['cookie-a']);
   });
 
   it('answers null when nobody is signed in', async () => {
-    const useCase = new GetCurrentAccountUseCase(new FakeIdentity({}));
+    const useCase = new GetCurrentAccountUseCase(new FakeIdentityPort({}));
 
     expect(await useCase.execute({ credential: '' })).toBeNull();
   });
