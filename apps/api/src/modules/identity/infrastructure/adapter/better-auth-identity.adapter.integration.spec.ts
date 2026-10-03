@@ -16,6 +16,9 @@ const prisma = new PrismaClient({
 const auth = createAuth(prisma, configuration.auth, new UuidIdGenerator());
 const identityPort: IdentityPort = new BetterAuthIdentityAdapter(auth);
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const SIGNED_OUT = { account: null, needsRefresh: false };
+
 const createdAccountIds: string[] = [];
 const createdStates: string[] = [];
 
@@ -23,6 +26,21 @@ const createdStates: string[] = [];
 async function cookieFor(token: string): Promise<string> {
   const signature = await makeSignature(token, configuration.auth.secret);
   return `thrive.session_token=${encodeURIComponent(`${token}.${signature}`)}`;
+}
+
+/** Moves a session's expiry as if it had last been refreshed `days` ago. */
+async function ageSession(sessionId: string, days: number): Promise<Date> {
+  const expiresAt = new Date(Date.now() + (7 - days) * DAY_MS);
+  await prisma.session.update({
+    where: { id: sessionId },
+    data: { expiresAt },
+  });
+  return expiresAt;
+}
+
+async function storedExpiry(sessionId: string): Promise<Date | undefined> {
+  return (await prisma.session.findUnique({ where: { id: sessionId } }))
+    ?.expiresAt;
 }
 
 async function aSignedInAccount() {
@@ -47,12 +65,38 @@ afterAll(async () => {
 });
 
 describe('Better Auth identity, through the port', () => {
-  it('answers the Account behind a live session cookie', async () => {
+  it('answers the Account behind a live session cookie, not yet due a refresh', async () => {
     const { email, credential } = await aSignedInAccount();
 
-    expect(await identityPort.currentAccount(credential)).toEqual({
-      email,
-      name: 'Ann Lee',
+    expect(await identityPort.currentSession(credential)).toEqual({
+      account: { email, name: 'Ann Lee' },
+      needsRefresh: false,
+    });
+  });
+
+  it('reports a session in use for over a day as due, and writes nothing', async () => {
+    const { session, credential } = await aSignedInAccount();
+    const agedExpiry = await ageSession(session.id, 2);
+
+    expect(await identityPort.currentSession(credential)).toMatchObject({
+      needsRefresh: true,
+    });
+    expect(await storedExpiry(session.id)).toEqual(agedExpiry);
+  });
+
+  it('refreshing pushes the expiry a full idle limit ahead and reissues the cookie', async () => {
+    const { session, credential } = await aSignedInAccount();
+    await ageSession(session.id, 2);
+
+    const { sessionCookies } = await identityPort.refreshSession(credential);
+
+    const expiry = (await storedExpiry(session.id))?.getTime() ?? 0;
+    expect(Math.abs(expiry - (Date.now() + 7 * DAY_MS))).toBeLessThan(60_000);
+    expect(sessionCookies).toContainEqual(
+      expect.stringMatching(/^thrive\.session_token=[^;]+;.*Max-Age=604800/),
+    );
+    expect(await identityPort.currentSession(credential)).toMatchObject({
+      needsRefresh: false,
     });
   });
 
@@ -86,16 +130,35 @@ describe('Better Auth identity, through the port', () => {
     );
   });
 
-  describe('answers null', () => {
+  describe('refreshing writes nothing and issues no session cookie', () => {
     it('without a cookie', async () => {
-      expect(await identityPort.currentAccount('')).toBeNull();
+      const { sessionCookies } = await identityPort.refreshSession('');
+
+      expect(sessionCookies.filter((c) => /=[^;]/.test(c))).toEqual([]);
+    });
+
+    it('for a tampered signature', async () => {
+      const { session } = await aSignedInAccount();
+      const agedExpiry = await ageSession(session.id, 2);
+      const forged = `thrive.session_token=${encodeURIComponent(`${session.token}.forged`)}`;
+
+      const { sessionCookies } = await identityPort.refreshSession(forged);
+
+      expect(await storedExpiry(session.id)).toEqual(agedExpiry);
+      expect(sessionCookies.filter((c) => /=[^;]/.test(c))).toEqual([]);
+    });
+  });
+
+  describe('reads as signed out', () => {
+    it('without a cookie', async () => {
+      expect(await identityPort.currentSession('')).toEqual(SIGNED_OUT);
     });
 
     it('for a tampered signature', async () => {
       const { session } = await aSignedInAccount();
       const forged = `thrive.session_token=${encodeURIComponent(`${session.token}.forged`)}`;
 
-      expect(await identityPort.currentAccount(forged)).toBeNull();
+      expect(await identityPort.currentSession(forged)).toEqual(SIGNED_OUT);
     });
 
     it('for an expired session', async () => {
@@ -105,14 +168,14 @@ describe('Better Auth identity, through the port', () => {
         data: { expiresAt: new Date(Date.now() - 60_000) },
       });
 
-      expect(await identityPort.currentAccount(credential)).toBeNull();
+      expect(await identityPort.currentSession(credential)).toEqual(SIGNED_OUT);
     });
 
     it('for a signed-out session', async () => {
       const { credential } = await aSignedInAccount();
       await identityPort.signOut(credential);
 
-      expect(await identityPort.currentAccount(credential)).toBeNull();
+      expect(await identityPort.currentSession(credential)).toEqual(SIGNED_OUT);
     });
   });
 });

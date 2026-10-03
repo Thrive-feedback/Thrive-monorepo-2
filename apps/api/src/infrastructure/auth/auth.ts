@@ -9,6 +9,12 @@ import type { AuthConfig } from '../../config/configuration';
 import type { IdGenerator } from '../../shared/application/id-generator.port';
 import type { PrismaClient } from '../database/generated/client';
 
+/** A session ends after this long without use. Using Thrive pushes it forward again. */
+const SESSION_IDLE_LIMIT_SECONDS = 7 * 24 * 60 * 60;
+
+/** How often, at most, a session in use is pushed forward. */
+const SESSION_REFRESH_INTERVAL_SECONDS = 24 * 60 * 60;
+
 /**
  * Builds the Better Auth instance on the application's one Prisma client, so auth shares
  * the connection pool rather than opening a second one. Configuration arrives as an
@@ -39,6 +45,13 @@ function authOptions(
     // error page yet, so it lands on the sign-in page too, never on a page of Better Auth's.
     onAPIError: { errorURL: '/login' },
     database,
+    session: {
+      expiresIn: SESSION_IDLE_LIMIT_SECONDS,
+      updateAge: SESSION_REFRESH_INTERVAL_SECONDS,
+      // Reading a session never writes: it only reports `needsRefresh`. Pushing the session
+      // forward is a separate POST, made where the new cookie can reach the browser.
+      deferSessionRefresh: true,
+    },
     socialProviders: {
       google: {
         clientId: authConfig.googleClientId,

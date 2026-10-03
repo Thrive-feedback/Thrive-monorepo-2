@@ -1,9 +1,10 @@
 import { AUTH, type Auth } from '@app/infrastructure/auth/auth';
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  type CurrentAccount,
+  type CurrentSession,
   type GoogleSignIn,
   IdentityPort,
+  type RefreshedSession,
   type SignedOut,
 } from '../../application/port/identity.port';
 
@@ -27,14 +28,30 @@ export class BetterAuthIdentityAdapter extends IdentityPort {
     super();
   }
 
-  async currentAccount(credential: string): Promise<CurrentAccount | null> {
-    // An absent, forged or expired cookie all come back as `null`, never as an error.
+  async currentSession(credential: string): Promise<CurrentSession> {
+    // With `deferSessionRefresh` on, a GET reads without writing and reports whether the
+    // session is due a refresh. An absent, forged or expired cookie comes back as `null`.
     const session = await this.auth.api.getSession({
       headers: requestHeaders(credential),
     });
-    return session
-      ? { email: session.user.email, name: session.user.name }
-      : null;
+    if (!session) {
+      return { account: null, needsRefresh: false };
+    }
+    return {
+      account: { email: session.user.email, name: session.user.name },
+      needsRefresh: 'needsRefresh' in session && session.needsRefresh === true,
+    };
+  }
+
+  async refreshSession(credential: string): Promise<RefreshedSession> {
+    // The same endpoint as POST is the one that writes: it pushes `expiresAt` forward when
+    // the session is due, and sets the cookie that matches.
+    const { headers } = await this.auth.api.getSession({
+      headers: requestHeaders(credential),
+      method: 'POST',
+      returnHeaders: true,
+    });
+    return { sessionCookies: headers.getSetCookie() };
   }
 
   async startGoogleSignIn(): Promise<GoogleSignIn> {
