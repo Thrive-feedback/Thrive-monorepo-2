@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import Landing from './page';
 
-vi.mock('@/lib/api-client.service', () => ({
+vi.mock('@/lib/api-base-url.util', () => ({
   apiBaseUrl: () => 'http://localhost:3000',
 }));
 

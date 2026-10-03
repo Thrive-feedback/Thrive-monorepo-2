@@ -1,8 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-vi.mock('server-only', () => ({}));
-
-const { apiBaseUrl } = await import('./api-client.service');
+import { apiBaseUrl } from './api-base-url.util';
 
 describe('apiBaseUrl', () => {
   afterEach(() => {
