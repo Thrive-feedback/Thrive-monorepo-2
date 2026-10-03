@@ -17,7 +17,8 @@ import {
 import type { Response } from 'express';
 import { ZodResponse } from 'nestjs-zod';
 import type { SessionCookies } from '../application/port/identity.port';
-import { GetCurrentAccountUseCase } from '../application/use-cases/get-current-account.use-case';
+import { GetCurrentSessionUseCase } from '../application/use-cases/get-current-session.use-case';
+import { RefreshSessionUseCase } from '../application/use-cases/refresh-session.use-case';
 import { SignOutUseCase } from '../application/use-cases/sign-out.use-case';
 import { StartGoogleSignInUseCase } from '../application/use-cases/start-google-sign-in.use-case';
 import { GetCurrentSessionResponseDto } from './dto/get-current-session.dto';
@@ -49,7 +50,8 @@ function setSessionCookies(response: Response, cookies: SessionCookies): void {
 export class SessionController {
   constructor(
     private readonly startGoogleSignInUseCase: StartGoogleSignInUseCase,
-    private readonly getCurrentAccountUseCase: GetCurrentAccountUseCase,
+    private readonly getCurrentSessionUseCase: GetCurrentSessionUseCase,
+    private readonly refreshSessionUseCase: RefreshSessionUseCase,
     private readonly signOutUseCase: SignOutUseCase,
   ) {}
 
@@ -63,16 +65,38 @@ export class SessionController {
   }
 
   @Get('current')
-  @ApiOperation({ summary: 'Read who the caller is signed in as' })
+  @ApiOperation({
+    summary: 'Read who the caller is signed in as, without changing anything',
+  })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.OK, type: GetCurrentSessionResponseDto })
   async getCurrentSession(@Headers('cookie') cookie?: string) {
-    const account = await this.getCurrentAccountUseCase.execute({
+    const session = await this.getCurrentSessionUseCase.execute({
       credential: cookie ?? '',
     });
     return {
-      account: account ? { email: account.email, name: account.name } : null,
+      account: session.account
+        ? { email: session.account.email, name: session.account.name }
+        : null,
+      needsRefresh: session.needsRefresh,
     };
+  }
+
+  @Post('current/refresh')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Push the current session forward and reissue its cookie',
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ApiNoContentResponse()
+  async refreshSession(
+    @Headers('cookie') cookie: string | undefined,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    const refreshed = await this.refreshSessionUseCase.execute({
+      credential: cookie ?? '',
+    });
+    setSessionCookies(response, refreshed.sessionCookies);
   }
 
   @Delete('current')

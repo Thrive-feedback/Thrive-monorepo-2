@@ -5,6 +5,16 @@ export interface CurrentAccount {
 }
 
 /**
+ * The caller's session as a read sees it. `needsRefresh` says the session has been in use
+ * long enough to be pushed forward; the read itself never pushes it.
+ */
+export interface CurrentSession {
+  /** `null` for no session, a forged one or an expired one. */
+  readonly account: CurrentAccount | null;
+  readonly needsRefresh: boolean;
+}
+
+/**
  * `Set-Cookie` values the provider wants the browser to hold. Opaque here: the application
  * passes them through without reading them, and the controller writes them onto the
  * response.
@@ -14,6 +24,10 @@ export type SessionCookies = readonly string[];
 export interface GoogleSignIn {
   /** Google's sign-in page, carrying the state and PKCE challenge for this attempt. */
   readonly url: string;
+  readonly sessionCookies: SessionCookies;
+}
+
+export interface RefreshedSession {
   readonly sessionCookies: SessionCookies;
 }
 
@@ -27,8 +41,14 @@ export interface SignedOut {
  * rewriting one adapter and nothing above it.
  */
 export abstract class IdentityPort {
-  /** The Account behind a live session, or `null` for none, a forged or an expired one. */
-  abstract currentAccount(credential: string): Promise<CurrentAccount | null>;
+  /** Reads the caller's session. Writes nothing, so it is safe on every page. */
+  abstract currentSession(credential: string): Promise<CurrentSession>;
+
+  /**
+   * Pushes a live session forward and returns the cookie that matches its new expiry.
+   * Without a live session it changes nothing and returns no session cookie.
+   */
+  abstract refreshSession(credential: string): Promise<RefreshedSession>;
 
   abstract startGoogleSignIn(): Promise<GoogleSignIn>;
 
