@@ -3,6 +3,23 @@
 -- `bun run auth:generate`. No existing rows are affected — the tables are new.
 --
 -- Rollback: DROP TABLE "session", "account", "verification", "user";
+--
+-- Data classes, kept beside the fields so nobody has to guess what may be logged or copied.
+-- Written here because `auth:generate` rewrites schema.prisma.
+--   sensitive (never logged, never cached):
+--     account."accessToken", account."refreshToken" encrypted at rest by Better Auth
+--       (`encryptOAuthTokens`);
+--     account."idToken" never stored: a hook clears it, because nothing reads it after
+--       sign-in and Better Auth would not encrypt it;
+--     session."token", verification."value" (the sign-in state and PKCE verifier) are
+--       not encrypted, because Better Auth finds rows by them; both are random, short-lived
+--       and deleted when they end;
+--     account."password" unused: sign-in is Google only.
+--   personal (never logged; deleted with the Account):
+--     user."email", user."name", user."image", session."ipAddress", session."userAgent",
+--     account."accountId" (Google's id for the person).
+--   internal: every "id", "userId", "providerId", "scope", "emailVerified",
+--     "identifier", and every timestamp.
 
 -- CreateTable
 CREATE TABLE "user" (

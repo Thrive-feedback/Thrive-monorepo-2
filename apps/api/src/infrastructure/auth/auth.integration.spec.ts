@@ -1,5 +1,7 @@
 import { afterAll, describe, expect, it } from 'bun:test';
 import { PrismaPg } from '@prisma/adapter-pg';
+import type { AuthContext } from 'better-auth';
+import { decryptOAuthToken, setTokenUtil } from 'better-auth/oauth2';
 import { version as uuidVersion, v7 as uuidv7 } from 'uuid';
 import { loadConfiguration } from '../../config/configuration';
 import { PrismaClient } from '../database/generated/client';
@@ -42,5 +44,44 @@ describe('createAuth against Postgres', () => {
     expect(
       await prisma.session.findUnique({ where: { id: session.id } }),
     ).toMatchObject({ userId: account.id, token: session.token });
+  });
+
+  it("stores Google's tokens encrypted, and keeps no ID token", async () => {
+    // Better Auth types these helpers against its generic context; ours is narrowed by our
+    // own options, which TypeScript will not widen on its own. Same object at run time.
+    const context = (await auth.$context) as unknown as AuthContext;
+    const { internalAdapter } = context;
+    const person = await internalAdapter.createUser(
+      {
+        email: `auth-tokens-${uuidv7()}@example.test`,
+        name: 'Token Test',
+        emailVerified: true,
+      },
+      { method: 'oauth', oauth: { providerId: 'google' } },
+    );
+    createdAccountIds.push(person.id);
+
+    // The same steps Better Auth's Google callback takes: encrypt, then store.
+    const link = await internalAdapter.createAccount({
+      userId: person.id,
+      providerId: 'google',
+      accountId: `google-${uuidv7()}`,
+      accessToken: await setTokenUtil('plain-access-token', context),
+      refreshToken: await setTokenUtil('plain-refresh-token', context),
+      idToken: 'header.payload.signature',
+    });
+    await internalAdapter.updateAccount(link.id, {
+      idToken: 'a.later.id-token',
+    });
+
+    const stored = await prisma.account.findUniqueOrThrow({
+      where: { id: link.id },
+    });
+    expect(stored.accessToken).not.toContain('plain-access-token');
+    expect(stored.refreshToken).not.toContain('plain-refresh-token');
+    expect(await decryptOAuthToken(stored.accessToken ?? '', context)).toBe(
+      'plain-access-token',
+    );
+    expect(stored.idToken).toBeNull();
   });
 });
