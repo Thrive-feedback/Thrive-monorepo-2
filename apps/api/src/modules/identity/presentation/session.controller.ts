@@ -48,16 +48,16 @@ function setSessionCookies(response: Response, cookies: SessionCookies): void {
 @Controller({ path: 'v1/sessions' })
 export class SessionController {
   constructor(
-    private readonly startGoogleSignIn: StartGoogleSignInUseCase,
-    private readonly getCurrentAccount: GetCurrentAccountUseCase,
-    private readonly signOut: SignOutUseCase,
+    private readonly startGoogleSignInUseCase: StartGoogleSignInUseCase,
+    private readonly getCurrentAccountUseCase: GetCurrentAccountUseCase,
+    private readonly signOutUseCase: SignOutUseCase,
   ) {}
 
   @Post('google')
   @ApiOperation({ summary: 'Start signing in with Google' })
   @ZodResponse({ status: HttpStatus.OK, type: StartGoogleSignInResponseDto })
-  async startGoogle(@Res({ passthrough: true }) response: Response) {
-    const signIn = await this.startGoogleSignIn.execute();
+  async startGoogleSignIn(@Res({ passthrough: true }) response: Response) {
+    const signIn = await this.startGoogleSignInUseCase.execute();
     setSessionCookies(response, signIn.sessionCookies);
     return { url: signIn.url };
   }
@@ -66,8 +66,8 @@ export class SessionController {
   @ApiOperation({ summary: 'Read who the caller is signed in as' })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.OK, type: GetCurrentSessionResponseDto })
-  async current(@Headers('cookie') cookie?: string) {
-    const account = await this.getCurrentAccount.execute({
+  async getCurrentSession(@Headers('cookie') cookie?: string) {
+    const account = await this.getCurrentAccountUseCase.execute({
       credential: cookie ?? '',
     });
     return {
@@ -80,11 +80,13 @@ export class SessionController {
   @ApiOperation({ summary: 'Sign out of the current session' })
   @ApiHeader(COOKIE_HEADER)
   @ApiNoContentResponse()
-  async end(
+  async signOut(
     @Headers('cookie') cookie: string | undefined,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    const signedOut = await this.signOut.execute({ credential: cookie ?? '' });
+    const signedOut = await this.signOutUseCase.execute({
+      credential: cookie ?? '',
+    });
     setSessionCookies(response, signedOut.sessionCookies);
   }
 }

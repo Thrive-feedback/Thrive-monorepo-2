@@ -8,9 +8,9 @@ export interface GetCurrentAccountInput {
 /** A query: who, if anyone, the request is signed in as. Being signed out is an answer. */
 @Injectable()
 export class GetCurrentAccountUseCase {
-  constructor(private readonly identity: IdentityPort) {}
+  constructor(private readonly identityPort: IdentityPort) {}
 
   execute(input: GetCurrentAccountInput): Promise<CurrentAccount | null> {
-    return this.identity.currentAccount(input.credential);
+    return this.identityPort.currentAccount(input.credential);
   }
 }

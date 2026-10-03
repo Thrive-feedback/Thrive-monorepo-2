@@ -8,9 +8,9 @@ export interface SignOutInput {
 /** A command. It can only end the caller's own session, so it needs no authorization. */
 @Injectable()
 export class SignOutUseCase {
-  constructor(private readonly identity: IdentityPort) {}
+  constructor(private readonly identityPort: IdentityPort) {}
 
   execute(input: SignOutInput): Promise<SignedOut> {
-    return this.identity.signOut(input.credential);
+    return this.identityPort.signOut(input.credential);
   }
 }

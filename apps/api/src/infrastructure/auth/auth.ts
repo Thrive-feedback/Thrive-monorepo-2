@@ -15,34 +15,34 @@ import type { PrismaClient } from '../database/generated/client';
  * argument; Better Auth is never left to read the environment itself.
  */
 export function createAuth(
-  prisma: PrismaClient,
-  config: AuthConfig,
-  ids: IdGenerator,
+  prismaClient: PrismaClient,
+  authConfig: AuthConfig,
+  idGenerator: IdGenerator,
 ): Auth {
-  return betterAuth(authOptions(prisma, config, ids));
+  return betterAuth(authOptions(prismaClient, authConfig, idGenerator));
 }
 
 function authOptions(
-  prisma: PrismaClient,
-  config: AuthConfig,
-  ids: IdGenerator,
+  prismaClient: PrismaClient,
+  authConfig: AuthConfig,
+  idGenerator: IdGenerator,
 ) {
-  const database: DBAdapterInstance = prismaAdapter(prisma, {
+  const database: DBAdapterInstance = prismaAdapter(prismaClient, {
     provider: 'postgresql',
   });
   return {
-    secret: config.secret,
-    baseURL: config.baseUrl,
+    secret: authConfig.secret,
+    baseURL: authConfig.baseUrl,
     // `baseUrl` is the web origin, so it is also the only origin a request may come from.
-    trustedOrigins: [config.baseUrl],
+    trustedOrigins: [authConfig.baseUrl],
     // A callback that fails before its sign-in attempt is identified has no per-attempt
     // error page yet, so it lands on the sign-in page too, never on a page of Better Auth's.
     onAPIError: { errorURL: '/login' },
     database,
     socialProviders: {
       google: {
-        clientId: config.googleClientId,
-        clientSecret: config.googleClientSecret,
+        clientId: authConfig.googleClientId,
+        clientSecret: authConfig.googleClientSecret,
         // Without it, Google signs straight back into the last account, so signing out
         // and choosing a different account would be impossible.
         prompt: 'select_account',
@@ -53,7 +53,7 @@ function authOptions(
     // They are the provider's tables; domain code never names them.
     advanced: {
       // Accounts and sessions take their ids from the same source as everything else.
-      database: { generateId: () => ids.next() },
+      database: { generateId: () => idGenerator.next() },
       // Names the session cookie `thrive.session_token`, which the web app checks for
       // before asking the API. Better Auth adds `__Secure-` in front of it on https.
       cookiePrefix: 'thrive',
