@@ -38,7 +38,10 @@ created by Prisma Migrate like every other table (ADR 0022).
 
 ## Consequences
 
-- Google tokens sit in our own `account` table, so Epic #12 can add calendar scopes later.
+- Google tokens sit in our own `account` table, so Epic #12 can add calendar scopes later. The
+  access and refresh tokens are encrypted at rest with the auth secret (`encryptOAuthTokens`), so
+  rotating it uses Better Auth's versioned `secrets` rather than a plain swap. The ID token is not
+  kept: it is only needed during sign-in, and Better Auth does not encrypt it.
 - Refusing personal Google accounts by `hd` is our code to write and test, not a toggle.
 - Session security and the auth secret are ours to own. `BETTER_AUTH_SECRET` is at least 32
   characters, is never defaulted, and comes from each environment's secret store (`INFRA_07`).

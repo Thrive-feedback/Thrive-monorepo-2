@@ -15,6 +15,11 @@ const SESSION_IDLE_LIMIT_SECONDS = 7 * 24 * 60 * 60;
 /** How often, at most, a session in use is pushed forward. */
 const SESSION_REFRESH_INTERVAL_SECONDS = 24 * 60 * 60;
 
+/** Drops the ID token before an account row is written; nothing reads it afterwards. */
+function withoutIdToken<T extends { idToken?: string | null }>(account: T): T {
+  return { ...account, idToken: null };
+}
+
 /**
  * Builds the Better Auth instance on the application's one Prisma client, so auth shares
  * the connection pool rather than opening a second one. Configuration arrives as an
@@ -45,6 +50,20 @@ function authOptions(
     // error page yet, so it lands on the sign-in page too, never on a page of Better Auth's.
     onAPIError: { errorURL: '/login' },
     database,
+    // Google's tokens are credentials. The access and refresh tokens are encrypted at
+    // rest with the auth secret; the ID token is not kept at all, because it is only
+    // needed during sign-in, and Better Auth does not encrypt it.
+    account: { encryptOAuthTokens: true },
+    databaseHooks: {
+      account: {
+        create: {
+          before: async (account) => ({ data: withoutIdToken(account) }),
+        },
+        update: {
+          before: async (account) => ({ data: withoutIdToken(account) }),
+        },
+      },
+    },
     session: {
       expiresIn: SESSION_IDLE_LIMIT_SECONDS,
       updateAge: SESSION_REFRESH_INTERVAL_SECONDS,
