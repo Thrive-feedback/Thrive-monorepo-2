@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { ROUTES } from '@/lib/routes.constant';
 import { readSession } from '@/lib/session/session.service';
 import { SignInPrompt } from './_components/sign-in-prompt';
 import { LoginSearchParams } from './_lib/login-search-params.schema';
@@ -28,7 +29,7 @@ type LoginPageProps = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   if (await readSession()) {
-    redirect('/home');
+    redirect(ROUTES.home);
   }
   const { error } = LoginSearchParams.parse(await searchParams);
 

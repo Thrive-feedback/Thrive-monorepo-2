@@ -10,6 +10,7 @@ import {
 } from '@/app/(signed-in)/register/invite-teammates/_lib/invite-emails.util';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
+import { ROUTES } from '@/lib/routes.constant';
 import { InviteEmailRow } from './invite-email-row';
 
 type Row = { id: number; value: string; errorMessage?: string };
@@ -93,11 +94,11 @@ export function InviteTeammatesForm() {
     toast.success('Invitations sent', {
       description: invitedCount(check.emails.length),
     });
-    router.push('/home');
+    router.push(ROUTES.home);
   }
 
   function handleSkip() {
-    router.push('/home');
+    router.push(ROUTES.home);
   }
 
   return (
