@@ -28,6 +28,20 @@ export async function signIn(): Promise<void> {
   redirect(unwrap(result).url);
 }
 
+/**
+ * Pushes the caller's session forward and hands the browser the cookie that matches, so
+ * someone who keeps using Thrive is never signed out. No redirect: setting the cookie makes
+ * Next render the route again. Needs no authorization: it only touches the caller's own
+ * session.
+ */
+export async function refreshSession(): Promise<void> {
+  const cookie = (await headers()).get('cookie') ?? undefined;
+  const result = await apiClient().POST('/v1/sessions/current/refresh', {
+    params: { header: { cookie } },
+  });
+  await forwardCookies(result.response);
+}
+
 /** Needs no authorization: it can only ever end the caller's own session. */
 export async function signOut(): Promise<void> {
   const cookie = (await headers()).get('cookie') ?? undefined;

@@ -23,7 +23,9 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
-const { signIn, signOut } = await import('./session-actions.service');
+const { refreshSession, signIn, signOut } = await import(
+  './session-actions.service'
+);
 
 describe('session actions', () => {
   beforeEach(() => {
@@ -84,5 +86,37 @@ describe('session actions', () => {
       httpOnly: true,
       sameSite: 'lax',
     });
+  });
+
+  it('refreshing posts with the cookie and hands the browser the renewed one', async () => {
+    requestHeaders.set('cookie', 'thrive.session_token=abc');
+    const seen: Request[] = [];
+    server.use(
+      http.post(
+        `${TEST_API_BASE_URL}/v1/sessions/current/refresh`,
+        ({ request }) => {
+          seen.push(request);
+          return new HttpResponse(null, {
+            status: 204,
+            headers: {
+              'Set-Cookie':
+                'thrive.session_token=abc.sig%2B; Max-Age=604800; Path=/; HttpOnly; SameSite=Lax',
+            },
+          });
+        },
+      ),
+    );
+
+    await refreshSession();
+
+    // `toContain`: as above, MSW's cookie jar can add an earlier test's cookie.
+    expect(seen[0]?.headers.get('cookie')).toContain(
+      'thrive.session_token=abc',
+    );
+    expect(cookieStore.set).toHaveBeenCalledWith(
+      'thrive.session_token',
+      'abc.sig+',
+      { maxAge: 604800, path: '/', httpOnly: true, sameSite: 'lax' },
+    );
   });
 });
