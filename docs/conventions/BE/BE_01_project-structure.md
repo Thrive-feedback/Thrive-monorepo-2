@@ -4,7 +4,7 @@ id: "BE_01"
 area: "BE"
 tier: "P1"
 status: "stable"
-updated: "2026-09-28"
+updated: "2026-10-03"
 requires: [INFRA_01]
 see_also: [BE_02, BE_03]
 ---
@@ -13,7 +13,7 @@ see_also: [BE_02, BE_03]
 
 # [BE] Project structure & module anatomy
 
-`P1` · `BE_01` · `stable` · `updated 2026-09-28`
+`P1` · `BE_01` · `stable` · `updated 2026-10-03`
 
 **Open when:** you are adding a module, or you do not know where a backend file belongs.
 
@@ -28,7 +28,7 @@ If you read nothing else:
 3. <a id="R3"></a>A module's only top-level directories are `domain/`, `application/`, `infrastructure/`, `presentation/`. Create one when it has a file, not before.
 4. <a id="R4"></a>Every module declares its Nest module in `<name>.module.ts` and its public surface in `index.ts`, both at the module root.
 5. <a id="R5"></a>Inside a layer, group files by the role they play, using the role folders in the tree under [R3](#R3) and no others.
-6. <a id="R6"></a>Suffix every file under `modules/` with its role — `.use-case.ts`, `.controller.ts`, `.port.ts`, `.adapter.ts`, `.repository.ts`, `.entity.ts`, `.vo.ts`, `.mapper.ts`, `.errors.ts`, `.dto.ts`, `.module.ts`, `.service.ts`, `.store.ts`, `.query.ts`, `.record.ts`, `.types.ts`, `.schema.ts`, `.query-port.ts`.
+6. <a id="R6"></a>Suffix every file under `modules/` with its role — `.use-case.ts`, `.controller.ts`, `.port.ts`, `.adapter.ts`, `.repository.ts`, `.entity.ts`, `.vo.ts`, `.mapper.ts`, `.errors.ts`, `.dto.ts`, `.module.ts`, `.service.ts`, `.store.ts`, `.query.ts`, `.record.ts`, `.types.ts`, `.schema.ts`, `.query-port.ts`. Name every injected dependency after its type, so the role shows where it is used too.
 7. <a id="R7"></a>Split a module into submodules under one context directory when it owns a second aggregate; concepts both submodules need live in `<context>/shared/domain/`.
 8. <a id="R8"></a>Put a module's concept in `shared/` only when a second module already imports it — the cross-cutting pieces [R1](#R1) lists belong there from the start — and in `infrastructure/` only when it wraps a provider rather than a business capability.
 9. <a id="R9"></a>Import across a module boundary through the app's path alias, never by `../` out of your own module; what you may import is [BE_03](../index.html#BE_03)'s.
@@ -100,7 +100,29 @@ domain/helpers.ts                   // a drawer, not a role
 infrastructure/index.ts             // an internal barrel (GEN_07#R6)
 ```
 
-**Enforcement:** partly automated — the architecture check ([INFRA_06](../index.html#INFRA_06)) rejects a file under `modules/` without a role suffix, but only when someone runs it; putting it in a pipeline is [INFRA_09](../index.html#INFRA_09)'s.
+The same role has to survive the trip into the code that uses the file. A constructor parameter or factory argument takes its type's name in camelCase, suffix included, so `this.signOutUseCase.execute()` says which layer it calls. A shortened name, such as `this.signOut`, reads like a method of the class itself and hides the dependency. A type without a role, such as a library instance, keeps its plain name.
+
+**Do**
+
+```
+constructor(
+  private readonly signOutUseCase: SignOutUseCase,
+  private readonly identityPort: IdentityPort,
+  private readonly idGenerator: IdGenerator,
+) {}
+```
+
+**Don't**
+
+```
+constructor(
+  private readonly signOut: SignOutUseCase, // a method name, not a dependency
+  private readonly identity: IdentityPort,  // which role?
+  private readonly ids: IdGenerator,
+) {}
+```
+
+**Enforcement:** partly automated — the architecture check ([INFRA_06](../index.html#INFRA_06)) rejects a file under `modules/` without a role suffix, but only when someone runs it; putting it in a pipeline is [INFRA_09](../index.html#INFRA_09)'s. Dependency names are review.
 
 ### [R7](#R7) Submodules and the shared kernel
 
@@ -162,7 +184,7 @@ When billing later grows its own aggregate, the directory becomes `modules/subsc
 - Module directory named after the capability, in glossary words ([R2](#R2), [GEN_14](../index.html#GEN_14)).
 - Only the four layer directories, each with at least one file ([R3](#R3)).
 - `<name>.module.ts` and `index.ts` exist at the module root ([R4](#R4)).
-- Every file is in a role folder and carries its role suffix ([R5](#R5), [R6](#R6)).
+- Every file is in a role folder and carries its role suffix, and every injected dependency is named after its type ([R5](#R5), [R6](#R6)).
 - A second aggregate became a submodule; shared concepts sit in the context's `shared/domain/` ([R7](#R7)).
 - No import reaches into another module by relative path ([R9](#R9)).
 - The new module ships a full vertical slice with tests ([R10](#R10)).

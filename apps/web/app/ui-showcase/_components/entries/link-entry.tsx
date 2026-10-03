@@ -3,6 +3,7 @@ import {
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
 import { Link } from '@/components/atoms/link';
+import { ROUTES } from '@/lib/routes.constant';
 
 const USAGE = `import { Link } from '@/components/atoms/link';
 
@@ -54,15 +55,15 @@ export function LinkEntry() {
       ]}
     >
       <StateCell label="Default" hint="Hover it">
-        <Link href="/ui-showcase/tokens">Design tokens</Link>
+        <Link href={ROUTES.uiShowcase.tokens}>Design tokens</Link>
       </StateCell>
       <StateCell label="Always underlined">
-        <Link href="/ui-showcase/tokens" underline="always">
+        <Link href={ROUTES.uiShowcase.tokens} underline="always">
           Design tokens
         </Link>
       </StateCell>
       <StateCell label="Focused">
-        <Link href="/ui-showcase/tokens" data-focus-preview>
+        <Link href={ROUTES.uiShowcase.tokens} data-focus-preview>
           Design tokens
         </Link>
       </StateCell>
@@ -76,5 +77,5 @@ export function LinkEntry() {
 }
 
 export function LinkPreview() {
-  return <Link href="/ui-showcase">Privacy Policy</Link>;
+  return <Link href={ROUTES.uiShowcase.index}>Privacy Policy</Link>;
 }

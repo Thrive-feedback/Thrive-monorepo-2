@@ -21,6 +21,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/sessions/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start signing in with Google */
+        post: operations["SessionController_startGoogleSignIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sessions/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read who the caller is signed in as, without changing anything */
+        get: operations["SessionController_getCurrentSession"];
+        put?: never;
+        post?: never;
+        /** Sign out of the current session */
+        delete: operations["SessionController_signOut"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sessions/current/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Push the current session forward and reissue its cookie */
+        post: operations["SessionController_refreshSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -28,6 +80,18 @@ export interface components {
         HealthResponseDto_Output: {
             /** @enum {string} */
             status: "ok";
+        };
+        StartGoogleSignInResponseDto_Output: {
+            /** Format: uri */
+            url: string;
+        };
+        GetCurrentSessionResponseDto_Output: {
+            account: {
+                /** Format: email */
+                email: string;
+                name: string;
+            } | null;
+            needsRefresh: boolean;
         };
     };
     responses: never;
@@ -54,6 +118,87 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HealthResponseDto_Output"];
                 };
+            };
+        };
+    };
+    SessionController_startGoogleSignIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StartGoogleSignInResponseDto_Output"];
+                };
+            };
+        };
+    };
+    SessionController_getCurrentSession: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetCurrentSessionResponseDto_Output"];
+                };
+            };
+        };
+    };
+    SessionController_signOut: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SessionController_refreshSession: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

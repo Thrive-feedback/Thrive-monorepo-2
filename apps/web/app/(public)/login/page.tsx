@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { ROUTES } from '@/lib/routes.constant';
+import { readSession } from '@/lib/session/session.service';
 import { SignInPrompt } from './_components/sign-in-prompt';
+import { LoginSearchParams } from './_lib/login-search-params.schema';
 
 const title = 'Are you ready to Thrive?';
 const description = 'Sign in to Thrive with your Google account.';
@@ -18,6 +22,16 @@ export const metadata: Metadata = {
   openGraph: { title, description },
 };
 
-export default function LoginPage() {
-  return <SignInPrompt />;
+type LoginPageProps = {
+  /** Better Auth sends a failed attempt back here with `?error=<code>`. */
+  searchParams: Promise<{ error?: string | string[] }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  if (await readSession()) {
+    redirect(ROUTES.home);
+  }
+  const { error } = LoginSearchParams.parse(await searchParams);
+
+  return <SignInPrompt didSignInFail={error !== undefined} />;
 }

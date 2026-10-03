@@ -36,6 +36,18 @@
       "cache": false,
       "env": ["DATABASE_MIGRATION_URL"]
     },
+    "db:reset": {
+      "cache": false,
+      "env": ["DATABASE_MIGRATION_URL"]
+    },
+    "db:drop": {
+      "cache": false,
+      "env": ["DATABASE_MIGRATION_URL"]
+    },
+    "auth:generate": {
+      "cache": false,
+      "dependsOn": ["db:generate"]
+    },
     "test:integration": {
       "dependsOn": ["^build", "db:generate"],
       "env": ["NODE_ENV", "PORT"]

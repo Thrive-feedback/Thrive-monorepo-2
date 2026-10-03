@@ -41,6 +41,11 @@
     },
     {
       "includes": ["apps/api/**"],
+      "javascript": {
+        "parser": {
+          "unsafeParameterDecoratorsEnabled": true
+        }
+      },
       "linter": {
         "domains": {
           "test": "recommended"
