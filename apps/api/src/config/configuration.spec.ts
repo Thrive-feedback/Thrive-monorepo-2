@@ -9,6 +9,10 @@ function parseOrigins(value: string): readonly string[] | undefined {
   const parsed = environmentSchema.safeParse({
     DATABASE_URL: LOCAL_POSTGRES_URL,
     CORS_ALLOWED_ORIGINS: value,
+    BETTER_AUTH_SECRET: 'a'.repeat(32),
+    BETTER_AUTH_URL: 'http://localhost:3001',
+    GOOGLE_CLIENT_ID: 'client-id.apps.googleusercontent.com',
+    GOOGLE_CLIENT_SECRET: 'client-secret',
   });
 
   return parsed.success ? parsed.data.CORS_ALLOWED_ORIGINS : undefined;
