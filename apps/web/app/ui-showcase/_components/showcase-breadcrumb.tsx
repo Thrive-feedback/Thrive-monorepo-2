@@ -1,4 +1,5 @@
 import { Link } from '@/components/atoms/link';
+import { ROUTES } from '@/lib/routes.constant';
 
 export type ShowcaseBreadcrumbProps = {
   current: string;
@@ -10,7 +11,7 @@ export function ShowcaseBreadcrumb({ current }: ShowcaseBreadcrumbProps) {
     <nav aria-label="Breadcrumb">
       <ol className="flex items-center gap-2 text-body2">
         <li>
-          <Link href="/ui-showcase">Index</Link>
+          <Link href={ROUTES.uiShowcase.index}>Index</Link>
         </li>
         <li aria-hidden="true" className="text-foreground-muted">
           /

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { TextField } from '@/components/molecules/text-field';
+import { ROUTES } from '@/lib/routes.constant';
 import { type TeamSize, TeamSizeOptions } from './team-size-options';
 
 /** Create is disabled until the Workspace has a name; a name of only spaces is no name. */
@@ -21,7 +22,7 @@ export function CreateWorkspaceForm() {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     // TODO(kritpavin, #72): save the Workspace before moving on.
     event.preventDefault();
-    router.push('/register/invite-teammates');
+    router.push(ROUTES.register.inviteTeammates);
   }
 
   return (

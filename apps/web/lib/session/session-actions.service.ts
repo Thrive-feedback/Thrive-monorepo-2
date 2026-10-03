@@ -4,6 +4,7 @@ import { unwrap } from '@repo/api';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { apiClient } from '@/lib/api-client.service';
+import { ROUTES } from '@/lib/routes.constant';
 import { parseSetCookie } from './set-cookie.util';
 
 /**
@@ -49,5 +50,5 @@ export async function signOut(): Promise<void> {
     params: { header: { cookie } },
   });
   await forwardCookies(result.response);
-  redirect('/login');
+  redirect(ROUTES.login);
 }

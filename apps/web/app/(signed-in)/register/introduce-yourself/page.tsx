@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
+import { ROUTES } from '@/lib/routes.constant';
 import { readSession } from '@/lib/session/session.service';
 import { IntroduceYourselfCard } from './_components/introduce-yourself-card';
 import { IntroduceYourselfHero } from './_components/introduce-yourself-hero';
@@ -26,7 +27,7 @@ export default async function IntroduceYourselfPage({
 }: IntroduceYourselfPageProps) {
   const session = await readSession();
   if (!session) {
-    redirect('/login');
+    redirect(ROUTES.login);
   }
   const { signedIn } = IntroduceYourselfSearchParams.parse(await searchParams);
 
@@ -36,7 +37,7 @@ export default async function IntroduceYourselfPage({
         <OneTimeToast
           type="success"
           message={`Signed in as ${session.email}`}
-          then="/register/introduce-yourself"
+          then={ROUTES.register.introduceYourself}
         />
       )}
       <IntroduceYourselfHero />

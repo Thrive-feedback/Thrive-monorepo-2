@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { ROUTES } from '@/lib/routes.constant';
 import { readSession } from '@/lib/session/session.service';
 import { CreateWorkspaceCard } from './_components/create-workspace-card';
 import { CreateWorkspaceHero } from './_components/create-workspace-hero';
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 export default async function CreateWorkspacePage() {
   const session = await readSession();
   if (!session) {
-    redirect('/login');
+    redirect(ROUTES.login);
   }
 
   return (

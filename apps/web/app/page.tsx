@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { apiBaseUrl } from '@/lib/api-base-url.util';
+import { ROUTES } from '@/lib/routes.constant';
 
 /**
  * The public landing route, deliberately empty of product: nothing is built ahead of the
@@ -20,7 +21,7 @@ export default function Landing() {
       <Text tone="muted">Ask for, give and act on feedback.</Text>
       <div className="flex flex-wrap gap-3">
         <Button asChild variant="primary" size="sm" className="w-fit">
-          <Link href="/ui-showcase">See the components</Link>
+          <Link href={ROUTES.uiShowcase.index}>See the components</Link>
         </Button>
         {/* Another origin, so a plain link: Next's `Link` is for this app's own routes. */}
         <Button asChild size="sm" className="w-fit">

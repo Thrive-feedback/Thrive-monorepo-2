@@ -4,6 +4,7 @@ import {
 } from '@/app/ui-showcase/_components/showcase-entry';
 import { Link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
+import { ROUTES } from '@/lib/routes.constant';
 
 const USAGE = `import { Text } from '@/components/atoms/text';
 
@@ -92,7 +93,7 @@ export function TextEntry() {
         <Text tone="danger">Danger</Text>
       </StateCell>
       <StateCell label="Every style" hint="Specs on the tokens page">
-        <Link href="/ui-showcase/tokens">See the type scale</Link>
+        <Link href={ROUTES.uiShowcase.tokens}>See the type scale</Link>
       </StateCell>
     </ShowcaseEntry>
   );
