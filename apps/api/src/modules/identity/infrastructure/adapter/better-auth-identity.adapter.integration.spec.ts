@@ -100,6 +100,26 @@ describe('Better Auth identity, through the port', () => {
     });
   });
 
+  it('refreshing makes the cookie expire when the session in the database does', async () => {
+    const { session, credential } = await aSignedInAccount();
+    await ageSession(session.id, 2);
+
+    const refreshedAt = Date.now();
+    const { sessionCookies } = await identityPort.refreshSession(credential);
+
+    const sessionCookie = sessionCookies.find((c) =>
+      c.startsWith('thrive.session_token='),
+    );
+    const maxAgeSeconds = Number(
+      /Max-Age=(\d+)/.exec(sessionCookie ?? '')?.[1],
+    );
+    const cookieExpiresAt = refreshedAt + maxAgeSeconds * 1000;
+    const sessionExpiresAt = (await storedExpiry(session.id))?.getTime() ?? 0;
+    // The browser starts counting Max-Age when the response arrives, so the two can only
+    // differ by the time the request took.
+    expect(Math.abs(cookieExpiresAt - sessionExpiresAt)).toBeLessThan(5_000);
+  });
+
   it('ends the session and returns a clearing cookie', async () => {
     const { session, credential } = await aSignedInAccount();
 
