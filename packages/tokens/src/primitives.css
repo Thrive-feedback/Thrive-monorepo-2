@@ -204,3 +204,27 @@
   --measure-2xl: 42rem;
   --measure-5xl: 64rem;
 }
+
+/*
+ * What `--family-sans` shows until Google Sans has downloaded: Arial, resized so its letters take
+ * the same width and its lines the same height as Google Sans. Without it the page is laid out
+ * in a system font of a different size and every line moves when Google Sans swaps in.
+ *
+ * Next.js builds this face itself for the Google fonts it has measurements for, and it has none
+ * for Google Sans, so the root layout names this face as Google Sans's fallback instead. The
+ * name is the contract between the two files.
+ *
+ * The values are measured from the latin Google Sans file Next.js downloads (regular weight,
+ * 1000 units per em: ascent 966, descent 286, no line gap) with the formula Next.js uses for a
+ * local font — average width of a letter-frequency sample against Arial's for `size-adjust`,
+ * then each vertical metric divided by that scale. Re-measure them if Google Fonts ships a new
+ * version.
+ */
+@font-face {
+  font-family: 'Google Sans Fallback';
+  src: local('Arial');
+  ascent-override: 95.12%;
+  descent-override: 28.16%;
+  line-gap-override: 0%;
+  size-adjust: 101.55%;
+}
