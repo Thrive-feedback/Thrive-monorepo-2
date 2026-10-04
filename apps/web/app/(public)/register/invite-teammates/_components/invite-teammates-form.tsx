@@ -2,19 +2,26 @@
 
 import { PlusIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
   checkInviteEmail,
   checkInviteEmails,
+  type InviteEmailProblem,
 } from '@/app/(public)/register/invite-teammates/_lib/invite-emails.util';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { InviteEmailRow } from './invite-email-row';
 
-type Row = { id: number; value: string; errorMessage?: string };
+type Row = { id: number; value: string; problem?: InviteEmailProblem };
 
 const STARTING_ROW_COUNT = 1;
+
+const PROBLEM_MESSAGES = {
+  malformed: 'malformedEmail',
+  personal: 'personalEmail',
+} as const satisfies Record<InviteEmailProblem, string>;
 
 /**
  * A row's address is checked when the person leaves it, and every row again on Send. Editing a
@@ -28,6 +35,7 @@ const STARTING_ROW_COUNT = 1;
  * layout, so the toast outlives this route.
  */
 export function InviteTeammatesForm() {
+  const t = useTranslations('InviteTeammates');
   const router = useRouter();
   const nextId = useRef(STARTING_ROW_COUNT);
   const inputs = useRef(new Map<number, HTMLInputElement>());
@@ -54,9 +62,7 @@ export function InviteTeammatesForm() {
   function handleRowBlur(id: number) {
     setRows((current) =>
       current.map((row) =>
-        row.id === id
-          ? { ...row, errorMessage: checkInviteEmail(row.value) }
-          : row,
+        row.id === id ? { ...row, problem: checkInviteEmail(row.value) } : row,
       ),
     );
   }
@@ -82,16 +88,17 @@ export function InviteTeammatesForm() {
       setRows(
         rows.map((row, index) => ({
           ...row,
-          errorMessage: check.errors[index],
+          problem: check.problems[index],
         })),
       );
-      const firstFlagged = rows.find((_, index) => check.errors[index]);
+      const firstFlagged = rows.find((_, index) => check.problems[index]);
       setFocusRowId(firstFlagged?.id ?? null);
       return;
     }
     // TODO(kritpavin, #73): send the Invitations. Nothing is sent or stored yet.
-    toast.success('Invitations sent', {
-      description: invitedCount(check.emails.length),
+    // A count, never the addresses: a toast is easily read over a shoulder.
+    toast.success(t('sent'), {
+      description: t('sentCount', { count: check.emails.length }),
     });
     router.push('/');
   }
@@ -104,7 +111,7 @@ export function InviteTeammatesForm() {
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
       <fieldset className="flex flex-col gap-3">
         <Text as="legend" variant="subtitle4" className="mb-2">
-          Email address
+          {t('emailAddress')}
         </Text>
         {/* Scrolls past about five rows. The padding, offset by the negative margin, keeps a
             focused field's ring inside the area instead of clipped at its edge. */}
@@ -119,9 +126,10 @@ export function InviteTeammatesForm() {
                   inputs.current.delete(row.id);
                 }
               }}
-              label={`Email address ${index + 1}`}
+              label={t('emailAddressRow', { number: index + 1 })}
+              removeLabel={t('removeEmailAddressRow', { number: index + 1 })}
               value={row.value}
-              errorMessage={row.errorMessage}
+              errorMessage={row.problem && t(PROBLEM_MESSAGES[row.problem])}
               isRemovable={rows.length > 1}
               onChange={(value) => handleRowChange(row.id, value)}
               onBlur={() => handleRowBlur(row.id)}
@@ -136,7 +144,7 @@ export function InviteTeammatesForm() {
           onClick={handleAddRow}
         >
           <PlusIcon aria-hidden="true" className="size-4" />
-          Add another
+          {t('addAnother')}
         </Button>
       </fieldset>
       <Button
@@ -145,18 +153,11 @@ export function InviteTeammatesForm() {
         disabled={!hasAnyEmail}
         className="mt-2 w-full"
       >
-        Send invites &amp; Done
+        {t('sendAndDone')}
       </Button>
       <Button variant="secondary" className="w-full" onClick={handleSkip}>
-        Skip &amp; Done
+        {t('skipAndDone')}
       </Button>
     </form>
   );
-}
-
-/** A count, never the addresses: a toast is easily read over a shoulder. */
-function invitedCount(count: number): string {
-  return count === 1
-    ? 'We invited 1 teammate.'
-    : `We invited ${count} teammates.`;
 }

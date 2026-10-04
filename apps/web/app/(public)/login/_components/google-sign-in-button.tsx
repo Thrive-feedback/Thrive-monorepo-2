@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { Button, type ButtonProps } from '@/components/atoms/button';
 import { cn } from '@/lib/cn.util';
 
@@ -19,6 +20,8 @@ export function GoogleSignInButton({
   className,
   ...rest
 }: GoogleSignInButtonProps) {
+  const t = useTranslations('Login');
+
   return (
     <Button className={cn('w-full', className)} {...rest}>
       {/* `width` and `height` only reserve space; `size-5` sets the rendered size. */}
@@ -29,7 +32,7 @@ export function GoogleSignInButton({
         height={20}
         className="size-5"
       />
-      Continue with Google
+      {t('continueWithGoogle')}
     </Button>
   );
 }

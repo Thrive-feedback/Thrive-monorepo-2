@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { renderWithIntl } from '@/lib/test/render-with-intl';
 import { IntroduceYourselfCard } from './introduce-yourself-card';
 
 vi.mock('@/app/(public)/_lib/mock-session.service', () => ({
@@ -9,7 +10,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 describe('IntroduceYourselfCard', () => {
   it('says who is signed in and offers a way out', () => {
-    render(<IntroduceYourselfCard email="tony@stark.com" />);
+    renderWithIntl(<IntroduceYourselfCard email="tony@stark.com" />);
 
     expect(
       screen.getByRole('heading', { level: 2, name: 'Introduce yourself' }),

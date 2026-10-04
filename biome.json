@@ -22,6 +22,25 @@
       }
     },
     {
+      "includes": [
+        "apps/web/**/*.tsx",
+        "!apps/web/**/*.test.tsx",
+        "!apps/web/app/ui-showcase/**"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noJsxLiterals": {
+              "level": "error",
+              "options": {
+                "allowedStrings": ["*"]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/ui/**"],
       "linter": {
         "domains": {

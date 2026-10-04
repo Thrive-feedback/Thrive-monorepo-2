@@ -1,0 +1,85 @@
+{
+  "Metadata": {
+    "title": "Thrive",
+    "description": "ขอฟีดแบ็ก ให้ฟีดแบ็ก และนำไปลงมือทำ"
+  },
+  "LanguageSwitch": {
+    "label": "ภาษา",
+    "en": "English",
+    "th": "ไทย"
+  },
+  "Logo": {
+    "alt": "Thrive"
+  },
+  "SiteFooter": {
+    "terms": "ข้อกำหนดและเงื่อนไข",
+    "privacy": "นโยบายความเป็นส่วนตัว",
+    "copyright": "©{year} Thrive สงวนลิขสิทธิ์"
+  },
+  "Home": {
+    "heading": "Thrive",
+    "tagline": "ขอฟีดแบ็ก ให้ฟีดแบ็ก และนำไปลงมือทำ",
+    "seeComponents": "ดูคอมโพเนนต์"
+  },
+  "Login": {
+    "title": "พร้อมจะ Thrive แล้วหรือยัง?",
+    "description": "ลงชื่อเข้าใช้ Thrive ด้วยบัญชี Google ของคุณ",
+    "prompt": "ลงชื่อเข้าใช้หรือสมัครใช้งาน",
+    "continueWithGoogle": "ดำเนินการต่อด้วย Google"
+  },
+  "WorkspaceSetup": {
+    "stepCount": "ขั้นตอนที่ {current} / {total}",
+    "stepCountSpoken": "ขั้นตอนที่ {current} จาก {total}"
+  },
+  "IntroduceYourself": {
+    "title": "แนะนำตัว",
+    "heading": "มาทำความรู้จักกันอย่างเป็นทางการ",
+    "intro": "เรากำลังเตรียมโต๊ะทำงานของคุณให้เรียบร้อย ขอทราบหน่อยได้ไหมว่าอยากให้ทีมรู้จักคุณในชื่ออะไร",
+    "signedInAs": "ลงชื่อเข้าใช้ในชื่อ <account>{email}</account>",
+    "notYou": "ไม่ใช่คุณใช่ไหม?",
+    "fullName": "ชื่อ-นามสกุล",
+    "fullNamePlaceholder": "กรอกชื่อของคุณ",
+    "displayName": "ให้เราเรียกคุณว่าอะไรดี?",
+    "displayNamePlaceholder": "เช่น ต้น, พี่มด, Tony",
+    "displayNameHelp": "ชื่อนี้จะแสดงให้คนอื่นในระบบเห็น",
+    "saveAndContinue": "บันทึกและดำเนินการต่อ"
+  },
+  "CreateWorkspace": {
+    "title": "สร้าง Workspace",
+    "heading": "ยินดีต้อนรับ! มาเตรียมบ้านของทีมคุณกัน",
+    "intro": "ตั้งชื่อ Workspace ใหม่ของคุณ<br></br>คุณจะเชิญทีมได้ในขั้นตอนถัดไป",
+    "workspaceName": "ชื่อ Workspace",
+    "workspaceNamePlaceholder": "เช่น Acme Corp, Dream Team",
+    "teamSize": "ขนาดทีม (ไม่บังคับ)",
+    "teamSizeJustMe": "แค่ฉันคนเดียว",
+    "teamSizeRange": "{min, number}–{max, number}",
+    "teamSizeAtLeast": "{min, number}+",
+    "create": "สร้าง Workspace"
+  },
+  "InviteTeammates": {
+    "title": "เชิญเพื่อนร่วมทีม",
+    "heading": "Thrive ดีกว่าเมื่อไปด้วยกัน",
+    "intro": "วันนี้ใครสมควรได้รับคำชมบ้าง? เชิญพวกเขาเข้ามาเลย",
+    "emailAddress": "อีเมล",
+    "emailAddressRow": "อีเมล {number}",
+    "removeEmailAddressRow": "ลบอีเมล {number}",
+    "emailPlaceholder": "name@company.com",
+    "addAnother": "เพิ่มอีก",
+    "sendAndDone": "ส่งคำเชิญและเสร็จสิ้น",
+    "skipAndDone": "ข้ามและเสร็จสิ้น",
+    "sent": "ส่งคำเชิญแล้ว",
+    "sentCount": "{count, plural, other {เชิญเพื่อนร่วมทีมแล้ว # คน}}",
+    "malformedEmail": "กรอกอีเมลให้ถูกต้อง",
+    "personalEmail": "ใช้อีเมลบริษัท Gmail ส่วนตัวลงชื่อเข้าใช้ Thrive ไม่ได้"
+  },
+  "Link": {
+    "opensInNewTab": "(เปิดในแท็บใหม่)"
+  },
+  "Spinner": {
+    "label": "กำลังโหลด"
+  },
+  "Toaster": {
+    "region": "การแจ้งเตือน",
+    "close": "ปิดการแจ้งเตือน"
+  }
+}

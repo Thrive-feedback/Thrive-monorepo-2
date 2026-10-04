@@ -1,8 +1,9 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Toaster } from '@/components/atoms/toaster';
+import { renderWithIntl } from '@/lib/test/render-with-intl';
 import { InviteTeammatesForm } from './invite-teammates-form';
 
 const push = vi.fn();
@@ -32,7 +33,7 @@ describe('InviteTeammatesForm', () => {
   });
 
   it('opens with one empty Email address field', () => {
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
 
     expect(emailFields()).toHaveLength(1);
     expect(emailField(1)).toHaveValue('');
@@ -40,7 +41,7 @@ describe('InviteTeammatesForm', () => {
 
   it('adds one more field with Add another, and focuses it', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
 
     await user.click(button('Add another'));
 
@@ -50,7 +51,7 @@ describe('InviteTeammatesForm', () => {
 
   it('removes any field, moving focus to the one that takes its place', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
     await user.type(emailField(1), 'pepper@stark.com');
     await user.click(button('Add another'));
     await user.type(emailField(2), 'happy@stark.com');
@@ -63,7 +64,7 @@ describe('InviteTeammatesForm', () => {
   });
 
   it('keeps the last field', () => {
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
 
     expect(
       screen.queryByRole('button', { name: /^Remove/ }),
@@ -72,7 +73,7 @@ describe('InviteTeammatesForm', () => {
 
   it('flags a malformed address under its field, sends nothing and focuses it', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
     await user.type(emailField(1), 'pepper@stark.com');
     await user.click(button('Add another'));
     await user.type(emailField(2), 'happy');
@@ -90,7 +91,7 @@ describe('InviteTeammatesForm', () => {
 
   it('flags a personal Gmail address, which could never sign in', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
     await user.type(emailField(1), 'tony@gmail.com');
 
     await user.click(button('Send invites & Done'));
@@ -102,7 +103,7 @@ describe('InviteTeammatesForm', () => {
 
   it('checks the format as soon as the field is left', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
     await user.type(emailField(1), 'happy');
 
     expect(emailField(1)).not.toHaveAttribute('aria-invalid');
@@ -117,7 +118,7 @@ describe('InviteTeammatesForm', () => {
 
   it('does not flag an empty field when it is left', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
 
     await user.click(emailField(1));
     await user.tab();
@@ -127,7 +128,7 @@ describe('InviteTeammatesForm', () => {
 
   it('clears a field’s flag once it is edited', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
     await user.type(emailField(1), 'happy');
     await user.click(button('Send invites & Done'));
 
@@ -138,7 +139,7 @@ describe('InviteTeammatesForm', () => {
 
   it('disables Send invites & Done until a field holds an address', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
 
     expect(button('Send invites & Done')).toBeDisabled();
 
@@ -154,7 +155,7 @@ describe('InviteTeammatesForm', () => {
 
   it('toasts how many were invited and goes Home, ignoring empty fields and merging duplicates', async () => {
     const user = userEvent.setup();
-    render(
+    renderWithIntl(
       <>
         <Toaster />
         <InviteTeammatesForm />
@@ -177,7 +178,7 @@ describe('InviteTeammatesForm', () => {
 
   it('goes Home on Skip & Done', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    renderWithIntl(<InviteTeammatesForm />);
 
     await user.click(button('Skip & Done'));
 

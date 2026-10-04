@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { TextField } from '@/components/molecules/text-field';
@@ -14,6 +15,7 @@ function firstWord(value: string): string {
  * from then on it is theirs, even if they clear it.
  */
 export function IntroduceYourselfForm() {
+  const t = useTranslations('IntroduceYourself');
   const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -42,20 +44,20 @@ export function IntroduceYourselfForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <TextField
-        label="Full Name"
+        label={t('fullName')}
         name="fullName"
         autoComplete="name"
-        placeholder="Enter your name"
+        placeholder={t('fullNamePlaceholder')}
         required
         value={fullName}
         onChange={handleFullNameChange}
       />
       <TextField
-        label="What should we call you?"
+        label={t('displayName')}
         name="displayName"
         autoComplete="nickname"
-        placeholder="e.g. Ton, P'Mod, Tony"
-        helperText="This is how your name will show up in the system."
+        placeholder={t('displayNamePlaceholder')}
+        helperText={t('displayNameHelp')}
         required
         value={displayName}
         onChange={handleDisplayNameChange}
@@ -66,7 +68,7 @@ export function IntroduceYourselfForm() {
         disabled={!canContinue}
         className="mt-2 w-full"
       >
-        Save &amp; Continue
+        {t('saveAndContinue')}
       </Button>
     </form>
   );

@@ -1,14 +1,18 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { readMockAccount } from '@/app/(public)/_lib/mock-session.service';
 import { InviteTeammatesCard } from './_components/invite-teammates-card';
 import { InviteTeammatesHero } from './_components/invite-teammates-hero';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
-export const metadata: Metadata = {
-  title: 'Invite your teammates',
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('InviteTeammates');
+  return {
+    title: t('title'),
+    robots: { index: false, follow: false },
+  };
+}
 
 /**
  * The check is in the page, not a layout, because a layout does not re-run when the client
