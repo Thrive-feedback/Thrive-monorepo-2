@@ -80,9 +80,9 @@ function authOptions(
         prompt: 'select_account',
       },
     },
-    // Better Auth's tables keep its own names (`user`, `account`, …): it resolves a model
+    // Better Auth's models keep its own names (`user`, `account`, …): it resolves a model
     // by those names before any rename, so reusing one for another model breaks lookups.
-    // They are the provider's tables; domain code never names them.
+    // Its tables take the glossary's names instead, through `@@map` (ADR 0027).
     advanced: {
       // Accounts and sessions take their ids from the same source as everything else.
       database: { generateId: () => idGenerator.next() },

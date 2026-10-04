@@ -63,4 +63,4 @@ created by Prisma Migrate like every other table (ADR 0022).
   CLI adds `@better-auth/infra` to the root `package.json`; revert that before committing.
 
 Supersedes: —
-Referenced by: `PROJECT.md` §4, `BE_21`, ADR 0026
+Referenced by: `PROJECT.md` §4, `BE_21`, ADR 0026, ADR 0027

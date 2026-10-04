@@ -21,7 +21,7 @@ model User {
   accounts      Account[]
 
   @@unique([email])
-  @@map("user")
+  @@map("account")
 }
 
 model Session {
@@ -57,7 +57,7 @@ model Account {
   updatedAt             DateTime  @updatedAt
 
   @@index([userId])
-  @@map("account")
+  @@map("sign_in_method")
 }
 
 model Verification {
