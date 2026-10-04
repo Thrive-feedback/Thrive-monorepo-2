@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { TextField } from '@/components/molecules/text-field';
@@ -8,6 +9,7 @@ import { type TeamSize, TeamSizeOptions } from './team-size-options';
 
 /** Create is disabled until the Workspace has a name; a name of only spaces is no name. */
 export function CreateWorkspaceForm() {
+  const t = useTranslations('CreateWorkspace');
   const router = useRouter();
   const [workspaceName, setWorkspaceName] = useState('');
   const [teamSize, setTeamSize] = useState<TeamSize | null>(null);
@@ -27,10 +29,10 @@ export function CreateWorkspaceForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <TextField
-        label="Workspace name"
+        label={t('workspaceName')}
         name="workspaceName"
         autoComplete="organization"
-        placeholder="e.g., Acme Corp, Dream Team"
+        placeholder={t('workspaceNamePlaceholder')}
         required
         value={workspaceName}
         onChange={handleNameChange}
@@ -46,7 +48,7 @@ export function CreateWorkspaceForm() {
         disabled={!canCreate}
         className="mt-2 w-full"
       >
-        Create Workspace
+        {t('create')}
       </Button>
     </form>
   );

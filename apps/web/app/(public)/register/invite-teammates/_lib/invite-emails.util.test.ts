@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  checkInviteEmail,
-  checkInviteEmails,
-  INVITE_EMAIL_MESSAGES,
-} from './invite-emails.util';
+import { checkInviteEmail, checkInviteEmails } from './invite-emails.util';
 
 describe('checkInviteEmails', () => {
   it('ignores empty rows and trims the rest', () => {
@@ -28,7 +24,7 @@ describe('checkInviteEmails', () => {
     (malformed) => {
       expect(checkInviteEmails(['happy@stark.com', malformed])).toEqual({
         ok: false,
-        errors: [undefined, INVITE_EMAIL_MESSAGES.malformed],
+        problems: [undefined, 'malformed'],
       });
     },
   );
@@ -38,7 +34,7 @@ describe('checkInviteEmails', () => {
     (personal) => {
       expect(checkInviteEmails([personal])).toEqual({
         ok: false,
-        errors: [INVITE_EMAIL_MESSAGES.personal],
+        problems: ['personal'],
       });
     },
   );
@@ -51,9 +47,7 @@ describe('checkInviteEmail', () => {
   });
 
   it('flags a malformed address and personal Gmail', () => {
-    expect(checkInviteEmail('pepper@')).toBe(INVITE_EMAIL_MESSAGES.malformed);
-    expect(checkInviteEmail('tony@gmail.com')).toBe(
-      INVITE_EMAIL_MESSAGES.personal,
-    );
+    expect(checkInviteEmail('pepper@')).toBe('malformed');
+    expect(checkInviteEmail('tony@gmail.com')).toBe('personal');
   });
 });

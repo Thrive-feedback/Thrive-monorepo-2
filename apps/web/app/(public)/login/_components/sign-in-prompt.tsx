@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { signIn } from '@/app/(public)/_lib/mock-session.service';
 import { Text } from '@/components/atoms/text';
 import { GoogleSignInButton } from './google-sign-in-button';
@@ -8,14 +9,16 @@ import { GoogleSignInButton } from './google-sign-in-button';
  * heading steps down a display size on narrow screens.
  */
 export function SignInPrompt() {
+  const t = useTranslations('Login');
+
   return (
     <div className="m-auto flex w-full max-w-2xl flex-col items-center gap-8 text-center">
       <div className="flex flex-col gap-3">
         <Text variant="display5" as="h1" className="md:text-display3">
-          Are you ready to Thrive?
+          {t('title')}
         </Text>
         <Text variant="body2" tone="muted">
-          sign in or sign up
+          {t('prompt')}
         </Text>
       </div>
       {/* TODO(kritpavin, #70): sign in with Google once an auth provider is chosen. Until then

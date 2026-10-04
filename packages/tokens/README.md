@@ -44,7 +44,8 @@ Two things are therefore provisional:
    current screens need and no more (`PROJECT.md` §2).
 
 **Type** follows the design's text styles one for one (`docs/adr/0023`, faces in `docs/adr/0025`). **Google Sans** carries
-every role but display and loads from Google Fonts. **Cooper**, the display face, is SIL OFL 1.1,
+every role but display and loads from Google Fonts; it also carries display text in Thai, which
+Cooper has no glyphs for (`docs/adr/0026`). **Cooper**, the display face, is SIL OFL 1.1,
 so it is committed — SemiBold only, the one weight the design uses — with its licence beside it
 in `apps/web/app/_lib/fonts/cooper/`. A new role here needs the same name added to `cn`'s list in
 `apps/web/lib/cn.util.ts`, or `tailwind-merge` will read it as a colour.

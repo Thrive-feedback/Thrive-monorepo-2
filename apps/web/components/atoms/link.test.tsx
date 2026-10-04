@@ -1,10 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { renderWithIntl } from '@/lib/test/render-with-intl';
 import { Link } from './link';
 
 describe('Link', () => {
   it('navigates within the app in the same tab', () => {
-    render(<Link href="/login">Sign in</Link>);
+    renderWithIntl(<Link href="/login">Sign in</Link>);
     const link = screen.getByRole('link', { name: 'Sign in' });
 
     expect(link).toHaveAttribute('href', '/login');
@@ -12,7 +13,7 @@ describe('Link', () => {
   });
 
   it('says when it opens a new tab, and gives the other site no handle on this one', () => {
-    render(
+    renderWithIntl(
       <Link href="https://example.com/terms" external>
         Terms
       </Link>,

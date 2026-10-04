@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { renderWithIntl } from '@/lib/test/render-with-intl';
 import { SignInPrompt } from './sign-in-prompt';
 
 vi.mock('@/app/(public)/_lib/mock-session.service', () => ({
@@ -8,7 +9,7 @@ vi.mock('@/app/(public)/_lib/mock-session.service', () => ({
 
 describe('SignInPrompt', () => {
   it('asks the visitor in and offers the one way in', () => {
-    render(<SignInPrompt />);
+    renderWithIntl(<SignInPrompt />);
 
     expect(
       screen.getByRole('heading', {
@@ -20,5 +21,19 @@ describe('SignInPrompt', () => {
     expect(
       screen.getByRole('button', { name: 'Continue with Google' }),
     ).toHaveAttribute('type', 'submit');
+  });
+
+  it('asks in Thai when the language is Thai', () => {
+    renderWithIntl(<SignInPrompt />, { locale: 'th' });
+
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: 'พร้อมจะ Thrive แล้วหรือยัง?',
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'ดำเนินการต่อด้วย Google' }),
+    ).toBeInTheDocument();
   });
 });

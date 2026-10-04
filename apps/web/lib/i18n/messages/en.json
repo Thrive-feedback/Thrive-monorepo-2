@@ -1,0 +1,85 @@
+{
+  "Metadata": {
+    "title": "Thrive",
+    "description": "Ask for, give and act on feedback."
+  },
+  "LanguageSwitch": {
+    "label": "Language",
+    "en": "English",
+    "th": "ไทย"
+  },
+  "Logo": {
+    "alt": "Thrive"
+  },
+  "SiteFooter": {
+    "terms": "Terms and Conditions",
+    "privacy": "Privacy Policy",
+    "copyright": "©{year} Thrive All rights reserved"
+  },
+  "Home": {
+    "heading": "Thrive",
+    "tagline": "Ask for, give and act on feedback.",
+    "seeComponents": "See the components"
+  },
+  "Login": {
+    "title": "Are you ready to Thrive?",
+    "description": "Sign in to Thrive with your Google account.",
+    "prompt": "sign in or sign up",
+    "continueWithGoogle": "Continue with Google"
+  },
+  "WorkspaceSetup": {
+    "stepCount": "Step {current} / {total}",
+    "stepCountSpoken": "Step {current} of {total}"
+  },
+  "IntroduceYourself": {
+    "title": "Introduce yourself",
+    "heading": "Let’s make it official.",
+    "intro": "I’m putting the finishing touches on your desk. May I ask how you would like to be introduced to the team?",
+    "signedInAs": "Signed in as <account>{email}</account>",
+    "notYou": "Not you?",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your name",
+    "displayName": "What should we call you?",
+    "displayNamePlaceholder": "e.g. Ton, P'Mod, Tony",
+    "displayNameHelp": "This is how your name will show up in the system.",
+    "saveAndContinue": "Save & Continue"
+  },
+  "CreateWorkspace": {
+    "title": "Create a Workspace",
+    "heading": "Welcome! Let’s set up your team’s home.",
+    "intro": "Give your new Workspace a name.<br></br>You can invite your team in the next step.",
+    "workspaceName": "Workspace name",
+    "workspaceNamePlaceholder": "e.g., Acme Corp, Dream Team",
+    "teamSize": "Team size (optional)",
+    "teamSizeJustMe": "Just me",
+    "teamSizeRange": "{min, number}–{max, number}",
+    "teamSizeAtLeast": "{min, number}+",
+    "create": "Create Workspace"
+  },
+  "InviteTeammates": {
+    "title": "Invite your teammates",
+    "heading": "Thrive is better together",
+    "intro": "Who else deserves a kudo today? Invite them in.",
+    "emailAddress": "Email address",
+    "emailAddressRow": "Email address {number}",
+    "removeEmailAddressRow": "Remove email address {number}",
+    "emailPlaceholder": "name@company.com",
+    "addAnother": "Add another",
+    "sendAndDone": "Send invites & Done",
+    "skipAndDone": "Skip & Done",
+    "sent": "Invitations sent",
+    "sentCount": "{count, plural, one {We invited # teammate.} other {We invited # teammates.}}",
+    "malformedEmail": "Enter a valid email address.",
+    "personalEmail": "Use a company email. Personal Gmail can’t sign in to Thrive."
+  },
+  "Link": {
+    "opensInNewTab": "(opens in a new tab)"
+  },
+  "Spinner": {
+    "label": "Loading"
+  },
+  "Toaster": {
+    "region": "Notifications",
+    "close": "Close notification"
+  }
+}

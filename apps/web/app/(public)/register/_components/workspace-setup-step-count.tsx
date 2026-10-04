@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { Text } from '@/components/atoms/text';
 
 const STEPS = ['create-workspace', 'invite-teammates'] as const;
@@ -12,16 +13,14 @@ export type WorkspaceSetupStepCountProps = {
 export function WorkspaceSetupStepCount({
   currentStep,
 }: WorkspaceSetupStepCountProps) {
+  const t = useTranslations('WorkspaceSetup');
   const position = STEPS.indexOf(currentStep) + 1;
+  const count = { current: position, total: STEPS.length };
 
   return (
     <Text as="p" variant="display6">
-      <span aria-hidden="true">
-        Step {position} / {STEPS.length}
-      </span>
-      <span className="sr-only">
-        Step {position} of {STEPS.length}
-      </span>
+      <span aria-hidden="true">{t('stepCount', count)}</span>
+      <span className="sr-only">{t('stepCountSpoken', count)}</span>
     </Text>
   );
 }

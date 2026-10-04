@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { renderWithIntl } from '@/lib/test/render-with-intl';
 import { IntroduceYourselfForm } from './introduce-yourself-form';
 
 const push = vi.fn();
@@ -18,7 +19,7 @@ function fields() {
 
 describe('IntroduceYourselfForm', () => {
   it('asks for both names, and both are required', () => {
-    render(<IntroduceYourselfForm />);
+    renderWithIntl(<IntroduceYourselfForm />);
     const { fullName, displayName } = fields();
 
     expect(fullName).toBeRequired();
@@ -30,7 +31,7 @@ describe('IntroduceYourselfForm', () => {
 
   it('keeps Continue disabled until both names are given', async () => {
     const user = userEvent.setup();
-    render(<IntroduceYourselfForm />);
+    renderWithIntl(<IntroduceYourselfForm />);
     const { fullName, continueButton } = fields();
 
     expect(continueButton).toBeDisabled();
@@ -42,7 +43,7 @@ describe('IntroduceYourselfForm', () => {
 
   it('pre-fills Display name from the first word of Full name', async () => {
     const user = userEvent.setup();
-    render(<IntroduceYourselfForm />);
+    renderWithIntl(<IntroduceYourselfForm />);
     const { fullName, displayName } = fields();
 
     await user.type(fullName, '  Tony Stark');
@@ -52,7 +53,7 @@ describe('IntroduceYourselfForm', () => {
 
   it('stops following Full name once Display name is edited', async () => {
     const user = userEvent.setup();
-    render(<IntroduceYourselfForm />);
+    renderWithIntl(<IntroduceYourselfForm />);
     const { fullName, displayName } = fields();
 
     await user.type(fullName, 'Tony');
@@ -65,7 +66,7 @@ describe('IntroduceYourselfForm', () => {
 
   it('disables Continue when Display name is cleared', async () => {
     const user = userEvent.setup();
-    render(<IntroduceYourselfForm />);
+    renderWithIntl(<IntroduceYourselfForm />);
     const { fullName, displayName, continueButton } = fields();
 
     await user.type(fullName, 'Tony Stark');
@@ -77,7 +78,7 @@ describe('IntroduceYourselfForm', () => {
 
   it('treats a name of only spaces as empty', async () => {
     const user = userEvent.setup();
-    render(<IntroduceYourselfForm />);
+    renderWithIntl(<IntroduceYourselfForm />);
     const { fullName, displayName, continueButton } = fields();
 
     await user.type(fullName, 'Tony');
@@ -89,7 +90,7 @@ describe('IntroduceYourselfForm', () => {
 
   it('moves on to Create a Workspace', async () => {
     const user = userEvent.setup();
-    render(<IntroduceYourselfForm />);
+    renderWithIntl(<IntroduceYourselfForm />);
     const { fullName, continueButton } = fields();
 
     await user.type(fullName, 'Tony Stark');

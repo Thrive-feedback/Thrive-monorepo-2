@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/cn.util';
 
 const link = cva('rounded-control font-medium text-link underline-offset-4', {
@@ -31,6 +32,8 @@ export function Link({
   children,
   ...rest
 }: LinkProps) {
+  const t = useTranslations('Link');
+
   return (
     <NextLink
       data-slot="link"
@@ -39,7 +42,7 @@ export function Link({
       {...rest}
     >
       {children}
-      {external && <span className="sr-only"> (opens in a new tab)</span>}
+      {external && <span className="sr-only"> {t('opensInNewTab')}</span>}
     </NextLink>
   );
 }

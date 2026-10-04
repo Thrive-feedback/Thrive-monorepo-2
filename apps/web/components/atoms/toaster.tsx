@@ -8,6 +8,7 @@ import {
   TriangleAlertIcon,
   XIcon,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
 
 export type { ToasterProps };
@@ -24,10 +25,13 @@ export type { ToasterProps };
  * moves it to the end of the row, where a close button is looked for.
  */
 export function Toaster(props: ToasterProps) {
+  const t = useTranslations('Toaster');
+
   return (
     <Sonner
       theme="light"
       closeButton
+      containerAriaLabel={t('region')}
       icons={{
         success: <CircleCheckIcon className="size-5 text-success" />,
         info: <InfoIcon className="size-5 text-info" />,
@@ -38,6 +42,7 @@ export function Toaster(props: ToasterProps) {
       }}
       toastOptions={{
         unstyled: true,
+        closeButtonAriaLabel: t('close'),
         classNames: {
           toast:
             'flex w-full items-start gap-3 rounded-control border p-4 text-foreground shadow-floating',

@@ -1,10 +1,12 @@
 import { Trash2Icon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 import { Button } from '@/components/atoms/button';
 import { Input } from '@/components/atoms/input';
 
 export type InviteEmailRowProps = {
   label: string;
+  removeLabel: string;
   value: string;
   errorMessage?: string;
   ref?: React.Ref<HTMLInputElement>;
@@ -16,10 +18,12 @@ export type InviteEmailRowProps = {
 
 /**
  * One address per row. The list shares one visible label, so each input is named by `label`
- * instead, which keeps rows apart for a screen reader and names the Remove button after its row.
+ * instead, which keeps rows apart for a screen reader; `removeLabel` names the Remove button after
+ * its row.
  */
 export function InviteEmailRow({
   label,
+  removeLabel,
   value,
   errorMessage,
   ref,
@@ -28,6 +32,7 @@ export function InviteEmailRow({
   onBlur,
   onRemove,
 }: InviteEmailRowProps) {
+  const t = useTranslations('InviteTeammates');
   const messageId = useId();
 
   return (
@@ -37,7 +42,7 @@ export function InviteEmailRow({
           ref={ref}
           type="email"
           autoComplete="off"
-          placeholder="name@company.com"
+          placeholder={t('emailPlaceholder')}
           aria-label={label}
           aria-invalid={errorMessage ? true : undefined}
           aria-describedby={errorMessage ? messageId : undefined}
@@ -49,7 +54,7 @@ export function InviteEmailRow({
           <Button
             variant="ghost-danger"
             size="icon"
-            aria-label={`Remove ${label.toLowerCase()}`}
+            aria-label={removeLabel}
             onClick={onRemove}
           >
             <Trash2Icon aria-hidden="true" className="size-4" />
