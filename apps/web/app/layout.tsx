@@ -13,10 +13,17 @@ import './globals.css';
  * The variables go on `<html>`, not `<body>`: the families are declared on `:root` and
  * resolve these variables there, so on `<body>` they would be undefined at the point of use
  * and the page would silently fall back to the system font.
+ *
+ * Next.js builds a resized backup face only for Google fonts it has measurements for, and it has
+ * none for Google Sans: asked to, it logs a warning and builds nothing. So the backup face is
+ * named here and declared, with measured values, in the token layer beside `--family-sans`.
+ * Naming a `fallback` is what stops Turbopack looking; `adjustFontFallback` stops webpack.
  */
 const googleSans = Google_Sans({
   subsets: ['latin'],
   display: 'swap',
+  fallback: ['Google Sans Fallback'],
+  adjustFontFallback: false,
   variable: '--font-google-sans',
 });
 

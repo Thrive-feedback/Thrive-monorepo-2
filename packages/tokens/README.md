@@ -43,7 +43,7 @@ Two things are therefore provisional:
    exist in either place, and there is no designer in the loop yet. These are the roles Thrive's
    current screens need and no more (`PROJECT.md` §2).
 
-**Type** follows the design's text styles one for one (`docs/adr/0023`, faces in `docs/adr/0024`). **Google Sans** carries
+**Type** follows the design's text styles one for one (`docs/adr/0023`, faces in `docs/adr/0025`). **Google Sans** carries
 every role but display and loads from Google Fonts. **Cooper**, the display face, is SIL OFL 1.1,
 so it is committed — SemiBold only, the one weight the design uses — with its licence beside it
 in `apps/web/app/_lib/fonts/cooper/`. A new role here needs the same name added to `cn`'s list in

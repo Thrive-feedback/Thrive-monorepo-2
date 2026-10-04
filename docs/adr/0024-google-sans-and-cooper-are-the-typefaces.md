@@ -1,6 +1,6 @@
 # 0024 — Google Sans and Cooper are the typefaces
 
-Status:   accepted
+Status:   superseded by 0025
 Date:     2026-09-30
 Deciders: kritpavin
 
