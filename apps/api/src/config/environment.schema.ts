@@ -59,7 +59,6 @@ export const environmentSchema = z.object({
   // built from it, so it is the web app's address, not this API's.
   BETTER_AUTH_URL: z.url(),
 
-  // The Google OAuth client people sign in with.
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
 });
