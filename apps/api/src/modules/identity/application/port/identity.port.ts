@@ -1,5 +1,6 @@
 /** The signed-in person, as much of them as the sign-in screens need. */
 export interface CurrentAccount {
+  readonly id: string;
   readonly email: string;
   readonly name: string;
 }

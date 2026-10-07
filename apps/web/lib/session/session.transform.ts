@@ -8,9 +8,21 @@ type CurrentSessionWire =
 export function toCurrentAccount(
   wire: CurrentSessionWire,
 ): CurrentAccount | null {
-  return wire.account
-    ? { email: wire.account.email, name: wire.account.name }
-    : null;
+  if (!wire.account) {
+    return null;
+  }
+  const { email, name, profile } = wire.account;
+  return {
+    email,
+    name,
+    profile: profile
+      ? {
+          fullName: profile.fullName,
+          displayName: profile.displayName,
+          slug: profile.slug,
+        }
+      : null,
+  };
 }
 
 /** The session has been in use long enough that it should be pushed forward. */

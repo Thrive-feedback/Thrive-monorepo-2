@@ -19,6 +19,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  profile       Profile?
 
   @@unique([email])
   @@map("user")
@@ -70,4 +71,21 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+/// An Account's personal details shown to others. Created by "Introduce yourself"; an Account
+/// without one has not finished registering.
+model Profile {
+  id          String   @id
+  accountId   String
+  account     User     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  fullName    String
+  displayName String
+  slug        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([accountId])
+  @@unique([slug])
+  @@map("profile")
 }

@@ -10,6 +10,7 @@
  */
 export type ErrorCategory =
   | 'validation'
+  | 'unauthenticated'
   | 'not_found'
   | 'conflict'
   | 'forbidden';

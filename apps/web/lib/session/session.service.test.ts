@@ -19,12 +19,40 @@ vi.mock('react', async (actual) => ({
   cache: <T>(fn: T) => fn,
 }));
 vi.mock('next/headers', () => ({ headers: async () => requestHeaders }));
+vi.mock('next/navigation', () => ({
+  redirect: vi.fn((url: string) => {
+    throw new Error(`redirect:${url}`);
+  }),
+}));
 
-const { readSession, readSessionNeedsRefresh } = await import(
-  './session.service'
-);
+const {
+  readSession,
+  readSessionNeedsRefresh,
+  requireAccountToIntroduce,
+  requireIntroducedAccount,
+} = await import('./session.service');
 
 const CURRENT_SESSION = `${TEST_API_BASE_URL}/v1/sessions/current`;
+const ANN_PROFILE = { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' };
+
+function answerSignedInAs(profile: typeof ANN_PROFILE | null) {
+  server.use(
+    http.get(CURRENT_SESSION, () =>
+      HttpResponse.json({
+        account: { email: 'ann@acme.test', name: 'Ann Lee', profile },
+        needsRefresh: false,
+      }),
+    ),
+  );
+}
+
+function answerSignedOut() {
+  server.use(
+    http.get(CURRENT_SESSION, () =>
+      HttpResponse.json({ account: null, needsRefresh: false }),
+    ),
+  );
+}
 
 describe('readSession', () => {
   beforeEach(() => {
@@ -38,7 +66,7 @@ describe('readSession', () => {
       http.get(CURRENT_SESSION, ({ request }) => {
         seen.push(request);
         return HttpResponse.json({
-          account: { email: 'ann@acme.test', name: 'Ann Lee' },
+          account: { email: 'ann@acme.test', name: 'Ann Lee', profile: null },
           needsRefresh: false,
         });
       }),
@@ -47,6 +75,7 @@ describe('readSession', () => {
     expect(await readSession()).toEqual({
       email: 'ann@acme.test',
       name: 'Ann Lee',
+      profile: null,
     });
     expect(seen[0]?.headers.get('cookie')).toBe('thrive.session_token=abc');
     expect(seen[0]?.headers.get('x-correlation-id')).toBeTruthy();
@@ -92,12 +121,80 @@ describe('readSession', () => {
     server.use(
       http.get(CURRENT_SESSION, () =>
         HttpResponse.json({
-          account: { email: 'ann@acme.test', name: 'Ann Lee' },
+          account: { email: 'ann@acme.test', name: 'Ann Lee', profile: null },
           needsRefresh: true,
         }),
       ),
     );
 
     expect(await readSessionNeedsRefresh()).toBe(true);
+  });
+});
+
+describe('requireIntroducedAccount', () => {
+  it('answers the Account of someone who has introduced themselves', async () => {
+    answerSignedInAs(ANN_PROFILE);
+
+    expect(await requireIntroducedAccount()).toEqual({
+      email: 'ann@acme.test',
+      name: 'Ann Lee',
+      profile: ANN_PROFILE,
+    });
+  });
+
+  it('sends a signed-out visitor to sign-in', async () => {
+    answerSignedOut();
+
+    await expect(requireIntroducedAccount()).rejects.toThrow('redirect:/login');
+  });
+
+  it('sends someone who has not introduced themselves to Introduce yourself', async () => {
+    answerSignedInAs(null);
+
+    await expect(requireIntroducedAccount()).rejects.toThrow(
+      'redirect:/register/introduce-yourself',
+    );
+  });
+
+  it('keeps "just signed in" across that redirect, so the toast still shows', async () => {
+    answerSignedInAs(null);
+
+    await expect(requireIntroducedAccount('1')).rejects.toThrow(
+      'redirect:/register/introduce-yourself?signedIn=1',
+    );
+  });
+});
+
+describe('requireAccountToIntroduce', () => {
+  it('answers the Account of someone who has not introduced themselves', async () => {
+    answerSignedInAs(null);
+
+    expect(await requireAccountToIntroduce()).toEqual({
+      email: 'ann@acme.test',
+      name: 'Ann Lee',
+      profile: null,
+    });
+  });
+
+  it('sends a signed-out visitor to sign-in', async () => {
+    answerSignedOut();
+
+    await expect(requireAccountToIntroduce()).rejects.toThrow(
+      'redirect:/login',
+    );
+  });
+
+  it('sends someone who has already introduced themselves home', async () => {
+    answerSignedInAs(ANN_PROFILE);
+
+    await expect(requireAccountToIntroduce()).rejects.toThrow('redirect:/home');
+  });
+
+  it('keeps "just signed in" across that redirect', async () => {
+    answerSignedInAs(ANN_PROFILE);
+
+    await expect(requireAccountToIntroduce('1')).rejects.toThrow(
+      'redirect:/home?signedIn=1',
+    );
   });
 });

@@ -1,10 +1,9 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { Button } from '@/components/atoms/button';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Text } from '@/components/atoms/text';
 import { ROUTES } from '@/lib/routes.constant';
-import { readSession } from '@/lib/session/session.service';
+import { requireIntroducedAccount } from '@/lib/session/session.service';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
 
 /**
@@ -21,11 +20,8 @@ type HomeProps = {
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const session = await readSession();
-  if (!session) {
-    redirect(ROUTES.login);
-  }
   const { signedIn } = HomeSearchParams.parse(await searchParams);
+  const session = await requireIntroducedAccount(signedIn);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 py-12">

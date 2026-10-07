@@ -43,6 +43,7 @@ const ROLE_SUFFIXES = [
   '.mapper.ts',
   '.errors.ts',
   '.dto.ts',
+  '.guard.ts',
   '.module.ts',
   '.service.ts',
   '.store.ts',

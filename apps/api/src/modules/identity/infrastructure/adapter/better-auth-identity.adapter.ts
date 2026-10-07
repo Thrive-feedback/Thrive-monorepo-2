@@ -38,7 +38,11 @@ export class BetterAuthIdentityAdapter extends IdentityPort {
       return { account: null, needsRefresh: false };
     }
     return {
-      account: { email: session.user.email, name: session.user.name },
+      account: {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+      },
       needsRefresh: 'needsRefresh' in session && session.needsRefresh === true,
     };
   }

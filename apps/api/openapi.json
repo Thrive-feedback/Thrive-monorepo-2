@@ -124,6 +124,57 @@
           "sessions"
         ]
       }
+    },
+    "/v1/profiles": {
+      "post": {
+        "operationId": "ProfileController_createProfile",
+        "parameters": [
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProfileRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateProfileResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID, FULL_NAME_EMPTY, FULL_NAME_TOO_LONG, DISPLAY_NAME_EMPTY or DISPLAY_NAME_TOO_LONG"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "409": {
+            "description": "PROFILE_ALREADY_EXISTS, or PROFILE_SLUG_TAKEN after retries"
+          }
+        },
+        "summary": "Create the caller's Profile",
+        "tags": [
+          "profiles"
+        ]
+      }
     }
   },
   "info": {
@@ -177,11 +228,33 @@
               },
               "name": {
                 "type": "string"
+              },
+              "profile": {
+                "type": "object",
+                "properties": {
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "slug": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "fullName",
+                  "displayName",
+                  "slug"
+                ],
+                "additionalProperties": false,
+                "nullable": true
               }
             },
             "required": [
               "email",
-              "name"
+              "name",
+              "profile"
             ],
             "additionalProperties": false,
             "nullable": true
@@ -193,6 +266,36 @@
         "required": [
           "account",
           "needsRefresh"
+        ],
+        "additionalProperties": false
+      },
+      "CreateProfileRequestDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fullName",
+          "displayName"
+        ],
+        "additionalProperties": false
+      },
+      "CreateProfileResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "id"
         ],
         "additionalProperties": false
       }

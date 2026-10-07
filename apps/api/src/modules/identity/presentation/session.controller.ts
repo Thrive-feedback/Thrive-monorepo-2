@@ -1,3 +1,4 @@
+import { Public } from '@app/shared/presentation/actor';
 import {
   Controller,
   Delete,
@@ -21,15 +22,9 @@ import { GetCurrentSessionUseCase } from '../application/use-cases/get-current-s
 import { RefreshSessionUseCase } from '../application/use-cases/refresh-session.use-case';
 import { SignOutUseCase } from '../application/use-cases/sign-out.use-case';
 import { StartGoogleSignInUseCase } from '../application/use-cases/start-google-sign-in.use-case';
+import { COOKIE_HEADER } from './dto/cookie-header.dto';
 import { GetCurrentSessionResponseDto } from './dto/get-current-session.dto';
 import { StartGoogleSignInResponseDto } from './dto/start-google-sign-in.dto';
-
-/** The browser's cookie header, forwarded by the web server. Absent when signed out. */
-const COOKIE_HEADER = {
-  name: 'cookie',
-  required: false,
-  description: "The browser's cookie header, forwarded by the web server.",
-};
 
 function setSessionCookies(response: Response, cookies: SessionCookies): void {
   for (const cookie of cookies) {
@@ -45,6 +40,7 @@ function setSessionCookies(response: Response, cookies: SessionCookies): void {
  * Public on purpose: signing in has to work while signed out, and each route only ever
  * touches the caller's own session.
  */
+@Public()
 @ApiTags('sessions')
 @Controller({ path: 'v1/sessions' })
 export class SessionController {
@@ -74,9 +70,20 @@ export class SessionController {
     const session = await this.getCurrentSessionUseCase.execute({
       credential: cookie ?? '',
     });
+    const { account } = session;
     return {
-      account: session.account
-        ? { email: session.account.email, name: session.account.name }
+      account: account
+        ? {
+            email: account.email,
+            name: account.name,
+            profile: account.profile
+              ? {
+                  fullName: account.profile.fullName,
+                  displayName: account.profile.displayName,
+                  slug: account.profile.slug,
+                }
+              : null,
+          }
         : null,
       needsRefresh: session.needsRefresh,
     };

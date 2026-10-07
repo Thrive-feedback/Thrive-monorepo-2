@@ -1,10 +1,24 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { SaveProfileState } from '../_lib/save-profile-state.type';
 import { IntroduceYourselfForm } from './introduce-yourself-form';
 
-const push = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+const saveProfile =
+  vi.fn<
+    (
+      previous: SaveProfileState,
+      formData: FormData,
+    ) => Promise<SaveProfileState>
+  >();
+vi.mock('../_lib/profile-actions.service', () => ({
+  saveProfile: (previous: SaveProfileState, formData: FormData) =>
+    saveProfile(previous, formData),
+}));
+
+beforeEach(() => {
+  saveProfile.mockReset();
+});
 
 function fields() {
   return {
@@ -87,7 +101,8 @@ describe('IntroduceYourselfForm', () => {
     expect(continueButton).toBeDisabled();
   });
 
-  it('moves on to Create a Workspace', async () => {
+  it('saves both names as they were typed', async () => {
+    saveProfile.mockResolvedValue({});
     const user = userEvent.setup();
     render(<IntroduceYourselfForm />);
     const { fullName, continueButton } = fields();
@@ -95,7 +110,49 @@ describe('IntroduceYourselfForm', () => {
     await user.type(fullName, 'Tony Stark');
     await user.click(continueButton);
 
-    expect(push).toHaveBeenCalledWith('/register/create-workspace');
+    const formData = saveProfile.mock.lastCall?.[1];
+    expect(formData?.get('fullName')).toBe('Tony Stark');
+    expect(formData?.get('displayName')).toBe('Tony');
+  });
+
+  it('shows why a name was refused beside that field, and keeps what was typed', async () => {
+    saveProfile.mockResolvedValue({
+      fieldErrors: { displayName: 'Use 50 characters or fewer.' },
+    });
+    const user = userEvent.setup();
+    render(<IntroduceYourselfForm />);
+    const { fullName, displayName, continueButton } = fields();
+
+    await user.type(fullName, 'Tony Stark');
+    await user.click(continueButton);
+
+    expect(
+      await screen.findByText('Use 50 characters or fewer.'),
+    ).toBeInTheDocument();
+    expect(displayName).toBeInvalid();
+    expect(displayName).toHaveAccessibleDescription(
+      'Use 50 characters or fewer.',
+    );
+    expect(fullName).toHaveValue('Tony Stark');
+  });
+
+  it('says so when saving failed for another reason, and keeps what was typed', async () => {
+    saveProfile.mockResolvedValue({
+      formError: "We couldn't save your details. Please try again.",
+    });
+    const user = userEvent.setup();
+    render(<IntroduceYourselfForm />);
+    const { fullName, displayName, continueButton } = fields();
+
+    await user.type(fullName, 'Tony Stark');
+    await user.click(continueButton);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      "We couldn't save your details. Please try again.",
+    );
+    expect(fullName).toHaveValue('Tony Stark');
+    expect(displayName).toHaveValue('Tony');
+    expect(continueButton).toBeEnabled();
   });
 
   it('starts from the name it is given, and Display name from its first word', () => {
