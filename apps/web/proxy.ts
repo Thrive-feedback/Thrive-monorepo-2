@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { ROUTES } from '@/lib/routes.constant';
 
 /**
- * Better Auth's session cookie (ADR 0026). It carries the `__Secure-` prefix on https.
+ * Better Auth's session cookie (ADR 0027). It carries the `__Secure-` prefix on https.
  */
 const SESSION_COOKIES = [
   'thrive.session_token',

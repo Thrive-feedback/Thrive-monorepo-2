@@ -1,4 +1,4 @@
-# 0026 — The browser reaches auth only through the web origin
+# 0027 — The browser reaches auth only through the web origin
 
 Status:   accepted
 Date:     2026-10-02
@@ -6,7 +6,7 @@ Deciders: kritpavin
 
 ## Context
 
-ADR 0025 runs Better Auth inside the API (`:3000`), but people use the web app (`:3001`).
+ADR 0026 runs Better Auth inside the API (`:3000`), but people use the web app (`:3001`).
 Task #70 needs the browser to sign in with Google, hold a session, and sign out. Three things are
 fixed already:
 
@@ -76,4 +76,4 @@ The decision is recorded before anything builds on it (`GEN_04`).
 - Each Google OAuth client registers `<web origin>/api/auth/callback/google`, one per environment.
 
 Supersedes: —
-Referenced by: `PROJECT.md` §4, ADR 0025
+Referenced by: `PROJECT.md` §4, ADR 0026
