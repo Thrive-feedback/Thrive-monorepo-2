@@ -73,6 +73,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create the caller's Profile */
+        post: operations["ProfileController_createProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -90,8 +107,21 @@ export interface components {
                 /** Format: email */
                 email: string;
                 name: string;
+                profile: {
+                    fullName: string;
+                    displayName: string;
+                    slug: string;
+                } | null;
             } | null;
             needsRefresh: boolean;
+        };
+        CreateProfileRequestDto: {
+            fullName: string;
+            displayName: string;
+        };
+        CreateProfileResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
         };
     };
     responses: never;
@@ -195,6 +225,53 @@ export interface operations {
         requestBody?: never;
         responses: {
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProfileController_createProfile: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProfileRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateProfileResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, FULL_NAME_EMPTY, FULL_NAME_TOO_LONG, DISPLAY_NAME_EMPTY or DISPLAY_NAME_TOO_LONG */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description PROFILE_ALREADY_EXISTS, or PROFILE_SLUG_TAKEN after retries */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

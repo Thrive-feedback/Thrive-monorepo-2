@@ -2,19 +2,21 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import Home from './page';
 
-const readSession = vi.fn();
+const ANN = {
+  email: 'ann@acme.test',
+  name: 'Ann Lee',
+  profile: { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' },
+};
+
+const requireIntroducedAccount = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
-  readSession: () => readSession(),
+  requireIntroducedAccount: (signedIn?: string) =>
+    requireIntroducedAccount(signedIn),
 }));
 vi.mock('@/components/atoms/one-time-toast', () => ({
   OneTimeToast: ({ type, message }: { type: string; message: string }) => (
     <output>{`${type} toast: ${message}`}</output>
   ),
-}));
-vi.mock('next/navigation', () => ({
-  redirect: vi.fn((url: string) => {
-    throw new Error(`redirect:${url}`);
-  }),
 }));
 
 function open(searchParams: Record<string, string> = {}) {
@@ -22,14 +24,22 @@ function open(searchParams: Record<string, string> = {}) {
 }
 
 describe('Home', () => {
-  it('sends a signed-out visitor to sign-in', async () => {
-    readSession.mockResolvedValue(null);
+  it('lets the gate turn away anyone who may not be here', async () => {
+    requireIntroducedAccount.mockRejectedValue(new Error('redirect:/login'));
 
     await expect(open()).rejects.toThrow('redirect:/login');
   });
 
-  it('shows Home to whoever is signed in', async () => {
-    readSession.mockResolvedValue({ email: 'ann@acme.test', name: 'Ann Lee' });
+  it('tells the gate the person has just signed in, so a redirect keeps the toast', async () => {
+    requireIntroducedAccount.mockResolvedValue(ANN);
+
+    await open({ signedIn: '1' });
+
+    expect(requireIntroducedAccount).toHaveBeenLastCalledWith('1');
+  });
+
+  it('shows Home to someone who has introduced themselves', async () => {
+    requireIntroducedAccount.mockResolvedValue(ANN);
 
     render(await open());
 
@@ -39,7 +49,7 @@ describe('Home', () => {
   });
 
   it('says who signed in when Google has just sent them back', async () => {
-    readSession.mockResolvedValue({ email: 'ann@acme.test', name: 'Ann Lee' });
+    requireIntroducedAccount.mockResolvedValue(ANN);
 
     render(await open({ signedIn: '1' }));
 
@@ -49,7 +59,7 @@ describe('Home', () => {
   });
 
   it('raises no toast on an ordinary visit', async () => {
-    readSession.mockResolvedValue({ email: 'ann@acme.test', name: 'Ann Lee' });
+    requireIntroducedAccount.mockResolvedValue(ANN);
 
     render(await open());
 

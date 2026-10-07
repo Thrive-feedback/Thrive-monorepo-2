@@ -1,9 +1,11 @@
 import 'server-only';
 import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
-import type { CurrentAccount } from './current-account.type';
+import { ROUTES } from '@/lib/routes.constant';
+import type { CurrentAccount, CurrentProfile } from './current-account.type';
 import { toCurrentAccount, toNeedsRefresh } from './session.transform';
 
 /**
@@ -33,4 +35,51 @@ export async function readSession(): Promise<CurrentAccount | null> {
  */
 export async function readSessionNeedsRefresh(): Promise<boolean> {
   return toNeedsRefresh(await readCurrentSession());
+}
+
+/** An Account that has introduced itself, so it has a Profile. */
+export type IntroducedAccount = CurrentAccount & {
+  readonly profile: CurrentProfile;
+};
+
+/**
+ * Keeps `signedIn=1` across a redirect, so a person Google sent to the wrong page for them
+ * is still told once that they are signed in.
+ */
+function withSignedIn(path: string, signedIn: '1' | undefined): string {
+  return signedIn === undefined ? path : `${path}?signedIn=${signedIn}`;
+}
+
+/**
+ * The signed-in Account, for a page only someone who has introduced themselves may see.
+ * Anyone else is sent where they belong: to sign in, or to introduce themselves first.
+ */
+export async function requireIntroducedAccount(
+  signedIn?: '1',
+): Promise<IntroducedAccount> {
+  const account = await readSession();
+  if (!account) {
+    redirect(ROUTES.login);
+  }
+  if (!account.profile) {
+    redirect(withSignedIn(ROUTES.register.introduceYourself, signedIn));
+  }
+  return { ...account, profile: account.profile };
+}
+
+/**
+ * The signed-in Account, for Introduce yourself. Someone who has already introduced
+ * themselves is sent home: the step only appears until it is done.
+ */
+export async function requireAccountToIntroduce(
+  signedIn?: '1',
+): Promise<CurrentAccount> {
+  const account = await readSession();
+  if (!account) {
+    redirect(ROUTES.login);
+  }
+  if (account.profile) {
+    redirect(withSignedIn(ROUTES.home, signedIn));
+  }
+  return account;
 }

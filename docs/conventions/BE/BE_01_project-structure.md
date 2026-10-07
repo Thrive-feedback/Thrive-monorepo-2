@@ -4,7 +4,7 @@ id: "BE_01"
 area: "BE"
 tier: "P1"
 status: "stable"
-updated: "2026-10-03"
+updated: "2026-10-04"
 requires: [INFRA_01]
 see_also: [BE_02, BE_03]
 ---
@@ -13,7 +13,7 @@ see_also: [BE_02, BE_03]
 
 # [BE] Project structure & module anatomy
 
-`P1` · `BE_01` · `stable` · `updated 2026-10-03`
+`P1` · `BE_01` · `stable` · `updated 2026-10-04`
 
 **Open when:** you are adding a module, or you do not know where a backend file belongs.
 
@@ -28,7 +28,7 @@ If you read nothing else:
 3. <a id="R3"></a>A module's only top-level directories are `domain/`, `application/`, `infrastructure/`, `presentation/`. Create one when it has a file, not before.
 4. <a id="R4"></a>Every module declares its Nest module in `<name>.module.ts` and its public surface in `index.ts`, both at the module root.
 5. <a id="R5"></a>Inside a layer, group files by the role they play, using the role folders in the tree under [R3](#R3) and no others.
-6. <a id="R6"></a>Suffix every file under `modules/` with its role — `.use-case.ts`, `.controller.ts`, `.port.ts`, `.adapter.ts`, `.repository.ts`, `.entity.ts`, `.vo.ts`, `.mapper.ts`, `.errors.ts`, `.dto.ts`, `.module.ts`, `.service.ts`, `.store.ts`, `.query.ts`, `.record.ts`, `.types.ts`, `.schema.ts`, `.query-port.ts`. Name every injected dependency after its type, so the role shows where it is used too.
+6. <a id="R6"></a>Suffix every file under `modules/` with its role — `.use-case.ts`, `.controller.ts`, `.port.ts`, `.adapter.ts`, `.repository.ts`, `.entity.ts`, `.vo.ts`, `.mapper.ts`, `.errors.ts`, `.dto.ts`, `.guard.ts`, `.module.ts`, `.service.ts`, `.store.ts`, `.query.ts`, `.record.ts`, `.types.ts`, `.schema.ts`, `.query-port.ts`. Name every injected dependency after its type, so the role shows where it is used too.
 7. <a id="R7"></a>Split a module into submodules under one context directory when it owns a second aggregate; concepts both submodules need live in `<context>/shared/domain/`.
 8. <a id="R8"></a>Put a module's concept in `shared/` only when a second module already imports it — the cross-cutting pieces [R1](#R1) lists belong there from the start — and in `infrastructure/` only when it wraps a provider rather than a business capability.
 9. <a id="R9"></a>Import across a module boundary through the app's path alias, never by `../` out of your own module; what you may import is [BE_03](../index.html#BE_03)'s.
@@ -83,6 +83,8 @@ Four of these exist because other documents require a place for them: `applicati
 ### [R6](#R6) The role suffix
 
 Casing and naming a file after its export are [GEN_07](../index.html#GEN_07)'s. The suffix is this document's, because it is what makes a violation visible in a diff: a `.controller.ts` importing a `.repository.ts` is wrong at a glance, with no need to open either file.
+
+`.guard.ts` is for a guard a module owns because only that module can answer it — the guard that asks Identity who is calling. It sits in `presentation/`, where [BE_02#R9](../index.html#BE_02) puts lifecycle pieces; a guard that belongs to no module goes in `shared/`.
 
 **Do**
 

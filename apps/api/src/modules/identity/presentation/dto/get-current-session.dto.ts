@@ -1,9 +1,18 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
+const profileSchema = z.object({
+  fullName: z.string(),
+  displayName: z.string(),
+  slug: z.string(),
+});
+
 const currentAccountSchema = z.object({
   email: z.email(),
+  /** The name the sign-in provider gave, which pre-fills "Introduce yourself". */
   name: z.string(),
+  /** `null` until the person has introduced themselves. */
+  profile: profileSchema.nullable(),
 });
 
 export const getCurrentSessionResponseSchema = z.object({

@@ -21,6 +21,7 @@ import {
  */
 const STATUS_BY_CATEGORY: Readonly<Record<ErrorCategory, HttpStatus>> = {
   validation: HttpStatus.BAD_REQUEST,
+  unauthenticated: HttpStatus.UNAUTHORIZED,
   not_found: HttpStatus.NOT_FOUND,
   conflict: HttpStatus.CONFLICT,
   forbidden: HttpStatus.FORBIDDEN,

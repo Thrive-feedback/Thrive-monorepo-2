@@ -52,7 +52,12 @@ async function aSignedInAccount() {
   );
   createdAccountIds.push(account.id);
   const session = await internalAdapter.createSession(account.id);
-  return { email, session, credential: await cookieFor(session.token) };
+  return {
+    accountId: account.id,
+    email,
+    session,
+    credential: await cookieFor(session.token),
+  };
 }
 
 afterAll(async () => {
@@ -66,10 +71,10 @@ afterAll(async () => {
 
 describe('Better Auth identity, through the port', () => {
   it('answers the Account behind a live session cookie, not yet due a refresh', async () => {
-    const { email, credential } = await aSignedInAccount();
+    const { accountId, email, credential } = await aSignedInAccount();
 
     expect(await identityPort.currentSession(credential)).toEqual({
-      account: { email, name: 'Ann Lee' },
+      account: { id: accountId, email, name: 'Ann Lee' },
       needsRefresh: false,
     });
   });

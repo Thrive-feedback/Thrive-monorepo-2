@@ -1,10 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { Button } from '@/components/atoms/button';
+import { Text } from '@/components/atoms/text';
 import { TextField } from '@/components/molecules/text-field';
-import { ROUTES } from '@/lib/routes.constant';
+import { saveProfile } from '../_lib/profile-actions.service';
+import type { SaveProfileState } from '../_lib/save-profile-state.type';
 
 function firstWord(value: string): string {
   return value.trim().split(/\s+/)[0] ?? '';
@@ -18,16 +19,22 @@ export type IntroduceYourselfFormProps = {
 /**
  * Display name follows the first word of Full name until the person types in Display name;
  * from then on it is theirs, even if they clear it.
+ *
+ * Both fields are controlled, so what was typed stays when saving fails.
  */
 export function IntroduceYourselfForm({
   defaultFullName = '',
 }: IntroduceYourselfFormProps) {
-  const router = useRouter();
   const [fullName, setFullName] = useState(defaultFullName);
   const [displayName, setDisplayName] = useState(firstWord(defaultFullName));
   const [isDisplayNameEdited, setIsDisplayNameEdited] = useState(false);
+  const [state, formAction, isSaving] = useActionState<
+    SaveProfileState,
+    FormData
+  >(saveProfile, {});
 
-  const canContinue = fullName.trim() !== '' && displayName.trim() !== '';
+  const canContinue =
+    fullName.trim() !== '' && displayName.trim() !== '' && !isSaving;
 
   function handleFullNameChange(event: React.ChangeEvent<HTMLInputElement>) {
     setFullName(event.target.value);
@@ -41,14 +48,8 @@ export function IntroduceYourselfForm({
     setDisplayName(event.target.value);
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    // TODO(kritpavin, #71): save the Profile before moving on.
-    event.preventDefault();
-    router.push(ROUTES.register.createWorkspace);
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form action={formAction} className="flex flex-col gap-4">
       <TextField
         label="Full Name"
         name="fullName"
@@ -57,6 +58,7 @@ export function IntroduceYourselfForm({
         required
         value={fullName}
         onChange={handleFullNameChange}
+        errorMessage={state.fieldErrors?.fullName}
       />
       <TextField
         label="What should we call you?"
@@ -67,7 +69,13 @@ export function IntroduceYourselfForm({
         required
         value={displayName}
         onChange={handleDisplayNameChange}
+        errorMessage={state.fieldErrors?.displayName}
       />
+      {state.formError && (
+        <Text role="alert" variant="body-2" tone="danger">
+          {state.formError}
+        </Text>
+      )}
       <Button
         type="submit"
         variant="primary"
