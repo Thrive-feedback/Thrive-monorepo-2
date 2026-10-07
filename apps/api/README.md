@@ -11,7 +11,7 @@ Signing in needs a Google OAuth client. Put its `GOOGLE_CLIENT_ID` and
 or git. The client's authorised redirect URI is
 `http://localhost:3001/api/auth/callback/google`. `BETTER_AUTH_URL` is the **web** app's
 origin, `http://localhost:3001`, because the browser reaches Better Auth through the web
-app (ADR 0026).
+app (ADR 0027).
 
 Schema changes use the checked-in Prisma schema and SQL migration history:
 
@@ -25,7 +25,7 @@ Review the generated SQL before committing it. Each migration changes one module
 tables. `db:migrate:dev` is for local development only. Deployment runs
 `bun run db:migrate:deploy` once before the new API version starts; it never runs from
 the API startup path. The first migration creates Better Auth's tables for Identity
-(ADR 0025); regenerate their models with `bun run auth:generate`, never by hand.
+(ADR 0026); regenerate their models with `bun run auth:generate`, never by hand.
 
 To empty the local database, run one of these from `apps/api`:
 
