@@ -1,7 +1,9 @@
 /*
  * The whole token layer in the order it has to load: values, then roles, then the Tailwind
- * theme built from the roles. An app imports this one file.
+ * theme built from the roles. An app imports this one file. The first three are generated from
+ * the blueprint (ADR 0028); `supplement.css` is the hand-written remainder.
  */
 @import './primitives.css';
+@import './supplement.css';
 @import './semantic.css';
 @import './theme.css';

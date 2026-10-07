@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/cn.util';
 
-const skeleton = cva('bg-surface-sunken motion-safe:animate-pulse', {
+const skeleton = cva('bg-surface-subtle motion-safe:animate-pulse', {
   variants: {
     shape: {
       text: 'h-4 w-full rounded-full',

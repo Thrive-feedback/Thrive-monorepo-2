@@ -4,32 +4,37 @@ import { useEffect, useState } from 'react';
 import { Text } from '@/components/atoms/text';
 
 const STEPS = [
+  '25',
   '50',
   '100',
+  '150',
   '200',
+  '250',
   '300',
+  '350',
   '400',
+  '450',
   '500',
+  '550',
   '600',
+  '650',
   '700',
+  '750',
   '800',
+  '850',
   '900',
   '950',
 ] as const;
 
 const RAMPS = [
-  { name: 'primary', extraSteps: ['750'] },
-  { name: 'secondary', extraSteps: [] },
-  { name: 'neutral', extraSteps: [] },
-  { name: 'success', extraSteps: [] },
-  { name: 'caution', extraSteps: [] },
-  { name: 'danger', extraSteps: [] },
-  { name: 'info', extraSteps: [] },
+  'primary',
+  'secondary',
+  'neutral',
+  'success',
+  'warning',
+  'error',
+  'info',
 ] as const;
-
-function stepsOf(extraSteps: readonly string[]): string[] {
-  return [...STEPS, ...extraSteps].sort((a, b) => Number(a) - Number(b));
-}
 
 /**
  * The primitive ramps, as the design's colour page lays them out. This is the one place that
@@ -46,8 +51,8 @@ export function Palette() {
   useEffect(() => {
     const styles = getComputedStyle(document.documentElement);
     const read: Record<string, string> = {};
-    for (const { name, extraSteps } of RAMPS) {
-      for (const step of stepsOf(extraSteps)) {
+    for (const name of RAMPS) {
+      for (const step of STEPS) {
         read[`${name}-${step}`] = styles
           .getPropertyValue(`--${name}-${step}`)
           .trim();
@@ -59,32 +64,33 @@ export function Palette() {
   return (
     <section aria-labelledby="palette-heading" className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <Text variant="subtitle1" as="h2" id="palette-heading">
+        <Text variant="subtitle-1" as="h2" id="palette-heading">
           Palette
         </Text>
-        <Text variant="body2" tone="muted">
-          The primitive ramps behind every role, 50 to 950 as in the design.
-          Components never use these directly — pick a role from the sections
-          below. The number is the step; hover a swatch for its value.
+        <Text variant="body-2" tone="muted">
+          The primitive ramps behind every role, 25 to 950, derived from each
+          seed colour in the blueprint. Components never use these directly —
+          pick a role from the sections below. The number is the step; hover a
+          swatch for its value.
         </Text>
       </div>
       <div className="flex flex-col gap-3">
-        {RAMPS.map(({ name, extraSteps }) => (
+        {RAMPS.map((name) => (
           <div
             key={name}
             className="flex flex-col gap-1 md:flex-row md:items-center md:gap-4"
           >
-            <Text as="span" variant="subtitle4" className="capitalize md:w-24">
+            <Text as="span" variant="subtitle-4" className="capitalize md:w-24">
               {name}
             </Text>
-            <ul className="grid flex-1 grid-cols-6 gap-1 sm:grid-cols-12">
-              {stepsOf(extraSteps).map((step) => {
+            <ul className="grid flex-1 grid-cols-5 gap-1 sm:grid-cols-10">
+              {STEPS.map((step) => {
                 const token = `${name}-${step}`;
                 return (
                   <li
                     key={token}
                     title={`--${token}: ${values[token] ?? ''}`}
-                    className="flex flex-col overflow-hidden rounded-control border border-line"
+                    className="flex flex-col overflow-hidden rounded-element border border-border-default"
                   >
                     <span
                       className="h-10"

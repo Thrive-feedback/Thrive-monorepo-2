@@ -3,42 +3,73 @@ import { extendTailwindMerge } from 'tailwind-merge';
 
 /*
  * tailwind-merge only knows Tailwind's default type scale. Our type utilities are the design's
- * roles (`text-body2`, `text-h1`), and an unknown `text-*` reads to it as a colour — so
- * `text-body2 text-foreground-muted` would lose its size. Naming the roles as font sizes keeps
+ * roles (`text-body-2`, `text-h1`), and an unknown `text-*` reads to it as a colour — so
+ * `text-body-2 text-fg-secondary` would lose its size. Naming the roles as font sizes keeps
  * both. The list mirrors the `--text-*` roles in `@repo/tokens`' theme.
  */
 const TYPE_ROLES = [
-  'display1',
-  'display2',
-  'display3',
-  'display4',
-  'display5',
-  'display6',
+  'display-1',
+  'display-2',
+  'display-3',
+  'display-4',
+  'display-5',
+  'display-6',
   'h1',
   'h2',
   'h3',
   'h4',
   'h5',
   'h6',
-  'subtitle1',
-  'subtitle2',
-  'subtitle3',
-  'subtitle4',
-  'body1',
-  'body2',
-  'body3',
+  'subtitle-1',
+  'subtitle-2',
+  'subtitle-3',
+  'subtitle-4',
+  'subtitle-display-1',
+  'subtitle-display-2',
+  'subtitle-display-3',
+  'subtitle-display-4',
+  'subtitle-handwrite-1',
+  'subtitle-handwrite-2',
+  'subtitle-handwrite-3',
+  'subtitle-handwrite-4',
+  'body-1',
+  'body-2',
+  'body-3',
+  'quote',
+  'code',
+  'button-md',
+  'button-sm',
+  'button-xs',
+  'input-label-md',
+  'input-label-sm',
+  'input-label-xs',
+  'input-value-md',
+  'input-value-sm',
+  'input-value-xs',
+  'input-helper',
+  'table-header',
+  'list-subheader',
+  'label',
   'caption',
   'overline',
-  'button-large',
-  'button-medium',
-  'button-small',
+  'tag',
 ];
 
 /**
- * The same gap for shape: `rounded-control` is unknown to tailwind-merge, so a caller's
+ * The same gap for shape: `rounded-element` is unknown to tailwind-merge, so a caller's
  * `rounded-full` would land beside it rather than replace it. Mirrors the `--radius-*` roles.
  */
-const SHAPE_ROLES = ['indicator', 'control', 'surface', 'floating'];
+const SHAPE_ROLES = [
+  'none',
+  'inner',
+  'element',
+  'container',
+  'page',
+  'surface',
+  'button',
+  'input',
+  'chip',
+];
 
 const twMerge = extendTailwindMerge({
   extend: {

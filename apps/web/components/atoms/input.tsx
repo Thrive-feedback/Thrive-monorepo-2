@@ -15,7 +15,7 @@ export function Input({ type = 'text', className, ...rest }: InputProps) {
       data-slot="input"
       type={type}
       className={cn(
-        'w-full min-w-0 rounded-control border border-line-strong bg-surface px-3 py-2.5 text-body1 placeholder:text-foreground-muted disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-foreground-muted aria-invalid:border-danger',
+        'w-full min-w-0 rounded-input border border-border-strong bg-surface-base px-3 py-2.5 text-body-1 placeholder:text-fg-secondary disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-fg-secondary aria-invalid:border-status-error-border',
         className,
       )}
       {...rest}

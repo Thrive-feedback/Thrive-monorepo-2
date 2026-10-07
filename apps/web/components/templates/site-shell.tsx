@@ -10,9 +10,9 @@ import { SiteNavbar } from '@/components/organisms/site-navbar';
  */
 export function SiteShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-linear-to-b from-backdrop to-backdrop-tint">
+    <div className="flex min-h-dvh flex-col bg-linear-to-b from-surface-base to-surface-subtle">
       <SiteNavbar />
-      <main className="flex flex-1 flex-col px-4 py-12 md:px-10">
+      <main className="flex flex-1 flex-col px-inset-container py-12">
         {children}
       </main>
       <SiteFooter />

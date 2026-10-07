@@ -5,7 +5,7 @@ import { Switch as SwitchPrimitive } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
 
 const track = cva(
-  'peer group inline-flex shrink-0 cursor-pointer items-center rounded-full p-0.5 disabled:cursor-not-allowed disabled:bg-surface-sunken data-[state=checked]:bg-action data-[state=unchecked]:bg-line-strong',
+  'peer group inline-flex shrink-0 cursor-pointer items-center rounded-full p-0.5 disabled:cursor-not-allowed disabled:bg-surface-subtle data-[state=checked]:bg-action-primary data-[state=unchecked]:bg-border-strong',
   {
     variants: {
       size: {
@@ -18,7 +18,7 @@ const track = cva(
 );
 
 const thumb = cva(
-  'pointer-events-none block rounded-full bg-surface group-disabled:bg-line data-[state=unchecked]:translate-x-0',
+  'pointer-events-none block rounded-full bg-surface-base group-disabled:bg-border-default data-[state=unchecked]:translate-x-0',
   {
     variants: {
       size: {

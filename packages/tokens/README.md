@@ -1,50 +1,59 @@
 # `@repo/tokens`
 
-Thrive's design tokens, in the three layers `FE_03` R2 requires, all in one package so that
-"outside the semantic layer" is a path as well as a name.
+Thrive's design tokens, in the three layers `FE_03` R2 requires. They are generated from the design
+source, a Blueprint workspace export, and committed (ADR 0028).
 
-| File | Layer | What belongs in it |
+## What it owns
+
+| File | Kind | What is in it |
 | --- | --- | --- |
-| `src/primitives.css` | values | Seven OKLCH ramps, the spacing multiplier, radii, stroke, the two loading-loop durations, font families, the design's type values (size, line height, letter spacing in px-named rem), and the weight and width scales. Names a value, never an intent. |
-| `src/semantic.css` | roles | `--surface`, `--action`, `--danger`… Each points at a primitive. **The only layer a component may reference.** |
-| `src/theme.css` | Tailwind | `@theme inline`, which resets Tailwind's default theme (`--*: initial`) and then maps roles and scales onto its namespaces, so every utility that exists is token-backed (`FE_04` R1). |
+| `source/thrive.blueprint.json` | design source | The blueprint export, exactly as design hands it over, apart from formatting. **The source of record** (`FE_03` R6). |
+| `src/primitives.css` | generated | Values only: seven OKLCH ramps (`--primary-25` … `--info-950`), the spacing unit, corners, families, and px-named type values. |
+| `src/semantic.css` | generated | The roles, and **the only layer a component may reference**. Colour roles (`--action-primary`, `--fg-secondary`, `--status-error-surface`…), elevation, shapes, layout roles and type roles. Tablet and desktop overrides sit under `md` and `lg` media queries. The dark mode is `:root[data-theme='dark']` over the same names. |
+| `src/theme.css` | generated | Tailwind's `@theme inline`. It resets the defaults (`--*: initial`) and maps every role onto a utility, so every utility that exists is token-backed (`FE_04` R1). |
+| `src/supplement.css` | hand-written | What the blueprint has no section for yet: motion, focus ring width and offset, two content widths, the mono family, and Google Sans's measured backup face (ADR 0025). Each value is a request to design, not a place to add more. |
+| `scripts/generate-tokens.ts` | generator | Reads the export and writes the three generated files. |
 
-An app imports `@repo/tokens/tokens.css`, which pulls all three in the order they have to load.
+## What it exports
+
+`@repo/tokens/tokens.css` loads everything in the order it must load. An app imports this one
+file. The individual files are exported too, for tests that read them.
+
+## Tasks
+
+```bash
+bun run tokens:generate   # regenerate the three files from the blueprint (turbo: tokens:generate)
+bun run lint              # biome check
+```
+
+To take a new design: replace `source/thrive.blueprint.json` with the new export, run
+`bun run tokens:generate`, and commit the export and the outputs together. The diff of the outputs
+is what design changed. If a role was renamed or removed, migrate every consumer in the same change
+(`FE_03` R10). An undefined custom property fails silently, so search for the old name.
 
 ## The rules that bite most often
 
-- **A component never references a primitive** (`FE_03` R2). `bg-action`, never `bg-primary-500` —
-  and the theme deliberately does not expose the ramps, so the second one does not exist as a
-  utility. Nor do Tailwind's defaults: the theme resets them, so `bg-red-500`, `rounded-md` and
-  `shadow-md` are not classes either. A utility you need that is missing wants a token first.
-- **Colours, shapes and type are roles; sizes are scales.** A type utility is one of the
-  design's text styles — `text-h1`, `text-body2`, `text-caption` — carrying size, line height,
-  letter spacing and weight together; display styles add `font-display`. Spacing, weight, width
-  and breakpoint map straight from their primitives, the way `--spacing` does. Breakpoints are
-  literal values in `theme.css`, because a media query cannot read a custom property.
-- **Names state roles, not appearances** (`FE_03` R3). `--danger`, never `--red`. The day danger
-  stops being red, a role name is still true.
-- **A theme is a mode of the semantic layer** (`FE_03` R7), attached as
-  `:root[data-theme='dark']` overriding the same role names. No component learns that a theme
-  exists. Dark mode is not built yet — it was out of scope for #47 — but this is where it goes.
+- **Never edit a generated file** (`FE_03` R5). The next run overwrites it. A wrong value is wrong in
+  the blueprint, and that is where it is fixed (R6).
+- **A component never references a primitive** (R2). Write `bg-action-primary`, never
+  `bg-primary-700`. The theme deliberately exposes no ramp, and Tailwind's defaults are reset, so
+  `bg-red-500` and `rounded-md` are not classes either.
+- **Names are the blueprint's**, with dots turned into dashes (R9). A role code needs and the
+  blueprint lacks is a request to design, not a local addition.
+- **A type utility is one blueprint role** (`text-h1`, `text-body-2`, `text-button-sm`). It carries
+  size, line height, letter spacing and weight, but not a family. Display, subtitle-display and
+  quote also need `font-display`, subtitle-handwrite needs `font-handwrite`, and code needs
+  `font-mono`; the `Text` atom adds them. A new role also needs adding to `cn`'s list in
+  `apps/web/lib/cn.util.ts`, or `tailwind-merge` will read it as a colour.
+- **A theme is a mode of the semantic layer** (R7). No component branches on it, and no class uses
+  `dark:` (`FE_04` R8).
 
-## Where the values came from, and where they are going
+## How the generator reads the blueprint
 
-The ramps were read out of the retired `Thrive-feedback/thrive-monorepo` build, which is read as a
-specification and never ported (`docs/adr/0009`). They are Thrive's real colours rather than
-invented placeholders.
+The full reasoning is in ADR 0028.
 
-Two things are therefore provisional:
-
-1. **`FE_03` R6 makes this package the source of record only until a design source exists.** Spike
-   #43 decides how Figma and code exchange tokens; the change that introduces the pipeline migrates
-   these values rather than re-deciding them.
-2. **The semantic vocabulary is a proposal.** `FE_03` R9 wants names agreed with design before they
-   exist in either place, and there is no designer in the loop yet. These are the roles Thrive's
-   current screens need and no more (`PROJECT.md` §2).
-
-**Type** follows the design's text styles one for one (`docs/adr/0023`, faces in `docs/adr/0025`). **Google Sans** carries
-every role but display and loads from Google Fonts. **Cooper**, the display face, is SIL OFL 1.1,
-so it is committed — SemiBold only, the one weight the design uses — with its licence beside it
-in `apps/web/app/_lib/fonts/cooper/`. A new role here needs the same name added to `cn`'s list in
-`apps/web/lib/cn.util.ts`, or `tailwind-merge` will read it as a colour.
+- **Ramps:** each of the 20 steps keeps the seed's OKLCH hue and chroma at the step's lightness.
+  The chroma is reduced until the colour fits sRGB.
+- **Devices:** phone is the default, tablet applies from `md`, desktop from `lg`.
+- **Type:** size is `16px × deviceRatio ^ stepOffset`, unless the blueprint pins one. Line height is
+  size × the group's ratio. Both are rounded to whole pixels.

@@ -65,11 +65,14 @@ toast('Feedback archived', { action: { label: 'Undo', onClick: restore } });`}
 
 export function ToastPreview() {
   return (
-    <div className="flex w-full items-start gap-3 rounded-control border border-success bg-success-subtle p-3">
-      <CircleCheckIcon aria-hidden="true" className="size-5 text-success" />
-      <div className="flex flex-col text-body2">
+    <div className="flex w-full items-start gap-3 rounded-element border border-status-success-border bg-status-success-surface p-3">
+      <CircleCheckIcon
+        aria-hidden="true"
+        className="size-5 text-status-success-fg"
+      />
+      <div className="flex flex-col text-body-2">
         <span className="font-medium">Resend success!</span>
-        <span className="text-foreground-muted">Verification link sent.</span>
+        <span className="text-fg-secondary">Verification link sent.</span>
       </div>
     </div>
   );

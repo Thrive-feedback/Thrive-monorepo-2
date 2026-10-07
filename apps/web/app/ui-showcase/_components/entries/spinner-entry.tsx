@@ -17,7 +17,7 @@ export function SpinnerEntry() {
       usage={`import { Spinner } from '@/components/atoms/spinner';
 
 <Spinner />
-<Spinner className="size-6 text-brand" />`}
+<Spinner className="size-6 text-fg-accent" />`}
       props={[
         {
           name: 'className',
@@ -35,12 +35,12 @@ export function SpinnerEntry() {
       <StateCell label="Sizes">
         <Spinner />
         <Spinner className="size-6" />
-        <Spinner className="size-8 text-brand" />
+        <Spinner className="size-8 text-fg-accent" />
       </StateCell>
     </ShowcaseEntry>
   );
 }
 
 export function SpinnerPreview() {
-  return <Spinner className="size-6 text-brand" />;
+  return <Spinner className="size-6 text-fg-accent" />;
 }

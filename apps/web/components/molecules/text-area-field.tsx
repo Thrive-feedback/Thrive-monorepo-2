@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn.util';
 
 const messageLine = cva('text-caption', {
   variants: {
-    invalid: { true: 'text-danger', false: 'text-foreground-muted' },
+    invalid: { true: 'text-status-error-fg', false: 'text-fg-secondary' },
   },
   defaultVariants: { invalid: false },
 });
@@ -41,7 +41,7 @@ export function TextAreaField({
     <div className={cn('flex flex-col gap-2', className)}>
       <Label htmlFor={id} className="block">
         {required && (
-          <span aria-hidden="true" className="me-1 text-danger">
+          <span aria-hidden="true" className="me-1 text-status-error-fg">
             *
           </span>
         )}

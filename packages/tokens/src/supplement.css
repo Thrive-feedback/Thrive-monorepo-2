@@ -1,0 +1,46 @@
+/*
+ * Hand-written: the few values the blueprint has no section for yet. Everything else in this
+ * package is generated from `source/thrive.blueprint.json` (ADR 0028), and each value here is a
+ * request to design to add it there (`FE_03` R6, R9) — not a place to add more.
+ *
+ * Motion, a stroke width for the focus ring, two content widths and a monospace family are what
+ * today's screens use that the blueprint does not describe.
+ */
+:root {
+  /* A spinner turns; a placeholder breathes while its content loads. */
+  --motion-spin: 1000ms linear infinite;
+  --motion-pulse: 2000ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  /* Focus, from one ring on every interactive element (`FE_06` R5). */
+  --focus-ring-width: 0.125rem;
+  --focus-ring-offset: 0.125rem;
+
+  --measure-2xl: 42rem;
+  --measure-5xl: 64rem;
+
+  --family-mono: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+}
+
+/*
+ * What `--family-main` shows until Google Sans has downloaded: Arial, resized so its letters take
+ * the same width and its lines the same height as Google Sans. Without it the page is laid out
+ * in a system font of a different size and every line moves when Google Sans swaps in.
+ *
+ * Next.js builds this face itself for the Google fonts it has measurements for, and it has none
+ * for Google Sans, so the root layout names this face as Google Sans's fallback instead. The
+ * name is the contract between the two files (ADR 0025).
+ *
+ * The values are measured from the latin Google Sans file Next.js downloads (regular weight,
+ * 1000 units per em: ascent 966, descent 286, no line gap) with the formula Next.js uses for a
+ * local font — average width of a letter-frequency sample against Arial's for `size-adjust`,
+ * then each vertical metric divided by that scale. Re-measure them if Google Fonts ships a new
+ * version.
+ */
+@font-face {
+  font-family: 'Google Sans Fallback';
+  src: local('Arial');
+  ascent-override: 95.12%;
+  descent-override: 28.16%;
+  line-gap-override: 0%;
+  size-adjust: 101.55%;
+}

@@ -13,6 +13,9 @@
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"],
       "env": ["API_BASE_URL", "NODE_ENV", "PORT"]
     },
+    "tokens:generate": {
+      "cache": false
+    },
     "contract:generate": {
       "cache": false,
       "dependsOn": ["db:generate"]

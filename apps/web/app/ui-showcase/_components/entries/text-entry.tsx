@@ -8,8 +8,8 @@ import { ROUTES } from '@/lib/routes.constant';
 
 const USAGE = `import { Text } from '@/components/atoms/text';
 
-<Text variant="display3" as="h1">Let’s make it official.</Text>
-<Text variant="body2" tone="muted">May I ask how you would like to be introduced?</Text>
+<Text variant="display-3" as="h1">Let’s make it official.</Text>
+<Text variant="body-2" tone="muted">May I ask how you would like to be introduced?</Text>
 
 // Looks like h6, is the page's second-level heading:
 <Text variant="h6" as="h2">Your Workspace</Text>`;
@@ -23,15 +23,15 @@ export function TextEntry() {
       source="components/atoms/text.tsx"
       summary="Sets text in one of the design's type styles, on whichever element the content is."
       useFor="Every heading, paragraph and caption on a screen — the style from the design, the element from the page outline."
-      avoidFor="Text inside another atom; atoms use the type utilities (text-body2…) directly."
+      avoidFor="Text inside another atom; atoms use the type utilities (text-body-2…) directly."
       usage={USAGE}
       props={[
         {
           name: 'variant',
-          type: "'display1'…'display6' | 'h1'…'h6' | 'subtitle1'…'subtitle4' | 'body1'…'body3' | 'caption' | 'overline'",
-          defaultValue: "'body1'",
+          type: "'display-1'…'display-6' | 'h1'…'h6' | 'subtitle-1'…'subtitle-4' | 'subtitle-display-1'…'-4' | 'subtitle-handwrite-1'…'-4' | 'body-1'…'body-3' | 'quote' | 'code' | 'label' | 'caption' | 'overline'",
+          defaultValue: "'body-1'",
           description:
-            'The design text style. Display styles are set in Cooper, the rest in Google Sans.',
+            'The blueprint type role. Display, subtitle-display and quote are set in Cooper, subtitle-handwrite in Caveat, code in mono, the rest in Google Sans.',
         },
         {
           name: 'as',
@@ -59,7 +59,7 @@ export function TextEntry() {
       ]}
     >
       <StateCell label="Display" hint="Cooper">
-        <Text variant="display5" as="p">
+        <Text variant="display-5" as="p">
           Let’s make it official.
         </Text>
       </StateCell>
@@ -70,8 +70,8 @@ export function TextEntry() {
       </StateCell>
       <StateCell label="Subtitle and body">
         <div className="flex flex-col gap-1">
-          <Text variant="subtitle2">Introduce yourself</Text>
-          <Text variant="body2" tone="muted">
+          <Text variant="subtitle-2">Introduce yourself</Text>
+          <Text variant="body-2" tone="muted">
             This is how your name will show up in the system.
           </Text>
         </div>
@@ -102,10 +102,10 @@ export function TextEntry() {
 export function TextPreview() {
   return (
     <div className="flex flex-col gap-1">
-      <Text variant="display6" as="span">
+      <Text variant="display-6" as="span">
         Let’s make it official.
       </Text>
-      <Text variant="body2" tone="muted">
+      <Text variant="body-2" tone="muted">
         Body copy in Google Sans.
       </Text>
     </div>

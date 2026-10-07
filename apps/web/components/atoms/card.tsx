@@ -19,13 +19,13 @@ export function Card({
   return (
     <section
       className={cn(
-        'flex w-full flex-col rounded-floating border border-line bg-surface-floating shadow-floating',
+        'flex w-full flex-col rounded-page border border-border-default bg-surface-overlay shadow-med',
         className,
       )}
       {...rest}
     >
-      <header className="border-line border-b px-6 pt-6 pb-4">
-        <Title className="text-center text-subtitle2">{title}</Title>
+      <header className="border-border-default border-b px-6 pt-6 pb-4">
+        <Title className="text-center text-subtitle-2">{title}</Title>
       </header>
       <div className="p-6">{children}</div>
     </section>

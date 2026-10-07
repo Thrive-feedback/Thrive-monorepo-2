@@ -9,11 +9,11 @@ export type ShowcaseBreadcrumbProps = {
 export function ShowcaseBreadcrumb({ current }: ShowcaseBreadcrumbProps) {
   return (
     <nav aria-label="Breadcrumb">
-      <ol className="flex items-center gap-2 text-body2">
+      <ol className="flex items-center gap-2 text-body-2">
         <li>
           <Link href={ROUTES.uiShowcase.index}>Index</Link>
         </li>
-        <li aria-hidden="true" className="text-foreground-muted">
+        <li aria-hidden="true" className="text-fg-secondary">
           /
         </li>
         <li>

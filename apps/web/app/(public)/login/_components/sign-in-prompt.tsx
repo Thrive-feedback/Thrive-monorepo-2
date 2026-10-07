@@ -18,10 +18,10 @@ export function SignInPrompt({ didSignInFail = false }: SignInPromptProps) {
   return (
     <div className="m-auto flex w-full max-w-2xl flex-col items-center gap-8 text-center">
       <div className="flex flex-col gap-3">
-        <Text variant="display5" as="h1" className="md:text-display3">
+        <Text variant="display-5" as="h1" className="md:text-display-3">
           Are you ready to Thrive?
         </Text>
-        <Text variant="body2" tone="muted">
+        <Text variant="body-2" tone="muted">
           sign in or sign up
         </Text>
       </div>

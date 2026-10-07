@@ -15,17 +15,27 @@
 @layer base {
   html {
     /*
-     * Tells form controls and scrollbars which modes the tokens support. Light only, because
-     * the semantic layer has no dark mode yet; claiming `light dark` would paint dark
-     * scrollbars on a light page.
+     * Tells form controls and scrollbars which mode is showing. It follows `data-theme`, the
+     * attribute the semantic layer's dark mode hangs from, rather than claiming `light dark`,
+     * which would paint dark scrollbars on a light page.
      */
     color-scheme: light;
+
+    /*
+     * The blueprint sets display roles at 700 and Cooper ships only its SemiBold. Without this
+     * the browser smears a fake bold over it; with it, the real SemiBold shows.
+     */
+    font-synthesis-weight: none;
+  }
+
+  html[data-theme='dark'] {
+    color-scheme: dark;
   }
 
   body {
-    background: var(--surface);
-    color: var(--foreground);
-    font-family: var(--family-sans);
+    background: var(--surface-base);
+    color: var(--fg-primary);
+    font-family: var(--family-main);
   }
 
   /* Focus stays visible on every interactive element, from one token. `data-focus-preview`
@@ -33,7 +43,7 @@
      the focused state beside the others instead of asking the reader to tab to it. */
   :focus-visible,
   [data-focus-preview] {
-    outline: var(--focus-ring-width) solid var(--focus);
+    outline: var(--focus-ring-width) solid var(--focus-ring);
     outline-offset: var(--focus-ring-offset);
   }
 }

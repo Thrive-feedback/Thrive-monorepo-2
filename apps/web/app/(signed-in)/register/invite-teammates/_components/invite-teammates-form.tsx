@@ -104,7 +104,7 @@ export function InviteTeammatesForm() {
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
       <fieldset className="flex flex-col gap-3">
-        <Text as="legend" variant="subtitle4" className="mb-2">
+        <Text as="legend" variant="subtitle-4" className="mb-2">
           Email address
         </Text>
         {/* Scrolls past about five rows. The padding, offset by the negative margin, keeps a

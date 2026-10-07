@@ -5,17 +5,17 @@ import { Avatar as AvatarPrimitive } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
 
 const avatar = cva(
-  'relative flex shrink-0 select-none overflow-hidden bg-surface-sunken text-foreground-muted',
+  'relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary',
   {
     variants: {
       size: {
-        sm: 'size-6 text-body3',
-        md: 'size-8 text-body2',
-        lg: 'size-10 text-body2',
+        sm: 'size-6 text-body-3',
+        md: 'size-8 text-body-2',
+        lg: 'size-10 text-body-2',
       },
       shape: {
         circle: 'rounded-full',
-        rounded: 'rounded-control',
+        rounded: 'rounded-element',
         square: 'rounded-none',
       },
     },

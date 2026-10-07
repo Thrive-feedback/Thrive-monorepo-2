@@ -48,7 +48,7 @@ describe('Text', () => {
   it('passes the element’s own props through', () => {
     render(
       <>
-        <Text as="label" variant="subtitle4" htmlFor="name">
+        <Text as="label" variant="subtitle-4" htmlFor="name">
           Name
         </Text>
         <input id="name" />

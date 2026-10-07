@@ -5,11 +5,13 @@
   "exports": {
     "./primitives.css": "./src/primitives.css",
     "./semantic.css": "./src/semantic.css",
+    "./supplement.css": "./src/supplement.css",
     "./theme.css": "./src/theme.css",
     "./tokens.css": "./src/tokens.css"
   },
   "scripts": {
-    "lint": "biome check ."
+    "lint": "biome check .",
+    "tokens:generate": "bun scripts/generate-tokens.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

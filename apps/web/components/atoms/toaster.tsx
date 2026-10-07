@@ -29,10 +29,12 @@ export function Toaster(props: ToasterProps) {
       theme="light"
       closeButton
       icons={{
-        success: <CircleCheckIcon className="size-5 text-success" />,
-        info: <InfoIcon className="size-5 text-info" />,
-        warning: <TriangleAlertIcon className="size-5 text-caution" />,
-        error: <OctagonXIcon className="size-5 text-danger" />,
+        success: <CircleCheckIcon className="size-5 text-status-success-fg" />,
+        info: <InfoIcon className="size-5 text-status-info-fg" />,
+        warning: (
+          <TriangleAlertIcon className="size-5 text-status-warning-fg" />
+        ),
+        error: <OctagonXIcon className="size-5 text-status-error-fg" />,
         loading: <Loader2Icon className="size-5 animate-spin" />,
         close: <XIcon aria-hidden="true" className="size-4" />,
       }}
@@ -40,24 +42,24 @@ export function Toaster(props: ToasterProps) {
         unstyled: true,
         classNames: {
           toast:
-            'flex w-full items-start gap-3 rounded-control border p-4 text-foreground shadow-floating',
-          title: 'text-subtitle4',
-          description: 'text-body2 text-foreground-muted',
+            'flex w-full items-start gap-3 rounded-element border p-4 text-fg-primary shadow-med',
+          title: 'text-subtitle-4',
+          description: 'text-body-2 text-fg-secondary',
           // Sonner joins `toast` with the type's classes rather than merging them, so the
           // colour lives only in the type slots: two backgrounds on one element would leave
           // stylesheet order to pick the winner.
-          default: 'border-line bg-surface',
-          loading: 'border-line bg-surface',
-          success: 'border-success bg-success-subtle',
-          info: 'border-info bg-info-subtle',
-          warning: 'border-caution bg-caution-subtle',
-          error: 'border-danger bg-danger-subtle',
+          default: 'border-border-default bg-surface-base',
+          loading: 'border-border-default bg-surface-base',
+          success: 'border-status-success-border bg-status-success-surface',
+          info: 'border-status-info-border bg-status-info-surface',
+          warning: 'border-status-warning-border bg-status-warning-surface',
+          error: 'border-status-error-border bg-status-error-surface',
           actionButton:
-            'ms-auto rounded-control bg-action px-3 py-1.5 text-button-medium text-foreground-on-action',
+            'ms-auto rounded-button bg-action-primary px-3 py-1.5 text-button-sm text-fg-on-action',
           closeButton:
-            'order-last ms-auto shrink-0 cursor-pointer rounded-full p-1 text-foreground-muted hover:bg-surface-sunken hover:text-foreground',
+            'order-last ms-auto shrink-0 cursor-pointer rounded-full p-1 text-fg-secondary hover:bg-surface-subtle hover:text-fg-primary',
           cancelButton:
-            'rounded-control border border-line px-3 py-1.5 text-button-medium',
+            'rounded-button border border-border-default px-3 py-1.5 text-button-sm',
         },
       }}
       {...props}
