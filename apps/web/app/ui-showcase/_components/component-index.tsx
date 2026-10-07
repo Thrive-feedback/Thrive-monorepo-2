@@ -25,13 +25,13 @@ export function ComponentIndex() {
           building a new one, and take colours from the{' '}
           <Link href={ROUTES.uiShowcase.tokens}>design tokens</Link>.
         </Text>
-        <Text variant="body2" tone="muted">
+        <Text variant="body-2" tone="muted">
           Adding one from shadcn:{' '}
-          <code className="text-foreground">
+          <code className="text-fg-primary">
             cd apps/web &amp;&amp; bunx --bun shadcn@latest add &lt;name&gt;
           </code>
           , then swap its classes for token utilities — see{' '}
-          <code className="text-foreground">docs/adr/0021</code>.
+          <code className="text-fg-primary">docs/adr/0021</code>.
         </Text>
       </header>
 
@@ -42,13 +42,13 @@ export function ComponentIndex() {
           className="flex flex-col gap-4"
         >
           <div className="flex flex-col gap-1">
-            <h2 id={`${level}-heading`} className="text-subtitle1">
+            <h2 id={`${level}-heading`} className="text-subtitle-1">
               {title}{' '}
-              <code className="font-normal text-body2 text-brand">
+              <code className="font-normal text-body-2 text-fg-accent">
                 {folder}
               </code>
             </h2>
-            <Text variant="body2" tone="muted">
+            <Text variant="body-2" tone="muted">
               {description}
             </Text>
           </div>
@@ -57,7 +57,7 @@ export function ComponentIndex() {
               ({ slug, name, level: entryLevel, Preview }) => (
                 <li
                   key={slug}
-                  className="relative flex flex-col overflow-hidden rounded-surface border border-line hover:border-line-strong hover:bg-surface-raised"
+                  className="relative flex flex-col overflow-hidden rounded-surface border border-border-default hover:border-border-strong hover:bg-surface-raised"
                 >
                   <div
                     inert
@@ -65,10 +65,10 @@ export function ComponentIndex() {
                   >
                     <Preview />
                   </div>
-                  <div className="flex items-center justify-between gap-2 border-line border-t bg-surface-raised px-4 py-3">
+                  <div className="flex items-center justify-between gap-2 border-border-default border-t bg-surface-raised px-4 py-3">
                     <Link
                       href={ROUTES.uiShowcase.component(slug)}
-                      className="font-semibold text-foreground after:absolute after:inset-0"
+                      className="font-semibold text-fg-primary after:absolute after:inset-0"
                     >
                       {name}
                     </Link>

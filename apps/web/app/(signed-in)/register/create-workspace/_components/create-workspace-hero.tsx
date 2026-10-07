@@ -6,10 +6,10 @@ export function CreateWorkspaceHero() {
   return (
     <div className="flex flex-col gap-4 text-center md:text-start">
       <WorkspaceSetupStepCount currentStep="create-workspace" />
-      <Text variant="display5" as="h1" className="md:text-display3">
+      <Text variant="display-5" as="h1" className="md:text-display-3">
         Welcome! Let’s set up your team’s home.
       </Text>
-      <Text variant="body2" tone="muted">
+      <Text variant="body-2" tone="muted">
         Give your new Workspace a name.
         <br />
         You can invite your team in the next step.

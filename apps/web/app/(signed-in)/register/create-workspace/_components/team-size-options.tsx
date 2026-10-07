@@ -22,14 +22,14 @@ export function TeamSizeOptions({
 }: TeamSizeOptionsProps) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <Text as="legend" variant="subtitle4" className="mb-2">
+      <Text as="legend" variant="subtitle-4" className="mb-2">
         Team size (optional)
       </Text>
       <div className="flex flex-wrap gap-2">
         {TEAM_SIZES.map((size) => (
           <label
             key={size}
-            className="relative rounded-indicator border border-line bg-surface px-3 py-1.5 text-body3 has-checked:border-action has-checked:bg-action-subtle has-checked:text-brand"
+            className="relative rounded-inner border border-border-default bg-surface-base px-3 py-1.5 text-body-3 has-checked:border-action-primary has-checked:bg-action-primary-surface has-checked:text-fg-accent"
           >
             <input
               type="radio"
@@ -37,7 +37,7 @@ export function TeamSizeOptions({
               value={size}
               checked={value === size}
               onChange={() => onChange(size)}
-              className="absolute inset-0 cursor-pointer appearance-none rounded-indicator"
+              className="absolute inset-0 cursor-pointer appearance-none rounded-inner"
             />
             {size}
           </label>

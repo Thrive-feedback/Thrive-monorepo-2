@@ -17,12 +17,12 @@ export function SomethingWentWrong({
   onRetry,
 }: SomethingWentWrongProps) {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-linear-to-b from-backdrop to-backdrop-tint px-4 py-12 text-center">
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-linear-to-b from-surface-base to-surface-subtle px-4 py-12 text-center">
       <div className="flex flex-col gap-3">
-        <Text variant="display5" as="h1">
+        <Text variant="display-5" as="h1">
           Something went wrong
         </Text>
-        <Text variant="body2" tone="muted">
+        <Text variant="body-2" tone="muted">
           Thrive could not load this page. Try again in a moment.
         </Text>
       </div>

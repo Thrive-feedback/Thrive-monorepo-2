@@ -57,7 +57,7 @@ export function InviteEmailRow({
         )}
       </div>
       {errorMessage && (
-        <p id={messageId} className="text-caption text-danger">
+        <p id={messageId} className="text-caption text-status-error-fg">
           {errorMessage}
         </p>
       )}

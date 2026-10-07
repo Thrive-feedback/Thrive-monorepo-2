@@ -2,15 +2,18 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import NextLink from 'next/link';
 import { cn } from '@/lib/cn.util';
 
-const link = cva('rounded-control font-medium text-link underline-offset-4', {
-  variants: {
-    underline: {
-      hover: 'hover:underline',
-      always: 'underline',
+const link = cva(
+  'rounded-element font-medium text-fg-accent underline-offset-4',
+  {
+    variants: {
+      underline: {
+        hover: 'hover:underline',
+        always: 'underline',
+      },
     },
+    defaultVariants: { underline: 'hover' },
   },
-  defaultVariants: { underline: 'hover' },
-});
+);
 
 export type LinkProps = React.ComponentPropsWithRef<typeof NextLink> &
   VariantProps<typeof link> & {

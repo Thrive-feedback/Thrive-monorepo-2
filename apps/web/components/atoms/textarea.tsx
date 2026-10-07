@@ -11,7 +11,7 @@ export function Textarea({ className, ...rest }: TextareaProps) {
     <textarea
       data-slot="textarea"
       className={cn(
-        'field-sizing-content flex min-h-20 w-full rounded-control border border-line-strong bg-surface px-3 py-2.5 text-body1 placeholder:text-foreground-muted disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-foreground-muted aria-invalid:border-danger',
+        'field-sizing-content flex min-h-20 w-full rounded-input border border-border-strong bg-surface-base px-3 py-2.5 text-body-1 placeholder:text-fg-secondary disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-fg-secondary aria-invalid:border-status-error-border',
         className,
       )}
       {...rest}

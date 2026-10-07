@@ -15,7 +15,7 @@ export function WorkspaceSetupStepCount({
   const position = STEPS.indexOf(currentStep) + 1;
 
   return (
-    <Text as="p" variant="display6">
+    <Text as="p" variant="display-6">
       <span aria-hidden="true">
         Step {position} / {STEPS.length}
       </span>

@@ -52,14 +52,14 @@ export function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        'flex w-full cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line-strong bg-surface px-3 py-2.5 text-body1 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-foreground-muted aria-invalid:border-danger data-placeholder:text-foreground-muted',
+        'flex w-full cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-input border border-border-strong bg-surface-base px-3 py-2.5 text-body-1 disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-fg-secondary aria-invalid:border-status-error-border data-placeholder:text-fg-secondary',
         className,
       )}
       {...rest}
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="size-4 shrink-0 text-foreground-muted" />
+        <ChevronDownIcon className="size-4 shrink-0 text-fg-secondary" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
@@ -79,7 +79,7 @@ export function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          'relative z-50 overflow-hidden rounded-surface border border-line bg-surface text-foreground shadow-floating',
+          'relative z-50 overflow-hidden rounded-surface border border-border-default bg-surface-base text-fg-primary shadow-med',
           className,
         )}
         {...rest}
@@ -100,10 +100,7 @@ export function SelectLabel({ className, ...rest }: SelectLabelProps) {
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
-      className={cn(
-        'px-2 py-1.5 text-caption text-foreground-muted',
-        className,
-      )}
+      className={cn('px-2 py-1.5 text-caption text-fg-secondary', className)}
       {...rest}
     />
   );
@@ -118,14 +115,14 @@ export function SelectItem({ className, children, ...rest }: SelectItemProps) {
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-control py-2 pr-8 pl-2 text-body2 outline-hidden data-disabled:pointer-events-none data-highlighted:bg-action-subtle data-disabled:text-foreground-muted',
+        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element py-2 pr-8 pl-2 text-body-2 outline-hidden data-disabled:pointer-events-none data-highlighted:bg-action-primary-surface data-disabled:text-fg-secondary',
         className,
       )}
       {...rest}
     >
       <span className="absolute right-2 flex size-4 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <CheckIcon className="size-4 text-brand" />
+          <CheckIcon className="size-4 text-fg-accent" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>

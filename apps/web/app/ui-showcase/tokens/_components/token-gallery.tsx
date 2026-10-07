@@ -24,118 +24,101 @@ import { Palette } from './palette';
  * the role name, for the reason in the header: `text-${role}` is invisible to the scanner.
  */
 const TYPE_STYLES = [
+  { role: 'display-1', className: 'font-display text-display-1' },
+  { role: 'display-2', className: 'font-display text-display-2' },
+  { role: 'display-3', className: 'font-display text-display-3' },
+  { role: 'display-4', className: 'font-display text-display-4' },
+  { role: 'display-5', className: 'font-display text-display-5' },
+  { role: 'display-6', className: 'font-display text-display-6' },
+  { role: 'h1', className: 'text-h1' },
+  { role: 'h2', className: 'text-h2' },
+  { role: 'h3', className: 'text-h3' },
+  { role: 'h4', className: 'text-h4' },
+  { role: 'h5', className: 'text-h5' },
+  { role: 'h6', className: 'text-h6' },
+  { role: 'subtitle-1', className: 'text-subtitle-1' },
+  { role: 'subtitle-2', className: 'text-subtitle-2' },
+  { role: 'subtitle-3', className: 'text-subtitle-3' },
+  { role: 'subtitle-4', className: 'text-subtitle-4' },
   {
-    role: 'display1',
-    className: 'font-display text-display1',
-    spec: 'Cooper SemiBold 72/72, -3',
+    role: 'subtitle-display-1',
+    className: 'font-display text-subtitle-display-1',
   },
   {
-    role: 'display2',
-    className: 'font-display text-display2',
-    spec: 'Cooper SemiBold 64/64, -3',
+    role: 'subtitle-display-2',
+    className: 'font-display text-subtitle-display-2',
   },
   {
-    role: 'display3',
-    className: 'font-display text-display3',
-    spec: 'Cooper SemiBold 48/56, -3',
+    role: 'subtitle-display-3',
+    className: 'font-display text-subtitle-display-3',
   },
   {
-    role: 'display4',
-    className: 'font-display text-display4',
-    spec: 'Cooper SemiBold 40/48, -0.3',
+    role: 'subtitle-display-4',
+    className: 'font-display text-subtitle-display-4',
   },
   {
-    role: 'display5',
-    className: 'font-display text-display5',
-    spec: 'Cooper SemiBold 32/40, -0.2',
+    role: 'subtitle-handwrite-1',
+    className: 'font-handwrite text-subtitle-handwrite-1',
   },
   {
-    role: 'display6',
-    className: 'font-display text-display6',
-    spec: 'Cooper SemiBold 28/36, -0.2',
-  },
-  { role: 'h1', className: 'text-h1', spec: 'Google Sans Medium 72/72, -3' },
-  { role: 'h2', className: 'text-h2', spec: 'Google Sans Medium 64/64, -3' },
-  { role: 'h3', className: 'text-h3', spec: 'Google Sans Medium 48/56, -3' },
-  { role: 'h4', className: 'text-h4', spec: 'Google Sans Medium 40/48, -0.3' },
-  { role: 'h5', className: 'text-h5', spec: 'Google Sans Medium 32/40, -0.2' },
-  { role: 'h6', className: 'text-h6', spec: 'Google Sans Medium 28/36, -0.2' },
-  {
-    role: 'subtitle1',
-    className: 'text-subtitle1',
-    spec: 'Google Sans Medium 24/32, -0.5',
+    role: 'subtitle-handwrite-2',
+    className: 'font-handwrite text-subtitle-handwrite-2',
   },
   {
-    role: 'subtitle2',
-    className: 'text-subtitle2',
-    spec: 'Google Sans Medium 20/28, -0.5',
+    role: 'subtitle-handwrite-3',
+    className: 'font-handwrite text-subtitle-handwrite-3',
   },
   {
-    role: 'subtitle3',
-    className: 'text-subtitle3',
-    spec: 'Google Sans Medium 16/24, -0.3',
+    role: 'subtitle-handwrite-4',
+    className: 'font-handwrite text-subtitle-handwrite-4',
   },
-  {
-    role: 'subtitle4',
-    className: 'text-subtitle4',
-    spec: 'Google Sans Medium 14/20',
-  },
-  { role: 'body1', className: 'text-body1', spec: 'Google Sans Regular 16/24' },
-  { role: 'body2', className: 'text-body2', spec: 'Google Sans Regular 14/20' },
-  { role: 'body3', className: 'text-body3', spec: 'Google Sans Regular 12/18' },
-  {
-    role: 'caption',
-    className: 'text-caption',
-    spec: 'Google Sans Regular 12/20',
-  },
-  {
-    role: 'overline',
-    className: 'text-overline uppercase',
-    spec: 'Google Sans Medium 12/20, upper case',
-  },
-  {
-    role: 'button-large',
-    className: 'text-button-large',
-    spec: 'Google Sans Medium 15/20 — Button lg',
-  },
-  {
-    role: 'button-medium',
-    className: 'text-button-medium',
-    spec: 'Google Sans Medium 14/20 — Button md',
-  },
-  {
-    role: 'button-small',
-    className: 'text-button-small',
-    spec: 'Google Sans Medium 13/20 — Button sm',
-  },
+  { role: 'body-1', className: 'text-body-1' },
+  { role: 'body-2', className: 'text-body-2' },
+  { role: 'body-3', className: 'text-body-3' },
+  { role: 'quote', className: 'font-display text-quote' },
+  { role: 'code', className: 'font-mono text-code' },
+  { role: 'button-md', className: 'text-button-md' },
+  { role: 'button-sm', className: 'text-button-sm' },
+  { role: 'button-xs', className: 'text-button-xs' },
+  { role: 'input-label-md', className: 'text-input-label-md' },
+  { role: 'input-label-sm', className: 'text-input-label-sm' },
+  { role: 'input-label-xs', className: 'text-input-label-xs' },
+  { role: 'input-value-md', className: 'text-input-value-md' },
+  { role: 'input-value-sm', className: 'text-input-value-sm' },
+  { role: 'input-value-xs', className: 'text-input-value-xs' },
+  { role: 'input-helper', className: 'text-input-helper' },
+  { role: 'table-header', className: 'text-table-header' },
+  { role: 'list-subheader', className: 'text-list-subheader' },
+  { role: 'label', className: 'text-label' },
+  { role: 'caption', className: 'text-caption' },
+  { role: 'overline', className: 'text-overline uppercase' },
+  { role: 'tag', className: 'text-tag' },
 ] as const;
 
 function TypeScale() {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <Text variant="subtitle1" as="h2">
+        <Text variant="subtitle-1" as="h2">
           Type
         </Text>
-        <Text variant="body2" tone="muted">
-          One utility per text style in the design, each carrying size, line
-          height, letter spacing and weight (px from Figma). Display styles also
-          need font-display — or use the Text component, which adds it.
+        <Text variant="body-2" tone="muted">
+          One utility per type role in the blueprint, each carrying size, line
+          height, letter spacing and weight, and stepping up at the tablet and
+          desktop breakpoints. A utility cannot carry a family, so display,
+          handwrite and code roles also need their font class — or use the Text
+          component, which adds it. Resize the window to see the steps.
         </Text>
       </div>
-      <ul className="flex flex-col divide-y divide-line rounded-surface border border-line">
-        {TYPE_STYLES.map(({ role, className, spec }) => (
+      <ul className="flex flex-col divide-y divide-border-default rounded-surface border border-border-default">
+        {TYPE_STYLES.map(({ role, className }) => (
           <li
             key={role}
             className="flex flex-col gap-2 p-4 md:flex-row md:items-baseline md:gap-6"
           >
             <div className="flex shrink-0 flex-col md:w-56">
-              <code className="text-body2">
-                {role.startsWith('display')
-                  ? `font-display text-${role}`
-                  : `text-${role}`}
-              </code>
-              <span className="text-caption text-foreground-muted">{spec}</span>
+              <code className="text-body-2">{className}</code>
+              <span className="text-caption text-fg-secondary">{role}</span>
             </div>
             <span className={cn('min-w-0 truncate', className)}>
               Feedback that helps
@@ -159,10 +142,10 @@ function Section({
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <Text variant="subtitle1" as="h2">
+        <Text variant="subtitle-1" as="h2">
           {title}
         </Text>
-        <Text variant="body2" tone="muted">
+        <Text variant="body-2" tone="muted">
           {description}
         </Text>
       </div>
@@ -179,11 +162,11 @@ function Swatch({
   children,
 }: Readonly<{ name: string; usage: string; children: React.ReactNode }>) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-surface border border-line">
+    <div className="flex flex-col overflow-hidden rounded-surface border border-border-default">
       <div className="flex h-16 items-center justify-center">{children}</div>
-      <div className="flex flex-col gap-0.5 border-line border-t p-3">
-        <code className="text-body2">{name}</code>
-        <span className="text-caption text-foreground-muted">{usage}</span>
+      <div className="flex flex-col gap-0.5 border-border-default border-t p-3">
+        <code className="text-body-2">{name}</code>
+        <span className="text-caption text-fg-secondary">{usage}</span>
       </div>
     </div>
   );
@@ -197,9 +180,9 @@ export function TokenGallery() {
           Design tokens
         </Text>
         <Text tone="muted" className="max-w-2xl">
-          The semantic layer: every colour, radius and family a component is
-          allowed to reference. Values come from the retired build and the names
-          are a proposal until design agrees them, so expect both to move.
+          The semantic layer: every colour, radius, shadow and family a
+          component is allowed to reference, generated from the design's
+          blueprint. Switch the theme in the navbar to see the dark mode.
         </Text>
       </header>
 
@@ -209,27 +192,27 @@ export function TokenGallery() {
         title="Surfaces"
         description="Backgrounds, from furthest back to nearest front."
       >
-        <Swatch name="bg-surface" usage="the page">
-          <div className="h-full w-full bg-surface" />
+        <Swatch name="bg-surface-base" usage="the page">
+          <div className="h-full w-full bg-surface-base" />
         </Swatch>
         <Swatch name="bg-surface-raised" usage="cards, sheets, menus">
           <div className="h-full w-full bg-surface-raised" />
         </Swatch>
-        <Swatch name="bg-surface-sunken" usage="wells and inset areas">
-          <div className="h-full w-full bg-surface-sunken" />
+        <Swatch name="bg-surface-subtle" usage="wells and inset areas">
+          <div className="h-full w-full bg-surface-subtle" />
         </Swatch>
         <Swatch
-          name="from-backdrop to-backdrop-tint"
+          name="from-surface-base to-surface-subtle"
           usage="the wash behind a page"
         >
-          <div className="h-full w-full bg-linear-to-b from-backdrop to-backdrop-tint" />
+          <div className="h-full w-full bg-linear-to-b from-surface-base to-surface-subtle" />
         </Swatch>
         <Swatch
-          name="bg-surface-floating shadow-floating"
+          name="bg-surface-overlay shadow-med"
           usage="a panel over the backdrop"
         >
-          <div className="flex h-full w-full items-center justify-center bg-linear-to-b from-backdrop to-backdrop-tint">
-            <div className="h-10 w-24 rounded-floating bg-surface-floating shadow-floating" />
+          <div className="flex h-full w-full items-center justify-center bg-linear-to-b from-surface-base to-surface-subtle">
+            <div className="h-10 w-24 rounded-page bg-surface-overlay shadow-med" />
           </div>
         </Swatch>
       </Section>
@@ -238,68 +221,77 @@ export function TokenGallery() {
         title="Text and icons"
         description="Foreground content. On-action is for content sitting on a filled action."
       >
-        <Swatch name="text-foreground" usage="body and headings">
-          <span className="text-foreground text-subtitle2">
+        <Swatch name="text-fg-primary" usage="body and headings">
+          <span className="text-fg-primary text-subtitle-2">
             Ask for feedback
           </span>
         </Swatch>
-        <Swatch name="text-foreground-muted" usage="secondary and helper text">
-          <span className="text-foreground-muted text-subtitle2">Optional</span>
+        <Swatch name="text-fg-secondary" usage="secondary and helper text">
+          <span className="text-fg-secondary text-subtitle-2">Optional</span>
         </Swatch>
-        <Swatch
-          name="text-foreground-on-action"
-          usage="label on a filled action"
-        >
-          <span className="rounded-control bg-action px-3 py-1.5 text-foreground-on-action">
+        <Swatch name="text-fg-on-action" usage="label on a filled action">
+          <span className="rounded-element bg-action-primary px-3 py-1.5 text-fg-on-action">
             Send
           </span>
         </Swatch>
-        <Swatch name="text-brand" usage="brand text that is not an action">
-          <span className="text-brand text-subtitle2">Thrive</span>
+        <Swatch name="text-fg-accent" usage="brand text that is not an action">
+          <span className="text-fg-accent text-subtitle-2">Thrive</span>
         </Swatch>
-        <Swatch name="text-link" usage="inline links">
-          <span className="text-link text-subtitle2 underline">
+        <Swatch name="text-fg-disabled" usage="disabled labels">
+          <span className="text-fg-disabled text-subtitle-2">Unavailable</span>
+        </Swatch>
+        <Swatch name="text-fg-accent" usage="inline links">
+          <span className="text-fg-accent text-subtitle-2 underline">
             Privacy Policy
           </span>
         </Swatch>
       </Section>
 
       <Section title="Lines" description="Dividers and control outlines.">
-        <Swatch name="border-line" usage="default divider">
-          <div className="h-8 w-32 border-line border-t" />
+        <Swatch name="border-border-default" usage="default divider">
+          <div className="h-8 w-32 border-border-default border-t" />
         </Swatch>
-        <Swatch name="border-line-strong" usage="emphasis, input outlines">
-          <div className="h-8 w-32 border-line-strong border-t" />
+        <Swatch name="border-border-strong" usage="emphasis, input outlines">
+          <div className="h-8 w-32 border-border-strong border-t" />
+        </Swatch>
+        <Swatch name="border-border-subtle" usage="quiet divider">
+          <div className="h-8 w-32 border-border-subtle border-t" />
+        </Swatch>
+        <Swatch name="border-border-muted" usage="disabled outline">
+          <div className="h-8 w-32 border-border-muted border-t" />
         </Swatch>
       </Section>
 
       <Section
         title="Action"
-        description="The primary action and the states it needs to be usable."
+        description="The primary action and the states it needs to be usable. Secondary and neutral actions follow the same pattern."
       >
-        <Swatch name="bg-action" usage="resting">
-          <div className="h-full w-full bg-action" />
+        <Swatch name="bg-action-primary" usage="resting">
+          <div className="h-full w-full bg-action-primary" />
         </Swatch>
-        <Swatch name="bg-action-hover" usage="hover">
-          <div className="h-full w-full bg-action-hover" />
+        <Swatch name="bg-action-primary-hover" usage="hover">
+          <div className="h-full w-full bg-action-primary-hover" />
         </Swatch>
-        <Swatch name="bg-action-pressed" usage="pressed">
-          <div className="h-full w-full bg-action-pressed" />
+        <Swatch name="bg-action-primary-active" usage="pressed">
+          <div className="h-full w-full bg-action-primary-active" />
         </Swatch>
-        <Swatch name="bg-action-subtle" usage="selected row, quiet button">
-          <div className="h-full w-full bg-action-subtle" />
+        <Swatch
+          name="bg-action-primary-surface"
+          usage="selected row, quiet button"
+        >
+          <div className="h-full w-full bg-action-primary-surface" />
         </Swatch>
       </Section>
 
       <Section
-        title="Accent"
-        description="Emphasis that is not an action to take."
+        title="Secondary action"
+        description="The second action ramp, standing in for what used to be the accent."
       >
-        <Swatch name="bg-accent" usage="highlight">
-          <div className="h-full w-full bg-accent" />
+        <Swatch name="bg-action-secondary" usage="highlight">
+          <div className="h-full w-full bg-action-secondary" />
         </Swatch>
-        <Swatch name="bg-accent-subtle" usage="highlight wash">
-          <div className="h-full w-full bg-accent-subtle" />
+        <Swatch name="bg-action-secondary-surface" usage="highlight wash">
+          <div className="h-full w-full bg-action-secondary-surface" />
         </Swatch>
       </Section>
 
@@ -307,26 +299,35 @@ export function TokenGallery() {
         title="Status"
         description="Each status has a fill for text and icons, and a wash for backgrounds."
       >
-        <Swatch name="text-success / bg-success-subtle" usage="it worked">
-          <span className="rounded-control bg-success-subtle px-3 py-1.5 text-body2 text-success">
+        <Swatch
+          name="text-status-success-fg / bg-status-success-surface"
+          usage="it worked"
+        >
+          <span className="rounded-element bg-status-success-surface px-3 py-1.5 text-body-2 text-status-success-fg">
             Answered
           </span>
         </Swatch>
-        <Swatch name="text-caution / bg-caution-subtle" usage="needs attention">
-          <span className="rounded-control bg-caution-subtle px-3 py-1.5 text-body2 text-caution">
+        <Swatch
+          name="text-status-warning-fg / bg-status-warning-surface"
+          usage="needs attention"
+        >
+          <span className="rounded-element bg-status-warning-surface px-3 py-1.5 text-body-2 text-status-warning-fg">
             Expiring
           </span>
         </Swatch>
         <Swatch
-          name="text-danger / bg-danger-subtle"
+          name="text-status-error-fg / bg-status-error-surface"
           usage="it failed, or it destroys"
         >
-          <span className="rounded-control bg-danger-subtle px-3 py-1.5 text-body2 text-danger">
+          <span className="rounded-element bg-status-error-surface px-3 py-1.5 text-body-2 text-status-error-fg">
             Expired
           </span>
         </Swatch>
-        <Swatch name="text-info / bg-info-subtle" usage="neutral information">
-          <span className="rounded-control bg-info-subtle px-3 py-1.5 text-body2 text-info">
+        <Swatch
+          name="text-status-info-fg / bg-status-info-surface"
+          usage="neutral information"
+        >
+          <span className="rounded-element bg-status-info-surface px-3 py-1.5 text-body-2 text-status-info-fg">
             Draft
           </span>
         </Swatch>
@@ -337,12 +338,12 @@ export function TokenGallery() {
         description="Applied globally, because FE_06 wants focus visible on everything interactive: one colour and the ring width and offset. Tab to the button."
       >
         <Swatch
-          name="--focus (global :focus-visible)"
+          name="--focus-ring (global :focus-visible)"
           usage="keyboard focus ring"
         >
           <button
             type="button"
-            className="rounded-control border border-line-strong px-3 py-1.5 text-body2"
+            className="rounded-element border border-border-strong px-3 py-1.5 text-body-2"
           >
             Focus me
           </button>
@@ -350,29 +351,73 @@ export function TokenGallery() {
       </Section>
 
       <Section
-        title="Shape and type"
-        description="Four radius roles: the mark inside a control, things you operate, things that hold content, and things that float over the page."
+        title="Shape"
+        description="The blueprint's corners, and the layout roles that pick one per device: a surface is a container on phone and tablet and a page on desktop."
       >
-        <Swatch name="rounded-indicator" usage="checkbox box">
-          <div className="size-6 rounded-indicator bg-surface-sunken" />
+        <Swatch name="rounded-inner" usage="a corner inside a corner">
+          <div className="size-6 rounded-inner bg-surface-subtle" />
         </Swatch>
-        <Swatch name="rounded-control" usage="buttons, inputs, chips">
-          <div className="h-10 w-32 rounded-control bg-surface-sunken" />
+        <Swatch name="rounded-element" usage="a badge, a menu item">
+          <div className="h-10 w-32 rounded-element bg-surface-subtle" />
         </Swatch>
-        <Swatch name="rounded-surface" usage="cards, sheets, dialogs">
-          <div className="h-10 w-32 rounded-surface bg-surface-sunken" />
+        <Swatch name="rounded-container" usage="a card, a panel, a dialog">
+          <div className="h-10 w-32 rounded-container bg-surface-subtle" />
         </Swatch>
-        <Swatch name="rounded-floating" usage="panels over the backdrop">
-          <div className="h-10 w-32 rounded-floating bg-surface-sunken" />
+        <Swatch name="rounded-page" usage="a sheet, a full-width surface">
+          <div className="h-10 w-32 rounded-page bg-surface-subtle" />
         </Swatch>
-        <Swatch name="font-sans" usage="everything but display (Google Sans)">
-          <span className="font-sans text-subtitle2">Thrive</span>
+        <Swatch name="rounded-surface" usage="cards and panels, per device">
+          <div className="h-10 w-32 rounded-surface bg-surface-subtle" />
         </Swatch>
-        <Swatch name="font-display" usage="display styles (Cooper)">
-          <span className="font-display text-display6">Thrive</span>
+        <Swatch name="rounded-button" usage="buttons, icon buttons">
+          <div className="h-10 w-32 rounded-button bg-surface-subtle" />
+        </Swatch>
+        <Swatch name="rounded-input" usage="fields, selects, search">
+          <div className="h-10 w-32 rounded-input bg-surface-subtle" />
+        </Swatch>
+        <Swatch name="rounded-chip" usage="chips, badges, tags">
+          <div className="h-8 w-20 rounded-chip bg-surface-subtle" />
+        </Swatch>
+      </Section>
+
+      <Section
+        title="Elevation"
+        description="Three heights, tinted with the darkest neutral and stronger in the dark mode."
+      >
+        <Swatch name="shadow-low" usage="a card resting on the page">
+          <div className="h-10 w-24 rounded-container bg-surface-raised shadow-low" />
+        </Swatch>
+        <Swatch name="shadow-med" usage="a menu or a popover">
+          <div className="h-10 w-24 rounded-container bg-surface-raised shadow-med" />
+        </Swatch>
+        <Swatch name="shadow-high" usage="a dialog over everything">
+          <div className="h-10 w-24 rounded-container bg-surface-raised shadow-high" />
+        </Swatch>
+      </Section>
+
+      <Section
+        title="Families"
+        description="The blueprint's three faces, plus mono for code."
+      >
+        <Swatch
+          name="font-main"
+          usage="every role but the ones below (Google Sans)"
+        >
+          <span className="font-main text-subtitle-2">Thrive</span>
+        </Swatch>
+        <Swatch
+          name="font-display"
+          usage="display, subtitle-display, quote (Cooper)"
+        >
+          <span className="font-display text-display-6">Thrive</span>
+        </Swatch>
+        <Swatch name="font-handwrite" usage="subtitle-handwrite (Caveat)">
+          <span className="font-handwrite text-subtitle-handwrite-2">
+            Thrive
+          </span>
         </Swatch>
         <Swatch name="font-mono" usage="code, ids, keys">
-          <span className="font-mono text-subtitle2">THV-0001</span>
+          <span className="font-mono text-subtitle-2">THV-0001</span>
         </Swatch>
       </Section>
 
@@ -381,10 +426,10 @@ export function TokenGallery() {
         description="Only the two loops the loading indicators need. Nothing else animates yet, and the pulse stops under reduced motion."
       >
         <Swatch name="animate-spin" usage="Spinner, Button loading">
-          <Spinner className="size-6 text-brand" />
+          <Spinner className="size-6 text-fg-accent" />
         </Swatch>
         <Swatch name="motion-safe:animate-pulse" usage="Skeleton">
-          <div className="h-4 w-32 rounded-full bg-surface-sunken motion-safe:animate-pulse" />
+          <div className="h-4 w-32 rounded-full bg-surface-subtle motion-safe:animate-pulse" />
         </Swatch>
       </Section>
 

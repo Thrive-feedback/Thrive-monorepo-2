@@ -4,26 +4,26 @@ import { Slot } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
 
 const buttonVariants = cva(
-  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-3 whitespace-nowrap rounded-control disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-sunken disabled:text-foreground-muted',
+  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-3 whitespace-nowrap rounded-button disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary',
   {
     variants: {
       variant: {
         primary:
-          'bg-action text-foreground-on-action enabled:active:bg-action-pressed enabled:hover:bg-action-hover',
+          'bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover',
         secondary:
-          'border border-line bg-surface text-foreground enabled:active:bg-surface-sunken enabled:hover:bg-surface-raised',
-        soft: 'bg-action-subtle text-brand enabled:active:bg-surface-sunken enabled:hover:bg-surface-raised',
+          'border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface',
+        soft: 'bg-action-primary-surface text-action-primary-fg enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
         ghost:
-          'text-brand enabled:active:bg-surface-sunken enabled:hover:bg-action-subtle',
+          'text-fg-accent enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface',
         danger:
-          'bg-danger text-foreground-on-action enabled:active:bg-danger/80 enabled:hover:bg-danger/90',
+          'bg-status-error text-fg-on-error enabled:active:bg-status-error-active enabled:hover:bg-status-error-hover',
         'ghost-danger':
-          'text-danger enabled:active:bg-surface-sunken enabled:hover:bg-danger-subtle',
+          'text-status-error-fg enabled:active:bg-status-error-surface-hover enabled:hover:bg-status-error-surface',
       },
       size: {
-        sm: 'px-3 py-1.5 text-button-small',
-        md: 'px-5.5 py-3 text-button-medium',
-        lg: 'px-6 py-3.5 text-button-large',
+        sm: 'px-3 py-1.5 text-button-sm',
+        md: 'px-inset-control-x py-inset-control-y text-button-md',
+        lg: 'px-6 py-3.5 text-button-md',
         icon: 'size-9 rounded-full',
       },
     },

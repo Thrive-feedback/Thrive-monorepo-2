@@ -1,66 +1,100 @@
 /*
- * Layer 3 of 3 — the Tailwind theme, generated from the semantic layer (`FE_04` R1: a utility
- * that is not token-backed does not exist).
+ * GENERATED from source/thrive.blueprint.json by scripts/generate-tokens.ts — do not edit (`FE_03` R5).
+ * Change the value in the blueprint, then run `bun run tokens:generate` (ADR 0028).
  *
- * `@theme inline` means the utilities resolve to `var(--…)` rather than to a copy of the value,
- * so a theme mode overriding the semantic layer changes what every utility paints without
- * regenerating anything (`FE_03` R7).
- *
- * The two sides differ by one prefix on purpose. Tailwind's theme namespaces are `--color-*`,
- * `--radius-*`, `--font-*`, so the semantic layer uses bare role names — `--surface`, `--action`.
- * Without that split a theme variable would refer to itself.
- *
- * `--*: initial` removes Tailwind's whole default theme first. Without it `bg-red-500`,
- * `rounded-md` and `shadow-md` all exist beside ours, and R1 is a rule to remember rather than
- * a fact of the build. Only what is declared below generates a utility.
- *
- * Colours, shapes and type appear only as semantic tokens: exposing a colour primitive would
- * put `bg-primary-500` in reach of every component and quietly undo `FE_03` R2, and a type
- * utility is one of the design's text styles (`text-h1`, `text-body2`), never a bare size.
- * Spacing, weight, breakpoint and width are scales rather than roles, so they map straight
- * from their primitives, as `--spacing` always has. Shadows appear only as elevation roles. Motion appears only
- * as the two loops the loading indicators need; transitions have no tokens, so no transition
- * utility carries a duration.
+ * Layer 3 of 3 — the Tailwind theme. `--*: initial` drops Tailwind's defaults, so every utility that exists is token-backed (`FE_04` R1); `inline` makes utilities resolve to `var(--…)`, so a theme mode repaints them without regenerating anything.
  */
 
 @theme inline {
   --*: initial;
 
-  --color-surface: var(--surface);
+  --color-action-primary: var(--action-primary);
+  --color-action-primary-hover: var(--action-primary-hover);
+  --color-action-primary-active: var(--action-primary-active);
+  --color-action-primary-surface: var(--action-primary-surface);
+  --color-action-primary-surface-hover: var(--action-primary-surface-hover);
+  --color-action-primary-fg: var(--action-primary-fg);
+  --color-action-primary-border: var(--action-primary-border);
+  --color-action-secondary: var(--action-secondary);
+  --color-action-secondary-hover: var(--action-secondary-hover);
+  --color-action-secondary-active: var(--action-secondary-active);
+  --color-action-secondary-surface: var(--action-secondary-surface);
+  --color-action-secondary-surface-hover: var(--action-secondary-surface-hover);
+  --color-action-secondary-fg: var(--action-secondary-fg);
+  --color-action-secondary-border: var(--action-secondary-border);
+  --color-action-muted: var(--action-muted);
+  --color-action-neutral: var(--action-neutral);
+  --color-action-neutral-hover: var(--action-neutral-hover);
+  --color-action-neutral-active: var(--action-neutral-active);
+  --color-action-neutral-surface: var(--action-neutral-surface);
+  --color-action-neutral-surface-hover: var(--action-neutral-surface-hover);
+  --color-action-neutral-fg: var(--action-neutral-fg);
+  --color-action-neutral-border: var(--action-neutral-border);
+  --color-surface-base: var(--surface-base);
+  --color-surface-subtle: var(--surface-subtle);
   --color-surface-raised: var(--surface-raised);
-  --color-surface-sunken: var(--surface-sunken);
-  --color-surface-floating: var(--surface-floating);
-  --color-backdrop: var(--backdrop);
-  --color-backdrop-tint: var(--backdrop-tint);
-  --color-brand: var(--brand);
-  --color-link: var(--link);
-  --color-foreground: var(--foreground);
-  --color-foreground-muted: var(--foreground-muted);
-  --color-foreground-on-action: var(--foreground-on-action);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-action: var(--action);
-  --color-action-hover: var(--action-hover);
-  --color-action-pressed: var(--action-pressed);
-  --color-action-subtle: var(--action-subtle);
-  --color-accent: var(--accent);
-  --color-accent-subtle: var(--accent-subtle);
-  --color-success: var(--success);
-  --color-success-subtle: var(--success-subtle);
-  --color-caution: var(--caution);
-  --color-caution-subtle: var(--caution-subtle);
-  --color-danger: var(--danger);
-  --color-danger-subtle: var(--danger-subtle);
-  --color-info: var(--info);
-  --color-info-subtle: var(--info-subtle);
-  --color-focus: var(--focus);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-skeleton: var(--surface-skeleton);
+  --color-surface-track: var(--surface-track);
+  --color-border-default: var(--border-default);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-muted: var(--border-muted);
+  --color-border-strong: var(--border-strong);
+  --color-fg-primary: var(--fg-primary);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-disabled: var(--fg-disabled);
+  --color-fg-accent: var(--fg-accent);
+  --color-fg-on-action: var(--fg-on-action);
+  --color-fg-on-secondary: var(--fg-on-secondary);
+  --color-fg-on-neutral: var(--fg-on-neutral);
+  --color-fg-on-success: var(--fg-on-success);
+  --color-fg-on-warning: var(--fg-on-warning);
+  --color-fg-on-error: var(--fg-on-error);
+  --color-fg-on-info: var(--fg-on-info);
+  --color-focus-ring: var(--focus-ring);
+  --color-status-success: var(--status-success);
+  --color-status-success-hover: var(--status-success-hover);
+  --color-status-success-active: var(--status-success-active);
+  --color-status-success-surface: var(--status-success-surface);
+  --color-status-success-surface-hover: var(--status-success-surface-hover);
+  --color-status-success-fg: var(--status-success-fg);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-hover: var(--status-warning-hover);
+  --color-status-warning-active: var(--status-warning-active);
+  --color-status-warning-surface: var(--status-warning-surface);
+  --color-status-warning-surface-hover: var(--status-warning-surface-hover);
+  --color-status-warning-fg: var(--status-warning-fg);
+  --color-status-warning-border: var(--status-warning-border);
+  --color-status-error: var(--status-error);
+  --color-status-error-hover: var(--status-error-hover);
+  --color-status-error-active: var(--status-error-active);
+  --color-status-error-surface: var(--status-error-surface);
+  --color-status-error-surface-hover: var(--status-error-surface-hover);
+  --color-status-error-fg: var(--status-error-fg);
+  --color-status-error-border: var(--status-error-border);
+  --color-status-info: var(--status-info);
+  --color-status-info-hover: var(--status-info-hover);
+  --color-status-info-active: var(--status-info-active);
+  --color-status-info-surface: var(--status-info-surface);
+  --color-status-info-surface-hover: var(--status-info-surface-hover);
+  --color-status-info-fg: var(--status-info-fg);
+  --color-status-info-border: var(--status-info-border);
 
-  --radius-indicator: var(--shape-indicator);
-  --radius-control: var(--shape-control);
+  --radius-none: var(--shape-none);
+  --radius-inner: var(--shape-inner);
+  --radius-element: var(--shape-element);
+  --radius-container: var(--shape-container);
+  --radius-page: var(--shape-page);
+  --radius-full: var(--shape-full);
   --radius-surface: var(--shape-surface);
-  --radius-floating: var(--shape-floating);
+  --radius-button: var(--shape-button);
+  --radius-input: var(--shape-input);
+  --radius-chip: var(--shape-chip);
 
-  --shadow-floating: var(--elevation-floating);
+  --shadow-low: var(--elevation-low);
+  --shadow-med: var(--elevation-med);
+  --shadow-high: var(--elevation-high);
 
   --animate-spin: spin var(--motion-spin);
   --animate-pulse: pulse var(--motion-pulse);
@@ -77,39 +111,46 @@
     }
   }
 
-  --font-sans: var(--family-sans);
   --font-display: var(--family-display);
+  --font-main: var(--family-main);
+  --font-handwrite: var(--family-handwrite);
   --font-mono: var(--family-mono);
-  /* Preflight reads these for the document and for `code`; the reset above drops them. */
-  --default-font-family: var(--family-sans);
+  --default-font-family: var(--family-main);
   --default-mono-font-family: var(--family-mono);
 
   --spacing: var(--space-unit);
+  --spacing-inset-container: var(--inset-container);
+  --spacing-gap-section: var(--gap-section);
+  --spacing-inset-control-x: var(--inset-control-x);
+  --spacing-inset-control-y: var(--inset-control-y);
+  --spacing-gap-grid: var(--gap-grid);
+  --spacing-gap-nav: var(--gap-nav);
+  --spacing-inset-card: var(--inset-card);
 
-  --text-display1: var(--type-display1-size);
-  --text-display1--line-height: var(--type-display1-leading);
-  --text-display1--letter-spacing: var(--type-display1-tracking);
-  --text-display1--font-weight: var(--type-display1-weight);
-  --text-display2: var(--type-display2-size);
-  --text-display2--line-height: var(--type-display2-leading);
-  --text-display2--letter-spacing: var(--type-display2-tracking);
-  --text-display2--font-weight: var(--type-display2-weight);
-  --text-display3: var(--type-display3-size);
-  --text-display3--line-height: var(--type-display3-leading);
-  --text-display3--letter-spacing: var(--type-display3-tracking);
-  --text-display3--font-weight: var(--type-display3-weight);
-  --text-display4: var(--type-display4-size);
-  --text-display4--line-height: var(--type-display4-leading);
-  --text-display4--letter-spacing: var(--type-display4-tracking);
-  --text-display4--font-weight: var(--type-display4-weight);
-  --text-display5: var(--type-display5-size);
-  --text-display5--line-height: var(--type-display5-leading);
-  --text-display5--letter-spacing: var(--type-display5-tracking);
-  --text-display5--font-weight: var(--type-display5-weight);
-  --text-display6: var(--type-display6-size);
-  --text-display6--line-height: var(--type-display6-leading);
-  --text-display6--letter-spacing: var(--type-display6-tracking);
-  --text-display6--font-weight: var(--type-display6-weight);
+  --text-display-1: var(--type-display-1-size);
+  --text-display-1--line-height: var(--type-display-1-leading);
+  --text-display-1--letter-spacing: var(--type-display-1-tracking);
+  --text-display-1--font-weight: var(--type-display-1-weight);
+  --text-display-2: var(--type-display-2-size);
+  --text-display-2--line-height: var(--type-display-2-leading);
+  --text-display-2--letter-spacing: var(--type-display-2-tracking);
+  --text-display-2--font-weight: var(--type-display-2-weight);
+  --text-display-3: var(--type-display-3-size);
+  --text-display-3--line-height: var(--type-display-3-leading);
+  --text-display-3--letter-spacing: var(--type-display-3-tracking);
+  --text-display-3--font-weight: var(--type-display-3-weight);
+  --text-display-4: var(--type-display-4-size);
+  --text-display-4--line-height: var(--type-display-4-leading);
+  --text-display-4--letter-spacing: var(--type-display-4-tracking);
+  --text-display-4--font-weight: var(--type-display-4-weight);
+  --text-display-5: var(--type-display-5-size);
+  --text-display-5--line-height: var(--type-display-5-leading);
+  --text-display-5--letter-spacing: var(--type-display-5-tracking);
+  --text-display-5--font-weight: var(--type-display-5-weight);
+  --text-display-6: var(--type-display-6-size);
+  --text-display-6--line-height: var(--type-display-6-leading);
+  --text-display-6--letter-spacing: var(--type-display-6-tracking);
+  --text-display-6--font-weight: var(--type-display-6-weight);
   --text-h1: var(--type-h1-size);
   --text-h1--line-height: var(--type-h1-leading);
   --text-h1--letter-spacing: var(--type-h1-tracking);
@@ -134,34 +175,126 @@
   --text-h6--line-height: var(--type-h6-leading);
   --text-h6--letter-spacing: var(--type-h6-tracking);
   --text-h6--font-weight: var(--type-h6-weight);
-  --text-subtitle1: var(--type-subtitle1-size);
-  --text-subtitle1--line-height: var(--type-subtitle1-leading);
-  --text-subtitle1--letter-spacing: var(--type-subtitle1-tracking);
-  --text-subtitle1--font-weight: var(--type-subtitle1-weight);
-  --text-subtitle2: var(--type-subtitle2-size);
-  --text-subtitle2--line-height: var(--type-subtitle2-leading);
-  --text-subtitle2--letter-spacing: var(--type-subtitle2-tracking);
-  --text-subtitle2--font-weight: var(--type-subtitle2-weight);
-  --text-subtitle3: var(--type-subtitle3-size);
-  --text-subtitle3--line-height: var(--type-subtitle3-leading);
-  --text-subtitle3--letter-spacing: var(--type-subtitle3-tracking);
-  --text-subtitle3--font-weight: var(--type-subtitle3-weight);
-  --text-subtitle4: var(--type-subtitle4-size);
-  --text-subtitle4--line-height: var(--type-subtitle4-leading);
-  --text-subtitle4--letter-spacing: var(--type-subtitle4-tracking);
-  --text-subtitle4--font-weight: var(--type-subtitle4-weight);
-  --text-body1: var(--type-body1-size);
-  --text-body1--line-height: var(--type-body1-leading);
-  --text-body1--letter-spacing: var(--type-body1-tracking);
-  --text-body1--font-weight: var(--type-body1-weight);
-  --text-body2: var(--type-body2-size);
-  --text-body2--line-height: var(--type-body2-leading);
-  --text-body2--letter-spacing: var(--type-body2-tracking);
-  --text-body2--font-weight: var(--type-body2-weight);
-  --text-body3: var(--type-body3-size);
-  --text-body3--line-height: var(--type-body3-leading);
-  --text-body3--letter-spacing: var(--type-body3-tracking);
-  --text-body3--font-weight: var(--type-body3-weight);
+  --text-subtitle-1: var(--type-subtitle-1-size);
+  --text-subtitle-1--line-height: var(--type-subtitle-1-leading);
+  --text-subtitle-1--letter-spacing: var(--type-subtitle-1-tracking);
+  --text-subtitle-1--font-weight: var(--type-subtitle-1-weight);
+  --text-subtitle-2: var(--type-subtitle-2-size);
+  --text-subtitle-2--line-height: var(--type-subtitle-2-leading);
+  --text-subtitle-2--letter-spacing: var(--type-subtitle-2-tracking);
+  --text-subtitle-2--font-weight: var(--type-subtitle-2-weight);
+  --text-subtitle-3: var(--type-subtitle-3-size);
+  --text-subtitle-3--line-height: var(--type-subtitle-3-leading);
+  --text-subtitle-3--letter-spacing: var(--type-subtitle-3-tracking);
+  --text-subtitle-3--font-weight: var(--type-subtitle-3-weight);
+  --text-subtitle-4: var(--type-subtitle-4-size);
+  --text-subtitle-4--line-height: var(--type-subtitle-4-leading);
+  --text-subtitle-4--letter-spacing: var(--type-subtitle-4-tracking);
+  --text-subtitle-4--font-weight: var(--type-subtitle-4-weight);
+  --text-subtitle-display-1: var(--type-subtitle-display-1-size);
+  --text-subtitle-display-1--line-height: var(
+    --type-subtitle-display-1-leading
+  );
+  --text-subtitle-display-1--letter-spacing: var(
+    --type-subtitle-display-1-tracking
+  );
+  --text-subtitle-display-1--font-weight: var(--type-subtitle-display-1-weight);
+  --text-subtitle-display-2: var(--type-subtitle-display-2-size);
+  --text-subtitle-display-2--line-height: var(
+    --type-subtitle-display-2-leading
+  );
+  --text-subtitle-display-2--letter-spacing: var(
+    --type-subtitle-display-2-tracking
+  );
+  --text-subtitle-display-2--font-weight: var(--type-subtitle-display-2-weight);
+  --text-subtitle-display-3: var(--type-subtitle-display-3-size);
+  --text-subtitle-display-3--line-height: var(
+    --type-subtitle-display-3-leading
+  );
+  --text-subtitle-display-3--letter-spacing: var(
+    --type-subtitle-display-3-tracking
+  );
+  --text-subtitle-display-3--font-weight: var(--type-subtitle-display-3-weight);
+  --text-subtitle-display-4: var(--type-subtitle-display-4-size);
+  --text-subtitle-display-4--line-height: var(
+    --type-subtitle-display-4-leading
+  );
+  --text-subtitle-display-4--letter-spacing: var(
+    --type-subtitle-display-4-tracking
+  );
+  --text-subtitle-display-4--font-weight: var(--type-subtitle-display-4-weight);
+  --text-body-1: var(--type-body-1-size);
+  --text-body-1--line-height: var(--type-body-1-leading);
+  --text-body-1--letter-spacing: var(--type-body-1-tracking);
+  --text-body-1--font-weight: var(--type-body-1-weight);
+  --text-body-2: var(--type-body-2-size);
+  --text-body-2--line-height: var(--type-body-2-leading);
+  --text-body-2--letter-spacing: var(--type-body-2-tracking);
+  --text-body-2--font-weight: var(--type-body-2-weight);
+  --text-body-3: var(--type-body-3-size);
+  --text-body-3--line-height: var(--type-body-3-leading);
+  --text-body-3--letter-spacing: var(--type-body-3-tracking);
+  --text-body-3--font-weight: var(--type-body-3-weight);
+  --text-quote: var(--type-quote-size);
+  --text-quote--line-height: var(--type-quote-leading);
+  --text-quote--letter-spacing: var(--type-quote-tracking);
+  --text-quote--font-weight: var(--type-quote-weight);
+  --text-code: var(--type-code-size);
+  --text-code--line-height: var(--type-code-leading);
+  --text-code--letter-spacing: var(--type-code-tracking);
+  --text-code--font-weight: var(--type-code-weight);
+  --text-button-md: var(--type-button-md-size);
+  --text-button-md--line-height: var(--type-button-md-leading);
+  --text-button-md--letter-spacing: var(--type-button-md-tracking);
+  --text-button-md--font-weight: var(--type-button-md-weight);
+  --text-button-sm: var(--type-button-sm-size);
+  --text-button-sm--line-height: var(--type-button-sm-leading);
+  --text-button-sm--letter-spacing: var(--type-button-sm-tracking);
+  --text-button-sm--font-weight: var(--type-button-sm-weight);
+  --text-button-xs: var(--type-button-xs-size);
+  --text-button-xs--line-height: var(--type-button-xs-leading);
+  --text-button-xs--letter-spacing: var(--type-button-xs-tracking);
+  --text-button-xs--font-weight: var(--type-button-xs-weight);
+  --text-input-label-md: var(--type-input-label-md-size);
+  --text-input-label-md--line-height: var(--type-input-label-md-leading);
+  --text-input-label-md--letter-spacing: var(--type-input-label-md-tracking);
+  --text-input-label-md--font-weight: var(--type-input-label-md-weight);
+  --text-input-label-sm: var(--type-input-label-sm-size);
+  --text-input-label-sm--line-height: var(--type-input-label-sm-leading);
+  --text-input-label-sm--letter-spacing: var(--type-input-label-sm-tracking);
+  --text-input-label-sm--font-weight: var(--type-input-label-sm-weight);
+  --text-input-label-xs: var(--type-input-label-xs-size);
+  --text-input-label-xs--line-height: var(--type-input-label-xs-leading);
+  --text-input-label-xs--letter-spacing: var(--type-input-label-xs-tracking);
+  --text-input-label-xs--font-weight: var(--type-input-label-xs-weight);
+  --text-input-value-md: var(--type-input-value-md-size);
+  --text-input-value-md--line-height: var(--type-input-value-md-leading);
+  --text-input-value-md--letter-spacing: var(--type-input-value-md-tracking);
+  --text-input-value-md--font-weight: var(--type-input-value-md-weight);
+  --text-input-value-sm: var(--type-input-value-sm-size);
+  --text-input-value-sm--line-height: var(--type-input-value-sm-leading);
+  --text-input-value-sm--letter-spacing: var(--type-input-value-sm-tracking);
+  --text-input-value-sm--font-weight: var(--type-input-value-sm-weight);
+  --text-input-value-xs: var(--type-input-value-xs-size);
+  --text-input-value-xs--line-height: var(--type-input-value-xs-leading);
+  --text-input-value-xs--letter-spacing: var(--type-input-value-xs-tracking);
+  --text-input-value-xs--font-weight: var(--type-input-value-xs-weight);
+  --text-input-helper: var(--type-input-helper-size);
+  --text-input-helper--line-height: var(--type-input-helper-leading);
+  --text-input-helper--letter-spacing: var(--type-input-helper-tracking);
+  --text-input-helper--font-weight: var(--type-input-helper-weight);
+  --text-table-header: var(--type-table-header-size);
+  --text-table-header--line-height: var(--type-table-header-leading);
+  --text-table-header--letter-spacing: var(--type-table-header-tracking);
+  --text-table-header--font-weight: var(--type-table-header-weight);
+  --text-list-subheader: var(--type-list-subheader-size);
+  --text-list-subheader--line-height: var(--type-list-subheader-leading);
+  --text-list-subheader--letter-spacing: var(--type-list-subheader-tracking);
+  --text-list-subheader--font-weight: var(--type-list-subheader-weight);
+  --text-label: var(--type-label-size);
+  --text-label--line-height: var(--type-label-leading);
+  --text-label--letter-spacing: var(--type-label-tracking);
+  --text-label--font-weight: var(--type-label-weight);
   --text-caption: var(--type-caption-size);
   --text-caption--line-height: var(--type-caption-leading);
   --text-caption--letter-spacing: var(--type-caption-tracking);
@@ -170,29 +303,60 @@
   --text-overline--line-height: var(--type-overline-leading);
   --text-overline--letter-spacing: var(--type-overline-tracking);
   --text-overline--font-weight: var(--type-overline-weight);
-  --text-button-large: var(--type-button-large-size);
-  --text-button-large--line-height: var(--type-button-large-leading);
-  --text-button-large--letter-spacing: var(--type-button-large-tracking);
-  --text-button-large--font-weight: var(--type-button-large-weight);
-  --text-button-medium: var(--type-button-medium-size);
-  --text-button-medium--line-height: var(--type-button-medium-leading);
-  --text-button-medium--letter-spacing: var(--type-button-medium-tracking);
-  --text-button-medium--font-weight: var(--type-button-medium-weight);
-  --text-button-small: var(--type-button-small-size);
-  --text-button-small--line-height: var(--type-button-small-leading);
-  --text-button-small--letter-spacing: var(--type-button-small-tracking);
-  --text-button-small--font-weight: var(--type-button-small-weight);
+  --text-tag: var(--type-tag-size);
+  --text-tag--line-height: var(--type-tag-leading);
+  --text-tag--letter-spacing: var(--type-tag-tracking);
+  --text-tag--font-weight: var(--type-tag-weight);
+  --text-subtitle-handwrite-1: var(--type-subtitle-handwrite-1-size);
+  --text-subtitle-handwrite-1--line-height: var(
+    --type-subtitle-handwrite-1-leading
+  );
+  --text-subtitle-handwrite-1--letter-spacing: var(
+    --type-subtitle-handwrite-1-tracking
+  );
+  --text-subtitle-handwrite-1--font-weight: var(
+    --type-subtitle-handwrite-1-weight
+  );
+  --text-subtitle-handwrite-2: var(--type-subtitle-handwrite-2-size);
+  --text-subtitle-handwrite-2--line-height: var(
+    --type-subtitle-handwrite-2-leading
+  );
+  --text-subtitle-handwrite-2--letter-spacing: var(
+    --type-subtitle-handwrite-2-tracking
+  );
+  --text-subtitle-handwrite-2--font-weight: var(
+    --type-subtitle-handwrite-2-weight
+  );
+  --text-subtitle-handwrite-3: var(--type-subtitle-handwrite-3-size);
+  --text-subtitle-handwrite-3--line-height: var(
+    --type-subtitle-handwrite-3-leading
+  );
+  --text-subtitle-handwrite-3--letter-spacing: var(
+    --type-subtitle-handwrite-3-tracking
+  );
+  --text-subtitle-handwrite-3--font-weight: var(
+    --type-subtitle-handwrite-3-weight
+  );
+  --text-subtitle-handwrite-4: var(--type-subtitle-handwrite-4-size);
+  --text-subtitle-handwrite-4--line-height: var(
+    --type-subtitle-handwrite-4-leading
+  );
+  --text-subtitle-handwrite-4--letter-spacing: var(
+    --type-subtitle-handwrite-4-tracking
+  );
+  --text-subtitle-handwrite-4--font-weight: var(
+    --type-subtitle-handwrite-4-weight
+  );
 
-  --font-weight-normal: var(--weight-normal);
-  --font-weight-medium: var(--weight-medium);
-  --font-weight-semibold: var(--weight-semibold);
-  --font-weight-bold: var(--weight-bold);
+  --font-weight-normal: var(--weight-400);
+  --font-weight-medium: var(--weight-500);
+  --font-weight-semibold: var(--weight-600);
+  --font-weight-bold: var(--weight-700);
 
   --container-2xl: var(--measure-2xl);
   --container-5xl: var(--measure-5xl);
 
-  /* Literal on purpose: a media query cannot read a custom property, so these are the one
-     token set that has to be written where Tailwind compiles it. Mobile first (`FE_04` R7). */
+  /* Literal: a media query cannot read a custom property. Mobile first (`FE_04` R7). */
   --breakpoint-sm: 40rem;
   --breakpoint-md: 48rem;
   --breakpoint-lg: 64rem;

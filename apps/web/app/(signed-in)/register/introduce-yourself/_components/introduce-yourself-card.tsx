@@ -21,9 +21,9 @@ export function IntroduceYourselfCard({
       className="max-w-110 justify-self-center md:justify-self-end"
     >
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Text variant="body2" tone="muted">
+        <Text variant="body-2" tone="muted">
           Signed in as{' '}
-          <Text as="span" variant="subtitle4" tone="brand">
+          <Text as="span" variant="subtitle-4" tone="brand">
             {email}
           </Text>
         </Text>

@@ -13,10 +13,10 @@ export type PropsTableProps = {
 /** A dash means no default: the prop is either required or simply absent until passed. */
 export function PropsTable({ caption, rows }: PropsTableProps) {
   return (
-    <div className="overflow-x-auto rounded-surface border border-line">
-      <table className="w-full text-left text-body2">
+    <div className="overflow-x-auto rounded-surface border border-border-default">
+      <table className="w-full text-left text-body-2">
         <caption className="sr-only">{caption}</caption>
-        <thead className="bg-surface-raised text-foreground-muted">
+        <thead className="bg-surface-raised text-fg-secondary">
           <tr>
             <th scope="col" className="px-3 py-2 font-medium">
               Prop
@@ -34,15 +34,16 @@ export function PropsTable({ caption, rows }: PropsTableProps) {
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.name} className="border-line border-t align-top">
+            <tr
+              key={row.name}
+              className="border-border-default border-t align-top"
+            >
               <th scope="row" className="px-3 py-2 font-medium font-mono">
                 {row.name}
               </th>
-              <td className="px-3 py-2 font-mono text-brand">{row.type}</td>
+              <td className="px-3 py-2 font-mono text-fg-accent">{row.type}</td>
               <td className="px-3 py-2 font-mono">{row.defaultValue ?? '—'}</td>
-              <td className="px-3 py-2 text-foreground-muted">
-                {row.description}
-              </td>
+              <td className="px-3 py-2 text-fg-secondary">{row.description}</td>
             </tr>
           ))}
         </tbody>

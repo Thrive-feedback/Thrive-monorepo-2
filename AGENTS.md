@@ -115,10 +115,11 @@ bun run lint           # lint everything
 bun run format         # Prettier write across the repo
 ```
 
-Two tasks are not in that list because they are not run on every change:
+Three tasks are not in that list because they are not run on every change:
 
 ```bash
 turbo run contract:generate --filter=api   # regenerate the API contract and its client
+turbo run tokens:generate --filter=@repo/tokens   # regenerate the token files from the design source
 turbo run test:integration test:bdd        # the API's slower suites
 ```
 

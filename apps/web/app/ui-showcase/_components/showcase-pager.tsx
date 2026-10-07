@@ -11,7 +11,7 @@ export function ShowcasePager({ previous, next }: ShowcasePagerProps) {
   return (
     <nav
       aria-label="More components"
-      className="flex justify-between gap-4 border-line border-t pt-6 text-body2"
+      className="flex justify-between gap-4 border-border-default border-t pt-6 text-body-2"
     >
       {previous ? (
         <Link href={ROUTES.uiShowcase.component(previous.slug)}>

@@ -36,7 +36,7 @@ export default async function Home({ searchParams }: HomeProps) {
           then={ROUTES.home}
         />
       )}
-      <Text variant="display5" as="h1">
+      <Text variant="display-5" as="h1">
         Thrive
       </Text>
       <Text tone="muted">Ask for, give and act on feedback.</Text>

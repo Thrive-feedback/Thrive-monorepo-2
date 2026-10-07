@@ -4,10 +4,10 @@ import { Text } from '@/components/atoms/text';
 export function IntroduceYourselfHero() {
   return (
     <div className="flex flex-col gap-4 text-center md:text-start">
-      <Text variant="display5" as="h1" className="md:text-display3">
+      <Text variant="display-5" as="h1" className="md:text-display-3">
         Let’s make it official.
       </Text>
-      <Text variant="body2" tone="muted">
+      <Text variant="body-2" tone="muted">
         I’m putting the finishing touches on your desk. May I ask how you would
         like to be introduced to the team?
       </Text>

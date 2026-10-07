@@ -6,17 +6,18 @@ import { describe, expect, it } from 'vitest';
 /*
  * A missing backup font is invisible to a rendered test: jsdom lays nothing out, and Next.js
  * reports it only as a build-time log line. So this reads the two places that decide it — the
- * root layout's `Google_Sans` options and the backup face in the token layer — as text.
+ * root layout's `Google_Sans` options and the backup face in the token layer — as text. The face is
+ * hand-written in the token layer's supplement, because the generated files come from the design.
  */
 const require = createRequire(join(__dirname, 'layout.test.ts'));
 const layout = readFileSync(join(__dirname, 'layout.tsx'), 'utf8');
-const primitives = readFileSync(
-  require.resolve('@repo/tokens/primitives.css'),
+const supplement = readFileSync(
+  require.resolve('@repo/tokens/supplement.css'),
   'utf8',
 );
 
 function fontFace(family: string): string | undefined {
-  return primitives
+  return supplement
     .split('@font-face')
     .slice(1)
     .find((block) => block.includes(`font-family: '${family}'`));

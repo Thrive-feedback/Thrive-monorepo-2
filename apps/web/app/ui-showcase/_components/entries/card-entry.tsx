@@ -44,7 +44,7 @@ export function CardEntry() {
     >
       <StateCell label="Default">
         <Card title="Welcome to Thrive" titleAs="h2">
-          <p className="text-body2 text-foreground-muted">Body content</p>
+          <p className="text-body-2 text-fg-secondary">Body content</p>
         </Card>
       </StateCell>
     </ShowcaseEntry>
