@@ -33,6 +33,20 @@ if (!globalThis.ResizeObserver) {
     disconnect() {}
   };
 }
+// Node 25+ defines its own `localStorage` and `sessionStorage`, which are undefined unless Node
+// is started with `--localstorage-file`, and Vitest keeps them over jsdom's. Put jsdom's back,
+// so a component that remembers something in the browser can be tested.
+declare const jsdom: { window: Window } | undefined;
+if (typeof jsdom !== 'undefined') {
+  for (const name of ['localStorage', 'sessionStorage'] as const) {
+    if (globalThis[name] === undefined) {
+      Object.defineProperty(globalThis, name, {
+        configurable: true,
+        value: jsdom.window[name],
+      });
+    }
+  }
+}
 // Server-side suites run in the `node` environment, where there is no `Element` to patch.
 if (typeof Element !== 'undefined') {
   Element.prototype.hasPointerCapture ??= () => false;
