@@ -4,12 +4,14 @@ import { Slot } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
 
 const buttonVariants = cva(
-  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-3 whitespace-nowrap rounded-button disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary',
+  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary',
   {
     variants: {
       variant: {
         primary:
           'bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover',
+        outlined:
+          'border border-action-primary-border bg-action-primary-surface text-action-primary enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
         secondary:
           'border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface',
         soft: 'bg-action-primary-surface text-action-primary-fg enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
@@ -21,12 +23,17 @@ const buttonVariants = cva(
           'text-status-error-fg enabled:active:bg-status-error-surface-hover enabled:hover:bg-status-error-surface',
       },
       size: {
-        sm: 'px-3 py-1.5 text-button-sm',
-        md: 'px-inset-control-x py-inset-control-y text-button-md',
-        lg: 'px-6 py-3.5 text-button-md',
+        sm: 'px-3 py-1.5 text-button-sm leading-5',
+        md: 'px-4 py-2 text-button-sm leading-5',
+        lg: 'px-5.5 py-3 text-button-md leading-5',
         icon: 'size-9 rounded-full',
       },
     },
+    compoundVariants: [
+      { variant: ['ghost', 'ghost-danger'], size: 'sm', className: 'px-1.25' },
+      { variant: ['ghost', 'ghost-danger'], size: 'md', className: 'px-2' },
+      { variant: ['ghost', 'ghost-danger'], size: 'lg', className: 'px-2.75' },
+    ],
     defaultVariants: { variant: 'secondary', size: 'md' },
   },
 );
