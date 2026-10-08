@@ -56,7 +56,7 @@ The HTTP method picks the side, not the data's sensitivity (ADR 0032):
 
 An action is an uncached `POST`, invisible to [R2](#R2) and [R3](#R3), so data for display is never fetched there. A read that authorizes or validates the action's own write — the session, the record it changes — is part of the write.
 
-**Enforcement:** review — deduplication makes the good and bad versions behave identically, so only a reader can tell them apart.
+**Enforcement:** partly automated — where the project runs an architecture check reading module directives ([INFRA_06](../index.html#INFRA_06)), a server action calling the client's `GET` fails it; a read through a helper, and where in the tree a read sits, are review — deduplication makes the good and bad versions behave identically.
 
 ### [R2](#R2) Say what you mean about caching
 
@@ -110,7 +110,7 @@ revalidatePath('/', 'layout');
 
 A person submits a form or presses a button, and the browser sends the intent to a server action, which holds the credentials, calls the API, revalidates ([R3](#R3)), and returns a result. An effect may invoke one only when the browser alone can receive the result, such as a renewed session cookie. One path means one place for authorization and invalidation, and a form that works before its JavaScript loads; whether the form is a server or client component is [FE_08](../index.html#FE_08)'s. The browser never calls the API: the cookie stays first-party, no API address ships, and the framework checks each action's origin, which a route handler does not. Sensitive content changes nothing — the action sends it. A write during render is one a prefetch can trigger.
 
-**Enforcement:** partly automated — where the API client is marked server-only, a client module importing it fails the build; a raw request to the API from the browser, and a write during render, are review.
+**Enforcement:** partly automated — where the API client is marked server-only, a client module importing it fails the build; where the project runs an architecture check reading module directives ([INFRA_06](../index.html#INFRA_06)), a client module calling `fetch` or importing the client's runtime, and a write method called outside an action, fail it. A write during render through a helper is review.
 
 ### [R5](#R5) An action is a public endpoint
 
@@ -227,7 +227,6 @@ One read deliberately breaks the pattern: the signed-in user's own drafts in the
 
 - [R10](#R10) fails as a privacy incident, not a bug, and nothing enforces it. A wrapper that refuses a revalidation window on any request carrying user credentials would close most of it — [FE_10](../index.html#FE_10) owns the wrapper and [INFRA_06](../index.html#INFRA_06) the guardrail.
 - [R2](#R2), [R6](#R6) and [R8](#R8) are all mechanically detectable and none are detected today, in that order of value per unit of effort.
-- A raw API request from a client component breaks [R4](#R4) undetected; an import-graph rule is the next guardrail ([INFRA_06](../index.html#INFRA_06)).
 - No default revalidation windows exist per kind of resource, so call sites will drift. A table belongs here once real pages exist.
 
 ## Related

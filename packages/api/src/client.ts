@@ -15,10 +15,9 @@ export interface ApiClientConfig {
   /**
    * Supplies the correlation id for one request.
    *
-   * Nothing yet decides how a server render and a later client call share one id per
-   * user action. Until that is settled, a caller that holds
-   * an id passes a function returning it; the default mints a fresh one so the trace is
-   * never missing entirely.
+   * The web app calls the API only from its server, so a request starts there: a caller
+   * that already holds an id for the user's action passes a function returning it, and the
+   * default mints a fresh one so the trace is never missing.
    */
   readonly correlationId?: () => string;
 }

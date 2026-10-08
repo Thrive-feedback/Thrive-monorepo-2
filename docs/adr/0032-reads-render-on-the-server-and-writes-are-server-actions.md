@@ -78,8 +78,14 @@ component (`useActionState`). Which one it is follows `FE_08`, not this ADR.
   client fails the build. That is the automated half of the enforcement.
 - Every write gets the framework's own CSRF check: Next.js compares a server action's `Origin` with
   its host.
-- A raw `fetch` to the API from a client component is caught only in review. A dependency-cruiser
-  or Biome rule against it is the next guardrail. It is not part of this decision.
+- The web app's architecture check (`apps/web/scripts/check-architecture.mjs`, run by the required
+  *Architecture* job) reads each module's directive. It fails a pull request when:
+  - a client module calls `fetch`, or imports a value from `@repo/api`
+  - a server action calls `.GET(`
+  - anything other than an action calls `.POST(`, `.PUT(`, `.PATCH(` or `.DELETE(`
+
+  What it cannot see stays with review: a read for display, or a write during render, that goes
+  through a helper instead of calling the client directly.
 - A screen that has to change without a navigation (polling, live updates, infinite lists) cannot
   be built until a later ADR opens a browser path. This is deliberate.
 - An action's return value crosses to the browser. An action that returns the raw API response
