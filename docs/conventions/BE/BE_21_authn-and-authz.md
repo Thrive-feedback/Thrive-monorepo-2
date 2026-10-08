@@ -4,7 +4,7 @@ id: "BE_21"
 area: "BE"
 tier: "P2"
 status: "stable"
-updated: "2026-10-01"
+updated: "2026-10-08"
 requires: [BE_20]
 see_also: [FE_19, GEN_09]
 ---
@@ -13,7 +13,7 @@ see_also: [FE_19, GEN_09]
 
 # [BE] Authentication & authorization
 
-`P2` · `BE_21` · `stable` · `updated 2026-10-01`
+`P2` · `BE_21` · `stable` · `updated 2026-10-08`
 
 **Open when:** an endpoint must know who is calling, or refuse them.
 
@@ -96,7 +96,7 @@ The domain takes the membership's identifier and capabilities as plain values, n
 
 ### [R9](#R9) The provider sits behind a port
 
-Whatever proves credentials sits behind an abstract port, implemented in `infrastructure/` ([BE_02](../index.html#BE_02) R6). The port speaks in the product's terms — verify this credential, return this identifier — and provider types stop at the adapter ([BE_02](../index.html#BE_02) R7). Membership and capabilities stay in the product's own tables, keyed by that identifier, so swapping provider touches the adapter and `PROJECT.md` and no use case. A provider's own organization or team feature is the thing to refuse: adopting it hands a core part of the model to something you do not control and cannot query alongside your own data.
+Whatever proves credentials sits behind an abstract port, implemented in `infrastructure/` ([BE_02](../index.html#BE_02) R6). The port speaks in the product's terms — verify this credential, return this identifier — and provider types stop at the adapter ([BE_02](../index.html#BE_02) R7). Membership and capabilities stay in tables in your own database, keyed by that identifier, so swapping provider touches the adapter and `PROJECT.md` and no use case. A provider's organization or team feature may store membership only on those terms: it writes your database, the owning module reaches it through its own port on the caller's session, and its endpoints are never served to the browser. Membership rules the feature already has (a limit, the creator's role) are its configuration; a rule that needs another module stays in a use case. Refuse a hosted provider's organizations outright: the data lives with the vendor and cannot be queried alongside your own. `docs/adr/0032-workspace-and-member-are-stored-by-better-auths-organization-plugin.md` holds the reasoning.
 
 **Enforcement:** review — a provider package imported outside `infrastructure/` is checkable.
 

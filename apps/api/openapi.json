@@ -182,9 +182,9 @@
         "parameters": [
           {
             "name": "cookie",
+            "required": false,
             "in": "header",
             "description": "The browser's cookie header, forwarded by the web server.",
-            "required": false,
             "schema": {
               "type": "string"
             }

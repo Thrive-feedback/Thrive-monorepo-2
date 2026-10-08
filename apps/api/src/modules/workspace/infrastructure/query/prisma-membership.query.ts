@@ -5,7 +5,9 @@ import type {
   MembershipPage,
   PageRequest,
 } from '../../application/types/membership.types';
+import { toMembershipView } from '../mapper/membership.mapper';
 
+/** Reads through `client`, so a check made inside a unit of work joins its transaction. */
 @Injectable()
 export class PrismaMembershipQuery extends MembershipQuery {
   constructor(
@@ -32,6 +34,6 @@ export class PrismaMembershipQuery extends MembershipQuery {
       }),
       this.prismaTransactionContext.client.member.count({ where }),
     ]);
-    return { items: members, total };
+    return { items: members.map(toMembershipView), total };
   }
 }

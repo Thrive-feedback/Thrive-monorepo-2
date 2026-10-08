@@ -21,6 +21,9 @@ model User {
   accounts      Account[]
   profile       Profile?
 
+  members     Member[]
+  invitations Invitation[]
+
   @@unique([email])
   @@map("user")
 }
@@ -35,6 +38,8 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  activeOrganizationId String?
 
   @@unique([token])
   @@index([userId])
@@ -90,10 +95,10 @@ model Profile {
   @@map("profile")
 }
 
-// Workspace's tables. `member.userId` is a Thrive Account, which is Better Auth's `user.id`,
-// never an `account` row (one sign-in method, whose own `accountId` is the provider's id). No
-// foreign key: `user` is Identity's table, and no constraint reaches across modules (BE_03 R7).
-// The domain calls it `accountId`; the mapper translates.
+// Workspace's tables, written by Better Auth's organization plugin (ADR 0032) under the
+// glossary's names: its `organization` is a Workspace and its `organizationId` is
+// `workspaceId`. `member.userId` is a Thrive Account, which is Better Auth's `user.id`, never
+// an `account` row. The domain calls it `accountId`; the mapper translates.
 
 enum TeamSize {
   JUST_ME
@@ -102,33 +107,57 @@ enum TeamSize {
   OVER_50
 }
 
-enum MemberRole {
-  OWNER
-}
-
 model Workspace {
-  id        String    @id
-  name      String
-  teamSize  TeamSize?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  members   Member[]
+  id          String       @id
+  name        String
+  /// Opaque and unique, because the plugin requires one. Never shown: a Workspace has no slug
+  /// in the glossary.
+  slug        String
+  logo        String?
+  metadata    String?
+  teamSize    TeamSize?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  members     Member[]
+  invitations Invitation[]
 
+  @@unique([slug])
   @@map("workspace")
 }
 
 // No unique index on `userId` alone: one Workspace per person is a rule of this release
-// (ADR-0020), kept in the application so lifting it needs no migration.
+// (ADR-0020), held by the plugin's `organizationLimit`, so lifting it needs no migration.
 model Member {
-  id          String     @id
+  id          String    @id
   workspaceId String
-  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   userId      String
-  role        MemberRole
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// The plugin's lowercase role name, e.g. `owner`. The mapper turns it into a Role.
+  role        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@unique([workspaceId, userId])
+  @@index([workspaceId])
   @@index([userId])
   @@map("member")
+}
+
+/// Required by the plugin; no route writes it yet. Invitations arrive with their own card.
+model Invitation {
+  id          String    @id
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  email       String
+  role        String?
+  status      String    @default("pending")
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  inviterId   String
+  user        User      @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([email])
+  @@map("invitation")
 }
