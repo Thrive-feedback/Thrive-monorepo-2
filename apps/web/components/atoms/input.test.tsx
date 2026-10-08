@@ -19,4 +19,12 @@ describe('Input', () => {
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Tony');
     expect(screen.getByRole('textbox', { name: 'Email' })).toHaveValue('');
   });
+
+  it('keeps its design size and variant off the native element', () => {
+    render(<Input aria-label="Name" size="sm" variant="filled" />);
+    const input = screen.getByRole('textbox', { name: 'Name' });
+
+    expect(input).not.toHaveAttribute('size');
+    expect(input).not.toHaveAttribute('variant');
+  });
 });

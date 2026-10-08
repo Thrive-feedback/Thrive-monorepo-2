@@ -29,6 +29,19 @@ export function TextFieldEntry() {
       props={[
         ...FIELD_PROPS,
         {
+          name: 'variant',
+          type: "'outlined' | 'filled' | 'standard'",
+          defaultValue: "'outlined'",
+          description:
+            'Outlined draws a border; filled sits on a light tint; standard on a solid grey.',
+        },
+        {
+          name: 'size',
+          type: "'sm' | 'md'",
+          defaultValue: "'md'",
+          description: 'md is a 44px control, sm a 32px one with smaller type.',
+        },
+        {
           name: '...rest',
           type: "ComponentProps<'input'> (no id)",
           description:
@@ -64,6 +77,33 @@ export function TextFieldEntry() {
       </StateCell>
       <StateCell label="Disabled">
         <TextField label="Workspace" defaultValue="Stark Industries" disabled />
+      </StateCell>
+      <StateCell label="Filled">
+        <TextField
+          label="Full Name"
+          variant="filled"
+          placeholder="Enter your name"
+          helperText="Shown on your Kudo cards."
+          required
+        />
+      </StateCell>
+      <StateCell label="Standard">
+        <TextField
+          label="Full Name"
+          variant="standard"
+          placeholder="Enter your name"
+          helperText="Shown on your Kudo cards."
+          required
+        />
+      </StateCell>
+      <StateCell label="Small, error">
+        <TextField
+          label="Email"
+          size="sm"
+          defaultValue="tony@"
+          errorMessage="Enter a full email address."
+          required
+        />
       </StateCell>
     </ShowcaseEntry>
   );
