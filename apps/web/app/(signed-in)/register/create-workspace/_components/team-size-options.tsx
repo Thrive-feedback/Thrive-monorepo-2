@@ -1,8 +1,8 @@
+import {
+  TEAM_SIZES,
+  type TeamSize,
+} from '@/app/(signed-in)/register/create-workspace/_lib/team-size.constant';
 import { Text } from '@/components/atoms/text';
-
-export const TEAM_SIZES = ['Just me', '2–10', '11–50', '50+'] as const;
-
-export type TeamSize = (typeof TEAM_SIZES)[number];
 
 export type TeamSizeOptionsProps = {
   name: string;
@@ -28,18 +28,18 @@ export function TeamSizeOptions({
       <div className="flex flex-wrap gap-2">
         {TEAM_SIZES.map((size) => (
           <label
-            key={size}
+            key={size.value}
             className="relative rounded-inner border border-border-default bg-surface-base px-3 py-1.5 text-body-3 has-checked:border-action-primary has-checked:bg-action-primary-surface has-checked:text-fg-accent"
           >
             <input
               type="radio"
               name={name}
-              value={size}
-              checked={value === size}
-              onChange={() => onChange(size)}
+              value={size.value}
+              checked={value === size.value}
+              onChange={() => onChange(size.value)}
               className="absolute inset-0 cursor-pointer appearance-none rounded-inner"
             />
-            {size}
+            {size.label}
           </label>
         ))}
       </div>

@@ -1,4 +1,5 @@
 import { Public } from '@app/shared/presentation/actor';
+import { COOKIE_HEADER } from '@app/shared/presentation/dto/cookie-header.dto';
 import {
   Controller,
   Delete,
@@ -22,7 +23,6 @@ import { GetCurrentSessionUseCase } from '../application/use-cases/get-current-s
 import { RefreshSessionUseCase } from '../application/use-cases/refresh-session.use-case';
 import { SignOutUseCase } from '../application/use-cases/sign-out.use-case';
 import { StartGoogleSignInUseCase } from '../application/use-cases/start-google-sign-in.use-case';
-import { COOKIE_HEADER } from './dto/cookie-header.dto';
 import { GetCurrentSessionResponseDto } from './dto/get-current-session.dto';
 import { StartGoogleSignInResponseDto } from './dto/start-google-sign-in.dto';
 

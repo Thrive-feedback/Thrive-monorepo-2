@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { LoginSearchParams } from './login-search-params.schema';
+import { SignInSearchParams } from './sign-in-search-params.schema';
 
-describe('LoginSearchParams', () => {
+describe('SignInSearchParams', () => {
   it('reads the error a failed sign-in comes back with', () => {
-    expect(LoginSearchParams.parse({ error: 'access_denied' })).toEqual({
+    expect(SignInSearchParams.parse({ error: 'access_denied' })).toEqual({
       error: 'access_denied',
     });
   });
 
   it('ignores a malformed error and any unknown param', () => {
     expect(
-      LoginSearchParams.parse({ error: ['a', 'b'], next: '/admin' }),
+      SignInSearchParams.parse({ error: ['a', 'b'], next: '/admin' }),
     ).toEqual({ error: undefined });
   });
 });

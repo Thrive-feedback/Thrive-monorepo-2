@@ -90,6 +90,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a Workspace, with the caller as its Owner */
+        post: operations["WorkspaceController_createWorkspace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/members/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Workspaces the caller is a Member of, and their Role */
+        get: operations["MemberController_listMyMemberships"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -122,6 +156,29 @@ export interface components {
         CreateProfileResponseDto_Output: {
             /** Format: uuid */
             id: string;
+        };
+        CreateWorkspaceRequestDto: {
+            name: string;
+            /** @enum {string|null} */
+            teamSize?: "JUST_ME" | "FROM_2_TO_10" | "FROM_11_TO_50" | "OVER_50" | null;
+        };
+        CreateWorkspaceResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
+        };
+        ListMyMembershipsResponseDto_Output: {
+            items: {
+                workspace: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                };
+                /** @enum {string} */
+                role: "OWNER";
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
         };
     };
     responses: never;
@@ -272,6 +329,85 @@ export interface operations {
             };
             /** @description PROFILE_ALREADY_EXISTS, or PROFILE_SLUG_TAKEN after retries */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceController_createWorkspace: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWorkspaceRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateWorkspaceResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, WORKSPACE_NAME_EMPTY or WORKSPACE_NAME_TOO_LONG */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description PROFILE_REQUIRED or ALREADY_IN_A_WORKSPACE */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MemberController_listMyMemberships: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListMyMembershipsResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -48,7 +48,7 @@ function authOptions(
     trustedOrigins: [authConfig.baseUrl],
     // A callback that fails before its sign-in attempt is identified has no per-attempt
     // error page yet, so it lands on the sign-in page too, never on a page of Better Auth's.
-    onAPIError: { errorURL: '/login' },
+    onAPIError: { errorURL: '/signin' },
     database,
     // Google's tokens are credentials. The access and refresh tokens are encrypted at
     // rest with the auth secret; the ID token is not kept at all, because it is only

@@ -7,6 +7,15 @@ vi.mock('@/lib/api-base-url.util', () => ({
 }));
 
 describe('Landing', () => {
+  it('offers sign-in', () => {
+    render(<Landing />);
+
+    expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute(
+      'href',
+      '/signin',
+    );
+  });
+
   it('points at the component showcase and the API reference', () => {
     render(<Landing />);
 

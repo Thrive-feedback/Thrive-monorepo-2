@@ -7,7 +7,7 @@ import { ROUTES } from '@/lib/routes.constant';
 
 const USAGE = `import { Link } from '@/components/atoms/link';
 
-<Link href="/login">Sign in</Link>
+<Link href="/signin">Sign in</Link>
 <Link href="https://thrive.example/terms" external underline="always">
   Terms and Conditions
 </Link>`;

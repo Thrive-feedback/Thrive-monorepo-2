@@ -41,4 +41,16 @@ describe('Toaster', () => {
       expect(screen.queryByText('Invitations sent')).not.toBeInTheDocument();
     });
   });
+
+  it('paints a status toast on the opaque canvas, so what is behind it does not show through', async () => {
+    render(<Toaster />);
+
+    act(() => {
+      toast.success('Signed in');
+    });
+    const shown = (await screen.findByText('Signed in')).closest('li');
+
+    expect(shown).toHaveClass('bg-surface-base', 'from-status-success-surface');
+    expect(shown).not.toHaveClass('bg-status-success-surface');
+  });
 });

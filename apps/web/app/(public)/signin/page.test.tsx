@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import LoginPage from './page';
+import SignInPage from './page';
 
 const readSession = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
@@ -21,10 +21,10 @@ vi.mock('@/components/atoms/one-time-toast', () => ({
 }));
 
 function open(searchParams: Record<string, string> = {}) {
-  return LoginPage({ searchParams: Promise.resolve(searchParams) });
+  return SignInPage({ searchParams: Promise.resolve(searchParams) });
 }
 
-describe('LoginPage', () => {
+describe('SignInPage', () => {
   it('sends someone already signed in to Home', async () => {
     readSession.mockResolvedValue({ email: 'ann@acme.test', name: 'Ann Lee' });
 

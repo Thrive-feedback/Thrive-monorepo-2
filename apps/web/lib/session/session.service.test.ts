@@ -26,14 +26,22 @@ vi.mock('next/navigation', () => ({
 }));
 
 const {
+  landingFor,
   readSession,
   readSessionNeedsRefresh,
+  requireAccountToCreateWorkspace,
   requireAccountToIntroduce,
-  requireIntroducedAccount,
+  requireMember,
 } = await import('./session.service');
 
 const CURRENT_SESSION = `${TEST_API_BASE_URL}/v1/sessions/current`;
+const MY_MEMBERSHIPS = `${TEST_API_BASE_URL}/v1/members/mine`;
 const ANN_PROFILE = { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' };
+const ACME = {
+  workspace: { id: '0199a0f0-0000-7000-8000-0000000000w1', name: 'Acme Corp' },
+  role: 'OWNER' as const,
+};
+const ANN = { email: 'ann@acme.test', name: 'Ann Lee' };
 
 function answerSignedInAs(profile: typeof ANN_PROFILE | null) {
   server.use(
@@ -50,6 +58,31 @@ function answerSignedOut() {
   server.use(
     http.get(CURRENT_SESSION, () =>
       HttpResponse.json({ account: null, needsRefresh: false }),
+    ),
+    http.get(MY_MEMBERSHIPS, () =>
+      HttpResponse.json(
+        {
+          error: {
+            code: 'NOT_SIGNED_IN',
+            message: 'Sign in to do this.',
+            correlationId: 'c-1',
+          },
+        },
+        { status: 401 },
+      ),
+    ),
+  );
+}
+
+function answerMemberOf(membership: typeof ACME | null) {
+  server.use(
+    http.get(MY_MEMBERSHIPS, () =>
+      HttpResponse.json({
+        items: membership ? [membership] : [],
+        total: membership ? 1 : 0,
+        page: 1,
+        pageSize: 1,
+      }),
     ),
   );
 }
@@ -131,47 +164,128 @@ describe('readSession', () => {
   });
 });
 
-describe('requireIntroducedAccount', () => {
-  it('answers the Account of someone who has introduced themselves', async () => {
-    answerSignedInAs(ANN_PROFILE);
+describe('landingFor', () => {
+  it('sends someone who has not introduced themselves to Introduce yourself', () => {
+    expect(landingFor({ ...ANN, profile: null }, null).page).toBe(
+      'introduceYourself',
+    );
+  });
 
-    expect(await requireIntroducedAccount()).toEqual({
-      email: 'ann@acme.test',
-      name: 'Ann Lee',
+  it('sends someone introduced but in no Workspace to Create a Workspace', () => {
+    expect(landingFor({ ...ANN, profile: ANN_PROFILE }, null).page).toBe(
+      'createWorkspace',
+    );
+  });
+
+  it('sends a Member of a Workspace Home', () => {
+    expect(landingFor({ ...ANN, profile: ANN_PROFILE }, ACME)).toEqual({
+      page: 'home',
+      account: { ...ANN, profile: ANN_PROFILE, membership: ACME },
+    });
+  });
+});
+
+describe('requireMember', () => {
+  beforeEach(() => {
+    requestHeaders.delete('cookie');
+  });
+
+  it("asks for the person's Workspace with the browser's cookie", async () => {
+    requestHeaders.set('cookie', 'thrive.session_token=abc');
+    answerSignedInAs(ANN_PROFILE);
+    const seen: Request[] = [];
+    server.use(
+      http.get(MY_MEMBERSHIPS, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json({
+          items: [ACME],
+          total: 1,
+          page: 1,
+          pageSize: 1,
+        });
+      }),
+    );
+
+    await requireMember();
+
+    expect(seen[0]?.headers.get('cookie')).toBe('thrive.session_token=abc');
+  });
+
+  it('answers a Member with their Workspace and Role', async () => {
+    answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(ACME);
+
+    expect(await requireMember()).toEqual({
+      ...ANN,
       profile: ANN_PROFILE,
+      membership: ACME,
     });
   });
 
   it('sends a signed-out visitor to sign-in', async () => {
     answerSignedOut();
 
-    await expect(requireIntroducedAccount()).rejects.toThrow('redirect:/login');
+    await expect(requireMember()).rejects.toThrow('redirect:/signin');
   });
 
   it('sends someone who has not introduced themselves to Introduce yourself', async () => {
     answerSignedInAs(null);
+    answerMemberOf(null);
 
-    await expect(requireIntroducedAccount()).rejects.toThrow(
+    await expect(requireMember()).rejects.toThrow(
       'redirect:/register/introduce-yourself',
     );
   });
 
-  it('keeps "just signed in" across that redirect, so the toast still shows', async () => {
-    answerSignedInAs(null);
+  it('sends someone in no Workspace to Create a Workspace', async () => {
+    answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(null);
 
-    await expect(requireIntroducedAccount('1')).rejects.toThrow(
-      'redirect:/register/introduce-yourself?signedIn=1',
+    await expect(requireMember()).rejects.toThrow(
+      'redirect:/register/create-workspace',
     );
+  });
+
+  it('keeps "just signed in" across that redirect, so the toast still shows', async () => {
+    answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(null);
+
+    await expect(requireMember('1')).rejects.toThrow(
+      'redirect:/register/create-workspace?signedIn=1',
+    );
+  });
+
+  it("fails with the API's error code when reading the Workspace fails", async () => {
+    answerSignedInAs(ANN_PROFILE);
+    server.use(
+      http.get(MY_MEMBERSHIPS, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: 'INTERNAL_ERROR',
+              message: 'Something went wrong.',
+              correlationId: 'c-2',
+            },
+          },
+          { status: 500 },
+        ),
+      ),
+    );
+
+    await expect(requireMember()).rejects.toMatchObject({
+      constructor: ApiError,
+      code: 'INTERNAL_ERROR',
+    });
   });
 });
 
 describe('requireAccountToIntroduce', () => {
   it('answers the Account of someone who has not introduced themselves', async () => {
     answerSignedInAs(null);
+    answerMemberOf(null);
 
     expect(await requireAccountToIntroduce()).toEqual({
-      email: 'ann@acme.test',
-      name: 'Ann Lee',
+      ...ANN,
       profile: null,
     });
   });
@@ -180,21 +294,63 @@ describe('requireAccountToIntroduce', () => {
     answerSignedOut();
 
     await expect(requireAccountToIntroduce()).rejects.toThrow(
-      'redirect:/login',
+      'redirect:/signin',
     );
   });
 
-  it('sends someone who has already introduced themselves home', async () => {
+  it('sends someone introduced but in no Workspace on to Create a Workspace', async () => {
     answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(null);
 
-    await expect(requireAccountToIntroduce()).rejects.toThrow('redirect:/home');
+    await expect(requireAccountToIntroduce()).rejects.toThrow(
+      'redirect:/register/create-workspace',
+    );
   });
 
-  it('keeps "just signed in" across that redirect', async () => {
+  it('sends a Member home, keeping "just signed in"', async () => {
     answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(ACME);
 
     await expect(requireAccountToIntroduce('1')).rejects.toThrow(
       'redirect:/home?signedIn=1',
+    );
+  });
+});
+
+describe('requireAccountToCreateWorkspace', () => {
+  it('answers someone introduced but in no Workspace', async () => {
+    answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(null);
+
+    expect(await requireAccountToCreateWorkspace()).toEqual({
+      ...ANN,
+      profile: ANN_PROFILE,
+    });
+  });
+
+  it('sends a signed-out visitor to sign-in', async () => {
+    answerSignedOut();
+
+    await expect(requireAccountToCreateWorkspace()).rejects.toThrow(
+      'redirect:/signin',
+    );
+  });
+
+  it('sends someone who has not introduced themselves to Introduce yourself first', async () => {
+    answerSignedInAs(null);
+    answerMemberOf(null);
+
+    await expect(requireAccountToCreateWorkspace()).rejects.toThrow(
+      'redirect:/register/introduce-yourself',
+    );
+  });
+
+  it('sends a Member who opens it directly to their Home', async () => {
+    answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(ACME);
+
+    await expect(requireAccountToCreateWorkspace()).rejects.toThrow(
+      'redirect:/home',
     );
   });
 });

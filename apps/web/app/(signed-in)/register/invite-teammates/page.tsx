@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { requireIntroducedAccount } from '@/lib/session/session.service';
+import { requireMember } from '@/lib/session/session.service';
 import { InviteTeammatesCard } from './_components/invite-teammates-card';
 import { InviteTeammatesHero } from './_components/invite-teammates-hero';
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
  * navigates between the pages under it.
  */
 export default async function InviteTeammatesPage() {
-  await requireIntroducedAccount();
+  await requireMember();
 
   return (
     <div className="m-auto grid w-full max-w-5xl items-center gap-10 md:grid-cols-2 md:gap-12">

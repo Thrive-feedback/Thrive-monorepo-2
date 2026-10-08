@@ -15,7 +15,7 @@ import {
  */
 const AFTER_SIGN_IN = '/home?signedIn=1';
 const AFTER_FIRST_SIGN_IN = '/register/introduce-yourself?signedIn=1';
-const AFTER_FAILED_SIGN_IN = '/login';
+const AFTER_FAILED_SIGN_IN = '/signin';
 
 function requestHeaders(credential: string): Headers {
   return new Headers(credential ? { cookie: credential } : {});

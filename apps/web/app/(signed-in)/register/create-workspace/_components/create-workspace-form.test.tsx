@@ -1,10 +1,27 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CreateWorkspaceState } from '@/app/(signed-in)/register/create-workspace/_lib/create-workspace-state.type';
 import { CreateWorkspaceForm } from './create-workspace-form';
 
-const push = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+const createWorkspace =
+  vi.fn<
+    (
+      previous: CreateWorkspaceState,
+      formData: FormData,
+    ) => Promise<CreateWorkspaceState>
+  >();
+vi.mock(
+  '@/app/(signed-in)/register/create-workspace/_lib/workspace-actions.service',
+  () => ({
+    createWorkspace: (previous: CreateWorkspaceState, formData: FormData) =>
+      createWorkspace(previous, formData),
+  }),
+);
+
+beforeEach(() => {
+  createWorkspace.mockReset();
+});
 
 function fields() {
   return {
@@ -47,15 +64,30 @@ describe('CreateWorkspaceForm', () => {
 
   it('does not submit on Enter while there is no name', async () => {
     const user = userEvent.setup();
-    push.mockClear();
     render(<CreateWorkspaceForm />);
 
     await user.type(fields().workspaceName, '   {Enter}');
 
-    expect(push).not.toHaveBeenCalled();
+    expect(createWorkspace).not.toHaveBeenCalled();
   });
 
-  it('moves on to Invite your teammates once named', async () => {
+  it('creates the Workspace with the name and the picked team size', async () => {
+    createWorkspace.mockResolvedValue({});
+    const user = userEvent.setup();
+    render(<CreateWorkspaceForm />);
+    const { workspaceName, createButton } = fields();
+
+    await user.type(workspaceName, 'Stark Industries');
+    await user.click(screen.getByRole('radio', { name: '11–50' }));
+    await user.click(createButton);
+
+    const formData = createWorkspace.mock.lastCall?.[1];
+    expect(formData?.get('workspaceName')).toBe('Stark Industries');
+    expect(formData?.get('teamSize')).toBe('FROM_11_TO_50');
+  });
+
+  it('sends no team size when none was picked', async () => {
+    createWorkspace.mockResolvedValue({});
     const user = userEvent.setup();
     render(<CreateWorkspaceForm />);
     const { workspaceName, createButton } = fields();
@@ -63,7 +95,63 @@ describe('CreateWorkspaceForm', () => {
     await user.type(workspaceName, 'Stark Industries');
     await user.click(createButton);
 
-    expect(push).toHaveBeenCalledWith('/register/invite-teammates');
+    expect(createWorkspace.mock.lastCall?.[1].get('teamSize')).toBeNull();
+  });
+
+  it('keeps Create disabled while the Workspace is being created, so it is not sent twice', async () => {
+    let finishCreating = (_state: CreateWorkspaceState) => {};
+    createWorkspace.mockReturnValue(
+      new Promise((resolve) => {
+        finishCreating = resolve;
+      }),
+    );
+    const user = userEvent.setup();
+    render(<CreateWorkspaceForm />);
+    const { workspaceName, createButton } = fields();
+
+    await user.type(workspaceName, 'Stark Industries');
+    await user.click(createButton);
+
+    expect(createButton).toBeDisabled();
+    // React holds every later transition until a pending action settles, so this one must.
+    await act(async () => finishCreating({}));
+  });
+
+  it('shows why the name was refused beside it, and keeps what was typed and picked', async () => {
+    createWorkspace.mockResolvedValue({
+      fieldErrors: { workspaceName: 'Use 100 characters or fewer.' },
+    });
+    const user = userEvent.setup();
+    render(<CreateWorkspaceForm />);
+    const { workspaceName, createButton } = fields();
+
+    await user.type(workspaceName, 'Stark Industries');
+    await user.click(screen.getByRole('radio', { name: '50+' }));
+    await user.click(createButton);
+
+    expect(
+      await screen.findByText('Use 100 characters or fewer.'),
+    ).toBeInTheDocument();
+    expect(workspaceName).toBeInvalid();
+    expect(workspaceName).toHaveValue('Stark Industries');
+    expect(screen.getByRole('radio', { name: '50+' })).toBeChecked();
+  });
+
+  it('says so when creating failed for another reason', async () => {
+    createWorkspace.mockResolvedValue({
+      formError: "We couldn't create your Workspace. Please try again.",
+    });
+    const user = userEvent.setup();
+    render(<CreateWorkspaceForm />);
+    const { workspaceName, createButton } = fields();
+
+    await user.type(workspaceName, 'Stark Industries');
+    await user.click(createButton);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      "We couldn't create your Workspace. Please try again.",
+    );
+    expect(createButton).toBeEnabled();
   });
 
   it('offers four optional Team sizes with none chosen', () => {
@@ -71,11 +159,16 @@ describe('CreateWorkspaceForm', () => {
     const radios = screen.getAllByRole('radio');
 
     expect(radios.map((radio) => radio.getAttribute('value'))).toEqual([
-      'Just me',
-      '2–10',
-      '11–50',
-      '50+',
+      'JUST_ME',
+      'FROM_2_TO_10',
+      'FROM_11_TO_50',
+      'OVER_50',
     ]);
+    expect(
+      screen
+        .getAllByRole('radio')
+        .map((radio) => radio.closest('label')?.textContent),
+    ).toEqual(['Just me', '2–10', '11–50', '50+']);
     for (const radio of radios) {
       expect(radio).not.toBeChecked();
     }

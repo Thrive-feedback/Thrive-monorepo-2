@@ -48,12 +48,19 @@ export function Toaster(props: ToasterProps) {
           // Sonner joins `toast` with the type's classes rather than merging them, so the
           // colour lives only in the type slots: two backgrounds on one element would leave
           // stylesheet order to pick the winner.
+          //
+          // A status surface is a translucent tint, made for an alert set into the page. A
+          // toast floats over content, which would show through it, so the tint is laid as an
+          // image over the opaque canvas colour: the same colour, but solid.
           default: 'border-border-default bg-surface-base',
           loading: 'border-border-default bg-surface-base',
-          success: 'border-status-success-border bg-status-success-surface',
-          info: 'border-status-info-border bg-status-info-surface',
-          warning: 'border-status-warning-border bg-status-warning-surface',
-          error: 'border-status-error-border bg-status-error-surface',
+          success:
+            'border-status-success-border bg-surface-base bg-linear-to-r from-status-success-surface to-status-success-surface',
+          info: 'border-status-info-border bg-surface-base bg-linear-to-r from-status-info-surface to-status-info-surface',
+          warning:
+            'border-status-warning-border bg-surface-base bg-linear-to-r from-status-warning-surface to-status-warning-surface',
+          error:
+            'border-status-error-border bg-surface-base bg-linear-to-r from-status-error-surface to-status-error-surface',
           actionButton:
             'ms-auto rounded-button bg-action-primary px-3 py-1.5 text-button-sm text-fg-on-action',
           closeButton:

@@ -6,8 +6,8 @@ import { ROUTES } from '@/lib/routes.constant';
 
 /**
  * The public landing route, deliberately empty of product: nothing is built ahead of the
- * first real feature, and the landing page replaces this. Until then it points developers at
- * the component showcase and the API's Scalar reference.
+ * first real feature, and the landing page replaces this. Until then it offers sign-in, and
+ * points developers at the component showcase and the API's Scalar reference.
  *
  * Every class resolves to a token: a role for colour, shape and type, a scale for spacing.
  * `bg-primary-500` is not a class that exists, because the theme exposes colour only as roles.
@@ -21,6 +21,9 @@ export default function Landing() {
       <Text tone="muted">Ask for, give and act on feedback.</Text>
       <div className="flex flex-wrap gap-3">
         <Button asChild variant="primary" size="sm" className="w-fit">
+          <Link href={ROUTES.signIn}>Sign in</Link>
+        </Button>
+        <Button asChild size="sm" className="w-fit">
           <Link href={ROUTES.uiShowcase.index}>See the components</Link>
         </Button>
         {/* Another origin, so a plain link: Next's `Link` is for this app's own routes. */}

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { requireIntroducedAccount } from '@/lib/session/session.service';
+import { requireAccountToCreateWorkspace } from '@/lib/session/session.service';
 import { CreateWorkspaceCard } from './_components/create-workspace-card';
 import { CreateWorkspaceHero } from './_components/create-workspace-hero';
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
  * navigates between the pages under it.
  */
 export default async function CreateWorkspacePage() {
-  await requireIntroducedAccount();
+  await requireAccountToCreateWorkspace();
 
   return (
     <div className="m-auto grid w-full max-w-5xl items-center gap-10 md:grid-cols-2 md:gap-12">

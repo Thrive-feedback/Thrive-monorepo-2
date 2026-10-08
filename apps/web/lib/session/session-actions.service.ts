@@ -50,5 +50,5 @@ export async function signOut(): Promise<void> {
     params: { header: { cookie } },
   });
   await forwardCookies(result.response);
-  redirect(ROUTES.login);
+  redirect(ROUTES.signIn);
 }

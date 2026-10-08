@@ -15,10 +15,10 @@ describe('OneTimeToast', () => {
   it.each(['success', 'error'] as const)(
     'raises one %s toast and drops the query from the address',
     (type) => {
-      render(<OneTimeToast type={type} message="Done" then="/login" />);
+      render(<OneTimeToast type={type} message="Done" then="/signin" />);
 
       expect(toast[type]).toHaveBeenCalledWith('Done', { id: 'Done' });
-      expect(replace).toHaveBeenCalledWith('/login', { scroll: false });
+      expect(replace).toHaveBeenCalledWith('/signin', { scroll: false });
     },
   );
 });

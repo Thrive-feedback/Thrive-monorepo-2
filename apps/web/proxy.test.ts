@@ -15,7 +15,7 @@ describe('proxy', () => {
     const response = visit('/register/introduce-yourself');
 
     expect(response.headers.get('location')).toBe(
-      'http://localhost:3001/login',
+      'http://localhost:3001/signin',
     );
   });
 

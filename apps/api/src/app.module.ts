@@ -8,13 +8,20 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { IdentityModule } from './modules/identity';
+import { WorkspaceModule } from './modules/workspace';
 import { CodedErrorFilter } from './shared/presentation/coded-error.filter';
 import { CorrelationIdMiddleware } from './shared/presentation/correlation-id.middleware';
 import { HealthController } from './shared/presentation/health.controller';
 import { SharedModule } from './shared/shared.module';
 
 @Module({
-  imports: [ConfigModule, SharedModule, DatabaseModule, IdentityModule],
+  imports: [
+    ConfigModule,
+    SharedModule,
+    DatabaseModule,
+    IdentityModule,
+    WorkspaceModule,
+  ],
   controllers: [HealthController],
   providers: [
     // Every value entering from outside is validated here, so a use case can assume its

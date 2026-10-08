@@ -1,4 +1,5 @@
 import { type Actor, CurrentActor } from '@app/shared/presentation/actor';
+import { COOKIE_HEADER } from '@app/shared/presentation/dto/cookie-header.dto';
 import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -10,7 +11,6 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { CreateProfileUseCase } from '../application/use-cases/create-profile.use-case';
-import { COOKIE_HEADER } from './dto/cookie-header.dto';
 import {
   CreateProfileRequestDto,
   CreateProfileResponseDto,
