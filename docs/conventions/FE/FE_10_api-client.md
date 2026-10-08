@@ -4,7 +4,7 @@ id: 'FE_10'
 area: 'FE'
 tier: 'P1'
 status: 'stable'
-updated: '2026-09-28'
+updated: '2026-10-08'
 requires: [GEN_08, FE_09]
 ---
 
@@ -12,7 +12,7 @@ requires: [GEN_08, FE_09]
 
 # [FE] Typed API client & contract consumption
 
-`P1` · `FE_10` · `stable` · `updated 2026-09-28`
+`P1` · `FE_10` · `stable` · `updated 2026-10-08`
 
 **Open when:** you are calling the backend, or the contract changed under you.
 
@@ -62,7 +62,7 @@ const res = await fetch(`${base}/v1/orders/${id}`);    // no correlation id, no 
 
 The client is constructed once per runtime from configuration — base URL, timeouts, default headers ([INFRA_07](../index.html#INFRA_07)) — and imported. A component that builds a client has taken configuration into the render tree, and it will be built with a different base URL somewhere.
 
-Because reads happen on the server by default ([FE_09](../index.html#FE_09)), the server-side client is the one that may hold a secret. The browser's client holds nothing that must stay secret: a value the browser cannot be trusted with means the call belongs on the server ([INFRA_07#R8](../index.html#INFRA_07)). Same client shape, different credentials, and the difference is configuration rather than a second implementation.
+Every call is made on the server — reads in server components, writes in server actions ([FE_09#R1](../index.html#FE_09), [FE_09#R4](../index.html#FE_09), ADR 0032) — so the client is a server module and the only one that may hold a secret. Mark it server-only where the stack allows, so a client import fails the build. A value the browser cannot be trusted with never leaves the server ([INFRA_07#R8](../index.html#INFRA_07)); if an ADR later opens a browser path, that client holds nothing secret, and the difference is configuration rather than a second implementation.
 
 **Enforcement:** review — a secret-named value reaching a client-side module is greppable ([INFRA_06](../index.html#INFRA_06)).
 
@@ -137,7 +137,7 @@ Then the backend renames a field. The contract regenerates in its own change ([R
 
 - Where view-model mappers live — beside the client, beside the feature, or beside the route — is undecided, and the first two features will choose differently. It should be settled with [FE_01](../index.html#FE_01)'s ladder in mind.
 - Where the contract does not describe the error body or enumerate its codes, the client's error envelope is hand-written and codes are untyped literals; [R2](#R2) and [R7](#R7) hold fully only once the API publishes both ([BE_09](../index.html#BE_09)).
-- Nothing here says how a client-side call, where one is justified ([FE_09#R9](../index.html#FE_09)), obtains the correlation id started on the server. The two halves are meant to share one id per user action, and the mechanism is unwritten.
+- How a browser call would obtain the correlation id started on the server is unwritten. No such call is allowed today ([FE_09#R4](../index.html#FE_09)); the ADR that opens a browser path must answer it.
 - A stale or patched committed output is caught only by review until a pipeline runs [INFRA_09](../index.html#INFRA_09)'s drift check.
 
 ## Related
