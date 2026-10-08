@@ -5,6 +5,7 @@ import {
   type DBAdapterInstance,
 } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { organization } from 'better-auth/plugins';
 import type { AuthConfig } from '../../config/configuration';
 import type { IdGenerator } from '../../shared/application/id-generator.port';
 import type { PrismaClient } from '../database/generated/client';
@@ -80,6 +81,28 @@ function authOptions(
         prompt: 'select_account',
       },
     },
+    plugins: [
+      // Workspace and Member (ADR 0032). The Workspace module calls it from its own adapter,
+      // on the caller's session; its HTTP routes are never mounted (see `AuthModule`), so
+      // `/v1/workspaces` is the only way in.
+      organization({
+        // One Workspace per person in this release (ADR-0020).
+        organizationLimit: 1,
+        creatorRole: 'owner',
+        disableOrganizationDeletion: true,
+        schema: {
+          organization: {
+            modelName: 'workspace',
+            additionalFields: {
+              // Stored in the `TeamSize` enum column; the use case has already checked it.
+              teamSize: { type: 'string', required: false, input: true },
+            },
+          },
+          member: { fields: { organizationId: 'workspaceId' } },
+          invitation: { fields: { organizationId: 'workspaceId' } },
+        },
+      }),
+    ],
     // Better Auth's tables keep its own names (`user`, `account`, …): it resolves a model
     // by those names before any rename, so reusing one for another model breaks lookups.
     // They are the provider's tables; domain code never names them.

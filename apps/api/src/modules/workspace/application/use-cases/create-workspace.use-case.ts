@@ -1,18 +1,15 @@
 import { HasProfilePort } from '@app/modules/identity';
-import { IdGenerator } from '@app/shared/application/id-generator.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable } from '@nestjs/common';
-import { Workspace } from '../../domain/entity/workspace.entity';
-import { WorkspaceRepository } from '../../domain/repository/workspace-repository.port';
 import { TeamSize } from '../../domain/value-object/team-size.vo';
 import { WorkspaceName } from '../../domain/value-object/workspace-name.vo';
-import {
-  AlreadyInAWorkspaceError,
-  ProfileRequiredError,
-} from '../workspace.errors';
+import { WorkspaceFounding } from '../port/workspace-founding.port';
+import { ProfileRequiredError } from '../workspace.errors';
 
 export interface CreateWorkspaceInput {
   readonly accountId: string;
+  /** The founder's `cookie` header, passed through to the store untouched. */
+  readonly credential: string;
   readonly name: string;
   readonly teamSize: string | null;
 }
@@ -25,10 +22,9 @@ export interface CreateWorkspaceResult {
 @Injectable()
 export class CreateWorkspaceUseCase {
   constructor(
-    private readonly workspaceRepository: WorkspaceRepository,
+    private readonly workspaceFounding: WorkspaceFounding,
     private readonly hasProfilePort: HasProfilePort,
     private readonly unitOfWork: UnitOfWork,
-    private readonly idGenerator: IdGenerator,
   ) {}
 
   async execute(input: CreateWorkspaceInput): Promise<CreateWorkspaceResult> {
@@ -40,28 +36,17 @@ export class CreateWorkspaceUseCase {
       throw new ProfileRequiredError();
     }
 
-    // Serialized per Account: two tabs creating at once would both pass the membership
-    // check, so the second waits for the first to commit and then sees its Workspace.
+    // Serialized per Account: the store checks the one-Workspace limit before it writes, so
+    // two tabs creating at once would both pass it. The second waits here until the first
+    // has stored its Workspace, and is then refused by that limit.
     return this.unitOfWork.run(
       async () => {
-        if (
-          (await this.workspaceRepository.findByMemberAccount(
-            input.accountId,
-          )) !== null
-        ) {
-          throw new AlreadyInAWorkspaceError();
-        }
-        const workspace = Workspace.found({
-          id: this.idGenerator.next(),
-          name,
-          teamSize,
-          founder: {
-            memberId: this.idGenerator.next(),
-            accountId: input.accountId,
-          },
+        const founded = await this.workspaceFounding.found({
+          credential: input.credential,
+          name: name.toString(),
+          teamSize: teamSize?.toString() ?? null,
         });
-        await this.workspaceRepository.save(workspace);
-        return { id: workspace.snapshot().id };
+        return { id: founded.workspaceId };
       },
       { serializeOn: `workspace-founder:${input.accountId}` },
     );

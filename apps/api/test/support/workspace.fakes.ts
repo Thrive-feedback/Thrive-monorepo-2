@@ -1,52 +1,36 @@
 import { HasProfilePort } from '@app/modules/identity';
 import {
-  Workspace,
-  type WorkspaceSnapshot,
-} from '@app/modules/workspace/domain/entity/workspace.entity';
-import { WorkspaceRepository } from '@app/modules/workspace/domain/repository/workspace-repository.port';
+  type FoundedWorkspace,
+  WorkspaceFounding,
+  type WorkspaceFoundingInput,
+} from '@app/modules/workspace/application/port/workspace-founding.port';
+import { AlreadyInAWorkspaceError } from '@app/modules/workspace/application/workspace.errors';
 
-/** A stored Workspace with its Owner, with any field the test cares about overridden. */
-export function aWorkspaceSnapshot(
-  overrides: Partial<WorkspaceSnapshot> = {},
-): WorkspaceSnapshot {
-  return {
-    id: '0199a0f0-0000-7000-8000-0000000000w1',
-    name: 'Acme Corp',
-    teamSize: 'FROM_11_TO_50',
-    members: [
-      {
-        id: '0199a0f0-0000-7000-8000-0000000000m1',
-        accountId: 'account-ann',
-        role: 'OWNER',
-      },
-    ],
-    ...overrides,
-  };
-}
+/**
+ * Remembers each Workspace it was asked to found, and answers the ids it was given. Like the
+ * real store, it refuses a credential whose founder already has one.
+ */
+export class FakeWorkspaceFounding extends WorkspaceFounding {
+  readonly founded: WorkspaceFoundingInput[] = [];
+  /** Credentials whose founder is already a Member of a Workspace. */
+  readonly alreadyMembers = new Set<string>();
+  private readonly ids: string[];
 
-/** Workspaces held in memory. */
-export class FakeWorkspaceRepository extends WorkspaceRepository {
-  readonly saved: WorkspaceSnapshot[] = [];
-
-  holding(...snapshots: WorkspaceSnapshot[]): this {
-    this.saved.push(...snapshots);
-    return this;
+  constructor(...ids: string[]) {
+    super();
+    this.ids = ids;
   }
 
-  async findById(id: string): Promise<Workspace | null> {
-    const found = this.saved.find((workspace) => workspace.id === id);
-    return found ? Workspace.restore(found) : null;
-  }
-
-  async findByMemberAccount(accountId: string): Promise<Workspace | null> {
-    const found = this.saved.find((workspace) =>
-      workspace.members.some((member) => member.accountId === accountId),
-    );
-    return found ? Workspace.restore(found) : null;
-  }
-
-  async save(workspace: Workspace): Promise<void> {
-    this.saved.push(workspace.snapshot());
+  async found(input: WorkspaceFoundingInput): Promise<FoundedWorkspace> {
+    if (this.alreadyMembers.has(input.credential)) {
+      throw new AlreadyInAWorkspaceError();
+    }
+    const workspaceId = this.ids.shift();
+    if (workspaceId === undefined) {
+      throw new Error('FakeWorkspaceFounding ran out of ids.');
+    }
+    this.founded.push(input);
+    return { workspaceId };
   }
 }
 

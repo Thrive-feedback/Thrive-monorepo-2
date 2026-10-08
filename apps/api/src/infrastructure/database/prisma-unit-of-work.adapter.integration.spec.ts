@@ -19,7 +19,7 @@ async function writeAWorkspace(): Promise<string> {
   const id = uuidv7();
   createdWorkspaceIds.push(id);
   await prismaTransactionContext.client.workspace.create({
-    data: { id, name: 'Unit of work' },
+    data: { id, name: 'Unit of work', slug: id },
   });
   return id;
 }

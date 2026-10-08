@@ -1,6 +1,6 @@
 import { type Actor, CurrentActor } from '@app/shared/presentation/actor';
 import { COOKIE_HEADER } from '@app/shared/presentation/dto/cookie-header.dto';
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Headers, HttpStatus, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -37,10 +37,12 @@ export class WorkspaceController {
   })
   async createWorkspace(
     @CurrentActor() actor: Actor,
+    @Headers('cookie') cookie: string | undefined,
     @Body() body: CreateWorkspaceRequestDto,
   ) {
     const created = await this.createWorkspaceUseCase.execute({
       accountId: actor.accountId,
+      credential: cookie ?? '',
       name: body.name,
       teamSize: body.teamSize ?? null,
     });
