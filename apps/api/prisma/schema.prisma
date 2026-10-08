@@ -89,3 +89,46 @@ model Profile {
   @@unique([slug])
   @@map("profile")
 }
+
+// Workspace's tables. `member.userId` is a Thrive Account, which is Better Auth's `user.id`,
+// never an `account` row (one sign-in method, whose own `accountId` is the provider's id). No
+// foreign key: `user` is Identity's table, and no constraint reaches across modules (BE_03 R7).
+// The domain calls it `accountId`; the mapper translates.
+
+enum TeamSize {
+  JUST_ME
+  FROM_2_TO_10
+  FROM_11_TO_50
+  OVER_50
+}
+
+enum MemberRole {
+  OWNER
+}
+
+model Workspace {
+  id        String    @id
+  name      String
+  teamSize  TeamSize?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  members   Member[]
+
+  @@map("workspace")
+}
+
+// No unique index on `userId` alone: one Workspace per person is a rule of this release
+// (ADR-0020), kept in the application so lifting it needs no migration.
+model Member {
+  id          String     @id
+  workspaceId String
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  role        MemberRole
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@map("member")
+}

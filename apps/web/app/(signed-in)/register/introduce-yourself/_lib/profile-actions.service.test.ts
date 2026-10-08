@@ -89,7 +89,7 @@ describe('saving the Profile', () => {
     apiRefusesWith('NOT_SIGNED_IN', 401);
 
     await expect(saveProfile({}, typed('Ann Lee', 'Ann'))).rejects.toThrow(
-      'redirect:/login',
+      'redirect:/signin',
     );
   });
 

@@ -32,7 +32,7 @@ export function SignInPrompt({ didSignInFail = false }: SignInPromptProps) {
         <OneTimeToast
           type="error"
           message="Sign-in didn't finish. Try again."
-          then={ROUTES.login}
+          then={ROUTES.signIn}
         />
       )}
     </div>

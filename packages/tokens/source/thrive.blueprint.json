@@ -2018,7 +2018,7 @@
         "description": "The page canvas, behind everything else.",
         "light": {
           "trackId": "neutral",
-          "weight": 100
+          "weight": 25
         },
         "dark": {
           "trackId": "neutral",
@@ -2031,7 +2031,7 @@
         "description": "A quiet wash set into the canvas: a well, a code block.",
         "light": {
           "trackId": "neutral",
-          "weight": 150
+          "weight": 50
         },
         "dark": {
           "trackId": "neutral",

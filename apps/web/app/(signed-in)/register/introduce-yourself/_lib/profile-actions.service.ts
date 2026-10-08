@@ -70,7 +70,7 @@ export async function saveProfile(
       // Saved already, from another tab or a second click: the step is done.
       next = ROUTES.home;
     } else if (error.code === 'NOT_SIGNED_IN') {
-      next = ROUTES.login;
+      next = ROUTES.signIn;
     } else {
       return { formError: COULD_NOT_SAVE };
     }

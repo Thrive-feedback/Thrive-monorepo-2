@@ -1,28 +1,40 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { startTransition, useActionState, useState } from 'react';
+import type { CreateWorkspaceState } from '@/app/(signed-in)/register/create-workspace/_lib/create-workspace-state.type';
+import type { TeamSize } from '@/app/(signed-in)/register/create-workspace/_lib/team-size.constant';
+import { createWorkspace } from '@/app/(signed-in)/register/create-workspace/_lib/workspace-actions.service';
 import { Button } from '@/components/atoms/button';
+import { Text } from '@/components/atoms/text';
 import { TextField } from '@/components/molecules/text-field';
-import { ROUTES } from '@/lib/routes.constant';
-import { type TeamSize, TeamSizeOptions } from './team-size-options';
+import { TeamSizeOptions } from './team-size-options';
 
-/** Create is disabled until the Workspace has a name; a name of only spaces is no name. */
+/**
+ * Create is disabled until the Workspace has a name, since a name of only spaces is no name,
+ * and while it is being created, so a second click cannot send it twice.
+ *
+ * Both fields are controlled, so what was typed and picked stays when creating fails. The
+ * form is submitted by hand rather than through `action`, because React resets a form after
+ * its action, which would clear the picked team size from the page but not from state.
+ */
 export function CreateWorkspaceForm() {
-  const router = useRouter();
   const [workspaceName, setWorkspaceName] = useState('');
   const [teamSize, setTeamSize] = useState<TeamSize | null>(null);
+  const [state, formAction, isCreating] = useActionState<
+    CreateWorkspaceState,
+    FormData
+  >(createWorkspace, {});
 
-  const canCreate = workspaceName.trim() !== '';
+  const canCreate = workspaceName.trim() !== '' && !isCreating;
 
   function handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
     setWorkspaceName(event.target.value);
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    // TODO(kritpavin, #72): save the Workspace before moving on.
     event.preventDefault();
-    router.push(ROUTES.register.inviteTeammates);
+    const formData = new FormData(event.currentTarget);
+    startTransition(() => formAction(formData));
   }
 
   return (
@@ -35,12 +47,18 @@ export function CreateWorkspaceForm() {
         required
         value={workspaceName}
         onChange={handleNameChange}
+        errorMessage={state.fieldErrors?.workspaceName}
       />
       <TeamSizeOptions
         name="teamSize"
         value={teamSize}
         onChange={setTeamSize}
       />
+      {state.formError && (
+        <Text role="alert" variant="body-2" tone="danger">
+          {state.formError}
+        </Text>
+      )}
       <Button
         type="submit"
         variant="primary"

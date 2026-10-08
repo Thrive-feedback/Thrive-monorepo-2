@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { toCurrentAccount, toNeedsRefresh } from './session.transform';
+import {
+  toCurrentAccount,
+  toCurrentMembership,
+  toNeedsRefresh,
+} from './session.transform';
 
 describe('toCurrentAccount', () => {
   it('maps a signed-in answer to the session, with its Profile', () => {
@@ -39,5 +43,29 @@ describe('toNeedsRefresh', () => {
 
   it('never asks to refresh when nobody is signed in', () => {
     expect(toNeedsRefresh({ account: null, needsRefresh: true })).toBe(false);
+  });
+});
+
+describe('toCurrentMembership', () => {
+  it("maps the person's Workspace and Role", () => {
+    const membership = {
+      workspace: { id: 'w-1', name: 'Acme Corp' },
+      role: 'OWNER' as const,
+    };
+
+    expect(
+      toCurrentMembership({
+        items: [membership],
+        total: 1,
+        page: 1,
+        pageSize: 1,
+      }),
+    ).toEqual(membership);
+  });
+
+  it('maps belonging to no Workspace to null', () => {
+    expect(
+      toCurrentMembership({ items: [], total: 0, page: 1, pageSize: 1 }),
+    ).toBeNull();
   });
 });

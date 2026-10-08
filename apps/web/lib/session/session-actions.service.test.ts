@@ -74,7 +74,7 @@ describe('session actions', () => {
       }),
     );
 
-    await expect(signOut()).rejects.toThrow('redirect:/login');
+    await expect(signOut()).rejects.toThrow('redirect:/signin');
     // `toContain`, not `toBe`: MSW keeps a cookie jar like a browser does, so a cookie an
     // earlier test's mocked response set can ride along. Real server-side fetch keeps none.
     expect(seen[0]?.headers.get('cookie')).toContain(

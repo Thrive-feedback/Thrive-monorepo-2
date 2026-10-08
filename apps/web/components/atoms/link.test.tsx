@@ -4,10 +4,10 @@ import { Link } from './link';
 
 describe('Link', () => {
   it('navigates within the app in the same tab', () => {
-    render(<Link href="/login">Sign in</Link>);
+    render(<Link href="/signin">Sign in</Link>);
     const link = screen.getByRole('link', { name: 'Sign in' });
 
-    expect(link).toHaveAttribute('href', '/login');
+    expect(link).toHaveAttribute('href', '/signin');
     expect(link).not.toHaveAttribute('target');
   });
 

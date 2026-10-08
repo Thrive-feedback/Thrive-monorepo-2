@@ -175,6 +175,114 @@
           "profiles"
         ]
       }
+    },
+    "/v1/workspaces": {
+      "post": {
+        "operationId": "WorkspaceController_createWorkspace",
+        "parameters": [
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateWorkspaceResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID, WORKSPACE_NAME_EMPTY or WORKSPACE_NAME_TOO_LONG"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "409": {
+            "description": "PROFILE_REQUIRED or ALREADY_IN_A_WORKSPACE"
+          }
+        },
+        "summary": "Create a Workspace, with the caller as its Owner",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/v1/members/mine": {
+      "get": {
+        "operationId": "MemberController_listMyMemberships",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListMyMembershipsResponseDto_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          }
+        },
+        "summary": "List the Workspaces the caller is a Member of, and their Role",
+        "tags": [
+          "members"
+        ]
+      }
     }
   },
   "info": {
@@ -296,6 +404,107 @@
         },
         "required": [
           "id"
+        ],
+        "additionalProperties": false
+      },
+      "CreateWorkspaceRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "teamSize": {
+            "type": "string",
+            "enum": [
+              "JUST_ME",
+              "FROM_2_TO_10",
+              "FROM_11_TO_50",
+              "OVER_50",
+              null
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "CreateWorkspaceResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "ListMyMembershipsResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "workspace": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "OWNER"
+                  ]
+                }
+              },
+              "required": [
+                "workspace",
+                "role"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
         ],
         "additionalProperties": false
       }

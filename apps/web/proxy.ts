@@ -21,7 +21,7 @@ export function proxy(request: NextRequest) {
   if (hasSessionCookie) {
     return NextResponse.next();
   }
-  return NextResponse.redirect(new URL(ROUTES.login, request.url));
+  return NextResponse.redirect(new URL(ROUTES.signIn, request.url));
 }
 
 export const config = {

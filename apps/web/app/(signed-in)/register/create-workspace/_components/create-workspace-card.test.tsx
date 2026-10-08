@@ -2,7 +2,12 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { CreateWorkspaceCard } from './create-workspace-card';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock(
+  '@/app/(signed-in)/register/create-workspace/_lib/workspace-actions.service',
+  () => ({
+    createWorkspace: vi.fn(),
+  }),
+);
 
 describe('CreateWorkspaceCard', () => {
   it('says Workspace, never Organization', () => {

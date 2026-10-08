@@ -52,8 +52,8 @@
   );
   --action-neutral-fg: var(--neutral-850);
   --action-neutral-border: var(--neutral-450);
-  --surface-base: var(--neutral-100);
-  --surface-subtle: var(--neutral-150);
+  --surface-base: var(--neutral-25);
+  --surface-subtle: var(--neutral-50);
   --surface-raised: var(--primary-100);
   --surface-overlay: color-mix(in oklch, var(--neutral-25) 96%, transparent);
   --surface-skeleton: var(--neutral-200);

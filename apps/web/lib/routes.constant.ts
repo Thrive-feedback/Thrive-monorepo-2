@@ -6,7 +6,7 @@
  */
 export const ROUTES = {
   landing: '/',
-  login: '/login',
+  signIn: '/signin',
   home: '/home',
   register: {
     introduceYourself: '/register/introduce-yourself',
