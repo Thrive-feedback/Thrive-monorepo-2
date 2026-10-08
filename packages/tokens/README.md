@@ -52,7 +52,7 @@ is what design changed. If a role was renamed or removed, migrate every consumer
 
 The full reasoning is in ADR 0028.
 
-- **Ramps:** each of the 20 steps keeps the seed's OKLCH hue and chroma at the step's lightness.
+- **Ramps:** each of the 20 steps keeps the seed's OKLCH hue and chroma at the step's lightness. A weight in the track's `adjustments.manualOverrides` is pinned to that exact colour instead, and may add a weight between the steps (125, 475, 825) on that track only.
   The chroma is reduced until the colour fits sRGB.
 - **Devices:** phone is the default, tablet applies from `md`, desktop from `lg`.
 - **Type:** size is `16px × deviceRatio ^ stepOffset`, unless the blueprint pins one. Line height is

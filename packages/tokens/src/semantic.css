@@ -6,9 +6,9 @@
  */
 :root {
   /* Colour roles. */
-  --action-primary: var(--primary-700);
-  --action-primary-hover: var(--primary-750);
-  --action-primary-active: var(--primary-800);
+  --action-primary: var(--primary-450);
+  --action-primary-hover: var(--primary-475);
+  --action-primary-active: var(--primary-550);
   --action-primary-surface: color-mix(
     in oklch,
     var(--primary-50) 12%,
@@ -21,9 +21,9 @@
   );
   --action-primary-fg: var(--primary-900);
   --action-primary-border: var(--primary-450);
-  --action-secondary: var(--secondary-400);
-  --action-secondary-hover: var(--secondary-450);
-  --action-secondary-active: var(--secondary-500);
+  --action-secondary: var(--secondary-475);
+  --action-secondary-hover: var(--secondary-550);
+  --action-secondary-active: var(--secondary-600);
   --action-secondary-surface: color-mix(
     in oklch,
     var(--secondary-50) 12%,
@@ -39,7 +39,7 @@
   --action-muted: var(--primary-400);
   --action-neutral: var(--neutral-950);
   --action-neutral-hover: var(--neutral-900);
-  --action-neutral-active: var(--neutral-850);
+  --action-neutral-active: var(--neutral-825);
   --action-neutral-surface: color-mix(
     in oklch,
     var(--neutral-50) 12%,
@@ -50,31 +50,31 @@
     var(--neutral-100) 18%,
     transparent
   );
-  --action-neutral-fg: var(--neutral-850);
+  --action-neutral-fg: var(--neutral-825);
   --action-neutral-border: var(--neutral-450);
-  --surface-base: var(--neutral-25);
-  --surface-subtle: var(--neutral-50);
+  --surface-base: var(--neutral-100);
+  --surface-subtle: var(--neutral-125);
   --surface-raised: var(--primary-100);
-  --surface-overlay: color-mix(in oklch, var(--neutral-25) 96%, transparent);
+  --surface-overlay: color-mix(in oklch, var(--neutral-50) 96%, transparent);
   --surface-skeleton: var(--neutral-200);
   --surface-track: var(--neutral-200);
   --border-default: var(--neutral-450);
   --border-subtle: color-mix(in oklch, var(--neutral-300) 12%, transparent);
   --border-muted: var(--neutral-200);
   --border-strong: var(--neutral-300);
-  --fg-primary: var(--neutral-850);
+  --fg-primary: var(--neutral-825);
   --fg-secondary: var(--neutral-650);
-  --fg-disabled: color-mix(in oklch, var(--neutral-500) 45%, transparent);
+  --fg-disabled: color-mix(in oklch, var(--neutral-475) 45%, transparent);
   --fg-accent: var(--primary-600);
-  --fg-on-action: var(--neutral-25);
-  --fg-on-secondary: var(--neutral-950);
-  --fg-on-neutral: var(--neutral-25);
-  --fg-on-success: var(--neutral-25);
-  --fg-on-warning: var(--neutral-950);
-  --fg-on-error: var(--neutral-950);
-  --fg-on-info: var(--neutral-950);
+  --fg-on-action: var(--neutral-50);
+  --fg-on-secondary: var(--neutral-50);
+  --fg-on-neutral: var(--neutral-50);
+  --fg-on-success: var(--neutral-50);
+  --fg-on-warning: var(--neutral-50);
+  --fg-on-error: var(--neutral-50);
+  --fg-on-info: var(--neutral-50);
   --focus-ring: var(--primary-300);
-  --status-success: var(--success-500);
+  --status-success: var(--success-475);
   --status-success-hover: var(--success-550);
   --status-success-active: var(--success-600);
   --status-success-surface: color-mix(
@@ -89,9 +89,9 @@
   );
   --status-success-fg: var(--success-900);
   --status-success-border: var(--success-450);
-  --status-warning: var(--warning-250);
-  --status-warning-hover: var(--warning-300);
-  --status-warning-active: var(--warning-350);
+  --status-warning: var(--warning-450);
+  --status-warning-hover: var(--warning-475);
+  --status-warning-active: var(--warning-550);
   --status-warning-surface: color-mix(
     in oklch,
     var(--warning-50) 12%,
@@ -104,9 +104,9 @@
   );
   --status-warning-fg: var(--warning-900);
   --status-warning-border: var(--warning-450);
-  --status-error: var(--error-350);
-  --status-error-hover: var(--error-400);
-  --status-error-active: var(--error-450);
+  --status-error: var(--error-450);
+  --status-error-hover: var(--error-475);
+  --status-error-active: var(--error-550);
   --status-error-surface: color-mix(in oklch, var(--error-50) 12%, transparent);
   --status-error-surface-hover: color-mix(
     in oklch,
@@ -115,9 +115,9 @@
   );
   --status-error-fg: var(--error-900);
   --status-error-border: var(--error-450);
-  --status-info: var(--info-400);
-  --status-info-hover: var(--info-450);
-  --status-info-active: var(--info-500);
+  --status-info: var(--info-450);
+  --status-info-hover: var(--info-475);
+  --status-info-active: var(--info-550);
   --status-info-surface: color-mix(in oklch, var(--info-50) 12%, transparent);
   --status-info-surface-hover: color-mix(
     in oklch,
@@ -488,9 +488,9 @@
 }
 
 :root[data-theme='dark'] {
-  --action-primary: var(--primary-650);
-  --action-primary-hover: var(--primary-600);
-  --action-primary-active: var(--primary-550);
+  --action-primary: var(--primary-400);
+  --action-primary-hover: var(--primary-350);
+  --action-primary-active: var(--primary-300);
   --action-primary-surface: color-mix(
     in oklch,
     var(--primary-950) 16%,
@@ -503,9 +503,9 @@
   );
   --action-primary-fg: var(--primary-100);
   --action-primary-border: var(--primary-450);
-  --action-secondary: var(--secondary-350);
-  --action-secondary-hover: var(--secondary-300);
-  --action-secondary-active: var(--secondary-250);
+  --action-secondary: var(--secondary-450);
+  --action-secondary-hover: var(--secondary-400);
+  --action-secondary-active: var(--secondary-350);
   --action-secondary-surface: color-mix(
     in oklch,
     var(--secondary-950) 16%,
@@ -521,7 +521,7 @@
   --action-muted: var(--primary-900);
   --action-neutral: var(--neutral-50);
   --action-neutral-hover: var(--neutral-100);
-  --action-neutral-active: var(--neutral-150);
+  --action-neutral-active: var(--neutral-125);
   --action-neutral-surface: color-mix(
     in oklch,
     var(--neutral-950) 16%,
@@ -534,13 +534,13 @@
   );
   --action-neutral-fg: var(--neutral-100);
   --action-neutral-border: var(--neutral-450);
-  --surface-base: var(--neutral-850);
+  --surface-base: var(--neutral-825);
   --surface-subtle: var(--neutral-800);
-  --surface-raised: var(--primary-850);
+  --surface-raised: var(--primary-825);
   --surface-overlay: color-mix(in oklch, var(--neutral-950) 92%, transparent);
   --surface-skeleton: var(--neutral-800);
   --surface-track: var(--neutral-800);
-  --border-default: var(--neutral-500);
+  --border-default: var(--neutral-475);
   --border-subtle: color-mix(in oklch, var(--neutral-650) 16%, transparent);
   --border-muted: var(--neutral-750);
   --border-strong: var(--neutral-700);
@@ -548,11 +548,11 @@
   --fg-secondary: var(--neutral-300);
   --fg-disabled: color-mix(in oklch, var(--neutral-450) 50%, transparent);
   --fg-accent: var(--primary-400);
-  --fg-on-action: var(--neutral-25);
+  --fg-on-action: var(--neutral-950);
   --fg-on-secondary: var(--neutral-950);
   --fg-on-neutral: var(--neutral-950);
   --fg-on-success: var(--neutral-950);
-  --fg-on-warning: var(--neutral-950);
+  --fg-on-warning: var(--neutral-50);
   --fg-on-error: var(--neutral-950);
   --fg-on-info: var(--neutral-950);
   --focus-ring: var(--primary-650);
@@ -571,9 +571,9 @@
   );
   --status-success-fg: var(--success-100);
   --status-success-border: var(--success-450);
-  --status-warning: var(--warning-300);
-  --status-warning-hover: var(--warning-250);
-  --status-warning-active: var(--warning-200);
+  --status-warning: var(--warning-475);
+  --status-warning-hover: var(--warning-450);
+  --status-warning-active: var(--warning-400);
   --status-warning-surface: color-mix(
     in oklch,
     var(--warning-950) 16%,
@@ -586,9 +586,9 @@
   );
   --status-warning-fg: var(--warning-100);
   --status-warning-border: var(--warning-450);
-  --status-error: var(--error-300);
-  --status-error-hover: var(--error-250);
-  --status-error-active: var(--error-200);
+  --status-error: var(--error-400);
+  --status-error-hover: var(--error-350);
+  --status-error-active: var(--error-300);
   --status-error-surface: color-mix(
     in oklch,
     var(--error-950) 16%,
@@ -601,9 +601,9 @@
   );
   --status-error-fg: var(--error-100);
   --status-error-border: var(--error-450);
-  --status-info: var(--info-350);
-  --status-info-hover: var(--info-300);
-  --status-info-active: var(--info-250);
+  --status-info: var(--info-400);
+  --status-info-hover: var(--info-350);
+  --status-info-active: var(--info-300);
   --status-info-surface: color-mix(in oklch, var(--info-950) 16%, transparent);
   --status-info-surface-hover: color-mix(
     in oklch,
