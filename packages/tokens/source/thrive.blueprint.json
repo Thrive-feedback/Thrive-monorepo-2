@@ -9,64 +9,146 @@
         {
           "id": "primary",
           "name": "primary",
-          "seedHex": "#2f3437",
+          "seedHex": "#a86fc0",
           "adjustments": {
             "anchors": {},
-            "manualOverrides": {}
+            "manualOverrides": {
+              "50": "#f9f5fb",
+              "100": "#efe1f5",
+              "300": "#be92d1",
+              "350": "#b786cc",
+              "400": "#a86fc0",
+              "450": "#9360a8",
+              "475": "#88589c",
+              "550": "#734985",
+              "600": "#5f3b6f",
+              "650": "#4c2e59",
+              "825": "#18081e",
+              "900": "#09020d",
+              "950": "#010002"
+            }
           }
         },
         {
           "id": "secondary",
           "name": "secondary",
-          "seedHex": "#2383e2",
+          "seedHex": "#b95732",
           "adjustments": {
             "anchors": {},
-            "manualOverrides": {}
+            "manualOverrides": {
+              "50": "#fdf5f2",
+              "100": "#ffded3",
+              "350": "#ef7447",
+              "400": "#d3653c",
+              "450": "#b95732",
+              "475": "#ac502e",
+              "550": "#934224",
+              "600": "#7a351b",
+              "900": "#0f0100",
+              "950": "#020000"
+            }
           }
         },
         {
           "id": "neutral",
           "name": "neutral",
-          "seedHex": "#787774",
+          "seedHex": "#737a75",
           "adjustments": {
             "anchors": {},
-            "manualOverrides": {}
+            "manualOverrides": {
+              "50": "#ffffff",
+              "100": "#e6e7e6",
+              "125": "#dddedd",
+              "200": "#c9ccca",
+              "300": "#a2a7a4",
+              "450": "#737a75",
+              "475": "#6a716c",
+              "650": "#353f38",
+              "700": "#2d3730",
+              "750": "#1e2821",
+              "800": "#0f1a13",
+              "825": "#08130c",
+              "900": "#010602",
+              "950": "#000100"
+            }
           }
         },
         {
           "id": "success",
           "name": "success",
-          "seedHex": "#0f7b6c",
+          "seedHex": "#408a54",
           "adjustments": {
             "anchors": {},
-            "manualOverrides": {}
+            "manualOverrides": {
+              "50": "#f2f9f3",
+              "100": "#d3efd8",
+              "350": "#59b370",
+              "400": "#4c9e62",
+              "450": "#408a54",
+              "475": "#3a804d",
+              "550": "#2f6c40",
+              "600": "#245933",
+              "900": "#000701",
+              "950": "#000100"
+            }
           }
         },
         {
           "id": "warning",
           "name": "warning",
-          "seedHex": "#dfab01",
+          "seedHex": "#957127",
           "adjustments": {
             "anchors": {},
-            "manualOverrides": {}
+            "manualOverrides": {
+              "50": "#faf6ef",
+              "100": "#fce3b8",
+              "400": "#ab8230",
+              "450": "#957127",
+              "475": "#8b6822",
+              "550": "#765818",
+              "900": "#0a0300",
+              "950": "#010000"
+            }
           }
         },
         {
           "id": "error",
           "name": "error",
-          "seedHex": "#eb5757",
+          "seedHex": "#db1445",
           "adjustments": {
             "anchors": {},
-            "manualOverrides": {}
+            "manualOverrides": {
+              "50": "#fef4f4",
+              "100": "#ffdcdc",
+              "300": "#fb757f",
+              "350": "#f86472",
+              "400": "#ef3a58",
+              "450": "#db1445",
+              "475": "#cc123f",
+              "550": "#ad0c34",
+              "900": "#110001",
+              "950": "#020000"
+            }
           }
         },
         {
           "id": "info",
           "name": "info",
-          "seedHex": "#2383e2",
+          "seedHex": "#4b73cd",
           "adjustments": {
             "anchors": {},
-            "manualOverrides": {}
+            "manualOverrides": {
+              "50": "#f3f7fe",
+              "100": "#dae7ff",
+              "300": "#7aa3fc",
+              "350": "#6c98fa",
+              "400": "#5885e9",
+              "450": "#4b73cd",
+              "475": "#456abe",
+              "550": "#3959a3",
+              "900": "#010412",
+              "950": "#000003"
+            }
           }
         }
       ],
@@ -1720,11 +1802,11 @@
         "description": "The fill of a primary button or an active control.",
         "light": {
           "trackId": "primary",
-          "weight": 700
+          "weight": 450
         },
         "dark": {
           "trackId": "primary",
-          "weight": 650
+          "weight": 400
         }
       },
       {
@@ -1733,11 +1815,11 @@
         "description": "The fill under the pointer.",
         "light": {
           "trackId": "primary",
-          "weight": 750
+          "weight": 475
         },
         "dark": {
           "trackId": "primary",
-          "weight": 600
+          "weight": 350
         }
       },
       {
@@ -1746,11 +1828,11 @@
         "description": "The fill while it is pressed.",
         "light": {
           "trackId": "primary",
-          "weight": 800
+          "weight": 550
         },
         "dark": {
           "trackId": "primary",
-          "weight": 550
+          "weight": 300
         }
       },
       {
@@ -1815,11 +1897,11 @@
         "description": "The fill of a button in the second brand colour.",
         "light": {
           "trackId": "secondary",
-          "weight": 400
+          "weight": 475
         },
         "dark": {
           "trackId": "secondary",
-          "weight": 350
+          "weight": 450
         }
       },
       {
@@ -1828,11 +1910,11 @@
         "description": "The fill under the pointer.",
         "light": {
           "trackId": "secondary",
-          "weight": 450
+          "weight": 550
         },
         "dark": {
           "trackId": "secondary",
-          "weight": 300
+          "weight": 400
         }
       },
       {
@@ -1841,11 +1923,11 @@
         "description": "The fill while it is pressed.",
         "light": {
           "trackId": "secondary",
-          "weight": 500
+          "weight": 600
         },
         "dark": {
           "trackId": "secondary",
-          "weight": 250
+          "weight": 350
         }
       },
       {
@@ -1949,11 +2031,11 @@
         "description": "The fill while it is pressed.",
         "light": {
           "trackId": "neutral",
-          "weight": 850
+          "weight": 825
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 150
+          "weight": 125
         }
       },
       {
@@ -1992,7 +2074,7 @@
         "description": "Text and icons on the surface, and on the canvas.",
         "light": {
           "trackId": "neutral",
-          "weight": 850
+          "weight": 825
         },
         "dark": {
           "trackId": "neutral",
@@ -2018,11 +2100,11 @@
         "description": "The page canvas, behind everything else.",
         "light": {
           "trackId": "neutral",
-          "weight": 25
+          "weight": 100
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 850
+          "weight": 825
         }
       },
       {
@@ -2031,7 +2113,7 @@
         "description": "A quiet wash set into the canvas: a well, a code block.",
         "light": {
           "trackId": "neutral",
-          "weight": 50
+          "weight": 125
         },
         "dark": {
           "trackId": "neutral",
@@ -2048,7 +2130,7 @@
         },
         "dark": {
           "trackId": "primary",
-          "weight": 850
+          "weight": 825
         }
       },
       {
@@ -2057,7 +2139,7 @@
         "description": "A popover, menu or dialog over everything else.",
         "light": {
           "trackId": "neutral",
-          "weight": 25,
+          "weight": 50,
           "alpha": 0.96
         },
         "dark": {
@@ -2102,7 +2184,7 @@
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 500
+          "weight": 475
         }
       },
       {
@@ -2152,7 +2234,7 @@
         "description": "Body text, headings and icons.",
         "light": {
           "trackId": "neutral",
-          "weight": 850
+          "weight": 825
         },
         "dark": {
           "trackId": "neutral",
@@ -2178,7 +2260,7 @@
         "description": "Text and icons on a control that cannot be used.",
         "light": {
           "trackId": "neutral",
-          "weight": 500,
+          "weight": 475,
           "alpha": 0.45
         },
         "dark": {
@@ -2206,11 +2288,11 @@
         "description": "Text and icons on the action primary fill.",
         "light": {
           "trackId": "neutral",
-          "weight": 25
+          "weight": 50
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 25
+          "weight": 950
         }
       },
       {
@@ -2219,7 +2301,7 @@
         "description": "Text and icons on the action secondary fill.",
         "light": {
           "trackId": "neutral",
-          "weight": 950
+          "weight": 50
         },
         "dark": {
           "trackId": "neutral",
@@ -2232,7 +2314,7 @@
         "description": "Text and icons on the action neutral fill.",
         "light": {
           "trackId": "neutral",
-          "weight": 25
+          "weight": 50
         },
         "dark": {
           "trackId": "neutral",
@@ -2245,7 +2327,7 @@
         "description": "Text and icons on the status success fill.",
         "light": {
           "trackId": "neutral",
-          "weight": 25
+          "weight": 50
         },
         "dark": {
           "trackId": "neutral",
@@ -2258,11 +2340,11 @@
         "description": "Text and icons on the status warning fill.",
         "light": {
           "trackId": "neutral",
-          "weight": 950
+          "weight": 50
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 950
+          "weight": 50
         }
       },
       {
@@ -2271,7 +2353,7 @@
         "description": "Text and icons on the status error fill.",
         "light": {
           "trackId": "neutral",
-          "weight": 950
+          "weight": 50
         },
         "dark": {
           "trackId": "neutral",
@@ -2284,7 +2366,7 @@
         "description": "Text and icons on the status info fill.",
         "light": {
           "trackId": "neutral",
-          "weight": 950
+          "weight": 50
         },
         "dark": {
           "trackId": "neutral",
@@ -2310,7 +2392,7 @@
         "description": "A success badge or message.",
         "light": {
           "trackId": "success",
-          "weight": 500
+          "weight": 475
         },
         "dark": {
           "trackId": "success",
@@ -2405,11 +2487,11 @@
         "description": "A warning badge or message.",
         "light": {
           "trackId": "warning",
-          "weight": 250
+          "weight": 450
         },
         "dark": {
           "trackId": "warning",
-          "weight": 300
+          "weight": 475
         }
       },
       {
@@ -2418,11 +2500,11 @@
         "description": "The fill under the pointer.",
         "light": {
           "trackId": "warning",
-          "weight": 300
+          "weight": 475
         },
         "dark": {
           "trackId": "warning",
-          "weight": 250
+          "weight": 450
         }
       },
       {
@@ -2431,11 +2513,11 @@
         "description": "The fill while it is pressed.",
         "light": {
           "trackId": "warning",
-          "weight": 350
+          "weight": 550
         },
         "dark": {
           "trackId": "warning",
-          "weight": 200
+          "weight": 400
         }
       },
       {
@@ -2500,11 +2582,11 @@
         "description": "An error badge or message.",
         "light": {
           "trackId": "error",
-          "weight": 350
+          "weight": 450
         },
         "dark": {
           "trackId": "error",
-          "weight": 300
+          "weight": 400
         }
       },
       {
@@ -2513,11 +2595,11 @@
         "description": "The fill under the pointer.",
         "light": {
           "trackId": "error",
-          "weight": 400
+          "weight": 475
         },
         "dark": {
           "trackId": "error",
-          "weight": 250
+          "weight": 350
         }
       },
       {
@@ -2526,11 +2608,11 @@
         "description": "The fill while it is pressed.",
         "light": {
           "trackId": "error",
-          "weight": 450
+          "weight": 550
         },
         "dark": {
           "trackId": "error",
-          "weight": 200
+          "weight": 300
         }
       },
       {
@@ -2595,11 +2677,11 @@
         "description": "An informational badge or message.",
         "light": {
           "trackId": "info",
-          "weight": 400
+          "weight": 450
         },
         "dark": {
           "trackId": "info",
-          "weight": 350
+          "weight": 400
         }
       },
       {
@@ -2608,11 +2690,11 @@
         "description": "The fill under the pointer.",
         "light": {
           "trackId": "info",
-          "weight": 450
+          "weight": 475
         },
         "dark": {
           "trackId": "info",
-          "weight": 300
+          "weight": 350
         }
       },
       {
@@ -2621,11 +2703,11 @@
         "description": "The fill while it is pressed.",
         "light": {
           "trackId": "info",
-          "weight": 500
+          "weight": 550
         },
         "dark": {
           "trackId": "info",
-          "weight": 250
+          "weight": 300
         }
       },
       {

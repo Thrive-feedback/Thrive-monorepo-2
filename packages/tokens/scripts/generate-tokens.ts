@@ -8,7 +8,9 @@
  *
  * The blueprint stores a ramp as a seed colour and a lightness list, not as finished colours, so
  * this script derives them (ADR 0028): each step keeps the seed's OKLCH hue and chroma at the
- * step's lightness, with the chroma reduced until the colour fits sRGB.
+ * step's lightness, with the chroma reduced until the colour fits sRGB. A track's
+ * `adjustments.manualOverrides` pins a weight to an exact colour instead; that weight may sit
+ * between the 20 steps (125, 475…), and then it exists on that track only.
  */
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -21,7 +23,11 @@ type ColourRef = { trackId: string; weight: number; alpha?: number };
 type Blueprint = {
   project: {
     palette: {
-      tracks: { id: string; seedHex: string }[];
+      tracks: {
+        id: string;
+        seedHex: string;
+        adjustments: { manualOverrides: Record<string, string> };
+      }[];
       lightnessValues: number[];
     };
     typography: {
@@ -202,8 +208,19 @@ function header(what: string): string {
  */`;
 }
 
+/** Each track's weights: the 20 steps plus any weight its overrides add. */
+const WEIGHTS = Object.fromEntries(
+  project.palette.tracks.map((track) => [
+    track.id,
+    new Set([
+      ...STEPS,
+      ...Object.keys(track.adjustments.manualOverrides).map(Number),
+    ]),
+  ]),
+) as Record<string, Set<number>>;
+
 function colourRef({ trackId, weight, alpha }: ColourRef): string {
-  if (!STEPS.includes(weight)) {
+  if (!WEIGHTS[trackId]?.has(weight)) {
     throw new Error(`${trackId}-${weight} is not a ramp step`);
   }
   const ref = `var(--${trackId}-${weight})`;
@@ -259,14 +276,27 @@ function primitives(): string {
 
   for (const track of project.palette.tracks) {
     const seed = hexToOklch(track.seedHex);
-    lines.push(`/* ${track.id}: seed ${track.seedHex} */`);
+    const overrides = track.adjustments.manualOverrides;
+    const ramp = new Map<number, Lch>();
     project.palette.lightnessValues.forEach((lightness, i) => {
       const l = lightness / 100;
-      const c = fitChroma(l, seed.c, seed.h);
-      lines.push(
-        `--${track.id}-${STEPS[i]}: oklch(${num(lightness, 2)}% ${num(c)} ${num(seed.h, 2)});`,
-      );
+      ramp.set(STEPS[i] as number, {
+        l,
+        c: fitChroma(l, seed.c, seed.h),
+        h: seed.h,
+      });
     });
+    for (const [weight, hex] of Object.entries(overrides)) {
+      ramp.set(Number(weight), hexToOklch(hex));
+    }
+    lines.push(`/* ${track.id}: seed ${track.seedHex} */`);
+    for (const weight of [...ramp.keys()].sort((a, b) => a - b)) {
+      const { l, c, h } = ramp.get(weight) as Lch;
+      const pinned = overrides[String(weight)];
+      lines.push(
+        `--${track.id}-${weight}: oklch(${num(l * 100, 2)}% ${num(c)} ${num(c < 1e-4 ? 0 : h, 2)});${pinned ? ` /* ${pinned} */` : ''}`,
+      );
+    }
     lines.push('');
   }
 
