@@ -23,7 +23,12 @@ async function bootstrap() {
   SwaggerModule.setup('openapi', app, document, {
     jsonDocumentUrl: 'openapi.json',
   });
-  app.use('/reference', apiReference({ content: document }));
+  // The sidebar lists each route by its path, which is how people look one up; the summary
+  // stays on the route's own page.
+  app.use(
+    '/reference',
+    apiReference({ content: document, operationTitleSource: 'path' }),
+  );
 
   await app.listen(http.port);
 }
