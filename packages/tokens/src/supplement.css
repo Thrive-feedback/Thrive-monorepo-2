@@ -3,8 +3,8 @@
  * package is generated from `source/thrive.blueprint.json` (ADR 0028), and each value here is a
  * request to design to add it there (`FE_03` R6, R9) — not a place to add more.
  *
- * Motion, a stroke width for the focus ring, two content widths and a monospace family are what
- * today's screens use that the blueprint does not describe.
+ * Motion, a stroke width for the focus ring, two content widths, a monospace family and the
+ * wordmark's colour in each theme are what today's screens use that the blueprint does not describe.
  */
 :root {
   /* A spinner turns; a placeholder breathes while its content loads. */
@@ -19,6 +19,14 @@
   --measure-5xl: 64rem;
 
   --family-mono: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+
+  /* The wordmark's own colour, exported from the design's logo page: near-black on light. */
+  --brand-wordmark: #1f1e1c;
+}
+
+/* The wordmark is white on the dark theme (Figma, Thrive · node 17348:15047). */
+:root[data-theme='dark'] {
+  --brand-wordmark: var(--neutral-50);
 }
 
 /*

@@ -1,0 +1,8 @@
+/*
+ * The wordmark's shape comes from the exported artwork and its colour from the token, so the
+ * theme changes it as it changes everything else. A mask has no utility, which is why this is CSS.
+ */
+.wordmark {
+  background-color: var(--brand-wordmark);
+  mask: url('/brand/thrive-logo.svg') center / contain no-repeat;
+}
