@@ -48,6 +48,7 @@ export async function readMembersAndInvitations(
       name: member.fullName,
       role: member.role,
       status: 'JOINED',
+      invitationId: null,
     }));
   if (invitations) {
     people.push(
@@ -56,6 +57,7 @@ export async function readMembersAndInvitations(
         name: null,
         role: invitation.role,
         status: invitation.status,
+        invitationId: invitation.invitationId,
       })),
     );
   }
