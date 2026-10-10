@@ -2,9 +2,7 @@ import { AuthModule } from '@app/infrastructure/auth/auth.module';
 import { DatabaseModule } from '@app/infrastructure/database/database.module';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { AccountSummaryAdapter } from './application/adapter/account-summary.adapter';
-import { HasProfileAdapter } from './application/adapter/has-profile.adapter';
-import { ProfileNameAdapter } from './application/adapter/profile-name.adapter';
+import { IdentityAdapter } from './application/adapter/identity.adapter';
 import { IdentityPort } from './application/port/identity.port';
 import { AccountQuery } from './application/query-port/account.query-port';
 import { ProfileQuery } from './application/query-port/profile.query-port';
@@ -49,9 +47,10 @@ import { SignedInGuard } from './presentation/signed-in.guard';
     CreateProfileUseCase,
     FindProfileOfAccountUseCase,
     FindAccountSummariesUseCase,
-    { provide: HasProfilePort, useClass: HasProfileAdapter },
-    { provide: ProfileNamePort, useClass: ProfileNameAdapter },
-    { provide: AccountSummaryPort, useClass: AccountSummaryAdapter },
+    IdentityAdapter,
+    { provide: HasProfilePort, useExisting: IdentityAdapter },
+    { provide: ProfileNamePort, useExisting: IdentityAdapter },
+    { provide: AccountSummaryPort, useExisting: IdentityAdapter },
   ],
   exports: [HasProfilePort, ProfileNamePort, AccountSummaryPort],
 })
