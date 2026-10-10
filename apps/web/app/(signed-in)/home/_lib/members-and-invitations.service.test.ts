@@ -78,12 +78,14 @@ describe('reading the Members and Invitations for Home', () => {
         name: null,
         role: 'MEMBER',
         status: 'JOINED',
+        invitationId: null,
       },
       {
         email: 'cat@acme.test',
         name: null,
         role: 'MEMBER',
         status: 'PENDING',
+        invitationId: '0199a0f0-0000-7000-8000-000000000003',
       },
     ]);
   });
@@ -104,6 +106,7 @@ describe('reading the Members and Invitations for Home', () => {
         name: 'Ann Lee',
         role: 'OWNER',
         status: 'JOINED',
+        invitationId: null,
       },
     ]);
   });

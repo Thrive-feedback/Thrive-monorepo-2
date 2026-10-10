@@ -33,17 +33,22 @@ describe('session actions', () => {
   });
 
   it('signing in hands the browser the state cookie, then sends it to Google', async () => {
+    const bodies: unknown[] = [];
     server.use(
-      http.post(`${TEST_API_BASE_URL}/v1/sessions/google`, () =>
-        HttpResponse.json(
-          { url: 'https://accounts.google.com/o/oauth2/v2/auth?state=s1' },
-          {
-            headers: {
-              'Set-Cookie':
-                'thrive.state=s1.sig%2B; Max-Age=300; Path=/; HttpOnly; SameSite=Lax',
+      http.post(
+        `${TEST_API_BASE_URL}/v1/sessions/google`,
+        async ({ request }) => {
+          bodies.push(await request.json());
+          return HttpResponse.json(
+            { url: 'https://accounts.google.com/o/oauth2/v2/auth?state=s1' },
+            {
+              headers: {
+                'Set-Cookie':
+                  'thrive.state=s1.sig%2B; Max-Age=300; Path=/; HttpOnly; SameSite=Lax',
+              },
             },
-          },
-        ),
+          );
+        },
       ),
     );
 
@@ -56,6 +61,8 @@ describe('session actions', () => {
       httpOnly: true,
       sameSite: 'lax',
     });
+    // No Invitation: Google sends the person back to where they usually land.
+    expect(bodies).toEqual([{}]);
   });
 
   it('signing out ends the session, clears the cookie and returns to sign-in', async () => {

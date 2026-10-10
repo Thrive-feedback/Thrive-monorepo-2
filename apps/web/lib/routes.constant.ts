@@ -12,6 +12,7 @@ export const ROUTES = {
     request: '/feedback/request',
     requestById: (requestId: string) => `/feedback/requests/${requestId}`,
   },
+  invitation: (invitationId: string) => `/invitations/${invitationId}`,
   register: {
     introduceYourself: '/register/introduce-yourself',
     createWorkspace: '/register/create-workspace',
