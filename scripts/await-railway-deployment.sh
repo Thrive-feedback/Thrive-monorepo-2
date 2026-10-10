@@ -8,8 +8,8 @@
 # before the container is running. Without this the next step would deploy against a
 # service that is still starting, and a crash loop would read as a green deploy.
 #
-# Needs RAILWAY_TOKEN in the environment, as every Railway command here does, and —
-# because that token is account-scoped and so belongs to no project in particular —
+# Needs RAILWAY_API_TOKEN in the environment, as every Railway command here does, and —
+# because a workspace-scoped token belongs to no project in particular —
 # RAILWAY_PROJECT_ID and RAILWAY_ENVIRONMENT_NAME to say which service is meant.
 
 set -euo pipefail
