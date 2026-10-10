@@ -4,7 +4,7 @@ id: 'FE_08'
 area: 'FE'
 tier: 'P1'
 status: 'stable'
-updated: '2026-09-22'
+updated: '2026-10-08'
 requires: [FE_01]
 see_also: [FE_09, FE_20]
 ---
@@ -13,7 +13,7 @@ see_also: [FE_09, FE_20]
 
 # [FE] Server vs Client components
 
-`P1` · `FE_08` · `stable` · `updated 2026-09-22`
+`P1` · `FE_08` · `stable` · `updated 2026-10-08`
 
 **Open when:** you are about to write `'use client'`.
 
@@ -91,7 +91,7 @@ export function OrderToolbar({ value }: OrderToolbarProps) {
 
 ### [R4](#R4) What may cross
 
-Props going from a server component to a client one are serialized, so they must be plain data: primitives, arrays, plain objects, dates. Not class instances, not a database handle, not a function. This is a real constraint on API design, not a technicality — passing a whole domain object across usually means the client component was handed more than it needs, and trimming it to the fields it renders is both the fix and an improvement. When behavior genuinely has to cross, it crosses as a server action, which [FE_09](../index.html#FE_09) owns.
+Props going from a server component to a client one are serialized, so they must be plain data: primitives, arrays, plain objects, dates. Not class instances, not a database handle, not a function. This is a real constraint on API design, not a technicality — passing a whole domain object across usually means the client component was handed more than it needs, and trimming it to the fields it renders is both the fix and an improvement. When behavior genuinely has to cross, it crosses as a server action. Which calls are reads on the server and which are writes through an action is [FE_09#R1](../index.html#FE_09) and [FE_09#R4](../index.html#FE_09).
 
 **Enforcement:** automated — the framework rejects a non-serializable prop at the boundary, when the path renders. A path no test or page visit reaches is unchecked until it runs.
 
@@ -146,7 +146,7 @@ A library component that uses hooks internally cannot be rendered from a server 
 
 ### [R9](#R9) Never go client to read data
 
-Needing data is the most common bad reason to add the directive. A server component can read directly, with no round trip, no loading state, and no credential in the browser; a client component that fetches on mount turns one server render into a request waterfall and a spinner. The cases where a client read is the right answer exist, and [FE_09](../index.html#FE_09) lists them — none of them start with "it was easier here".
+Needing data is the most common bad reason to add the directive. A server component can read directly, with no round trip, no loading state, and no credential in the browser; a client component that fetches on mount turns one server render into a request waterfall and a spinner. Where a read may happen, and the narrow case a client read waits on, is [FE_09](../index.html#FE_09)'s — none of it starts with "it was easier here".
 
 **Enforcement:** review — [FE_09](../index.html#FE_09)'s rules are where this is caught in practice.
 

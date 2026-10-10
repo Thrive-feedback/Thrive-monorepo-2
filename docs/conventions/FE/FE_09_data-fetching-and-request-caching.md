@@ -4,7 +4,7 @@ id: 'FE_09'
 area: 'FE'
 tier: 'P1'
 status: 'stable'
-updated: '2026-09-22'
+updated: '2026-10-08'
 requires: [FE_08]
 see_also: [FE_10, FE_17]
 ---
@@ -13,7 +13,7 @@ see_also: [FE_10, FE_17]
 
 # [FE] Data fetching & Next.js request caching
 
-`P1` · `FE_09` · `stable` · `updated 2026-09-22`
+`P1` · `FE_09` · `stable` · `updated 2026-10-08`
 
 **Open when:** a view needs data from the API.
 
@@ -23,11 +23,11 @@ Server fetch with revalidation and tags, server actions for mutations, when a cl
 
 If you read nothing else:
 
-1. <a id="R1"></a>Read on the server, in the component that renders the data.
+1. <a id="R1"></a>Read with `GET`, on the server, in the component that renders the data. Never fetch data for display in a server action.
 2. <a id="R2"></a>State a caching intent on every read. Never take the framework's default by omission.
 3. <a id="R3"></a>Tag a cached read with the resource it holds, and revalidate the narrowest tag that covers what changed.
-4. <a id="R4"></a>Perform every write in a server action.
-5. <a id="R5"></a>Treat a server action as a public endpoint: authorize it and validate its input, every time.
+4. <a id="R4"></a>Perform every write — `POST`, `PUT`, `PATCH`, `DELETE` — in a server action the browser invokes. Never write during render, and never send a request to the API from the browser.
+5. <a id="R5"></a>Treat a server action as a public endpoint: authorize it, validate its input, and return only the view model the screen needs.
 6. <a id="R6"></a>Start independent reads together. Await one before another only when the second needs the first.
 7. <a id="R7"></a>Give a slow read its own Suspense boundary, with a fallback that reserves its space.
 8. <a id="R8"></a>Never fetch in an effect.
@@ -36,21 +36,31 @@ If you read nothing else:
 
 ## Why
 
-Where a read happens decides almost everything else about a view: how many round trips it costs, whether it can be cached, what ships to the browser, and how many states the component must render. Reading on the server collapses most of that — the data is there when the component renders, so there is no loading state, no client waterfall, and no credential leaving the server. The rest follows from that default.
+Where a read happens decides almost everything else about a view: how many round trips it costs, whether it can be cached, what ships to the browser, and how many states the component must render. Reading on the server collapses most of that — the data is there when the component renders, so there is no loading state, no client waterfall, and no credential leaving the server.
 
-Caching is where the same view gets fast or gets wrong, and both failures come from vagueness. A read with no stated intent behaves however the framework version behaves — not a decision anyone made, and one that changes under you. A cache with no tags can only be invalidated bluntly, so writes clear too much or leave a stale page a user reads as a lost order.
+Caching is where the same view gets fast or gets wrong, and both failures come from vagueness. A read with no stated intent behaves however the framework version behaves, which nobody decided. A cache with no tags can only be invalidated bluntly, so writes clear too much or leave a stale page a user reads as a lost order.
 
 ## Rule detail
 
 ### [R1](#R1) Read where you render
 
-The component that displays the data fetches it, even when two components in one route need the same thing: _identical_ requests in one render pass are deduplicated to a single call. Identical is the operative word — two reads that merely overlap are two requests, and a read that bypasses the framework's request cache dedupes only if you memoize it per request. So share the call, not the result: lifting reads into the route file to prop-drill them couples every section to the page's data contract, and a section then cannot move without editing the route. The exception is data the page owns, such as the value deciding whether the route renders. What the call looks like — the client, the types, the correlation id — is [FE_10](../index.html#FE_10)'s.
+The component that displays the data fetches it, even when two components in one route need the same thing: _identical_ requests in one render pass are deduplicated to a single call. Only identical requests dedupe, and a read outside the framework's request cache needs per-request memoizing. So share the call, not the result: lifting reads into the route file to prop-drill them couples every section to the page's data contract, and a section then cannot move without editing the route. The exception is data the page owns, such as the value deciding whether the route renders. What the call looks like — the client, the types, the correlation id — is [FE_10](../index.html#FE_10)'s.
 
-**Enforcement:** review — deduplication makes the good and bad versions behave identically, so only a reader can tell them apart.
+The HTTP method picks the side, not the data's sensitivity (ADR 0032):
+
+| The screen needs to… | Call from | Session, correlation id | An API error becomes |
+| --- | --- | --- | --- |
+| read (`GET`) | the rendering server component | cookie forwarded; client adds id | redirect, not-found or error boundary, by code |
+| save or command (`POST`, `PUT`, `PATCH`, `DELETE`) | a server action | cookie forwarded, set-cookie copied back; client adds id | action state, by code ([FE_10#R7](../index.html#FE_10)) |
+| change without navigation | nowhere yet ([R9](#R9)) | — | — |
+
+An action is an uncached `POST`, invisible to [R2](#R2) and [R3](#R3), so data for display is never fetched there. A read that authorizes or validates the action's own write — the session, the record it changes — is part of the write.
+
+**Enforcement:** partly automated — where the project runs an architecture check reading module directives ([INFRA_06](../index.html#INFRA_06)), a server action calling the client's `GET` fails it; a read through a helper, and where in the tree a read sits, are review — deduplication makes the good and bad versions behave identically.
 
 ### [R2](#R2) Say what you mean about caching
 
-Every read declares one of three things: cache it for a stated window, cache it until a tag invalidates it, or do not cache it. Which one is a product decision — how stale may this be before a user is misled? — and writing it at the call site makes it reviewable. The default is no shortcut: it has changed across framework versions, so an omitted intent hands your page's behavior to a version bump nobody connected to it.
+Every read declares one of three things: cache it for a stated window, cache it until a tag invalidates it, or do not cache it. Which one is a product decision — how stale may this be before a user is misled? — and writing it at the call site makes it reviewable. The default has changed across framework versions, so omitting the intent hands your page to a version bump.
 
 **Do**
 
@@ -74,7 +84,7 @@ const orders = await api.orders.list();
 
 ### [R3](#R3) Tag the resource, revalidate the narrowest
 
-A tag names what the cached response holds, so a write can say what it made stale. Name tags after resources, not pages: two pages showing the same order must both refresh when it changes, and neither when the other's layout does. After a write, revalidate the narrowest tag covering the change — clearing the collection because it is easier turns one edited row into a re-fetch for everyone. Tag invalidation reaches only reads the framework cached, so the client's cache options must map onto its data cache ([FE_10](../index.html#FE_10) owns that mapping); a client caching in its own store makes every `revalidateTag` a silent no-op.
+A tag names what the cached response holds, so a write can say what it made stale. Name tags after resources, not pages: two pages showing the same order must both refresh when it changes, and neither when the other's layout does. After a write, revalidate the narrowest tag covering the change — clearing the whole collection re-fetches everything for one edited row. Tag invalidation reaches only reads the framework cached, so the client's cache options must map onto its data cache ([FE_10](../index.html#FE_10) owns that mapping); a client caching in its own store makes every `revalidateTag` a silent no-op.
 
 **Do**
 
@@ -98,13 +108,15 @@ revalidatePath('/', 'layout');
 
 ### [R4](#R4) Writes are actions
 
-A mutation runs in a server action: the browser sends the intent, the server holds the credentials, makes the call, revalidates what it invalidated ([R3](#R3)), and returns a result the caller can render. Every write then takes one path — one place for authorization, one for invalidation, one to look when a change does not appear on screen. A form also works before its JavaScript loads, a real reliability property rather than a nicety.
+A person submits a form or presses a button, and the browser sends the intent to a server action, which holds the credentials, calls the API, revalidates ([R3](#R3)), and returns a result. An effect may invoke one only when the browser alone can receive the result, such as a renewed session cookie. One path means one place for authorization and invalidation, and a form that works before its JavaScript loads; whether the form is a server or client component is [FE_08](../index.html#FE_08)'s. The browser never calls the API: the cookie stays first-party, no API address ships, and the framework checks each action's origin, which a route handler does not. Sensitive content changes nothing — the action sends it. A write during render is one a prefetch can trigger.
 
-**Enforcement:** review — nothing distinguishes a write from a read at the call site.
+**Enforcement:** partly automated — where the API client is marked server-only, a client module importing it fails the build; where the project runs an architecture check reading module directives ([INFRA_06](../index.html#INFRA_06)), a client module calling `fetch` or importing the client's runtime, and a write method called outside an action, fail it. A write during render through a helper is review.
 
 ### [R5](#R5) An action is a public endpoint
 
-A server action compiles to an HTTP endpoint anyone can call with any payload. That your only call site is a form you wrote is no constraint on the caller, and neither is a check in the component that rendered it — that ran in a different process, for a different request. Every action re-establishes who is calling and validates its own input, every time. [GEN_09#R6](../index.html#GEN_09) and [GEN_09#R7](../index.html#GEN_09) state the obligation; the point here is that an action is one of the boundaries they mean, which is easy to miss because it looks like a local function call.
+A server action compiles to an HTTP endpoint anyone can call with any payload. A check in the component that rendered the form ran in another request and constrains nothing. Every action re-establishes who is calling and validates its own input, every time. [GEN_09#R6](../index.html#GEN_09) and [GEN_09#R7](../index.html#GEN_09) state the obligation; an action is one of their boundaries, though it looks like a local call.
+
+What an action returns reaches the browser, so return the view model the screen renders, never the API's response.
 
 **Do**
 
@@ -149,13 +161,13 @@ A page renders as fast as its slowest read unless that read sits inside a Suspen
 
 ### [R8](#R8) Never fetch in an effect
 
-Fetching on mount guarantees the worst version of every property this document is after: the request cannot start until the bundle has loaded and rendered, the framework cannot cache the result, the component needs three states instead of one, and each one adds a round trip. It is also the pattern that most often smuggles an API base URL and a token into the browser. A value that depends on something only the browser knows is still not an effect fetching — it is a client read ([R9](#R9)).
+Fetching on mount is the worst case for everything here: the request cannot start until the bundle has loaded and rendered, the framework cannot cache the result, the component needs three states instead of one, and each one adds a round trip. It is also the pattern that most often smuggles an API base URL and a token into the browser. A value only the browser knows goes in the URL for the server to read, or it is a client read ([R9](#R9)).
 
 **Enforcement:** review — a lint rule matching a request call inside an effect would catch the common form and is a candidate guardrail ([INFRA_06](../index.html#INFRA_06)).
 
 ### [R9](#R9) When a client query library is allowed
 
-Server reads cover any data that changes when the URL changes. A client query library earns its place when data has to change without a navigation: polling or live updates, an infinite list accumulating pages, or optimistic updates a user must see before the server confirms. Those are real and the library is the right tool for them — the requirement is that the pull request names which one, because "we needed it on the client" is how a codebase ends up fetching everything twice. When one is used it goes through the same client as everything else ([FE_10](../index.html#FE_10)) and does not become a second home for data the server has ([FE_17](../index.html#FE_17)).
+Server reads cover any data that changes when the URL changes. A client query library earns its place when data has to change without a navigation: polling or live updates, an infinite list accumulating pages, or optimistic updates a user must see before the server confirms. The library is the right tool for those, and the pull request names which one, because "we needed it on the client" is how a codebase ends up fetching everything twice. When one is used it goes through the same client as everything else ([FE_10](../index.html#FE_10)) and does not become a second home for data the server has ([FE_17](../index.html#FE_17)). [R4](#R4) gives it no browser path to the API; the first such screen records an ADR opening one.
 
 **Enforcement:** review — checklist item in [GEN_06](../index.html#GEN_06).
 
@@ -194,17 +206,17 @@ const [orders, counts] = await Promise.all([
 ]);
 ```
 
-Cancelling is a write, so it is an action ([R4](#R4)) that authorizes and validates first ([R5](#R5)), then revalidates only the order it changed and the collection listing it ([R3](#R3)). The row's button submits to the action; no client read is involved, so no query library is introduced ([R9](#R9)).
+Cancelling is a write, so it is an action ([R4](#R4)) that authorizes and validates first, then returns the row's new status rather than the API's order ([R5](#R5)), and revalidates only the order and its collection ([R3](#R3)). No client read is involved, so no query library is introduced ([R9](#R9)).
 
 One read deliberately breaks the pattern: the signed-in user's own drafts in the header. That response differs per user, so it is read per request with no revalidation window ([R10](#R10)).
 
 ## Checklist
 
-- Every read happens on the server, in the component that renders it ([R1](#R1)).
+- Every `GET` happens on the server, in the component that renders it; no action fetches data for display ([R1](#R1)).
 - Every read states a caching intent explicitly ([R2](#R2)).
 - Cached reads carry resource tags; each write revalidates the narrowest one ([R3](#R3)).
-- Every write is a server action ([R4](#R4)).
-- Every action authorizes and validates its own input ([R5](#R5)).
+- Every `POST`, `PUT`, `PATCH` and `DELETE` is a server action the browser invokes; nothing writes during render, and the browser sends no request to the API ([R4](#R4)).
+- Every action authorizes, validates its own input, and returns a view model rather than the API's response ([R5](#R5)).
 - No sequential await that does not need the previous result ([R6](#R6)).
 - Slow reads sit behind a Suspense boundary with a space-reserving fallback ([R7](#R7)).
 - No fetch inside an effect ([R8](#R8)).
@@ -213,9 +225,9 @@ One read deliberately breaks the pattern: the signed-in user's own drafts in the
 
 ## Open questions
 
-- [R10](#R10) is the rule whose failure is a privacy incident rather than a bug, and nothing enforces it. A wrapper that refuses a revalidation window on any request carrying user credentials would close most of it — [FE_10](../index.html#FE_10) owns the wrapper and [INFRA_06](../index.html#INFRA_06) the guardrail.
+- [R10](#R10) fails as a privacy incident, not a bug, and nothing enforces it. A wrapper that refuses a revalidation window on any request carrying user credentials would close most of it — [FE_10](../index.html#FE_10) owns the wrapper and [INFRA_06](../index.html#INFRA_06) the guardrail.
 - [R2](#R2), [R6](#R6) and [R8](#R8) are all mechanically detectable and none are detected today, in that order of value per unit of effort.
-- No default revalidation windows are set per kind of resource, so every call site decides alone and the values will drift. A short table belongs here once real pages exist to derive one from.
+- No default revalidation windows exist per kind of resource, so call sites will drift. A table belongs here once real pages exist.
 
 ## Related
 

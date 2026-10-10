@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "biome check .",
     "check-types": "tsc --noEmit",
+    "check-arch": "bun scripts/check-architecture.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

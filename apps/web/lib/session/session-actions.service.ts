@@ -8,8 +8,8 @@ import { ROUTES } from '@/lib/routes.constant';
 import { parseSetCookie } from './set-cookie.util';
 
 /**
- * Only the two actions live here: every export of a `'use server'` file can be called from
- * the browser, so nothing that reads data belongs beside them.
+ * Only actions live here: every export of a `'use server'` file can be called from the
+ * browser, so nothing that reads data belongs beside them.
  */
 
 /** The API answered the server, not the browser, so its cookies are copied on by hand. */
