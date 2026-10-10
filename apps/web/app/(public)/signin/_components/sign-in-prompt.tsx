@@ -1,8 +1,8 @@
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Text } from '@/components/atoms/text';
+import { GoogleSignInButton } from '@/components/molecules/google-sign-in-button';
 import { ROUTES } from '@/lib/routes.constant';
 import { signIn } from '@/lib/session/session-actions.service';
-import { GoogleSignInButton } from './google-sign-in-button';
 
 /**
  * `m-auto` centres the prompt on both axes inside the layout's flex column. The heading and

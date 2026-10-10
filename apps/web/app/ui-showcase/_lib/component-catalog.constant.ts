@@ -15,6 +15,10 @@ import {
   CheckboxPreview,
 } from '@/app/ui-showcase/_components/entries/checkbox-entry';
 import {
+  GoogleSignInButtonEntry,
+  GoogleSignInButtonPreview,
+} from '@/app/ui-showcase/_components/entries/google-sign-in-button-entry';
+import {
   InputEntry,
   InputPreview,
 } from '@/app/ui-showcase/_components/entries/input-entry';
@@ -217,5 +221,12 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'molecule',
     Preview: TextAreaFieldPreview,
     Entry: TextAreaFieldEntry,
+  },
+  {
+    slug: 'google-sign-in-button',
+    name: 'GoogleSignInButton',
+    level: 'molecule',
+    Preview: GoogleSignInButtonPreview,
+    Entry: GoogleSignInButtonEntry,
   },
 ];
