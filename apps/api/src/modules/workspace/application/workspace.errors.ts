@@ -55,3 +55,25 @@ export class NotAllowedToSeeInvitationsError extends ApplicationError {
     super("Only the Owner and Admins can see this Workspace's Invitations.");
   }
 }
+
+/** No Invitation has this id. Nothing more is said, to someone who may be guessing ids. */
+export class InvitationNotFoundError extends ApplicationError {
+  readonly code = 'INVITATION_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super('No Invitation has this id.');
+  }
+}
+
+/** Revoking is for those who can invite: the Owner and Admins. */
+export class NotAllowedToRevokeInvitationsError extends ApplicationError {
+  readonly code = 'NOT_ALLOWED_TO_REVOKE_INVITATIONS';
+  readonly category = 'forbidden' as const;
+
+  constructor() {
+    super(
+      'Only the Owner and Admins can revoke Invitations to this Workspace.',
+    );
+  }
+}

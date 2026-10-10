@@ -14,8 +14,10 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiForbiddenResponse,
   ApiHeader,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
@@ -24,6 +26,7 @@ import {
 import { ZodResponse } from 'nestjs-zod';
 import type { MembershipView } from '../application/types/membership.types';
 import { ListWorkspaceInvitationsUseCase } from '../application/use-cases/list-workspace-invitations.use-case';
+import { RevokeInvitationUseCase } from '../application/use-cases/revoke-invitation.use-case';
 import { SendInvitationsUseCase } from '../application/use-cases/send-invitations.use-case';
 import {
   ListWorkspaceInvitationsQueryDto,
@@ -33,6 +36,7 @@ import {
   SendInvitationsRequestDto,
   SendInvitationsResponseDto,
 } from './dto/send-invitations.dto';
+import { WorkspaceInvitationPathParamsDto } from './dto/workspace-invitation-path-params.dto';
 import { WorkspacePathParamsDto } from './dto/workspace-path-params.dto';
 import {
   CurrentMembership,
@@ -50,6 +54,7 @@ export class InvitationController {
   constructor(
     private readonly sendInvitationsUseCase: SendInvitationsUseCase,
     private readonly listWorkspaceInvitationsUseCase: ListWorkspaceInvitationsUseCase,
+    private readonly revokeInvitationUseCase: RevokeInvitationUseCase,
   ) {}
 
   @Get()
@@ -132,5 +137,33 @@ export class InvitationController {
           : { email: result.email, outcome: result.outcome },
       ),
     };
+  }
+
+  @Post(':invitationId/revoke')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Revoke an open Invitation to a Workspace, so its link stops working',
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ApiNoContentResponse({ description: 'Revoked' })
+  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
+  @ApiForbiddenResponse({ description: 'NOT_ALLOWED_TO_REVOKE_INVITATIONS' })
+  @ApiNotFoundResponse({
+    description: 'WORKSPACE_NOT_FOUND or INVITATION_NOT_FOUND',
+  })
+  @ApiConflictResponse({
+    description: 'INVITATION_ALREADY_ACCEPTED or INVITATION_REVOKED',
+  })
+  async revokeInvitation(
+    @CurrentMembership() membership: MembershipView,
+    @Headers('cookie') cookie: string | undefined,
+    @Param() params: WorkspaceInvitationPathParamsDto,
+  ): Promise<void> {
+    await this.revokeInvitationUseCase.execute({
+      credential: cookie ?? '',
+      membership,
+      invitationId: params.invitationId,
+    });
   }
 }

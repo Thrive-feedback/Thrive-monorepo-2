@@ -10,6 +10,7 @@ import {
   type WorkspaceFoundingInput,
 } from '@app/modules/workspace/application/port/workspace-founding.port';
 import {
+  type InvitationAcceptance,
   type InvitationRequest,
   type InvitationRevocation,
   type InvitationStored,
@@ -18,6 +19,7 @@ import {
 import { InvitationQuery } from '@app/modules/workspace/application/query-port/invitation.query-port';
 import { MembershipQuery } from '@app/modules/workspace/application/query-port/membership.query-port';
 import type {
+  InvitationDetailView,
   InvitationPage,
   InvitationView,
 } from '@app/modules/workspace/application/types/invitation.types';
@@ -112,6 +114,12 @@ export class FakeWorkspaceInviting extends WorkspaceInviting {
     return { outcome: 'invited', invitationId, expiresAt: this.expiresAt };
   }
 
+  readonly accepted: InvitationAcceptance[] = [];
+
+  async accept(acceptance: InvitationAcceptance): Promise<void> {
+    this.accepted.push(acceptance);
+  }
+
   /** Set to make every revoke fail, as a store that cannot be reached would. */
   revokeFails = false;
 
@@ -175,7 +183,10 @@ export class FakeAccountSummaryPort extends AccountSummaryPort {
   }
 }
 
-/** Open Invitations held in memory, answered as the store would at the instant given. */
+/**
+ * Invitations held in memory, answered as the store would at the instant given: open ones for a
+ * Workspace's list, and single ones in whatever status the test set.
+ */
 export class FakeInvitationQuery extends InvitationQuery {
   readonly invitations: (Omit<InvitationView, 'status'> & {
     readonly workspaceId: string;
@@ -190,12 +201,21 @@ export class FakeInvitationQuery extends InvitationQuery {
       .filter((i) => i.workspaceId === workspaceId)
       .map(({ workspaceId: _, ...invitation }) => ({
         ...invitation,
-        status: InvitationStatus.at(invitation.expiresAt, now).toString(),
+        status: InvitationStatus.openAt(invitation.expiresAt, now),
       }));
     const start = (page.page - 1) * page.pageSize;
     return {
       items: items.slice(start, start + page.pageSize),
       total: items.length,
     };
+  }
+
+  /** Single Invitations as the store would answer them, keyed by id, status already worked out. */
+  readonly details = new Map<string, InvitationDetailView>();
+
+  async invitationById(
+    invitationId: string,
+  ): Promise<InvitationDetailView | null> {
+    return this.details.get(invitationId) ?? null;
   }
 }

@@ -2,6 +2,7 @@ import { AUTH, type Auth } from '@app/infrastructure/auth/auth';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { APIError } from 'better-auth';
 import {
+  type InvitationAcceptance,
   type InvitationRequest,
   type InvitationRevocation,
   type InvitationStored,
@@ -15,7 +16,8 @@ function requestHeaders(credential: string): Headers {
 /**
  * Stores Invitations through Better Auth's organization plugin, on the inviter's own session,
  * so the plugin checks they may invite and that the address is not already in or invited. Its
- * own invitation email is never configured: the use case sends ours.
+ * own invitation email is never configured: the use case sends ours. Accepting runs on the
+ * invited person's session, so the plugin also makes the Workspace their active one.
  */
 @Injectable()
 export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
@@ -62,6 +64,13 @@ export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
     }
   }
 
+  async accept(acceptance: InvitationAcceptance): Promise<void> {
+    await this.auth.api.acceptInvitation({
+      body: { invitationId: acceptance.invitationId },
+      headers: requestHeaders(acceptance.credential),
+    });
+  }
+
   async revoke(revocation: InvitationRevocation): Promise<void> {
     try {
       await this.auth.api.cancelInvitation({
@@ -69,8 +78,8 @@ export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
         headers: requestHeaders(revocation.credential),
       });
     } catch (error) {
-      // The caller answers the address `failed` either way, so this is the one record that an
-      // Invitation whose email never went out is still Pending.
+      // Sending answers an address `failed` whether or not its revoke lands, so this is the one
+      // record that an Invitation whose email never went out is still Pending.
       this.logger.warn({
         event: 'invitation.revoke_failed',
         invitationId: revocation.invitationId,

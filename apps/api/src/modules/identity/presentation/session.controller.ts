@@ -1,6 +1,7 @@
 import { Public } from '@app/shared/presentation/actor';
 import { COOKIE_HEADER } from '@app/shared/presentation/dto/cookie-header.dto';
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -24,7 +25,10 @@ import { RefreshSessionUseCase } from '../application/use-cases/refresh-session.
 import { SignOutUseCase } from '../application/use-cases/sign-out.use-case';
 import { StartGoogleSignInUseCase } from '../application/use-cases/start-google-sign-in.use-case';
 import { GetCurrentSessionResponseDto } from './dto/get-current-session.dto';
-import { StartGoogleSignInResponseDto } from './dto/start-google-sign-in.dto';
+import {
+  StartGoogleSignInRequestDto,
+  StartGoogleSignInResponseDto,
+} from './dto/start-google-sign-in.dto';
 
 function setSessionCookies(response: Response, cookies: SessionCookies): void {
   for (const cookie of cookies) {
@@ -54,8 +58,13 @@ export class SessionController {
   @Post('google')
   @ApiOperation({ summary: 'Start signing in with Google' })
   @ZodResponse({ status: HttpStatus.OK, type: StartGoogleSignInResponseDto })
-  async startGoogleSignIn(@Res({ passthrough: true }) response: Response) {
-    const signIn = await this.startGoogleSignInUseCase.execute();
+  async startGoogleSignIn(
+    @Body() body: StartGoogleSignInRequestDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const signIn = await this.startGoogleSignInUseCase.execute({
+      invitationId: body.invitationId ?? null,
+    });
     setSessionCookies(response, signIn.sessionCookies);
     return { url: signIn.url };
   }

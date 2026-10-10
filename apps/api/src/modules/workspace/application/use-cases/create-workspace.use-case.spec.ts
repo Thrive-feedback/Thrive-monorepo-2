@@ -74,7 +74,7 @@ describe('creating a Workspace', () => {
     await useCase.execute(request());
 
     expect(unitOfWork.opened).toEqual([
-      { serializeOn: 'workspace-founder:account-ann' },
+      { serializeOn: 'account-workspace:account-ann' },
     ]);
   });
 
