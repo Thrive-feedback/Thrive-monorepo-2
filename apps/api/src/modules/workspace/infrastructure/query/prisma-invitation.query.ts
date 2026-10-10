@@ -1,9 +1,15 @@
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { Injectable } from '@nestjs/common';
 import { InvitationQuery } from '../../application/query-port/invitation.query-port';
-import type { InvitationPage } from '../../application/types/invitation.types';
+import type {
+  InvitationDetailView,
+  InvitationPage,
+} from '../../application/types/invitation.types';
 import type { PageRequest } from '../../application/types/membership.types';
-import { toInvitationView } from '../mapper/invitation.mapper';
+import {
+  toInvitationDetailView,
+  toInvitationView,
+} from '../mapper/invitation.mapper';
 
 @Injectable()
 export class PrismaInvitationQuery extends InvitationQuery {
@@ -34,5 +40,24 @@ export class PrismaInvitationQuery extends InvitationQuery {
       items: invitations.map((invitation) => toInvitationView(invitation, now)),
       total,
     };
+  }
+
+  async invitationById(
+    invitationId: string,
+    now: Date,
+  ): Promise<InvitationDetailView | null> {
+    const invitation =
+      await this.prismaTransactionContext.client.invitation.findUnique({
+        where: { id: invitationId },
+        select: {
+          id: true,
+          email: true,
+          status: true,
+          expiresAt: true,
+          inviterId: true,
+          workspace: { select: { id: true, name: true } },
+        },
+      });
+    return invitation ? toInvitationDetailView(invitation, now) : null;
   }
 }

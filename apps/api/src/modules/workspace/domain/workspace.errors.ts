@@ -57,3 +57,42 @@ export class TooManyInvitationsError extends DomainError {
     super(`Invite at most ${maxCount} people at a time.`);
   }
 }
+
+/** Its 7 days have passed; only a new Invitation lets the person in. */
+export class InvitationExpiredError extends DomainError {
+  readonly code = 'INVITATION_EXPIRED';
+  readonly category = 'conflict' as const;
+
+  constructor() {
+    super('This Invitation has expired.');
+  }
+}
+
+export class InvitationRevokedError extends DomainError {
+  readonly code = 'INVITATION_REVOKED';
+  readonly category = 'conflict' as const;
+
+  constructor() {
+    super('This Invitation was revoked.');
+  }
+}
+
+/** An Invitation lets one person in, once. */
+export class InvitationAlreadyAcceptedError extends DomainError {
+  readonly code = 'INVITATION_ALREADY_ACCEPTED';
+  readonly category = 'conflict' as const;
+
+  constructor() {
+    super('This Invitation has already been accepted.');
+  }
+}
+
+/** Signed in with a different address from the one the Invitation was sent to. */
+export class InvitationNotForYouError extends DomainError {
+  readonly code = 'INVITATION_NOT_FOR_YOU';
+  readonly category = 'forbidden' as const;
+
+  constructor() {
+    super('This Invitation was sent to a different email address.');
+  }
+}

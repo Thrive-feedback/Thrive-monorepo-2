@@ -139,7 +139,9 @@ describe('Better Auth identity, through the port', () => {
   });
 
   it('starts Google sign-in with a state and a PKCE challenge', async () => {
-    const { url, sessionCookies } = await identityPort.startGoogleSignIn();
+    const { url, sessionCookies } = await identityPort.startGoogleSignIn({
+      invitationId: null,
+    });
 
     const google = new URL(url);
     const state = google.searchParams.get('state') ?? '';
@@ -153,6 +155,21 @@ describe('Better Auth identity, through the port', () => {
     expect(sessionCookies).toContainEqual(
       expect.stringMatching(/^thrive\.state=/),
     );
+  });
+
+  it('sends someone signing in to accept an Invitation back to it, new Account or not', async () => {
+    const invitationId = '0199a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b';
+
+    const { url } = await identityPort.startGoogleSignIn({ invitationId });
+
+    const state = new URL(url).searchParams.get('state') ?? '';
+    createdStates.push(state);
+    const stored = await prisma.verification.findFirst({
+      where: { identifier: `auth-state:${state}` },
+    });
+    const attempt = JSON.parse(stored?.value ?? '{}');
+    expect(attempt.callbackURL).toBe(`/invitations/${invitationId}?signedIn=1`);
+    expect(attempt.newUserURL).toBe(`/invitations/${invitationId}?signedIn=1`);
   });
 
   describe('refreshing writes nothing and issues no session cookie', () => {

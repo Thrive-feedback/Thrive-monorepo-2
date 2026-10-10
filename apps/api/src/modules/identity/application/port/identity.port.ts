@@ -22,6 +22,11 @@ export interface CurrentSession {
  */
 export type SessionCookies = readonly string[];
 
+export interface GoogleSignInRequest {
+  /** The Invitation the person is signing in to accept. Opaque here: only a path segment. */
+  readonly invitationId: string | null;
+}
+
 export interface GoogleSignIn {
   /** Google's sign-in page, carrying the state and PKCE challenge for this attempt. */
   readonly url: string;
@@ -51,7 +56,13 @@ export abstract class IdentityPort {
    */
   abstract refreshSession(credential: string): Promise<RefreshedSession>;
 
-  abstract startGoogleSignIn(): Promise<GoogleSignIn>;
+  /**
+   * Starts signing in with Google. With an Invitation, Google sends the person back to it
+   * rather than to their usual landing page, so they can go on to accept it.
+   */
+  abstract startGoogleSignIn(
+    request: GoogleSignInRequest,
+  ): Promise<GoogleSignIn>;
 
   /** Ends the caller's session. Repeatable: with no session it still clears the cookie. */
   abstract signOut(credential: string): Promise<SignedOut>;

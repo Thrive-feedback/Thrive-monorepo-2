@@ -27,6 +27,16 @@
       "post": {
         "operationId": "SessionController_startGoogleSignIn",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartGoogleSignInRequestDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -488,6 +498,146 @@
           "workspace"
         ]
       }
+    },
+    "/v1/workspaces/{workspaceId}/invitations/{invitationId}/revoke": {
+      "post": {
+        "operationId": "InvitationController_revokeInvitation",
+        "parameters": [
+          {
+            "name": "cookie",
+            "required": false,
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Revoked"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "NOT_ALLOWED_TO_REVOKE_INVITATIONS"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND or INVITATION_NOT_FOUND"
+          },
+          "409": {
+            "description": "INVITATION_ALREADY_ACCEPTED or INVITATION_REVOKED"
+          }
+        },
+        "summary": "Revoke an open Invitation to a Workspace, so its link stops working",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/v1/invitations/{invitationId}": {
+      "get": {
+        "operationId": "InvitationLinkController_getInvitation",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetInvitationResponseDto_Output"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVITATION_NOT_FOUND"
+          }
+        },
+        "summary": "Read an Invitation as the person holding its link sees it, signed in or not",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/v1/invitations/{invitationId}/accept": {
+      "post": {
+        "operationId": "InvitationLinkController_acceptInvitation",
+        "parameters": [
+          {
+            "name": "cookie",
+            "required": false,
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Accepted, or already a Member there"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "INVITATION_NOT_FOR_YOU"
+          },
+          "404": {
+            "description": "INVITATION_NOT_FOUND"
+          },
+          "409": {
+            "description": "INVITATION_EXPIRED, INVITATION_REVOKED, INVITATION_ALREADY_ACCEPTED or ALREADY_IN_A_WORKSPACE"
+          }
+        },
+        "summary": "Accept an Invitation, joining its Workspace; repeating it once in changes nothing",
+        "tags": [
+          "workspace"
+        ]
+      }
     }
   },
   "info": {
@@ -526,6 +676,17 @@
         "required": [
           "status"
         ],
+        "additionalProperties": false
+      },
+      "StartGoogleSignInRequestDto": {
+        "type": "object",
+        "properties": {
+          "invitationId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
         "additionalProperties": false
       },
       "StartGoogleSignInResponseDto_Output": {
@@ -943,6 +1104,35 @@
         },
         "required": [
           "results"
+        ],
+        "additionalProperties": false
+      },
+      "GetInvitationResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "workspaceName": {
+            "type": "string"
+          },
+          "inviterName": {
+            "type": "string"
+          },
+          "invitedEmailMasked": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "EXPIRED",
+              "ACCEPTED",
+              "REVOKED"
+            ]
+          }
+        },
+        "required": [
+          "workspaceName",
+          "invitedEmailMasked",
+          "status"
         ],
         "additionalProperties": false
       }
