@@ -39,6 +39,11 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: thrive-feedback
   WEB_URL: https://thrive-web-production.up.railway.app
+  # An account-scoped token has no project of its own, so every Railway command names the
+  # project and environment it means. A project id identifies, it does not authorise — the
+  # token in the secret store is what does that.
+  RAILWAY_PROJECT_ID: 834caa14-3edb-4e9d-b683-ba9defe6ef06
+  RAILWAY_ENVIRONMENT_NAME: production
   # The web app reaches the API over the project's private network. Written into the web
   # image at build time, because the callback rewrite is part of the build.
   API_BASE_URL: http://thrive-api.railway.internal:3000
@@ -158,13 +163,20 @@ jobs:
       # Migrations are forward-only: every one must be readable by the code already
       # running, because a rollback returns the code and never the schema.
       - name: Migrate the database
-        run: railway run --service thrive-api -- bun run --cwd apps/api db:migrate:deploy
+        run: |
+          railway run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_NAME" \
+            --service thrive-api \
+            -- bun run --cwd apps/api db:migrate:deploy
 
       # The API first: the web app calls it, so the dependency moves before its caller.
       # Pointing a service at a new tag is what starts its deployment.
       - name: Deploy the API
         run: |
           railway service source connect \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_NAME" \
             --image "$REGISTRY/$IMAGE_NAMESPACE/thrive-api:sha-$COMMIT" \
             --service thrive-api
           scripts/await-railway-deployment.sh thrive-api
@@ -172,6 +184,8 @@ jobs:
       - name: Deploy the web app
         run: |
           railway service source connect \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_NAME" \
             --image "$REGISTRY/$IMAGE_NAMESPACE/thrive-web:sha-$COMMIT" \
             --service thrive-web
           scripts/await-railway-deployment.sh thrive-web

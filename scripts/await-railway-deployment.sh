@@ -8,13 +8,18 @@
 # before the container is running. Without this the next step would deploy against a
 # service that is still starting, and a crash loop would read as a green deploy.
 #
-# Needs RAILWAY_TOKEN in the environment, as every Railway command here does.
+# Needs RAILWAY_TOKEN in the environment, as every Railway command here does, and —
+# because that token is account-scoped and so belongs to no project in particular —
+# RAILWAY_PROJECT_ID and RAILWAY_ENVIRONMENT_NAME to say which service is meant.
 
 set -euo pipefail
 
 SERVICE="${1:?usage: await-railway-deployment.sh <service>}"
 TIMEOUT_SECONDS="${2:-600}"
 INTERVAL_SECONDS=10
+
+: "${RAILWAY_PROJECT_ID:?RAILWAY_PROJECT_ID is not set}"
+: "${RAILWAY_ENVIRONMENT_NAME:?RAILWAY_ENVIRONMENT_NAME is not set}"
 
 # Railway's own vocabulary. Anything outside both lists means the deployment is still
 # moving, so we keep waiting.
@@ -25,7 +30,11 @@ deadline=$(( $(date +%s) + TIMEOUT_SECONDS ))
 
 while :; do
   # `|| true`: a transient API error should cost one interval, not the deployment.
-  listing=$(railway deployment list --service "$SERVICE" --json 2>/dev/null || true)
+  listing=$(railway deployment list \
+    --project "$RAILWAY_PROJECT_ID" \
+    --environment "$RAILWAY_ENVIRONMENT_NAME" \
+    --service "$SERVICE" \
+    --limit 1 --json 2>/dev/null || true)
   status=$(printf '%s' "$listing" | jq -r 'if type == "array" then .[0].status else .deployments[0].status // empty end' 2>/dev/null || true)
 
   case " $SUCCEEDED " in
@@ -38,7 +47,7 @@ while :; do
   case " $FAILED " in
     *" $status "*)
       echo "::error::$SERVICE deployment ended as $status"
-      echo "::error::Logs: railway logs --service $SERVICE"
+      echo "::error::Logs: railway logs --project $RAILWAY_PROJECT_ID --environment $RAILWAY_ENVIRONMENT_NAME --service $SERVICE"
       exit 1
       ;;
   esac
