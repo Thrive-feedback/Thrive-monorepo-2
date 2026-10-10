@@ -1,0 +1,46 @@
+# What never belongs in a build context: anything the image rebuilds for itself, anything
+# that would make the context huge, and anything carrying a secret. Keeping it small is
+# also what keeps the dependency layer cacheable.
+
+# Installed, never copied: every image installs from the lockfile.
+node_modules
+**/node_modules
+
+# Built inside the image from source.
+.next
+**/.next
+dist
+**/dist
+out
+**/out
+.turbo
+**/.turbo
+apps/api/src/infrastructure/database/generated
+
+# Environment files are delivered by the platform, never baked into a layer.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# History, tooling and documentation: none of it runs.
+.git
+.github
+.vscode
+.idea
+docs
+features
+**/*.md
+!apps/api/README.md
+!apps/web/README.md
+
+# Test and coverage output.
+coverage
+test-results
+blob-report
+playwright-report
+**/*.log
+
+.DS_Store

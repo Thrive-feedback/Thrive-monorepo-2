@@ -1,0 +1,136 @@
+# What reaches production, and the only thing that does. Railway's own GitHub integration
+# is deliberately disconnected: a deploy triggered by a push would skip the migration gate
+# below, and the step that decides whether the schema is ready would live in a dashboard
+# instead of in this file.
+#
+# Merging and releasing are separate decisions, so a merge does not deploy by itself. There
+# are two ways to start one, and both end up here:
+#
+#   - By hand: Actions -> Deploy -> Run workflow, on main.
+#   - On merge, if the pull request carries the `deploy` label. The label is added by whoever
+#     wants their change to go straight out, and its absence is the default.
+#
+# Either way it deploys main as it stands when the job starts, which is not necessarily the
+# commit whose pull request triggered it — someone else's merge can ride along.
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why this is going out, for the run's own record
+        required: false
+        type: string
+  pull_request:
+    types: [closed]
+
+# Reads the code and nothing else. The one credential it holds is a repository secret.
+permissions:
+  contents: read
+
+# Two runs started close together must not interleave: a second deploy that overtakes the
+# first would migrate a database out from under code that is still rolling out. Queue,
+# never cancel — a cancelled deploy can leave a migration applied and the code absent.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Production
+    # A closed pull request is not a merged one, and a merged one deploys only when it was
+    # labelled for it. Everything else that reaches this workflow stops here, without a
+    # failed run to explain away.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       contains(github.event.pull_request.labels.*.name, 'deploy'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: https://thrive-web-production.up.railway.app
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      API_SERVICE: thrive-api
+      WEB_SERVICE: thrive-web
+      WEB_URL: https://thrive-web-production.up.railway.app
+    steps:
+      # A manual run takes its branch from the dialog, and a labelled pull request could
+      # have targeted anything. Only main has been through the merge gate.
+      - name: Refuse to deploy anything but main
+        if: >-
+          (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main') ||
+          (github.event_name == 'pull_request' && github.event.pull_request.base.ref != 'main')
+        run: |
+          echo "::error::Deploy runs on main only."
+          echo "::error::Manual ref: ${{ github.ref }}; pull request base: ${{ github.event.pull_request.base.ref }}"
+          exit 1
+
+      - name: Record why
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Started by hand — ${{ inputs.reason || 'no reason given' }}"
+          else
+            echo "Started by the 'deploy' label on #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}"
+          fi
+
+      # Always main, never the pull request's own head: branches land on main by rebase
+      # (ADR 0018), so the commits that exist after a merge are not the ones the pull
+      # request event carries.
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        with:
+          ref: main
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.0.2
+        with:
+          bun-version-file: package.json
+
+      # The migration runs from this runner, not from inside an image, so it is a step that
+      # can fail before anything is deployed. It needs the Prisma CLI, which needs the
+      # workspace installed.
+      - run: bun install --frozen-lockfile
+
+      - name: Install the Railway CLI
+        run: bun add --global @railway/cli@5.64.2
+
+      # The gate. `railway run` injects the API service's own variables, so the connection
+      # string stays in Railway's store and never becomes a repository secret. A failure
+      # here stops the job with the old code still serving the old schema.
+      #
+      # Migrations are forward-only: every one must be readable by the code already
+      # running, because a rollback returns the code and never the schema.
+      - name: Migrate the database
+        run: railway run --service "$API_SERVICE" -- bun run --cwd apps/api db:migrate:deploy
+
+      # The API first: the web app calls it, so the dependency deploys before its caller.
+      # `--ci` waits for the deployment and fails the step if the health check never passes.
+      - name: Deploy the API
+        run: railway up --service "$API_SERVICE" --ci
+
+      - name: Deploy the web app
+        run: railway up --service "$WEB_SERVICE" --ci
+
+      # The health checks above prove each container started. This proves the public
+      # address actually answers, which is the part a person would notice.
+      - name: Smoke-test the public address
+        run: |
+          for attempt in $(seq 1 10); do
+            status=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 10 "$WEB_URL" || true)
+            if [ "$status" = "200" ]; then
+              echo "$WEB_URL answered 200 on attempt $attempt"
+              exit 0
+            fi
+            echo "attempt $attempt: $status"
+            sleep 6
+          done
+          echo "::error::$WEB_URL never answered 200"
+          exit 1
+
+      # Rollback is a human step for now: the CLI can redeploy a service but cannot name a
+      # previous deployment, so choosing which one to return to is done in the dashboard.
+      - name: Say how to roll back
+        if: failure()
+        run: |
+          echo "::error::Deploy failed. Roll back in Railway: project thrive-prod -> the"
+          echo "::error::failing service -> Deployments -> the last green one -> Redeploy."
+          echo "::error::The schema is NOT rolled back. Check whether the migration applied."

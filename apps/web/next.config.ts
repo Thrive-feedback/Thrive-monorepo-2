@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import type { NextConfig } from 'next';
 import { apiBaseUrl } from './lib/api-base-url.util';
 
@@ -10,6 +11,13 @@ import { apiBaseUrl } from './lib/api-base-url.util';
  * rather than shipping a callback that goes nowhere.
  */
 const nextConfig: NextConfig = {
+  // The deployed image ships a traced server and its own dependencies, rather than the
+  // whole workspace. Without this the runtime image carries every development dependency
+  // in the monorepo, for a server that needs a fraction of them.
+  output: 'standalone',
+  // Traced from the repository root: a workspace app's dependencies are installed above
+  // its own directory, and the trace must be able to reach them.
+  outputFileTracingRoot: join(import.meta.dirname, '../..'),
   allowedDevOrigins: ['http://localhost:3000'],
   async rewrites() {
     return [
