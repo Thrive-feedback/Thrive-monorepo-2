@@ -118,3 +118,64 @@ describe('storing Invitations through the organization plugin', () => {
     expect((await workspaceInviting.invite(request)).outcome).toBe('invited');
   });
 });
+
+describe('accepting an Invitation through the organization plugin', () => {
+  async function anInvitationFor(email: string) {
+    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const stored = invited(
+      await workspaceInviting.invite({
+        credential: owner.credential,
+        workspaceId,
+        email,
+      }),
+    );
+    return { workspaceId, invitationId: stored.invitationId };
+  }
+
+  it('makes the invited person a Member with the Member role, and settles the Invitation', async () => {
+    const invitee = await fixtures.aSignedInAccount('accepting-invitee');
+    const { workspaceId, invitationId } = await anInvitationFor(invitee.email);
+
+    await workspaceInviting.accept({
+      credential: invitee.credential,
+      invitationId,
+    });
+
+    expect(
+      await prismaService.member.findUniqueOrThrow({
+        where: {
+          workspaceId_userId: { workspaceId, userId: invitee.accountId },
+        },
+      }),
+    ).toMatchObject({ role: 'member' });
+    expect(
+      await prismaService.invitation.findUniqueOrThrow({
+        where: { id: invitationId },
+      }),
+    ).toMatchObject({ status: 'accepted' });
+  });
+
+  it("makes the Workspace the invited person's active one", async () => {
+    const invitee = await fixtures.aSignedInAccount('accepting-active');
+    const { workspaceId, invitationId } = await anInvitationFor(invitee.email);
+
+    await workspaceInviting.accept({
+      credential: invitee.credential,
+      invitationId,
+    });
+
+    const sessions = await prismaService.session.findMany({
+      where: { userId: invitee.accountId },
+    });
+    expect(sessions.map((s) => s.activeOrganizationId)).toEqual([workspaceId]);
+  });
+
+  it('lets an Invitation be used once', async () => {
+    const invitee = await fixtures.aSignedInAccount('accepting-once');
+    const { invitationId } = await anInvitationFor(invitee.email);
+    const acceptance = { credential: invitee.credential, invitationId };
+    await workspaceInviting.accept(acceptance);
+
+    await expect(workspaceInviting.accept(acceptance)).rejects.toThrow();
+  });
+});

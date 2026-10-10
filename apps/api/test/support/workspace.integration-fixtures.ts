@@ -27,8 +27,10 @@ export class WorkspaceFixtures {
   async aSignedInAccount(label: string): Promise<SignedInAccount> {
     const accountId = uuidv7();
     const email = `${label}-${accountId}@acme.test`;
+    // Verified, as Google marks every account it signs in; the plugin will not let an
+    // unverified one accept an Invitation.
     await this.prismaService.user.create({
-      data: { id: accountId, name: 'Ann Lee', email },
+      data: { id: accountId, name: 'Ann Lee', email, emailVerified: true },
     });
     this.accountIds.push(accountId);
     const { internalAdapter } = await this.auth.$context;
