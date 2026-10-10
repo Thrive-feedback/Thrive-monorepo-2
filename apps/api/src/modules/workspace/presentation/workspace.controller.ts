@@ -16,7 +16,7 @@ import {
   CreateWorkspaceResponseDto,
 } from './dto/create-workspace.dto';
 
-@ApiTags('workspaces')
+@ApiTags('workspace')
 @Controller({ path: 'v1/workspaces' })
 export class WorkspaceController {
   constructor(

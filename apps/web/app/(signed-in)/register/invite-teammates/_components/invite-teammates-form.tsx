@@ -2,20 +2,27 @@
 
 import { PlusIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import { sendInvitations } from '@/app/(signed-in)/register/invite-teammates/_lib/invitation-actions.service';
 import {
   checkInviteEmail,
   checkInviteEmails,
 } from '@/app/(signed-in)/register/invite-teammates/_lib/invite-emails.util';
+import type { InviteResult } from '@/app/(signed-in)/register/invite-teammates/_lib/invite-teammates-state.type';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { ROUTES } from '@/lib/routes.constant';
 import { InviteEmailRow } from './invite-email-row';
+import { InviteResults } from './invite-results';
 
 type Row = { id: number; value: string; errorMessage?: string };
 
 const STARTING_ROW_COUNT = 1;
+
+/** The API invites at most this many people per send. */
+const MAX_ROW_COUNT = 10;
+
+const COULD_NOT_SEND_TO_ROW = "Couldn't send. Try again.";
 
 /**
  * A row's address is checked when the person leaves it, and every row again on Send. Editing a
@@ -25,8 +32,9 @@ const STARTING_ROW_COUNT = 1;
  * flagged row refuses the whole send rather than sending the rest, so nobody is told their
  * invites went out while some are still waiting to be fixed.
  *
- * The confirmation is a toast, raised just before leaving for Home: the Toaster is in the root
- * layout, so the toast outlives this route.
+ * Each address is answered on its own. One whose email could not go out stays in its row,
+ * flagged, and the rest leave the form, so sending again retries only those. Once none is
+ * left, the form gives way to what happened to every address.
  */
 export function InviteTeammatesForm() {
   const router = useRouter();
@@ -36,6 +44,10 @@ export function InviteTeammatesForm() {
     Array.from({ length: STARTING_ROW_COUNT }, (_, id) => ({ id, value: '' })),
   );
   const [focusRowId, setFocusRowId] = useState<number | null>(null);
+  const [formError, setFormError] = useState<string>();
+  const [settled, setSettled] = useState<readonly InviteResult[]>([]);
+  const [isDone, setIsDone] = useState(false);
+  const [isSending, startSending] = useTransition();
 
   const hasAnyEmail = rows.some((row) => row.value.trim() !== '');
 
@@ -90,15 +102,42 @@ export function InviteTeammatesForm() {
       setFocusRowId(firstFlagged?.id ?? null);
       return;
     }
-    // TODO(kritpavin, #73): send the Invitations. Nothing is sent or stored yet.
-    toast.success('Invitations sent', {
-      description: invitedCount(check.emails.length),
+    setFormError(undefined);
+    startSending(async () => {
+      const sent = await sendInvitations(check.emails);
+      if ('formError' in sent) {
+        setFormError(sent.formError);
+        return;
+      }
+      const failed = sent.results.filter((r) => r.outcome === 'failed');
+      setSettled((earlier) => [
+        ...earlier,
+        ...sent.results.filter((r) => r.outcome !== 'failed'),
+      ]);
+      if (failed.length === 0) {
+        setIsDone(true);
+        return;
+      }
+      const retryRows = failed.map((result) => ({
+        id: nextId.current++,
+        value: result.email,
+        errorMessage: COULD_NOT_SEND_TO_ROW,
+      }));
+      setRows(retryRows);
+      setFocusRowId(retryRows[0]?.id ?? null);
     });
+  }
+
+  function handleContinue() {
     router.push(ROUTES.home);
   }
 
   function handleSkip() {
     router.push(ROUTES.home);
+  }
+
+  if (isDone) {
+    return <InviteResults results={settled} onContinue={handleContinue} />;
   }
 
   return (
@@ -130,34 +169,43 @@ export function InviteTeammatesForm() {
             />
           ))}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-fit"
-          onClick={handleAddRow}
-        >
-          <PlusIcon aria-hidden="true" className="size-4" />
-          Add another
-        </Button>
+        {rows.length < MAX_ROW_COUNT && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-fit"
+            onClick={handleAddRow}
+          >
+            <PlusIcon aria-hidden="true" className="size-4" />
+            Add another
+          </Button>
+        )}
+        <Text variant="caption" tone="muted">
+          You can invite up to {MAX_ROW_COUNT} now — invite more anytime from
+          Settings.
+        </Text>
       </fieldset>
+      {formError && (
+        <Text role="alert" variant="caption" tone="danger">
+          {formError}
+        </Text>
+      )}
       <Button
         type="submit"
         variant="primary"
-        disabled={!hasAnyEmail}
+        disabled={!hasAnyEmail || isSending}
         className="mt-2 w-full"
       >
-        Send invites &amp; Done
+        {isSending ? 'Sending…' : 'Send invites & Done'}
       </Button>
-      <Button variant="secondary" className="w-full" onClick={handleSkip}>
+      <Button
+        variant="secondary"
+        className="w-full"
+        disabled={isSending}
+        onClick={handleSkip}
+      >
         Skip &amp; Done
       </Button>
     </form>
   );
-}
-
-/** A count, never the addresses: a toast is easily read over a shoulder. */
-function invitedCount(count: number): string {
-  return count === 1
-    ? 'We invited 1 teammate.'
-    : `We invited ${count} teammates.`;
 }

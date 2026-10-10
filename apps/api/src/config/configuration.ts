@@ -29,10 +29,27 @@ export class AuthConfig {
   ) {}
 }
 
+export class EmailConfig {
+  constructor(
+    /** The Gmail account every email is sent as. */
+    readonly gmailUser: string,
+    readonly gmailAppPassword: string,
+  ) {}
+}
+
+export class WebConfig {
+  constructor(
+    /** Where a link sent to a person points: the web app they open, not this API. */
+    readonly origin: string,
+  ) {}
+}
+
 export interface Configuration {
   readonly http: HttpConfig;
   readonly database: DatabaseConfig;
   readonly auth: AuthConfig;
+  readonly email: EmailConfig;
+  readonly web: WebConfig;
 }
 
 /** Injection token for the whole parsed configuration, from which each namespace is projected. */
@@ -71,6 +88,13 @@ export function loadConfiguration(
       parsed.data.GOOGLE_CLIENT_ID,
       parsed.data.GOOGLE_CLIENT_SECRET,
     ),
+    email: new EmailConfig(
+      parsed.data.GMAIL_SMTP_USER,
+      parsed.data.GMAIL_SMTP_APP_PASSWORD,
+    ),
+    // The auth URL is already the web origin (ADR 0027), so a second variable would only be
+    // one that could disagree with it.
+    web: new WebConfig(new URL(parsed.data.BETTER_AUTH_URL).origin),
   };
 }
 

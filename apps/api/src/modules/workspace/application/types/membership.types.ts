@@ -16,3 +16,14 @@ export interface MembershipPage {
   readonly items: readonly MembershipView[];
   readonly total: number;
 }
+
+/** One Member of a Workspace, as the Workspace knows them: the Account and its Role. */
+export interface WorkspaceMemberView {
+  readonly accountId: string;
+  readonly role: MemberRoleValue;
+}
+
+export interface WorkspaceMemberPage {
+  readonly items: readonly WorkspaceMemberView[];
+  readonly total: number;
+}

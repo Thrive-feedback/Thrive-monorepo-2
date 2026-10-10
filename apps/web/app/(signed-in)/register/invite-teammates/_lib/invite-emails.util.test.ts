@@ -33,15 +33,12 @@ describe('checkInviteEmails', () => {
     },
   );
 
-  it.each(['tony@gmail.com', 'tony@GMAIL.com', 'tony@googlemail.com'])(
-    'flags personal Gmail %s',
-    (personal) => {
-      expect(checkInviteEmails([personal])).toEqual({
-        ok: false,
-        errors: [INVITE_EMAIL_MESSAGES.personal],
-      });
-    },
-  );
+  it('accepts a personal Gmail address, since any Google account can sign in', () => {
+    expect(checkInviteEmails(['tony@gmail.com'])).toEqual({
+      ok: true,
+      emails: ['tony@gmail.com'],
+    });
+  });
 });
 
 describe('checkInviteEmail', () => {
@@ -50,10 +47,7 @@ describe('checkInviteEmail', () => {
     expect(checkInviteEmail(' pepper@stark.com ')).toBeUndefined();
   });
 
-  it('flags a malformed address and personal Gmail', () => {
+  it('flags a malformed address', () => {
     expect(checkInviteEmail('pepper@')).toBe(INVITE_EMAIL_MESSAGES.malformed);
-    expect(checkInviteEmail('tony@gmail.com')).toBe(
-      INVITE_EMAIL_MESSAGES.personal,
-    );
   });
 });

@@ -22,3 +22,36 @@ export class AlreadyInAWorkspaceError extends ApplicationError {
     super('This Account is already a Member of a Workspace.');
   }
 }
+
+/**
+ * The Workspace does not exist, or the caller is not a Member of it. The two are one answer,
+ * so nobody outside a Workspace can learn that its id is real.
+ */
+export class WorkspaceNotFoundError extends ApplicationError {
+  readonly code = 'WORKSPACE_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super('No Workspace with this id has the caller as a Member.');
+  }
+}
+
+/** Owner and Admins invite people; a Member with no management rights cannot. */
+export class NotAllowedToInviteError extends ApplicationError {
+  readonly code = 'NOT_ALLOWED_TO_INVITE';
+  readonly category = 'forbidden' as const;
+
+  constructor() {
+    super('Only the Owner and Admins can invite people to this Workspace.');
+  }
+}
+
+/** Pending Invitations are for those who can invite: the Owner and Admins. */
+export class NotAllowedToSeeInvitationsError extends ApplicationError {
+  readonly code = 'NOT_ALLOWED_TO_SEE_INVITATIONS';
+  readonly category = 'forbidden' as const;
+
+  constructor() {
+    super("Only the Owner and Admins can see this Workspace's Invitations.");
+  }
+}

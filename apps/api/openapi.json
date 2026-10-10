@@ -19,7 +19,7 @@
         },
         "summary": "Report that the API is up",
         "tags": [
-          "health"
+          "app"
         ]
       }
     },
@@ -41,7 +41,7 @@
         },
         "summary": "Start signing in with Google",
         "tags": [
-          "sessions"
+          "identity"
         ]
       }
     },
@@ -73,7 +73,7 @@
         },
         "summary": "Read who the caller is signed in as, without changing anything",
         "tags": [
-          "sessions"
+          "identity"
         ]
       },
       "delete": {
@@ -96,7 +96,7 @@
         },
         "summary": "Sign out of the current session",
         "tags": [
-          "sessions"
+          "identity"
         ]
       }
     },
@@ -121,7 +121,7 @@
         },
         "summary": "Push the current session forward and reissue its cookie",
         "tags": [
-          "sessions"
+          "identity"
         ]
       }
     },
@@ -172,7 +172,7 @@
         },
         "summary": "Create the caller's Profile",
         "tags": [
-          "profiles"
+          "identity"
         ]
       }
     },
@@ -223,7 +223,7 @@
         },
         "summary": "Create a Workspace, with the caller as its Owner",
         "tags": [
-          "workspaces"
+          "workspace"
         ]
       }
     },
@@ -280,7 +280,212 @@
         },
         "summary": "List the Workspaces the caller is a Member of, and their Role",
         "tags": [
-          "members"
+          "workspace"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/members": {
+      "get": {
+        "operationId": "WorkspaceMemberController_listWorkspaceMembers",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListWorkspaceMembersResponseDto_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "List the Members of a Workspace and their Roles",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/invitations": {
+      "get": {
+        "operationId": "InvitationController_listWorkspaceInvitations",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListWorkspaceInvitationsResponseDto_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "NOT_ALLOWED_TO_SEE_INVITATIONS"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "List the Invitations of a Workspace still waiting on someone, pending or expired",
+        "tags": [
+          "workspace"
+        ]
+      },
+      "post": {
+        "operationId": "InvitationController_sendInvitations",
+        "parameters": [
+          {
+            "name": "cookie",
+            "required": false,
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendInvitationsRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendInvitationsResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID, NO_ADDRESSES_TO_INVITE or TOO_MANY_INVITATIONS"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "NOT_ALLOWED_TO_INVITE"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "Invite several people to a Workspace by email, at most 10 at a time",
+        "tags": [
+          "workspace"
         ]
       }
     }
@@ -291,7 +496,20 @@
     "version": "1.0",
     "contact": {}
   },
-  "tags": [],
+  "tags": [
+    {
+      "name": "identity",
+      "description": "Who is signed in, their session and their Profile."
+    },
+    {
+      "name": "workspace",
+      "description": "Workspaces, their Members and their Invitations."
+    },
+    {
+      "name": "app",
+      "description": "The application itself, such as its health."
+    }
+  ],
   "servers": [],
   "components": {
     "schemas": {
@@ -473,7 +691,9 @@
                 "role": {
                   "type": "string",
                   "enum": [
-                    "OWNER"
+                    "OWNER",
+                    "ADMIN",
+                    "MEMBER"
                   ]
                 }
               },
@@ -505,6 +725,224 @@
           "total",
           "page",
           "pageSize"
+        ],
+        "additionalProperties": false
+      },
+      "ListWorkspaceMembersResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "accountId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "fullName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "OWNER",
+                    "ADMIN",
+                    "MEMBER"
+                  ]
+                }
+              },
+              "required": [
+                "accountId",
+                "email",
+                "fullName",
+                "role"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "additionalProperties": false
+      },
+      "ListWorkspaceInvitationsResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "invitationId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "OWNER",
+                    "ADMIN",
+                    "MEMBER"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "EXPIRED"
+                  ]
+                },
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "invitationId",
+                "email",
+                "role",
+                "status",
+                "expiresAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "additionalProperties": false
+      },
+      "SendInvitationsRequestDto": {
+        "type": "object",
+        "properties": {
+          "emails": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "emails"
+        ],
+        "additionalProperties": false
+      },
+      "SendInvitationsResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "email": {
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "invited"
+                      ]
+                    },
+                    "invitationId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    }
+                  },
+                  "required": [
+                    "email",
+                    "outcome",
+                    "invitationId",
+                    "expiresAt"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "email": {
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "already_member",
+                        "already_invited",
+                        "failed"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "email",
+                    "outcome"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "results"
         ],
         "additionalProperties": false
       }

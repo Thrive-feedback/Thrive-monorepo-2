@@ -42,9 +42,10 @@ export function TextEntry() {
         },
         {
           name: 'tone',
-          type: "'default' | 'muted' | 'brand' | 'danger'",
+          type: "'default' | 'muted' | 'brand' | 'danger' | 'success' | 'info' | 'warning'",
           defaultValue: "'default'",
-          description: 'Text colour, from the foreground roles.',
+          description:
+            'Text colour, from the foreground roles; the last four from the status roles.',
         },
         {
           name: '...rest',
@@ -91,6 +92,9 @@ export function TextEntry() {
         <Text tone="muted">Muted</Text>
         <Text tone="brand">Brand</Text>
         <Text tone="danger">Danger</Text>
+        <Text tone="success">Success</Text>
+        <Text tone="info">Info</Text>
+        <Text tone="warning">Warning</Text>
       </StateCell>
       <StateCell label="Every style" hint="Specs on the tokens page">
         <Link href={ROUTES.uiShowcase.tokens}>See the type scale</Link>

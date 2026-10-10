@@ -3,6 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { InviteTeammatesCard } from './invite-teammates-card';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock(
+  '@/app/(signed-in)/register/invite-teammates/_lib/invitation-actions.service',
+  () => ({
+    sendInvitations: vi.fn(),
+  }),
+);
 
 describe('InviteTeammatesCard', () => {
   it('invites by email only, with no invite link', () => {

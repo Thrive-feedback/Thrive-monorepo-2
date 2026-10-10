@@ -19,7 +19,7 @@ import {
  * list, though today it holds at most one: one Workspace per person is a rule of this
  * release, not of the contract.
  */
-@ApiTags('members')
+@ApiTags('workspace')
 @Controller({ path: 'v1/members' })
 export class MemberController {
   constructor(

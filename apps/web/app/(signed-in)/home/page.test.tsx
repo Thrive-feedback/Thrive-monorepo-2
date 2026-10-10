@@ -16,6 +16,11 @@ const requireMember = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
   requireMember: (signedIn?: string) => requireMember(signedIn),
 }));
+vi.mock('./_components/member-and-invitation-list', () => ({
+  MemberAndInvitationList: ({ ownEmail }: { ownEmail: string }) => (
+    <output>{`people besides ${ownEmail}`}</output>
+  ),
+}));
 vi.mock('@/components/atoms/one-time-toast', () => ({
   OneTimeToast: ({ type, message }: { type: string; message: string }) => (
     <output>{`${type} toast: ${message}`}</output>
@@ -41,15 +46,43 @@ describe('Home', () => {
     expect(requireMember).toHaveBeenLastCalledWith('1');
   });
 
-  it("shows a Member their Workspace's Home, and that they are its Owner", async () => {
+  it('shows the Workspace name, the person’s email and their Role', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open());
+
+    expect(screen.getByText('Workspace name:').parentElement).toHaveTextContent(
+      /^Workspace name:\s*Acme Corp$/,
+    );
+    expect(screen.getByText('My email:').parentElement).toHaveTextContent(
+      /^My email:\s*ann@acme\.test$/,
+    );
+    expect(screen.getByText('My role:').parentElement).toHaveTextContent(
+      /^My role:\s*Owner$/,
+    );
+  });
+
+  it('lists everyone else in the person’s Workspace under My teammates', async () => {
     requireMember.mockResolvedValue(ANN);
 
     render(await open());
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Acme Corp' }),
+      screen.getByRole('heading', { level: 2, name: 'My teammates' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('You’re the Owner')).toBeInTheDocument();
+    expect(
+      screen.getByText('people besides ann@acme.test'),
+    ).toBeInTheDocument();
+  });
+
+  it('no longer links to the component showcase', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open());
+
+    expect(
+      screen.queryByRole('link', { name: 'See the components' }),
+    ).toBeNull();
   });
 
   it('says who signed in when Google has just sent them back', async () => {

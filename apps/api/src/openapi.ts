@@ -20,6 +20,14 @@ export function buildOpenApiDocument(
         .setTitle('Thrive API')
         .setDescription('Thrive — an employee feedback platform.')
         .setVersion('1.0')
+        // One tag per Nest module, so the reference groups routes the way the code owns them.
+        // A controller's `@ApiTags` names its module; a tag listed here and nowhere else is unused.
+        .addTag(
+          'identity',
+          'Who is signed in, their session and their Profile.',
+        )
+        .addTag('workspace', 'Workspaces, their Members and their Invitations.')
+        .addTag('app', 'The application itself, such as its health.')
         .build(),
     ),
   );

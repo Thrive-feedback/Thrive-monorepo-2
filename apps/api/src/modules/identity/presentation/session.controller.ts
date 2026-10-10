@@ -41,7 +41,7 @@ function setSessionCookies(response: Response, cookies: SessionCookies): void {
  * touches the caller's own session.
  */
 @Public()
-@ApiTags('sessions')
+@ApiTags('identity')
 @Controller({ path: 'v1/sessions' })
 export class SessionController {
   constructor(
