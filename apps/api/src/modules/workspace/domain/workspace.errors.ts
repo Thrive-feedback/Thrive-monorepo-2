@@ -39,3 +39,21 @@ export class MemberRoleInvalidError extends DomainError {
     super('A Member role must be one of the known Roles.');
   }
 }
+
+export class NoAddressesToInviteError extends DomainError {
+  readonly code = 'NO_ADDRESSES_TO_INVITE';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('Name at least one email address to invite.');
+  }
+}
+
+export class TooManyInvitationsError extends DomainError {
+  readonly code = 'TOO_MANY_INVITATIONS';
+  readonly category = 'validation' as const;
+
+  constructor(readonly maxCount: number) {
+    super(`Invite at most ${maxCount} people at a time.`);
+  }
+}

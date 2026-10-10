@@ -1,12 +1,33 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { toast } from 'sonner';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Toaster } from '@/components/atoms/toaster';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type {
+  InviteResult,
+  SendInvitationsState,
+} from '@/app/(signed-in)/register/invite-teammates/_lib/invite-teammates-state.type';
 import { InviteTeammatesForm } from './invite-teammates-form';
 
 const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+
+const sendInvitations =
+  vi.fn<(emails: readonly string[]) => Promise<SendInvitationsState>>();
+vi.mock(
+  '@/app/(signed-in)/register/invite-teammates/_lib/invitation-actions.service',
+  () => ({
+    sendInvitations: (emails: readonly string[]) => sendInvitations(emails),
+  }),
+);
+
+/** The API answers each address with the outcome the test names, `invited` by default. */
+function apiAnswers(outcomes: Record<string, InviteResult['outcome']> = {}) {
+  sendInvitations.mockImplementation(async (emails) => ({
+    results: emails.map((email) => ({
+      email: email.toLowerCase(),
+      outcome: outcomes[email.toLowerCase()] ?? 'invited',
+    })),
+  }));
+}
 
 function emailField(position: number) {
   return screen.getByRole('textbox', { name: `Email address ${position}` });
@@ -23,12 +44,8 @@ function button(name: string) {
 describe('InviteTeammatesForm', () => {
   beforeEach(() => {
     push.mockClear();
-  });
-
-  afterEach(() => {
-    act(() => {
-      toast.dismiss();
-    });
+    sendInvitations.mockReset();
+    apiAnswers();
   });
 
   it('opens with one empty Email address field', () => {
@@ -85,19 +102,7 @@ describe('InviteTeammatesForm', () => {
       'Enter a valid email address.',
     );
     expect(emailField(2)).toHaveFocus();
-    expect(push).not.toHaveBeenCalled();
-  });
-
-  it('flags a personal Gmail address, which could never sign in', async () => {
-    const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
-    await user.type(emailField(1), 'tony@gmail.com');
-
-    await user.click(button('Send invites & Done'));
-
-    expect(emailField(1)).toHaveAccessibleDescription(
-      'Use a company email. Personal Gmail can’t sign in to Thrive.',
-    );
+    expect(sendInvitations).not.toHaveBeenCalled();
   });
 
   it('checks the format as soon as the field is left', async () => {
@@ -152,14 +157,10 @@ describe('InviteTeammatesForm', () => {
     expect(button('Send invites & Done')).toBeDisabled();
   });
 
-  it('toasts how many were invited and goes Home, ignoring empty fields and merging duplicates', async () => {
+  it('sends each address once, ignoring empty fields, then lists what happened to each', async () => {
     const user = userEvent.setup();
-    render(
-      <>
-        <Toaster />
-        <InviteTeammatesForm />
-      </>,
-    );
+    apiAnswers({ 'happy@stark.com': 'already_member' });
+    render(<InviteTeammatesForm />);
     await user.type(emailField(1), 'pepper@stark.com');
     await user.click(button('Add another'));
     await user.click(button('Add another'));
@@ -169,10 +170,92 @@ describe('InviteTeammatesForm', () => {
 
     await user.click(button('Send invites & Done'));
 
-    expect(await screen.findByText('Invitations sent')).toBeInTheDocument();
-    expect(screen.getByText('We invited 2 teammates.')).toBeInTheDocument();
-    expect(screen.queryByText(/@stark\.com/)).not.toBeInTheDocument();
+    expect(sendInvitations).toHaveBeenCalledWith([
+      'pepper@stark.com',
+      'happy@stark.com',
+    ]);
+    const heading = await screen.findByRole('heading', { name: 'Invitations' });
+    expect(heading).toHaveFocus();
+    expect(screen.getByText('Invitation sent')).toBeInTheDocument();
+    expect(
+      screen.getByText('is already in this Workspace'),
+    ).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('goes Home on Continue once the Invitations are sent', async () => {
+    const user = userEvent.setup();
+    render(<InviteTeammatesForm />);
+    await user.type(emailField(1), 'pepper@stark.com');
+    await user.click(button('Send invites & Done'));
+
+    await user.click(await screen.findByRole('button', { name: 'Continue' }));
+
     expect(push).toHaveBeenCalledWith('/home');
+  });
+
+  it('keeps only the addresses that could not be sent, flagged, so sending again retries just those', async () => {
+    const user = userEvent.setup();
+    apiAnswers({ 'happy@stark.com': 'failed' });
+    render(<InviteTeammatesForm />);
+    await user.type(emailField(1), 'pepper@stark.com');
+    await user.click(button('Add another'));
+    await user.type(emailField(2), 'happy@stark.com');
+
+    await user.click(button('Send invites & Done'));
+
+    expect(
+      await screen.findByDisplayValue('happy@stark.com'),
+    ).toBeInTheDocument();
+    expect(emailFields()).toHaveLength(1);
+    expect(emailField(1)).toHaveAccessibleDescription(
+      "Couldn't send. Try again.",
+    );
+    expect(emailField(1)).toHaveFocus();
+
+    apiAnswers();
+    await user.click(button('Send invites & Done'));
+
+    expect(sendInvitations).toHaveBeenLastCalledWith(['happy@stark.com']);
+    expect(
+      await screen.findByRole('heading', { name: 'Invitations' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText('Invitation sent')).toHaveLength(2);
+  });
+
+  it('says why when the whole send is refused', async () => {
+    const user = userEvent.setup();
+    sendInvitations.mockResolvedValue({
+      formError: 'Only the Owner and Admins can invite teammates.',
+    });
+    render(<InviteTeammatesForm />);
+    await user.type(emailField(1), 'pepper@stark.com');
+
+    await user.click(button('Send invites & Done'));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Only the Owner and Admins can invite teammates.',
+    );
+    expect(emailField(1)).toHaveValue('pepper@stark.com');
+  });
+
+  it('stops offering another field at ten, and says more can be invited from Settings', async () => {
+    const user = userEvent.setup();
+    render(<InviteTeammatesForm />);
+
+    for (let added = 1; added < 10; added++) {
+      await user.click(button('Add another'));
+    }
+
+    expect(emailFields()).toHaveLength(10);
+    expect(
+      screen.queryByRole('button', { name: 'Add another' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'You can invite up to 10 now — invite more anytime from Settings.',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('goes Home on Skip & Done', async () => {

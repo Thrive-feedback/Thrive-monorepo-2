@@ -5,8 +5,10 @@ import {
   CONFIGURATION,
   type Configuration,
   DatabaseConfig,
+  EmailConfig,
   HttpConfig,
   loadConfiguration,
+  WebConfig,
 } from './configuration';
 
 /**
@@ -33,7 +35,17 @@ import {
       useFactory: (config: Configuration) => config.auth,
       inject: [CONFIGURATION],
     },
+    {
+      provide: EmailConfig,
+      useFactory: (config: Configuration) => config.email,
+      inject: [CONFIGURATION],
+    },
+    {
+      provide: WebConfig,
+      useFactory: (config: Configuration) => config.web,
+      inject: [CONFIGURATION],
+    },
   ],
-  exports: [HttpConfig, DatabaseConfig, AuthConfig],
+  exports: [HttpConfig, DatabaseConfig, AuthConfig, EmailConfig, WebConfig],
 })
 export class ConfigModule {}

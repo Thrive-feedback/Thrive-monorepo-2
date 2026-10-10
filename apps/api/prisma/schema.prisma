@@ -144,7 +144,9 @@ model Member {
   @@map("member")
 }
 
-/// Required by the plugin; no route writes it yet. Invitations arrive with their own card.
+/// An offer to join a Workspace, written by the plugin's `createInvitation`. `status` is the
+/// plugin's lowercase name (`pending`, `accepted`, `canceled`, `rejected`); `role` is always
+/// `member` until Roles can be chosen when inviting.
 model Invitation {
   id          String    @id
   workspaceId String

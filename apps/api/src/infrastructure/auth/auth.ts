@@ -16,6 +16,9 @@ const SESSION_IDLE_LIMIT_SECONDS = 7 * 24 * 60 * 60;
 /** How often, at most, a session in use is pushed forward. */
 const SESSION_REFRESH_INTERVAL_SECONDS = 24 * 60 * 60;
 
+/** An Invitation can be accepted for this long after it is sent (glossary: Invitation). */
+const INVITATION_LIFETIME_SECONDS = 7 * 24 * 60 * 60;
+
 /** Drops the ID token before an account row is written; nothing reads it afterwards. */
 function withoutIdToken<T extends { idToken?: string | null }>(account: T): T {
   return { ...account, idToken: null };
@@ -90,6 +93,9 @@ function authOptions(
         organizationLimit: 1,
         creatorRole: 'owner',
         disableOrganizationDeletion: true,
+        invitationExpiresIn: INVITATION_LIFETIME_SECONDS,
+        // No `sendInvitationEmail`: the Workspace module's use case sends the Invitation
+        // email itself, because the inviter's name comes from their Profile in Identity.
         schema: {
           organization: {
             modelName: 'workspace',

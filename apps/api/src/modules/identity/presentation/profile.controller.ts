@@ -17,7 +17,7 @@ import {
 } from './dto/create-profile.dto';
 
 /** The caller's own Profile. Its slug is made from their email; nobody sends one. */
-@ApiTags('profiles')
+@ApiTags('identity')
 @Controller({ path: 'v1/profiles' })
 export class ProfileController {
   constructor(private readonly createProfileUseCase: CreateProfileUseCase) {}

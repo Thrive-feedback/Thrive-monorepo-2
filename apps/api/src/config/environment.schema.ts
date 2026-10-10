@@ -61,6 +61,11 @@ export const environmentSchema = z.object({
 
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
+
+  // The Gmail account every email is sent as, and the App Password it signs in with
+  // (ADR 0036). Required everywhere: the API always sends real email.
+  GMAIL_SMTP_USER: z.email(),
+  GMAIL_SMTP_APP_PASSWORD: z.string().min(1),
 });
 
 export type Environment = z.infer<typeof environmentSchema>;

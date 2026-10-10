@@ -124,6 +124,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Members of a Workspace and their Roles */
+        get: operations["WorkspaceMemberController_listWorkspaceMembers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Invitations of a Workspace still waiting on someone, pending or expired */
+        get: operations["InvitationController_listWorkspaceInvitations"];
+        put?: never;
+        /** Invite several people to a Workspace by email, at most 10 at a time */
+        post: operations["InvitationController_sendInvitations"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -174,11 +209,58 @@ export interface components {
                     name: string;
                 };
                 /** @enum {string} */
-                role: "OWNER";
+                role: "OWNER" | "ADMIN" | "MEMBER";
             }[];
             total: number;
             page: number;
             pageSize: number;
+        };
+        ListWorkspaceMembersResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                accountId: string;
+                email: string;
+                fullName: string | null;
+                /** @enum {string} */
+                role: "OWNER" | "ADMIN" | "MEMBER";
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        ListWorkspaceInvitationsResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                invitationId: string;
+                email: string;
+                /** @enum {string} */
+                role: "OWNER" | "ADMIN" | "MEMBER";
+                /** @enum {string} */
+                status: "PENDING" | "EXPIRED";
+                /** Format: date-time */
+                expiresAt: string;
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        SendInvitationsRequestDto: {
+            emails: string[];
+        };
+        SendInvitationsResponseDto_Output: {
+            results: ({
+                email: string;
+                /** @enum {string} */
+                outcome: "invited";
+                /** Format: uuid */
+                invitationId: string;
+                /** Format: date-time */
+                expiresAt: string;
+            } | {
+                email: string;
+                /** @enum {string} */
+                outcome: "already_member" | "already_invited" | "failed";
+            })[];
         };
     };
     responses: never;
@@ -408,6 +490,151 @@ export interface operations {
             };
             /** @description NOT_SIGNED_IN */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceMemberController_listWorkspaceMembers: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListWorkspaceMembersResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InvitationController_listWorkspaceInvitations: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListWorkspaceInvitationsResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_ALLOWED_TO_SEE_INVITATIONS */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InvitationController_sendInvitations: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendInvitationsRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendInvitationsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, NO_ADDRESSES_TO_INVITE or TOO_MANY_INVITATIONS */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_ALLOWED_TO_INVITE */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

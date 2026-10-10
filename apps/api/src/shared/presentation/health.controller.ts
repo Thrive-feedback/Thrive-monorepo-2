@@ -10,7 +10,7 @@ import { HealthResponseDto } from './dto/health.dto';
  * platform's probe is not part of the contract the web app consumes.
  */
 @Public()
-@ApiTags('health')
+@ApiTags('app')
 @Controller({ path: 'health' })
 export class HealthController {
   @Get()
