@@ -39,9 +39,9 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: thrive-feedback
   WEB_URL: https://thrive-web-production.up.railway.app
-  # An account-scoped token has no project of its own, so every Railway command names the
-  # project and environment it means. A project id identifies, it does not authorise — the
-  # token in the secret store is what does that.
+  # A workspace token has no project of its own, so every Railway command names the project
+  # and environment it means. A project id identifies, it does not authorise — the token in
+  # the secret store is what does that.
   RAILWAY_PROJECT_ID: 834caa14-3edb-4e9d-b683-ba9defe6ef06
   RAILWAY_ENVIRONMENT_NAME: production
   # The web app reaches the API over the project's private network. Written into the web
@@ -139,7 +139,11 @@ jobs:
       name: production
       url: https://thrive-web-production.up.railway.app
     env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      # A workspace token, not a project token: changing a service's source is a
+      # management action, which a project token may not make. The CLI reads account- and
+      # workspace-scoped tokens from RAILWAY_API_TOKEN and project tokens from
+      # RAILWAY_TOKEN, so the name of this variable is what selects which kind is in use.
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
       COMMIT: ${{ needs.resolve.outputs.sha }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
