@@ -1,17 +1,18 @@
-# What reaches production, and the only thing that does. Railway's own GitHub integration
-# is deliberately disconnected: a deploy triggered by a push would skip the migration gate
-# below, and the step that decides whether the schema is ready would live in a dashboard
-# instead of in this file.
+# What reaches production, and the only thing that does.
 #
-# Merging and releasing are separate decisions, so a merge does not deploy by itself. There
-# are two ways to start one, and both end up here:
+# The images are built here and pushed to the registry tagged with the commit they were
+# built from; Railway is then pointed at that tag and pulls it. Railway builds nothing, so
+# none of what gets deployed depends on a platform setting that only exists in a dashboard
+# (ADR 0034, replacing the upload-and-let-Railway-build approach of ADR 0033).
+#
+# Two ways to start one, and both end up here:
 #
 #   - By hand: Actions -> Deploy -> Run workflow, on main.
-#   - On merge, if the pull request carries the `deploy` label. The label is added by whoever
-#     wants their change to go straight out, and its absence is the default.
+#   - On merge, if the pull request carries the `deploy` label.
 #
-# Either way it deploys main as it stands when the job starts, which is not necessarily the
-# commit whose pull request triggered it — someone else's merge can ride along.
+# Either way it deploys main as it stands when the run starts, which is not necessarily the
+# commit whose pull request triggered it — someone else's merge can ride along. The commit
+# actually deployed is resolved once, in the first job, and every later job uses it.
 name: Deploy
 
 on:
@@ -24,7 +25,6 @@ on:
   pull_request:
     types: [closed]
 
-# Reads the code and nothing else. The one credential it holds is a repository secret.
 permissions:
   contents: read
 
@@ -35,26 +35,31 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: thrive-feedback
+  WEB_URL: https://thrive-web-production.up.railway.app
+  # The web app reaches the API over the project's private network. Written into the web
+  # image at build time, because the callback rewrite is part of the build.
+  API_BASE_URL: http://thrive-api.railway.internal:3000
+
 jobs:
-  deploy:
-    name: Production
+  # Which commit is going out. Resolved once so the tag that is built, the tag that is
+  # deployed and the commit in the run's log can never be three different things: on a
+  # pull_request event `github.sha` is the event's own merge commit, which is not what
+  # main points at after a rebase merge (ADR 0018).
+  resolve:
+    name: Resolve the commit
     # A closed pull request is not a merged one, and a merged one deploys only when it was
-    # labelled for it. Everything else that reaches this workflow stops here, without a
-    # failed run to explain away.
+    # labelled for it. Everything else stops here, without a failed run to explain away.
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.pull_request.merged == true &&
        contains(github.event.pull_request.labels.*.name, 'deploy'))
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    environment:
-      name: production
-      url: https://thrive-web-production.up.railway.app
-    env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      API_SERVICE: thrive-api
-      WEB_SERVICE: thrive-web
-      WEB_URL: https://thrive-web-production.up.railway.app
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
     steps:
       # A manual run takes its branch from the dialog, and a labelled pull request could
       # have targeted anything. Only main has been through the merge gate.
@@ -67,20 +72,74 @@ jobs:
           echo "::error::Manual ref: ${{ github.ref }}; pull request base: ${{ github.event.pull_request.base.ref }}"
           exit 1
 
-      - name: Record why
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Started by hand — ${{ inputs.reason || 'no reason given' }}"
-          else
-            echo "Started by the 'deploy' label on #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}"
-          fi
-
-      # Always main, never the pull request's own head: branches land on main by rebase
-      # (ADR 0018), so the commits that exist after a merge are not the ones the pull
-      # request event carries.
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
         with:
           ref: main
+
+      - name: Read the commit and say why
+        id: commit
+        run: |
+          sha=$(git rev-parse HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Deploying $sha, started by hand — ${{ inputs.reason || 'no reason given' }}"
+          else
+            echo "Deploying $sha, started by the 'deploy' label on #${{ github.event.pull_request.number }}"
+          fi
+
+  # One image per deployable, each tagged with the commit it was built from and nothing
+  # else: `latest` is never a deployment target (INFRA_10 R1, R8).
+  images:
+    name: Build ${{ matrix.app }}
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        app: [api, web]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+
+      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/thrive-${{ matrix.app }}:sha-${{ needs.resolve.outputs.sha }}
+          # Only the web image reads it; the API's Dockerfile declares no such argument and
+          # ignores it.
+          build-args: API_BASE_URL=${{ env.API_BASE_URL }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+
+  deploy:
+    name: Production
+    needs: [resolve, images]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: https://thrive-web-production.up.railway.app
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      COMMIT: ${{ needs.resolve.outputs.sha }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.0.2
         with:
           bun-version-file: package.json
@@ -94,21 +153,28 @@ jobs:
         run: bun add --global @railway/cli@5.64.2
 
       # The gate. `railway run` injects the API service's own variables, so the connection
-      # string stays in Railway's store and never becomes a repository secret. A failure
-      # here stops the job with the old code still serving the old schema.
+      # string stays in Railway's store and never becomes a repository secret.
       #
       # Migrations are forward-only: every one must be readable by the code already
       # running, because a rollback returns the code and never the schema.
       - name: Migrate the database
-        run: railway run --service "$API_SERVICE" -- bun run --cwd apps/api db:migrate:deploy
+        run: railway run --service thrive-api -- bun run --cwd apps/api db:migrate:deploy
 
-      # The API first: the web app calls it, so the dependency deploys before its caller.
-      # `--ci` waits for the deployment and fails the step if the health check never passes.
+      # The API first: the web app calls it, so the dependency moves before its caller.
+      # Pointing a service at a new tag is what starts its deployment.
       - name: Deploy the API
-        run: railway up --service "$API_SERVICE" --ci
+        run: |
+          railway service source connect \
+            --image "$REGISTRY/$IMAGE_NAMESPACE/thrive-api:sha-$COMMIT" \
+            --service thrive-api
+          scripts/await-railway-deployment.sh thrive-api
 
       - name: Deploy the web app
-        run: railway up --service "$WEB_SERVICE" --ci
+        run: |
+          railway service source connect \
+            --image "$REGISTRY/$IMAGE_NAMESPACE/thrive-web:sha-$COMMIT" \
+            --service thrive-web
+          scripts/await-railway-deployment.sh thrive-web
 
       # The health checks above prove each container started. This proves the public
       # address actually answers, which is the part a person would notice.
@@ -126,11 +192,12 @@ jobs:
           echo "::error::$WEB_URL never answered 200"
           exit 1
 
-      # Rollback is a human step for now: the CLI can redeploy a service but cannot name a
-      # previous deployment, so choosing which one to return to is done in the dashboard.
+      # Every image ever deployed is still in the registry under its own commit, so a
+      # rollback is this same command with an older tag.
       - name: Say how to roll back
         if: failure()
         run: |
-          echo "::error::Deploy failed. Roll back in Railway: project thrive-prod -> the"
-          echo "::error::failing service -> Deployments -> the last green one -> Redeploy."
+          echo "::error::Deploy of $COMMIT failed."
+          echo "::error::Roll back by running this workflow from the last good commit, or:"
+          echo "::error::  railway service source connect --image $REGISTRY/$IMAGE_NAMESPACE/thrive-api:sha-<older> --service thrive-api"
           echo "::error::The schema is NOT rolled back. Check whether the migration applied."
