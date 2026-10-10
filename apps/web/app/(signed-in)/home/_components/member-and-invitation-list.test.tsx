@@ -8,6 +8,13 @@ vi.mock('@/app/(signed-in)/home/_lib/members-and-invitations.service', () => ({
     readMembersAndInvitations(...args),
 }));
 
+vi.mock('@/app/(signed-in)/home/_lib/invitation-actions.service', () => ({
+  revokeInvitation: vi.fn(),
+}));
+
+const CAT_INVITATION = '0199a0f0-0000-7000-8000-000000000003';
+const DAN_INVITATION = '0199a0f0-0000-7000-8000-000000000004';
+
 const MEMBERSHIP = {
   workspace: { id: 'w-1', name: 'Acme Corp' },
   role: 'OWNER',
@@ -41,20 +48,65 @@ describe('MemberAndInvitationList', () => {
         name: 'Ben Hall',
         role: 'ADMIN',
         status: 'JOINED',
+        invitationId: null,
       },
-      { email: 'cat@acme.test', name: null, role: 'MEMBER', status: 'PENDING' },
-      { email: 'dan@acme.test', name: null, role: 'MEMBER', status: 'EXPIRED' },
+      {
+        email: 'cat@acme.test',
+        name: null,
+        role: 'MEMBER',
+        status: 'PENDING',
+        invitationId: CAT_INVITATION,
+      },
+      {
+        email: 'dan@acme.test',
+        name: null,
+        role: 'MEMBER',
+        status: 'EXPIRED',
+        invitationId: DAN_INVITATION,
+      },
     ]);
 
     await renderList();
 
     expect(
-      screen.getAllByRole('listitem').map((item) => item.textContent),
+      screen
+        .getAllByRole('listitem')
+        .map((item) => item.firstElementChild?.textContent),
     ).toEqual([
       'ben@acme.test | Ben Hall : Admin : Joined',
       'cat@acme.test | — : Member : Pending',
       'dan@acme.test | — : Member : Expired',
     ]);
+  });
+
+  it('offers to revoke each Invitation, and nothing for a Member', async () => {
+    readMembersAndInvitations.mockResolvedValue([
+      {
+        email: 'ben@acme.test',
+        name: 'Ben Hall',
+        role: 'ADMIN',
+        status: 'JOINED',
+        invitationId: null,
+      },
+      {
+        email: 'cat@acme.test',
+        name: null,
+        role: 'MEMBER',
+        status: 'PENDING',
+        invitationId: CAT_INVITATION,
+      },
+    ]);
+
+    await renderList();
+
+    expect(
+      screen.getAllByRole('button').map((button) => button.textContent),
+    ).toEqual(['Revoke']);
+    expect(
+      screen.getByRole('button', {
+        name: 'Revoke invitation to cat@acme.test',
+      }),
+    ).toBeInTheDocument();
   });
 
   it('says so when there is nobody else yet', async () => {
