@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   type CurrentSession,
   type GoogleSignIn,
+  type GoogleSignInRequest,
   IdentityPort,
   type RefreshedSession,
   type SignedOut,
@@ -16,6 +17,14 @@ import {
 const AFTER_SIGN_IN = '/home?signedIn=1';
 const AFTER_FIRST_SIGN_IN = '/register/introduce-yourself?signedIn=1';
 const AFTER_FAILED_SIGN_IN = '/signin';
+
+/**
+ * Back to the Invitation, whether or not the Account is new: accepting comes before
+ * introducing yourself, and the Invitation page sends a new Account on to that step.
+ */
+function afterSignInToAccept(invitationId: string): string {
+  return `/invitations/${encodeURIComponent(invitationId)}?signedIn=1`;
+}
 
 function requestHeaders(credential: string): Headers {
   return new Headers(credential ? { cookie: credential } : {});
@@ -58,12 +67,16 @@ export class BetterAuthIdentityAdapter extends IdentityPort {
     return { sessionCookies: headers.getSetCookie() };
   }
 
-  async startGoogleSignIn(): Promise<GoogleSignIn> {
+  async startGoogleSignIn(request: GoogleSignInRequest): Promise<GoogleSignIn> {
+    const afterInvitation =
+      request.invitationId === null
+        ? null
+        : afterSignInToAccept(request.invitationId);
     const { headers, response } = await this.auth.api.signInSocial({
       body: {
         provider: 'google',
-        callbackURL: AFTER_SIGN_IN,
-        newUserCallbackURL: AFTER_FIRST_SIGN_IN,
+        callbackURL: afterInvitation ?? AFTER_SIGN_IN,
+        newUserCallbackURL: afterInvitation ?? AFTER_FIRST_SIGN_IN,
         errorCallbackURL: AFTER_FAILED_SIGN_IN,
         // The web server, not the browser, receives this answer, so it gets the URL to
         // redirect to rather than a redirect it would have to follow.

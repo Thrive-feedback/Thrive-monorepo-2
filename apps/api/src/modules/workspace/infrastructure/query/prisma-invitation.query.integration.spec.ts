@@ -62,3 +62,63 @@ describe('reading the open Invitations of a Workspace', () => {
     ]);
   });
 });
+
+describe('reading one Invitation by its id', () => {
+  it('answers each stored status as Thrive names it, with its Workspace and inviter', async () => {
+    const owner = await fixtures.aSignedInAccount('invitation-by-id');
+    const workspaceId = await fixtures.aWorkspace(owner, 'Acme');
+    const now = new Date();
+    const anInvitation = async (status: string, expiresInMs: number) => {
+      const id = uuidv7();
+      await prismaService.invitation.create({
+        data: {
+          id,
+          workspaceId,
+          email: `${status}@acme.test`,
+          role: 'member',
+          status,
+          expiresAt: new Date(now.getTime() + expiresInMs),
+          inviterId: owner.accountId,
+        },
+      });
+      return (await invitationQuery.invitationById(id, now))?.status;
+    };
+
+    expect(await anInvitation('pending', 7 * DAY_MS)).toBe('PENDING');
+    expect(await anInvitation('pending', -DAY_MS)).toBe('EXPIRED');
+    expect(await anInvitation('accepted', 7 * DAY_MS)).toBe('ACCEPTED');
+    expect(await anInvitation('canceled', 7 * DAY_MS)).toBe('REVOKED');
+    expect(await anInvitation('rejected', 7 * DAY_MS)).toBe('REVOKED');
+  });
+
+  it('answers the Workspace, the inviter and the address it was sent to', async () => {
+    const owner = await fixtures.aSignedInAccount('invitation-detail');
+    const workspaceId = await fixtures.aWorkspace(owner, 'Acme');
+    const id = uuidv7();
+    await prismaService.invitation.create({
+      data: {
+        id,
+        workspaceId,
+        email: 'somchai@acme.test',
+        role: 'member',
+        status: 'pending',
+        expiresAt: new Date(Date.now() + 7 * DAY_MS),
+        inviterId: owner.accountId,
+      },
+    });
+
+    expect(await invitationQuery.invitationById(id, new Date())).toEqual({
+      invitationId: id,
+      workspace: { id: workspaceId, name: 'Acme' },
+      inviterAccountId: owner.accountId,
+      email: 'somchai@acme.test',
+      status: 'PENDING',
+    });
+  });
+
+  it('answers null for an id no Invitation has', async () => {
+    expect(
+      await invitationQuery.invitationById(uuidv7(), new Date()),
+    ).toBeNull();
+  });
+});

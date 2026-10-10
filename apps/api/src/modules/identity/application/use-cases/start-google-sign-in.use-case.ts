@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { type GoogleSignIn, IdentityPort } from '../port/identity.port';
+import {
+  type GoogleSignIn,
+  type GoogleSignInRequest,
+  IdentityPort,
+} from '../port/identity.port';
 
 /**
  * A command: it records a sign-in attempt, so the callback can later prove it belongs to
@@ -9,7 +13,7 @@ import { type GoogleSignIn, IdentityPort } from '../port/identity.port';
 export class StartGoogleSignInUseCase {
   constructor(private readonly identityPort: IdentityPort) {}
 
-  execute(): Promise<GoogleSignIn> {
-    return this.identityPort.startGoogleSignIn();
+  execute(input: GoogleSignInRequest): Promise<GoogleSignIn> {
+    return this.identityPort.startGoogleSignIn(input);
   }
 }

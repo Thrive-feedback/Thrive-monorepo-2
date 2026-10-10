@@ -1,6 +1,7 @@
 import {
   type CurrentSession,
   type GoogleSignIn,
+  type GoogleSignInRequest,
   IdentityPort,
   type SessionCookies,
 } from '@app/modules/identity/application/port/identity.port';
@@ -23,8 +24,11 @@ import { ProfileSlug } from '@app/modules/identity/domain/value-object/profile-s
  * the port rather than how.
  */
 export class FakeIdentityPort extends IdentityPort {
-  readonly calls: { readonly method: string; readonly credential?: string }[] =
-    [];
+  readonly calls: {
+    readonly method: string;
+    readonly credential?: string;
+    readonly invitationId?: string | null;
+  }[] = [];
 
   session: CurrentSession = { account: null, needsRefresh: false };
   googleSignIn: GoogleSignIn = {
@@ -44,8 +48,11 @@ export class FakeIdentityPort extends IdentityPort {
     return { sessionCookies: this.refreshCookies };
   }
 
-  async startGoogleSignIn(): Promise<GoogleSignIn> {
-    this.calls.push({ method: 'startGoogleSignIn' });
+  async startGoogleSignIn(request: GoogleSignInRequest): Promise<GoogleSignIn> {
+    this.calls.push({
+      method: 'startGoogleSignIn',
+      invitationId: request.invitationId,
+    });
     return this.googleSignIn;
   }
 

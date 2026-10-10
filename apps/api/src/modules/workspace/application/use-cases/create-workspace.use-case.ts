@@ -38,7 +38,8 @@ export class CreateWorkspaceUseCase {
 
     // Serialized per Account: the store checks the one-Workspace limit before it writes, so
     // two tabs creating at once would both pass it. The second waits here until the first
-    // has stored its Workspace, and is then refused by that limit.
+    // has stored its Workspace, and is then refused by that limit. Accepting an Invitation
+    // takes the same key, because it joins a Workspace under the same limit.
     return this.unitOfWork.run(
       async () => {
         const founded = await this.workspaceFounding.found({
@@ -48,7 +49,7 @@ export class CreateWorkspaceUseCase {
         });
         return { id: founded.workspaceId };
       },
-      { serializeOn: `workspace-founder:${input.accountId}` },
+      { serializeOn: `account-workspace:${input.accountId}` },
     );
   }
 }
