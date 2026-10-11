@@ -17,7 +17,7 @@ export interface FeedbackRequestRow {
 export abstract class FeedbackRequestQuery {
   /**
    * One request of one Workspace with its Asks, or `null`. The Workspace is a required
-   * argument, so a read scoped to nothing cannot be written (`BE_21` R4).
+   * argument, so a read scoped to nothing cannot be written.
    */
   abstract requestInWorkspace(
     workspaceId: string,

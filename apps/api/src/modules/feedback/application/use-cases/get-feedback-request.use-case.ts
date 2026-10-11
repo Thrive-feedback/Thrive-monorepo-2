@@ -7,7 +7,7 @@ import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port'
 import type { FeedbackRequestView } from '../types/feedback-request.types';
 
 export interface GetFeedbackRequestInput {
-  /** The Workspace the caller is a Member of, resolved before this runs (`BE_21` R3). */
+  /** The Workspace the caller is a Member of, resolved before this runs. */
   readonly workspaceId: string;
   readonly requestId: string;
 }

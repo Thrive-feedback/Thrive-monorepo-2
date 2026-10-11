@@ -28,7 +28,7 @@ export interface GiverToAsk {
  * been asked" is a rule about the request rather than about one Ask.
  *
  * The Workspace and the people are held as ids with no reference into Workspace's tables:
- * Feedback owns neither and never joins across the boundary (`BE_03` R7).
+ * Feedback owns neither, and a module never joins or migrates across another's tables.
  */
 export class FeedbackRequest {
   private constructor(
@@ -85,10 +85,9 @@ export class FeedbackRequest {
    * Rebuilds a stored request with its Asks.
    *
    * Deliberately does not re-check what `send` checked. A stored row was valid when it was
-   * written, and the rules it was written under will change — #30 raises the number of Givers,
-   * #83 the Visibility — so a load that enforced today's rules would refuse to read yesterday's
-   * rows, which is the failure `BE_15` R5 is about. The checks live where the aggregate is
-   * created, and the store holds the one invariant it can: a unique index on
+   * written, and the rules will change — more Givers per request, a chosen Visibility — so a
+   * load enforcing today's rules would refuse to read yesterday's rows. The checks stay where
+   * the aggregate is created, and the store holds the one invariant it can: a unique index on
    * `(feedbackRequestId, giverAccountId)`.
    */
   static restore(snapshot: FeedbackRequestSnapshot): FeedbackRequest {

@@ -9,7 +9,7 @@ import { Visibility } from '../../domain/value-object/visibility.vo';
 import { GiverNotInWorkspaceError } from '../feedback-request.errors';
 
 export interface SendFeedbackRequestInput {
-  /** The Workspace the caller is a Member of, resolved before this runs (`BE_21` R3). */
+  /** The Workspace the caller is a Member of, resolved before this runs. */
   readonly workspaceId: string;
   readonly requesterAccountId: string;
   readonly topic: string;

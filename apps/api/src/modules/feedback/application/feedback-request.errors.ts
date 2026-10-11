@@ -28,10 +28,8 @@ export class FeedbackRequestNotFoundError extends ApplicationError {
 
 /**
  * The caller is not a Member of the Workspace in the path — the same answer Workspace gives,
- * under the same code, so the two are indistinguishable to a caller.
- *
- * Declared here rather than imported: Workspace publishes the membership fact, not its
- * presentation layer, and `BE_02` R2 keeps a guard out of another module's reach.
+ * under the same code, so the two are indistinguishable to a caller. Declared here rather than
+ * imported: Workspace publishes whether somebody is a Member, not the code that refuses them.
  */
 export class WorkspaceNotFoundError extends ApplicationError {
   readonly code = 'WORKSPACE_NOT_FOUND';
