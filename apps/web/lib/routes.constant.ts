@@ -9,7 +9,6 @@ export const ROUTES = {
   signIn: '/signin',
   home: '/home',
   feedback: {
-    request: '/feedback/request',
     requestById: (requestId: string) => `/feedback/requests/${requestId}`,
   },
   invitation: (invitationId: string) => `/invitations/${invitationId}`,

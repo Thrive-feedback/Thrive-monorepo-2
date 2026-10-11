@@ -43,6 +43,8 @@ one free-text box — and the Requester chooses Visibility when sending, which i
 | D7 | No `expiresAt` on an Ask yet | Add a nullable column now | #38/#39 own expiry and will bring their own migration (`BE_15` R4/R8). `PROJECT.md` §2: solve today's problem |
 | D8 | Two pull requests, API first | One PR | `GEN_08` R8 — ship the contract change before the change that consumes it |
 
+> **Superseded, 2026-10-11:** D1 and D2 no longer hold. The form now lives on `/home`, `/feedback/request` and the navbar link are gone, and "Ask someone else" on the confirmation goes to `/home`. The routes below now sit in nested groups: the form's files under `app/(signed-in)/(side-nav)/home/`, the confirmation under `app/(signed-in)/(top-nav)/feedback/requests/[requestId]/`.
+
 ## 3. Domain model
 
 Glossary rows this uses verbatim (`GEN_14`): **Feedback Request** (`FeedbackRequest`),
