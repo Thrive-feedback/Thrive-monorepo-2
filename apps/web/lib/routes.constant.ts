@@ -8,6 +8,10 @@ export const ROUTES = {
   landing: '/',
   signIn: '/signin',
   home: '/home',
+  feedback: {
+    request: '/feedback/request',
+    requestById: (requestId: string) => `/feedback/requests/${requestId}`,
+  },
   register: {
     introduceYourself: '/register/introduce-yourself',
     createWorkspace: '/register/create-workspace',
