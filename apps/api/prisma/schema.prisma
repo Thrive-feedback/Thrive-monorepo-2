@@ -163,3 +163,54 @@ model Invitation {
   @@index([email])
   @@map("invitation")
 }
+
+// Feedback's tables. The Workspace and the people are held as ids with no foreign key into
+// Workspace's or Identity's tables: Feedback owns neither, and never joins, transacts or
+// migrates across another module's tables (BE_03 R7). The cost is that a deleted Account
+// leaves its id behind on an Ask, which the read resolves to no name.
+
+enum Visibility {
+  ONLY_ME
+  SELECTED_PEOPLE
+  EVERYONE
+}
+
+enum AskStatus {
+  PENDING
+  ANSWERED
+  EXPIRED
+}
+
+/// A Member asking other Members for Feedback on a Topic (glossary: Feedback Request).
+model FeedbackRequest {
+  id                 String        @id
+  workspaceId        String
+  /// The Account of the Member who asked. They become the Receiver of what it collects.
+  requesterAccountId String
+  topic              String
+  /// Interim: every request is ONLY_ME until #83 lets the Requester choose.
+  visibility         Visibility    @default(ONLY_ME)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  asks               FeedbackAsk[]
+
+  @@index([workspaceId, requesterAccountId])
+  @@map("feedback_request")
+}
+
+/// One Member being asked, inside a Feedback Request (glossary: Ask).
+model FeedbackAsk {
+  id                String          @id
+  feedbackRequestId String
+  feedbackRequest   FeedbackRequest @relation(fields: [feedbackRequestId], references: [id], onDelete: Cascade)
+  /// The Account of the Member asked to write the Feedback.
+  giverAccountId    String
+  status            AskStatus       @default(PENDING)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([feedbackRequestId, giverAccountId])
+  /// For "the Asks waiting for me" (#18), the one read that has no request id.
+  @@index([giverAccountId, status])
+  @@map("feedback_ask")
+}

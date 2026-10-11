@@ -3,6 +3,7 @@ import { DatabaseModule } from '@app/infrastructure/database/database.module';
 import { EmailModule } from '@app/infrastructure/email/email.module';
 import { IdentityModule } from '@app/modules/identity';
 import { Module } from '@nestjs/common';
+import { WorkspaceMembershipAdapter } from './application/adapter/workspace-membership.adapter';
 import { WorkspaceFounding } from './application/port/workspace-founding.port';
 import { WorkspaceInviting } from './application/port/workspace-inviting.port';
 import { InvitationQuery } from './application/query-port/invitation.query-port';
@@ -13,6 +14,7 @@ import { ListWorkspaceInvitationsUseCase } from './application/use-cases/list-wo
 import { ListWorkspaceMembersUseCase } from './application/use-cases/list-workspace-members.use-case';
 import { ResolveMembershipUseCase } from './application/use-cases/resolve-membership.use-case';
 import { SendInvitationsUseCase } from './application/use-cases/send-invitations.use-case';
+import { WorkspaceMembershipPort } from './domain/port/workspace-membership.port';
 import { BetterAuthWorkspaceFoundingAdapter } from './infrastructure/adapter/better-auth-workspace-founding.adapter';
 import { BetterAuthWorkspaceInvitingAdapter } from './infrastructure/adapter/better-auth-workspace-inviting.adapter';
 import { PrismaInvitationQuery } from './infrastructure/query/prisma-invitation.query';
@@ -47,6 +49,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
       useClass: BetterAuthWorkspaceInvitingAdapter,
     },
     { provide: MembershipQuery, useClass: PrismaMembershipQuery },
+    { provide: WorkspaceMembershipPort, useClass: WorkspaceMembershipAdapter },
     { provide: InvitationQuery, useClass: PrismaInvitationQuery },
     CreateWorkspaceUseCase,
     ListMyMembershipsUseCase,
@@ -56,5 +59,8 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ListWorkspaceInvitationsUseCase,
     WorkspaceMemberGuard,
   ],
+  // Published so a module acting inside a Workspace can ask whether an Account is a Member
+  // of it, without reaching into Workspace's own tables (BE_03 R1, R5).
+  exports: [WorkspaceMembershipPort],
 })
 export class WorkspaceModule {}
