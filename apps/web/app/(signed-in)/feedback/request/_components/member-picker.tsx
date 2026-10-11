@@ -20,15 +20,12 @@ export type MemberPickerProps = {
 };
 
 /**
- * Who to ask, from the Members of the person's own Workspace. The trigger is named by a Label
- * rather than `aria-label`, so the name is visible as well as announced, and an error takes
- * the helper line and is tied to the trigger — the same contract `TextField` keeps.
+ * Who to ask, from the Members of the person's own Workspace.
  *
- * The chosen value is also submitted as a hidden field: Radix's trigger is a button, so the
- * native `name` on `Select` is what puts the Account id in the form data.
- *
- * `value` is `''` rather than `null` while nobody is chosen, so the control is controlled from
- * its first render — switching between the two makes React warn and lose the value.
+ * `name` on `Select` is what puts the Account id in the form data: the trigger is a button, so
+ * the value reaches a submit through a hidden field rather than the trigger itself. And `value`
+ * is `''` rather than `null` while nobody is chosen, so the control is controlled from its first
+ * render — switching between the two makes React warn and drop the value.
  */
 export function MemberPicker({
   teammates,

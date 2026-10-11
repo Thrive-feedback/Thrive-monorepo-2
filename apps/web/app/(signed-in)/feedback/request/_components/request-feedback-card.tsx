@@ -8,10 +8,7 @@ export type RequestFeedbackCardProps = {
   ownEmail: string;
 };
 
-/**
- * Reads who can be asked on the server, in the component that renders it, and hands the form
- * plain data. The read is what can wait, so the page wraps this in its own Suspense boundary.
- */
+/** Reads who can be asked on the server and hands the form plain data. */
 export async function RequestFeedbackCard({
   membership,
   ownEmail,

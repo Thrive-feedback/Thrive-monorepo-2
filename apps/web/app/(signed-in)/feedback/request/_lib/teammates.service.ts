@@ -11,10 +11,7 @@ const ONE_PAGE = { page: 1, pageSize: 100 };
 /**
  * Everyone in the person's Workspace but themselves, oldest Member first. Not cached: who is
  * in changes the moment someone accepts an Invitation, and one person's teammates must never
- * be served to another.
- *
- * Members are told apart by email rather than by Account id, because the session carries the
- * email and not the id.
+ * be served to another. Themselves is found by email, because that is what the session carries.
  */
 export async function readTeammates(
   membership: CurrentMembership,
