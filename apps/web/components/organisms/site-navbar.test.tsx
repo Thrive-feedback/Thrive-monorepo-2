@@ -27,12 +27,23 @@ describe('SiteNavbar', () => {
     );
   });
 
+  it('offers Request feedback to whoever is signed in', async () => {
+    readSession.mockResolvedValue({ email: 'ann@acme.test', name: 'Ann Lee' });
+
+    render(await SiteNavbar());
+
+    expect(
+      screen.getByRole('link', { name: 'Request feedback' }),
+    ).toHaveAttribute('href', '/feedback/request');
+  });
+
   it('shows only the logo when nobody is signed in', async () => {
     readSession.mockResolvedValue(null);
 
     render(await SiteNavbar());
 
     expect(screen.queryByRole('button', { name: 'Sign out' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Request feedback' })).toBeNull();
     expect(screen.getByRole('link')).toHaveAttribute('href', '/');
   });
 

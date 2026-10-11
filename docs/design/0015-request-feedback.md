@@ -256,8 +256,8 @@ app/(signed-in)/feedback/request/
   _lib/request-feedback-state.type.ts
 app/(signed-in)/feedback/requests/[requestId]/
   page.tsx                                  the confirmation, re-read on every load
-  _components/feedback-request-summary.tsx
-  _lib/feedback-request.service.ts          'server-only'; reads one request
+  _components/feedback-request-summary.tsx  names the Giver, the Topic and the Ask's status
+  _lib/feedback-request.service.ts          'server-only'; reads one request, null for 404
   _lib/request-params.schema.ts             validates the segment (FE_11 R4)
 ```
 
@@ -309,10 +309,19 @@ On success it redirects to `ROUTES.feedback.requestById(id)`. Error codes map to
 
 `'use client'` on `request-feedback-form.tsx` only (`FE_08` R1/R2/R3); the page, the hero and
 the card stay server components. `useActionState` over the server action, as
-`create-workspace-form.tsx` does, with both fields controlled so what was typed survives a
-refusal. `Send` is disabled while either field is empty or while sending, so a double click
-cannot send twice; validation still runs on submit, because a disabled button explains nothing
-(`FE_06`).
+`create-workspace-form.tsx` does, with both fields controlled so what was picked and typed
+survives a refusal.
+
+**Send stays enabled on an empty form**, and is disabled only while sending. The plan had it
+disabled until both fields were filled; that would have met no acceptance criterion, because
+#15 AC 4 wants pressing Send on an empty form to *show an inline error*, and a disabled button
+explains nothing (`FE_06`). Pressing it validates in the browser, puts the message on the field
+and moves focus to the first field in error; the server action checks the same values again,
+because it is a public endpoint whatever the form did first (`FE_09` R5).
+
+The picker's `value` is `''` while nobody is chosen, not `null`: Radix's `Select` warns and
+loses its value when a control switches from uncontrolled to controlled, which `value={x ??
+undefined}` does on the first pick.
 
 Component props (`FE_05` R1/R2/R3/R5):
 
@@ -344,9 +353,10 @@ component.
 (`FE_11` R4), reads the request server-side, and renders "You asked {name} for feedback on
 {topic}" with the Ask's status. A refresh re-reads it, which is #21 AC 2. A request id from
 another Workspace answers `404` from the API, which the page turns into `notFound()` (`FE_11`
-R6). Failures fall to the existing root `apps/web/app/error.tsx` — the repo keeps one error
-boundary there rather than per-route files, and slow reads get an inline `<Suspense>` with a
-`Skeleton`, as `/home` does, rather than a `loading.tsx`.
+R6). No `not-found.tsx` is added, so Next's default 404 renders; failures fall to the existing
+root `apps/web/app/error.tsx` — the repo keeps one error boundary there rather than per-route
+files — and the slow read gets an inline `<Suspense>` with a `Skeleton`, as `/home` does,
+rather than a `loading.tsx`.
 
 ## 7. `todo` convention entries interpreted
 
