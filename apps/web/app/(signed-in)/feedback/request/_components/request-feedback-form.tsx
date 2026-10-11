@@ -22,12 +22,8 @@ const ADD_A_TOPIC = 'Add a Topic.';
 
 /**
  * Send stays enabled on an empty form on purpose: pressing it is how a person finds out what
- * is missing, and a disabled button explains nothing. What is missing is said on the field
- * itself, and focus moves there.
- *
- * The same values are checked again in the server action, which is a public endpoint whatever
- * this form did first. Both fields stay controlled, so what was picked and typed survives a
- * refusal from either.
+ * is missing, and a disabled button explains nothing. Both fields stay controlled, so what was
+ * picked and typed survives a refusal.
  *
  * The form is submitted by hand rather than through `action`, because React resets a form
  * after its action, which would clear the picked teammate from the page but not from state.
