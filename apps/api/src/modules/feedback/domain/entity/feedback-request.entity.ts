@@ -81,7 +81,16 @@ export class FeedbackRequest {
     );
   }
 
-  /** Rebuilds a stored request with its Asks. */
+  /**
+   * Rebuilds a stored request with its Asks.
+   *
+   * Deliberately does not re-check what `send` checked. A stored row was valid when it was
+   * written, and the rules it was written under will change — #30 raises the number of Givers,
+   * #83 the Visibility — so a load that enforced today's rules would refuse to read yesterday's
+   * rows, which is the failure `BE_15` R5 is about. The checks live where the aggregate is
+   * created, and the store holds the one invariant it can: a unique index on
+   * `(feedbackRequestId, giverAccountId)`.
+   */
   static restore(snapshot: FeedbackRequestSnapshot): FeedbackRequest {
     return new FeedbackRequest(
       snapshot.id,
