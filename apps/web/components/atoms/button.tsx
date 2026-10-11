@@ -14,18 +14,18 @@ const buttonVariants = cva(
           'border border-action-primary-border bg-action-primary-surface text-action-primary enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
         secondary:
           'border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface',
-        soft: 'bg-action-primary-surface text-action-primary-fg enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
+        soft: 'bg-action-neutral-surface text-action-primary-fg enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
         ghost:
-          'text-fg-accent enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface',
+          'bg-action-neutral-surface text-fg-accent enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface',
         danger:
           'bg-status-error text-fg-on-error enabled:active:bg-status-error-active enabled:hover:bg-status-error-hover',
         'ghost-danger':
           'text-status-error-fg enabled:active:bg-status-error-surface-hover enabled:hover:bg-status-error-surface',
       },
       size: {
-        sm: 'px-3 py-1.5 text-button-sm leading-5',
-        md: 'px-4 py-2 text-button-sm leading-5',
-        lg: 'px-5.5 py-3 text-button-md leading-5',
+        sm: 'px-3 py-2 text-button-sm leading-5',
+        md: 'px-4 py-2.5 text-button-sm leading-5',
+        lg: 'px-5.5 py-3.5 text-button-md leading-5',
         icon: 'size-9 rounded-full',
       },
     },
@@ -42,6 +42,8 @@ export type ButtonProps = React.ComponentPropsWithRef<'button'> &
   VariantProps<typeof buttonVariants> & {
     loading?: boolean;
     asChild?: boolean;
+    /** An icon before the label, such as a brand's mark. Decorative: the label names the button. */
+    prefixIcon?: React.ReactNode;
   };
 
 /**
@@ -52,13 +54,18 @@ export type ButtonProps = React.ComponentPropsWithRef<'button'> &
  *
  * `asChild` paints its one child as a button instead of rendering a `<button>` — for a link
  * that looks like an action: `<Button asChild><Link href="/x">Go</Link></Button>`. The child
- * keeps its own element and semantics, so `type`, `disabled` and `loading` do not apply.
+ * keeps its own element and semantics, so `type`, `disabled`, `loading` and `prefixIcon` do
+ * not apply.
+ *
+ * `prefixIcon` sits before the label. While loading, the spinner takes its place, so the button
+ * never shows two icons.
  */
 export function Button({
   variant,
   size,
   loading = false,
   asChild = false,
+  prefixIcon,
   disabled,
   className,
   type = 'button',
@@ -86,8 +93,10 @@ export function Button({
       className={cn(buttonVariants({ variant, size }), className)}
       {...rest}
     >
-      {loading && (
+      {loading ? (
         <Loader2Icon aria-hidden="true" className="size-4 animate-spin" />
+      ) : (
+        prefixIcon
       )}
       {children}
     </button>

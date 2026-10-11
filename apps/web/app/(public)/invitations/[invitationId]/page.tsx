@@ -10,6 +10,7 @@ import { InvitationSignIn } from './_components/invitation-sign-in';
 import { readInvitation } from './_lib/invitation.service';
 import { InvitationParams } from './_lib/invitation-params.schema';
 import { InvitationSearchParams } from './_lib/invitation-search-params.schema';
+import { hasJoinIntentFor } from './_lib/join-intent.service';
 
 /** Reached only from an email, and personal to whoever received it. */
 export const metadata: Metadata = {
@@ -25,8 +26,8 @@ type InvitationPageProps = {
 
 /**
  * Where an Invitation's Accept link lands. It says first whether the Invitation still stands;
- * if it does, a signed-out person signs in with Google and comes back here, and a signed-in one
- * joins with one click.
+ * if it does, a signed-out person signs in with Google and comes back here to be joined at once,
+ * and someone who arrives already signed in joins with one click.
  */
 export default async function InvitationPage({
   params,
@@ -38,9 +39,10 @@ export default async function InvitationPage({
   }
   const { invitationId } = parsed.data;
   const { signedIn } = InvitationSearchParams.parse(await searchParams);
-  const [invitation, account] = await Promise.all([
+  const [invitation, account, joinOnArrival] = await Promise.all([
     readInvitation(invitationId),
     readSession(),
+    hasJoinIntentFor(invitationId),
   ]);
   if (!invitation) {
     notFound();
@@ -68,7 +70,11 @@ export default async function InvitationPage({
         />
       )}
       <InvitationHeading invitation={invitation} />
-      <InvitationJoinForm invitation={invitation} email={account.email} />
+      <InvitationJoinForm
+        invitation={invitation}
+        email={account.email}
+        joinOnArrival={joinOnArrival}
+      />
     </div>
   );
 }

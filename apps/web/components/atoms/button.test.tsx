@@ -71,6 +71,26 @@ describe('Button', () => {
     expect(handleClick).not.toHaveBeenCalled();
   });
 
+  it('shows a prefix icon before its label, and the spinner in its place while loading', () => {
+    const icon = <span data-testid="mark" aria-hidden="true" />;
+    const { rerender } = render(
+      <Button prefixIcon={icon}>Continue with Google</Button>,
+    );
+
+    const button = screen.getByRole('button', {
+      name: 'Continue with Google',
+    });
+    expect(button.firstElementChild).toBe(screen.getByTestId('mark'));
+
+    rerender(
+      <Button prefixIcon={icon} loading>
+        Continue with Google
+      </Button>,
+    );
+
+    expect(screen.queryByTestId('mark')).toBeNull();
+  });
+
   it('can paint a link as a button without turning it into one', () => {
     render(
       <Button asChild variant="primary">

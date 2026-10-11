@@ -174,7 +174,9 @@ describe('InviteTeammatesForm', () => {
       'pepper@stark.com',
       'happy@stark.com',
     ]);
-    const heading = await screen.findByRole('heading', { name: 'Invitations' });
+    const heading = await screen.findByRole('heading', {
+      name: 'Invitations status',
+    });
     expect(heading).toHaveFocus();
     expect(screen.getByText('Invitation sent')).toBeInTheDocument();
     expect(
@@ -218,7 +220,7 @@ describe('InviteTeammatesForm', () => {
 
     expect(sendInvitations).toHaveBeenLastCalledWith(['happy@stark.com']);
     expect(
-      await screen.findByRole('heading', { name: 'Invitations' }),
+      await screen.findByRole('heading', { name: 'Invitations status' }),
     ).toBeInTheDocument();
     expect(screen.getAllByText('Invitation sent')).toHaveLength(2);
   });
@@ -251,11 +253,9 @@ describe('InviteTeammatesForm', () => {
     expect(
       screen.queryByRole('button', { name: 'Add another' }),
     ).not.toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'You can invite up to 10 now — invite more anytime from Settings.',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/You can invite up to 10 now/)).toHaveTextContent(
+      /invite more anytime from Settings\./,
+    );
   });
 
   it('goes Home on Skip & Done', async () => {

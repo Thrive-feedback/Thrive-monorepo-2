@@ -8,4 +8,13 @@ describe('Logo', () => {
 
     expect(screen.getAllByRole('img', { name: 'Thrive' })).toHaveLength(1);
   });
+
+  it('takes a size from the caller, keeping its name', () => {
+    render(<Logo className="h-12 w-40" />);
+
+    expect(screen.getByRole('img', { name: 'Thrive' })).toHaveClass(
+      'h-12',
+      'w-40',
+    );
+  });
 });

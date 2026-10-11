@@ -79,6 +79,38 @@ describe('MemberAndInvitationList', () => {
     ]);
   });
 
+  it('colours each status by where it stands', async () => {
+    readMembersAndInvitations.mockResolvedValue([
+      {
+        email: 'ben@acme.test',
+        name: 'Ben Hall',
+        role: 'ADMIN',
+        status: 'JOINED',
+        invitationId: null,
+      },
+      {
+        email: 'cat@acme.test',
+        name: null,
+        role: 'MEMBER',
+        status: 'PENDING',
+        invitationId: CAT_INVITATION,
+      },
+      {
+        email: 'dan@acme.test',
+        name: null,
+        role: 'MEMBER',
+        status: 'EXPIRED',
+        invitationId: DAN_INVITATION,
+      },
+    ]);
+
+    await renderList();
+
+    expect(screen.getByText('Joined')).toHaveClass('text-status-success');
+    expect(screen.getByText('Pending')).toHaveClass('text-status-warning');
+    expect(screen.getByText('Expired')).toHaveClass('text-status-error');
+  });
+
   it('offers to revoke each Invitation, and nothing for a Member', async () => {
     readMembersAndInvitations.mockResolvedValue([
       {

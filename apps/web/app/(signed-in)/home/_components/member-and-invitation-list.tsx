@@ -18,6 +18,17 @@ const STATUS_NAMES: Readonly<Record<MemberOrInvitation['status'], string>> = {
 };
 
 /**
+ * Each status in the colour of where it stands: in, still waiting, or lapsed. The status colour
+ * itself, not its `-fg` role, which is near-black text meant for a status surface. The word
+ * carries the same meaning, so nothing depends on seeing the colour.
+ */
+const STATUS_COLOURS: Readonly<Record<MemberOrInvitation['status'], string>> = {
+  JOINED: 'text-status-success',
+  PENDING: 'text-status-warning',
+  EXPIRED: 'text-status-error',
+};
+
+/**
  * Everyone else in the Workspace, then — for the Owner and Admins — everyone invited and not yet
  * in, one line each: `email | name : role : status`, with `—` where there is no name yet. Each
  * Invitation can be revoked from its line; only those who can revoke are shown Invitations. It
@@ -44,7 +55,9 @@ export async function MemberAndInvitationList({
         >
           <Text as="span" variant="body-2" className="break-all">
             {person.email} | {person.name ?? '—'} : {ROLE_NAMES[person.role]} :{' '}
-            {STATUS_NAMES[person.status]}
+            <span className={STATUS_COLOURS[person.status]}>
+              {STATUS_NAMES[person.status]}
+            </span>
           </Text>
           {person.invitationId !== null && (
             <RevokeInvitationButton

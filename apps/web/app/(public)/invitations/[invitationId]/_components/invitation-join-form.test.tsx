@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AcceptInvitationState } from '../_lib/accept-invitation-state.type';
@@ -8,8 +8,8 @@ import { InvitationJoinForm } from './invitation-join-form';
 const INVITATION: Invitation = {
   invitationId: '0199a0f0-0000-7000-8000-000000000001',
   workspaceName: 'Acme',
-  inviterName: 'Ann Lee',
-  invitedEmailMasked: 's•••@acme.co',
+  inviterName: 'Ann',
+  invitedEmailMasked: 'som•••@acme.co',
   status: 'PENDING',
 };
 
@@ -39,22 +39,34 @@ describe('InvitationJoinForm', () => {
     const user = renderForm();
 
     expect(acceptInvitation).not.toHaveBeenCalled();
-    await user.click(screen.getByRole('button', { name: 'Join Acme' }));
+    await user.click(screen.getByRole('button', { name: 'Join “Acme”' }));
 
     expect(acceptInvitation).toHaveBeenCalledWith(INVITATION.invitationId);
+  });
+
+  it('marks switching account with Google’s logo, which the label already names', () => {
+    renderForm();
+
+    const switchAccount = screen.getByRole('button', {
+      name: 'Use another Google account',
+    });
+    expect(switchAccount.querySelector('img')).toHaveAttribute(
+      'src',
+      expect.stringContaining('google-g.svg'),
+    );
   });
 
   it('tells someone signed in with another address which one the Invitation is for, and offers to switch', async () => {
     acceptInvitation.mockResolvedValue({ refusal: 'notForYou' });
     const user = renderForm();
 
-    await user.click(screen.getByRole('button', { name: 'Join Acme' }));
+    await user.click(screen.getByRole('button', { name: 'Join “Acme”' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      "You're signed in as nok@acme.co, but this invitation was sent to s•••@acme.co. Use the Google account it was sent to.",
+      "You're signed in as nok@acme.co, but this invitation was sent to som•••@acme.co. Use the Google account it was sent to.",
     );
     expect(
-      screen.queryByRole('button', { name: 'Join Acme' }),
+      screen.queryByRole('button', { name: 'Join “Acme”' }),
     ).not.toBeInTheDocument();
     await user.click(
       screen.getByRole('button', { name: 'Use another Google account' }),
@@ -68,7 +80,7 @@ describe('InvitationJoinForm', () => {
     acceptInvitation.mockResolvedValue({ refusal: 'alreadyInAWorkspace' });
     const user = renderForm();
 
-    await user.click(screen.getByRole('button', { name: 'Join Acme' }));
+    await user.click(screen.getByRole('button', { name: 'Join “Acme”' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       "You're already in a Workspace on Thrive, and for now each person can be in only one.",
@@ -79,11 +91,51 @@ describe('InvitationJoinForm', () => {
     acceptInvitation.mockResolvedValue({ refusal: 'failed' });
     const user = renderForm();
 
-    await user.click(screen.getByRole('button', { name: 'Join Acme' }));
+    await user.click(screen.getByRole('button', { name: 'Join “Acme”' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       "We couldn't add you to Acme. Please try again.",
     );
-    expect(screen.getByRole('button', { name: 'Join Acme' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Join “Acme”' })).toBeEnabled();
+  });
+
+  it('joins without a click when the person has just signed in to join', async () => {
+    acceptInvitation.mockResolvedValue({});
+
+    render(
+      <InvitationJoinForm
+        invitation={INVITATION}
+        email="somchai@acme.co"
+        joinOnArrival
+      />,
+    );
+
+    await waitFor(() => {
+      expect(acceptInvitation).toHaveBeenCalledTimes(1);
+    });
+    expect(acceptInvitation).toHaveBeenCalledWith(INVITATION.invitationId);
+  });
+
+  it('shows the wrong-account refusal straight away when joining on arrival is refused', async () => {
+    acceptInvitation.mockResolvedValue({ refusal: 'notForYou' });
+
+    render(
+      <InvitationJoinForm
+        invitation={INVITATION}
+        email="nok@acme.co"
+        joinOnArrival
+      />,
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      "You're signed in as nok@acme.co, but this invitation was sent to som•••@acme.co.",
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Join “Acme”' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Use another Google account' }),
+    ).toBeInTheDocument();
+    expect(acceptInvitation).toHaveBeenCalledTimes(1);
   });
 });

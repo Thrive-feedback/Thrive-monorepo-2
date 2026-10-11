@@ -5,12 +5,12 @@ import { readSession } from '@/lib/session/session.service';
 import { SignInPrompt } from './_components/sign-in-prompt';
 import { SignInSearchParams } from './_lib/sign-in-search-params.schema';
 
-const title = 'Are you ready to Thrive?';
+const title = 'Welcome to Thrive';
 const description = 'Sign in to Thrive with your Google account.';
 
 /**
- * The title is absolute, skipping the layout's "· Thrive" template, so the tab says exactly
- * what the page's heading says.
+ * The title is absolute, skipping the layout's "· Thrive" template, so the tab greets the
+ * visitor as the page's heading does.
  *
  * Indexable on purpose: someone searching for Thrive's login should land here. There is no
  * canonical URL, because it has to be absolute and the app has no production domain yet.

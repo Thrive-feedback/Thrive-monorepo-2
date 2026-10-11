@@ -9,7 +9,7 @@ export function CreateWorkspaceHero() {
       <Text variant="display-5" as="h1" className="md:text-display-3">
         Welcome! Let’s set up your team’s home.
       </Text>
-      <Text variant="body-2" tone="muted">
+      <Text variant="body-1" tone="muted">
         Give your new Workspace a name.
         <br />
         You can invite your team in the next step.

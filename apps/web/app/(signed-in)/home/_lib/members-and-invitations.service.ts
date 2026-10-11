@@ -45,7 +45,7 @@ export async function readMembersAndInvitations(
     .items.filter((member) => member.email !== ownEmail)
     .map((member) => ({
       email: member.email,
-      name: member.fullName,
+      name: member.displayName,
       role: member.role,
       status: 'JOINED',
       invitationId: null,

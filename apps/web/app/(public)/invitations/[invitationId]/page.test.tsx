@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Invitation } from './_lib/invitation.type';
 import InvitationPage from './page';
@@ -8,8 +8,8 @@ const INVITATION_ID = '0199a0f0-0000-7000-8000-000000000001';
 const PENDING: Invitation = {
   invitationId: INVITATION_ID,
   workspaceName: 'Acme',
-  inviterName: 'Ann Lee',
-  invitedEmailMasked: 's•••@acme.co',
+  inviterName: 'Ann',
+  invitedEmailMasked: 'som•••@acme.co',
   status: 'PENDING',
 };
 
@@ -29,8 +29,14 @@ vi.mock('@/lib/session/session.service', () => ({
   readSession: () => readSession(),
 }));
 
+const hasJoinIntentFor = vi.fn<(id: string) => Promise<boolean>>();
+vi.mock('./_lib/join-intent.service', () => ({
+  hasJoinIntentFor: (id: string) => hasJoinIntentFor(id),
+}));
+
+const acceptInvitation = vi.fn();
 vi.mock('./_lib/invitation-actions.service', () => ({
-  acceptInvitation: vi.fn(),
+  acceptInvitation: (id: string) => acceptInvitation(id),
   signInToAccept: vi.fn(),
   useAnotherGoogleAccount: vi.fn(),
 }));
@@ -44,6 +50,8 @@ vi.mock('@/components/atoms/one-time-toast', () => ({
 beforeEach(() => {
   readInvitation.mockReset();
   readSession.mockReset();
+  acceptInvitation.mockReset().mockResolvedValue({});
+  hasJoinIntentFor.mockReset().mockResolvedValue(false);
 });
 
 function open(invitationId = INVITATION_ID, signedIn?: string) {
@@ -63,10 +71,14 @@ describe('InvitationPage', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: 'Ann Lee invited you to join Acme',
+        name: '“Ann” invited you to join “Acme” workspace',
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText('s•••@acme.co')).toBeInTheDocument();
+    expect(screen.getByText('Do you want to join?')).toBeInTheDocument();
+    expect(screen.getByText('“Acme”')).toHaveClass('text-fg-accent');
+    expect(screen.getByText('som•••@acme.co')).toHaveClass(
+      'text-action-secondary',
+    );
     expect(
       screen.getByRole('button', { name: 'Continue with Google' }),
     ).toBeInTheDocument();
@@ -80,7 +92,7 @@ describe('InvitationPage', () => {
 
     expect(screen.getByText('somchai@acme.co')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Join Acme' }),
+      screen.getByRole('button', { name: 'Join “Acme”' }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Continue with Google' }),
@@ -107,7 +119,7 @@ describe('InvitationPage', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: "You've been invited to join Acme",
+        name: "You've been invited to join “Acme” workspace",
       }),
     ).toBeInTheDocument();
   });
@@ -122,7 +134,7 @@ describe('InvitationPage', () => {
       screen.getByText('This invitation has expired.'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Ask Ann Lee to invite you again.'),
+      screen.getByText('Ask Ann to invite you again.'),
     ).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
@@ -133,9 +145,9 @@ describe('InvitationPage', () => {
 
     render(await open());
 
-    expect(
-      screen.getByText('This invitation is no longer valid.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('This invitation is no longer valid.')).toHaveClass(
+      'text-status-error',
+    );
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
@@ -164,5 +176,30 @@ describe('InvitationPage', () => {
   it('answers not found for a link that carries no Invitation id', async () => {
     await expect(open('not-an-id')).rejects.toThrow('notFound');
     expect(readInvitation).not.toHaveBeenCalled();
+  });
+
+  it('joins at once for someone back from the Google sign-in they started here', async () => {
+    readInvitation.mockResolvedValue(PENDING);
+    readSession.mockResolvedValue({ email: 'somchai@acme.co' });
+    hasJoinIntentFor.mockResolvedValue(true);
+
+    render(await open(INVITATION_ID, '1'));
+
+    expect(hasJoinIntentFor).toHaveBeenCalledWith(INVITATION_ID);
+    await waitFor(() => {
+      expect(acceptInvitation).toHaveBeenCalledWith(INVITATION_ID);
+    });
+  });
+
+  it('never joins from a link alone, signedIn or not, without that intent', async () => {
+    readInvitation.mockResolvedValue(PENDING);
+    readSession.mockResolvedValue({ email: 'somchai@acme.co' });
+
+    render(await open(INVITATION_ID, '1'));
+
+    expect(
+      await screen.findByRole('button', { name: 'Join “Acme”' }),
+    ).toBeEnabled();
+    expect(acceptInvitation).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { PlusIcon } from 'lucide-react';
+import { InfoIcon, PlusIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { sendInvitations } from '@/app/(signed-in)/register/invite-teammates/_lib/invitation-actions.service';
@@ -180,13 +180,17 @@ export function InviteTeammatesForm() {
             Add another
           </Button>
         )}
-        <Text variant="caption" tone="muted">
-          You can invite up to {MAX_ROW_COUNT} now — invite more anytime from
-          Settings.
-        </Text>
+        <div className="flex items-start gap-2 text-fg-secondary">
+          <InfoIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+          <Text variant="body-2" tone="muted">
+            You can invite up to {MAX_ROW_COUNT} now
+            <br />
+            invite more anytime from Settings.
+          </Text>
+        </div>
       </fieldset>
       {formError && (
-        <Text role="alert" variant="caption" tone="danger">
+        <Text role="alert" variant="body-2" tone="danger">
           {formError}
         </Text>
       )}
