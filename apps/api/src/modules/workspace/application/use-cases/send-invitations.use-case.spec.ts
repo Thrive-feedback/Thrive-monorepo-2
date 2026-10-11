@@ -42,7 +42,7 @@ function setUp() {
   );
   const emailSender = new FakeEmailSender();
   const profileNamePort = new FakeProfileNamePort();
-  profileNamePort.fullNames.set('account-ann', 'Ann Lee');
+  profileNamePort.displayNames.set('account-ann', 'Ann');
   const unitOfWork = new FakeUnitOfWork();
   const useCase = new SendInvitationsUseCase(
     workspaceInviting,
@@ -78,9 +78,9 @@ describe('sending Invitations to a Workspace', () => {
     expect(emailSender.sent).toHaveLength(1);
     expect(emailSender.sent[0]).toMatchObject({
       to: 'ben@acme.co',
-      fromName: 'Ann Lee',
+      fromName: 'Ann',
       replyTo: 'ann@acme.co',
-      subject: 'Ann Lee invited you to join Acme on Thrive',
+      subject: 'Your ticket to join Acme is ready!',
     });
     expect(emailSender.sent[0]?.text).toContain(
       `https://thrive.test/invitations/${FIRST_INVITATION_ID}`,
@@ -200,13 +200,13 @@ describe('sending Invitations to a Workspace', () => {
 
   it('names the inviter by their email when they have no Profile', async () => {
     const { emailSender, profileNamePort, useCase } = setUp();
-    profileNamePort.fullNames.clear();
+    profileNamePort.displayNames.clear();
 
     await useCase.execute(request());
 
-    expect(emailSender.sent[0]).toMatchObject({
-      fromName: 'ann@acme.co',
-      subject: 'ann@acme.co invited you to join Acme on Thrive',
-    });
+    expect(emailSender.sent[0]?.fromName).toBe('ann@acme.co');
+    expect(emailSender.sent[0]?.text).toContain(
+      'ann@acme.co has reserved a spot for you on the Acme workspace.',
+    );
   });
 });

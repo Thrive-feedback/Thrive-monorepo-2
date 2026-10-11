@@ -91,7 +91,7 @@ export class SendInvitationsUseCase {
     );
 
     const inviterName =
-      (await this.profileNamePort.fullNameOf(input.accountId)) ??
+      (await this.profileNamePort.displayNameOf(input.accountId)) ??
       input.inviterEmail;
 
     const outcomes: InvitationOutcome[] = [];

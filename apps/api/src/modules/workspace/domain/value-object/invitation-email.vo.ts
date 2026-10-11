@@ -17,31 +17,36 @@ function escapeHtml(value: string): string {
 }
 
 /**
- * Thrive's light theme, as fixed values: email clients read neither CSS variables nor OKLCH, so
- * each is the hex of the token it names in `packages/tokens`. Change them with the tokens.
+ * Thrive's light theme, as fixed hex: email clients read neither CSS variables nor OKLCH, so each
+ * value names the token it copies in `packages/tokens`, and the design's translucent colours are
+ * flattened onto the card. Change them with the tokens.
  */
 const EMAIL_STYLE = {
-  /** `--surface-base` */
-  page: '#e6e7e6',
-  /** `--neutral-50`, the card the message sits on */
+  /** The site's page, `--surface-base` to `--surface-subtle`; Outlook shows the first alone. */
+  pageTop: '#e6e7e6',
+  pageBottom: '#dddedd',
+  /** `--surface-overlay` on the page, the Card atom's surface. */
   card: '#ffffff',
-  /** `--border-muted` */
-  divider: '#c9ccca',
-  /** `--fg-primary` */
-  text: '#08130c',
-  /** `--fg-secondary` */
-  muted: '#353f38',
-  /** `--fg-accent`, the wordmark */
-  accent: '#5f3b6f',
-  /** `--action-primary` */
+  /** `--corner-page`, the Card atom's corners. */
+  cardRadius: '28px',
+  /** `--action-primary`, the primary Button. */
   action: '#9360a8',
+  /** `--action-secondary`, the orange that marks the Workspace's name. */
+  secondary: '#ac502e',
   /** `--fg-on-action` */
   onAction: '#ffffff',
-  /** `--surface-raised`, behind the address that must sign in */
-  highlight: '#efe1f5',
-  /** `--corner-page` and `--corner-element` */
-  cardRadius: '28px',
+  /** `--corner-element`, the Button atom's corners. */
   buttonRadius: '4px',
+  /** The greeting and the link. */
+  brand: '#804798',
+  /** `--primary-400`, the notice under the button. */
+  notice: '#a86fc0',
+  title: '#191b21',
+  body: '#65666a',
+  caption: '#abacae',
+  divider: '#dedfe0',
+  linkBox: '#ebe0f0',
+  linkBoxBorder: '#d2b5de',
   /** Google Sans where the reader has it; email cannot load the app's fonts. */
   font: "'Google Sans', Roboto, 'Helvetica Neue', Arial, sans-serif",
 } as const;
@@ -49,11 +54,17 @@ const EMAIL_STYLE = {
 interface InvitationHtmlParts {
   readonly inviterName: string;
   readonly workspaceName: string;
-  readonly invitedEmail: string;
   readonly acceptUrl: string;
-  readonly about: string;
-  readonly expires: string;
-  readonly ignore: string;
+  readonly greeting: string;
+  readonly title: string;
+  readonly button: string;
+  readonly notice: string;
+  readonly signOff: string;
+}
+
+/** A thin rule standing either side of a line of text, as a table cell. */
+function sideRule(color: string): string {
+  return `<td width="20%" style="vertical-align:middle;"><div style="border-top:1px solid ${color};font-size:0;line-height:0;">&nbsp;</div></td>`;
 }
 
 /**
@@ -65,29 +76,45 @@ function invitationHtml(parts: InvitationHtmlParts): string {
   const inviter = escapeHtml(parts.inviterName);
   const workspace = escapeHtml(parts.workspaceName);
   const url = escapeHtml(parts.acceptUrl);
+  const text = `font-family:${s.font};margin:0;`;
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${inviter} invited you to join ${workspace} on Thrive</title>
+<title>${escapeHtml(parts.title)}</title>
 </head>
-<body style="margin:0;padding:0;background-color:${s.page};">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${s.page};">
-<tr><td align="center" style="padding:40px 16px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background-color:${s.card};border-radius:${s.cardRadius};">
-<tr><td style="padding:40px 40px 0 40px;font-family:${s.font};font-size:22px;font-weight:700;color:${s.accent};">Thrive</td></tr>
-<tr><td style="padding:24px 40px 0 40px;font-family:${s.font};font-size:24px;line-height:32px;font-weight:700;color:${s.text};">${inviter} invited you to join ${workspace}</td></tr>
-<tr><td style="padding:12px 40px 0 40px;font-family:${s.font};font-size:16px;line-height:24px;color:${s.muted};">${escapeHtml(parts.about)}</td></tr>
-<tr><td style="padding:32px 40px 0 40px;">
+<body style="margin:0;padding:0;background-color:${s.pageBottom};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${s.pageTop};background-image:linear-gradient(180deg, ${s.pageTop} 0%, ${s.pageBottom} 100%);">
+<tr><td align="center" style="padding:64px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background-color:${s.card};border-radius:${s.cardRadius};">
+<tr><td style="padding:32px 24px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center"><p style="${text}font-size:20px;line-height:28px;font-weight:600;letter-spacing:-0.5px;color:${s.brand};">${escapeHtml(parts.greeting)}</p></td></tr>
+<tr><td align="center" style="padding-top:8px;"><h1 style="${text}font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.5px;color:${s.title};">${escapeHtml(parts.title)}</h1></td></tr>
+<tr><td style="padding-top:24px;"><p style="${text}font-size:16px;line-height:24px;color:${s.body};">${inviter} has reserved a spot for you on the <span style="color:${s.secondary};">${workspace}</span> workspace. Your team is waiting to build something great together.<br><br>Here is your access pass:</p></td></tr>
+<tr><td align="center" style="padding-top:24px;">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-<td style="background-color:${s.action};border-radius:${s.buttonRadius};">
-<a href="${url}" style="display:inline-block;padding:14px 28px;font-family:${s.font};font-size:16px;font-weight:700;color:${s.onAction};text-decoration:none;">Accept invitation</a>
+<td align="center" style="background-color:${s.action};border-radius:${s.buttonRadius};">
+<a href="${url}" style="display:block;padding:14px 22px;font-family:${s.font};font-size:16px;line-height:19px;font-weight:600;color:${s.onAction};text-decoration:none;border-radius:${s.buttonRadius};">${escapeHtml(parts.button)}</a>
 </td></tr></table>
 </td></tr>
-<tr><td style="padding:24px 40px 0 40px;font-family:${s.font};font-size:14px;line-height:22px;color:${s.muted};">Sign in with <span style="background-color:${s.highlight};padding:2px 6px;border-radius:${s.buttonRadius};color:${s.text};">${escapeHtml(parts.invitedEmail)}</span> to accept it. ${escapeHtml(parts.expires)}</td></tr>
-<tr><td style="padding:24px 40px 0 40px;"><div style="border-top:1px solid ${s.divider};font-size:0;line-height:0;">&nbsp;</div></td></tr>
-<tr><td style="padding:16px 40px 40px 40px;font-family:${s.font};font-size:12px;line-height:18px;color:${s.muted};">If the button doesn't work, open this link: <a href="${url}" style="color:${s.accent};word-break:break-all;">${url}</a><br><br>${escapeHtml(parts.ignore)} Replies go to ${inviter}.</td></tr>
+<tr><td align="center" style="padding-top:8px;"><p style="${text}font-size:12px;line-height:20px;color:${s.notice};">${escapeHtml(parts.notice)}</p></td></tr>
+<tr><td style="padding-top:24px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+${sideRule(s.divider)}
+<td align="center" width="1%" style="padding:0 8px;white-space:nowrap;"><p style="${text}font-size:12px;line-height:20px;color:${s.caption};">Or copy this link:</p></td>
+${sideRule(s.divider)}
+</tr></table>
+</td></tr>
+<tr><td style="padding-top:8px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td align="center" style="padding:16px;background-color:${s.linkBox};border:1px solid ${s.linkBoxBorder};border-radius:8px;"><a href="${url}" style="font-family:${s.font};font-size:12px;line-height:18px;color:${s.brand};text-decoration:none;word-break:break-all;">${url}</a></td>
+</tr></table>
+</td></tr>
+<tr><td align="center" style="padding-top:24px;"><p style="${text}font-size:16px;line-height:24px;color:${s.body};">${escapeHtml(parts.signOff)}</p></td></tr>
+</table>
+</td></tr>
 </table>
 </td></tr>
 </table>
@@ -96,7 +123,7 @@ function invitationHtml(parts: InvitationHtmlParts): string {
 }
 
 export interface InvitationEmailDetails {
-  /** The inviter's Profile name, as they introduced themselves. */
+  /** The inviter's Display name, as others see them. */
   readonly inviterName: string;
   readonly workspaceName: string;
   /** The address invited, which is also the one that must sign in to accept. */
@@ -109,7 +136,8 @@ export interface InvitationEmailDetails {
 /**
  * The email that delivers an Invitation, in English. It names who invited and to which
  * Workspace, says which address must sign in to accept, and how long the offer lasts — in
- * days rather than as a date, so no reader's timezone can make it wrong.
+ * days rather than as a date, so no reader's timezone can make it wrong. The person invited
+ * may have no Profile yet, so it greets them without a name.
  */
 export class InvitationEmail {
   private constructor(
@@ -126,32 +154,35 @@ export class InvitationEmail {
       ),
     );
     const lasts = days === 1 ? '1 day' : `${days} days`;
-    const invited = `${details.inviterName} invited you to join ${details.workspaceName} on Thrive.`;
-    const about = `Thrive is where ${details.workspaceName} asks for, gives and acts on feedback.`;
-    const expires = `This invitation expires in ${lasts}.`;
-    const signInAs = `Sign in with this email address (${details.invitedEmail}) to accept it.`;
-    const ignore = "If you weren't expecting this, you can ignore this email.";
+    const greeting = 'Hi there,';
+    const title = 'You’re on the list!';
+    const reserved = `${details.inviterName} has reserved a spot for you on the ${details.workspaceName} workspace. Your team is waiting to build something great together.`;
+    const button = 'Join the workspace';
+    const notice = `This invitation expires in ${lasts}. Sign in with ${details.invitedEmail} to accept it.`;
+    const signOff = 'See you inside, The Thrive Team';
 
     const text = [
-      invited,
-      about,
-      `Accept invitation: ${details.acceptUrl}`,
-      `${expires}\n${signInAs}`,
-      ignore,
+      greeting,
+      title,
+      reserved,
+      `Here is your access pass: ${details.acceptUrl}`,
+      notice,
+      signOff,
     ].join('\n\n');
 
     const html = invitationHtml({
       inviterName: details.inviterName,
       workspaceName: details.workspaceName,
-      invitedEmail: details.invitedEmail,
       acceptUrl: details.acceptUrl,
-      about,
-      expires,
-      ignore,
+      greeting,
+      title,
+      button,
+      notice,
+      signOff,
     });
 
     return new InvitationEmail(
-      `${details.inviterName} invited you to join ${details.workspaceName} on Thrive`,
+      `Your ticket to join ${details.workspaceName} is ready!`,
       html,
       text,
     );

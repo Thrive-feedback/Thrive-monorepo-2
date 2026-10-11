@@ -310,6 +310,7 @@ export interface components {
                 accountId: string;
                 email: string;
                 fullName: string | null;
+                displayName: string | null;
                 /** @enum {string} */
                 role: "OWNER" | "ADMIN" | "MEMBER";
             }[];

@@ -25,6 +25,7 @@ function setUp() {
     accountId: 'account-ben',
     email: 'ben@acme.test',
     fullName: 'Ben Carter',
+    displayName: 'Ben',
   });
   const useCase = new GetFeedbackRequestUseCase(
     feedbackRequestQuery,
@@ -64,6 +65,7 @@ describe('reading one Feedback Request', () => {
       accountId: 'account-ben',
       email: 'ben@acme.test',
       fullName: null,
+      displayName: null,
     });
 
     const found = await useCase.execute({

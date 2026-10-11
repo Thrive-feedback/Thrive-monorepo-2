@@ -22,9 +22,24 @@ function setUp() {
     },
   );
   accountSummaryPort.summaries.push(
-    { accountId: 'account-ann', email: 'ann@acme.co', fullName: 'Ann Lee' },
-    { accountId: 'account-ben', email: 'ben@acme.co', fullName: null },
-    { accountId: 'account-cat', email: 'cat@globex.co', fullName: 'Cat' },
+    {
+      accountId: 'account-ann',
+      email: 'ann@acme.co',
+      fullName: 'Ann Lee',
+      displayName: 'Ann',
+    },
+    {
+      accountId: 'account-ben',
+      email: 'ben@acme.co',
+      fullName: null,
+      displayName: null,
+    },
+    {
+      accountId: 'account-cat',
+      email: 'cat@globex.co',
+      fullName: 'Cat',
+      displayName: 'Cat',
+    },
   );
   return new ListWorkspaceMembersUseCase(membershipQuery, accountSummaryPort);
 }
@@ -42,12 +57,14 @@ describe('listing the Members of a Workspace', () => {
           accountId: 'account-ann',
           email: 'ann@acme.co',
           fullName: 'Ann Lee',
+          displayName: 'Ann',
           role: 'OWNER',
         },
         {
           accountId: 'account-ben',
           email: 'ben@acme.co',
           fullName: null,
+          displayName: null,
           role: 'MEMBER',
         },
       ],

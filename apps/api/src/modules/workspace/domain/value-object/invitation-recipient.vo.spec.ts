@@ -31,15 +31,23 @@ describe('who may accept an Invitation', () => {
 });
 
 describe('the invited address shown to whoever holds the link', () => {
-  it('keeps the first letter and the domain, and hides the rest', () => {
+  it('keeps the first three letters and the domain, and hides the rest', () => {
     expect(InvitationRecipient.of('Somchai@acme.co').masked()).toBe(
-      's•••@acme.co',
+      'som•••@acme.co',
     );
   });
 
   it('hides how long the name is', () => {
-    expect(InvitationRecipient.of('jo@acme.co').masked()).toBe(
+    expect(InvitationRecipient.of('jonas@acme.co').masked()).toBe(
       InvitationRecipient.of('jonathan@acme.co').masked(),
     );
+  });
+
+  it('never shows a short name whole', () => {
+    expect(InvitationRecipient.of('ann@acme.co').masked()).toBe(
+      'an•••@acme.co',
+    );
+    expect(InvitationRecipient.of('jo@acme.co').masked()).toBe('j•••@acme.co');
+    expect(InvitationRecipient.of('a@acme.co').masked()).toBe('a•••@acme.co');
   });
 });

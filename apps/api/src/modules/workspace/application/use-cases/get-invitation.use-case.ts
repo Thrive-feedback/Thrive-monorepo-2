@@ -13,7 +13,7 @@ export interface GetInvitationInput {
 /** What anyone holding an Invitation's link may learn before signing in. */
 export interface InvitationPreview {
   readonly workspaceName: string;
-  /** `null` while the inviter has not introduced themselves. */
+  /** The inviter's Display name; `null` while they have not introduced themselves. */
   readonly inviterName: string | null;
   /** Only enough of the address for its owner to recognise it. */
   readonly invitedEmailMasked: string;
@@ -43,7 +43,7 @@ export class GetInvitationUseCase {
     }
     return {
       workspaceName: invitation.workspace.name,
-      inviterName: await this.profileNamePort.fullNameOf(
+      inviterName: await this.profileNamePort.displayNameOf(
         invitation.inviterAccountId,
       ),
       invitedEmailMasked: InvitationRecipient.of(invitation.email).masked(),

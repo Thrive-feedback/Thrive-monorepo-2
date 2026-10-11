@@ -15,6 +15,8 @@ export interface WorkspaceMember {
   readonly email: string;
   /** `null` while the Member has not introduced themselves. */
   readonly fullName: string | null;
+  /** The name others see and call them by; `null` while they have not introduced themselves. */
+  readonly displayName: string | null;
   readonly role: MemberRoleValue;
 }
 
@@ -55,6 +57,7 @@ export class ListWorkspaceMembersUseCase {
                 accountId: member.accountId,
                 email: summary.email,
                 fullName: summary.fullName,
+                displayName: summary.displayName,
                 role: member.role,
               },
             ]

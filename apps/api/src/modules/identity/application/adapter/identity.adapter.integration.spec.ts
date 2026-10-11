@@ -31,12 +31,17 @@ async function anAccount(): Promise<{ id: string; email: string }> {
   return { id, email };
 }
 
-async function introduce(accountId: string, fullName = 'Ann Lee') {
+async function introduce(
+  accountId: string,
+  fullName = 'Ann Lee',
+  displayName = 'Ann',
+) {
   await prismaService.profile.create({
     data: aProfileSnapshot({
       id: uuidv7(),
       accountId,
       fullName,
+      displayName,
       slug: `ann.${accountId}`,
     }),
   });
@@ -65,22 +70,22 @@ describe('whether an Account has a Profile, as Workspace asks it', () => {
 });
 
 describe('the name an Account introduced itself with, as Workspace asks it', () => {
-  it('is the Profile full name, not the Google account name', async () => {
+  it('is the Profile Display name, not its full name or the Google account name', async () => {
     const { id } = await anAccount();
-    await introduce(id, 'Ann Lee');
+    await introduce(id, 'Ann Lee', 'Annie');
 
-    expect(await profileNamePort.fullNameOf(id)).toBe('Ann Lee');
+    expect(await profileNamePort.displayNameOf(id)).toBe('Annie');
   });
 
   it('is null while the Account has not introduced itself', async () => {
     const { id } = await anAccount();
 
-    expect(await profileNamePort.fullNameOf(id)).toBeNull();
+    expect(await profileNamePort.displayNameOf(id)).toBeNull();
   });
 });
 
 describe('who several Accounts are, as Workspace asks it', () => {
-  it('answers each with its email and Profile name, null where there is no Profile, and leaves out unknown ids', async () => {
+  it('answers each with its email and Profile names, null where there is no Profile, and leaves out unknown ids', async () => {
     const introduced = await anAccount();
     await introduce(introduced.id, 'Ann Lee');
     const notIntroduced = await anAccount();
@@ -99,11 +104,13 @@ describe('who several Accounts are, as Workspace asks it', () => {
           accountId: introduced.id,
           email: introduced.email,
           fullName: 'Ann Lee',
+          displayName: 'Ann',
         },
         {
           accountId: notIntroduced.id,
           email: notIntroduced.email,
           fullName: null,
+          displayName: null,
         },
       ].sort((a, b) => a.accountId.localeCompare(b.accountId)),
     );

@@ -1030,6 +1030,12 @@
                     "null"
                   ]
                 },
+                "displayName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "role": {
                   "type": "string",
                   "enum": [
@@ -1043,6 +1049,7 @@
                 "accountId",
                 "email",
                 "fullName",
+                "displayName",
                 "role"
               ],
               "additionalProperties": false

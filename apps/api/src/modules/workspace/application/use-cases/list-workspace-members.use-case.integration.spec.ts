@@ -39,9 +39,24 @@ describe('listing the Members of a Workspace', () => {
     const outsider = await fixtures.aSignedInAccount('members-outsider');
     await fixtures.aWorkspace(outsider, 'Globex');
     accountSummaryPort.summaries.push(
-      { accountId: owner.accountId, email: owner.email, fullName: 'Ann Lee' },
-      { accountId: member.accountId, email: member.email, fullName: null },
-      { accountId: outsider.accountId, email: outsider.email, fullName: 'Cat' },
+      {
+        accountId: owner.accountId,
+        email: owner.email,
+        fullName: 'Ann Lee',
+        displayName: 'Ann',
+      },
+      {
+        accountId: member.accountId,
+        email: member.email,
+        fullName: null,
+        displayName: null,
+      },
+      {
+        accountId: outsider.accountId,
+        email: outsider.email,
+        fullName: 'Cat',
+        displayName: 'Cat',
+      },
     );
 
     const members = await listWorkspaceMembersUseCase.execute({
@@ -58,12 +73,14 @@ describe('listing the Members of a Workspace', () => {
           accountId: owner.accountId,
           email: owner.email,
           fullName: 'Ann Lee',
+          displayName: 'Ann',
           role: 'OWNER',
         },
         {
           accountId: member.accountId,
           email: member.email,
           fullName: null,
+          displayName: null,
           role: 'MEMBER',
         },
       ],

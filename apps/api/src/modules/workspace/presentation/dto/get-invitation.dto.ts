@@ -6,7 +6,7 @@ export const getInvitationResponseSchema = z.object({
   workspaceName: z.string(),
   /** Left out while the inviter has not introduced themselves. */
   inviterName: z.string().optional(),
-  /** The invited address with most of its name hidden, such as `s•••@acme.com`. */
+  /** The invited address with most of its name hidden, such as `som•••@acme.com`. */
   invitedEmailMasked: z.string(),
   /** Only a `PENDING` Invitation can be accepted. */
   status: z.enum(INVITATION_STATUSES),
