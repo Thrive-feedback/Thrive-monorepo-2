@@ -1,4 +1,5 @@
 import { Trash2Icon } from 'lucide-react';
+import Image from 'next/image';
 import NextLink from 'next/link';
 import {
   ShowcaseEntry,
@@ -59,6 +60,12 @@ export function ButtonEntry() {
             'Paints its single child (usually a Link) as a button instead of rendering a <button>.',
         },
         {
+          name: 'prefixIcon',
+          type: 'ReactNode',
+          description:
+            'An icon before the label, such as Google’s mark on “Continue with Google”. Decorative; the spinner replaces it while loading.',
+        },
+        {
           name: 'type',
           type: "'button' | 'submit' | 'reset'",
           defaultValue: "'button'",
@@ -117,6 +124,22 @@ export function ButtonEntry() {
           Saving
         </Button>
         <Button loading>Saving</Button>
+      </StateCell>
+      <StateCell label="With a prefix icon">
+        <Button
+          size="lg"
+          prefixIcon={
+            <Image
+              src="/brand/google-g.svg"
+              alt=""
+              width={20}
+              height={20}
+              className="size-5"
+            />
+          }
+        >
+          Continue with Google
+        </Button>
       </StateCell>
       <StateCell label="As a link" hint="asChild around next/link">
         <Button asChild variant="soft">

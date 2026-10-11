@@ -9,7 +9,7 @@ export function InviteTeammatesHero() {
       <Text variant="display-5" as="h1" className="md:text-display-3">
         Thrive is better together
       </Text>
-      <Text variant="body-2" tone="muted">
+      <Text variant="body-1" tone="muted">
         Who else deserves a kudo today? Invite them in.
       </Text>
     </div>

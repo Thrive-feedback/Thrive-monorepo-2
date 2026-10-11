@@ -8,6 +8,7 @@ vi.mock('@/lib/session/session.service', () => ({
   readSession: () => readSession(),
   readSessionNeedsRefresh: () => readSessionNeedsRefresh(),
 }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 vi.mock('./session-refresher', () => ({
   SessionRefresher: () => <output>session refresher</output>,
 }));

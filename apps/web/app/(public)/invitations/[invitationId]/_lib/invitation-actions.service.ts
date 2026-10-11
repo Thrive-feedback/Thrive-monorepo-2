@@ -12,6 +12,7 @@ import type {
   AcceptInvitationRefusal,
   AcceptInvitationState,
 } from './accept-invitation-state.type';
+import { forgetJoinIntent, rememberJoinIntent } from './join-intent.service';
 
 /**
  * Only the actions live here: every export of a `'use server'` file can be called from the
@@ -38,18 +39,23 @@ const SHOWN_BY_THE_PAGE = new Set([
   'INVITATION_ALREADY_ACCEPTED',
 ]);
 
-/** Signs in with Google, coming back to this Invitation afterwards. */
+/**
+ * Signs in with Google, coming back to this Invitation afterwards. Choosing to sign in here is
+ * choosing to join, so it is remembered and the page joins on the way back.
+ */
 export async function signInToAccept(invitationId: string): Promise<void> {
   const id = InvitationId.safeParse(invitationId);
   if (!id.success) {
     redirect(ROUTES.signIn);
   }
+  await rememberJoinIntent(id.data);
   await startGoogleSignIn(id.data);
 }
 
 /**
  * Signs out, then straight back in with Google, which asks which account to use, and returns to
- * this Invitation. For someone signed in with an address the Invitation was not sent to.
+ * this Invitation to join it. For someone signed in with an address the Invitation was not sent
+ * to.
  */
 export async function useAnotherGoogleAccount(
   invitationId: string,
@@ -63,13 +69,15 @@ export async function useAnotherGoogleAccount(
     params: { header: { cookie } },
   });
   await forwardCookies(signedOut.response);
+  await rememberJoinIntent(id.data);
   await startGoogleSignIn(id.data);
 }
 
 /**
  * Accepts the Invitation as the signed-in person; the API checks it was sent to them. Joined,
  * or already in that Workspace, they go where they belong now: Introduce yourself if they
- * have not yet, otherwise Home.
+ * have not yet, otherwise Home. Any intent to join is spent first, whatever the answer, so the
+ * page never tries again by itself.
  */
 export async function acceptInvitation(
   invitationId: string,
@@ -78,6 +86,7 @@ export async function acceptInvitation(
   if (!id.success) {
     return { refusal: 'failed' };
   }
+  await forgetJoinIntent();
   const cookie = (await headers()).get('cookie') ?? undefined;
   let next: string;
   try {

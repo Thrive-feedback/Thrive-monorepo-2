@@ -8,14 +8,18 @@ export type WorkspaceSetupStepCountProps = {
   currentStep: WorkspaceSetupStep;
 };
 
-/** Counted from one list of steps, so adding a step updates every page's count. Read aloud as "of". */
+/** Counted from one list of steps, so adding a step updates every page's count. Read aloud as "of"; written by hand, like the other lead-in lines. */
 export function WorkspaceSetupStepCount({
   currentStep,
 }: WorkspaceSetupStepCountProps) {
   const position = STEPS.indexOf(currentStep) + 1;
 
   return (
-    <Text as="p" variant="display-6">
+    <Text
+      as="p"
+      variant="subtitle-handwrite-1"
+      className="text-action-secondary"
+    >
       <span aria-hidden="true">
         Step {position} / {STEPS.length}
       </span>

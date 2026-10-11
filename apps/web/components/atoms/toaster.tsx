@@ -49,18 +49,18 @@ export function Toaster(props: ToasterProps) {
           // colour lives only in the type slots: two backgrounds on one element would leave
           // stylesheet order to pick the winner.
           //
-          // A status surface is a translucent tint, made for an alert set into the page. A
-          // toast floats over content, which would show through it, so the tint is laid as an
-          // image over the opaque canvas colour: the same colour, but solid.
-          default: 'border-border-default bg-surface-base',
-          loading: 'border-border-default bg-surface-base',
+          // A toast sits on the near-white card surface, lighter than the page. A status toast
+          // lays its status tint over that as an image: two background colours on one element
+          // would leave stylesheet order to pick the winner.
+          default: 'border-border-default bg-surface-overlay',
+          loading: 'border-border-default bg-surface-overlay',
           success:
-            'border-status-success-border bg-surface-base bg-linear-to-r from-status-success-surface to-status-success-surface',
-          info: 'border-status-info-border bg-surface-base bg-linear-to-r from-status-info-surface to-status-info-surface',
+            'border-status-success-border bg-surface-overlay bg-linear-to-r from-status-success-surface-hover to-status-success-surface-hover',
+          info: 'border-status-info-border bg-surface-overlay bg-linear-to-r from-status-info-surface-hover to-status-info-surface-hover',
           warning:
-            'border-status-warning-border bg-surface-base bg-linear-to-r from-status-warning-surface to-status-warning-surface',
+            'border-status-warning-border bg-surface-overlay bg-linear-to-r from-status-warning-surface-hover to-status-warning-surface-hover',
           error:
-            'border-status-error-border bg-surface-base bg-linear-to-r from-status-error-surface to-status-error-surface',
+            'border-status-error-border bg-surface-overlay bg-linear-to-r from-status-error-surface-hover to-status-error-surface-hover',
           actionButton:
             'ms-auto rounded-button bg-action-primary px-3 py-1.5 text-button-sm text-fg-on-action',
           closeButton:

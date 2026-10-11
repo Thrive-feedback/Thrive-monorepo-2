@@ -1,7 +1,6 @@
-import Link from 'next/link';
 import { Button } from '@/components/atoms/button';
 import { Link as TextLink } from '@/components/atoms/link';
-import { Logo } from '@/components/atoms/logo';
+import { NavbarLogo } from '@/components/molecules/navbar-logo';
 import { ThemeToggle } from '@/components/molecules/theme-toggle';
 import { ROUTES } from '@/lib/routes.constant';
 import {
@@ -12,7 +11,8 @@ import { signOut } from '@/lib/session/session-actions.service';
 import { SessionRefresher } from './session-refresher';
 
 /**
- * The logo, the product navigation for whoever is signed in, the light/dark switch, and Sign out. It is on every signed-in page, so it is
+ * The logo (left out on the sign-in page, which shows its own), the product navigation for
+ * whoever is signed in, the light/dark switch, and Sign out. It is on every signed-in page, so it is
  * also where a session due a refresh gets one. The design also draws "Log in" and
  * "Create Organization" here; they are left out on purpose, because sign-in is the page
  * itself and creating an organization is not offered.
@@ -28,9 +28,7 @@ export async function SiteNavbar() {
 
   return (
     <header className="flex h-18 shrink-0 items-center justify-between px-inset-container">
-      <Link href="/" className="rounded-element">
-        <Logo />
-      </Link>
+      <NavbarLogo />
       {needsRefresh && <SessionRefresher />}
       {session && (
         <nav aria-label="Product" className="flex items-center gap-gap-nav">

@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { InviteResult } from '@/app/(signed-in)/register/invite-teammates/_lib/invite-teammates-state.type';
 import { Button } from '@/components/atoms/button';
-import type { TextProps } from '@/components/atoms/text';
 import { Text } from '@/components/atoms/text';
 
 export type InviteResultsProps = {
@@ -18,17 +17,16 @@ const OUTCOME_TEXT: Readonly<Record<InviteResult['outcome'], string>> = {
 };
 
 /**
- * How serious each outcome is, as the status colour it reads in: sent is success, already in is
- * only information, already invited means no new email went out, and failed is an error. The
+ * How serious each outcome is, in the status's own colour: sent is success, already in is only
+ * information, already invited means no new email went out, and failed is an error. The status
+ * colour itself, not its `-fg` role, which is near-black text meant for a status surface. The
  * words above carry the same meaning, so nothing depends on seeing the colour.
  */
-const OUTCOME_TONE: Readonly<
-  Record<InviteResult['outcome'], NonNullable<TextProps['tone']>>
-> = {
-  invited: 'success',
-  already_member: 'info',
-  already_invited: 'warning',
-  failed: 'danger',
+const OUTCOME_COLOUR: Readonly<Record<InviteResult['outcome'], string>> = {
+  invited: 'text-status-success',
+  already_member: 'text-status-info',
+  already_invited: 'text-status-warning',
+  failed: 'text-status-error',
 };
 
 /**
@@ -44,19 +42,19 @@ export function InviteResults({ results, onContinue }: InviteResultsProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <Text as="h3" variant="subtitle-4" ref={heading} tabIndex={-1}>
-        Invitations
+      <Text as="h3" variant="subtitle-3" ref={heading} tabIndex={-1}>
+        Invitations status
       </Text>
       <ul className="flex flex-col gap-2">
         {results.map((result) => (
           <li key={result.email} className="flex flex-col">
-            <Text as="span" variant="body-2" className="break-all">
+            <Text as="span" variant="body-1" className="break-all">
               {result.email}
             </Text>
             <Text
               as="span"
-              variant="caption"
-              tone={OUTCOME_TONE[result.outcome]}
+              variant="body-2"
+              className={OUTCOME_COLOUR[result.outcome]}
             >
               {OUTCOME_TEXT[result.outcome]}
             </Text>

@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { server, TEST_API_BASE_URL } from '@/lib/test/msw-server';
 
 const requestHeaders = new Headers();
-const cookieStore = { set: vi.fn() };
+const cookieStore = { set: vi.fn(), delete: vi.fn() };
 
 vi.stubEnv('API_BASE_URL', TEST_API_BASE_URL);
 vi.mock('server-only', () => ({}));
@@ -55,7 +55,16 @@ function googleSignInStarts(bodies: unknown[] = []) {
 
 beforeEach(() => {
   requestHeaders.set('cookie', 'thrive.session_token=abc');
+  requestHeaders.set('origin', 'https://thrive.test');
+  cookieStore.set.mockReset();
+  cookieStore.delete.mockReset();
 });
+
+function rememberedIntents(): unknown[] {
+  return cookieStore.set.mock.calls
+    .filter(([name]) => name === 'thrive.join_intent')
+    .map(([, value]) => value);
+}
 
 describe('accepting an Invitation', () => {
   it('accepts as the signed-in person, then sends them where they belong', async () => {
@@ -73,6 +82,7 @@ describe('accepting an Invitation', () => {
     expect(seen[0]?.headers.get('cookie')).toContain(
       'thrive.session_token=abc',
     );
+    expect(cookieStore.delete).toHaveBeenCalledWith('thrive.join_intent');
   });
 
   it('stays to explain when the Invitation was sent to another address', async () => {
@@ -81,6 +91,8 @@ describe('accepting an Invitation', () => {
     expect(await acceptInvitation(INVITATION_ID)).toEqual({
       refusal: 'notForYou',
     });
+    // Spent even on a refusal, so the page never joins again by itself.
+    expect(cookieStore.delete).toHaveBeenCalledWith('thrive.join_intent');
   });
 
   it('stays to explain when the person is already in a Workspace', async () => {
@@ -125,6 +137,46 @@ describe('signing in to accept', () => {
     expect(bodies).toEqual([{ invitationId: INVITATION_ID }]);
   });
 
+  it('remembers that the person chose to join this Invitation', async () => {
+    googleSignInStarts();
+
+    await expect(signInToAccept(INVITATION_ID)).rejects.toThrow(
+      `redirect:${GOOGLE_URL}`,
+    );
+    expect(cookieStore.set).toHaveBeenCalledWith(
+      'thrive.join_intent',
+      INVITATION_ID,
+      {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: true,
+        path: '/',
+        maxAge: 600,
+      },
+    );
+  });
+
+  it('remembers the intent unsecured on a local http server, where a secure one would be lost', async () => {
+    requestHeaders.set('origin', 'http://localhost:3001');
+    googleSignInStarts();
+
+    await expect(signInToAccept(INVITATION_ID)).rejects.toThrow(
+      `redirect:${GOOGLE_URL}`,
+    );
+    expect(cookieStore.set).toHaveBeenCalledWith(
+      'thrive.join_intent',
+      INVITATION_ID,
+      expect.objectContaining({ secure: false }),
+    );
+  });
+
+  it('remembers nothing for something that is not an Invitation id', async () => {
+    await expect(signInToAccept('../sessions')).rejects.toThrow(
+      'redirect:/signin',
+    );
+    expect(rememberedIntents()).toEqual([]);
+  });
+
   it('signs out first when switching to another Google account', async () => {
     const calls: string[] = [];
     server.use(
@@ -148,5 +200,6 @@ describe('signing in to accept', () => {
       'signOut',
       `signIn:${JSON.stringify({ invitationId: INVITATION_ID })}`,
     ]);
+    expect(rememberedIntents()).toEqual([INVITATION_ID]);
   });
 });

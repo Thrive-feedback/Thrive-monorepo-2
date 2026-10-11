@@ -7,7 +7,7 @@ type InvitationStatus =
 /** Someone in the Workspace, or invited to it, as Home lists them. */
 export type MemberOrInvitation = {
   readonly email: string;
-  /** The Profile name; `null` for an Invitation, or a Member who has not introduced themselves. */
+  /** The Display name; `null` for an Invitation, or a Member who has not introduced themselves. */
   readonly name: string | null;
   readonly role: MemberRole;
   /** `JOINED` for a Member; an Invitation is `PENDING` until its 7 days pass, then `EXPIRED`. */

@@ -21,8 +21,8 @@ describe('reading an Invitation from its link', () => {
       http.get(INVITATION, () =>
         HttpResponse.json({
           workspaceName: 'Acme',
-          inviterName: 'Ann Lee',
-          invitedEmailMasked: 's•••@acme.co',
+          inviterName: 'Ann',
+          invitedEmailMasked: 'som•••@acme.co',
           status: 'PENDING',
         }),
       ),
@@ -31,8 +31,8 @@ describe('reading an Invitation from its link', () => {
     expect(await readInvitation(INVITATION_ID)).toEqual({
       invitationId: INVITATION_ID,
       workspaceName: 'Acme',
-      inviterName: 'Ann Lee',
-      invitedEmailMasked: 's•••@acme.co',
+      inviterName: 'Ann',
+      invitedEmailMasked: 'som•••@acme.co',
       status: 'PENDING',
     });
   });
@@ -42,7 +42,7 @@ describe('reading an Invitation from its link', () => {
       http.get(INVITATION, () =>
         HttpResponse.json({
           workspaceName: 'Acme',
-          invitedEmailMasked: 's•••@acme.co',
+          invitedEmailMasked: 'som•••@acme.co',
           status: 'EXPIRED',
         }),
       ),

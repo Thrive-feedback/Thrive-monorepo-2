@@ -22,7 +22,8 @@ const CLOSED_REASONS: Readonly<Record<ClosedInvitationStatus, string>> = {
 
 /**
  * An Invitation that can no longer be accepted, said before anyone signs in. A new one is the
- * only way in, so the person is pointed at whoever sent it.
+ * only way in, so the person is pointed at whoever sent it. A revoked one reads in the error
+ * colour: someone withdrew it, which is the one ending the person did not choose or let lapse.
  */
 export function InvitationClosed({
   invitation,
@@ -35,7 +36,11 @@ export function InvitationClosed({
     <div className="m-auto flex w-full max-w-2xl flex-col items-center gap-6 text-center">
       <InvitationHeading invitation={invitation} />
       <div className="flex flex-col gap-2">
-        <Text variant="subtitle-3" as="p">
+        <Text
+          variant="subtitle-3"
+          as="p"
+          className={status === 'REVOKED' ? 'text-status-error' : undefined}
+        >
           {CLOSED_REASONS[status]}
         </Text>
         <Text variant="body-2" tone="muted">

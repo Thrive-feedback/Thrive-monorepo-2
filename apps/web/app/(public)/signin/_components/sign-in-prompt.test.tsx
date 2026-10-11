@@ -16,12 +16,14 @@ describe('SignInPrompt', () => {
     render(<SignInPrompt />);
 
     expect(
-      screen.getByRole('heading', {
-        level: 1,
-        name: 'Are you ready to Thrive?',
-      }),
-    ).toBeInTheDocument();
-    expect(screen.getByText('sign in or sign up')).toBeInTheDocument();
+      screen.getByRole('heading', { level: 1, name: 'Welcome to Thrive' }),
+    ).toHaveClass('font-handwrite', 'text-subtitle-handwrite-1');
+    expect(screen.getByRole('img', { name: 'Thrive' })).toBeInTheDocument();
+    expect(screen.getByText('Thrive')).toHaveClass('text-fg-accent');
+    expect(screen.getByText('Thrive').parentElement).toHaveTextContent(
+      "Let's Thrive together.",
+    );
+    expect(screen.queryByText('sign in or sign up')).toBeNull();
     expect(
       screen.getByRole('button', { name: 'Continue with Google' }),
     ).toHaveAttribute('type', 'submit');

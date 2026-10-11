@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState } from 'react';
+import Image from 'next/image';
+import { startTransition, useActionState, useEffect, useRef } from 'react';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import type {
@@ -17,6 +18,11 @@ export type InvitationJoinFormProps = {
   invitation: Invitation;
   /** The address the person is signed in with. */
   email: string;
+  /**
+   * The person chose to join by signing in with Google and has just come back, so the form
+   * joins for them at once instead of asking again.
+   */
+  joinOnArrival?: boolean;
 };
 
 function refusalMessage(
@@ -35,19 +41,32 @@ function refusalMessage(
 }
 
 /**
- * A Pending Invitation, opened signed in. Joining takes one deliberate click, so the person
- * sees which account they are about to join with; opening the page never joins by itself.
- * Someone signed in with another address is told so, and offered the way to switch.
+ * A Pending Invitation, opened signed in. Arriving by a link, joining takes one deliberate
+ * click, so the person sees which account they are about to join with. Coming back from the
+ * Google sign-in they started here, it joins at once: that click was the choice. Someone signed
+ * in with another address is told so, and offered the way to switch.
  */
 export function InvitationJoinForm({
   invitation,
   email,
+  joinOnArrival = false,
 }: InvitationJoinFormProps) {
   const [state, join, isJoining] = useActionState<AcceptInvitationState>(
     acceptInvitation.bind(null, invitation.invitationId),
     {},
   );
   const isNotForYou = state.refusal === 'notForYou';
+
+  // Once per arrival: React runs an effect twice in development, and joining twice would only
+  // ask the API the same question again.
+  const hasJoinedOnArrival = useRef(false);
+  useEffect(() => {
+    if (!joinOnArrival || hasJoinedOnArrival.current) {
+      return;
+    }
+    hasJoinedOnArrival.current = true;
+    startTransition(join);
+  }, [joinOnArrival, join]);
 
   return (
     <div className="flex w-full max-w-110 flex-col items-center gap-4">
@@ -56,7 +75,7 @@ export function InvitationJoinForm({
         <Text
           as="span"
           variant="body-2"
-          className="break-all font-medium text-fg-primary"
+          className="break-all font-medium text-action-secondary"
         >
           {email}
         </Text>
@@ -75,7 +94,7 @@ export function InvitationJoinForm({
             loading={isJoining}
             className="w-full"
           >
-            Join {invitation.workspaceName}
+            Join “{invitation.workspaceName}”
           </Button>
         </form>
       )}
@@ -85,9 +104,18 @@ export function InvitationJoinForm({
       >
         <Button
           type="submit"
-          variant={isNotForYou ? 'primary' : 'ghost'}
+          variant={isNotForYou ? 'secondary' : 'ghost'}
           size={isNotForYou ? 'lg' : 'md'}
           className="w-full"
+          prefixIcon={
+            <Image
+              src="/brand/google-g.svg"
+              alt=""
+              width={20}
+              height={20}
+              className="size-5"
+            />
+          }
         >
           Use another Google account
         </Button>

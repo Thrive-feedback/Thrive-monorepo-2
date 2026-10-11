@@ -37,12 +37,14 @@ function apiHolds(seen: string[] = []) {
             accountId: '0199a0f0-0000-7000-8000-000000000001',
             email: 'ann@acme.test',
             fullName: 'Ann Lee',
+            displayName: 'Ann',
             role: 'OWNER',
           },
           {
             accountId: '0199a0f0-0000-7000-8000-000000000002',
             email: 'ben@acme.test',
             fullName: null,
+            displayName: null,
             role: 'MEMBER',
           },
         ],
@@ -103,7 +105,7 @@ describe('reading the Members and Invitations for Home', () => {
     expect(teammates).toEqual([
       {
         email: 'ann@acme.test',
-        name: 'Ann Lee',
+        name: 'Ann',
         role: 'OWNER',
         status: 'JOINED',
         invitationId: null,

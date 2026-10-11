@@ -14,22 +14,22 @@ describe('InviteResults', () => {
     render(<InviteResults results={RESULTS} onContinue={vi.fn()} />);
 
     expect(screen.getByText('Invitation sent')).toHaveClass(
-      'text-status-success-fg',
+      'text-status-success',
     );
     expect(screen.getByText('is already in this Workspace')).toHaveClass(
-      'text-status-info-fg',
+      'text-status-info',
     );
     expect(screen.getByText('already has a pending Invitation')).toHaveClass(
-      'text-status-warning-fg',
+      'text-status-warning',
     );
-    expect(screen.getByText("Couldn't send")).toHaveClass(
-      'text-status-error-fg',
-    );
+    expect(screen.getByText("Couldn't send")).toHaveClass('text-status-error');
   });
 
   it('moves focus to its heading when it replaces the form', () => {
     render(<InviteResults results={RESULTS} onContinue={vi.fn()} />);
 
-    expect(screen.getByRole('heading', { name: 'Invitations' })).toHaveFocus();
+    expect(
+      screen.getByRole('heading', { name: 'Invitations status' }),
+    ).toHaveFocus();
   });
 });

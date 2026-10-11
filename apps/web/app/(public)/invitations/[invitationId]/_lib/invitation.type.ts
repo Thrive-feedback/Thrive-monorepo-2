@@ -10,7 +10,7 @@ export type ClosedInvitationStatus = Exclude<InvitationStatus, 'PENDING'>;
 export type Invitation = {
   readonly invitationId: string;
   readonly workspaceName: string;
-  /** `null` while the inviter has not introduced themselves. */
+  /** The inviter's Display name; `null` while they have not introduced themselves. */
   readonly inviterName: string | null;
   /** Only enough of the invited address for its owner to recognise it. */
   readonly invitedEmailMasked: string;

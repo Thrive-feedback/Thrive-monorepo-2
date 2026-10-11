@@ -1,5 +1,6 @@
+import Image from 'next/image';
+import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
-import { GoogleSignInButton } from '@/components/molecules/google-sign-in-button';
 import type { Invitation } from '../_lib/invitation.type';
 import { signInToAccept } from '../_lib/invitation-actions.service';
 import { InvitationHeading } from './invitation-heading';
@@ -22,7 +23,7 @@ export function InvitationSignIn({ invitation }: InvitationSignInProps) {
           <Text
             as="span"
             variant="body-2"
-            className="font-medium text-fg-primary"
+            className="font-medium text-action-secondary"
           >
             {invitation.invitedEmailMasked}
           </Text>
@@ -33,7 +34,22 @@ export function InvitationSignIn({ invitation }: InvitationSignInProps) {
         action={signInToAccept.bind(null, invitation.invitationId)}
         className="w-full max-w-110"
       >
-        <GoogleSignInButton type="submit" />
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full"
+          prefixIcon={
+            <Image
+              src="/brand/google-g.svg"
+              alt=""
+              width={20}
+              height={20}
+              className="size-5"
+            />
+          }
+        >
+          Continue with Google
+        </Button>
       </form>
     </div>
   );

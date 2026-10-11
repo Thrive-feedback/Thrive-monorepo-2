@@ -7,7 +7,7 @@ export function IntroduceYourselfHero() {
       <Text variant="display-5" as="h1" className="md:text-display-3">
         Let’s make it official.
       </Text>
-      <Text variant="body-2" tone="muted">
+      <Text variant="body-1" tone="muted">
         I’m putting the finishing touches on your desk. May I ask how you would
         like to be introduced to the team?
       </Text>
