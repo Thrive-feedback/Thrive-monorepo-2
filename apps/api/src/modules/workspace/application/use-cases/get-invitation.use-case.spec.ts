@@ -30,14 +30,14 @@ function setUp(status: InvitationStatusValue = 'PENDING') {
 }
 
 describe('reading an Invitation from its link', () => {
-  it('names the Workspace and the inviter, and masks the invited address', async () => {
+  it('names the Workspace and the inviter by Display name, and masks the invited address', async () => {
     const { profileNamePort, useCase } = setUp();
-    profileNamePort.fullNames.set('account-ann', 'Ann Lee');
+    profileNamePort.displayNames.set('account-ann', 'Ann');
 
     expect(await useCase.execute({ invitationId: INVITATION_ID })).toEqual({
       workspaceName: 'Acme',
-      inviterName: 'Ann Lee',
-      invitedEmailMasked: 's•••@acme.co',
+      inviterName: 'Ann',
+      invitedEmailMasked: 'som•••@acme.co',
       status: 'PENDING',
     });
   });

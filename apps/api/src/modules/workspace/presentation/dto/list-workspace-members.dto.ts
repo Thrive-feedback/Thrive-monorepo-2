@@ -13,6 +13,8 @@ const workspaceMemberSchema = z.object({
   email: z.string(),
   /** `null` while the Member has not introduced themselves. */
   fullName: z.string().nullable(),
+  /** The name others see and call them by; `null` while they have not introduced themselves. */
+  displayName: z.string().nullable(),
   role: z.enum(MEMBER_ROLES),
 });
 

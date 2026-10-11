@@ -58,6 +58,7 @@ export class WorkspaceMemberController {
         accountId: member.accountId,
         email: member.email,
         fullName: member.fullName,
+        displayName: member.displayName,
         role: member.role,
       })),
       total: members.total,

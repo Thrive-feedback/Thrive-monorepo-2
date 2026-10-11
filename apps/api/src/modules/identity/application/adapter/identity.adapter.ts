@@ -27,6 +27,13 @@ export class IdentityAdapter
     );
   }
 
+  async displayNameOf(accountId: string): Promise<string | null> {
+    const profile = await this.findProfileOfAccountUseCase.execute({
+      accountId,
+    });
+    return profile?.displayName ?? null;
+  }
+
   async fullNameOf(accountId: string): Promise<string | null> {
     const profile = await this.findProfileOfAccountUseCase.execute({
       accountId,

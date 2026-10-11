@@ -3,6 +3,6 @@
  * the person to someone else, such as naming who sent an Invitation.
  */
 export abstract class ProfileNamePort {
-  /** The Profile's full name, or `null` while the Account has not introduced itself. */
-  abstract fullNameOf(accountId: string): Promise<string | null>;
+  /** The Profile's Display name, or `null` while the Account has not introduced itself. */
+  abstract displayNameOf(accountId: string): Promise<string | null>;
 }

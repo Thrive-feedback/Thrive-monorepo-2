@@ -21,13 +21,14 @@ export class PrismaAccountQuery extends AccountQuery {
       select: {
         id: true,
         email: true,
-        profile: { select: { fullName: true } },
+        profile: { select: { fullName: true, displayName: true } },
       },
     });
     return accounts.map((account) => ({
       accountId: account.id,
       email: account.email,
       fullName: account.profile?.fullName ?? null,
+      displayName: account.profile?.displayName ?? null,
     }));
   }
 }

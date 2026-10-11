@@ -71,10 +71,10 @@ export class FakeHasProfilePort extends HasProfilePort {
 
 /** Answers the names of the Accounts the test says have introduced themselves. */
 export class FakeProfileNamePort extends ProfileNamePort {
-  readonly fullNames = new Map<string, string>();
+  readonly displayNames = new Map<string, string>();
 
-  async fullNameOf(accountId: string): Promise<string | null> {
-    return this.fullNames.get(accountId) ?? null;
+  async displayNameOf(accountId: string): Promise<string | null> {
+    return this.displayNames.get(accountId) ?? null;
   }
 }
 

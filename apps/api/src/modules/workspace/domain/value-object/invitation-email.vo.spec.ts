@@ -6,16 +6,17 @@ import {
 
 const NOW = new Date('2026-10-10T03:00:00Z');
 const SEVEN_DAYS_LATER = new Date('2026-10-17T03:00:00Z');
+const ACCEPT_URL =
+  'https://thrive.test/invitations/0199a0f0-0000-7000-8000-000000000001';
 
 function anInvitation(
   overrides: Partial<InvitationEmailDetails> = {},
 ): InvitationEmailDetails {
   return {
-    inviterName: 'Somchai Jaidee',
+    inviterName: 'Somchai',
     workspaceName: 'Acme',
     invitedEmail: 'ann@acme.co',
-    acceptUrl:
-      'https://thrive.test/invitations/0199a0f0-0000-7000-8000-000000000001',
+    acceptUrl: ACCEPT_URL,
     expiresAt: SEVEN_DAYS_LATER,
     now: NOW,
     ...overrides,
@@ -23,44 +24,74 @@ function anInvitation(
 }
 
 describe('the email that delivers an Invitation', () => {
-  it('names who invited and to which Workspace in its subject', () => {
+  it('names the Workspace in its subject', () => {
     expect(InvitationEmail.compose(anInvitation()).content().subject).toBe(
-      'Somchai Jaidee invited you to join Acme on Thrive',
+      'Your ticket to join Acme is ready!',
     );
   });
 
-  it('links to the Invitation, in the HTML and the plain text alike', () => {
+  it('says who reserved the spot, and in which Workspace, its name in orange', () => {
+    const email = InvitationEmail.compose(anInvitation()).content();
+
+    expect(email.text).toContain(
+      'Somchai has reserved a spot for you on the Acme workspace.',
+    );
+    expect(email.html).toContain(
+      'Somchai has reserved a spot for you on the <span style="color:#ac502e;">Acme</span> workspace.',
+    );
+  });
+
+  it('joins with a button that fits its label', () => {
+    const { html } = InvitationEmail.compose(anInvitation()).content();
+
+    expect(html).toMatch(
+      /<td align="center" style="padding-top:24px;">\n<table role="presentation" cellpadding="0"[^>]*>(?:(?!<\/table>)[\s\S])*>Join the workspace<\/a>/,
+    );
+  });
+
+  it('links to the Invitation from the button and the copyable link, and in the plain text', () => {
     const email = InvitationEmail.compose(anInvitation()).content();
 
     expect(email.html).toMatch(
-      /<a href="https:\/\/thrive\.test\/invitations\/0199a0f0-0000-7000-8000-000000000001"[^>]*>Accept invitation<\/a>/,
+      /<a href="https:\/\/thrive\.test\/invitations\/0199a0f0-0000-7000-8000-000000000001"[^>]*>Join the workspace<\/a>/,
     );
-    expect(email.text).toContain(
-      'Accept invitation: https://thrive.test/invitations/0199a0f0-0000-7000-8000-000000000001',
-    );
+    expect(email.html).toContain(`>${ACCEPT_URL}</a>`);
+    expect(email.text).toContain(`Here is your access pass: ${ACCEPT_URL}`);
   });
 
-  it('says which address must sign in to accept it', () => {
-    expect(InvitationEmail.compose(anInvitation()).content().text).toContain(
-      'Sign in with this email address (ann@acme.co) to accept it.',
-    );
+  it('carries no pictures, so nothing waits on a reader allowing them', () => {
+    expect(
+      InvitationEmail.compose(anInvitation()).content().html,
+    ).not.toContain('<img');
   });
 
-  it('says how many days it lasts, rather than a date in some timezone', () => {
-    expect(InvitationEmail.compose(anInvitation()).content().text).toContain(
-      'This invitation expires in 7 days.',
-    );
+  it('says how many days it lasts and which address must sign in', () => {
+    const email = InvitationEmail.compose(anInvitation()).content();
+
+    for (const body of [email.html, email.text]) {
+      expect(body).toContain(
+        'This invitation expires in 7 days. Sign in with ann@acme.co to accept it.',
+      );
+    }
+  });
+
+  it('says one day, not "1 days"', () => {
+    expect(
+      InvitationEmail.compose(
+        anInvitation({ expiresAt: new Date('2026-10-11T03:00:00Z') }),
+      ).content().text,
+    ).toContain('This invitation expires in 1 day.');
   });
 
   it('keeps Thai names as they were typed', () => {
     const email = InvitationEmail.compose(
-      anInvitation({ inviterName: 'สมชาย ใจดี', workspaceName: 'บริษัท เอ' }),
+      anInvitation({ inviterName: 'สมชาย', workspaceName: 'บริษัท เอ' }),
     ).content();
 
-    expect(email.subject).toBe(
-      'สมชาย ใจดี invited you to join บริษัท เอ on Thrive',
+    expect(email.subject).toBe('Your ticket to join บริษัท เอ is ready!');
+    expect(email.html).toContain(
+      'สมชาย has reserved a spot for you on the <span style="color:#ac502e;">บริษัท เอ</span> workspace.',
     );
-    expect(email.html).toContain('สมชาย ใจดี invited you to join บริษัท เอ');
     expect(email.html).toContain('<meta charset="utf-8">');
   });
 
@@ -73,17 +104,5 @@ describe('the email that delivers an Invitation', () => {
     expect(email.html).toContain(
       '&lt;a href=&quot;https://evil.test&quot;&gt;Acme&lt;/a&gt;',
     );
-  });
-
-  it('names the address that must sign in, in the HTML too', () => {
-    expect(InvitationEmail.compose(anInvitation()).content().html).toContain(
-      'ann@acme.co',
-    );
-  });
-
-  it('keeps the link readable for a client that hides the button', () => {
-    const { html } = InvitationEmail.compose(anInvitation()).content();
-
-    expect(html).toContain("If the button doesn't work, open this link:");
   });
 });
