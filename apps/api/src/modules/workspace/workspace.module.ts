@@ -60,7 +60,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     WorkspaceMemberGuard,
   ],
   // Published so a module acting inside a Workspace can ask whether an Account is a Member
-  // of it, without reaching into Workspace's own tables (BE_03 R1, R5).
+  // of it, without reaching into Workspace's own tables.
   exports: [WorkspaceMembershipPort],
 })
 export class WorkspaceModule {}

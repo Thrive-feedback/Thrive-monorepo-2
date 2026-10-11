@@ -9,9 +9,8 @@ function isAskStatus(raw: string): raw is AskStatusValue {
 }
 
 /**
- * Where one Ask stands. An Ask starts Pending; Answered arrives with answering (#24) and
- * Expired with the expiry date the Requester chooses (#39), each bringing the transition that
- * reaches it — nothing can reach them today, so nothing here claims to.
+ * Where one Ask stands. An Ask starts Pending; answering and expiry will each bring the
+ * transition that reaches their value, so nothing can reach Answered or Expired yet.
  */
 export class AskStatus {
   static readonly Pending = new AskStatus('PENDING');
