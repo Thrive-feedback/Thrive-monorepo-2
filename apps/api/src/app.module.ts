@@ -7,6 +7,7 @@ import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
+import { FeedbackModule } from './modules/feedback';
 import { IdentityModule } from './modules/identity';
 import { WorkspaceModule } from './modules/workspace';
 import { CodedErrorFilter } from './shared/presentation/coded-error.filter';
@@ -21,6 +22,7 @@ import { SharedModule } from './shared/shared.module';
     DatabaseModule,
     IdentityModule,
     WorkspaceModule,
+    FeedbackModule,
   ],
   controllers: [HealthController],
   providers: [
