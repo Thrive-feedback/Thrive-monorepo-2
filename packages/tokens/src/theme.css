@@ -80,6 +80,7 @@
   --color-status-info-surface-hover: var(--status-info-surface-hover);
   --color-status-info-fg: var(--status-info-fg);
   --color-status-info-border: var(--status-info-border);
+  --color-fg-muted: var(--fg-muted);
 
   --radius-none: var(--shape-none);
   --radius-inner: var(--shape-inner);
@@ -120,11 +121,13 @@
 
   --spacing: var(--space-unit);
   --spacing-inset-container: var(--inset-container);
+  --spacing-inset-section: var(--inset-section);
   --spacing-gap-section: var(--gap-section);
   --spacing-inset-control-x: var(--inset-control-x);
   --spacing-inset-control-y: var(--inset-control-y);
   --spacing-gap-grid: var(--gap-grid);
   --spacing-gap-nav: var(--gap-nav);
+  --spacing-inset-nav-y: var(--inset-nav-y);
   --spacing-inset-card: var(--inset-card);
 
   --text-display-1: var(--type-display-1-size);
