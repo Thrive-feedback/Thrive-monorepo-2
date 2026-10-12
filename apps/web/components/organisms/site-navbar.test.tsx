@@ -28,11 +28,20 @@ describe('SiteNavbar', () => {
     );
   });
 
+  it('shows the address signed in with while signed in', async () => {
+    readSession.mockResolvedValue({ email: 'ann@acme.test', name: 'Ann Lee' });
+
+    render(await SiteNavbar());
+
+    expect(screen.getByText('ann@acme.test')).toBeInTheDocument();
+  });
+
   it('shows only the logo when nobody is signed in', async () => {
     readSession.mockResolvedValue(null);
 
     render(await SiteNavbar());
 
+    expect(screen.queryByText(/@/)).toBeNull();
     expect(screen.queryByRole('button', { name: 'Sign out' })).toBeNull();
     expect(screen.getByRole('link')).toHaveAttribute('href', '/');
   });
