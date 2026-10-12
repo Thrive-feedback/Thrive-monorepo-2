@@ -11,7 +11,8 @@ const askSchema = z.object({
   status: z.enum(ASK_STATUSES),
 });
 
-export const getFeedbackRequestResponseSchema = z.object({
+/** One Feedback Request on the wire. The list of them sends the same shape, so it is one. */
+export const feedbackRequestSchema = z.object({
   id: z.uuid(),
   topic: z.string(),
   visibility: z.enum(VISIBILITIES),
@@ -19,6 +20,8 @@ export const getFeedbackRequestResponseSchema = z.object({
   asks: z.array(askSchema),
   createdAt: z.iso.datetime({ offset: true }),
 });
+
+export const getFeedbackRequestResponseSchema = feedbackRequestSchema;
 export class GetFeedbackRequestResponseDto extends createZodDto(
   getFeedbackRequestResponseSchema,
 ) {}
