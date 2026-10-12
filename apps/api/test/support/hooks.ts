@@ -13,11 +13,11 @@ import type { ThriveWorld } from './world';
 const BOOT_TIMEOUT_MS = 30_000;
 
 BeforeAll({ timeout: BOOT_TIMEOUT_MS }, async () => {
-  // The configuration requires Gmail credentials at boot (ADR 0036), but nothing here sends
-  // email: the provider is replaced below. Placeholders let the suite run without the real
-  // secret, and never replace one that is set.
-  process.env.GMAIL_SMTP_USER ??= 'scenarios@thrive.test';
-  process.env.GMAIL_SMTP_APP_PASSWORD ??= 'not-used-by-the-scenarios';
+  // The configuration requires the email provider's credentials at boot (ADR 0038), but
+  // nothing here sends email: the provider is replaced below. Placeholders let the suite run
+  // without the real secret, and never replace one that is set.
+  process.env.RESEND_API_KEY ??= 'not-used-by-the-scenarios';
+  process.env.RESEND_FROM_ADDRESS ??= 'scenarios@thrive.test';
 
   const emailSender = new FakeEmailSender();
   // Imported only now, so the placeholders above are in place before the configuration loads.

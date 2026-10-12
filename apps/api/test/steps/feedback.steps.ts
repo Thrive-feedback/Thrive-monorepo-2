@@ -64,7 +64,99 @@ Then(
 Then(
   '{person} is told it cannot be found',
   function (this: ThriveWorld, _name: string) {
-    // Outside the Workspace, the Workspace itself is not found: nothing about it leaks (BE_21 R3).
-    this.refusedWith('WORKSPACE_NOT_FOUND');
+    // Outside the Workspace, the Workspace is not found; inside it but not a party, the request
+    // is not found. Either way the caller learns nothing about it (ADR 0037, ADR 0039).
+    assert.equal(this.lastResponse?.status, 404);
+    assert.ok(
+      ['WORKSPACE_NOT_FOUND', 'FEEDBACK_REQUEST_NOT_FOUND'].includes(
+        this.lastResponse?.body?.error?.code,
+      ),
+      `Expected a not-found refusal, got ${JSON.stringify(this.lastResponse?.body)}`,
+    );
+  },
+);
+
+When(
+  '{person} looks at the requests they have sent',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await this.as(
+        name,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(name)}/feedback-requests`,
+      ),
+      `${name} listing the requests they sent`,
+    );
+  },
+);
+
+Then(
+  '{person} sees a request about {string} asking {person}',
+  function (this: ThriveWorld, _name: string, topic: string, giver: string) {
+    const items: { topic: string; asks: { giverAccountId: string }[] }[] =
+      this.lastResponse?.body.items;
+    assert.deepEqual(
+      items.map((request) => [
+        request.topic,
+        request.asks.map((ask) => ask.giverAccountId),
+      ]),
+      [[topic, [this.person(giver).accountId]]],
+    );
+  },
+);
+
+When(
+  '{person} looks at what they have been asked',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await this.as(
+        name,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(name)}/feedback-asks`,
+      ),
+      `${name} listing what they have been asked`,
+    );
+  },
+);
+
+Then(
+  '{person} sees an Ask from {person} about {string} waiting for an answer',
+  function (
+    this: ThriveWorld,
+    _name: string,
+    requester: string,
+    topic: string,
+  ) {
+    const items: {
+      topic: string;
+      requester: { accountId: string };
+      status: string;
+    }[] = this.lastResponse?.body.items;
+    assert.deepEqual(
+      items.map((ask) => [ask.topic, ask.requester.accountId, ask.status]),
+      [[topic, this.person(requester).accountId, 'PENDING']],
+    );
+  },
+);
+
+Then(
+  '{person} can open the Ask about {string}',
+  async function (this: ThriveWorld, name: string, topic: string) {
+    const workspaceId = this.workspaceOf(name);
+    const listed = this.succeeded(
+      await this.as(name, 'GET', `/v1/workspaces/${workspaceId}/feedback-asks`),
+      `${name} listing what they have been asked`,
+    );
+    const askId: string | undefined = listed.body.items[0]?.askId;
+    assert.ok(askId, `${name} has no Ask to open.`);
+    const opened = this.succeeded(
+      await this.as(
+        name,
+        'GET',
+        `/v1/workspaces/${workspaceId}/feedback-asks/${askId}`,
+      ),
+      `${name} opening the Ask`,
+    );
+    assert.equal(opened.body.topic, topic);
   },
 );
