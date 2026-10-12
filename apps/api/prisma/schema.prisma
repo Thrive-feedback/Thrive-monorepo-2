@@ -209,8 +209,37 @@ model FeedbackAsk {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
+  feedback          Feedback?
+
   @@unique([feedbackRequestId, giverAccountId])
   /// For "the Asks waiting for me" (#18), the one read that has no request id.
   @@index([giverAccountId, status])
   @@map("feedback_ask")
+}
+
+/// One Giver's answer to one Ask (glossary: Feedback, origin Requested). Offered Feedback —
+/// written without being asked, so with no Ask and no request — is #29, which makes
+/// feedbackAskId nullable and adds FeedbackOrigin.
+model Feedback {
+  id                String      @id
+  /// Workspace's id, held without a foreign key (BE_03 R7), as on FeedbackRequest.
+  workspaceId       String
+  feedbackRequestId String
+  /// Inside Feedback's own module, so a real relation. One answer per Ask, ever: this unique
+  /// index is what refuses a second answer when two requests race, which no check in the
+  /// application can do on its own.
+  feedbackAskId     String      @unique
+  feedbackAsk       FeedbackAsk @relation(fields: [feedbackAskId], references: [id], onDelete: Cascade)
+  /// The Accounts of the Member who wrote it and the Member it is for. No foreign keys.
+  giverAccountId    String
+  receiverAccountId String
+  body              String
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  /// For "the Feedback I received", newest first (#26).
+  @@index([workspaceId, receiverAccountId, createdAt])
+  /// For "the Feedback I gave" (#27).
+  @@index([workspaceId, giverAccountId, createdAt])
+  @@map("feedback")
 }

@@ -8,6 +8,11 @@ export interface PageRequest {
   readonly pageSize: number;
 }
 
+export interface AnswerView {
+  readonly body: string;
+  readonly answeredAt: Date;
+}
+
 /** One Ask as a screen reads it: who was asked, by name, and where it stands. */
 export interface AskView {
   readonly askId: string;
@@ -15,6 +20,13 @@ export interface AskView {
   /** `null` while that Member has not introduced themselves. */
   readonly giverName: string | null;
   readonly status: AskStatusValue;
+  /**
+   * What was written, or `null` — because the Ask is still waiting, because this caller may
+   * not read it, or because the view does not carry answers at all, as the list of sent
+   * requests does not. The Receiver reads every answer their request collected; a Giver reads
+   * their own and nobody else's.
+   */
+  readonly answer: AnswerView | null;
 }
 
 /** One Feedback Request as a screen reads it. */

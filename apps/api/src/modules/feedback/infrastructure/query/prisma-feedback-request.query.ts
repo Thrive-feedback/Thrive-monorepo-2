@@ -1,6 +1,7 @@
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { Injectable } from '@nestjs/common';
 import {
+  type FeedbackAnswerRow,
   type FeedbackAskPageRow,
   type FeedbackAskRow,
   type FeedbackRequestPageRow,
@@ -73,6 +74,23 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
           })),
         }
       : null;
+  }
+
+  async answersInRequest(
+    workspaceId: string,
+    requestId: string,
+  ): Promise<readonly FeedbackAnswerRow[]> {
+    const records =
+      await this.prismaTransactionContext.client.feedback.findMany({
+        where: { workspaceId, feedbackRequestId: requestId },
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        select: { feedbackAskId: true, body: true, createdAt: true },
+      });
+    return records.map((record) => ({
+      askId: record.feedbackAskId,
+      body: record.body,
+      answeredAt: record.createdAt,
+    }));
   }
 
   async sentInWorkspace(

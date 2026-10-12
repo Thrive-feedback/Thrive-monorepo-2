@@ -63,3 +63,30 @@ Feature: Feedback requests
       | opener | who they are           |
       | Ben    | another Member         |
       | Ann    | the Requester who sent it |
+
+  @api
+  Scenario: A teammate answers what they were asked, and the Member who asked reads it
+    Given Ann has asked Ben for Feedback on "Running the planning meeting"
+    When Ben answers "You open strongly and lose the room at the detail."
+    Then Ann reads "You open strongly and lose the room at the detail." on the request about "Running the planning meeting"
+
+  @api
+  Scenario: An answered Ask stops waiting
+    Given Ann has asked Ben for Feedback on "Running the planning meeting"
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When Ben looks at what they have been asked
+    Then Ben has nothing waiting for them
+
+  @api
+  Scenario: An Ask collects one answer, and the first one is final
+    Given Ann has asked Ben for Feedback on "Running the planning meeting"
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When Ben answers "And another thing."
+    Then Ben is told the Ask has already been answered
+
+  @api
+  Scenario: An Ask is answered by the Member it waits on and by nobody else
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben for Feedback on "Running the planning meeting"
+    When Cara answers the Ask waiting for Ben
+    Then Cara is told the Ask cannot be found

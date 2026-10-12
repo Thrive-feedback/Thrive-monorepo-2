@@ -73,6 +73,10 @@ export class ListSentFeedbackRequestsUseCase {
           giverAccountId: ask.giverAccountId,
           giverName: names.get(ask.giverAccountId) ?? null,
           status: AskStatus.of(ask.status).toString(),
+          // The list says where each Ask stands, not what was written: a page of twenty
+          // requests would carry twenty answers nobody is reading yet. The Receiver opens one
+          // request to read its answers.
+          answer: null,
         })),
         createdAt: request.createdAt,
       })),

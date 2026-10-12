@@ -38,8 +38,21 @@ export class FeedbackAsk {
     );
   }
 
+  hasId(askId: string): boolean {
+    return this.id === askId;
+  }
+
   isFor(accountId: string): boolean {
     return this.giverAccountId === accountId;
+  }
+
+  /** The same Ask, answered. Refuses a second answer, because the first one is final. */
+  answer(): FeedbackAsk {
+    return new FeedbackAsk(
+      this.id,
+      this.giverAccountId,
+      this.status.answered(),
+    );
   }
 
   snapshot(): FeedbackAskSnapshot {

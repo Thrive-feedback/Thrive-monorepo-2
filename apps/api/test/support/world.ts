@@ -37,6 +37,8 @@ export class ThriveWorld extends World {
   lastResponse?: ApiResponse;
   feedbackRequest?: FeedbackRequestSent;
   private readonly people = new Map<string, SignedInAccount>();
+  /** The Ask each person has open, so answering it twice does not need it to still be waiting. */
+  private readonly asksOnScreen = new Map<string, string>();
   /** The Workspace each person belongs to, once they belong to one. */
   private readonly workspaces = new Map<string, string>();
 
@@ -52,6 +54,15 @@ export class ThriveWorld extends World {
     const account = await this.fixtures.aSignedInAccount(name.toLowerCase());
     this.people.set(name, account);
     return account;
+  }
+
+  /** Remembers the Ask `name` is looking at, the way their screen holds the id. */
+  opened(name: string, askId: string): void {
+    this.asksOnScreen.set(name, askId);
+  }
+
+  askOnScreen(name: string): string | undefined {
+    return this.asksOnScreen.get(name);
   }
 
   person(name: string): SignedInAccount {

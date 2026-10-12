@@ -154,3 +154,46 @@ export async function myInvitations(
   );
   return response.body.items;
 }
+
+/** The Giver answers the one Ask waiting for them, as the answer screen would. */
+export async function answerTheirAsk(
+  world: ThriveWorld,
+  giver: string,
+  body: string,
+): Promise<ApiResponse> {
+  return world.as(
+    giver,
+    'POST',
+    `/v1/workspaces/${world.workspaceOf(giver)}/feedback-asks/${await askIdWaitingFor(world, giver)}/answers`,
+    { body },
+  );
+}
+
+/**
+ * The id of the Ask `name` is answering: the one their screen already holds, or — the first
+ * time — the one waiting in their own list, which is the only route that will show it to them.
+ *
+ * Remembering it is what lets a scenario press Send twice. A Giver who has just answered has
+ * the id in front of them; their waiting list no longer does.
+ */
+export async function askIdWaitingFor(
+  world: ThriveWorld,
+  name: string,
+): Promise<string> {
+  const onScreen = world.askOnScreen(name);
+  if (onScreen) {
+    return onScreen;
+  }
+  const listed = world.succeeded(
+    await world.as(
+      name,
+      'GET',
+      `/v1/workspaces/${world.workspaceOf(name)}/feedback-asks`,
+    ),
+    `${name} listing what they have been asked`,
+  );
+  const askId: string | undefined = listed.body.items[0]?.askId;
+  assert.ok(askId, `${name} has no Ask waiting for them.`);
+  world.opened(name, askId);
+  return askId;
+}

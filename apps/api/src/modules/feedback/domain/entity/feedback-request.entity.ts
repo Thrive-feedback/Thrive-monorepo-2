@@ -3,8 +3,10 @@ import {
   GiverAlreadyAskedError,
   NoGiversToAskError,
 } from '../feedback-request.errors';
+import type { FeedbackBody } from '../value-object/feedback-body.vo';
 import { Topic } from '../value-object/topic.vo';
 import { Visibility } from '../value-object/visibility.vo';
+import { Feedback } from './feedback.entity';
 import { FeedbackAsk, type FeedbackAskSnapshot } from './feedback-ask.entity';
 
 export interface FeedbackRequestSnapshot {
@@ -37,7 +39,7 @@ export class FeedbackRequest {
     private readonly requesterAccountId: string,
     private readonly topic: Topic,
     private readonly visibility: Visibility,
-    private readonly asks: readonly FeedbackAsk[],
+    private asks: readonly FeedbackAsk[],
   ) {}
 
   /**
@@ -99,6 +101,42 @@ export class FeedbackRequest {
       Visibility.of(snapshot.visibility),
       snapshot.asks.map((ask) => FeedbackAsk.restore(ask)),
     );
+  }
+
+  /**
+   * The Giver answers their Ask: the Ask becomes Answered and the Feedback it collected comes
+   * back, addressed to the Requester. Both happen here because "this Ask is answered once" is
+   * a rule about the request, not about one Ask — which is why the request is the consistency
+   * boundary and the Feedback is written in the same transaction.
+   *
+   * `null` when the request holds no such Ask for that Giver. It is not this aggregate's place
+   * to decide what a caller is told about an Ask that is not theirs; the use case answers that
+   * the same way every scoped read does.
+   */
+  answerAsk(details: {
+    readonly askId: string;
+    readonly giverAccountId: string;
+    readonly feedbackId: string;
+    readonly body: FeedbackBody;
+  }): Feedback | null {
+    const asked = this.asks.find(
+      (ask) => ask.hasId(details.askId) && ask.isFor(details.giverAccountId),
+    );
+    if (!asked) {
+      return null;
+    }
+    const answered = asked.answer();
+    this.asks = this.asks.map((ask) => (ask === asked ? answered : ask));
+    return Feedback.answering({
+      id: details.feedbackId,
+      workspaceId: this.workspaceId,
+      feedbackRequestId: this.id,
+      feedbackAskId: details.askId,
+      giverAccountId: details.giverAccountId,
+      // The Requester asked, so the Requester is who the answer is for. Never a client's word.
+      receiverAccountId: this.requesterAccountId,
+      body: details.body,
+    });
   }
 
   snapshot(): FeedbackRequestSnapshot {

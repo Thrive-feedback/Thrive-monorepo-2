@@ -1,4 +1,7 @@
-import { AskStatusInvalidError } from '../feedback-request.errors';
+import {
+  AskAlreadyAnsweredError,
+  AskStatusInvalidError,
+} from '../feedback-request.errors';
 
 export const ASK_STATUSES = ['PENDING', 'ANSWERED', 'EXPIRED'] as const;
 
@@ -9,11 +12,12 @@ function isAskStatus(raw: string): raw is AskStatusValue {
 }
 
 /**
- * Where one Ask stands. An Ask starts Pending; answering and expiry will each bring the
- * transition that reaches their value, so nothing can reach Answered or Expired yet.
+ * Where one Ask stands. An Ask starts Pending and becomes Answered when its Giver writes the
+ * answer; expiry brings the transition that reaches Expired (#39), so nothing reaches it yet.
  */
 export class AskStatus {
   static readonly Pending = new AskStatus('PENDING');
+  static readonly Answered = new AskStatus('ANSWERED');
 
   private constructor(private readonly value: AskStatusValue) {}
 
@@ -26,6 +30,14 @@ export class AskStatus {
 
   isPending(): boolean {
     return this.value === 'PENDING';
+  }
+
+  /** The answered Ask. Only a Pending one can be answered — the first answer is final. */
+  answered(): AskStatus {
+    if (!this.isPending()) {
+      throw new AskAlreadyAnsweredError();
+    }
+    return AskStatus.Answered;
   }
 
   equals(other: AskStatus): boolean {
