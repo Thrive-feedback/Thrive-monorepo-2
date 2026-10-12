@@ -4,23 +4,20 @@ import {
 } from '@app/shared/application/email-sender.port';
 import { Logger } from '@nestjs/common';
 
-/** Resend answers in well under a second; a request still open after this is reported as failed. */
+/** Resend answers in well under a second. */
 const SEND_TIMEOUT_MS = 15_000;
 
-/** Two retries past the first try. Past that the send has failed for the caller to answer. */
+/** Two retries past the first try. */
 const MAX_SEND_ATTEMPTS = 3;
 
 const RETRY_BASE_DELAY_MS = 250;
 
-/**
- * Statuses where the message was certainly not accepted and the condition is transient. A
- * validation error is absent on purpose: retrying a malformed message only sends it again.
- */
+/** A validation error is absent on purpose: sending a malformed message again only fails again. */
 const RETRYABLE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
-/** Waits, so a test can run the retry path without the delay it is built around. */
+/** Injected so a test can run the retry path without the delay it is built around. */
 export type Wait = (milliseconds: number) => Promise<void>;
 
 const waitWithTimer: Wait = (milliseconds) =>
@@ -67,10 +64,6 @@ export class ResendEmailSender extends EmailSender {
     }
   }
 
-  /**
-   * One request. A retry is only safe because of the idempotency key: without it a request
-   * whose response was lost could not be told from one that never arrived.
-   */
   private async attempt(message: EmailMessage): Promise<Attempt> {
     let response: Response;
     try {
@@ -92,8 +85,7 @@ export class ResendEmailSender extends EmailSender {
         signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
       });
     } catch {
-      // A timeout or a dropped connection. The request may or may not have arrived, which is
-      // what the idempotency key is for.
+      // The request may or may not have arrived, which is what the idempotency key is for.
       return { sent: false, retryable: true };
     }
 
@@ -114,16 +106,16 @@ interface Attempt {
   readonly status?: number;
 }
 
-/** Exponential, with jitter so a batch of Invitations does not retry in lockstep. */
+/** Jittered so a batch of Invitations does not retry in lockstep. */
 function backoffFor(attempt: number): number {
   const exponential = RETRY_BASE_DELAY_MS * 2 ** (attempt - 1);
   return exponential + Math.random() * exponential;
 }
 
 /**
- * Encodes a person's name for the From header. Resend takes that header as one string, so the
- * escaping is this code's to do. The name reaches here from a Profile someone typed: a quote
- * would end the display name early, and a newline would start a header of their choosing.
+ * Resend takes the From header as one string, so the escaping is this code's to do. The name
+ * reaches here from a Profile someone typed: a quote would end the display name early, and a
+ * newline would start a header of their choosing.
  */
 function quotedDisplayName(name: string): string {
   const escaped = name

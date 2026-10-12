@@ -2,9 +2,9 @@
 export interface EmailMessage {
   readonly to: string;
   /**
-   * Names which logical email this is, so a transport may retry a send whose outcome it never
-   * learned without delivering twice. Only the caller can tell two sends to the same address
-   * apart: re-inviting someone after a failure is a different email, not a retry of the first.
+   * Lets a transport retry a send whose outcome it never learned without delivering twice. Only
+   * the caller can tell two sends to the same address apart: re-inviting someone after a failure
+   * is a different email, not a retry of the first.
    */
   readonly idempotencyKey: string;
   /** Shown as the sender's name, beside an address the transport owns. */
