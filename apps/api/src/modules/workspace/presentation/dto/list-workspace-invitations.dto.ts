@@ -1,8 +1,11 @@
+import {
+  pageQueryShape,
+  pageResultShape,
+} from '@app/shared/presentation/dto/page.dto';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { OPEN_INVITATION_STATUSES } from '../../domain/value-object/invitation-status.vo';
 import { MEMBER_ROLES } from '../../domain/value-object/member-role.vo';
-import { pageQueryShape, pageResultShape } from './page.dto';
 
 export const listWorkspaceInvitationsQuerySchema =
   z.strictObject(pageQueryShape);

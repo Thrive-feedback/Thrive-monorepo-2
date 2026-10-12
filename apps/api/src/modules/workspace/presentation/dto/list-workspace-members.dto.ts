@@ -1,7 +1,10 @@
+import {
+  pageQueryShape,
+  pageResultShape,
+} from '@app/shared/presentation/dto/page.dto';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { MEMBER_ROLES } from '../../domain/value-object/member-role.vo';
-import { pageQueryShape, pageResultShape } from './page.dto';
 
 export const listWorkspaceMembersQuerySchema = z.strictObject(pageQueryShape);
 export class ListWorkspaceMembersQueryDto extends createZodDto(
