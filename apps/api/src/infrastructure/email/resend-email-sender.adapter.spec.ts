@@ -30,7 +30,10 @@ function stubResend(...statuses: (number | 'unreachable')[]): RequestInit[] {
     if (status === 'unreachable') {
       throw new Error('socket closed');
     }
-    return new Response(null, { status });
+    return new Response(JSON.stringify({ name: 'validation_error' }), {
+      status,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }) as typeof fetch;
   return calls;
 }
@@ -138,6 +141,14 @@ describe('sending an email through Resend', () => {
 
     expect(bodyOf(calls, 0).from).toBe(
       '"Ann Bcc: eve@evil via Thrive" <no-reply@send.thrive.example>',
+    );
+  });
+
+  it('says which refusal Resend named, so a status alone need not be guessed at', async () => {
+    stubResend(400);
+
+    await expect(senderUnderTest().send(anEmail())).rejects.toThrow(
+      /validation_error/,
     );
   });
 });
