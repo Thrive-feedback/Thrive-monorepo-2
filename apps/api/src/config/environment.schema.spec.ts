@@ -8,8 +8,8 @@ const validEnvironment = {
   BETTER_AUTH_URL: 'http://localhost:3001',
   GOOGLE_CLIENT_ID: 'client-id.apps.googleusercontent.com',
   GOOGLE_CLIENT_SECRET: 'client-secret',
-  GMAIL_SMTP_USER: 'thrive.test@gmail.com',
-  GMAIL_SMTP_APP_PASSWORD: 'abcd efgh ijkl mnop',
+  RESEND_API_KEY: 're_test_key',
+  RESEND_FROM_ADDRESS: 'no-reply@send.thrive.example',
 };
 
 function failedPaths(env: Record<string, string | undefined>): string[] {
@@ -51,7 +51,7 @@ describe('environmentSchema', () => {
     },
   );
 
-  it.each(['GMAIL_SMTP_USER', 'GMAIL_SMTP_APP_PASSWORD'])(
+  it.each(['RESEND_API_KEY', 'RESEND_FROM_ADDRESS'])(
     'refuses a missing %s, since every email is sent for real',
     (name) => {
       expect(failedPaths({ ...validEnvironment, [name]: undefined })).toEqual([
@@ -60,9 +60,9 @@ describe('environmentSchema', () => {
     },
   );
 
-  it('refuses a Gmail user that is not an email address', () => {
+  it('refuses a From address that is not an email address', () => {
     expect(
-      failedPaths({ ...validEnvironment, GMAIL_SMTP_USER: 'thrive' }),
-    ).toEqual(['GMAIL_SMTP_USER']);
+      failedPaths({ ...validEnvironment, RESEND_FROM_ADDRESS: 'no-reply' }),
+    ).toEqual(['RESEND_FROM_ADDRESS']);
   });
 });

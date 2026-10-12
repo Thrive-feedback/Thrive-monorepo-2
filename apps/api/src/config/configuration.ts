@@ -31,9 +31,9 @@ export class AuthConfig {
 
 export class EmailConfig {
   constructor(
-    /** The Gmail account every email is sent as. */
-    readonly gmailUser: string,
-    readonly gmailAppPassword: string,
+    readonly resendApiKey: string,
+    /** The address every email is sent from, on the verified sending subdomain. */
+    readonly fromAddress: string,
   ) {}
 }
 
@@ -89,8 +89,8 @@ export function loadConfiguration(
       parsed.data.GOOGLE_CLIENT_SECRET,
     ),
     email: new EmailConfig(
-      parsed.data.GMAIL_SMTP_USER,
-      parsed.data.GMAIL_SMTP_APP_PASSWORD,
+      parsed.data.RESEND_API_KEY,
+      parsed.data.RESEND_FROM_ADDRESS,
     ),
     // The auth URL is already the web origin (ADR 0027), so a second variable would only be
     // one that could disagree with it.

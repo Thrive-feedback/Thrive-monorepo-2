@@ -39,3 +39,17 @@ export class WorkspaceNotFoundError extends ApplicationError {
     super('No Workspace with this id has the caller as a Member.');
   }
 }
+
+/**
+ * No Ask with this id is addressed to the caller in this Workspace. One answer for "it does not
+ * exist", "it is somebody else's" and "it is another Workspace's", so no id can be probed for
+ * and no Member learns that another Member was asked.
+ */
+export class FeedbackAskNotFoundError extends ApplicationError {
+  readonly code = 'FEEDBACK_ASK_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super('No Ask with this id is waiting for you in this Workspace.');
+  }
+}

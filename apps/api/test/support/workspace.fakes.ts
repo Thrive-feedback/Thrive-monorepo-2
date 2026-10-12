@@ -177,8 +177,11 @@ export class FakeMembershipQuery extends MembershipQuery {
 /** Answers the Accounts the test has described, as Identity would. */
 export class FakeAccountSummaryPort extends AccountSummaryPort {
   readonly summaries: AccountSummary[] = [];
+  /** One entry per call, holding what was asked for: how a test sees an N+1 read. */
+  readonly calls: (readonly string[])[] = [];
 
   async summariesOf(accountIds: readonly string[]): Promise<AccountSummary[]> {
+    this.calls.push([...accountIds]);
     return this.summaries.filter((s) => accountIds.includes(s.accountId));
   }
 }

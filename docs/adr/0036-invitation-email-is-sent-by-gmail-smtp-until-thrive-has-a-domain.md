@@ -1,6 +1,6 @@
 # 0036 — Invitation email is sent by Gmail SMTP until Thrive has a domain
 
-Status:   accepted
+Status:   superseded by 0038
 Date:     2026-10-10
 Deciders: kritpavin
 

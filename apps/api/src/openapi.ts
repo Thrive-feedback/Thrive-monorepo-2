@@ -27,6 +27,10 @@ export function buildOpenApiDocument(
           'Who is signed in, their session and their Profile.',
         )
         .addTag('workspace', 'Workspaces, their Members and their Invitations.')
+        .addTag(
+          'feedback',
+          'Feedback Requests, the Asks they hold, and the answers to them.',
+        )
         .addTag('app', 'The application itself, such as its health.')
         .build(),
     ),

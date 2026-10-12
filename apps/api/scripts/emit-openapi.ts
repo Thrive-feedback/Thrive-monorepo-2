@@ -24,9 +24,9 @@ async function emit(): Promise<void> {
   process.env.BETTER_AUTH_URL = 'http://unused.invalid';
   process.env.GOOGLE_CLIENT_ID = 'unused';
   process.env.GOOGLE_CLIENT_SECRET = 'unused';
-  // Never used: no email is sent, and the transport opens no connection until one is.
-  process.env.GMAIL_SMTP_USER = 'unused@unused.invalid';
-  process.env.GMAIL_SMTP_APP_PASSWORD = 'unused';
+  // Never used: no email is sent, and the transport makes no request until one is.
+  process.env.RESEND_API_KEY = 'unused';
+  process.env.RESEND_FROM_ADDRESS = 'unused@unused.invalid';
   const app = await NestFactory.create(AppModule, { logger: false });
   const target = resolve(__dirname, '..', 'openapi.json');
 

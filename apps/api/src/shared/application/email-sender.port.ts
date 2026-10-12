@@ -1,6 +1,12 @@
 /** One email to one person. The sender decides the From address; the caller only names it. */
 export interface EmailMessage {
   readonly to: string;
+  /**
+   * Lets a transport retry a send whose outcome it never learned without delivering twice. Only
+   * the caller can tell two sends to the same address apart: re-inviting someone after a failure
+   * is a different email, not a retry of the first.
+   */
+  readonly idempotencyKey: string;
   /** Shown as the sender's name, beside an address the transport owns. */
   readonly fromName: string;
   /** Where a reply goes, since the From address is not one a person reads. */
