@@ -38,7 +38,7 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: thrive-feedback
-  WEB_URL: https://thrive-web-production.up.railway.app
+  WEB_URL: https://thriveteam.app
   # A workspace token has no project of its own, so every Railway command names the project
   # and environment it means. A project id identifies, it does not authorise — the token in
   # the secret store is what does that.
@@ -137,7 +137,7 @@ jobs:
     timeout-minutes: 30
     environment:
       name: production
-      url: https://thrive-web-production.up.railway.app
+      url: https://thriveteam.app
     env:
       # A workspace token, not a project token: changing a service's source is a
       # management action, which a project token may not make. The CLI reads account- and
