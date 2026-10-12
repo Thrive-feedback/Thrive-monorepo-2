@@ -12,8 +12,8 @@ export interface SignedInAccount {
 }
 
 /**
- * Builds signed-in Accounts and Workspaces in the real database for the Invitation suites,
- * and removes everything it built.
+ * Builds signed-in Accounts and Workspaces in the real database for the Invitation suites and
+ * the `@api` scenarios, and removes everything it built.
  */
 export class WorkspaceFixtures {
   private readonly accountIds: string[] = [];
@@ -72,6 +72,11 @@ export class WorkspaceFixtures {
   }
 
   async removeAll(): Promise<void> {
+    // Feedback names its Workspace and people by id only, with no foreign key to cascade
+    // through, so its rows go first and by hand.
+    await this.prismaService.feedbackRequest.deleteMany({
+      where: { requesterAccountId: { in: this.accountIds } },
+    });
     await this.prismaService.workspace.deleteMany({
       where: { members: { some: { userId: { in: this.accountIds } } } },
     });
