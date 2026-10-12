@@ -15,6 +15,12 @@ describe('who may accept an Invitation', () => {
     ).not.toThrow();
   });
 
+  it('reads an address the way Invitations are stored, so a signed-in address finds its own', () => {
+    expect(InvitationRecipient.of(' Somchai@Acme.co ').toString()).toBe(
+      'somchai@acme.co',
+    );
+  });
+
   it('refuses an Account signed in with another address', () => {
     expect(() =>
       InvitationRecipient.of('somchai@acme.co').ensureIs('nok@acme.co'),

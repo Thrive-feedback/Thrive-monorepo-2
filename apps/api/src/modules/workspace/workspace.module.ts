@@ -11,6 +11,7 @@ import { MembershipQuery } from './application/query-port/membership.query-port'
 import { AcceptInvitationUseCase } from './application/use-cases/accept-invitation.use-case';
 import { CreateWorkspaceUseCase } from './application/use-cases/create-workspace.use-case';
 import { GetInvitationUseCase } from './application/use-cases/get-invitation.use-case';
+import { ListMyInvitationsUseCase } from './application/use-cases/list-my-invitations.use-case';
 import { ListMyMembershipsUseCase } from './application/use-cases/list-my-memberships.use-case';
 import { ListWorkspaceInvitationsUseCase } from './application/use-cases/list-workspace-invitations.use-case';
 import { ListWorkspaceMembersUseCase } from './application/use-cases/list-workspace-members.use-case';
@@ -25,6 +26,7 @@ import { PrismaMembershipQuery } from './infrastructure/query/prisma-membership.
 import { InvitationController } from './presentation/invitation.controller';
 import { InvitationLinkController } from './presentation/invitation-link.controller';
 import { MemberController } from './presentation/member.controller';
+import { MyInvitationController } from './presentation/my-invitation.controller';
 import { WorkspaceController } from './presentation/workspace.controller';
 import { WorkspaceMemberController } from './presentation/workspace-member.controller';
 import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
@@ -42,6 +44,8 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     MemberController,
     WorkspaceMemberController,
     InvitationController,
+    // Before the link's controller, whose `:invitationId` would otherwise take `mine`.
+    MyInvitationController,
     InvitationLinkController,
   ],
   providers: [
@@ -58,6 +62,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     { provide: InvitationQuery, useClass: PrismaInvitationQuery },
     CreateWorkspaceUseCase,
     ListMyMembershipsUseCase,
+    ListMyInvitationsUseCase,
     ResolveMembershipUseCase,
     SendInvitationsUseCase,
     ListWorkspaceMembersUseCase,
