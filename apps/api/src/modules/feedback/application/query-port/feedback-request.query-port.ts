@@ -40,6 +40,12 @@ export interface FeedbackAskPageRow {
   readonly total: number;
 }
 
+export interface FeedbackAnswerRow {
+  readonly askId: string;
+  readonly body: string;
+  readonly answeredAt: Date;
+}
+
 export abstract class FeedbackRequestQuery {
   /**
    * One request of one Workspace with its Asks, or `null`. The Workspace is a required
@@ -49,6 +55,16 @@ export abstract class FeedbackRequestQuery {
     workspaceId: string,
     requestId: string,
   ): Promise<FeedbackRequestRow | null>;
+
+  /**
+   * The answers written in one request, by Ask. Read on its own rather than joined onto every
+   * request: only the screen that opens one request shows them, and who may read which is the
+   * use case's to decide.
+   */
+  abstract answersInRequest(
+    workspaceId: string,
+    requestId: string,
+  ): Promise<readonly FeedbackAnswerRow[]>;
 
   /** The requests one Member sent in one Workspace, newest first. */
   abstract sentInWorkspace(

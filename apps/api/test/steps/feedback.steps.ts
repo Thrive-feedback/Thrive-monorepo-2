@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { Given, Then, When } from '@cucumber/cucumber';
-import { askForFeedback } from '../support/journeys';
+import {
+  answerTheirAsk,
+  askForFeedback,
+  askIdWaitingFor,
+} from '../support/journeys';
 import type { ThriveWorld } from '../support/world';
 
 function openFeedbackRequest(world: ThriveWorld, name: string) {
@@ -14,27 +18,6 @@ function openFeedbackRequest(world: ThriveWorld, name: string) {
     'GET',
     `/v1/workspaces/${workspaceId}/feedback-requests/${id}`,
   );
-}
-
-/**
- * The id of the one Ask waiting for `name`, read as they would read it — through their own
- * waiting list, which is the only route that will show it to them.
- */
-async function askIdWaitingFor(
-  world: ThriveWorld,
-  name: string,
-): Promise<string> {
-  const listed = world.succeeded(
-    await world.as(
-      name,
-      'GET',
-      `/v1/workspaces/${world.workspaceOf(name)}/feedback-asks`,
-    ),
-    `${name} listing what they have been asked`,
-  );
-  const askId: string | undefined = listed.body.items[0]?.askId;
-  assert.ok(askId, `${name} has no Ask waiting for them.`);
-  return askId;
 }
 
 Given(
@@ -209,5 +192,68 @@ Then(
   function (this: ThriveWorld, _name: string) {
     assert.deepEqual(this.lastResponse?.body.items, []);
     assert.equal(this.lastResponse?.body.total, 0);
+  },
+);
+
+Given(
+  '{person} has answered {string}',
+  async function (this: ThriveWorld, giver: string, body: string) {
+    this.succeeded(
+      await answerTheirAsk(this, giver, body),
+      `${giver} answering their Ask`,
+    );
+  },
+);
+
+When(
+  '{person} answers {string}',
+  async function (this: ThriveWorld, giver: string, body: string) {
+    await answerTheirAsk(this, giver, body);
+  },
+);
+
+When(
+  '{person} answers the Ask waiting for {person}',
+  async function (this: ThriveWorld, opener: string, giver: string) {
+    const askId = await askIdWaitingFor(this, giver);
+    await this.as(
+      opener,
+      'POST',
+      `/v1/workspaces/${this.workspaceOf(opener)}/feedback-asks/${askId}/answers`,
+      { body: 'Something I was never asked for.' },
+    );
+  },
+);
+
+Then(
+  '{person} reads {string} on the request about {string}',
+  async function (
+    this: ThriveWorld,
+    name: string,
+    body: string,
+    topic: string,
+  ) {
+    const response = this.succeeded(
+      await openFeedbackRequest(this, name),
+      `${name} opening the Feedback request`,
+    );
+    assert.equal(response.body.topic, topic);
+    assert.deepEqual(
+      response.body.asks.map(
+        (ask: { answer: { body: string } | null; status: string }) => [
+          ask.answer?.body ?? null,
+          ask.status,
+        ],
+      ),
+      [[body, 'ANSWERED']],
+    );
+  },
+);
+
+Then(
+  '{person} is told the Ask has already been answered',
+  function (this: ThriveWorld, _name: string) {
+    assert.equal(this.lastResponse?.status, 409);
+    this.refusedWith('ASK_ALREADY_ANSWERED');
   },
 );

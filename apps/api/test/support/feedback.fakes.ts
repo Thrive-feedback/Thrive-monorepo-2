@@ -1,4 +1,5 @@
 import type {
+  FeedbackAnswerRow,
   FeedbackAskPageRow,
   FeedbackAskRow,
   FeedbackRequestPageRow,
@@ -6,10 +7,12 @@ import type {
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import type { PageRequest } from '@app/modules/feedback/application/types/feedback-request.types';
+import type { Feedback } from '@app/modules/feedback/domain/entity/feedback.entity';
 import {
   FeedbackRequest,
   type FeedbackRequestSnapshot,
 } from '@app/modules/feedback/domain/entity/feedback-request.entity';
+import { AskAlreadyAnsweredError } from '@app/modules/feedback/domain/feedback-request.errors';
 import { FeedbackRequestRepository } from '@app/modules/feedback/domain/repository/feedback-request-repository.port';
 import type { AskStatusValue } from '@app/modules/feedback/domain/value-object/ask-status.vo';
 import { WorkspaceMembershipPort } from '@app/modules/workspace';
@@ -57,10 +60,69 @@ export class FakeFeedbackRequestRepository extends FeedbackRequestRepository {
     );
     return found ? FeedbackRequest.restore(found) : null;
   }
+
+  async findByAskOfGiver(
+    workspaceId: string,
+    askId: string,
+    giverAccountId: string,
+  ): Promise<FeedbackRequest | null> {
+    const found = this.saved.find(
+      (request) =>
+        request.workspaceId === workspaceId &&
+        request.asks.some(
+          (ask) => ask.id === askId && ask.giverAccountId === giverAccountId,
+        ),
+    );
+    return found ? FeedbackRequest.restore(found) : null;
+  }
+
+  readonly answers: ReturnType<Feedback['snapshot']>[] = [];
+
+  /**
+   * Like the real store: the Ask it answers has to still be Pending, and one Ask can hold one
+   * answer — the two defences the repository turns into the same refusal.
+   */
+  async saveAnswer(
+    request: FeedbackRequest,
+    feedback: Feedback,
+  ): Promise<void> {
+    const answer = feedback.snapshot();
+    const stored = this.saved.findIndex(
+      (saved) => saved.id === answer.feedbackRequestId,
+    );
+    const before = this.saved[stored];
+    const asked = before?.asks.find((ask) => ask.id === answer.feedbackAskId);
+    if (!before || !asked || asked.status !== 'PENDING') {
+      throw new AskAlreadyAnsweredError();
+    }
+    if (
+      this.answers.some((held) => held.feedbackAskId === answer.feedbackAskId)
+    ) {
+      throw new AskAlreadyAnsweredError();
+    }
+    this.saved[stored] = request.snapshot();
+    this.answers.push(answer);
+  }
 }
 
 export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
   readonly rows: (FeedbackRequestRow & { readonly workspaceId: string })[] = [];
+
+  readonly answers: FeedbackAnswerRow[] = [];
+
+  async answersInRequest(
+    workspaceId: string,
+    requestId: string,
+  ): Promise<readonly FeedbackAnswerRow[]> {
+    const request = this.rows.find(
+      (row) => row.id === requestId && row.workspaceId === workspaceId,
+    );
+    if (!request) {
+      return [];
+    }
+    const askIds = new Set(request.asks.map((ask) => ask.askId));
+    return this.answers.filter((answer) => askIds.has(answer.askId));
+  }
 
   async requestInWorkspace(
     workspaceId: string,

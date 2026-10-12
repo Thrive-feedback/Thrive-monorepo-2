@@ -1,15 +1,18 @@
 import { type Actor, CurrentActor } from '@app/shared/presentation/actor';
 import { COOKIE_HEADER } from '@app/shared/presentation/dto/cookie-header.dto';
 import {
+  Body,
   Controller,
   Get,
   HttpStatus,
   Param,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiHeader,
   ApiNotFoundResponse,
   ApiOperation,
@@ -18,8 +21,13 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import type { MyAskView } from '../application/types/feedback-request.types';
+import { AnswerFeedbackAskUseCase } from '../application/use-cases/answer-feedback-ask.use-case';
 import { GetFeedbackAskUseCase } from '../application/use-cases/get-feedback-ask.use-case';
 import { ListMyFeedbackAsksUseCase } from '../application/use-cases/list-my-feedback-asks.use-case';
+import {
+  AnswerFeedbackAskRequestDto,
+  AnswerFeedbackAskResponseDto,
+} from './dto/answer-feedback-ask.dto';
 import { GetFeedbackAskResponseDto } from './dto/get-feedback-ask.dto';
 import {
   ListMyFeedbackAsksQueryDto,
@@ -57,6 +65,7 @@ export class FeedbackAskController {
   constructor(
     private readonly listMyFeedbackAsksUseCase: ListMyFeedbackAsksUseCase,
     private readonly getFeedbackAskUseCase: GetFeedbackAskUseCase,
+    private readonly answerFeedbackAskUseCase: AnswerFeedbackAskUseCase,
   ) {}
 
   @Get()
@@ -106,5 +115,37 @@ export class FeedbackAskController {
       askId: params.askId,
     });
     return toResponse(ask);
+  }
+
+  @Post(':askId/answers')
+  @ApiOperation({
+    summary: 'Answer an Ask waiting for the caller, in one free-text answer',
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ZodResponse({
+    status: HttpStatus.CREATED,
+    type: AnswerFeedbackAskResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description:
+      'REQUEST_INVALID, FEEDBACK_BODY_EMPTY or FEEDBACK_BODY_TOO_LONG',
+  })
+  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
+  @ApiNotFoundResponse({
+    description: 'WORKSPACE_NOT_FOUND or FEEDBACK_ASK_NOT_FOUND',
+  })
+  @ApiConflictResponse({ description: 'ASK_ALREADY_ANSWERED' })
+  async answerFeedbackAsk(
+    @CurrentActor() actor: Actor,
+    @Param() params: FeedbackAskPathParamsDto,
+    @Body() body: AnswerFeedbackAskRequestDto,
+  ) {
+    const answered = await this.answerFeedbackAskUseCase.execute({
+      workspaceId: params.workspaceId,
+      giverAccountId: actor.accountId,
+      askId: params.askId,
+      body: body.body,
+    });
+    return { feedbackId: answered.feedbackId };
   }
 }

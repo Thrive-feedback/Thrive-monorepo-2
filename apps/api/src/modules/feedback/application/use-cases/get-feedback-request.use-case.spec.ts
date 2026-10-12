@@ -35,7 +35,26 @@ function setUp() {
     feedbackRequestQuery,
     accountSummaryPort,
   );
-  return { accountSummaryPort, useCase };
+  return { accountSummaryPort, feedbackRequestQuery, useCase };
+}
+
+const ANSWERED_AT = new Date('2026-10-12T04:00:00.000Z');
+
+function benHasAnswered(setUpResult: ReturnType<typeof setUp>): void {
+  const { feedbackRequestQuery } = setUpResult;
+  const row = feedbackRequestQuery.rows[0];
+  if (!row) {
+    throw new Error('The fixture has no Feedback Request.');
+  }
+  feedbackRequestQuery.rows[0] = {
+    ...row,
+    asks: [{ askId: ASK_ID, giverAccountId: GIVER, status: 'ANSWERED' }],
+  };
+  feedbackRequestQuery.answers.push({
+    askId: ASK_ID,
+    body: 'You open strongly and lose the room at the detail.',
+    answeredAt: ANSWERED_AT,
+  });
 }
 
 describe('reading one Feedback Request', () => {
@@ -58,6 +77,7 @@ describe('reading one Feedback Request', () => {
           giverAccountId: GIVER,
           giverName: 'Ben Carter',
           status: 'PENDING',
+          answer: null,
         },
       ],
       createdAt: CREATED_AT,
@@ -104,6 +124,82 @@ describe('reading one Feedback Request', () => {
         requestId: REQUEST_ID,
       }),
     ).rejects.toThrow(FeedbackRequestNotFoundError);
+  });
+
+  it('gives the Requester, who is the Receiver, what their Giver wrote', async () => {
+    const context = setUp();
+    benHasAnswered(context);
+
+    const found = await context.useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      callerAccountId: REQUESTER,
+      requestId: REQUEST_ID,
+    });
+
+    expect(found.asks[0]?.answer).toEqual({
+      body: 'You open strongly and lose the room at the detail.',
+      answeredAt: ANSWERED_AT,
+    });
+  });
+
+  it('gives a Giver back their own answer', async () => {
+    const context = setUp();
+    benHasAnswered(context);
+
+    const found = await context.useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      callerAccountId: GIVER,
+      requestId: REQUEST_ID,
+    });
+
+    expect(found.asks[0]?.answer?.body).toBe(
+      'You open strongly and lose the room at the detail.',
+    );
+  });
+
+  it("never gives a Giver another Giver's answer", async () => {
+    // Two Asks on one request is #31's shape; the store can already hold it, and who may read
+    // which answer is decided here rather than when the cap is raised.
+    const context = setUp();
+    const row = context.feedbackRequestQuery.rows[0];
+    if (!row) {
+      throw new Error('The fixture has no Feedback Request.');
+    }
+    const OTHER_ASK = '0199a0f0-0000-7000-8000-0000000000a2';
+    context.feedbackRequestQuery.rows[0] = {
+      ...row,
+      asks: [
+        { askId: ASK_ID, giverAccountId: GIVER, status: 'ANSWERED' },
+        { askId: OTHER_ASK, giverAccountId: BYSTANDER, status: 'ANSWERED' },
+      ],
+    };
+    context.feedbackRequestQuery.answers.push(
+      { askId: ASK_ID, body: 'Ben wrote this.', answeredAt: ANSWERED_AT },
+      { askId: OTHER_ASK, body: 'Cara wrote this.', answeredAt: ANSWERED_AT },
+    );
+
+    const found = await context.useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      callerAccountId: GIVER,
+      requestId: REQUEST_ID,
+    });
+
+    expect(found.asks.map((ask) => ask.answer?.body ?? null)).toEqual([
+      'Ben wrote this.',
+      null,
+    ]);
+  });
+
+  it('shows no answer while the Ask is still waiting', async () => {
+    const { useCase } = setUp();
+
+    const found = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      callerAccountId: REQUESTER,
+      requestId: REQUEST_ID,
+    });
+
+    expect(found.asks[0]?.answer).toBeNull();
   });
 
   it("answers not-found for a request in somebody else's Workspace", async () => {

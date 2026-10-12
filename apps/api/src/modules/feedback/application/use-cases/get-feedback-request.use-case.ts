@@ -3,9 +3,15 @@ import { Injectable } from '@nestjs/common';
 import { AskStatus } from '../../domain/value-object/ask-status.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { FeedbackRequestNotFoundError } from '../feedback-request.errors';
-import type { FeedbackRequestRow } from '../query-port/feedback-request.query-port';
+import type {
+  FeedbackAnswerRow,
+  FeedbackRequestRow,
+} from '../query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
-import type { FeedbackRequestView } from '../types/feedback-request.types';
+import type {
+  AnswerView,
+  FeedbackRequestView,
+} from '../types/feedback-request.types';
 
 export interface GetFeedbackRequestInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
@@ -46,8 +52,30 @@ function mayRead(row: FeedbackRequestRow, callerAccountId: string): boolean {
 }
 
 /**
- * A query: one Feedback Request of the caller's Workspace, with each Giver named. The names
- * are Identity's, read through its published port in one batch rather than one call per Ask.
+ * What the caller may read of one Ask's answer: everything, if the request is theirs and they
+ * are the Receiver of what it collected; their own answer, if they are the Giver who wrote it;
+ * nothing otherwise. Until #84 gives the Requester a choice of audience, those two are the
+ * only people an answer reaches (`ADR-0022`, `#24` AC 5).
+ */
+function answerFor(
+  ask: { readonly askId: string; readonly giverAccountId: string },
+  answers: ReadonlyMap<string, FeedbackAnswerRow>,
+  callerAccountId: string,
+  requesterAccountId: string,
+): AnswerView | null {
+  const isReceiver = callerAccountId === requesterAccountId;
+  const wroteIt = callerAccountId === ask.giverAccountId;
+  if (!isReceiver && !wroteIt) {
+    return null;
+  }
+  const answer = answers.get(ask.askId);
+  return answer ? { body: answer.body, answeredAt: answer.answeredAt } : null;
+}
+
+/**
+ * A query: one Feedback Request of the caller's Workspace, with each Giver named and each
+ * answer the caller may read. The names are Identity's, read through its published port in one
+ * batch rather than one call per Ask.
  */
 @Injectable()
 export class GetFeedbackRequestUseCase {
@@ -65,10 +93,17 @@ export class GetFeedbackRequestUseCase {
       throw new FeedbackRequestNotFoundError();
     }
 
-    const names = await namesOf(
-      this.accountSummaryPort,
-      row.asks.map((ask) => ask.giverAccountId),
-    );
+    const [names, answerRows] = await Promise.all([
+      namesOf(
+        this.accountSummaryPort,
+        row.asks.map((ask) => ask.giverAccountId),
+      ),
+      this.feedbackRequestQuery.answersInRequest(
+        input.workspaceId,
+        input.requestId,
+      ),
+    ]);
+    const answers = new Map(answerRows.map((answer) => [answer.askId, answer]));
 
     return {
       id: row.id,
@@ -80,6 +115,12 @@ export class GetFeedbackRequestUseCase {
         // A Giver's Account cascades away with them, so a missing one was deleted mid-read.
         giverName: names.get(ask.giverAccountId) ?? null,
         status: AskStatus.of(ask.status).toString(),
+        answer: answerFor(
+          ask,
+          answers,
+          input.callerAccountId,
+          row.requesterAccountId,
+        ),
       })),
       createdAt: row.createdAt,
     };

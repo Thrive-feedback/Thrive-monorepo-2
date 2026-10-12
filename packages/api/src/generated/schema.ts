@@ -296,6 +296,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/feedback-asks/{askId}/answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer an Ask waiting for the caller, in one free-text answer */
+        post: operations["FeedbackAskController_answerFeedbackAsk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -453,6 +470,11 @@ export interface components {
                     giverName: string | null;
                     /** @enum {string} */
                     status: "PENDING" | "ANSWERED" | "EXPIRED";
+                    answer: {
+                        body: string;
+                        /** Format: date-time */
+                        answeredAt: string;
+                    } | null;
                 }[];
                 /** Format: date-time */
                 createdAt: string;
@@ -475,6 +497,11 @@ export interface components {
                 giverName: string | null;
                 /** @enum {string} */
                 status: "PENDING" | "ANSWERED" | "EXPIRED";
+                answer: {
+                    body: string;
+                    /** Format: date-time */
+                    answeredAt: string;
+                } | null;
             }[];
             /** Format: date-time */
             createdAt: string;
@@ -515,6 +542,13 @@ export interface components {
             status: "PENDING" | "ANSWERED" | "EXPIRED";
             /** Format: date-time */
             createdAt: string;
+        };
+        AnswerFeedbackAskRequestDto: {
+            body: string;
+        };
+        AnswerFeedbackAskResponseDto_Output: {
+            /** Format: uuid */
+            feedbackId: string;
         };
     };
     responses: never;
@@ -1280,6 +1314,63 @@ export interface operations {
             };
             /** @description WORKSPACE_NOT_FOUND or FEEDBACK_ASK_NOT_FOUND */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedbackAskController_answerFeedbackAsk: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                askId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerFeedbackAskRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerFeedbackAskResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, FEEDBACK_BODY_EMPTY or FEEDBACK_BODY_TOO_LONG */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or FEEDBACK_ASK_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ASK_ALREADY_ANSWERED */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

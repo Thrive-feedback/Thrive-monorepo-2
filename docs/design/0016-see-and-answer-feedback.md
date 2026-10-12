@@ -80,7 +80,7 @@ nothing is probeable (`BE_21`; the existing error's own doc comment already stat
 | D7 | Answering is `POST …/feedback-asks/{askId}/answers` → `201 { feedbackId }` | `PATCH …/feedback-asks/{askId}` with `{ status, body }` | Answering creates a thing (`BE_07` R1/R2); it does not edit a status field. The status flip is a consequence the domain owns, not a field a client sets |
 | D8 | `feedback-asks` is its own top-level collection under the Workspace, with its own controller | `…/feedback-requests/{requestId}/asks/{askId}` | #18 is the one read that has **no request id** — it is "the Asks for me", across requests. The schema's `@@index([giverAccountId, status])` was already added for it (0015 §5). A Giver who has not seen the request cannot be asked to name it in a URL |
 | D9 | `pageQueryShape` / `pageResultShape` move from `modules/workspace/presentation/dto/page.dto.ts` to `shared/presentation/dto/page.dto.ts`; Workspace imports from there | Duplicate the shape inside Feedback; import Workspace's | Importing it trips `BE_03` R4 (never reach into another module's `presentation/`) — the same wall that made Feedback declare its own `WorkspaceMemberGuard` (ADR 0037). Duplicating it means two definitions of one wire contract (`BE_07` R5 wants one). `shared/presentation/dto/` already holds `cookie-header.dto.ts` and is where a cross-module wire shape belongs. Cost: a Feedback PR touches Workspace's imports — mechanical, no behaviour |
-| D10 | The Requester reads answers through the **existing** `GET …/feedback-requests/{requestId}`, each Ask gaining `answer` — `{ body, answeredAt }` or `null` | A separate `GET …/feedback` route | #24 AC 3 is "open it and read what B wrote" — that is this screen. A Giver sees only their own Ask's answer; the Receiver sees all of them (§5.4) |
+| D10 | The Requester reads answers through the **existing** `GET …/feedback-requests/{requestId}`, each Ask gaining `answer` — `{ body, answeredAt }` or `null`. The answers are **their own query** (`answersInRequest`), read beside the request rather than joined onto every Ask row | A separate `GET …/feedback` route; a join carried by both reads | #24 AC 3 is "open it and read what B wrote" — that is this screen. A Giver sees only their own Ask's answer; the Receiver sees all of them (§5.4). The list of sent requests sends `answer: null` and says so: a page of twenty requests would otherwise carry twenty answers nobody is reading yet |
 | D11 | Four pull requests: API then web, for #16+#18 together, then API then web for #24 | One PR per card; one PR for everything | `GEN_08` R8 — the contract change ships before what consumes it. #16 and #18 are one API surface (one query port, one enrichment, one guard) and splitting them doubles the review of the same file. #24 carries the migration and the only write, so it reviews alone |
 
 **Reviewed 2026-10-12 (naroebordin).** D6's 4,000 accepted as the interim; §2's defect is fixed
@@ -114,17 +114,19 @@ FeedbackAsk   gains `answer()` — returns the answered Ask; refuses when not Pe
 FeedbackRequest.answerAsk({ askId, giverAccountId, feedbackId, body }) : Feedback
 ```
 
-`answerAsk` is the only way an Ask changes, and it enforces, in this order:
+`answerAsk` is the only way an Ask changes:
 
-1. the Ask is in this request — else `AskNotFoundError` (application `not_found`, see §5.3);
-2. the Ask is **that Giver's** — same error, same code, so one Member cannot learn another's Ask
-   exists;
-3. the Ask is `Pending` — else `AskAlreadyAnsweredError` (`conflict` → `409`);
-4. the Feedback is built with `receiverAccountId` read off the aggregate's `requesterAccountId`.
+1. no Ask in this request with that id **and** that Giver → it answers **`null`**;
+2. the Ask is not `Pending` → `AskAlreadyAnsweredError` (`conflict` → `409`);
+3. otherwise the Ask becomes `ANSWERED` and the Feedback comes back, with `receiverAccountId`
+   read off the aggregate's own `requesterAccountId` — never off anything a client sent.
 
-Rule 2 is authorization inside the domain on purpose: it is the same sentence as "an Ask belongs
-to one Giver", and `BE_21` puts authorization in the application layer rather than the database —
-it does not forbid the aggregate from knowing whose Ask is whose.
+**Built as `null`, not as a thrown not-found** (changed from the plan): deciding what a caller is
+told about an Ask that is not theirs belongs to the use case, which answers
+`FEEDBACK_ASK_NOT_FOUND` the way every scoped read in this module does. The aggregate importing an
+application error would also invert the layers (`BE_02` R3). The repository load is scoped to
+`(workspaceId, askId, giverAccountId)` anyway — `findByAskOfGiver` — so `null` from the aggregate
+means the row changed under the read.
 
 ## 5. API
 
@@ -214,15 +216,15 @@ would refuse it anyway — the repository turns either into `AskAlreadyAnsweredE
 
 ### 5.3 Errors
 
-New, on `ApplicationError` with stable codes (`BE_09` R2/R3/R6), reaching the wire through the
-existing `CodedErrorFilter` — nothing below a controller throws an HTTP exception (R5), and the
-category→status map is **not** touched:
+Stable codes (`BE_09` R2/R3/R6), reaching the wire through the existing `CodedErrorFilter` —
+nothing below a controller throws an HTTP exception (R5), and the category→status map is **not**
+touched:
 
-| Code | Category | Status | Meaning |
-| --- | --- | --- | --- |
-| `FEEDBACK_ASK_NOT_FOUND` | `not_found` | 404 | no Ask with that id is the caller's, in this Workspace. One answer for "does not exist", "someone else's" and "another Workspace's" |
-| `ASK_ALREADY_ANSWERED` | `conflict` | 409 | the category already exists in `STATUS_BY_CATEGORY` and is unused; this is its first caller |
-| `FEEDBACK_BODY_EMPTY` / `FEEDBACK_BODY_TOO_LONG` | `validation` | 400 | raised by the VO, as `TOPIC_EMPTY` / `TOPIC_TOO_LONG` already are |
+| Code | Declared on | Category | Status | Meaning |
+| --- | --- | --- | --- | --- |
+| `FEEDBACK_ASK_NOT_FOUND` | `ApplicationError` (already exists, #18) | `not_found` | 404 | no Ask with that id is the caller's, in this Workspace. One answer for "does not exist", "someone else's" and "another Workspace's" |
+| `ASK_ALREADY_ANSWERED` | **`DomainError`** | `conflict` | 409 | "an Ask collects one answer" is a business rule, so it is the domain's — raised by the aggregate when it can see the Ask is not Pending, and by the repository when only the store could (ADR 0041). The `conflict` category already existed in `STATUS_BY_CATEGORY`, unused; this is its first caller |
+| `FEEDBACK_BODY_EMPTY` / `FEEDBACK_BODY_TOO_LONG` | `DomainError` | `validation` | 400 | raised by the VO, as `TOPIC_EMPTY` / `TOPIC_TOO_LONG` already are |
 
 ### 5.4 Who may read an answer
 
@@ -378,6 +380,19 @@ real domain objects; no test for a projection query, R9):
   Postgres migrated; `test:integration` runs nothing automatically, so §10 runs it by hand and each
   PR says whether it ran
 
+**Gherkin** (`@api`, `GEN_10`) — **added to the plan after the suite landed on `main` on
+2026-10-12.** `features/feedback-requests.feature` now exists, so answering arrives with its own
+scenarios rather than unit tests alone:
+
+- a teammate answers what they were asked, and the Member who asked reads it
+- an answered Ask stops waiting
+- an Ask collects one answer, and the first one is final — the `409`
+- an Ask is answered by the Member it waits on and by nobody else — the `404`
+
+Steps in `apps/api/test/steps/feedback.steps.ts`, over two journeys in `support/journeys.ts`. The
+world remembers the Ask a person has on screen, because a Giver pressing Send twice has the id in
+front of them while their waiting list no longer does.
+
 **Web** (Vitest + Testing Library, `FE_14`): queried by role and accessible name, real `userEvent`,
 network mocked at MSW and nothing below it (R4), server actions replaced at their module (R6) —
 both lists including their empty states, the answer form's inline error, and the side nav's two new
@@ -391,7 +406,7 @@ Four pull requests, in order. Each is green on all six CI checks before the next
 | --- | --- | --- | --- |
 | 1 | `feat/16-18-api-read-feedback` | #16, #18 | D9's `page.dto.ts` move; §2's authz fix; the two list routes; `GET …/feedback-asks/{askId}`; query-port reads; tests |
 | 2 | `feat/16-18-web-feedback-lists` | #16, #18 | `/feedback/sent`, `/feedback/asks`, the two services, side-nav links, routes constant, tests |
-| 3 | `feat/24-api-answer-an-ask` | #24 | `create_feedback` migration; `Feedback` + `FeedbackBody`; `answerAsk()`; `POST …/answers`; answers on the request read (D10); tests |
+| 3 | `feat/24-api-answer-an-ask` | #24 | `create_feedback` migration; `Feedback` + `FeedbackBody`; `answerAsk()`; `POST …/answers`; answers on the request read (D10); unit, integration and `@api` tests; ADR 0041 |
 | 4 | `feat/24-web-answer-an-ask` | #24 | the answer screen, the `TextArea` atom + its showcase entry, the server action, the answer on the confirmation page, tests |
 
 **A generator defect worked around in PR 1.** An Ask names the Member who asked as
@@ -420,13 +435,18 @@ turbo run test --filter=web                   # PRs 2 and 4
 cd apps/api && node scripts/check-architecture.mjs
 ```
 
-PR 3 additionally, by hand, because nothing runs it automatically:
+PR 3 additionally, by hand, because CI runs neither suite:
 
 ```bash
-docker compose up -d postgres
-cd apps/api && bunx prisma migrate dev --name create_feedback
-bun run test:integration                      # includes the two-writers race test
+docker compose up -d
+bun run --cwd apps/api db:migrate:deploy
+bun run --cwd apps/api test:integration        # includes the two-writers race test
+bun run --cwd apps/api test:bdd                # the @api scenarios
 ```
+
+Both need `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` in
+the environment (`test:integration` needs the two `RESEND_*` as well; `test:bdd` fills those in
+itself). A checkout's `.env` may predate them — copy the missing lines from `.env.example`.
 
 Board and brain, as the work lands:
 

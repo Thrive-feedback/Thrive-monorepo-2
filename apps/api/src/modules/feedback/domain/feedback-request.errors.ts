@@ -65,3 +65,37 @@ export class VisibilityInvalidError extends DomainError {
     super('A Visibility must be one of the known audiences.');
   }
 }
+
+export class FeedbackBodyEmptyError extends DomainError {
+  readonly code = 'FEEDBACK_BODY_EMPTY';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('An answer must contain at least one non-space character.');
+  }
+}
+
+export class FeedbackBodyTooLongError extends DomainError {
+  readonly code = 'FEEDBACK_BODY_TOO_LONG';
+  readonly category = 'validation' as const;
+
+  constructor(readonly maxLength: number) {
+    super(`An answer must be at most ${maxLength} characters.`);
+  }
+}
+
+/**
+ * One Ask collects one answer. A second would mean the Receiver reads two answers to one
+ * question and the Giver cannot tell which stands — so the first one is final.
+ *
+ * Raised by the aggregate when it can see the Ask is not Pending, and by the repository when
+ * two requests raced and the unique index refused the loser. Both are the same rule.
+ */
+export class AskAlreadyAnsweredError extends DomainError {
+  readonly code = 'ASK_ALREADY_ANSWERED';
+  readonly category = 'conflict' as const;
+
+  constructor() {
+    super('This Ask has already been answered.');
+  }
+}

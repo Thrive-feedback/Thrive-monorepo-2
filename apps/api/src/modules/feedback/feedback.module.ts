@@ -3,6 +3,7 @@ import { IdentityModule } from '@app/modules/identity';
 import { WorkspaceModule } from '@app/modules/workspace';
 import { Module } from '@nestjs/common';
 import { FeedbackRequestQuery } from './application/query-port/feedback-request.query-port';
+import { AnswerFeedbackAskUseCase } from './application/use-cases/answer-feedback-ask.use-case';
 import { GetFeedbackAskUseCase } from './application/use-cases/get-feedback-ask.use-case';
 import { GetFeedbackRequestUseCase } from './application/use-cases/get-feedback-request.use-case';
 import { ListMyFeedbackAsksUseCase } from './application/use-cases/list-my-feedback-asks.use-case';
@@ -35,6 +36,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ListSentFeedbackRequestsUseCase,
     ListMyFeedbackAsksUseCase,
     GetFeedbackAskUseCase,
+    AnswerFeedbackAskUseCase,
     WorkspaceMemberGuard,
   ],
 })

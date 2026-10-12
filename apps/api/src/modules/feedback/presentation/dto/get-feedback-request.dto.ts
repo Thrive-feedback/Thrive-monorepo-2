@@ -3,12 +3,22 @@ import { z } from 'zod';
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
 import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
 
+const answerSchema = z.object({
+  body: z.string(),
+  answeredAt: z.iso.datetime({ offset: true }),
+});
+
 const askSchema = z.object({
   askId: z.uuid(),
   giverAccountId: z.uuid(),
   /** `null` while that Member has not introduced themselves. */
   giverName: z.string().nullable(),
   status: z.enum(ASK_STATUSES),
+  /**
+   * What was written, or `null`: the Ask is still waiting, the caller may not read it, or the
+   * route does not carry answers — the list of sent requests does not.
+   */
+  answer: answerSchema.nullable(),
 });
 
 /** One Feedback Request on the wire. The list of them sends the same shape, so it is one. */

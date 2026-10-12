@@ -49,6 +49,12 @@ function toResponse(request: FeedbackRequestView) {
       giverAccountId: ask.giverAccountId,
       giverName: ask.giverName,
       status: ask.status,
+      answer: ask.answer
+        ? {
+            body: ask.answer.body,
+            answeredAt: ask.answer.answeredAt.toISOString(),
+          }
+        : null,
     })),
     createdAt: request.createdAt.toISOString(),
   };
