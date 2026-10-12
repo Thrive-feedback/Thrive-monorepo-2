@@ -1,10 +1,17 @@
-import type { FeedbackRequestRow } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
+import type {
+  FeedbackAskPageRow,
+  FeedbackAskRow,
+  FeedbackRequestPageRow,
+  FeedbackRequestRow,
+} from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
+import type { PageRequest } from '@app/modules/feedback/application/types/feedback-request.types';
 import {
   FeedbackRequest,
   type FeedbackRequestSnapshot,
 } from '@app/modules/feedback/domain/entity/feedback-request.entity';
 import { FeedbackRequestRepository } from '@app/modules/feedback/domain/repository/feedback-request-repository.port';
+import type { AskStatusValue } from '@app/modules/feedback/domain/value-object/ask-status.vo';
 import { WorkspaceMembershipPort } from '@app/modules/workspace';
 
 /** Which Accounts are Members of which Workspace, as the test sets it up. */
@@ -65,4 +72,76 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
       ) ?? null
     );
   }
+
+  async sentInWorkspace(
+    workspaceId: string,
+    requesterAccountId: string,
+    page: PageRequest,
+  ): Promise<FeedbackRequestPageRow> {
+    const sent = this.rows
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          row.requesterAccountId === requesterAccountId,
+      )
+      .sort(newestFirst);
+    return { items: pageOf(sent, page), total: sent.length };
+  }
+
+  async asksFor(
+    workspaceId: string,
+    giverAccountId: string,
+    status: AskStatusValue,
+    page: PageRequest,
+  ): Promise<FeedbackAskPageRow> {
+    const waiting = this.asksOf(workspaceId)
+      .filter(
+        (ask) => ask.giverAccountId === giverAccountId && ask.status === status,
+      )
+      .sort(newestFirst);
+    return { items: pageOf(waiting, page), total: waiting.length };
+  }
+
+  async askFor(
+    workspaceId: string,
+    giverAccountId: string,
+    askId: string,
+  ): Promise<FeedbackAskRow | null> {
+    return (
+      this.asksOf(workspaceId).find(
+        (ask) => ask.askId === askId && ask.giverAccountId === giverAccountId,
+      ) ?? null
+    );
+  }
+
+  /** Every Ask of a Workspace, flattened out of the requests holding them, as the join does. */
+  private asksOf(
+    workspaceId: string,
+  ): (FeedbackAskRow & { readonly giverAccountId: string })[] {
+    return this.rows
+      .filter((row) => row.workspaceId === workspaceId)
+      .flatMap((row) =>
+        row.asks.map((ask) => ({
+          askId: ask.askId,
+          giverAccountId: ask.giverAccountId,
+          feedbackRequestId: row.id,
+          topic: row.topic,
+          requesterAccountId: row.requesterAccountId,
+          status: ask.status,
+          createdAt: row.createdAt,
+        })),
+      );
+  }
+}
+
+function newestFirst(
+  left: { readonly createdAt: Date },
+  right: { readonly createdAt: Date },
+): number {
+  return right.createdAt.getTime() - left.createdAt.getTime();
+}
+
+function pageOf<T>(rows: readonly T[], page: PageRequest): T[] {
+  const from = (page.page - 1) * page.pageSize;
+  return rows.slice(from, from + page.pageSize);
 }

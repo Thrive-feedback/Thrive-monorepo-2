@@ -17,3 +17,12 @@ export const feedbackRequestPathParamsSchema = z.object({
 export class FeedbackRequestPathParamsDto extends createZodDto(
   feedbackRequestPathParamsSchema,
 ) {}
+
+/** The same path, plus the one Ask a route acts on. */
+export const feedbackAskPathParamsSchema = z.object({
+  workspaceId: z.uuid(),
+  askId: z.uuid(),
+});
+export class FeedbackAskPathParamsDto extends createZodDto(
+  feedbackAskPathParamsSchema,
+) {}

@@ -3,11 +3,15 @@ import { IdentityModule } from '@app/modules/identity';
 import { WorkspaceModule } from '@app/modules/workspace';
 import { Module } from '@nestjs/common';
 import { FeedbackRequestQuery } from './application/query-port/feedback-request.query-port';
+import { GetFeedbackAskUseCase } from './application/use-cases/get-feedback-ask.use-case';
 import { GetFeedbackRequestUseCase } from './application/use-cases/get-feedback-request.use-case';
+import { ListMyFeedbackAsksUseCase } from './application/use-cases/list-my-feedback-asks.use-case';
+import { ListSentFeedbackRequestsUseCase } from './application/use-cases/list-sent-feedback-requests.use-case';
 import { SendFeedbackRequestUseCase } from './application/use-cases/send-feedback-request.use-case';
 import { FeedbackRequestRepository } from './domain/repository/feedback-request-repository.port';
 import { PrismaFeedbackRequestQuery } from './infrastructure/query/prisma-feedback-request.query';
 import { PrismaFeedbackRequestRepository } from './infrastructure/repository/prisma-feedback-request.repository';
+import { FeedbackAskController } from './presentation/feedback-ask.controller';
 import { FeedbackRequestController } from './presentation/feedback-request.controller';
 import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
 
@@ -19,7 +23,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
  */
 @Module({
   imports: [DatabaseModule, IdentityModule, WorkspaceModule],
-  controllers: [FeedbackRequestController],
+  controllers: [FeedbackRequestController, FeedbackAskController],
   providers: [
     {
       provide: FeedbackRequestRepository,
@@ -28,6 +32,9 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     { provide: FeedbackRequestQuery, useClass: PrismaFeedbackRequestQuery },
     SendFeedbackRequestUseCase,
     GetFeedbackRequestUseCase,
+    ListSentFeedbackRequestsUseCase,
+    ListMyFeedbackAsksUseCase,
+    GetFeedbackAskUseCase,
     WorkspaceMemberGuard,
   ],
 })
