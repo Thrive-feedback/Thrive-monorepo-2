@@ -16,6 +16,27 @@ function openFeedbackRequest(world: ThriveWorld, name: string) {
   );
 }
 
+/**
+ * The id of the one Ask waiting for `name`, read as they would read it — through their own
+ * waiting list, which is the only route that will show it to them.
+ */
+async function askIdWaitingFor(
+  world: ThriveWorld,
+  name: string,
+): Promise<string> {
+  const listed = world.succeeded(
+    await world.as(
+      name,
+      'GET',
+      `/v1/workspaces/${world.workspaceOf(name)}/feedback-asks`,
+    ),
+    `${name} listing what they have been asked`,
+  );
+  const askId: string | undefined = listed.body.items[0]?.askId;
+  assert.ok(askId, `${name} has no Ask waiting for them.`);
+  return askId;
+}
+
 Given(
   '{person} has asked {person} for Feedback on {string}',
   async function (
@@ -158,5 +179,35 @@ Then(
       `${name} opening the Ask`,
     );
     assert.equal(opened.body.topic, topic);
+  },
+);
+
+When(
+  '{person} opens the Ask waiting for {person}',
+  async function (this: ThriveWorld, opener: string, giver: string) {
+    const askId = await askIdWaitingFor(this, giver);
+    await this.as(
+      opener,
+      'GET',
+      `/v1/workspaces/${this.workspaceOf(opener)}/feedback-asks/${askId}`,
+    );
+  },
+);
+
+Then(
+  '{person} is told the Ask cannot be found',
+  function (this: ThriveWorld, _name: string) {
+    // An Ask is read through its own Giver, so one addressed to somebody else is not found —
+    // the same answer the Requester gets, who reads the request itself instead.
+    assert.equal(this.lastResponse?.status, 404);
+    this.refusedWith('FEEDBACK_ASK_NOT_FOUND');
+  },
+);
+
+Then(
+  '{person} has nothing waiting for them',
+  function (this: ThriveWorld, _name: string) {
+    assert.deepEqual(this.lastResponse?.body.items, []);
+    assert.equal(this.lastResponse?.body.total, 0);
   },
 );
