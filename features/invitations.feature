@@ -1,6 +1,7 @@
 Feature: Invitations
   An Owner brings teammates into their Workspace by email. Each teammate
-  joins from the link in their Invitation.
+  joins from the link in their Invitation, or finds it waiting when they
+  sign in without the link.
 
   Background:
     Given Ann owns a Workspace called "Acme"
@@ -41,3 +42,40 @@ Feature: Invitations
     And Ann has invited Ben
     When Cara accepts Ben's Invitation
     Then Cara is told the Invitation is not for them
+
+  @api
+  Scenario: Someone who signs in without the link finds every Invitation waiting for them
+    Given Dan owns a Workspace called "Globex"
+    And Ben is signed in
+    And Ann has invited Ben
+    And Dan has invited Ben
+    When Ben looks for Invitations waiting for them
+    Then Ben is offered these Workspaces, newest first:
+      | Workspace | Members |
+      | Globex    | 1       |
+      | Acme      | 1       |
+
+  @api
+  Scenario: Someone joins one of the Workspaces waiting for them
+    Given Dan owns a Workspace called "Globex"
+    And Ben is signed in
+    And Ann has invited Ben
+    And Dan has invited Ben
+    When Ben joins "Acme" from the Invitations waiting for them
+    Then Ben is a Member of "Acme"
+
+  @api
+  Scenario: Creating a Workspace instead leaves the Invitations waiting
+    Given Ben is signed in
+    And Ben has introduced themselves
+    And Ann has invited Ben
+    When Ben creates a Workspace called "Initech"
+    Then Ann sees Ben's Invitation waiting to be accepted
+
+  @api
+  Scenario: Nobody is offered an Invitation sent to someone else
+    Given Ben is signed in
+    And Cara is signed in
+    And Ann has invited Ben
+    When Cara looks for Invitations waiting for them
+    Then Cara is offered no Workspaces
