@@ -14,7 +14,7 @@ import {
 import type { MembershipView } from '../types/membership.types';
 import { NotAllowedToInviteError } from '../workspace.errors';
 
-/** Gmail accepts a handful of messages on one connection at a time; more only queue. */
+/** Stays under Resend's 10 requests a second, which it answers 429 past. */
 const SENDS_AT_ONCE = 5;
 
 export interface SendInvitationsInput {
