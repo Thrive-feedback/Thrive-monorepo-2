@@ -13,8 +13,8 @@ function parseOrigins(value: string): readonly string[] | undefined {
     BETTER_AUTH_URL: 'http://localhost:3001',
     GOOGLE_CLIENT_ID: 'client-id.apps.googleusercontent.com',
     GOOGLE_CLIENT_SECRET: 'client-secret',
-    GMAIL_SMTP_USER: 'thrive.test@gmail.com',
-    GMAIL_SMTP_APP_PASSWORD: 'abcd efgh ijkl mnop',
+    RESEND_API_KEY: 're_test_key',
+    RESEND_FROM_ADDRESS: 'no-reply@send.thrive.example',
   });
 
   return parsed.success ? parsed.data.CORS_ALLOWED_ORIGINS : undefined;

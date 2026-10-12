@@ -62,10 +62,11 @@ export const environmentSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
 
-  // The Gmail account every email is sent as, and the App Password it signs in with
-  // (ADR 0036). Required everywhere: the API always sends real email.
-  GMAIL_SMTP_USER: z.email(),
-  GMAIL_SMTP_APP_PASSWORD: z.string().min(1),
+  // The Resend API key, and the address every email is sent from — an address on the
+  // verified sending subdomain, not a person's (ADR 0038). Required everywhere: the API
+  // always sends real email.
+  RESEND_API_KEY: z.string().min(1),
+  RESEND_FROM_ADDRESS: z.email(),
 });
 
 export type Environment = z.infer<typeof environmentSchema>;

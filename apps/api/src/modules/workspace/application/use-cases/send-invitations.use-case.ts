@@ -126,6 +126,9 @@ export class SendInvitationsUseCase {
     try {
       await this.emailSender.send({
         to: email,
+        // One Invitation is one email. A second Invitation to the same address after a
+        // failure carries a new id, so the transport retries this send and not that one.
+        idempotencyKey: stored.invitationId,
         fromName: inviterName,
         replyTo: input.inviterEmail,
         ...content,
