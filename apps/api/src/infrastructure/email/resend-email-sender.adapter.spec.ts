@@ -20,7 +20,6 @@ function anEmail(overrides: Partial<EmailMessage> = {}): EmailMessage {
 
 const realFetch = globalThis.fetch;
 
-/** Answers each call with the next status given, and records what it was asked to send. */
 function stubResend(...statuses: (number | 'unreachable')[]): RequestInit[] {
   const calls: RequestInit[] = [];
   let call = 0;
@@ -36,7 +35,7 @@ function stubResend(...statuses: (number | 'unreachable')[]): RequestInit[] {
   return calls;
 }
 
-/** The real adapter, with the retry delay removed so a test does not wait it out. */
+/** The retry delay is removed so a test does not wait it out. */
 function senderUnderTest(): ResendEmailSender {
   return new ResendEmailSender(
     're_test_key',
