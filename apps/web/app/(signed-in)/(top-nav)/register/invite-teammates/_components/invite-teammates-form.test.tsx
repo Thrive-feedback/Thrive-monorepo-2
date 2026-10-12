@@ -206,9 +206,11 @@ describe('InviteTeammatesForm', () => {
 
     await user.click(button('Send invites & Done'));
 
-    expect(
-      await screen.findByDisplayValue('happy@stark.com'),
-    ).toBeInTheDocument();
+    // One barrier, then plain queries: while a send is in flight the button reads "Sending…",
+    // so its idle name coming back is what says the answer has landed and the form has been
+    // rebuilt. Asserting on the form before that passes only while the machine is fast enough.
+    await screen.findByRole('button', { name: 'Send invites & Done' });
+    expect(screen.getByDisplayValue('happy@stark.com')).toBeInTheDocument();
     expect(emailFields()).toHaveLength(1);
     expect(emailField(1)).toHaveAccessibleDescription(
       "Couldn't send. Try again.",
