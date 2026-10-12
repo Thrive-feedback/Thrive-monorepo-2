@@ -48,16 +48,19 @@ export class ResendEmailSender extends EmailSender {
       }
       if (!result.retryable || attempt === MAX_SEND_ATTEMPTS) {
         // The caller turns this into an answer per address, so this is the one record of why.
-        // Only the status: Resend's body quotes the recipient, and the idempotency key is the
-        // Invitation id, which is the capability to accept it.
+        // Resend's `name` is an enum; its `message` quotes the recipient and stays out, as does
+        // the idempotency key, which is the Invitation id and so the capability to accept it.
         this.logger.warn({
           event: 'email.send_failed',
           transport: 'resend',
           status: result.status,
+          reason: result.reason,
           attempts: attempt,
         });
         throw new Error(
-          `Resend did not accept the message (status ${result.status ?? 'none'})`,
+          `Resend did not accept the message (status ${result.status ?? 'none'}${
+            result.reason ? `, ${result.reason}` : ''
+          })`,
         );
       }
       await this.wait(backoffFor(attempt));
@@ -96,6 +99,7 @@ export class ResendEmailSender extends EmailSender {
       sent: false,
       retryable: RETRYABLE_STATUSES.has(response.status),
       status: response.status,
+      reason: await refusalName(response),
     };
   }
 }
@@ -104,6 +108,25 @@ interface Attempt {
   readonly sent: boolean;
   readonly retryable?: boolean;
   readonly status?: number;
+  readonly reason?: string;
+}
+
+/**
+ * Resend names each refusal — `validation_error`, `invalid_idempotency_key` — beside a message
+ * that quotes the recipient. Only the name is read, because a status alone cannot tell a
+ * malformed address from a key the wrong length.
+ */
+async function refusalName(response: Response): Promise<string | undefined> {
+  try {
+    const body: unknown = await response.json();
+    if (typeof body === 'object' && body !== null && 'name' in body) {
+      const { name } = body as { name: unknown };
+      return typeof name === 'string' ? name : undefined;
+    }
+  } catch {
+    // A refusal that is not JSON tells us nothing more than its status already did.
+  }
+  return undefined;
 }
 
 /** Jittered so a batch of Invitations does not retry in lockstep. */
