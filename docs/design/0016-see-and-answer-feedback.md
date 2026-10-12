@@ -285,15 +285,17 @@ reads, `'use server'` actions for writes — which is what #140 ratifies. If #14
 and 4 adopt whatever it changes; if it lands after, it rewrites these files. See §10.
 
 ```
+app/(signed-in)/(side-nav)/feedback/_lib/                        shared by both lists
+  ask-status.constant.ts                the status names and their three colour roles
+  sent-day.util.ts                      one date format, fixed to UTC and one locale
 app/(signed-in)/(side-nav)/feedback/sent/                        #16
   page.tsx                              server; requireMember(); Suspense around the list
   _components/sent-request-list.tsx     one row per request: Topic, date, each Giver + status
-  _components/sent-request-row.tsx
   _lib/sent-requests.service.ts         'server-only'; cache: 'no-store'
   _lib/sent-request.type.ts             the view model (FE_10 R6)
 app/(signed-in)/(side-nav)/feedback/asks/                        #18
   page.tsx
-  _components/waiting-ask-list.tsx      who asked, the Topic, when; links to the answer screen
+  _components/waiting-ask-list.tsx      who asked, the Topic, when; the answer screen is #24
   _lib/my-asks.service.ts
   _lib/my-ask.type.ts
 app/(signed-in)/(top-nav)/feedback/asks/[askId]/                 #22/#24
@@ -306,11 +308,11 @@ app/(signed-in)/(top-nav)/feedback/asks/[askId]/                 #22/#24
   _lib/ask-params.schema.ts
 ```
 
-Modified: `lib/routes.constant.ts` (`feedback.sent`, `feedback.asks`, `feedback.askById(id)`);
-`components/organisms/site-side-nav.tsx` + its test — the side nav holds one link today and its
-doc comment says "Only Home uses it, so its one link is always the current page", which stops being
-true: it gains **My requests** and **Waiting for me**, and `aria-current` becomes a comparison
-against `usePathname()` rather than a constant. The confirmation page from 0015 is unchanged except
+Modified: `lib/routes.constant.ts` (`feedback.sent`, `feedback.asks`, and `feedback.askById(id)`
+in PR 4); `components/organisms/site-side-nav.tsx` + its test — the side nav held one link, whose
+`aria-current="page"` was a constant because Home was the only page using the nav. The links move
+into `components/organisms/side-nav-links.tsx`, a client component, because only the browser knows
+the current path: a server component would have to be told it by every page. The confirmation page from 0015 is unchanged except
 that it now renders an answer when there is one.
 
 - Both lists: `FE_09` R1/R2/R10 — `cache: 'no-store'`, because an Ask's status changes when
@@ -320,9 +322,9 @@ that it now renders an answer when there is one.
   with the existing `Skeleton`, as `/home` does. Errors: the root `app/error.tsx` boundary.
 - The answer form mirrors `request-feedback-form.tsx`: `useActionState`, the field controlled so
   typing survives a refusal, **Send enabled on an empty box** and the error shown inline on press
-  (the `/home` form's reading of `FE_06`), disabled only while sending. A `TextArea` atom does not
-  exist in `components/` — it is added there, not route-private, because it is a plain primitive
-  with no domain in it (`FE_01` R3/R4), and shown at `/ui-showcase` like every other component.
+  (the `/home` form's reading of `FE_06`), disabled only while sending. `components/atoms/textarea.tsx`
+  and `components/molecules/text-area-field.tsx` already exist, so PR 4 adds no component — an
+  earlier draft of this section said otherwise.
 - Error code → copy (`FE_10` R7, branch on the **code**, never the message):
 
 | Code | What the person reads |

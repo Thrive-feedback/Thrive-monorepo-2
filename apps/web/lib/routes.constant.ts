@@ -9,6 +9,10 @@ export const ROUTES = {
   signIn: '/signin',
   home: '/home',
   feedback: {
+    /** The Feedback Requests the signed-in person sent. */
+    sent: '/feedback/sent',
+    /** The Asks waiting for the signed-in person to answer. */
+    asks: '/feedback/asks',
     requestById: (requestId: string) => `/feedback/requests/${requestId}`,
   },
   invitation: (invitationId: string) => `/invitations/${invitationId}`,
