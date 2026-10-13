@@ -3,6 +3,7 @@ import { IdentityModule } from '@app/modules/identity';
 import { WorkspaceModule } from '@app/modules/workspace';
 import { Module } from '@nestjs/common';
 import { FeedbackRequestQuery } from './application/query-port/feedback-request.query-port';
+import { AccountNamesService } from './application/service/account-names.service';
 import { AnswerFeedbackAskUseCase } from './application/use-cases/answer-feedback-ask.use-case';
 import { GetFeedbackAskUseCase } from './application/use-cases/get-feedback-ask.use-case';
 import { GetFeedbackRequestUseCase } from './application/use-cases/get-feedback-request.use-case';
@@ -31,6 +32,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
       useClass: PrismaFeedbackRequestRepository,
     },
     { provide: FeedbackRequestQuery, useClass: PrismaFeedbackRequestQuery },
+    AccountNamesService,
     SendFeedbackRequestUseCase,
     GetFeedbackRequestUseCase,
     ListSentFeedbackRequestsUseCase,
