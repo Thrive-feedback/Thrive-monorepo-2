@@ -1,10 +1,12 @@
 import { NavbarLogo } from '@/components/molecules/navbar-logo';
 import { ThemeToggle } from '@/components/molecules/theme-toggle';
+import { cn } from '@/lib/cn.util';
 import {
   readSession,
   readSessionNeedsRefresh,
 } from '@/lib/session/session.service';
 import { AccountMenu } from './account-menu';
+import styles from './glass.module.css';
 import { MemberNavLinks } from './member-nav-links';
 import { SessionRefresher } from './session-refresher';
 
@@ -21,7 +23,14 @@ export async function MemberNavbar() {
   ]);
 
   return (
-    <header className="flex h-18 shrink-0 items-center justify-between gap-gap-nav px-inset-container">
+    <header
+      className={cn(
+        'fixed inset-x-0 top-0 z-40 flex h-18 items-center justify-between gap-gap-nav px-inset-container',
+        styles.glass,
+        styles.curvesDown,
+        styles.framed,
+      )}
+    >
       <div className="flex items-center gap-gap-nav">
         <NavbarLogo />
         {session && <MemberNavLinks />}

@@ -57,27 +57,27 @@
   /* neutral: seed #ffffff */
   --neutral-25: oklch(97.5% 0 0);
   --neutral-50: oklch(100% 0 0); /* #ffffff */
-  --neutral-100: oklch(92.69% 0.0017 145.56); /* #e6e7e6 */
-  --neutral-125: oklch(89.95% 0.0017 145.56); /* #dddedd */
+  --neutral-100: oklch(92.8% 0 0); /* #e7e7e7 */
+  --neutral-125: oklch(90.06% 0 0); /* #dedede */
   --neutral-150: oklch(89.13% 0 0);
-  --neutral-200: oklch(84.23% 0.0043 157.16); /* #c9ccca */
+  --neutral-200: oklch(84.21% 0 0); /* #cbcbcb */
   --neutral-250: oklch(80.21% 0 0);
-  --neutral-300: oklch(72.34% 0.0071 160.01); /* #a2a7a4 */
+  --neutral-300: oklch(72.19% 0 0); /* #a5a5a5 */
   --neutral-350: oklch(69.4% 0 0);
   --neutral-400: oklch(63.51% 0 0);
-  --neutral-450: oklch(57.2% 0.0113 154.92); /* #737a75 */
-  --neutral-475: oklch(54.1% 0.0114 154.89); /* #6a716c */
+  --neutral-450: oklch(57.27% 0 0); /* #787878 */
+  --neutral-475: oklch(54.17% 0 0); /* #6f6f6f */
   --neutral-500: oklch(51.25% 0 0);
   --neutral-550: oklch(45.07% 0 0);
   --neutral-600: oklch(38.99% 0 0);
-  --neutral-650: oklch(35.61% 0.0179 154.88); /* #353f38 */
-  --neutral-700: oklch(32.51% 0.0182 154.75); /* #2d3730 */
-  --neutral-750: oklch(26.47% 0.0191 154.41); /* #1e2821 */
-  --neutral-800: oklch(20.45% 0.0212 156.1); /* #0f1a13 */
-  --neutral-825: oklch(17.33% 0.0219 155.73); /* #08130c */
+  --neutral-650: oklch(35.62% 0 0); /* #3c3c3c */
+  --neutral-700: oklch(32.5% 0 0); /* #343434 */
+  --neutral-750: oklch(26.45% 0 0); /* #252525 */
+  --neutral-800: oklch(20.46% 0 0); /* #171717 */
+  --neutral-825: oklch(17.3% 0 0); /* #101010 */
   --neutral-850: oklch(13.37% 0 0);
-  --neutral-900: oklch(10.97% 0.0224 150.91); /* #010602 */
-  --neutral-950: oklch(5.82% 0.0198 142.5); /* #000100 */
+  --neutral-900: oklch(10.67% 0 0); /* #040404 */
+  --neutral-950: oklch(6.72% 0 0); /* #010101 */
   --neutral-975: oklch(5% 0 0);
 
   /* success: seed #5faf74 */
@@ -184,6 +184,7 @@
   --corner-inner: 0.1406rem;
   --corner-element: 0.1875rem;
   --corner-container: 0.2813rem;
+  --corner-control: 0.5625rem;
   --corner-page: 1.3125rem;
   --corner-full: 9999px;
 

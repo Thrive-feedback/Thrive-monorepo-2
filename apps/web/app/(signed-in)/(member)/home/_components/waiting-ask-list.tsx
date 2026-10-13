@@ -30,7 +30,7 @@ export async function WaitingAskList({ membership }: WaitingAskListProps) {
       {asks.map((ask) => (
         <li
           key={ask.askId}
-          className="flex flex-col gap-1 rounded-page bg-surface-overlay p-4"
+          className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
         >
           <Text as="h2" variant="subtitle-4" className="break-words">
             <Link href={ROUTES.feedback.askById(ask.askId)}>{ask.topic}</Link>

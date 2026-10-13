@@ -1,20 +1,21 @@
 import { Text } from '@/components/atoms/text';
 import { NavbarLogo } from '@/components/molecules/navbar-logo';
 import { ThemeToggle } from '@/components/molecules/theme-toggle';
+import { cn } from '@/lib/cn.util';
 import {
   readSession,
   readSessionNeedsRefresh,
 } from '@/lib/session/session.service';
+import styles from './glass.module.css';
 import { SessionRefresher } from './session-refresher';
 import { SignOutForm } from './sign-out-form';
 
 /**
- * The logo (left out on the sign-in page, which shows its own), the light/dark switch, and,
- * while signed in, the address they signed in with and Sign out. It is on the public pages and
- * on Register; a Member's pages draw `MemberNavbar` instead, so the two are where a session due
- * a refresh gets one. The design also draws "Log in" and "Create Organization"
- * here; they are left out on purpose, because sign-in is the page itself and creating an
- * organization is not offered.
+ * The logo, the light/dark switch, and, while signed in, the address they signed in with and
+ * Sign out. It is on the invitation pages and on Register; sign-in has no navbar, and a Member's
+ * pages draw `MemberNavbar` instead, so the two are where a session due a refresh gets one. The
+ * design also draws "Log in" and "Create Organization" here; they are left out on purpose,
+ * because sign-in is the page itself and creating an organization is not offered.
  */
 export async function SiteNavbar() {
   const [session, needsRefresh] = await Promise.all([
@@ -23,7 +24,14 @@ export async function SiteNavbar() {
   ]);
 
   return (
-    <header className="flex h-18 shrink-0 items-center justify-between px-inset-container">
+    <header
+      className={cn(
+        'sticky top-0 z-40 flex h-18 shrink-0 items-center justify-between px-inset-container',
+        styles.glass,
+        styles.neutral,
+        styles.curvesDown,
+      )}
+    >
       <NavbarLogo />
       {needsRefresh && <SessionRefresher />}
       <div className="flex min-w-0 items-center gap-gap-nav">

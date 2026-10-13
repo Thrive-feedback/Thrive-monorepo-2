@@ -1,0 +1,9 @@
+/*
+ * The list opens under its trigger, exactly as wide as it, and scrolls inside itself when there is
+ * less room below than it needs. Radix measures both and hands them over as variables; a measured
+ * size has no utility, which is why this is CSS.
+ */
+.content {
+  width: var(--radix-select-trigger-width);
+  max-height: var(--radix-select-content-available-height);
+}

@@ -13,8 +13,8 @@ export default function MemberLoading() {
     >
       <span className="sr-only">Loading…</span>
       <Skeleton className="h-10 w-1/2" />
-      <Skeleton className="h-80 w-full" />
-      <Skeleton className="h-40 w-full" />
+      <Skeleton shape="card" className="h-80" />
+      <Skeleton shape="card" className="h-40" />
     </div>
   );
 }

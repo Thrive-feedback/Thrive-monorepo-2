@@ -4,7 +4,7 @@ import { Input, type InputProps } from '@/components/atoms/input';
 import { Label } from '@/components/atoms/label';
 import { cn } from '@/lib/cn.util';
 
-const labelLine = cva('mb-2 block', {
+const labelLine = cva('mb-1 block', {
   variants: {
     size: { sm: 'text-input-label-xs', md: 'text-input-label-sm' },
     tone: {

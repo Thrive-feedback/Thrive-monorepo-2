@@ -27,7 +27,7 @@ export function SomethingWentWrong({
     <Root
       className={
         fullPage
-          ? 'flex min-h-dvh flex-col items-center justify-center gap-6 bg-linear-to-b from-surface-base to-surface-subtle px-4 py-12 text-center'
+          ? 'flex min-h-dvh flex-col items-center justify-center gap-6 px-4 py-12 text-center'
           : 'm-auto flex flex-col items-center justify-center gap-6 text-center'
       }
     >

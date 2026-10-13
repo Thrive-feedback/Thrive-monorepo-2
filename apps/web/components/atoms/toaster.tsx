@@ -42,7 +42,7 @@ export function Toaster(props: ToasterProps) {
         unstyled: true,
         classNames: {
           toast:
-            'flex w-full items-start gap-3 rounded-element border p-4 text-fg-primary shadow-med',
+            'flex w-full items-start gap-3 rounded-control border p-4 text-fg-primary shadow-med',
           title: 'text-subtitle-4',
           description: 'text-body-2 text-fg-secondary',
           // Sonner joins `toast` with the type's classes rather than merging them, so the

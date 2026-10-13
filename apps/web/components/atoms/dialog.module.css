@@ -1,0 +1,8 @@
+/*
+ * The page behind a dialog is blurred as well as dimmed. The colour comes from
+ * `bg-surface-scrim` and the amount of blur from its token; a backdrop filter has no utility
+ * here, which is why this is CSS.
+ */
+.scrim {
+  backdrop-filter: blur(var(--scrim-blur));
+}

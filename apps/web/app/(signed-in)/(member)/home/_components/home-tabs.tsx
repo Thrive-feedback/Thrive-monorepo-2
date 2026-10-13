@@ -74,7 +74,10 @@ export function HomeTabs({ tab, membership }: HomeTabsProps) {
         ))}
       </TabsList>
       <TabsContent value={tab}>
-        <Suspense key={tab} fallback={<Skeleton className="h-40 w-full" />}>
+        <Suspense
+          key={tab}
+          fallback={<Skeleton shape="card" className="h-40" />}
+        >
           <TabPanel tab={tab} membership={membership} />
         </Suspense>
       </TabsContent>

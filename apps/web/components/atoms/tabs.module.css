@@ -1,0 +1,11 @@
+/*
+ * The list still scrolls sideways when the tabs do not fit — by trackpad, touch or the arrow
+ * keys — but shows no bar under them. Hiding a scrollbar has no utility, which is why this is CSS.
+ */
+.list {
+  scrollbar-width: none;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}

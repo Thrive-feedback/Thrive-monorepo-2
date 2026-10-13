@@ -34,6 +34,9 @@
   --color-surface-subtle: var(--surface-subtle);
   --color-surface-raised: var(--surface-raised);
   --color-surface-overlay: var(--surface-overlay);
+  --color-surface-scrim: var(--surface-scrim);
+  --color-surface-glass: var(--surface-glass);
+  --color-surface-glass-neutral: var(--surface-glass-neutral);
   --color-surface-skeleton: var(--surface-skeleton);
   --color-surface-track: var(--surface-track);
   --color-border-default: var(--border-default);
@@ -86,6 +89,7 @@
   --radius-inner: var(--shape-inner);
   --radius-element: var(--shape-element);
   --radius-container: var(--shape-container);
+  --radius-control: var(--shape-control);
   --radius-page: var(--shape-page);
   --radius-full: var(--shape-full);
   --radius-surface: var(--shape-surface);
@@ -99,6 +103,8 @@
 
   --animate-spin: spin var(--motion-spin);
   --animate-pulse: pulse var(--motion-pulse);
+  --animate-enter: enter var(--motion-enter);
+  --animate-exit: exit var(--motion-exit);
 
   @keyframes spin {
     to {
@@ -109,6 +115,20 @@
   @keyframes pulse {
     50% {
       opacity: 0.5;
+    }
+  }
+
+  @keyframes enter {
+    from {
+      opacity: 0;
+      scale: 0.96;
+    }
+  }
+
+  @keyframes exit {
+    to {
+      opacity: 0;
+      scale: 0.96;
     }
   }
 

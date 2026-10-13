@@ -20,7 +20,7 @@ export async function FeedbackComposerCard({
   return (
     <section
       aria-label="Ask for or give feedback"
-      className="flex w-full flex-col rounded-page bg-surface-overlay p-6"
+      className="flex w-full flex-col rounded-page bg-surface-raised p-6"
     >
       <FeedbackComposer teammates={teammates} />
     </section>

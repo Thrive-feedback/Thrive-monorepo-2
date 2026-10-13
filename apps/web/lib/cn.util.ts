@@ -64,6 +64,7 @@ const SHAPE_ROLES = [
   'inner',
   'element',
   'container',
+  'control',
   'page',
   'surface',
   'button',

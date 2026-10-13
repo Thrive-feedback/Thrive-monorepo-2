@@ -49,7 +49,7 @@ export function MemberPicker({
     <div className="flex flex-col">
       <Label
         htmlFor={id}
-        className={invalid ? 'mb-2 block text-status-error-fg' : 'mb-2 block'}
+        className={invalid ? 'mb-1 block text-status-error-fg' : 'mb-1 block'}
       >
         <span aria-hidden="true" className="me-1 text-status-error-fg">
           *

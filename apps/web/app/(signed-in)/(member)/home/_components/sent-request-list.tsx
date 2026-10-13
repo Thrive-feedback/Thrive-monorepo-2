@@ -33,7 +33,7 @@ export async function SentRequestList({ membership }: SentRequestListProps) {
       {requests.map((request) => (
         <li
           key={request.id}
-          className="flex flex-col gap-1 rounded-page bg-surface-overlay p-4"
+          className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
         >
           <Text as="h2" variant="subtitle-4" className="break-words">
             <Link href={ROUTES.feedback.requestById(request.id)}>

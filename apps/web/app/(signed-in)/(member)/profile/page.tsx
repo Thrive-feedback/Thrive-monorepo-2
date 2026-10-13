@@ -37,7 +37,7 @@ export default async function ProfilePage() {
           {profile.displayName}
         </Text>
       </div>
-      <dl className="flex flex-col gap-4 rounded-page bg-surface-overlay p-6">
+      <dl className="flex flex-col gap-4 rounded-page bg-surface-raised p-6">
         {rows.map((row) => (
           <div key={row.label} className="flex flex-col gap-1">
             <dt className="text-fg-secondary text-label">{row.label}</dt>
