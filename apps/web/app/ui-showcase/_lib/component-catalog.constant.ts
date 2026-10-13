@@ -15,6 +15,10 @@ import {
   CheckboxPreview,
 } from '@/app/ui-showcase/_components/entries/checkbox-entry';
 import {
+  DropdownMenuEntry,
+  DropdownMenuPreview,
+} from '@/app/ui-showcase/_components/entries/dropdown-menu-entry';
+import {
   InputEntry,
   InputPreview,
 } from '@/app/ui-showcase/_components/entries/input-entry';
@@ -46,6 +50,10 @@ import {
   SwitchEntry,
   SwitchPreview,
 } from '@/app/ui-showcase/_components/entries/switch-entry';
+import {
+  TabsEntry,
+  TabsPreview,
+} from '@/app/ui-showcase/_components/entries/tabs-entry';
 import {
   TextAreaFieldEntry,
   TextAreaFieldPreview,
@@ -168,6 +176,20 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'atom',
     Preview: SelectPreview,
     Entry: SelectEntry,
+  },
+  {
+    slug: 'tabs',
+    name: 'Tabs',
+    level: 'atom',
+    Preview: TabsPreview,
+    Entry: TabsEntry,
+  },
+  {
+    slug: 'dropdown-menu',
+    name: 'DropdownMenu',
+    level: 'atom',
+    Preview: DropdownMenuPreview,
+    Entry: DropdownMenuEntry,
   },
   {
     slug: 'avatar',
