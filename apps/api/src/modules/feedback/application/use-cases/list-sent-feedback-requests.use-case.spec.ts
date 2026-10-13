@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
+import { AccountNamesService } from '../service/account-names.service';
 import { ListSentFeedbackRequestsUseCase } from './list-sent-feedback-requests.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -76,7 +77,7 @@ function setUp() {
   );
   const useCase = new ListSentFeedbackRequestsUseCase(
     feedbackRequestQuery,
-    accountSummaryPort,
+    new AccountNamesService(accountSummaryPort),
   );
   return { accountSummaryPort, useCase };
 }

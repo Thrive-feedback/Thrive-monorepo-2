@@ -1,4 +1,3 @@
-import { AccountSummaryPort } from '@app/modules/identity';
 import { Injectable } from '@nestjs/common';
 import { AskStatus } from '../../domain/value-object/ask-status.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
@@ -8,6 +7,7 @@ import type {
   FeedbackRequestRow,
 } from '../query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
+import { AccountNamesService } from '../service/account-names.service';
 import type {
   AnswerView,
   FeedbackRequestView,
@@ -19,23 +19,6 @@ export interface GetFeedbackRequestInput {
   /** The signed-in caller, from the session. Never taken from the path or the body. */
   readonly callerAccountId: string;
   readonly requestId: string;
-}
-
-/**
- * The name each Account introduced itself with, for a whole page in one call rather than one
- * call per row (`BE_06` R9). A missing Account — deleted mid-read — and one that has not
- * introduced itself both read as `null`, because neither has a name to show.
- */
-async function namesOf(
-  accountSummaryPort: AccountSummaryPort,
-  accountIds: readonly string[],
-): Promise<ReadonlyMap<string, string | null>> {
-  const summaries = await accountSummaryPort.summariesOf([
-    ...new Set(accountIds),
-  ]);
-  return new Map(
-    summaries.map((summary) => [summary.accountId, summary.fullName]),
-  );
 }
 
 /**
@@ -81,7 +64,7 @@ function answerFor(
 export class GetFeedbackRequestUseCase {
   constructor(
     private readonly feedbackRequestQuery: FeedbackRequestQuery,
-    private readonly accountSummaryPort: AccountSummaryPort,
+    private readonly accountNamesService: AccountNamesService,
   ) {}
 
   async execute(input: GetFeedbackRequestInput): Promise<FeedbackRequestView> {
@@ -94,8 +77,7 @@ export class GetFeedbackRequestUseCase {
     }
 
     const [names, answerRows] = await Promise.all([
-      namesOf(
-        this.accountSummaryPort,
+      this.accountNamesService.namesOf(
         row.asks.map((ask) => ask.giverAccountId),
       ),
       this.feedbackRequestQuery.answersInRequest(

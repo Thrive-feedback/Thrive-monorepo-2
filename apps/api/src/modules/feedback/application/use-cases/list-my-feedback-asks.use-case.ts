@@ -1,10 +1,10 @@
-import { AccountSummaryPort } from '@app/modules/identity';
 import { Injectable } from '@nestjs/common';
 import {
   AskStatus,
   type AskStatusValue,
 } from '../../domain/value-object/ask-status.vo';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
+import { AccountNamesService } from '../service/account-names.service';
 import type {
   MyAskListView,
   PageRequest,
@@ -21,23 +21,6 @@ export interface ListMyFeedbackAsksInput {
 }
 
 /**
- * The name each Account introduced itself with, for a whole page in one call rather than one
- * call per row (`BE_06` R9). A missing Account — deleted mid-read — and one that has not
- * introduced itself both read as `null`, because neither has a name to show.
- */
-async function namesOf(
-  accountSummaryPort: AccountSummaryPort,
-  accountIds: readonly string[],
-): Promise<ReadonlyMap<string, string | null>> {
-  const summaries = await accountSummaryPort.summariesOf([
-    ...new Set(accountIds),
-  ]);
-  return new Map(
-    summaries.map((summary) => [summary.accountId, summary.fullName]),
-  );
-}
-
-/**
  * A query: the Asks addressed to the caller in this Workspace, newest first, each naming the
  * Member who asked. This is the only read of an Ask that has no request id — with Notifications
  * at Low priority (`ADR-0006`), it is how a Giver learns they were asked at all.
@@ -46,7 +29,7 @@ async function namesOf(
 export class ListMyFeedbackAsksUseCase {
   constructor(
     private readonly feedbackRequestQuery: FeedbackRequestQuery,
-    private readonly accountSummaryPort: AccountSummaryPort,
+    private readonly accountNamesService: AccountNamesService,
   ) {}
 
   async execute(input: ListMyFeedbackAsksInput): Promise<MyAskListView> {
@@ -56,8 +39,7 @@ export class ListMyFeedbackAsksUseCase {
       input.status,
       input.page,
     );
-    const names = await namesOf(
-      this.accountSummaryPort,
+    const names = await this.accountNamesService.namesOf(
       asks.items.map((ask) => ask.requesterAccountId),
     );
 
