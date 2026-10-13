@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { requireMember } from '@/lib/session/session.service';
 import { InvitationList } from './_components/invitation-list';
+import { InviteMembersForm } from './_components/invite-members-form';
 import { MemberList } from './_components/member-list';
 import { mayManageInvitations } from './_lib/invitation-access.util';
 
@@ -14,9 +15,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * Who is in the person's Workspace, for every Member; and, for the Owner and Admins, the
- * Invitations still open — Pending or Expired — to resend or revoke. Both read their own data, so each fills in
- * when its read returns.
+ * Who is in the person's Workspace, for every Member; and, for the Owner and Admins, a form to
+ * invite more and the Invitations still open — Pending or Expired — to resend or revoke. The
+ * lists read their own data, so each fills in when its read returns.
  */
 export default async function Members() {
   const session = await requireMember();
@@ -37,6 +38,14 @@ export default async function Members() {
           />
         </Suspense>
       </section>
+      {mayManageInvitations(session.membership) && (
+        <section className="flex flex-col gap-3">
+          <Text as="h2" variant="subtitle-2">
+            Invite teammates
+          </Text>
+          <InviteMembersForm />
+        </section>
+      )}
       {mayManageInvitations(session.membership) && (
         <section className="flex flex-col gap-3">
           <Text as="h2" variant="subtitle-2">

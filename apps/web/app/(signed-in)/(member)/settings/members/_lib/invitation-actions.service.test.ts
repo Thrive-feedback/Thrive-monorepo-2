@@ -13,12 +13,18 @@ const INVITATION_ID = '0199a0f0-0000-7000-8000-000000000003';
 const INVITATION = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/invitations/${INVITATION_ID}`;
 const REVOKE = `${INVITATION}/revoke`;
 const RESEND = `${INVITATION}/resend`;
+const INVITE = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/invitations`;
 
 const revalidatePath = vi.hoisted(() => vi.fn());
 
 vi.stubEnv('API_BASE_URL', TEST_API_BASE_URL);
 vi.mock('server-only', () => ({}));
 vi.mock('next/cache', () => ({ revalidatePath }));
+vi.mock('next/navigation', () => ({
+  redirect: (to: string) => {
+    throw new Error(`redirect:${to}`);
+  },
+}));
 vi.mock('next/headers', () => ({
   headers: async () => new Headers({ cookie: 'thrive.session_token=abc' }),
 }));
@@ -31,7 +37,7 @@ vi.mock('@/lib/session/session.service', () => ({
   }),
 }));
 
-const { resendInvitation, revokeInvitation } = await import(
+const { inviteMembers, resendInvitation, revokeInvitation } = await import(
   './invitation-actions.service'
 );
 
@@ -125,5 +131,84 @@ describe('resending an Invitation from Members', () => {
       ok: false,
       message: "We couldn't send that invitation again. Please try again.",
     });
+  });
+});
+
+describe('inviting teammates from Members', () => {
+  it("invites the addresses to the person's own Workspace, as them, and answers each", async () => {
+    const seen: Request[] = [];
+    server.use(
+      http.post(INVITE, async ({ request }) => {
+        seen.push(request.clone());
+        return HttpResponse.json(
+          {
+            results: [
+              { email: 'ben@acme.test', outcome: 'invited' },
+              { email: 'cara@acme.test', outcome: 'already_member' },
+            ],
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    revalidatePath.mockClear();
+
+    expect(
+      await inviteMembers(['ben@acme.test', 'cara@acme.test', 'BEN@acme.test']),
+    ).toEqual({
+      results: [
+        { email: 'ben@acme.test', outcome: 'invited' },
+        { email: 'cara@acme.test', outcome: 'already_member' },
+      ],
+    });
+    expect(await seen[0]?.json()).toEqual({
+      emails: ['ben@acme.test', 'cara@acme.test'],
+    });
+    expect(seen[0]?.headers.get('cookie')).toContain(
+      'thrive.session_token=abc',
+    );
+    expect(revalidatePath).toHaveBeenCalledWith('/settings/members');
+  });
+
+  it('checks the list again without calling the API', async () => {
+    const seen: Request[] = [];
+    server.use(
+      http.post(INVITE, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json({ results: [] }, { status: 201 });
+      }),
+    );
+
+    expect(await inviteMembers(['ben'])).toEqual({
+      formError: 'Not an email address: ben',
+    });
+    expect(await inviteMembers([])).toEqual({
+      formError: 'Add at least one email address.',
+    });
+    expect(seen).toHaveLength(0);
+  });
+
+  it('says why when the person may not invite', async () => {
+    apiRefusesWith(INVITE, 'NOT_ALLOWED_TO_INVITE', 403);
+
+    expect(await inviteMembers(['ben@acme.test'])).toEqual({
+      formError: 'Only the Owner and Admins can invite teammates.',
+    });
+  });
+
+  it('answers a generic failure for a code it does not explain', async () => {
+    apiRefusesWith(INVITE, 'SOMETHING_ELSE', 500);
+
+    expect(await inviteMembers(['ben@acme.test'])).toEqual({
+      formError: "We couldn't send your invitations. Please try again.",
+    });
+  });
+
+  it('sends someone signed out to sign in', async () => {
+    apiRefusesWith(INVITE, 'NOT_SIGNED_IN', 401);
+
+    await expect(inviteMembers(['ben@acme.test'])).rejects.toThrow(
+      'redirect:/signin',
+    );
   });
 });
