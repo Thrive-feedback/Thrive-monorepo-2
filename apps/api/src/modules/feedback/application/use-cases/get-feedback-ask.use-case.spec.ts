@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
+import { AccountNamesService } from '../service/account-names.service';
 import { GetFeedbackAskUseCase } from './get-feedback-ask.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -33,7 +34,7 @@ function setUp() {
   });
   const useCase = new GetFeedbackAskUseCase(
     feedbackRequestQuery,
-    accountSummaryPort,
+    new AccountNamesService(accountSummaryPort),
   );
   return { accountSummaryPort, useCase };
 }
