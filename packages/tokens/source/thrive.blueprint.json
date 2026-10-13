@@ -1689,6 +1689,13 @@
           "unlinkedPx": 12
         },
         {
+          "id": "control",
+          "name": "Control",
+          "description": "A control people press or type into — a button, a field, a toast.",
+          "basePx": 12,
+          "scales": true
+        },
+        {
           "id": "page",
           "name": "Page",
           "description": "A full-width surface or a sheet.",
@@ -1933,9 +1940,9 @@
         "description": "Buttons, including icon buttons.",
         "kind": "radius",
         "byDevice": {
-          "phone": "element",
-          "tablet": "element",
-          "desktop": "element"
+          "phone": "control",
+          "tablet": "control",
+          "desktop": "control"
         }
       },
       {
@@ -1944,9 +1951,9 @@
         "description": "Text fields, selects and search boxes.",
         "kind": "radius",
         "byDevice": {
-          "phone": "element",
-          "tablet": "element",
-          "desktop": "element"
+          "phone": "control",
+          "tablet": "control",
+          "desktop": "control"
         }
       },
       {
@@ -2015,19 +2022,19 @@
             "anchors": {},
             "manualOverrides": {
               "50": "#ffffff",
-              "100": "#e6e7e6",
-              "125": "#dddedd",
-              "200": "#c9ccca",
-              "300": "#a2a7a4",
-              "450": "#737a75",
-              "475": "#6a716c",
-              "650": "#353f38",
-              "700": "#2d3730",
-              "750": "#1e2821",
-              "800": "#0f1a13",
-              "825": "#08130c",
-              "900": "#010602",
-              "950": "#000100"
+              "100": "#e7e7e7",
+              "125": "#dedede",
+              "200": "#cbcbcb",
+              "300": "#a5a5a5",
+              "450": "#787878",
+              "475": "#6f6f6f",
+              "650": "#3c3c3c",
+              "700": "#343434",
+              "750": "#252525",
+              "800": "#171717",
+              "825": "#101010",
+              "900": "#040404",
+              "950": "#010101"
             }
           }
         },
@@ -2141,7 +2148,7 @@
         "description": "The fill under the pointer.",
         "light": {
           "trackId": "primary",
-          "weight": 500
+          "weight": 450
         },
         "dark": {
           "trackId": "primary",
@@ -2154,7 +2161,7 @@
         "description": "The fill while it is pressed.",
         "light": {
           "trackId": "primary",
-          "weight": 550
+          "weight": 500
         },
         "dark": {
           "trackId": "primary",
@@ -2183,12 +2190,12 @@
         "light": {
           "trackId": "primary",
           "weight": 100,
-          "alpha": 0.26
+          "alpha": 0.7
         },
         "dark": {
           "trackId": "primary",
-          "weight": 900,
-          "alpha": 0.3
+          "weight": 750,
+          "alpha": 0.7
         }
       },
       {
@@ -2278,12 +2285,12 @@
         "light": {
           "trackId": "secondary",
           "weight": 100,
-          "alpha": 0.26
+          "alpha": 0.7
         },
         "dark": {
           "trackId": "secondary",
-          "weight": 900,
-          "alpha": 0.3
+          "weight": 750,
+          "alpha": 0.7
         }
       },
       {
@@ -2386,12 +2393,12 @@
         "light": {
           "trackId": "neutral",
           "weight": 100,
-          "alpha": 0.26
+          "alpha": 0.7
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 900,
-          "alpha": 0.3
+          "weight": 750,
+          "alpha": 0.7
         }
       },
       {
@@ -2426,11 +2433,11 @@
         "description": "The page canvas, behind everything else.",
         "light": {
           "trackId": "neutral",
-          "weight": 100
+          "weight": 50
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 825
+          "weight": 800
         }
       },
       {
@@ -2443,7 +2450,7 @@
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 800
+          "weight": 750
         }
       },
       {
@@ -2451,12 +2458,12 @@
         "name": "Surface raised",
         "description": "A card or panel lifted off the canvas.",
         "light": {
-          "trackId": "primary",
-          "weight": 100
+          "trackId": "neutral",
+          "weight": 25
         },
         "dark": {
-          "trackId": "primary",
-          "weight": 825
+          "trackId": "neutral",
+          "weight": 750
         }
       },
       {
@@ -2470,8 +2477,53 @@
         },
         "dark": {
           "trackId": "neutral",
+          "weight": 750,
+          "alpha": 0.96
+        }
+      },
+      {
+        "id": "surface.scrim",
+        "name": "Surface scrim",
+        "description": "The dimmed layer behind a dialog, over the rest of the page.",
+        "light": {
+          "trackId": "neutral",
           "weight": 950,
-          "alpha": 0.92
+          "alpha": 0.5
+        },
+        "dark": {
+          "trackId": "neutral",
+          "weight": 950,
+          "alpha": 0.7
+        }
+      },
+      {
+        "id": "surface.glass",
+        "name": "Surface glass",
+        "description": "A bar that stays in place while the page scrolls under it, letting the page show through, blurred.",
+        "light": {
+          "trackId": "primary",
+          "weight": 100,
+          "alpha": 0.65
+        },
+        "dark": {
+          "trackId": "primary",
+          "weight": 825,
+          "alpha": 0.55
+        }
+      },
+      {
+        "id": "surface.glass-neutral",
+        "name": "Surface glass neutral",
+        "description": "A glass bar without the brand tint, for the screens before someone reaches their Workspace.",
+        "light": {
+          "trackId": "neutral",
+          "weight": 50,
+          "alpha": 0.72
+        },
+        "dark": {
+          "trackId": "neutral",
+          "weight": 825,
+          "alpha": 0.72
         }
       },
       {
@@ -2480,11 +2532,13 @@
         "description": "The placeholder block shown while content loads.",
         "light": {
           "trackId": "neutral",
-          "weight": 200
+          "weight": 100,
+          "alpha": 0.7
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 800
+          "weight": 700,
+          "alpha": 0.6
         }
       },
       {
@@ -2497,7 +2551,7 @@
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 800
+          "weight": 750
         }
       },
       {
@@ -2525,7 +2579,7 @@
         "dark": {
           "trackId": "neutral",
           "weight": 650,
-          "alpha": 0.16
+          "alpha": 0.7
         }
       },
       {
@@ -2538,7 +2592,7 @@
         },
         "dark": {
           "trackId": "neutral",
-          "weight": 750
+          "weight": 650
         }
       },
       {
@@ -2777,8 +2831,8 @@
         },
         "dark": {
           "trackId": "success",
-          "weight": 900,
-          "alpha": 0.3
+          "weight": 750,
+          "alpha": 0.5
         }
       },
       {
@@ -2872,8 +2926,8 @@
         },
         "dark": {
           "trackId": "warning",
-          "weight": 900,
-          "alpha": 0.3
+          "weight": 750,
+          "alpha": 0.5
         }
       },
       {
@@ -2967,8 +3021,8 @@
         },
         "dark": {
           "trackId": "error",
-          "weight": 900,
-          "alpha": 0.3
+          "weight": 750,
+          "alpha": 0.5
         }
       },
       {
@@ -3062,8 +3116,8 @@
         },
         "dark": {
           "trackId": "info",
-          "weight": 900,
-          "alpha": 0.3
+          "weight": 750,
+          "alpha": 0.5
         }
       },
       {

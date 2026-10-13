@@ -20,7 +20,7 @@ export type FeedbackCardProps = {
  */
 export function FeedbackCard({ item }: FeedbackCardProps) {
   return (
-    <article className="flex flex-col gap-3 rounded-page bg-surface-overlay p-4">
+    <article className="flex flex-col gap-3 rounded-page bg-surface-raised p-4">
       <header className="flex items-center gap-3">
         <Avatar size="md" aria-hidden="true">
           <AvatarFallback>{initials(item.giverName)}</AvatarFallback>

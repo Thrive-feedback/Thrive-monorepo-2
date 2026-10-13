@@ -1,0 +1,105 @@
+/*
+ * Frosted glass: a bar held in place while the page scrolls under it and shows through, blurred
+ * and a little more colourful. Both navbars are glass, and so is the frame `MemberShell` draws
+ * around a Member's page, so all of it is written here once. Masks and a backdrop filter have no
+ * utility, which is why this is CSS.
+ *
+ * `.glass` takes the brand tint of a Member's pages; `.neutral` swaps in the untinted glass of
+ * the screens before Home — invitations and registering.
+ */
+.glass {
+  --glass-tint: var(--surface-glass);
+
+  background-color: var(--glass-tint);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+
+.neutral {
+  --glass-tint: var(--surface-glass-neutral);
+}
+
+/*
+ * Where a bar meets the page, the glass curves into it at both ends, so the page reads as a sheet
+ * with rounded corners tucked under the bar: `.curvesDown` under a bar across the top,
+ * `.curvesUp` over one along the bottom. Each curve is a page-corner-sized square of glass with a
+ * quarter circle cut out of it. The bar is already a backdrop root, so the curves take its tint
+ * without blurring again.
+ */
+.curvesDown,
+.curvesUp {
+  --corner: var(--shape-page);
+  /* How far in from the window's edge the curves start; `.framed` sets it. */
+  --frame-gap: 0;
+}
+
+.curvesDown::before,
+.curvesDown::after,
+.curvesUp::before,
+.curvesUp::after {
+  content: '';
+  position: absolute;
+  width: var(--corner);
+  height: var(--corner);
+  background-color: var(--glass-tint);
+  pointer-events: none;
+}
+
+.curvesDown::before,
+.curvesDown::after {
+  top: 100%;
+}
+
+.curvesUp::before,
+.curvesUp::after {
+  bottom: 100%;
+}
+
+.curvesDown::before,
+.curvesUp::before {
+  left: var(--frame-gap);
+}
+
+.curvesDown::after,
+.curvesUp::after {
+  right: var(--frame-gap);
+}
+
+.curvesDown::before {
+  mask: radial-gradient(
+    circle at 100% 100%,
+    transparent var(--corner),
+    black var(--corner)
+  );
+}
+
+.curvesDown::after {
+  mask: radial-gradient(
+    circle at 0% 100%,
+    transparent var(--corner),
+    black var(--corner)
+  );
+}
+
+.curvesUp::before {
+  mask: radial-gradient(
+    circle at 100% 0%,
+    transparent var(--corner),
+    black var(--corner)
+  );
+}
+
+.curvesUp::after {
+  mask: radial-gradient(
+    circle at 0% 0%,
+    transparent var(--corner),
+    black var(--corner)
+  );
+}
+
+/*
+ * On a Member's pages glass also runs down each side of the window — the `w-3` strips in
+ * `MemberShell` — so the curves move in by the same width to start where the window does.
+ */
+.framed {
+  --frame-gap: calc(var(--space-unit) * 3);
+}

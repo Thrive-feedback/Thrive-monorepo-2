@@ -23,10 +23,10 @@ export function SkeletonEntry() {
       props={[
         {
           name: 'shape',
-          type: "'text' | 'circle' | 'rectangle'",
+          type: "'text' | 'circle' | 'control' | 'card'",
           defaultValue: "'text'",
           description:
-            'A line of text, an avatar, or a block. Size it with className.',
+            'What it stands in for — lines of text, an avatar, a button or field, a card — so its corners match what replaces it. Size it with className.',
         },
         {
           name: '...rest',
@@ -49,8 +49,11 @@ export function SkeletonEntry() {
       <StateCell label="Circle">
         <Skeleton shape="circle" />
       </StateCell>
-      <StateCell label="Rectangle">
-        <Skeleton shape="rectangle" />
+      <StateCell label="Control">
+        <Skeleton shape="control" />
+      </StateCell>
+      <StateCell label="Card">
+        <Skeleton shape="card" />
       </StateCell>
       <StateCell label="Composed: a Member row">
         <div className="flex w-full items-center gap-3">

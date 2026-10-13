@@ -29,7 +29,7 @@ export function TeamSizeOptions({
         {TEAM_SIZES.map((size) => (
           <label
             key={size.value}
-            className="relative rounded-inner border border-border-default bg-surface-base px-3 py-1.5 text-body-3 has-checked:border-action-primary has-checked:bg-action-primary-surface has-checked:text-fg-accent"
+            className="relative rounded-chip border border-border-default bg-surface-base px-3 py-1.5 text-body-3 has-checked:border-action-primary has-checked:bg-action-primary-surface has-checked:text-fg-accent"
           >
             <input
               type="radio"
@@ -37,7 +37,7 @@ export function TeamSizeOptions({
               value={size.value}
               checked={value === size.value}
               onChange={() => onChange(size.value)}
-              className="absolute inset-0 cursor-pointer appearance-none rounded-inner"
+              className="absolute inset-0 cursor-pointer appearance-none rounded-chip"
             />
             {size.label}
           </label>

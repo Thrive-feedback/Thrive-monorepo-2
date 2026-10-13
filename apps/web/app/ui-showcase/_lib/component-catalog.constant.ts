@@ -3,6 +3,14 @@ import {
   AvatarPreview,
 } from '@/app/ui-showcase/_components/entries/avatar-entry';
 import {
+  AvatarGroupEntry,
+  AvatarGroupPreview,
+} from '@/app/ui-showcase/_components/entries/avatar-group-entry';
+import {
+  BreadcrumbEntry,
+  BreadcrumbPreview,
+} from '@/app/ui-showcase/_components/entries/breadcrumb-entry';
+import {
   ButtonEntry,
   ButtonPreview,
 } from '@/app/ui-showcase/_components/entries/button-entry';
@@ -14,6 +22,10 @@ import {
   CheckboxEntry,
   CheckboxPreview,
 } from '@/app/ui-showcase/_components/entries/checkbox-entry';
+import {
+  DialogEntry,
+  DialogPreview,
+} from '@/app/ui-showcase/_components/entries/dialog-entry';
 import {
   DropdownMenuEntry,
   DropdownMenuPreview,
@@ -35,6 +47,10 @@ import {
   RadioGroupPreview,
 } from '@/app/ui-showcase/_components/entries/radio-group-entry';
 import {
+  ResizableEntry,
+  ResizablePreview,
+} from '@/app/ui-showcase/_components/entries/resizable-entry';
+import {
   SelectEntry,
   SelectPreview,
 } from '@/app/ui-showcase/_components/entries/select-entry';
@@ -50,6 +66,10 @@ import {
   SwitchEntry,
   SwitchPreview,
 } from '@/app/ui-showcase/_components/entries/switch-entry';
+import {
+  TableEntry,
+  TablePreview,
+} from '@/app/ui-showcase/_components/entries/table-entry';
 import {
   TabsEntry,
   TabsPreview,
@@ -74,6 +94,14 @@ import {
   ToastEntry,
   ToastPreview,
 } from '@/app/ui-showcase/_components/entries/toast-entry';
+import {
+  ToggleEntry,
+  TogglePreview,
+} from '@/app/ui-showcase/_components/entries/toggle-entry';
+import {
+  TooltipEntry,
+  TooltipPreview,
+} from '@/app/ui-showcase/_components/entries/tooltip-entry';
 import type { AtomicLevel } from '@/app/ui-showcase/_components/level-badge';
 
 export type ShowcaseComponent = {
@@ -171,6 +199,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: SwitchEntry,
   },
   {
+    slug: 'toggle',
+    name: 'Toggle',
+    level: 'atom',
+    Preview: TogglePreview,
+    Entry: ToggleEntry,
+  },
+  {
     slug: 'select',
     name: 'Select',
     level: 'atom',
@@ -185,11 +220,32 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: TabsEntry,
   },
   {
+    slug: 'breadcrumb',
+    name: 'Breadcrumb',
+    level: 'atom',
+    Preview: BreadcrumbPreview,
+    Entry: BreadcrumbEntry,
+  },
+  {
     slug: 'dropdown-menu',
     name: 'DropdownMenu',
     level: 'atom',
     Preview: DropdownMenuPreview,
     Entry: DropdownMenuEntry,
+  },
+  {
+    slug: 'dialog',
+    name: 'Dialog',
+    level: 'atom',
+    Preview: DialogPreview,
+    Entry: DialogEntry,
+  },
+  {
+    slug: 'tooltip',
+    name: 'Tooltip',
+    level: 'atom',
+    Preview: TooltipPreview,
+    Entry: TooltipEntry,
   },
   {
     slug: 'avatar',
@@ -227,6 +283,20 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: CardEntry,
   },
   {
+    slug: 'table',
+    name: 'Table',
+    level: 'atom',
+    Preview: TablePreview,
+    Entry: TableEntry,
+  },
+  {
+    slug: 'resizable',
+    name: 'Resizable',
+    level: 'atom',
+    Preview: ResizablePreview,
+    Entry: ResizableEntry,
+  },
+  {
     slug: 'text-field',
     name: 'TextField',
     level: 'molecule',
@@ -239,5 +309,12 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'molecule',
     Preview: TextAreaFieldPreview,
     Entry: TextAreaFieldEntry,
+  },
+  {
+    slug: 'avatar-group',
+    name: 'AvatarGroup',
+    level: 'molecule',
+    Preview: AvatarGroupPreview,
+    Entry: AvatarGroupEntry,
   },
 ];

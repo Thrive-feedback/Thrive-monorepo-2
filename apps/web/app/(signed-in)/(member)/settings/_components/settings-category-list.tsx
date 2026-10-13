@@ -21,7 +21,7 @@ export function SettingsCategoryList() {
       {CATEGORIES.map((category) => (
         <li
           key={category.href}
-          className="flex flex-col gap-1 rounded-page bg-surface-overlay p-4"
+          className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
         >
           <Link href={category.href} className="self-start text-subtitle-4">
             {category.name}

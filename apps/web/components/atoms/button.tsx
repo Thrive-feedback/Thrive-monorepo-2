@@ -13,7 +13,7 @@ const buttonVariants = cva(
         outlined:
           'border border-action-primary-border bg-action-primary-surface text-action-primary enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
         secondary:
-          'border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface',
+          'border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface-hover',
         soft: 'bg-action-neutral-surface text-action-primary-fg enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
         ghost:
           'bg-action-neutral-surface text-fg-accent enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface',

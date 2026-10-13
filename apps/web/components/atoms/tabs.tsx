@@ -2,6 +2,7 @@
 
 import { Tabs as TabsPrimitive } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
+import styles from './tabs.module.css';
 
 /*
  * The parts are Radix's, written as a composition:
@@ -39,6 +40,7 @@ export function TabsList({ className, ...rest }: TabsListProps) {
       data-slot="tabs-list"
       className={cn(
         'flex items-center gap-1 overflow-x-auto border-border-subtle border-b',
+        styles.list,
         className,
       )}
       {...rest}
@@ -55,7 +57,7 @@ export function TabsTrigger({ className, ...rest }: TabsTriggerProps) {
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        '-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-2 px-3 py-2 text-button-sm text-fg-secondary hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary',
+        '-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-button-sm text-fg-secondary hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary',
         className,
       )}
       {...rest}

@@ -1,3 +1,4 @@
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Spinner } from '@/components/atoms/spinner';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
@@ -202,17 +203,29 @@ export function TokenGallery() {
           <div className="h-full w-full bg-surface-subtle" />
         </Swatch>
         <Swatch
-          name="from-surface-base to-surface-subtle"
-          usage="the wash behind a page"
-        >
-          <div className="h-full w-full bg-linear-to-b from-surface-base to-surface-subtle" />
-        </Swatch>
-        <Swatch
           name="bg-surface-overlay shadow-med"
-          usage="a panel over the backdrop"
+          usage="a panel over the page"
         >
-          <div className="flex h-full w-full items-center justify-center bg-linear-to-b from-surface-base to-surface-subtle">
+          <div className="flex h-full w-full items-center justify-center bg-surface-base">
             <div className="h-10 w-24 rounded-page bg-surface-overlay shadow-med" />
+          </div>
+        </Swatch>
+        <Swatch name="bg-surface-scrim" usage="the page dimmed behind a dialog">
+          <div className="relative flex h-full w-full items-center justify-center bg-surface-base text-subtitle-2">
+            Page
+            <div className="absolute inset-0 bg-surface-scrim" />
+          </div>
+        </Swatch>
+        <Swatch name="bg-surface-glass" usage="a Member's navbar and frame">
+          <div className="relative flex h-full w-full items-center justify-center bg-surface-base text-subtitle-2">
+            Page
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-surface-glass" />
+          </div>
+        </Swatch>
+        <Swatch name="bg-surface-glass-neutral" usage="the navbar before Home">
+          <div className="relative flex h-full w-full items-center justify-center bg-surface-base text-subtitle-2">
+            Page
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-surface-glass-neutral" />
           </div>
         </Swatch>
       </Section>
@@ -363,6 +376,9 @@ export function TokenGallery() {
         <Swatch name="rounded-container" usage="a card, a panel, a dialog">
           <div className="h-10 w-32 rounded-container bg-surface-subtle" />
         </Swatch>
+        <Swatch name="rounded-control" usage="a button, a field, a toast">
+          <div className="h-10 w-32 rounded-control bg-surface-subtle" />
+        </Swatch>
         <Swatch name="rounded-page" usage="a sheet, a full-width surface">
           <div className="h-10 w-32 rounded-page bg-surface-subtle" />
         </Swatch>
@@ -423,13 +439,24 @@ export function TokenGallery() {
 
       <Section
         title="Motion"
-        description="Only the two loops the loading indicators need. Nothing else animates yet, and the pulse stops under reduced motion."
+        description="The two loops the loading indicators need, and the way an overlay arrives and leaves. Everything but the spinner stops under reduced motion."
       >
         <Swatch name="animate-spin" usage="Spinner, Button loading">
           <Spinner className="size-6 text-fg-accent" />
         </Swatch>
-        <Swatch name="motion-safe:animate-pulse" usage="Skeleton">
-          <div className="h-4 w-32 rounded-full bg-surface-subtle motion-safe:animate-pulse" />
+        <Swatch
+          name="bg-surface-skeleton motion-safe:animate-pulse"
+          usage="Skeleton"
+        >
+          <Skeleton className="w-32" />
+        </Swatch>
+        <Swatch
+          name="motion-safe:animate-enter / animate-exit"
+          usage="Dialog and Tooltip opening and closing"
+        >
+          <span className="text-body-2 text-fg-secondary">
+            Open a Dialog to see it
+          </span>
         </Swatch>
       </Section>
 

@@ -60,7 +60,7 @@ export function DropdownMenuContent({
         align={align}
         sideOffset={sideOffset}
         className={cn(
-          'z-50 min-w-48 overflow-hidden rounded-surface border border-border-default bg-surface-base p-1 text-fg-primary shadow-med',
+          'z-50 min-w-48 overflow-hidden rounded-control border border-border-muted bg-surface-raised p-1 text-fg-primary shadow-med',
           className,
         )}
         {...rest}

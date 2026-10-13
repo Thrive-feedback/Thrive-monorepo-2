@@ -3,6 +3,7 @@
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
 import { Select as SelectPrimitive } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
+import styles from './select.module.css';
 
 /*
  * The parts are Radix's, so a select is written as a composition rather than configured with
@@ -13,8 +14,9 @@ import { cn } from '@/lib/cn.util';
  *     <SelectContent><SelectItem value="design">Design</SelectItem></SelectContent>
  *   </Select>
  *
- * The list opens item-aligned — over the trigger, with the chosen item under the pointer —
- * which is what a native select does and needs no measured width in a class.
+ * The list always opens under the trigger, as wide as it — never over it or above it — so the
+ * field stays in view while choosing. Near the bottom of the screen the list scrolls inside
+ * itself rather than flipping up.
  */
 
 export type SelectProps = React.ComponentProps<typeof SelectPrimitive.Root>;
@@ -70,6 +72,7 @@ export type SelectContentProps = React.ComponentPropsWithRef<
 >;
 
 export function SelectContent({
+  sideOffset = 4,
   className,
   children,
   ...rest
@@ -78,13 +81,18 @@ export function SelectContent({
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         data-slot="select-content"
+        position="popper"
+        side="bottom"
+        sideOffset={sideOffset}
+        avoidCollisions={false}
         className={cn(
-          'relative z-50 overflow-hidden rounded-surface border border-border-default bg-surface-base text-fg-primary shadow-med',
+          'relative z-50 overflow-hidden rounded-control border border-border-muted bg-surface-base text-fg-primary shadow-med',
+          styles.content,
           className,
         )}
         {...rest}
       >
-        <SelectPrimitive.Viewport className="p-1">
+        <SelectPrimitive.Viewport className="flex flex-col gap-0.5 p-1.5">
           {children}
         </SelectPrimitive.Viewport>
       </SelectPrimitive.Content>
@@ -100,7 +108,7 @@ export function SelectLabel({ className, ...rest }: SelectLabelProps) {
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
-      className={cn('px-2 py-1.5 text-caption text-fg-secondary', className)}
+      className={cn('px-3 py-1.5 text-caption text-fg-secondary', className)}
       {...rest}
     />
   );
@@ -115,12 +123,12 @@ export function SelectItem({ className, children, ...rest }: SelectItemProps) {
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element py-2 pr-8 pl-2 text-body-2 outline-hidden data-disabled:pointer-events-none data-highlighted:bg-action-primary-surface data-disabled:text-fg-secondary',
+        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-container py-2.5 pr-9 pl-3 text-body-2 outline-hidden data-disabled:pointer-events-none data-highlighted:bg-action-neutral-surface-hover data-[state=checked]:text-action-primary data-disabled:text-fg-disabled',
         className,
       )}
       {...rest}
     >
-      <span className="absolute right-2 flex size-4 items-center justify-center">
+      <span className="absolute right-3 flex size-4 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
           <CheckIcon className="size-4 text-fg-accent" />
         </SelectPrimitive.ItemIndicator>

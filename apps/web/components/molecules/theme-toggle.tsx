@@ -51,6 +51,7 @@ export function ThemeToggle() {
       size="icon"
       aria-label="Dark theme"
       aria-pressed={isDark}
+      className="text-action-primary enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover aria-pressed:text-action-secondary aria-pressed:enabled:active:bg-action-secondary-surface-hover aria-pressed:enabled:hover:bg-action-secondary-surface-hover"
       onClick={handleClick}
     >
       {isDark ? (

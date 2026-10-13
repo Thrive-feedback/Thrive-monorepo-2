@@ -3,13 +3,23 @@
  * package is generated from `source/thrive.blueprint.json` (ADR 0028), and each value here is a
  * request to design to add it there (`FE_03` R6, R9) — not a place to add more.
  *
- * Motion, a stroke width for the focus ring, two content widths, a monospace family and the
- * wordmark's colour in each theme are what today's screens use that the blueprint does not describe.
+ * Motion, a stroke width for the focus ring, two content widths, a monospace family, the
+ * wordmark's colour in each theme, and the blur behind a dialog or under a glass bar are what
+ * today's screens use that the blueprint does not describe.
  */
 :root {
   /* A spinner turns; a placeholder breathes while its content loads. */
   --motion-spin: 1000ms linear infinite;
   --motion-pulse: 2000ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  /* An overlay — a dialog, a tooltip — fades and grows in, and leaves a little faster. */
+  --motion-enter: 150ms cubic-bezier(0, 0, 0.2, 1);
+  --motion-exit: 100ms cubic-bezier(0.4, 0, 1, 1);
+
+  /* How much the page blurs behind a dialog, and blurs and gains colour under a glass bar such
+     as the navbar. */
+  --scrim-blur: 0.375rem;
+  --glass-blur: 1.25rem;
+  --glass-saturate: 1.8;
 
   /* Focus, from one ring on every interactive element (`FE_06` R5). */
   --focus-ring-width: 0.125rem;

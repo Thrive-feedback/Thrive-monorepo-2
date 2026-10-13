@@ -4,7 +4,7 @@ import { Label } from '@/components/atoms/label';
 import { Textarea, type TextareaProps } from '@/components/atoms/textarea';
 import { cn } from '@/lib/cn.util';
 
-const messageLine = cva('text-caption', {
+const messageLine = cva('mt-2 text-caption', {
   variants: {
     invalid: { true: 'text-status-error-fg', false: 'text-fg-secondary' },
   },
@@ -38,8 +38,8 @@ export function TextAreaField({
   const message = errorMessage ?? helperText;
 
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
-      <Label htmlFor={id} className="block">
+    <div className={cn('flex flex-col', className)}>
+      <Label htmlFor={id} className="mb-1 block">
         {required && (
           <span aria-hidden="true" className="me-1 text-status-error-fg">
             *

@@ -19,5 +19,6 @@ describe('cn', () => {
   it('lets the caller’s radius replace a shape role', () => {
     expect(cn('rounded-element', 'rounded-full')).toBe('rounded-full');
     expect(cn('rounded-full', 'rounded-page')).toBe('rounded-page');
+    expect(cn('rounded-control', 'rounded-full')).toBe('rounded-full');
   });
 });

@@ -56,7 +56,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <Text variant="display-5" as="h1">
         {session.membership.workspace.name}
       </Text>
-      <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+      <Suspense fallback={<Skeleton shape="card" className="h-80" />}>
         <FeedbackComposerCard
           membership={session.membership}
           ownEmail={session.email}

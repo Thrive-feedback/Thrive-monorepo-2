@@ -509,6 +509,8 @@ function theme(): string {
   lines.push('');
   lines.push('--animate-spin: spin var(--motion-spin);');
   lines.push('--animate-pulse: pulse var(--motion-pulse);');
+  lines.push('--animate-enter: enter var(--motion-enter);');
+  lines.push('--animate-exit: exit var(--motion-exit);');
   lines.push('');
   lines.push(
     '@keyframes spin {',
@@ -519,6 +521,25 @@ function theme(): string {
   );
   lines.push('');
   lines.push('@keyframes pulse {', '  50% {', '    opacity: 0.5;', '  }', '}');
+  lines.push('');
+  // `scale`, not `transform`, so an element centred with a translate keeps its position.
+  lines.push(
+    '@keyframes enter {',
+    '  from {',
+    '    opacity: 0;',
+    '    scale: 0.96;',
+    '  }',
+    '}',
+  );
+  lines.push('');
+  lines.push(
+    '@keyframes exit {',
+    '  to {',
+    '    opacity: 0;',
+    '    scale: 0.96;',
+    '  }',
+    '}',
+  );
   lines.push('');
   for (const name of Object.values(FONT_FAMILY_NAMES)) {
     lines.push(`--font-${name}: var(--family-${name});`);
