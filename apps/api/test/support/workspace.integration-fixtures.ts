@@ -12,8 +12,8 @@ export interface SignedInAccount {
 }
 
 /**
- * Builds signed-in Accounts and Workspaces in the real database for the Invitation suites,
- * and removes everything it built.
+ * Builds signed-in Accounts and Workspaces in the real database for the Invitation suites and
+ * the `@api` scenarios, and removes everything it built.
  */
 export class WorkspaceFixtures {
   private readonly accountIds: string[] = [];
@@ -71,7 +71,43 @@ export class WorkspaceFixtures {
     });
   }
 
+  /**
+   * An Invitation row written straight to the store, for the states the API cannot reach on
+   * demand — expired, accepted, sent days ago. Pending, to a fresh address, sent now, unless
+   * told otherwise. Removed with its Workspace.
+   */
+  async anInvitation(
+    workspaceId: string,
+    inviter: SignedInAccount,
+    options: {
+      readonly expiresAt: Date;
+      readonly email?: string;
+      readonly status?: 'pending' | 'accepted' | 'canceled' | 'rejected';
+      readonly createdAt?: Date;
+    },
+  ): Promise<string> {
+    const id = uuidv7();
+    await this.prismaService.invitation.create({
+      data: {
+        id,
+        workspaceId,
+        email: options.email ?? `invitee-${id}@acme.test`,
+        role: 'member',
+        status: options.status ?? 'pending',
+        createdAt: options.createdAt,
+        expiresAt: options.expiresAt,
+        inviterId: inviter.accountId,
+      },
+    });
+    return id;
+  }
+
   async removeAll(): Promise<void> {
+    // Feedback names its Workspace and people by id only, with no foreign key to cascade
+    // through, so its rows go first and by hand.
+    await this.prismaService.feedbackRequest.deleteMany({
+      where: { requesterAccountId: { in: this.accountIds } },
+    });
     await this.prismaService.workspace.deleteMany({
       where: { members: { some: { userId: { in: this.accountIds } } } },
     });

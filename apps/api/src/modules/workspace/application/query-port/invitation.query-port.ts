@@ -1,6 +1,8 @@
+import type { InvitationRecipient } from '../../domain/value-object/invitation-recipient.vo';
 import type {
   InvitationDetailView,
   InvitationPage,
+  PendingInvitationPage,
 } from '../types/invitation.types';
 import type { PageRequest } from '../types/membership.types';
 
@@ -23,4 +25,15 @@ export abstract class InvitationQuery {
     invitationId: string,
     now: Date,
   ): Promise<InvitationDetailView | null>;
+
+  /**
+   * The Invitations sent to `recipient`, across every Workspace, that are Pending at `now` —
+   * neither accepted, revoked nor expired, as `InvitationStatus.openAt` draws the line. Newest
+   * first.
+   */
+  abstract pendingInvitationsTo(
+    recipient: InvitationRecipient,
+    now: Date,
+    page: PageRequest,
+  ): Promise<PendingInvitationPage>;
 }

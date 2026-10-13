@@ -41,11 +41,11 @@ describe('the email that delivers an Invitation', () => {
     );
   });
 
-  it('joins with a button that fits its label', () => {
+  it('joins with a button as wide as the card', () => {
     const { html } = InvitationEmail.compose(anInvitation()).content();
 
     expect(html).toMatch(
-      /<td align="center" style="padding-top:24px;">\n<table role="presentation" cellpadding="0"[^>]*>(?:(?!<\/table>)[\s\S])*>Join the workspace<\/a>/,
+      /<td align="center" style="padding-top:24px;">\n<table role="presentation" width="100%" cellpadding="0"[^>]*>(?:(?!<\/table>)[\s\S])*>Join this workspace<\/a>/,
     );
   });
 
@@ -53,7 +53,7 @@ describe('the email that delivers an Invitation', () => {
     const email = InvitationEmail.compose(anInvitation()).content();
 
     expect(email.html).toMatch(
-      /<a href="https:\/\/thrive\.test\/invitations\/0199a0f0-0000-7000-8000-000000000001"[^>]*>Join the workspace<\/a>/,
+      /<a href="https:\/\/thrive\.test\/invitations\/0199a0f0-0000-7000-8000-000000000001"[^>]*>Join this workspace<\/a>/,
     );
     expect(email.html).toContain(`>${ACCEPT_URL}</a>`);
     expect(email.text).toContain(`Here is your access pass: ${ACCEPT_URL}`);

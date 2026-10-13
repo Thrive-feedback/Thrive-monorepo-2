@@ -35,9 +35,10 @@ const FIELD_ERRORS: Readonly<
 const COULD_NOT_SAVE = "We couldn't save your details. Please try again.";
 
 /**
- * Saves what the person typed in Introduce yourself as their Profile, then moves on to
- * Create a Workspace. The API decides who is saving, from the browser's own session
- * cookie, so nobody can save a Profile for someone else.
+ * Saves what the person typed in Introduce yourself as their Profile, then moves on to the
+ * Invitations waiting for them; that page sends anyone with none on to Create a Workspace.
+ * The API decides who is saving, from the browser's own session cookie, so nobody can save a
+ * Profile for someone else.
  */
 export async function saveProfile(
   _previous: SaveProfileState,
@@ -52,7 +53,7 @@ export async function saveProfile(
   }
 
   const cookie = (await headers()).get('cookie') ?? undefined;
-  let next: string = ROUTES.register.createWorkspace;
+  let next: string = ROUTES.register.joinWorkspace;
   try {
     await apiClient().POST('/v1/profiles', {
       params: { header: { cookie } },

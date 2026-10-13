@@ -94,7 +94,7 @@ function invitationHtml(parts: InvitationHtmlParts): string {
 <tr><td align="center" style="padding-top:8px;"><h1 style="${text}font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.5px;color:${s.title};">${escapeHtml(parts.title)}</h1></td></tr>
 <tr><td style="padding-top:24px;"><p style="${text}font-size:16px;line-height:24px;color:${s.body};">${inviter} has reserved a spot for you on the <span style="color:${s.secondary};">${workspace}</span> workspace. Your team is waiting to build something great together.<br><br>Here is your access pass:</p></td></tr>
 <tr><td align="center" style="padding-top:24px;">
-<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
 <td align="center" style="background-color:${s.action};border-radius:${s.buttonRadius};">
 <a href="${url}" style="display:block;padding:14px 22px;font-family:${s.font};font-size:16px;line-height:19px;font-weight:600;color:${s.onAction};text-decoration:none;border-radius:${s.buttonRadius};">${escapeHtml(parts.button)}</a>
 </td></tr></table>
@@ -157,7 +157,7 @@ export class InvitationEmail {
     const greeting = 'Hi there,';
     const title = 'You’re on the list!';
     const reserved = `${details.inviterName} has reserved a spot for you on the ${details.workspaceName} workspace. Your team is waiting to build something great together.`;
-    const button = 'Join the workspace';
+    const button = 'Join this workspace';
     const notice = `This invitation expires in ${lasts}. Sign in with ${details.invitedEmail} to accept it.`;
     const signOff = 'See you inside, The Thrive Team';
 
