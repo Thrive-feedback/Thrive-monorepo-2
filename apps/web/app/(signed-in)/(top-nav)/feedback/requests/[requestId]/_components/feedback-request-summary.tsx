@@ -18,8 +18,9 @@ const ASK_STATUS_WORDS: Readonly<
 };
 
 /**
- * The confirmation. It is read from what was stored rather than from what was typed, so a
- * reload or a shared link shows the same thing.
+ * The confirmation, and afterwards the place the Requester reads what came back. It is read
+ * from what was stored rather than from what was typed, so a reload or a shared link shows the
+ * same thing — and an answer written since appears without anybody being told to look.
  */
 export function FeedbackRequestSummary({
   request,
@@ -29,13 +30,23 @@ export function FeedbackRequestSummary({
       <div className="flex flex-col gap-6">
         <ul className="flex flex-col gap-3">
           {request.asks.map((ask) => (
-            <li key={ask.askId} className="flex flex-col gap-1">
-              <Text variant="subtitle-3" as="h2">
-                You asked {ask.giverName ?? 'a teammate'} about {request.topic}
-              </Text>
-              <Text variant="body-3" tone="muted">
-                Now {ASK_STATUS_WORDS[ask.status]}.
-              </Text>
+            <li key={ask.askId} className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
+                <Text variant="subtitle-3" as="h2">
+                  You asked {ask.giverName ?? 'a teammate'} about{' '}
+                  {request.topic}
+                </Text>
+                <Text variant="body-3" tone="muted">
+                  Now {ASK_STATUS_WORDS[ask.status]}.
+                </Text>
+              </div>
+              {ask.answer !== null && (
+                // Their words, kept as they wrote them: the line breaks they chose are part of
+                // the answer, and a paragraph run together reads as a different message.
+                <Text variant="body-2" className="whitespace-pre-line">
+                  {ask.answer}
+                </Text>
+              )}
             </li>
           ))}
         </ul>

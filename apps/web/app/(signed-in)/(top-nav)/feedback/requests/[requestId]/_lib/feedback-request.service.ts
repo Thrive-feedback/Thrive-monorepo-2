@@ -13,6 +13,8 @@ export type SentFeedbackRequest = {
     /** The Member asked, or `null` while they have not introduced themselves. */
     readonly giverName: string | null;
     readonly status: 'PENDING' | 'ANSWERED' | 'EXPIRED';
+    /** What they wrote, once they have — and only for the people allowed to read it. */
+    readonly answer: string | null;
   }[];
 };
 
@@ -48,6 +50,7 @@ export async function readFeedbackRequest(
         askId: ask.askId,
         giverName: ask.giverName,
         status: ask.status,
+        answer: ask.answer?.body ?? null,
       })),
     };
   } catch (error) {
