@@ -302,13 +302,28 @@ app/(signed-in)/(side-nav)/feedback/asks/                        #18
   _lib/my-ask.type.ts
 app/(signed-in)/(top-nav)/feedback/asks/[askId]/                 #22/#24
   page.tsx                              validates the segment with Zod (FE_11 R4)
-  _components/answer-ask-card.tsx       server; who asked + the Topic
+  _components/answer-ask-card.tsx       server; who asked + the Topic; the box, or why there is none
   _components/answer-ask-form.tsx       'use client' — the one interactive subtree
   _lib/feedback-ask.service.ts          'server-only'; null on 404 → notFound()
   _lib/answer-ask-actions.service.ts    'use server'; POSTs, then redirects
   _lib/answer-ask-state.type.ts
   _lib/ask-params.schema.ts
 ```
+
+**Three things the plan did not say, decided while building PR 4:**
+
+- **An answered Ask gets no box.** The first answer is final, so a second one earns a `409`; a
+  form that can only be refused is worse than a sentence saying why. The screen reads the Ask's
+  status and renders either the box or "You have already answered this", with a link back.
+- **Sending goes back to the same Ask**, which then shows that sentence. It is the confirmation that
+  survives a refresh, the same reason #21's own confirmation is its own route (0015 D3) — and it is
+  where a repeated Send lands too, so the `409` never reaches the person as an error.
+- **The Topic is the link** on *Waiting for me*, not a repeated "Answer this": a screen reader
+  listing the links then hears what each one is about.
+
+Every surface here is the `Card` atom, so PR 4 adds no component and the hand-rolled surface in the
+two list rows (§7's earlier note) gains no third copy — the `SurfaceRow` molecule considered for this
+pull request is not needed.
 
 Modified: `lib/routes.constant.ts` (`feedback.sent`, `feedback.asks`, and `feedback.askById(id)`
 in PR 4); `components/organisms/site-side-nav.tsx` + its test — the side nav held one link, whose

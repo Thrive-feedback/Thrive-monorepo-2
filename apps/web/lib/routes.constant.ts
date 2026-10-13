@@ -13,6 +13,8 @@ export const ROUTES = {
     sent: '/feedback/sent',
     /** The Asks waiting for the signed-in person to answer. */
     asks: '/feedback/asks',
+    /** One Ask waiting for them, where they write the answer. */
+    askById: (askId: string) => `/feedback/asks/${askId}`,
     requestById: (requestId: string) => `/feedback/requests/${requestId}`,
   },
   invitation: (invitationId: string) => `/invitations/${invitationId}`,

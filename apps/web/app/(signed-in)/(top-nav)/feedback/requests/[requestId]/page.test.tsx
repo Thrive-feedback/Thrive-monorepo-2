@@ -37,7 +37,14 @@ describe('the page showing a sent Feedback Request', () => {
     readFeedbackRequest.mockResolvedValue({
       id: REQUEST_ID,
       topic: 'my sprint review talk',
-      asks: [{ askId: 'ask-1', giverName: 'Ben Carter', status: 'PENDING' }],
+      asks: [
+        {
+          askId: 'ask-1',
+          giverName: 'Ben Carter',
+          status: 'PENDING',
+          answer: null,
+        },
+      ],
     });
 
     render(await FeedbackRequestPage(params()));
@@ -56,7 +63,9 @@ describe('the page showing a sent Feedback Request', () => {
     readFeedbackRequest.mockResolvedValue({
       id: REQUEST_ID,
       topic: 'my sprint review talk',
-      asks: [{ askId: 'ask-1', giverName: null, status: 'ANSWERED' }],
+      asks: [
+        { askId: 'ask-1', giverName: null, status: 'ANSWERED', answer: null },
+      ],
     });
 
     render(await FeedbackRequestPage(params()));
@@ -73,7 +82,14 @@ describe('the page showing a sent Feedback Request', () => {
     readFeedbackRequest.mockResolvedValue({
       id: REQUEST_ID,
       topic: 'my sprint review talk',
-      asks: [{ askId: 'ask-1', giverName: 'Ben Carter', status: 'PENDING' }],
+      asks: [
+        {
+          askId: 'ask-1',
+          giverName: 'Ben Carter',
+          status: 'PENDING',
+          answer: null,
+        },
+      ],
     });
 
     render(await FeedbackRequestPage(params()));
@@ -81,6 +97,27 @@ describe('the page showing a sent Feedback Request', () => {
     expect(
       screen.getByRole('link', { name: 'Ask someone else' }),
     ).toHaveAttribute('href', '/home');
+  });
+
+  it('shows what the Giver wrote, once they have written it', async () => {
+    readFeedbackRequest.mockResolvedValue({
+      id: REQUEST_ID,
+      topic: 'my sprint review talk',
+      asks: [
+        {
+          askId: 'ask-1',
+          giverName: 'Ben Carter',
+          status: 'ANSWERED',
+          answer: 'You open strongly and lose the room at the detail.',
+        },
+      ],
+    });
+
+    render(await FeedbackRequestPage(params()));
+
+    expect(
+      screen.getByText('You open strongly and lose the room at the detail.'),
+    ).toBeInTheDocument();
   });
 
   it('is not found when the Workspace has no such request', async () => {

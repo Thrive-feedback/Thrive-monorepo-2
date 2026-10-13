@@ -1,6 +1,8 @@
 import { sentDay } from '@/app/(signed-in)/(side-nav)/feedback/_lib/sent-day.util';
 import { readMyAsks } from '@/app/(signed-in)/(side-nav)/feedback/asks/_lib/my-asks.service';
+import { Link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
+import { ROUTES } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 export type WaitingAskListProps = {
@@ -11,8 +13,8 @@ export type WaitingAskListProps = {
  * Every Ask waiting on the person: who asked, about what, and when. With Notifications at Low
  * priority (`ADR-0006`), this list is the only way a Giver finds out they were asked at all.
  *
- * Nothing opens yet — the screen that writes an answer is #24. Until it exists a row says what
- * is waiting rather than pretending to lead somewhere.
+ * The Topic is the link rather than a repeated "Answer this", so each row announces itself by
+ * what it is about.
  */
 export async function WaitingAskList({ membership }: WaitingAskListProps) {
   const asks = await readMyAsks(membership);
@@ -31,7 +33,7 @@ export async function WaitingAskList({ membership }: WaitingAskListProps) {
           className="flex flex-col gap-1 rounded-page bg-surface-overlay p-4"
         >
           <Text as="h2" variant="subtitle-4" className="break-words">
-            {ask.topic}
+            <Link href={ROUTES.feedback.askById(ask.askId)}>{ask.topic}</Link>
           </Text>
           <Text as="p" variant="body-2">
             Asked by {ask.requesterName ?? 'a teammate'}

@@ -45,6 +45,9 @@ describe('WaitingAskList', () => {
     expect(
       screen.getByRole('heading', { level: 2, name: 'my presentation skills' }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'my presentation skills' }),
+    ).toHaveAttribute('href', '/feedback/asks/ask-1');
     expect(screen.getByText('Asked by Ana Silva')).toBeInTheDocument();
     expect(screen.getByText('11 Oct 2026')).toBeInTheDocument();
   });
