@@ -138,3 +138,19 @@ export async function myMemberships(
   );
   return response.body.items;
 }
+
+export async function myInvitations(
+  world: ThriveWorld,
+  name: string,
+): Promise<
+  {
+    invitationId: string;
+    workspace: { name: string; memberCount: number };
+  }[]
+> {
+  const response = world.succeeded(
+    await world.as(name, 'GET', '/v1/invitations/mine'),
+    `Listing the Invitations waiting for ${name}`,
+  );
+  return response.body.items;
+}

@@ -24,6 +24,7 @@ const STEPS = [
   '850',
   '900',
   '950',
+  '975',
 ] as const;
 
 const RAMPS = [
@@ -68,7 +69,7 @@ export function Palette() {
           Palette
         </Text>
         <Text variant="body-2" tone="muted">
-          The primitive ramps behind every role, 25 to 950, derived from each
+          The primitive ramps behind every role, 25 to 975, derived from each
           seed colour in the blueprint. Components never use these directly —
           pick a role from the sections below. The number is the step; hover a
           swatch for its value.
@@ -83,7 +84,7 @@ export function Palette() {
             <Text as="span" variant="subtitle-4" className="capitalize md:w-24">
               {name}
             </Text>
-            <ul className="grid flex-1 grid-cols-5 gap-1 sm:grid-cols-10">
+            <ul className="grid flex-1 grid-cols-7 gap-1">
               {STEPS.map((step) => {
                 const token = `${name}-${step}`;
                 return (

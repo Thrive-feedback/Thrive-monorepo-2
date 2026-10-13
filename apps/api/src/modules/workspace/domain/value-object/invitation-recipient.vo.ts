@@ -22,6 +22,11 @@ export class InvitationRecipient {
     return new InvitationRecipient(normalized(email));
   }
 
+  /** The address as Invitations are stored and matched: trimmed, without case. */
+  toString(): string {
+    return this.email;
+  }
+
   /** Refuses anyone signed in with another address. */
   ensureIs(accountEmail: string): void {
     if (normalized(accountEmail) !== this.email) {

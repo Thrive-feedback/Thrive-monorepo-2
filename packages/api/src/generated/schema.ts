@@ -176,6 +176,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/invitations/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Invitations sent to the caller that they can still accept, across every Workspace */
+        get: operations["MyInvitationController_listMyInvitations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/invitations/{invitationId}": {
         parameters: {
             query?: never;
@@ -386,6 +403,25 @@ export interface components {
                 /** @enum {string} */
                 outcome: "already_member" | "already_invited" | "failed";
             })[];
+        };
+        ListMyInvitationsResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                invitationId: string;
+                workspace: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    memberCount: number;
+                };
+                /** Format: date-time */
+                invitedAt: string;
+                /** Format: date-time */
+                expiresAt: string;
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
         };
         GetInvitationResponseDto_Output: {
             workspaceName: string;
@@ -909,6 +945,38 @@ export interface operations {
             };
             /** @description INVITATION_ALREADY_ACCEPTED or INVITATION_REVOKED */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyInvitationController_listMyInvitations: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListMyInvitationsResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
