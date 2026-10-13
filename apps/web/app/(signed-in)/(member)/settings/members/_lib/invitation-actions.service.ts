@@ -1,12 +1,15 @@
 'use server';
 
-import { ApiError, type operations } from '@repo/api';
+import { ApiError, type operations, unwrap } from '@repo/api';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
+import { checkEmailList, parseEmailList } from './email-list.util';
+import type { InviteMembersState } from './invite-members-state.type';
 
 const InvitationId = z.uuid();
 
@@ -106,4 +109,60 @@ export async function resendInvitation(
         { params },
       ),
   );
+}
+
+/** What to say when the API refused the whole send, by its error code. */
+const INVITE_ERRORS: Readonly<Record<string, string>> = {
+  NOT_ALLOWED_TO_INVITE: 'Only the Owner and Admins can invite teammates.',
+  TOO_MANY_INVITATIONS: 'You can invite up to 10 people at a time.',
+};
+
+const COULD_NOT_INVITE = "We couldn't send your invitations. Please try again.";
+
+const InviteEmails = z.array(z.string()).min(1);
+
+/**
+ * Invites the addresses to the person's own Workspace, answering what happened to each. The
+ * Workspace is the one the session belongs to, never one the browser names. The list is checked
+ * again here, whatever the form already checked, and Members is drawn again so Open invitations
+ * shows the new ones.
+ */
+export async function inviteMembers(
+  emails: readonly string[],
+): Promise<InviteMembersState> {
+  const input = InviteEmails.safeParse(emails);
+  const list = parseEmailList(input.success ? input.data.join('\n') : '');
+  const refusal = checkEmailList(list);
+  if (refusal) {
+    return { formError: refusal };
+  }
+
+  const { membership } = await requireMember();
+  const cookie = (await headers()).get('cookie') ?? undefined;
+  try {
+    const { results } = unwrap(
+      await apiClient().POST('/v1/workspaces/{workspaceId}/invitations', {
+        params: {
+          path: { workspaceId: membership.workspace.id },
+          header: { cookie },
+        },
+        body: { emails: [...list.emails] },
+      }),
+    );
+    revalidatePath(ROUTES.settings.members);
+    return {
+      results: results.map((result) => ({
+        email: result.email,
+        outcome: result.outcome,
+      })),
+    };
+  } catch (error) {
+    if (!(error instanceof ApiError)) {
+      throw error;
+    }
+    if (error.code === 'NOT_SIGNED_IN') {
+      redirect(ROUTES.signIn);
+    }
+    return { formError: INVITE_ERRORS[error.code] ?? COULD_NOT_INVITE };
+  }
 }
