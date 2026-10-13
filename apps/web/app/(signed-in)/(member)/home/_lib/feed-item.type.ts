@@ -1,0 +1,25 @@
+/** The fixed set of Reactions a Member can add to Feedback on the feed (`ADR-0022`). */
+export const REACTIONS = [
+  { emoji: '👏', name: 'Clap' },
+  { emoji: '❤️', name: 'Heart' },
+  { emoji: '💡', name: 'Idea' },
+  { emoji: '🙏', name: 'Thanks' },
+] as const;
+
+export type ReactionEmoji = (typeof REACTIONS)[number]['emoji'];
+
+/** One piece of Feedback as a feed card shows it. */
+export type FeedItem = {
+  readonly id: string;
+  readonly giverName: string;
+  readonly receiverName: string;
+  /** Requested answers an Ask; Offered was given without being asked. */
+  readonly origin: 'REQUESTED' | 'OFFERED';
+  readonly topic: string;
+  readonly body: string;
+  readonly givenAt: string;
+  /** Who reacted, by Reaction. Names are shown: a Reaction is never anonymous. */
+  readonly reactions: Readonly<
+    Partial<Record<ReactionEmoji, readonly string[]>>
+  >;
+};

@@ -10,9 +10,9 @@ import { SignOutForm } from './sign-out-form';
 
 /**
  * The logo (left out on the sign-in page, which shows its own), the light/dark switch, and,
- * while signed in, the address they signed in with and Sign out. It is on every signed-in page
- * but Home, which draws the same items as a side nav (`SiteSideNav`), so the two are where a
- * session due a refresh gets one. The design also draws "Log in" and "Create Organization"
+ * while signed in, the address they signed in with and Sign out. It is on the public pages and
+ * on Register; a Member's pages draw `MemberNavbar` instead, so the two are where a session due
+ * a refresh gets one. The design also draws "Log in" and "Create Organization"
  * here; they are left out on purpose, because sign-in is the page itself and creating an
  * organization is not offered.
  */

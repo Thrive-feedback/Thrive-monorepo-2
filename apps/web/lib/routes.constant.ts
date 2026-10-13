@@ -4,15 +4,26 @@
  *
  * Paths only, never full URLs: the origin is the deployment's, not the code's.
  */
+/** Home's feed tabs, in the order they are drawn. The first is the one Home opens on. */
+export const HOME_TABS = [
+  'workspace',
+  'shared',
+  'my-requests',
+  'waiting',
+] as const;
+
+export type HomeTab = (typeof HOME_TABS)[number];
+
 export const ROUTES = {
   landing: '/',
   signIn: '/signin',
   home: '/home',
+  /** One tab of Home's feed. `workspace` is the tab Home opens on, so it needs no query. */
+  homeTab: (tab: HomeTab) =>
+    tab === HOME_TABS[0] ? '/home' : `/home?tab=${tab}`,
+  /** The signed-in person's own Profile, read from the session. */
+  profile: '/profile',
   feedback: {
-    /** The Feedback Requests the signed-in person sent. */
-    sent: '/feedback/sent',
-    /** The Asks waiting for the signed-in person to answer. */
-    asks: '/feedback/asks',
     /** One Ask waiting for them, where they write the answer. */
     askById: (askId: string) => `/feedback/asks/${askId}`,
     requestById: (requestId: string) => `/feedback/requests/${requestId}`,

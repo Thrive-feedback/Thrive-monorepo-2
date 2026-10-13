@@ -5,6 +5,11 @@ export type SomethingWentWrongProps = {
   /** Next's reference for a failure on the server; quoting it finds the failure in the logs. */
   digest?: string;
   onRetry: () => void;
+  /**
+   * `false` inside a layout that still stands — its navbar and its own `main` — so this draws a
+   * block in that space instead of a whole page.
+   */
+  fullPage?: boolean;
 };
 
 /**
@@ -15,9 +20,17 @@ export type SomethingWentWrongProps = {
 export function SomethingWentWrong({
   digest,
   onRetry,
+  fullPage = true,
 }: SomethingWentWrongProps) {
+  const Root = fullPage ? 'main' : 'div';
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-linear-to-b from-surface-base to-surface-subtle px-4 py-12 text-center">
+    <Root
+      className={
+        fullPage
+          ? 'flex min-h-dvh flex-col items-center justify-center gap-6 bg-linear-to-b from-surface-base to-surface-subtle px-4 py-12 text-center'
+          : 'm-auto flex flex-col items-center justify-center gap-6 text-center'
+      }
+    >
       <div className="flex flex-col gap-3">
         <Text variant="display-5" as="h1">
           Something went wrong
@@ -34,6 +47,6 @@ export function SomethingWentWrong({
           Reference: {digest}
         </Text>
       )}
-    </main>
+    </Root>
   );
 }

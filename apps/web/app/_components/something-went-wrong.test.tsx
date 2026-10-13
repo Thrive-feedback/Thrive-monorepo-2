@@ -28,4 +28,19 @@ describe('SomethingWentWrong', () => {
 
     expect(screen.queryByText(/Reference:/)).toBeNull();
   });
+
+  it('is the page’s main region when it replaces the whole page', () => {
+    render(<SomethingWentWrong onRetry={vi.fn()} />);
+
+    expect(screen.getByRole('main')).toBeInTheDocument();
+  });
+
+  it('leaves the main region to the layout it sits inside', () => {
+    render(<SomethingWentWrong onRetry={vi.fn()} fullPage={false} />);
+
+    expect(screen.queryByRole('main')).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Try again' }),
+    ).toBeInTheDocument();
+  });
 });
