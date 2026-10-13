@@ -41,7 +41,8 @@ as a seed and a lightness list, never as finished colours.
   - the hue is the seed's hue;
   - the chroma is the seed's chroma, reduced by bisection until the colour fits sRGB.
 
-  Steps are 25, 50, 100 … 950, one per lightness value.
+  Steps are 25, 50, 100 … 950, 975, one per lightness value: 21 since the export of 2026-10-12,
+  which added the darkest. A role naming a weight between steps is ADR 0040's.
 - **Devices map to the theme's breakpoints:** phone is the default, tablet from `md` (48rem),
   desktop from `lg` (64rem). The semantic layer overrides only the values that change.
 - **Type sizes** are `baseFontSizePx × deviceRatio ^ stepOffset` unless the blueprint pins a

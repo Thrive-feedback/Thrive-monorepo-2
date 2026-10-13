@@ -46,7 +46,7 @@ describe('saving the Profile', () => {
     requestHeaders.delete('cookie');
   });
 
-  it("sends both names with the browser's cookie, then moves on to Create a Workspace", async () => {
+  it("sends both names with the browser's cookie, then moves on to the Invitations waiting for them", async () => {
     requestHeaders.set('cookie', 'thrive.session_token=abc');
     const seen: Request[] = [];
     server.use(
@@ -60,7 +60,7 @@ describe('saving the Profile', () => {
     );
 
     await expect(saveProfile({}, typed('Ann Lee', 'Ann'))).rejects.toThrow(
-      'redirect:/register/create-workspace',
+      'redirect:/register/join-workspace',
     );
     expect(seen[0]?.headers.get('cookie')).toBe('thrive.session_token=abc');
     expect(await seen[0]?.json()).toEqual({

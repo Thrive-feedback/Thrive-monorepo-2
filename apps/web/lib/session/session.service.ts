@@ -10,10 +10,15 @@ import type {
   CurrentMembership,
   CurrentProfile,
 } from './current-account.type';
+import type {
+  PendingInvitation,
+  PendingInvitations,
+} from './pending-invitation.type';
 import {
   toCurrentAccount,
   toCurrentMembership,
   toNeedsRefresh,
+  toPendingInvitations,
 } from './session.transform';
 
 async function forwardedCookie(): Promise<string | undefined> {
@@ -66,6 +71,32 @@ export async function readSession(): Promise<CurrentAccount | null> {
 }
 
 /**
+ * The Invitations sent to this request's person that they could accept now. Asked only of
+ * someone in no Workspace, so a Member's pages never wait on it. One page holds them all: the
+ * API's largest, far more than anyone is invited to at once.
+ */
+const readMyInvitations = cache(async (): Promise<PendingInvitation[]> => {
+  try {
+    const result = await apiClient().GET('/v1/invitations/mine', {
+      params: {
+        header: { cookie: await forwardedCookie() },
+        query: { page: 1, pageSize: 100 },
+      },
+      cache: 'no-store',
+    });
+    return toPendingInvitations(unwrap(result));
+  } catch (error) {
+    // Signed out since the session was read: the next step's own call finds that out and
+    // sends them to sign in. Any other failure stays loud, because answering "none" would
+    // quietly hide Invitations from someone about to create a Workspace instead.
+    if (error instanceof ApiError && error.code === 'NOT_SIGNED_IN') {
+      return [];
+    }
+    throw error;
+  }
+});
+
+/**
  * Whether the session should be pushed forward now. A server component cannot set the new
  * cookie, so it renders the refresher, which runs the `refreshSession` action instead.
  */
@@ -86,29 +117,45 @@ export type MemberAccount = IntroducedAccount & {
 /** Where a signed-in person belongs, with what that page needs to know about them. */
 export type Landing =
   | { readonly page: 'introduceYourself'; readonly account: CurrentAccount }
+  | {
+      readonly page: 'joinWorkspace';
+      readonly account: IntroducedAccount;
+      readonly invitations: PendingInvitations;
+    }
   | { readonly page: 'createWorkspace'; readonly account: IntroducedAccount }
   | { readonly page: 'home'; readonly account: MemberAccount };
 
 const LANDING_ROUTES: Readonly<Record<Landing['page'], string>> = {
   introduceYourself: ROUTES.register.introduceYourself,
+  joinWorkspace: ROUTES.register.joinWorkspace,
   createWorkspace: ROUTES.register.createWorkspace,
   home: ROUTES.home,
 };
 
 /**
- * The one rule for where a signed-in person belongs: introduce yourself, then create a
- * Workspace, then Home. Every signed-in page asks this rather than deciding for itself.
+ * The one rule for where a signed-in person belongs: introduce yourself, then join a Workspace
+ * you were invited to or create one, then Home. Every signed-in page asks this rather than
+ * deciding for itself. `invitations` are the ones the person could accept now.
  */
 export function landingFor(
   account: CurrentAccount,
   membership: CurrentMembership | null,
+  invitations: readonly PendingInvitation[],
 ): Landing {
   const { profile } = account;
   if (!profile) {
     return { page: 'introduceYourself', account };
   }
   if (!membership) {
-    return { page: 'createWorkspace', account: { ...account, profile } };
+    const introduced = { ...account, profile };
+    const [first, ...rest] = invitations;
+    return first
+      ? {
+          page: 'joinWorkspace',
+          account: introduced,
+          invitations: [first, ...rest],
+        }
+      : { page: 'createWorkspace', account: introduced };
   }
   return { page: 'home', account: { ...account, profile, membership } };
 }
@@ -130,7 +177,9 @@ async function readLanding(): Promise<Landing> {
   if (!account) {
     redirect(ROUTES.signIn);
   }
-  return landingFor(account, membership);
+  const invitations =
+    account.profile && !membership ? await readMyInvitations() : [];
+  return landingFor(account, membership, invitations);
 }
 
 function sendTo(landing: Landing, signedIn: '1' | undefined): never {
@@ -160,11 +209,23 @@ export async function requireAccountToIntroduce(
   return landing.account;
 }
 
-/** The signed-in Account, for Create a Workspace: only for someone in none yet. */
+/**
+ * The signed-in Account, for Create a Workspace: only for someone in none yet. Someone with
+ * Invitations waiting may still choose to create one instead.
+ */
 export async function requireAccountToCreateWorkspace(): Promise<IntroducedAccount> {
   const landing = await readLanding();
-  if (landing.page !== 'createWorkspace') {
+  if (landing.page !== 'createWorkspace' && landing.page !== 'joinWorkspace') {
     sendTo(landing, undefined);
   }
   return landing.account;
+}
+
+/** The Invitations to choose from, for someone in no Workspace who has any waiting. */
+export async function requireInvitationsToJoin(): Promise<PendingInvitations> {
+  const landing = await readLanding();
+  if (landing.page !== 'joinWorkspace') {
+    sendTo(landing, undefined);
+  }
+  return landing.invitations;
 }

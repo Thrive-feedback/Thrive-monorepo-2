@@ -22,6 +22,8 @@ import type {
   InvitationDetailView,
   InvitationPage,
   InvitationView,
+  PendingInvitationPage,
+  PendingInvitationView,
 } from '@app/modules/workspace/application/types/invitation.types';
 import type {
   MembershipPage,
@@ -30,6 +32,7 @@ import type {
   WorkspaceMemberPage,
 } from '@app/modules/workspace/application/types/membership.types';
 import { AlreadyInAWorkspaceError } from '@app/modules/workspace/application/workspace.errors';
+import type { InvitationRecipient } from '@app/modules/workspace/domain/value-object/invitation-recipient.vo';
 import { InvitationStatus } from '@app/modules/workspace/domain/value-object/invitation-status.vo';
 
 /**
@@ -220,5 +223,23 @@ export class FakeInvitationQuery extends InvitationQuery {
     invitationId: string,
   ): Promise<InvitationDetailView | null> {
     return this.details.get(invitationId) ?? null;
+  }
+
+  /** Invitations as their recipients read them, keyed by the stored address. */
+  readonly sentTo = new Map<string, PendingInvitationView[]>();
+
+  async pendingInvitationsTo(
+    recipient: InvitationRecipient,
+    now: Date,
+    page: PageRequest,
+  ): Promise<PendingInvitationPage> {
+    const items = (this.sentTo.get(recipient.toString()) ?? []).filter(
+      (invitation) => invitation.expiresAt > now,
+    );
+    const start = (page.page - 1) * page.pageSize;
+    return {
+      items: items.slice(start, start + page.pageSize),
+      total: items.length,
+    };
   }
 }

@@ -1,11 +1,15 @@
 import type { components } from '@repo/api';
 import type { CurrentAccount, CurrentMembership } from './current-account.type';
+import type { PendingInvitation } from './pending-invitation.type';
 
 type CurrentSessionWire =
   components['schemas']['GetCurrentSessionResponseDto_Output'];
 
 type MyMembershipsWire =
   components['schemas']['ListMyMembershipsResponseDto_Output'];
+
+type PendingInvitationsWire =
+  components['schemas']['ListMyInvitationsResponseDto_Output'];
 
 /** `null` means nobody is signed in: the API answers that rather than failing. */
 export function toCurrentAccount(
@@ -48,4 +52,18 @@ export function toCurrentMembership(
     workspace: { id: first.workspace.id, name: first.workspace.name },
     role: first.role,
   };
+}
+
+/** Only what the choice of Workspace shows, with the date read as a `Date`. */
+export function toPendingInvitations(
+  wire: PendingInvitationsWire,
+): PendingInvitation[] {
+  return wire.items.map((invitation) => ({
+    invitationId: invitation.invitationId,
+    workspace: {
+      name: invitation.workspace.name,
+      memberCount: invitation.workspace.memberCount,
+    },
+    invitedAt: new Date(invitation.invitedAt),
+  }));
 }

@@ -10,7 +10,8 @@
  * this script derives them (ADR 0028): each step keeps the seed's OKLCH hue and chroma at the
  * step's lightness, with the chroma reduced until the colour fits sRGB. A track's
  * `adjustments.manualOverrides` pins a weight to an exact colour instead; that weight may sit
- * between the 20 steps (125, 475…), and then it exists on that track only.
+ * between the 21 steps (125, 475…), and then it exists on that track only. A role that names a
+ * weight its track does not have takes the nearest lighter one the track does have (ADR 0040).
  */
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -85,8 +86,20 @@ const { project } = JSON.parse(
   readFileSync(join(ROOT, SOURCE), 'utf8'),
 ) as Blueprint;
 
-/** The 20 ramp steps, in the order of the blueprint's lightness list. */
-const STEPS = [25, 50, ...Array.from({ length: 18 }, (_, i) => 100 + i * 50)];
+/** The 21 ramp steps, in the order of the blueprint's lightness list. */
+const STEPS = [
+  25,
+  50,
+  ...Array.from({ length: 18 }, (_, i) => 100 + i * 50),
+  975,
+];
+
+// A list of another length would name every step after the first mismatch wrongly, silently.
+if (project.palette.lightnessValues.length !== STEPS.length) {
+  throw new Error(
+    `The blueprint has ${project.palette.lightnessValues.length} lightness values; the ramp names ${STEPS.length} steps (${STEPS.join(', ')}).`,
+  );
+}
 
 /**
  * Where each device's values start. Phone is the default; the others are the theme's `md` and
@@ -219,14 +232,28 @@ const WEIGHTS = Object.fromEntries(
   ]),
 ) as Record<string, Set<number>>;
 
+/**
+ * The track's weight a role names, or — when the blueprint names one between the track's
+ * weights, such as 325 — the nearest lighter weight it has, with a comment saying so (ADR 0040).
+ */
 function colourRef({ trackId, weight, alpha }: ColourRef): string {
-  if (!WEIGHTS[trackId]?.has(weight)) {
-    throw new Error(`${trackId}-${weight} is not a ramp step`);
+  const weights = WEIGHTS[trackId];
+  if (!weights) {
+    throw new Error(`${trackId} is not a palette track`);
   }
-  const ref = `var(--${trackId}-${weight})`;
-  return alpha === undefined
-    ? ref
-    : `color-mix(in oklch, ${ref} ${num(alpha * 100, 2)}%, transparent)`;
+  const lighter = [...weights].filter((w) => w <= weight);
+  if (lighter.length === 0) {
+    throw new Error(`${trackId}-${weight} is lighter than every step`);
+  }
+  const used = Math.max(...lighter);
+  const ref = `var(--${trackId}-${used})`;
+  const colour =
+    alpha === undefined
+      ? ref
+      : `color-mix(in oklch, ${ref} ${num(alpha * 100, 2)}%, transparent)`;
+  return used === weight
+    ? colour
+    : `${colour} /* blueprint: ${trackId}-${weight} */`;
 }
 
 // ---------------------------------------------------------------------------------------------
