@@ -1,5 +1,5 @@
 /**
- * The day something was sent, as a person reads it: `11 Oct 2026`.
+ * A day as a person reads it — when something was sent, or when it expires: `11 Oct 2026`.
  *
  * Fixed to UTC and to one locale on purpose. The server renders these lists, so a format
  * that followed the machine's zone would disagree with the same page rendered elsewhere, and
@@ -11,6 +11,6 @@ const DAY = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'UTC',
 });
 
-export function sentDay(isoDateTime: string): string {
+export function calendarDay(isoDateTime: string): string {
   return DAY.format(new Date(isoDateTime));
 }

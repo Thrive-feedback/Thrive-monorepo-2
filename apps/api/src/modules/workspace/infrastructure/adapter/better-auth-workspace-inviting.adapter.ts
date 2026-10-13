@@ -3,6 +3,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { APIError } from 'better-auth';
 import {
   type InvitationAcceptance,
+  type InvitationReissued,
   type InvitationRequest,
   type InvitationRevocation,
   type InvitationStored,
@@ -86,6 +87,48 @@ export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
       });
       throw error;
     }
+  }
+
+  async reissue(request: InvitationRequest): Promise<InvitationReissued> {
+    try {
+      // `resend` extends a Pending one in place. The plugin does not count an expired one as
+      // Pending, so for that address it stores a new Invitation instead.
+      const invitation = await this.auth.api.createInvitation({
+        body: {
+          email: request.email,
+          role: 'member',
+          organizationId: request.workspaceId,
+          resend: true,
+        },
+        headers: requestHeaders(request.credential),
+      });
+      return {
+        outcome: 'reissued',
+        invitationId: invitation.id,
+        expiresAt: new Date(invitation.expiresAt),
+      };
+    } catch (error) {
+      if (
+        this.isRefusedWith(
+          error,
+          'USER_IS_ALREADY_A_MEMBER_OF_THIS_ORGANIZATION',
+        )
+      ) {
+        return { outcome: 'already_member' };
+      }
+      throw error;
+    }
+  }
+
+  async markSent(invitationId: string, sentAt: Date): Promise<void> {
+    // The plugin has no route that writes an Invitation's own fields, so this goes through its
+    // adapter, which still owns the table.
+    const { adapter } = await this.auth.$context;
+    await adapter.update({
+      model: 'invitation',
+      where: [{ field: 'id', value: invitationId }],
+      update: { lastSentAt: sentAt },
+    });
   }
 
   private isRefusedWith(

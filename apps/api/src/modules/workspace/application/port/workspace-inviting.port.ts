@@ -16,6 +16,18 @@ export type InvitationStored =
   | { readonly outcome: 'already_member' }
   | { readonly outcome: 'already_invited' };
 
+/**
+ * What a resend left Pending: the same Invitation extended, or a new one if it had expired. The
+ * address may have joined meanwhile through another Invitation, and then nothing is stored.
+ */
+export type InvitationReissued =
+  | {
+      readonly outcome: 'reissued';
+      readonly invitationId: string;
+      readonly expiresAt: Date;
+    }
+  | { readonly outcome: 'already_member' };
+
 export interface InvitationRevocation {
   readonly credential: string;
   readonly invitationId: string;
@@ -43,4 +55,14 @@ export abstract class WorkspaceInviting {
 
   /** Revokes a Pending Invitation, so it can never be accepted. */
   abstract revoke(revocation: InvitationRevocation): Promise<void>;
+
+  /**
+   * Gives the address a Pending Invitation again, as the signed-in inviter. One still Pending
+   * is extended for its full lifetime and keeps its id, so the link already sent still works;
+   * one that has expired is left alone, and a new one stored beside it.
+   */
+  abstract reissue(request: InvitationRequest): Promise<InvitationReissued>;
+
+  /** Records when the Invitation's email last went out. */
+  abstract markSent(invitationId: string, sentAt: Date): Promise<void>;
 }

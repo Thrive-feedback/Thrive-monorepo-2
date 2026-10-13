@@ -61,6 +61,14 @@ export class InvitationStatus {
     this.ensureOpen();
   }
 
+  /**
+   * An open Invitation can be resent: a Pending one to remind, an Expired one to start afresh.
+   * One already settled cannot.
+   */
+  ensureResendable(): void {
+    this.ensureOpen();
+  }
+
   toString(): InvitationStatusValue {
     return this.value;
   }

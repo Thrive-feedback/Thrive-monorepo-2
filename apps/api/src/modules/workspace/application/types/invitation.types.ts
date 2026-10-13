@@ -10,7 +10,11 @@ export interface InvitationView {
   /** The Role the invited person will join with. */
   readonly role: MemberRoleValue;
   readonly status: OpenInvitationStatusValue;
+  /** When it was first sent. A resend moves its expiry, never this. */
+  readonly invitedAt: Date;
   readonly expiresAt: Date;
+  /** Who sent it, to be named through Identity. */
+  readonly inviterAccountId: string;
 }
 
 export interface InvitationPage {
@@ -26,6 +30,8 @@ export interface InvitationDetailView {
   /** The address it was sent to, exactly as stored. */
   readonly email: string;
   readonly status: InvitationStatusValue;
+  /** When its email last went out: when it was sent, or last resent. */
+  readonly lastSentAt: Date;
 }
 
 /**
@@ -40,7 +46,7 @@ export interface PendingInvitationView {
     /** Everyone with a Membership there, the Owner included. */
     readonly memberCount: number;
   };
-  /** When it was sent. Invitations are never resent yet, so this is also when it was last sent. */
+  /** When it was first sent. A resend moves its expiry, never this. */
   readonly invitedAt: Date;
   readonly expiresAt: Date;
 }

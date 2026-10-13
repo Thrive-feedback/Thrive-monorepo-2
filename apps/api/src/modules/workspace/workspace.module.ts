@@ -8,6 +8,7 @@ import { WorkspaceFounding } from './application/port/workspace-founding.port';
 import { WorkspaceInviting } from './application/port/workspace-inviting.port';
 import { InvitationQuery } from './application/query-port/invitation.query-port';
 import { MembershipQuery } from './application/query-port/membership.query-port';
+import { InvitationDelivery } from './application/service/invitation-delivery.service';
 import { AcceptInvitationUseCase } from './application/use-cases/accept-invitation.use-case';
 import { CreateWorkspaceUseCase } from './application/use-cases/create-workspace.use-case';
 import { GetInvitationUseCase } from './application/use-cases/get-invitation.use-case';
@@ -15,6 +16,7 @@ import { ListMyInvitationsUseCase } from './application/use-cases/list-my-invita
 import { ListMyMembershipsUseCase } from './application/use-cases/list-my-memberships.use-case';
 import { ListWorkspaceInvitationsUseCase } from './application/use-cases/list-workspace-invitations.use-case';
 import { ListWorkspaceMembersUseCase } from './application/use-cases/list-workspace-members.use-case';
+import { ResendInvitationUseCase } from './application/use-cases/resend-invitation.use-case';
 import { ResolveMembershipUseCase } from './application/use-cases/resolve-membership.use-case';
 import { RevokeInvitationUseCase } from './application/use-cases/revoke-invitation.use-case';
 import { SendInvitationsUseCase } from './application/use-cases/send-invitations.use-case';
@@ -70,6 +72,8 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     GetInvitationUseCase,
     AcceptInvitationUseCase,
     RevokeInvitationUseCase,
+    ResendInvitationUseCase,
+    InvitationDelivery,
     WorkspaceMemberGuard,
   ],
   // Published so a module acting inside a Workspace can ask whether an Account is a Member

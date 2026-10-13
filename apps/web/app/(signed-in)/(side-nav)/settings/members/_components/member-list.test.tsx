@@ -1,0 +1,44 @@
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { MemberList } from './member-list';
+
+const readMembers = vi.fn();
+vi.mock(
+  '@/app/(signed-in)/(side-nav)/settings/members/_lib/members.service',
+  () => ({
+    readMembers: (...args: unknown[]) => readMembers(...args),
+  }),
+);
+
+const MEMBERSHIP = {
+  workspace: { id: 'w-1', name: 'Acme Corp' },
+  role: 'MEMBER',
+} as const;
+
+describe('MemberList', () => {
+  it('shows each Member as name, email and Role, with a dash for no name, and marks the person', async () => {
+    readMembers.mockResolvedValue([
+      {
+        accountId: 'a-1',
+        email: 'ann@acme.test',
+        name: 'Ann',
+        role: 'OWNER',
+      },
+      {
+        accountId: 'a-2',
+        email: 'ben@acme.test',
+        name: null,
+        role: 'MEMBER',
+      },
+    ]);
+
+    render(
+      await MemberList({ membership: MEMBERSHIP, ownEmail: 'ben@acme.test' }),
+    );
+
+    expect(
+      screen.getAllByRole('listitem').map((item) => item.textContent),
+    ).toEqual(['Annann@acme.testOwner', '—ben@acme.testMember (you)']);
+    expect(readMembers).toHaveBeenCalledWith(MEMBERSHIP);
+  });
+});

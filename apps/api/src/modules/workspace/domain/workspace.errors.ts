@@ -96,3 +96,13 @@ export class InvitationNotForYouError extends DomainError {
     super('This Invitation was sent to a different email address.');
   }
 }
+
+/** Resending is held back for a few minutes after each send, so one click cannot send many. */
+export class InvitationResentTooSoonError extends DomainError {
+  readonly code = 'INVITATION_RESENT_TOO_SOON';
+  readonly category = 'conflict' as const;
+
+  constructor(retryAfterSeconds: number) {
+    super(`This Invitation was just sent. Try again in ${retryAfterSeconds}s.`);
+  }
+}

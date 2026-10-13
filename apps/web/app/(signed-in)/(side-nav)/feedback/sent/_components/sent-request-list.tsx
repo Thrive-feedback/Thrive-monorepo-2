@@ -2,10 +2,10 @@ import {
   ASK_STATUS_COLOURS,
   ASK_STATUS_NAMES,
 } from '@/app/(signed-in)/(side-nav)/feedback/_lib/ask-status.constant';
-import { sentDay } from '@/app/(signed-in)/(side-nav)/feedback/_lib/sent-day.util';
 import { readSentRequests } from '@/app/(signed-in)/(side-nav)/feedback/sent/_lib/sent-requests.service';
 import { Link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
+import { calendarDay } from '@/lib/calendar-day.util';
 import { ROUTES } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
@@ -42,7 +42,7 @@ export async function SentRequestList({ membership }: SentRequestListProps) {
           </Text>
           <Text as="p" variant="body-3" tone="muted">
             Sent{' '}
-            <time dateTime={request.sentAt}>{sentDay(request.sentAt)}</time>
+            <time dateTime={request.sentAt}>{calendarDay(request.sentAt)}</time>
           </Text>
           <ul className="flex flex-col gap-1">
             {request.asks.map((ask) => (

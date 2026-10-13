@@ -16,11 +16,6 @@ const requireMember = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
   requireMember: (signedIn?: string) => requireMember(signedIn),
 }));
-vi.mock('./_components/member-and-invitation-list', () => ({
-  MemberAndInvitationList: ({ ownEmail }: { ownEmail: string }) => (
-    <output>{`people besides ${ownEmail}`}</output>
-  ),
-}));
 vi.mock('./_components/request-feedback-card', () => ({
   RequestFeedbackCard: ({ ownEmail }: { ownEmail: string }) => (
     <output>{`request feedback as ${ownEmail}`}</output>
@@ -65,19 +60,6 @@ describe('Home', () => {
     expect(screen.getByText('My role:').parentElement).toHaveTextContent(
       /^My role:\s*Owner$/,
     );
-  });
-
-  it('lists everyone else in the person’s Workspace under My teammates', async () => {
-    requireMember.mockResolvedValue(ANN);
-
-    render(await open());
-
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'My teammates' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('people besides ann@acme.test'),
-    ).toBeInTheDocument();
   });
 
   it('lets the person ask a teammate for Feedback', async () => {

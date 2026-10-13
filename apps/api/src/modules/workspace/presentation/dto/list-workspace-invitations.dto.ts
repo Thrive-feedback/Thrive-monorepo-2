@@ -20,7 +20,14 @@ const invitationSchema = z.object({
   role: z.enum(MEMBER_ROLES),
   /** `PENDING` until its 7 days pass, then `EXPIRED`. Accepted and revoked ones are not listed. */
   status: z.enum(OPEN_INVITATION_STATUSES),
+  /** When it was first sent. Resending moves `expiresAt`, never this. */
+  invitedAt: z.iso.datetime({ offset: true }),
   expiresAt: z.iso.datetime({ offset: true }),
+  invitedBy: z.object({
+    email: z.string(),
+    /** `null` while they have not introduced themselves. */
+    displayName: z.string().nullable(),
+  }),
 });
 
 export const listWorkspaceInvitationsResponseSchema = z.object({

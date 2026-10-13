@@ -19,6 +19,7 @@ function setUp(status: InvitationStatusValue = 'PENDING') {
     inviterAccountId: 'account-ann',
     email: 'somchai@acme.co',
     status,
+    lastSentAt: NOW,
   });
   const profileNamePort = new FakeProfileNamePort();
   const useCase = new GetInvitationUseCase(

@@ -34,6 +34,7 @@ function setUp(status: InvitationStatusValue = 'PENDING') {
     inviterAccountId: 'account-ann',
     email: 'somchai@acme.co',
     status,
+    lastSentAt: NOW,
   });
   const membershipQuery = new FakeMembershipQuery();
   const unitOfWork = new FakeUnitOfWork();

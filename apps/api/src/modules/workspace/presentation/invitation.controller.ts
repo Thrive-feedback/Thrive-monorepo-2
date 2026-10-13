@@ -26,12 +26,14 @@ import {
 import { ZodResponse } from 'nestjs-zod';
 import type { MembershipView } from '../application/types/membership.types';
 import { ListWorkspaceInvitationsUseCase } from '../application/use-cases/list-workspace-invitations.use-case';
+import { ResendInvitationUseCase } from '../application/use-cases/resend-invitation.use-case';
 import { RevokeInvitationUseCase } from '../application/use-cases/revoke-invitation.use-case';
 import { SendInvitationsUseCase } from '../application/use-cases/send-invitations.use-case';
 import {
   ListWorkspaceInvitationsQueryDto,
   ListWorkspaceInvitationsResponseDto,
 } from './dto/list-workspace-invitations.dto';
+import { ResendInvitationResponseDto } from './dto/resend-invitation.dto';
 import {
   SendInvitationsRequestDto,
   SendInvitationsResponseDto,
@@ -55,6 +57,7 @@ export class InvitationController {
     private readonly sendInvitationsUseCase: SendInvitationsUseCase,
     private readonly listWorkspaceInvitationsUseCase: ListWorkspaceInvitationsUseCase,
     private readonly revokeInvitationUseCase: RevokeInvitationUseCase,
+    private readonly resendInvitationUseCase: ResendInvitationUseCase,
   ) {}
 
   @Get()
@@ -87,7 +90,12 @@ export class InvitationController {
         email: invitation.email,
         role: invitation.role,
         status: invitation.status,
+        invitedAt: invitation.invitedAt.toISOString(),
         expiresAt: invitation.expiresAt.toISOString(),
+        invitedBy: {
+          email: invitation.invitedBy.email,
+          displayName: invitation.invitedBy.displayName,
+        },
       })),
       total: invitations.total,
       page: page.page,
@@ -165,5 +173,41 @@ export class InvitationController {
       membership,
       invitationId: params.invitationId,
     });
+  }
+
+  @Post(':invitationId/resend')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Send an open Invitation again, good for another 7 days; an expired one is replaced',
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ZodResponse({ status: HttpStatus.OK, type: ResendInvitationResponseDto })
+  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
+  @ApiForbiddenResponse({ description: 'NOT_ALLOWED_TO_RESEND_INVITATIONS' })
+  @ApiNotFoundResponse({
+    description: 'WORKSPACE_NOT_FOUND or INVITATION_NOT_FOUND',
+  })
+  @ApiConflictResponse({
+    description:
+      'INVITATION_ALREADY_ACCEPTED, INVITATION_REVOKED, INVITATION_RESENT_TOO_SOON or ALREADY_A_MEMBER',
+  })
+  async resendInvitation(
+    @CurrentActor() actor: Actor,
+    @CurrentMembership() membership: MembershipView,
+    @Headers('cookie') cookie: string | undefined,
+    @Param() params: WorkspaceInvitationPathParamsDto,
+  ) {
+    const resent = await this.resendInvitationUseCase.execute({
+      accountId: actor.accountId,
+      resenderEmail: actor.email,
+      credential: cookie ?? '',
+      membership,
+      invitationId: params.invitationId,
+    });
+    return {
+      invitationId: resent.invitationId,
+      expiresAt: resent.expiresAt.toISOString(),
+    };
   }
 }

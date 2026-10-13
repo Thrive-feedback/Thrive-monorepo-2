@@ -158,6 +158,7 @@ model Invitation {
   createdAt   DateTime  @default(now())
   inviterId   String
   user        User      @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  lastSentAt  DateTime?
 
   @@index([workspaceId])
   @@index([email])

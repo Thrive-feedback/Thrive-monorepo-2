@@ -77,3 +77,25 @@ export class NotAllowedToRevokeInvitationsError extends ApplicationError {
     );
   }
 }
+
+/** Resending is for those who can invite: the Owner and Admins. */
+export class NotAllowedToResendInvitationsError extends ApplicationError {
+  readonly code = 'NOT_ALLOWED_TO_RESEND_INVITATIONS';
+  readonly category = 'forbidden' as const;
+
+  constructor() {
+    super(
+      'Only the Owner and Admins can resend Invitations to this Workspace.',
+    );
+  }
+}
+
+/** The address joined the Workspace another way, so there is no Invitation left to resend. */
+export class AlreadyAMemberError extends ApplicationError {
+  readonly code = 'ALREADY_A_MEMBER';
+  readonly category = 'conflict' as const;
+
+  constructor() {
+    super('This address already belongs to a Member of the Workspace.');
+  }
+}

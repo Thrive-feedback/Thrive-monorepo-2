@@ -15,7 +15,9 @@ export function toInvitationView(
     readonly id: string;
     readonly email: string;
     readonly role: string | null;
+    readonly createdAt: Date;
     readonly expiresAt: Date;
+    readonly inviterId: string;
   },
   now: Date,
 ): InvitationView {
@@ -24,7 +26,9 @@ export function toInvitationView(
     email: record.email,
     role: MemberRole.of((record.role ?? 'member').toUpperCase()).toString(),
     status: InvitationStatus.openAt(record.expiresAt, now),
+    invitedAt: record.createdAt,
     expiresAt: record.expiresAt,
+    inviterAccountId: record.inviterId,
   };
 }
 
@@ -51,7 +55,10 @@ export function toInvitationDetailView(
     readonly id: string;
     readonly email: string;
     readonly status: string;
+    readonly createdAt: Date;
     readonly expiresAt: Date;
+    /** `null` until it is first resent. */
+    readonly lastSentAt: Date | null;
     readonly inviterId: string;
     readonly workspace: { readonly id: string; readonly name: string };
   },
@@ -63,6 +70,7 @@ export function toInvitationDetailView(
     inviterAccountId: record.inviterId,
     email: record.email,
     status: statusOf(record.status, record.expiresAt, now).toString(),
+    lastSentAt: record.lastSentAt ?? record.createdAt,
   };
 }
 

@@ -176,6 +176,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/invitations/{invitationId}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send an open Invitation again, good for another 7 days; an expired one is replaced */
+        post: operations["InvitationController_resendInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/invitations/mine": {
         parameters: {
             query?: never;
@@ -397,7 +414,13 @@ export interface components {
                 /** @enum {string} */
                 status: "PENDING" | "EXPIRED";
                 /** Format: date-time */
+                invitedAt: string;
+                /** Format: date-time */
                 expiresAt: string;
+                invitedBy: {
+                    email: string;
+                    displayName: string | null;
+                };
             }[];
             total: number;
             page: number;
@@ -420,6 +443,12 @@ export interface components {
                 /** @enum {string} */
                 outcome: "already_member" | "already_invited" | "failed";
             })[];
+        };
+        ResendInvitationResponseDto_Output: {
+            /** Format: uuid */
+            invitationId: string;
+            /** Format: date-time */
+            expiresAt: string;
         };
         ListMyInvitationsResponseDto_Output: {
             items: {
@@ -978,6 +1007,59 @@ export interface operations {
                 content?: never;
             };
             /** @description INVITATION_ALREADY_ACCEPTED or INVITATION_REVOKED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InvitationController_resendInvitation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                invitationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResendInvitationResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_ALLOWED_TO_RESEND_INVITATIONS */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or INVITATION_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description INVITATION_ALREADY_ACCEPTED, INVITATION_REVOKED, INVITATION_RESENT_TOO_SOON or ALREADY_A_MEMBER */
             409: {
                 headers: {
                     [name: string]: unknown;

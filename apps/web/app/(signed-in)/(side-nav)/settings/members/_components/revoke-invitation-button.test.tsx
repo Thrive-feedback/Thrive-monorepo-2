@@ -1,13 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { RevokeInvitationResult } from '@/app/(signed-in)/(side-nav)/home/_lib/invitation-actions.service';
+import type { InvitationActionResult } from '@/app/(signed-in)/(side-nav)/settings/members/_lib/invitation-actions.service';
 import { RevokeInvitationButton } from './revoke-invitation-button';
 
 const revokeInvitation =
-  vi.fn<(invitationId: string) => Promise<RevokeInvitationResult>>();
+  vi.fn<(invitationId: string) => Promise<InvitationActionResult>>();
 vi.mock(
-  '@/app/(signed-in)/(side-nav)/home/_lib/invitation-actions.service',
+  '@/app/(signed-in)/(side-nav)/settings/members/_lib/invitation-actions.service',
   () => ({
     revokeInvitation: (invitationId: string) => revokeInvitation(invitationId),
   }),

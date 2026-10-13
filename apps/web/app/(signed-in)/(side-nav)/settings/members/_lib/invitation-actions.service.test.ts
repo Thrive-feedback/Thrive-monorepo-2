@@ -10,7 +10,9 @@ import { server, TEST_API_BASE_URL } from '@/lib/test/msw-server';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
 const INVITATION_ID = '0199a0f0-0000-7000-8000-000000000003';
-const REVOKE = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/invitations/${INVITATION_ID}/revoke`;
+const INVITATION = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/invitations/${INVITATION_ID}`;
+const REVOKE = `${INVITATION}/revoke`;
+const RESEND = `${INVITATION}/resend`;
 
 const revalidatePath = vi.hoisted(() => vi.fn());
 
@@ -29,11 +31,13 @@ vi.mock('@/lib/session/session.service', () => ({
   }),
 }));
 
-const { revokeInvitation } = await import('./invitation-actions.service');
+const { resendInvitation, revokeInvitation } = await import(
+  './invitation-actions.service'
+);
 
-function apiRefusesWith(code: string, status: number) {
+function apiRefusesWith(url: string, code: string, status: number) {
   server.use(
-    http.post(REVOKE, () =>
+    http.post(url, () =>
       HttpResponse.json(
         { error: { code, message: 'Refused.', correlationId: 'c-1' } },
         { status },
@@ -42,8 +46,8 @@ function apiRefusesWith(code: string, status: number) {
   );
 }
 
-describe('revoking an Invitation from Home', () => {
-  it("revokes it in the person's own Workspace, as them, and draws Home again", async () => {
+describe('revoking an Invitation from Members', () => {
+  it("revokes it in the person's own Workspace, as them, and draws Members again", async () => {
     const seen: Request[] = [];
     server.use(
       http.post(REVOKE, ({ request }) => {
@@ -56,11 +60,11 @@ describe('revoking an Invitation from Home', () => {
     expect(seen[0]?.headers.get('cookie')).toContain(
       'thrive.session_token=abc',
     );
-    expect(revalidatePath).toHaveBeenCalledWith('/home');
+    expect(revalidatePath).toHaveBeenCalledWith('/settings/members');
   });
 
   it('says why when it was already accepted', async () => {
-    apiRefusesWith('INVITATION_ALREADY_ACCEPTED', 409);
+    apiRefusesWith(REVOKE, 'INVITATION_ALREADY_ACCEPTED', 409);
 
     expect(await revokeInvitation(INVITATION_ID)).toEqual({
       ok: false,
@@ -69,7 +73,7 @@ describe('revoking an Invitation from Home', () => {
   });
 
   it('answers a generic failure for a code it does not explain', async () => {
-    apiRefusesWith('SOMETHING_ELSE', 500);
+    apiRefusesWith(REVOKE, 'SOMETHING_ELSE', 500);
 
     expect(await revokeInvitation(INVITATION_ID)).toEqual({
       ok: false,
@@ -81,6 +85,45 @@ describe('revoking an Invitation from Home', () => {
     expect(await revokeInvitation('../members')).toEqual({
       ok: false,
       message: "We couldn't revoke that invitation. Please try again.",
+    });
+  });
+});
+
+describe('resending an Invitation from Members', () => {
+  it("resends it in the person's own Workspace, as them, and draws Members again", async () => {
+    const seen: Request[] = [];
+    server.use(
+      http.post(RESEND, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json({
+          invitationId: INVITATION_ID,
+          expiresAt: '2026-10-20T03:00:00.000Z',
+        });
+      }),
+    );
+
+    expect(await resendInvitation(INVITATION_ID)).toEqual({ ok: true });
+    expect(seen[0]?.headers.get('cookie')).toContain(
+      'thrive.session_token=abc',
+    );
+    expect(revalidatePath).toHaveBeenCalledWith('/settings/members');
+  });
+
+  it('asks the person to wait when it was sent a moment ago', async () => {
+    apiRefusesWith(RESEND, 'INVITATION_RESENT_TOO_SOON', 409);
+
+    expect(await resendInvitation(INVITATION_ID)).toEqual({
+      ok: false,
+      message: 'You sent this a moment ago. Try again in a few minutes.',
+    });
+  });
+
+  it('answers a generic failure for a code it does not explain', async () => {
+    apiRefusesWith(RESEND, 'SOMETHING_ELSE', 500);
+
+    expect(await resendInvitation(INVITATION_ID)).toEqual({
+      ok: false,
+      message: "We couldn't send that invitation again. Please try again.",
     });
   });
 });

@@ -168,3 +168,132 @@ Then(
     assert.deepEqual(this.lastResponse?.body.items, []);
   },
 );
+
+const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
+
+/** An Invitation from `inviter` to `invitee`, written to the store as if sent at `sentAt`. */
+async function storeInvitation(
+  world: ThriveWorld,
+  inviter: string,
+  invitee: string,
+  sentAt: Date,
+): Promise<void> {
+  const invitationId = await world.fixtures.anInvitation(
+    world.workspaceOf(inviter),
+    world.person(inviter),
+    {
+      email: world.person(invitee).email,
+      createdAt: sentAt,
+      expiresAt: new Date(sentAt.getTime() + 7 * DAY_MS),
+    },
+  );
+  world.invitationStoredFor(invitee, invitationId);
+}
+
+/** `owner`'s view of the Invitation to `invitee`, as the Members screen lists it. */
+async function listedInvitationTo(
+  world: ThriveWorld,
+  owner: string,
+  invitee: string,
+): Promise<{
+  status: string;
+  expiresAt: string;
+  invitedBy: { displayName: string | null; email: string };
+}> {
+  const response = world.succeeded(
+    await world.as(
+      owner,
+      'GET',
+      `/v1/workspaces/${world.workspaceOf(owner)}/invitations`,
+    ),
+    `${owner} listing Invitations`,
+  );
+  const { email } = world.person(invitee);
+  const listed = response.body.items.find(
+    (item: { email: string }) => item.email === email,
+  );
+  assert.ok(listed, `${owner} does not see an Invitation to ${invitee}.`);
+  return listed;
+}
+
+Given(
+  '{person} invited {person} an hour ago',
+  async function (this: ThriveWorld, inviter: string, invitee: string) {
+    await storeInvitation(
+      this,
+      inviter,
+      invitee,
+      new Date(Date.now() - HOUR_MS),
+    );
+  },
+);
+
+Given(
+  "{person}'s Invitation to {person} has expired",
+  async function (this: ThriveWorld, inviter: string, invitee: string) {
+    await storeInvitation(
+      this,
+      inviter,
+      invitee,
+      new Date(Date.now() - 8 * DAY_MS),
+    );
+  },
+);
+
+When(
+  "{person} resends {person}'s Invitation",
+  async function (this: ThriveWorld, name: string, invitee: string) {
+    const invitationId =
+      this.storedInvitationTo(invitee) ?? invitationIdEmailedTo(this, invitee);
+    await this.as(
+      name,
+      'POST',
+      `/v1/workspaces/${this.workspaceOf(name)}/invitations/${invitationId}/resend`,
+    );
+  },
+);
+
+Then(
+  "{person} sees {person}'s Invitation was sent by {person}",
+  async function (
+    this: ThriveWorld,
+    owner: string,
+    invitee: string,
+    inviter: string,
+  ) {
+    const listed = await listedInvitationTo(this, owner, invitee);
+    assert.deepEqual(listed.invitedBy, {
+      displayName: inviter,
+      email: this.person(inviter).email,
+    });
+  },
+);
+
+Then(
+  "{person} sees {person}'s Invitation is good for another 7 days",
+  async function (this: ThriveWorld, owner: string, invitee: string) {
+    const listed = await listedInvitationTo(this, owner, invitee);
+    const left = new Date(listed.expiresAt).getTime() - Date.now();
+    assert.equal(listed.status, 'PENDING');
+    // A minute's slack for the time the request itself took.
+    assert.ok(
+      Math.abs(left - 7 * DAY_MS) < 60_000,
+      `Expected 7 days left, got ${left / DAY_MS} days.`,
+    );
+  },
+);
+
+Then(
+  '{person} is told to wait before sending it again',
+  function (this: ThriveWorld, _name: string) {
+    this.refusedWith('INVITATION_RESENT_TOO_SOON');
+  },
+);
+
+Then(
+  '{person} is told they may not resend Invitations',
+  function (this: ThriveWorld, _name: string) {
+    this.refusedWith('NOT_ALLOWED_TO_RESEND_INVITATIONS');
+  },
+);

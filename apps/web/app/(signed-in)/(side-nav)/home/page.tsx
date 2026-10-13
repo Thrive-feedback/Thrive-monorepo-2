@@ -4,11 +4,10 @@ import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { ROUTES } from '@/lib/routes.constant';
+import { ROLE_NAMES } from '@/lib/session/role-names.constant';
 import { requireMember } from '@/lib/session/session.service';
-import { MemberAndInvitationList } from './_components/member-and-invitation-list';
 import { RequestFeedbackCard } from './_components/request-feedback-card';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
-import { ROLE_NAMES } from './_lib/role-names.constant';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
 export const metadata: Metadata = {
@@ -18,9 +17,8 @@ export const metadata: Metadata = {
 
 /**
  * Home of the person's Workspace, where a Member lands after signing in; `/` stays public
- * for the landing page. It names the Workspace and who the person is in it, lets them ask a
- * teammate for Feedback, and lists their teammates — with the Invitations still open, for
- * those who can invite.
+ * for the landing page. It names the Workspace and who the person is in it, and lets them ask a
+ * teammate for Feedback. Who else is in the Workspace is under Settings → Members.
  *
  * Every class resolves to a token: a role for colour, shape and type, a scale for spacing.
  * `bg-primary-500` is not a class that exists, because the theme exposes colour only as roles.
@@ -74,17 +72,6 @@ export default async function Home({ searchParams }: HomeProps) {
           ownEmail={session.email}
         />
       </Suspense>
-      <section className="flex flex-col gap-2">
-        <Text as="h2" variant="subtitle-4">
-          My teammates
-        </Text>
-        <Suspense fallback={<Skeleton className="h-20 w-full" />}>
-          <MemberAndInvitationList
-            membership={session.membership}
-            ownEmail={session.email}
-          />
-        </Suspense>
-      </section>
     </div>
   );
 }

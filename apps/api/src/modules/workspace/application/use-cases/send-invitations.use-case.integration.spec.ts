@@ -14,6 +14,7 @@ import {
 } from '@test/support/workspace.integration-fixtures';
 import { BetterAuthWorkspaceInvitingAdapter } from '../../infrastructure/adapter/better-auth-workspace-inviting.adapter';
 import { PrismaMembershipQuery } from '../../infrastructure/query/prisma-membership.query';
+import { InvitationDelivery } from '../service/invitation-delivery.service';
 import {
   NotAllowedToInviteError,
   WorkspaceNotFoundError,
@@ -32,11 +33,13 @@ const auth = createAuth(
 const emailSender = new FakeEmailSender();
 const sendInvitationsUseCase = new SendInvitationsUseCase(
   new BetterAuthWorkspaceInvitingAdapter(auth),
-  emailSender,
-  new FakeProfileNamePort(),
+  new InvitationDelivery(
+    emailSender,
+    new FakeProfileNamePort(),
+    new SystemClock(),
+    configuration.web,
+  ),
   new PrismaUnitOfWork(prismaService, prismaTransactionContext),
-  new SystemClock(),
-  configuration.web,
 );
 const resolveMembershipUseCase = new ResolveMembershipUseCase(
   new PrismaMembershipQuery(prismaTransactionContext),

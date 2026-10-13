@@ -68,3 +68,29 @@ describe('revoking an Invitation in each status', () => {
     );
   });
 });
+
+describe('resending an Invitation in each status', () => {
+  it('is allowed while it is Pending', () => {
+    expect(() =>
+      InvitationStatus.at(NEXT_WEEK, NOW).ensureResendable(),
+    ).not.toThrow();
+  });
+
+  it('is allowed once it has Expired, to start it afresh', () => {
+    expect(() =>
+      InvitationStatus.at(NOW, NOW).ensureResendable(),
+    ).not.toThrow();
+  });
+
+  it('is refused once it was Accepted', () => {
+    expect(() => InvitationStatus.Accepted.ensureResendable()).toThrow(
+      InvitationAlreadyAcceptedError,
+    );
+  });
+
+  it('is refused once it was Revoked', () => {
+    expect(() => InvitationStatus.Revoked.ensureResendable()).toThrow(
+      InvitationRevokedError,
+    );
+  });
+});

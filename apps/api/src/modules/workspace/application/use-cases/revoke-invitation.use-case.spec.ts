@@ -34,6 +34,7 @@ function setUp(
     inviterAccountId: 'account-ann',
     email: 'somchai@acme.co',
     status,
+    lastSentAt: NOW,
   });
   const useCase = new RevokeInvitationUseCase(
     workspaceInviting,
