@@ -9,6 +9,7 @@ import {
 } from '@test/support/workspace.fakes';
 import type { MemberRoleValue } from '../../domain/value-object/member-role.vo';
 import { TooManyInvitationsError } from '../../domain/workspace.errors';
+import { InvitationDelivery } from '../service/invitation-delivery.service';
 import { NotAllowedToInviteError } from '../workspace.errors';
 import { SendInvitationsUseCase } from './send-invitations.use-case';
 
@@ -46,11 +47,13 @@ function setUp() {
   const unitOfWork = new FakeUnitOfWork();
   const useCase = new SendInvitationsUseCase(
     workspaceInviting,
-    emailSender,
-    profileNamePort,
+    new InvitationDelivery(
+      emailSender,
+      profileNamePort,
+      new FakeClock(NOW),
+      new WebConfig('https://thrive.test'),
+    ),
     unitOfWork,
-    new FakeClock(NOW),
-    new WebConfig('https://thrive.test'),
   );
   return {
     workspaceInviting,

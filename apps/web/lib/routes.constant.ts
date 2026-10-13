@@ -17,6 +17,12 @@ export const ROUTES = {
     askById: (askId: string) => `/feedback/asks/${askId}`,
     requestById: (requestId: string) => `/feedback/requests/${requestId}`,
   },
+  settings: {
+    /** The list of settings categories. */
+    index: '/settings',
+    /** Who is in the Workspace, and the Invitations still open. */
+    members: '/settings/members',
+  },
   invitation: (invitationId: string) => `/invitations/${invitationId}`,
   register: {
     introduceYourself: '/register/introduce-yourself',

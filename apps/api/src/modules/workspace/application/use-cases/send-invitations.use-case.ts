@@ -1,16 +1,12 @@
-import { WebConfig } from '@app/config/configuration';
-import { ProfileNamePort } from '@app/modules/identity';
-import { Clock } from '@app/shared/application/clock.port';
-import { EmailSender } from '@app/shared/application/email-sender.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable } from '@nestjs/common';
-import { InvitationEmail } from '../../domain/value-object/invitation-email.vo';
 import { InvitedAddresses } from '../../domain/value-object/invited-addresses.vo';
 import { MemberRole } from '../../domain/value-object/member-role.vo';
 import {
   type InvitationStored,
   WorkspaceInviting,
 } from '../port/workspace-inviting.port';
+import { InvitationDelivery } from '../service/invitation-delivery.service';
 import type { MembershipView } from '../types/membership.types';
 import { NotAllowedToInviteError } from '../workspace.errors';
 
@@ -53,11 +49,8 @@ interface Stored {
 export class SendInvitationsUseCase {
   constructor(
     private readonly workspaceInviting: WorkspaceInviting,
-    private readonly emailSender: EmailSender,
-    private readonly profileNamePort: ProfileNamePort,
+    private readonly invitationDelivery: InvitationDelivery,
     private readonly unitOfWork: UnitOfWork,
-    private readonly clock: Clock,
-    private readonly webConfig: WebConfig,
   ) {}
 
   async execute(
@@ -90,9 +83,10 @@ export class SendInvitationsUseCase {
       { serializeOn: `workspace-invitations:${workspaceId}` },
     );
 
-    const inviterName =
-      (await this.profileNamePort.displayNameOf(input.accountId)) ??
-      input.inviterEmail;
+    const inviterName = await this.invitationDelivery.senderNameOf({
+      accountId: input.accountId,
+      email: input.inviterEmail,
+    });
 
     const outcomes: InvitationOutcome[] = [];
     for (let start = 0; start < stored.length; start += SENDS_AT_ONCE) {
@@ -115,24 +109,20 @@ export class SendInvitationsUseCase {
     if (stored.outcome !== 'invited') {
       return { email, outcome: stored.outcome };
     }
-    const content = InvitationEmail.compose({
-      inviterName,
-      workspaceName: input.membership.workspace.name,
-      invitedEmail: email,
-      acceptUrl: `${this.webConfig.origin}/invitations/${stored.invitationId}`,
-      expiresAt: stored.expiresAt,
-      now: this.clock.now(),
-    }).content();
     try {
-      await this.emailSender.send({
-        to: email,
-        // A second Invitation to the same address carries a new id, so the transport retries
-        // this send and never that one.
-        idempotencyKey: stored.invitationId,
-        fromName: inviterName,
-        replyTo: input.inviterEmail,
-        ...content,
-      });
+      await this.invitationDelivery.deliver(
+        {
+          invitationId: stored.invitationId,
+          email,
+          expiresAt: stored.expiresAt,
+          workspaceName: input.membership.workspace.name,
+          // A second Invitation to the same address carries a new id, so the transport retries
+          // this send and never that one.
+          idempotencyKey: stored.invitationId,
+        },
+        { accountId: input.accountId, email: input.inviterEmail },
+        inviterName,
+      );
     } catch {
       // The email did not go out, so this address is answered `failed` rather than the whole
       // send failing, and its Invitation is revoked so a second send is not "already invited".

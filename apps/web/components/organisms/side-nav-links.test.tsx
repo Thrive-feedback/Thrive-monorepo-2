@@ -7,14 +7,14 @@ vi.mock('next/navigation', () => ({ usePathname: () => usePathname() }));
 const { SideNavLinks } = await import('./side-nav-links');
 
 describe('SideNavLinks', () => {
-  it('offers the three signed-in pages, in the order a person meets them', () => {
+  it('offers the signed-in pages, in the order a person meets them', () => {
     usePathname.mockReturnValue('/home');
 
     render(<SideNavLinks />);
 
     expect(
       screen.getAllByRole('link').map((link) => link.getAttribute('href')),
-    ).toEqual(['/home', '/feedback/sent', '/feedback/asks']);
+    ).toEqual(['/home', '/feedback/sent', '/feedback/asks', '/settings']);
   });
 
   it('marks the page the person is on, and only that one', () => {
@@ -27,6 +27,17 @@ describe('SideNavLinks', () => {
     ).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Home' })).not.toHaveAttribute(
       'aria-current',
+    );
+  });
+
+  it('marks Settings as the section the person is in, on every page beneath it', () => {
+    usePathname.mockReturnValue('/settings/members');
+
+    render(<SideNavLinks />);
+
+    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute(
+      'aria-current',
+      'true',
     );
   });
 

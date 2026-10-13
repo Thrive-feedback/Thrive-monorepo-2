@@ -79,3 +79,40 @@ Feature: Invitations
     And Ann has invited Ben
     When Cara looks for Invitations waiting for them
     Then Cara is offered no Workspaces
+
+  @api
+  Scenario: An Owner sees who sent each Invitation
+    Given Ben is signed in
+    When Ann invites Ben
+    Then Ann sees Ben's Invitation was sent by Ann
+
+  @api
+  Scenario: An Owner resends an Invitation sent a while ago
+    Given Ben is signed in
+    And Ann invited Ben an hour ago
+    When Ann resends Ben's Invitation
+    Then Ben is emailed an Invitation to "Acme"
+    And Ann sees Ben's Invitation is good for another 7 days
+
+  @api
+  Scenario: Resending an expired Invitation sends a fresh one
+    Given Ben is signed in
+    And Ann's Invitation to Ben has expired
+    When Ann resends Ben's Invitation
+    Then Ben is emailed an Invitation to "Acme"
+    And Ann sees Ben's Invitation waiting to be accepted
+
+  @api
+  Scenario: An Invitation cannot be resent moments after it was sent
+    Given Ben is signed in
+    And Ann has invited Ben
+    When Ann resends Ben's Invitation
+    Then Ann is told to wait before sending it again
+
+  @api
+  Scenario: A Member cannot resend an Invitation
+    Given Ben is a Member of Ann's Workspace
+    And Cara is signed in
+    And Ann invited Cara an hour ago
+    When Ben resends Cara's Invitation
+    Then Ben is told they may not resend Invitations

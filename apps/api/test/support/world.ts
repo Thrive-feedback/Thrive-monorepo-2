@@ -41,6 +41,8 @@ export class ThriveWorld extends World {
   private readonly asksOnScreen = new Map<string, string>();
   /** The Workspace each person belongs to, once they belong to one. */
   private readonly workspaces = new Map<string, string>();
+  /** Invitations written straight to the store, by who they were sent to; no email carries them. */
+  private readonly storedInvitations = new Map<string, string>();
 
   constructor(options: IWorldOptions) {
     super(options);
@@ -89,6 +91,14 @@ export class ThriveWorld extends World {
       `${name} does not belong to a Workspace in this scenario.`,
     );
     return workspaceId;
+  }
+
+  invitationStoredFor(invitee: string, invitationId: string): void {
+    this.storedInvitations.set(invitee, invitationId);
+  }
+
+  storedInvitationTo(invitee: string): string | undefined {
+    return this.storedInvitations.get(invitee);
   }
 
   /** Calls the API as `name` would from the web — their session cookie, a correlation id. */

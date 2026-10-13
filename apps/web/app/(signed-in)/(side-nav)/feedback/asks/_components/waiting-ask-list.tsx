@@ -1,7 +1,7 @@
-import { sentDay } from '@/app/(signed-in)/(side-nav)/feedback/_lib/sent-day.util';
 import { readMyAsks } from '@/app/(signed-in)/(side-nav)/feedback/asks/_lib/my-asks.service';
 import { Link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
+import { calendarDay } from '@/lib/calendar-day.util';
 import { ROUTES } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
@@ -39,7 +39,7 @@ export async function WaitingAskList({ membership }: WaitingAskListProps) {
             Asked by {ask.requesterName ?? 'a teammate'}
           </Text>
           <Text as="p" variant="body-3" tone="muted">
-            <time dateTime={ask.askedAt}>{sentDay(ask.askedAt)}</time>
+            <time dateTime={ask.askedAt}>{calendarDay(ask.askedAt)}</time>
           </Text>
         </li>
       ))}

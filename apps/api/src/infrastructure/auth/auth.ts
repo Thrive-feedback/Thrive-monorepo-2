@@ -105,7 +105,15 @@ function authOptions(
             },
           },
           member: { fields: { organizationId: 'workspaceId' } },
-          invitation: { fields: { organizationId: 'workspaceId' } },
+          invitation: {
+            fields: { organizationId: 'workspaceId' },
+            additionalFields: {
+              // When its email last went out, if it was resent; until then, its `createdAt`.
+              // The plugin only extends the expiry on a resend, so the Workspace module
+              // stamps this itself.
+              lastSentAt: { type: 'date', required: false, input: false },
+            },
+          },
         },
       }),
     ],

@@ -7,7 +7,7 @@ Step definitions live with the stack that runs them: `@api` steps in `apps/api/t
 | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `sessions.feature`          | being recognised while signed in; signing out                                                                   |
 | `workspace.feature`         | founding a Workspace; the two refusals a founder can meet                                                       |
-| `invitations.feature`       | inviting, joining from the email or from the Invitations waiting on sign-in, revoking, who may do which         |
+| `invitations.feature`       | inviting, joining from the email or from the Invitations waiting on sign-in, revoking, resending, who may do which |
 | `feedback-requests.feature` | asking for Feedback; what was sent and what is waiting; only its parties may read it, and an Ask only its Giver |
 
 Every scenario is `@api`. No `@browser` steps exist yet (`FE_15`; Playwright is planned).

@@ -57,6 +57,28 @@ describe('reading the open Invitations of a Workspace', () => {
       ['pending@acme.test', 'PENDING', 'MEMBER'],
     ]);
   });
+
+  it('answers when each was first sent and who sent it', async () => {
+    const owner = await fixtures.aSignedInAccount('invitation-sender');
+    const workspaceId = await fixtures.aWorkspace(owner);
+    const sentAt = new Date(Date.now() - DAY_MS);
+    await fixtures.anInvitation(workspaceId, owner, {
+      createdAt: sentAt,
+      lastSentAt: new Date(),
+      expiresAt: new Date(Date.now() + 7 * DAY_MS),
+    });
+
+    const page = await invitationQuery.openInvitationsOfWorkspace(
+      workspaceId,
+      new Date(),
+      { page: 1, pageSize: 20 },
+    );
+
+    expect(page.items[0]).toMatchObject({
+      invitedAt: sentAt,
+      inviterAccountId: owner.accountId,
+    });
+  });
 });
 
 describe('reading one Invitation by its id', () => {
@@ -85,9 +107,11 @@ describe('reading one Invitation by its id', () => {
   it('answers the Workspace, the inviter and the address it was sent to', async () => {
     const owner = await fixtures.aSignedInAccount('invitation-detail');
     const workspaceId = await fixtures.aWorkspace(owner, 'Acme');
+    const sentAt = new Date(Date.now() - DAY_MS);
     const id = await fixtures.anInvitation(workspaceId, owner, {
       email: 'somchai@acme.test',
-      expiresAt: new Date(Date.now() + 7 * DAY_MS),
+      createdAt: sentAt,
+      expiresAt: new Date(sentAt.getTime() + 7 * DAY_MS),
     });
 
     expect(await invitationQuery.invitationById(id, new Date())).toEqual({
@@ -96,7 +120,23 @@ describe('reading one Invitation by its id', () => {
       inviterAccountId: owner.accountId,
       email: 'somchai@acme.test',
       status: 'PENDING',
+      lastSentAt: sentAt,
     });
+  });
+
+  it('answers the last resend as when it was last sent', async () => {
+    const owner = await fixtures.aSignedInAccount('invitation-resent');
+    const workspaceId = await fixtures.aWorkspace(owner);
+    const resentAt = new Date(Date.now() - 60_000);
+    const id = await fixtures.anInvitation(workspaceId, owner, {
+      createdAt: new Date(Date.now() - DAY_MS),
+      lastSentAt: resentAt,
+      expiresAt: new Date(Date.now() + 7 * DAY_MS),
+    });
+
+    expect(
+      (await invitationQuery.invitationById(id, new Date()))?.lastSentAt,
+    ).toEqual(resentAt);
   });
 
   it('answers null for an id no Invitation has', async () => {

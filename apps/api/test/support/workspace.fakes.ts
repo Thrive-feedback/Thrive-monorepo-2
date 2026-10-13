@@ -11,6 +11,7 @@ import {
 } from '@app/modules/workspace/application/port/workspace-founding.port';
 import {
   type InvitationAcceptance,
+  type InvitationReissued,
   type InvitationRequest,
   type InvitationRevocation,
   type InvitationStored,
@@ -126,12 +127,51 @@ export class FakeWorkspaceInviting extends WorkspaceInviting {
   /** Set to make every revoke fail, as a store that cannot be reached would. */
   revokeFails = false;
 
+  /** Ids whose revoke fails, as one the store could not be reached for would. */
+  readonly revokeFailsFor = new Set<string>();
+
   async revoke(revocation: InvitationRevocation): Promise<void> {
-    if (this.revokeFails) {
+    if (this.revokeFails || this.revokeFailsFor.has(revocation.invitationId)) {
       throw new Error('The store refused the revoke.');
     }
     this.revoked.push(revocation);
     this.pending.delete(revocation.invitationId);
+  }
+
+  /**
+   * Like the store: an address with a Pending Invitation keeps it, extended to `expiresAt`, and
+   * any other is given a new one from the ids. List an id in `expired` to have its address
+   * treated as having none Pending.
+   */
+  readonly expired = new Set<string>();
+
+  async reissue(request: InvitationRequest): Promise<InvitationReissued> {
+    if (this.members.has(request.email)) {
+      return { outcome: 'already_member' };
+    }
+    const pendingId = [...this.pending].find(
+      ([id, email]) => email === request.email && !this.expired.has(id),
+    )?.[0];
+    if (pendingId !== undefined) {
+      return {
+        outcome: 'reissued',
+        invitationId: pendingId,
+        expiresAt: this.expiresAt,
+      };
+    }
+    const invitationId = this.ids.shift();
+    if (invitationId === undefined) {
+      throw new Error('FakeWorkspaceInviting ran out of ids.');
+    }
+    this.pending.set(invitationId, request.email);
+    return { outcome: 'reissued', invitationId, expiresAt: this.expiresAt };
+  }
+
+  /** When each Invitation's email was recorded as sent, by id. */
+  readonly sentAt = new Map<string, Date>();
+
+  async markSent(invitationId: string, sentAt: Date): Promise<void> {
+    this.sentAt.set(invitationId, sentAt);
   }
 }
 

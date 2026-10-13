@@ -4,7 +4,10 @@ import { createAuth } from '@app/infrastructure/auth/auth';
 import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { UuidIdGenerator } from '@app/infrastructure/uuid-id-generator.adapter';
 import { WorkspaceFixtures } from '@test/support/workspace.integration-fixtures';
-import type { InvitationStored } from '../../application/port/workspace-inviting.port';
+import type {
+  InvitationReissued,
+  InvitationStored,
+} from '../../application/port/workspace-inviting.port';
 import { BetterAuthWorkspaceInvitingAdapter } from './better-auth-workspace-inviting.adapter';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -30,6 +33,14 @@ function invited(stored: InvitationStored) {
     throw new Error(`Expected an Invitation, got ${stored.outcome}.`);
   }
   return stored;
+}
+
+/** What a reissue left Pending, or a failed test when the address had joined. */
+function reissuedOf(reissued: InvitationReissued) {
+  if (reissued.outcome !== 'reissued') {
+    throw new Error(`Expected a Pending Invitation, got ${reissued.outcome}.`);
+  }
+  return reissued;
 }
 
 async function anOwnerWithAWorkspace() {
@@ -177,5 +188,82 @@ describe('accepting an Invitation through the organization plugin', () => {
     await workspaceInviting.accept(acceptance);
 
     await expect(workspaceInviting.accept(acceptance)).rejects.toThrow();
+  });
+});
+
+describe('reissuing an Invitation through the organization plugin', () => {
+  it('extends a Pending one for another 7 days, keeping its id', async () => {
+    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const sentAt = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const invitationId = await fixtures.anInvitation(workspaceId, owner, {
+      email: 'ben@acme.test',
+      createdAt: sentAt,
+      expiresAt: new Date(sentAt.getTime() + SEVEN_DAYS_MS),
+    });
+    const before = Date.now();
+
+    const reissued = reissuedOf(
+      await workspaceInviting.reissue({
+        credential: owner.credential,
+        workspaceId,
+        email: 'ben@acme.test',
+      }),
+    );
+
+    expect(reissued.invitationId).toBe(invitationId);
+    expect(reissued.expiresAt.getTime() - before).toBeGreaterThanOrEqual(
+      SEVEN_DAYS_MS - 1000,
+    );
+  });
+
+  it('stores a new one beside an expired one, leaving the expired one as it was', async () => {
+    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const expiredId = await fixtures.anInvitation(workspaceId, owner, {
+      email: 'ben@acme.test',
+      expiresAt: new Date(Date.now() - 1000),
+    });
+
+    const reissued = reissuedOf(
+      await workspaceInviting.reissue({
+        credential: owner.credential,
+        workspaceId,
+        email: 'ben@acme.test',
+      }),
+    );
+
+    expect(reissued.invitationId).not.toBe(expiredId);
+    const expired = await prismaService.invitation.findUniqueOrThrow({
+      where: { id: expiredId },
+    });
+    expect(expired.status).toBe('pending');
+  });
+
+  it('answers already a member for an address that joined meanwhile', async () => {
+    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const ben = await fixtures.aSignedInAccount('reissue-ben');
+    await fixtures.addMember(workspaceId, ben, 'member');
+
+    expect(
+      await workspaceInviting.reissue({
+        credential: owner.credential,
+        workspaceId,
+        email: ben.email,
+      }),
+    ).toEqual({ outcome: 'already_member' });
+  });
+
+  it('records when the email last went out', async () => {
+    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const invitationId = await fixtures.anInvitation(workspaceId, owner, {
+      expiresAt: new Date(Date.now() + SEVEN_DAYS_MS),
+    });
+    const sentAt = new Date('2026-10-13T05:00:00Z');
+
+    await workspaceInviting.markSent(invitationId, sentAt);
+
+    const row = await prismaService.invitation.findUniqueOrThrow({
+      where: { id: invitationId },
+    });
+    expect(row.lastSentAt).toEqual(sentAt);
   });
 });

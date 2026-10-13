@@ -84,6 +84,7 @@ export class WorkspaceFixtures {
       readonly email?: string;
       readonly status?: 'pending' | 'accepted' | 'canceled' | 'rejected';
       readonly createdAt?: Date;
+      readonly lastSentAt?: Date;
     },
   ): Promise<string> {
     const id = uuidv7();
@@ -95,6 +96,7 @@ export class WorkspaceFixtures {
         role: 'member',
         status: options.status ?? 'pending',
         createdAt: options.createdAt,
+        lastSentAt: options.lastSentAt,
         expiresAt: options.expiresAt,
         inviterId: inviter.accountId,
       },
