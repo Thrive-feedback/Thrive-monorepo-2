@@ -104,8 +104,7 @@ export function InvitationJoinForm({
       >
         <Button
           type="submit"
-          variant={isNotForYou ? 'secondary' : 'ghost'}
-          size={isNotForYou ? 'lg' : 'md'}
+          size="lg"
           className="w-full"
           prefixIcon={
             <Image

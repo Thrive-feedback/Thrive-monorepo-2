@@ -1,6 +1,7 @@
 import type {
   InvitationDetailView,
   InvitationView,
+  PendingInvitationView,
 } from '../../application/types/invitation.types';
 import { InvitationStatus } from '../../domain/value-object/invitation-status.vo';
 import { MemberRole } from '../../domain/value-object/member-role.vo';
@@ -62,5 +63,27 @@ export function toInvitationDetailView(
     inviterAccountId: record.inviterId,
     email: record.email,
     status: statusOf(record.status, record.expiresAt, now).toString(),
+  };
+}
+
+export function toPendingInvitationView(record: {
+  readonly id: string;
+  readonly createdAt: Date;
+  readonly expiresAt: Date;
+  readonly workspace: {
+    readonly id: string;
+    readonly name: string;
+    readonly _count: { readonly members: number };
+  };
+}): PendingInvitationView {
+  return {
+    invitationId: record.id,
+    workspace: {
+      id: record.workspace.id,
+      name: record.workspace.name,
+      memberCount: record.workspace._count.members,
+    },
+    invitedAt: record.createdAt,
+    expiresAt: record.expiresAt,
   };
 }

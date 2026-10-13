@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { Given, Then, When } from '@cucumber/cucumber';
+import { type DataTable, Given, Then, When } from '@cucumber/cucumber';
 import { harness } from '../support/harness';
 import {
   accept,
   invitationIdEmailedTo,
   invite,
   joinWorkspaceOf,
+  myInvitations,
   myMemberships,
 } from '../support/journeys';
 import type { ThriveWorld } from '../support/world';
@@ -128,5 +129,42 @@ Then(
   '{person} is told the Invitation is not for them',
   function (this: ThriveWorld, _name: string) {
     this.refusedWith('INVITATION_NOT_FOR_YOU');
+  },
+);
+
+When(
+  '{person} looks for Invitations waiting for them',
+  async function (this: ThriveWorld, name: string) {
+    await myInvitations(this, name);
+  },
+);
+
+When(
+  '{person} joins {string} from the Invitations waiting for them',
+  async function (this: ThriveWorld, name: string, workspaceName: string) {
+    const chosen = (await myInvitations(this, name)).find(
+      (invitation) => invitation.workspace.name === workspaceName,
+    );
+    assert.ok(chosen, `${name} was not offered ${workspaceName}.`);
+    await accept(this, name, chosen.invitationId);
+  },
+);
+
+Then(
+  '{person} is offered these Workspaces, newest first:',
+  function (this: ThriveWorld, _name: string, table: DataTable) {
+    const items: { workspace: { name: string; memberCount: number } }[] =
+      this.lastResponse?.body.items;
+    assert.deepEqual(
+      items.map((i) => [i.workspace.name, String(i.workspace.memberCount)]),
+      table.hashes().map((row) => [row.Workspace, row.Members]),
+    );
+  },
+);
+
+Then(
+  '{person} is offered no Workspaces',
+  function (this: ThriveWorld, _name: string) {
+    assert.deepEqual(this.lastResponse?.body.items, []);
   },
 );

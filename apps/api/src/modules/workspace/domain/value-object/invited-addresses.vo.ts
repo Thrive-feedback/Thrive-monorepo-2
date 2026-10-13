@@ -2,6 +2,7 @@ import {
   NoAddressesToInviteError,
   TooManyInvitationsError,
 } from '../workspace.errors';
+import { InvitationRecipient } from './invitation-recipient.vo';
 
 /**
  * The addresses one send invites, each once. An address is compared without case or
@@ -14,7 +15,10 @@ export class InvitedAddresses {
   private constructor(private readonly emails: readonly string[]) {}
 
   static of(raw: readonly string[]): InvitedAddresses {
-    const emails = [...new Set(raw.map((email) => email.trim().toLowerCase()))];
+    // Normalized as the recipient is, so an Invitation stored here is found by its address.
+    const emails = [
+      ...new Set(raw.map((email) => InvitationRecipient.of(email).toString())),
+    ];
     if (emails.length === 0) {
       throw new NoAddressesToInviteError();
     }

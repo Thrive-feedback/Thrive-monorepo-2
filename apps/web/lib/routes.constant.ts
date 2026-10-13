@@ -18,6 +18,7 @@ export const ROUTES = {
   invitation: (invitationId: string) => `/invitations/${invitationId}`,
   register: {
     introduceYourself: '/register/introduce-yourself',
+    joinWorkspace: '/register/join-workspace',
     createWorkspace: '/register/create-workspace',
     inviteTeammates: '/register/invite-teammates',
   },
