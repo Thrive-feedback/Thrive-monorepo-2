@@ -128,7 +128,11 @@ jobs:
           # ignores it.
           build-args: API_BASE_URL=${{ env.API_BASE_URL }}
           cache-from: type=gha,scope=${{ matrix.app }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+          # Layer blobs are keyed by digest across scopes, so the api and web jobs can race to
+          # reserve the same one and the loser fails with "failed to reserve cache". The cache
+          # never changes what the image contains, so a missed export only makes the next build
+          # slower and must not fail the deploy.
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }},ignore-error=true
 
   deploy:
     name: Production
