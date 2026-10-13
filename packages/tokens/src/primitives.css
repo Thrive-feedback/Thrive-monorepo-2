@@ -9,175 +9,182 @@
   --primary-25: oklch(97.5% 0.0173 315.35);
   --primary-50: oklch(97.49% 0.009 314.78); /* #f9f5fb */
   --primary-100: oklch(92.68% 0.0306 315.9); /* #efe1f5 */
-  --primary-150: oklch(85% 0.1096 315.35);
-  --primary-200: oklch(80% 0.1323 315.35);
-  --primary-250: oklch(75% 0.1323 315.35);
+  --primary-150: oklch(89.13% 0.078 315.35);
+  --primary-200: oklch(84.95% 0.11 315.35);
+  --primary-250: oklch(80.21% 0.1323 315.35);
   --primary-300: oklch(72.31% 0.1012 315.44); /* #be92d1 */
   --primary-350: oklch(69.27% 0.1131 315.41); /* #b786cc */
   --primary-400: oklch(63.21% 0.1323 315.35); /* #a86fc0 */
   --primary-450: oklch(57.2% 0.1207 315.54); /* #9360a8 */
   --primary-475: oklch(53.99% 0.1155 315.42); /* #88589c */
-  --primary-500: oklch(50% 0.1323 315.35);
+  --primary-500: oklch(51.25% 0.1323 315.35);
   --primary-550: oklch(47.77% 0.1046 315.14); /* #734985 */
   --primary-600: oklch(41.7% 0.0934 314.77); /* #5f3b6f */
   --primary-650: oklch(35.71% 0.0804 315); /* #4c2e59 */
-  --primary-700: oklch(30% 0.1323 315.35);
-  --primary-750: oklch(25% 0.1229 315.35);
-  --primary-800: oklch(20% 0.0983 315.35);
+  --primary-700: oklch(27.5% 0.1323 315.35);
+  --primary-750: oklch(22.29% 0.1096 315.35);
+  --primary-800: oklch(17.55% 0.0863 315.35);
   --primary-825: oklch(17.24% 0.0489 316.08); /* #18081e */
-  --primary-850: oklch(15% 0.0738 315.35);
+  --primary-850: oklch(13.37% 0.0658 315.35);
   --primary-900: oklch(11.36% 0.0356 315.79); /* #09020d */
   --primary-950: oklch(5.12% 0.0256 311.99); /* #010002 */
+  --primary-975: oklch(5% 0.0247 315.35);
 
-  /* secondary: seed #b95732 */
-  --secondary-25: oklch(97.5% 0.0128 40.47);
+  /* secondary: seed #ef7447 */
+  --secondary-25: oklch(97.5% 0.0128 40.1);
   --secondary-50: oklch(97.55% 0.0095 41.89); /* #fdf5f2 */
   --secondary-100: oklch(92.5% 0.0397 39.3); /* #ffded3 */
-  --secondary-150: oklch(85% 0.0853 40.47);
-  --secondary-200: oklch(80% 0.1191 40.47);
-  --secondary-250: oklch(75% 0.1369 40.47);
-  --secondary-300: oklch(70% 0.1369 40.47);
+  --secondary-150: oklch(89.13% 0.0595 40.1);
+  --secondary-200: oklch(84.95% 0.0854 40.1);
+  --secondary-250: oklch(80.21% 0.1174 40.1);
+  --secondary-300: oklch(75% 0.1561 40.1);
   --secondary-350: oklch(69.56% 0.1633 40.1); /* #ef7447 */
   --secondary-400: oklch(63.22% 0.1497 40.33); /* #d3653c */
   --secondary-450: oklch(57.18% 0.1369 40.47); /* #b95732 */
   --secondary-475: oklch(54.11% 0.13 40.15); /* #ac502e */
-  --secondary-500: oklch(50% 0.1369 40.47);
+  --secondary-500: oklch(51.25% 0.1605 40.1);
   --secondary-550: oklch(47.98% 0.1177 40.09); /* #934224 */
   --secondary-600: oklch(41.81% 0.1038 40.27); /* #7a351b */
-  --secondary-650: oklch(35% 0.1088 40.47);
-  --secondary-700: oklch(30% 0.0933 40.47);
-  --secondary-750: oklch(25% 0.0777 40.47);
-  --secondary-800: oklch(20% 0.0622 40.47);
-  --secondary-850: oklch(15% 0.0466 40.47);
+  --secondary-650: oklch(33.1% 0.1037 40.1);
+  --secondary-700: oklch(27.5% 0.0861 40.1);
+  --secondary-750: oklch(22.29% 0.0698 40.1);
+  --secondary-800: oklch(17.55% 0.055 40.1);
+  --secondary-850: oklch(13.37% 0.0419 40.1);
   --secondary-900: oklch(11.15% 0.0384 35.83); /* #0f0100 */
   --secondary-950: oklch(5.32% 0.0218 29.23); /* #020000 */
+  --secondary-975: oklch(5% 0.0158 40.1);
 
-  /* neutral: seed #737a75 */
-  --neutral-25: oklch(97.5% 0.0113 154.92);
+  /* neutral: seed #ffffff */
+  --neutral-25: oklch(97.5% 0 0);
   --neutral-50: oklch(100% 0 0); /* #ffffff */
   --neutral-100: oklch(92.69% 0.0017 145.56); /* #e6e7e6 */
   --neutral-125: oklch(89.95% 0.0017 145.56); /* #dddedd */
-  --neutral-150: oklch(85% 0.0113 154.92);
+  --neutral-150: oklch(89.13% 0 0);
   --neutral-200: oklch(84.23% 0.0043 157.16); /* #c9ccca */
-  --neutral-250: oklch(75% 0.0113 154.92);
+  --neutral-250: oklch(80.21% 0 0);
   --neutral-300: oklch(72.34% 0.0071 160.01); /* #a2a7a4 */
-  --neutral-350: oklch(65% 0.0113 154.92);
-  --neutral-400: oklch(60% 0.0113 154.92);
+  --neutral-350: oklch(69.4% 0 0);
+  --neutral-400: oklch(63.51% 0 0);
   --neutral-450: oklch(57.2% 0.0113 154.92); /* #737a75 */
   --neutral-475: oklch(54.1% 0.0114 154.89); /* #6a716c */
-  --neutral-500: oklch(50% 0.0113 154.92);
-  --neutral-550: oklch(45% 0.0113 154.92);
-  --neutral-600: oklch(40% 0.0113 154.92);
+  --neutral-500: oklch(51.25% 0 0);
+  --neutral-550: oklch(45.07% 0 0);
+  --neutral-600: oklch(38.99% 0 0);
   --neutral-650: oklch(35.61% 0.0179 154.88); /* #353f38 */
   --neutral-700: oklch(32.51% 0.0182 154.75); /* #2d3730 */
   --neutral-750: oklch(26.47% 0.0191 154.41); /* #1e2821 */
   --neutral-800: oklch(20.45% 0.0212 156.1); /* #0f1a13 */
   --neutral-825: oklch(17.33% 0.0219 155.73); /* #08130c */
-  --neutral-850: oklch(15% 0.0113 154.92);
+  --neutral-850: oklch(13.37% 0 0);
   --neutral-900: oklch(10.97% 0.0224 150.91); /* #010602 */
   --neutral-950: oklch(5.82% 0.0198 142.5); /* #000100 */
+  --neutral-975: oklch(5% 0 0);
 
-  /* success: seed #408a54 */
-  --success-25: oklch(97.5% 0.0399 150.35);
+  /* success: seed #5faf74 */
+  --success-25: oklch(97.5% 0.0397 150.78);
   --success-50: oklch(97.52% 0.0108 149.86); /* #f2f9f3 */
   --success-100: oklch(92.55% 0.0426 150.57); /* #d3efd8 */
-  --success-150: oklch(85% 0.1113 150.35);
-  --success-200: oklch(80% 0.1113 150.35);
-  --success-250: oklch(75% 0.1113 150.35);
-  --success-300: oklch(70% 0.1113 150.35);
+  --success-150: oklch(89.13% 0.1177 150.78);
+  --success-200: oklch(84.95% 0.1177 150.78);
+  --success-250: oklch(80.21% 0.1177 150.78);
+  --success-300: oklch(75% 0.1177 150.78);
   --success-350: oklch(69.38% 0.1311 150.1); /* #59b370 */
   --success-400: oklch(63.19% 0.1208 150.39); /* #4c9e62 */
   --success-450: oklch(57.16% 0.1113 150.35); /* #408a54 */
   --success-475: oklch(54.08% 0.1065 150.32); /* #3a804d */
-  --success-500: oklch(50% 0.1113 150.35);
+  --success-500: oklch(51.25% 0.1177 150.78);
   --success-550: oklch(47.86% 0.095 150.47); /* #2f6c40 */
   --success-600: oklch(41.72% 0.0847 150.44); /* #245933 */
-  --success-650: oklch(35% 0.0956 150.35);
-  --success-700: oklch(30% 0.0819 150.35);
-  --success-750: oklch(25% 0.0683 150.35);
-  --success-800: oklch(20% 0.0546 150.35);
-  --success-850: oklch(15% 0.041 150.35);
+  --success-650: oklch(33.1% 0.0895 150.78);
+  --success-700: oklch(27.5% 0.0744 150.78);
+  --success-750: oklch(22.29% 0.0603 150.78);
+  --success-800: oklch(17.55% 0.0475 150.78);
+  --success-850: oklch(13.37% 0.0362 150.78);
   --success-900: oklch(11.21% 0.0324 148.05); /* #000701 */
   --success-950: oklch(5.82% 0.0198 142.5); /* #000100 */
+  --success-975: oklch(5% 0.0136 150.78);
 
-  /* warning: seed #957127 */
-  --warning-25: oklch(97.5% 0.0239 81.89);
+  /* warning: seed #f6be4f */
+  --warning-25: oklch(97.5% 0.0236 81.55);
   --warning-50: oklch(97.43% 0.0102 81.8); /* #faf6ef */
   --warning-100: oklch(92.57% 0.0622 81.15); /* #fce3b8 */
-  --warning-150: oklch(85% 0.1003 81.89);
-  --warning-200: oklch(80% 0.1003 81.89);
-  --warning-250: oklch(75% 0.1003 81.89);
-  --warning-300: oklch(70% 0.1003 81.89);
-  --warning-350: oklch(65% 0.1003 81.89);
+  --warning-150: oklch(89.13% 0.1068 81.55);
+  --warning-200: oklch(84.95% 0.1407 81.55);
+  --warning-250: oklch(80.21% 0.1407 81.55);
+  --warning-300: oklch(75% 0.1407 81.55);
+  --warning-350: oklch(69.4% 0.1407 81.55);
   --warning-400: oklch(63.13% 0.1097 81.41); /* #ab8230 */
   --warning-450: oklch(57.06% 0.1003 81.89); /* #957127 */
   --warning-475: oklch(53.98% 0.0961 81.03); /* #8b6822 */
-  --warning-500: oklch(50% 0.1003 81.89);
+  --warning-500: oklch(51.25% 0.1057 81.55);
   --warning-550: oklch(47.98% 0.0877 82.1); /* #765818 */
-  --warning-600: oklch(40% 0.0824 81.89);
-  --warning-650: oklch(35% 0.0721 81.89);
-  --warning-700: oklch(30% 0.0618 81.89);
-  --warning-750: oklch(25% 0.0515 81.89);
-  --warning-800: oklch(20% 0.0412 81.89);
-  --warning-850: oklch(15% 0.0309 81.89);
+  --warning-600: oklch(38.99% 0.0804 81.55);
+  --warning-650: oklch(33.1% 0.0683 81.55);
+  --warning-700: oklch(27.5% 0.0567 81.55);
+  --warning-750: oklch(22.29% 0.046 81.55);
+  --warning-800: oklch(17.55% 0.0362 81.55);
+  --warning-850: oklch(13.37% 0.0276 81.55);
   --warning-900: oklch(11.08% 0.0254 62.51); /* #0a0300 */
   --warning-950: oklch(4.22% 0.0173 29.23); /* #010000 */
+  --warning-975: oklch(5% 0.0104 81.55);
 
-  /* error: seed #db1445 */
-  --error-25: oklch(97.5% 0.0122 17.25);
+  /* error: seed #ef476e */
+  --error-25: oklch(97.5% 0.0124 11.45);
   --error-50: oklch(97.49% 0.0108 17.34); /* #fef4f4 */
   --error-100: oklch(92.36% 0.039 17.88); /* #ffdcdc */
-  --error-150: oklch(85% 0.082 17.25);
-  --error-200: oklch(80% 0.115 17.25);
-  --error-250: oklch(75% 0.1517 17.25);
+  --error-150: oklch(89.13% 0.058 11.45);
+  --error-200: oklch(84.95% 0.0836 11.45);
+  --error-250: oklch(80.21% 0.1154 11.45);
   --error-300: oklch(72.32% 0.1639 17.52); /* #fb757f */
   --error-350: oklch(69.39% 0.1812 17.52); /* #f86472 */
   --error-400: oklch(63.14% 0.215 17.21); /* #ef3a58 */
   --error-450: oklch(57.08% 0.221 17.25); /* #db1445 */
   --error-475: oklch(54.11% 0.2095 17.49); /* #cc123f */
-  --error-500: oklch(50% 0.2002 17.25);
+  --error-500: oklch(51.25% 0.2041 11.45);
   --error-550: oklch(47.81% 0.1858 17.39); /* #ad0c34 */
-  --error-600: oklch(40% 0.1601 17.25);
-  --error-650: oklch(35% 0.1401 17.25);
-  --error-700: oklch(30% 0.1201 17.25);
-  --error-750: oklch(25% 0.1001 17.25);
-  --error-800: oklch(20% 0.0801 17.25);
-  --error-850: oklch(15% 0.0601 17.25);
+  --error-600: oklch(38.99% 0.1558 11.45);
+  --error-650: oklch(33.1% 0.1323 11.45);
+  --error-700: oklch(27.5% 0.1099 11.45);
+  --error-750: oklch(22.29% 0.0891 11.45);
+  --error-800: oklch(17.55% 0.0702 11.45);
+  --error-850: oklch(13.37% 0.0535 11.45);
   --error-900: oklch(11.23% 0.0451 20.43); /* #110001 */
   --error-950: oklch(5.32% 0.0218 29.23); /* #020000 */
+  --error-975: oklch(5% 0.0201 11.45);
 
-  /* info: seed #4b73cd */
-  --info-25: oklch(97.5% 0.0117 264.26);
+  /* info: seed #5a89f3 */
+  --info-25: oklch(97.5% 0.0117 264.28);
   --info-50: oklch(97.51% 0.0103 261.79); /* #f3f7fe */
   --info-100: oklch(92.56% 0.0356 262.82); /* #dae7ff */
-  --info-150: oklch(85% 0.0737 264.26);
-  --info-200: oklch(80% 0.1002 264.26);
-  --info-250: oklch(75% 0.1278 264.26);
+  --info-150: oklch(89.13% 0.0526 264.28);
+  --info-200: oklch(84.95% 0.074 264.28);
+  --info-250: oklch(80.21% 0.0991 264.28);
   --info-300: oklch(72.36% 0.1378 264.46); /* #7aa3fc */
   --info-350: oklch(69.23% 0.1525 264.51); /* #6c98fa */
   --info-400: oklch(63.28% 0.1584 264.15); /* #5885e9 */
   --info-450: oklch(57.12% 0.1459 264.26); /* #4b73cd */
   --info-475: oklch(53.94% 0.1381 264.38); /* #456abe */
-  --info-500: oklch(50% 0.1459 264.26);
+  --info-500: oklch(51.25% 0.1665 264.28);
   --info-550: oklch(47.85% 0.125 264.55); /* #3959a3 */
-  --info-600: oklch(40% 0.1459 264.26);
-  --info-650: oklch(35% 0.1459 264.26);
-  --info-700: oklch(30% 0.1459 264.26);
-  --info-750: oklch(25% 0.1459 264.26);
-  --info-800: oklch(20% 0.1383 264.26);
-  --info-850: oklch(15% 0.1037 264.26);
+  --info-600: oklch(38.99% 0.1665 264.28);
+  --info-650: oklch(33.1% 0.1665 264.28);
+  --info-700: oklch(27.5% 0.1665 264.28);
+  --info-750: oklch(22.29% 0.1541 264.28);
+  --info-800: oklch(17.55% 0.1213 264.28);
+  --info-850: oklch(13.37% 0.0925 264.28);
   --info-900: oklch(11.26% 0.0375 263.12); /* #010412 */
   --info-950: oklch(4.38% 0.0304 264.05); /* #000003 */
+  --info-975: oklch(5% 0.0347 264.28);
 
   /* The spacing unit. Tailwind derives every spacing step from it. */
   --space-unit: 0.25rem;
 
   /* Corners, in pixels times the blueprint's radius multiplier. */
   --corner-none: 0;
-  --corner-inner: 0.1875rem;
-  --corner-element: 0.25rem;
-  --corner-container: 0.375rem;
-  --corner-page: 1.75rem;
+  --corner-inner: 0.1406rem;
+  --corner-element: 0.1875rem;
+  --corner-container: 0.2813rem;
+  --corner-page: 1.3125rem;
   --corner-full: 9999px;
 
   /* Families, in the blueprint's fallback order. */
