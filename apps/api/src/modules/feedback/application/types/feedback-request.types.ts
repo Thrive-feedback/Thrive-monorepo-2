@@ -61,3 +61,25 @@ export interface MyAskListView {
   readonly items: readonly MyAskView[];
   readonly total: number;
 }
+
+/**
+ * One piece of Feedback as its Receiver reads it: who wrote it, what it was about, and what
+ * they wrote. There is no `visibility` here — Visibility governs who *besides* the Giver and
+ * the Receiver may read, and the Receiver is never the person it excludes.
+ */
+export interface ReceivedFeedbackView {
+  readonly id: string;
+  readonly feedbackRequestId: string;
+  readonly topic: string;
+  readonly giverAccountId: string;
+  /** `null` while the Giver has not introduced themselves. */
+  readonly giverName: string | null;
+  readonly body: string;
+  readonly createdAt: Date;
+}
+
+/** The Feedback written to one Member, newest first. */
+export interface ReceivedFeedbackListView {
+  readonly items: readonly ReceivedFeedbackView[];
+  readonly total: number;
+}

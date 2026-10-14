@@ -298,3 +298,50 @@ Then(
     );
   },
 );
+
+When(
+  '{person} looks at the Feedback written to them',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await this.as(
+        name,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(name)}/feedback`,
+      ),
+      `${name} listing the Feedback written to them`,
+    );
+  },
+);
+
+Then(
+  '{person} reads {string} from {person} about {string}',
+  function (
+    this: ThriveWorld,
+    _name: string,
+    body: string,
+    giver: string,
+    topic: string,
+  ) {
+    const items: {
+      body: string;
+      giverAccountId: string;
+      topic: string;
+    }[] = this.lastResponse?.body.items;
+    assert.deepEqual(
+      items.map((feedback) => [
+        feedback.body,
+        feedback.giverAccountId,
+        feedback.topic,
+      ]),
+      [[body, this.person(giver).accountId, topic]],
+    );
+  },
+);
+
+Then(
+  '{person} has no Feedback written to them',
+  function (this: ThriveWorld, _name: string) {
+    assert.deepEqual(this.lastResponse?.body.items, []);
+    assert.equal(this.lastResponse?.body.total, 0);
+  },
+);

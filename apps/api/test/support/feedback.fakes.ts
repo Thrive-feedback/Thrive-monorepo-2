@@ -2,8 +2,10 @@ import type {
   FeedbackAnswerRow,
   FeedbackAskPageRow,
   FeedbackAskRow,
+  FeedbackPageRow,
   FeedbackRequestPageRow,
   FeedbackRequestRow,
+  FeedbackRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import type { PageRequest } from '@app/modules/feedback/application/types/feedback-request.types';
@@ -174,6 +176,30 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
         (ask) => ask.askId === askId && ask.giverAccountId === giverAccountId,
       ) ?? null
     );
+  }
+
+  /**
+   * The Feedback rows the test has written, as the `feedback` table holds them: addressed to
+   * one Member of one Workspace, with the Topic of the request they answer.
+   */
+  readonly feedback: (FeedbackRow & {
+    readonly workspaceId: string;
+    readonly receiverAccountId: string;
+  })[] = [];
+
+  async receivedBy(
+    workspaceId: string,
+    receiverAccountId: string,
+    page: PageRequest,
+  ): Promise<FeedbackPageRow> {
+    const received = this.feedback
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          row.receiverAccountId === receiverAccountId,
+      )
+      .sort(newestFirst);
+    return { items: pageOf(received, page), total: received.length };
   }
 
   /** Every Ask of a Workspace, flattened out of the requests holding them, as the join does. */
