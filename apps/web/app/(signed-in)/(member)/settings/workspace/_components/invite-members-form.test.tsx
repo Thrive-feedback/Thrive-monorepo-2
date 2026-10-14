@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { InviteMembersState } from '@/app/(signed-in)/(member)/settings/members/_lib/invite-members-state.type';
+import type { InviteMembersState } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invite-members-state.type';
 
 const inviteMembers =
   vi.fn<(emails: readonly string[]) => Promise<InviteMembersState>>();
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service',
+  '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service',
   () => ({
     inviteMembers: (emails: readonly string[]) => inviteMembers(emails),
   }),

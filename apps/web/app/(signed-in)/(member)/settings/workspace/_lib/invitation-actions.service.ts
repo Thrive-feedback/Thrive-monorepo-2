@@ -75,7 +75,7 @@ async function actOnInvitation(
     }
     return { ok: false, message: errors[error.code] ?? fallback };
   } finally {
-    revalidatePath(ROUTES.settings.members);
+    revalidatePath(ROUTES.settings.workspace);
   }
 }
 
@@ -149,7 +149,7 @@ export async function inviteMembers(
         body: { emails: [...list.emails] },
       }),
     );
-    revalidatePath(ROUTES.settings.members);
+    revalidatePath(ROUTES.settings.workspace);
     return {
       results: results.map((result) => ({
         email: result.email,

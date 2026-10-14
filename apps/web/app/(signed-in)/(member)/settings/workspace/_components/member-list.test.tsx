@@ -4,7 +4,7 @@ import { MemberList } from './member-list';
 
 const readMembers = vi.fn();
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/members/_lib/members.service',
+  '@/app/(signed-in)/(member)/settings/workspace/_lib/members.service',
   () => ({
     readMembers: (...args: unknown[]) => readMembers(...args),
   }),

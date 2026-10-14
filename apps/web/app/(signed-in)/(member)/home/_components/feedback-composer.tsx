@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { useId, useState } from 'react';
 import type { Teammate } from '@/app/(signed-in)/(member)/home/_lib/teammate.type';
 import { Button } from '@/components/atoms/button';
 import { ButtonGroup } from '@/components/atoms/button-group';
@@ -23,30 +24,56 @@ export type FeedbackComposerProps = {
  * moments `ADR-0022` holds equally important. The mode is not in the URL: it is a choice made
  * on the way to writing, not a place to come back to. The two buttons are pressed one at a
  * time. Both forms stay mounted and the other one is hidden, so switching keeps what was typed.
+ *
+ * The forms fold away under the buttons for someone reading rather than writing; picking a mode
+ * opens them again, since that is a step towards writing. It always opens expanded.
  */
 export function FeedbackComposer({ teammates }: FeedbackComposerProps) {
   const [mode, setMode] = useState<ComposerMode>('request');
+  const [expanded, setExpanded] = useState(true);
+  const formsId = useId();
 
   return (
     <div className="flex flex-col gap-4">
-      <ButtonGroup aria-label="Feedback form">
-        {(['request', 'give'] as const).map((value) => (
-          <Button
-            key={value}
-            variant={mode === value ? 'highlight' : 'secondary'}
-            size="sm"
-            aria-pressed={mode === value}
-            onClick={() => setMode(value)}
-          >
-            {MODE_NAMES[value]}
-          </Button>
-        ))}
-      </ButtonGroup>
-      <div hidden={mode !== 'request'}>
-        <RequestFeedbackForm teammates={teammates} />
+      <div className="flex items-start justify-between gap-4">
+        <ButtonGroup aria-label="Feedback form">
+          {(['request', 'give'] as const).map((value) => (
+            <Button
+              key={value}
+              variant={mode === value ? 'primary' : 'secondary'}
+              size="sm"
+              aria-pressed={mode === value}
+              onClick={() => {
+                setMode(value);
+                setExpanded(true);
+              }}
+            >
+              {MODE_NAMES[value]}
+            </Button>
+          ))}
+        </ButtonGroup>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={expanded ? 'Hide form' : 'Show form'}
+          aria-expanded={expanded}
+          aria-controls={formsId}
+          onClick={() => setExpanded((open) => !open)}
+        >
+          {expanded ? (
+            <ChevronUpIcon aria-hidden="true" className="size-5" />
+          ) : (
+            <ChevronDownIcon aria-hidden="true" className="size-5" />
+          )}
+        </Button>
       </div>
-      <div hidden={mode !== 'give'}>
-        <GiveFeedbackForm teammates={teammates} />
+      <div id={formsId} hidden={!expanded}>
+        <div hidden={mode !== 'request'}>
+          <RequestFeedbackForm teammates={teammates} />
+        </div>
+        <div hidden={mode !== 'give'}>
+          <GiveFeedbackForm teammates={teammates} />
+        </div>
       </div>
     </div>
   );

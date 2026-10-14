@@ -33,7 +33,7 @@ export function DropdownMenuEntry() {
       origin="shadcn"
       source="components/atoms/dropdown-menu.tsx — DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem…"
       summary="A short list of actions or places, opened from one button."
-      useFor="Actions that belong to one thing but would crowd the screen, such as the account menu."
+      useFor="Actions that belong to one thing but would crowd the screen, such as a row of actions on a list item."
       avoidFor="Choosing a value for a form (Select) or the main navigation."
       usage={`import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,

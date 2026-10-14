@@ -21,18 +21,20 @@ export const ROUTES = {
   /** One tab of Home's feed. `workspace` is the tab Home opens on, so it needs no query. */
   homeTab: (tab: HomeTab) =>
     tab === HOME_TABS[0] ? '/home' : `/home?tab=${tab}`,
-  /** The signed-in person's own Profile, read from the session. */
-  profile: '/profile',
   feedback: {
     /** One Ask waiting for them, where they write the answer. */
     askById: (askId: string) => `/feedback/asks/${askId}`,
     requestById: (requestId: string) => `/feedback/requests/${requestId}`,
   },
   settings: {
-    /** The list of settings categories. */
+    /** The settings menu; beside it on a wide screen, the Account section. */
     index: '/settings',
-    /** Who is in the Workspace, and the Invitations still open. */
-    members: '/settings/members',
+    /** The signed-in person's own Profile, read from the session, and Sign out. */
+    account: '/settings/account',
+    /** The Workspace's name, who is in it, and the Invitations still open. */
+    workspace: '/settings/workspace',
+    /** The colour mode. */
+    appearance: '/settings/appearance',
   },
   invitation: (invitationId: string) => `/invitations/${invitationId}`,
   register: {

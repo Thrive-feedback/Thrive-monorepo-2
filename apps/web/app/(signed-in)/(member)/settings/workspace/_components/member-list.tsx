@@ -1,4 +1,4 @@
-import { readMembers } from '@/app/(signed-in)/(member)/settings/members/_lib/members.service';
+import { readMembers } from '@/app/(signed-in)/(member)/settings/workspace/_lib/members.service';
 import { Text } from '@/components/atoms/text';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { ROLE_NAMES } from '@/lib/session/role-names.constant';
