@@ -2488,12 +2488,12 @@
         "light": {
           "trackId": "neutral",
           "weight": 950,
-          "alpha": 0.5
+          "alpha": 0.05
         },
         "dark": {
           "trackId": "neutral",
           "weight": 950,
-          "alpha": 0.7
+          "alpha": 0.15
         }
       },
       {
