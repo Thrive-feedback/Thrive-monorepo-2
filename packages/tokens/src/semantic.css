@@ -56,7 +56,7 @@
   --surface-subtle: var(--neutral-125);
   --surface-raised: var(--neutral-25);
   --surface-overlay: color-mix(in oklch, var(--neutral-50) 96%, transparent);
-  --surface-scrim: color-mix(in oklch, var(--neutral-950) 50%, transparent);
+  --surface-scrim: color-mix(in oklch, var(--neutral-950) 5%, transparent);
   --surface-glass: color-mix(in oklch, var(--primary-100) 65%, transparent);
   --surface-glass-neutral: color-mix(
     in oklch,
@@ -553,7 +553,7 @@
   --surface-subtle: var(--neutral-750);
   --surface-raised: var(--neutral-750);
   --surface-overlay: color-mix(in oklch, var(--neutral-750) 96%, transparent);
-  --surface-scrim: color-mix(in oklch, var(--neutral-950) 70%, transparent);
+  --surface-scrim: color-mix(in oklch, var(--neutral-950) 15%, transparent);
   --surface-glass: color-mix(in oklch, var(--primary-825) 55%, transparent);
   --surface-glass-neutral: color-mix(
     in oklch,
