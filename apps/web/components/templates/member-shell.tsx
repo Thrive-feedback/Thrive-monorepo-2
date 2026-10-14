@@ -1,10 +1,9 @@
-import { SiteFooter } from '@/components/molecules/site-footer';
 import styles from '@/components/organisms/glass.module.css';
 import { MemberNavbar } from '@/components/organisms/member-navbar';
 import { cn } from '@/lib/cn.util';
 
 /**
- * The page shape of every page a Member uses: the Member navbar, content, footer. It is
+ * The page shape of every page a Member uses: the Member navbar, then content. It is
  * `SiteShell` with the navbar that has Home and the account menu, inside a frame of frosted
  * glass: the navbar across the top and a strip down each side and along the bottom, all fixed
  * to the window with the same tint and blur. The page scrolls underneath, as if through a
@@ -23,7 +22,6 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
       <main className="mt-18 flex flex-1 flex-col px-inset-container py-12">
         {children}
       </main>
-      <SiteFooter />
       <div
         aria-hidden="true"
         className={cn(

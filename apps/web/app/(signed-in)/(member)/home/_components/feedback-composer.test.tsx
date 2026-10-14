@@ -16,21 +16,25 @@ describe('FeedbackComposer', () => {
     render(<FeedbackComposer teammates={[]} />);
 
     expect(
-      screen.getByRole('tab', { name: 'Request feedback' }),
-    ).toHaveAttribute('aria-selected', 'true');
+      screen.getByRole('button', { name: 'Request feedback' }),
+    ).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('request form')).toBeVisible();
+    expect(screen.getByText('give form')).not.toBeVisible();
   });
 
   it('switches to giving Feedback', async () => {
     const user = userEvent.setup();
     render(<FeedbackComposer teammates={[]} />);
 
-    await user.click(screen.getByRole('tab', { name: 'Give feedback' }));
+    await user.click(screen.getByRole('button', { name: 'Give feedback' }));
 
-    expect(screen.getByRole('tab', { name: 'Give feedback' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
-    expect(screen.getByRole('tabpanel')).toHaveTextContent('give form');
+    expect(
+      screen.getByRole('button', { name: 'Give feedback' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      screen.getByRole('button', { name: 'Request feedback' }),
+    ).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('give form')).toBeVisible();
+    expect(screen.getByText('request form')).not.toBeVisible();
   });
 });

@@ -2,14 +2,17 @@
 
 import { useState } from 'react';
 import type { Teammate } from '@/app/(signed-in)/(member)/home/_lib/teammate.type';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/atoms/tabs';
+import { Button } from '@/components/atoms/button';
+import { ButtonGroup } from '@/components/atoms/button-group';
 import { GiveFeedbackForm } from './give-feedback-form';
 import { RequestFeedbackForm } from './request-feedback-form';
+
+type ComposerMode = 'request' | 'give';
+
+const MODE_NAMES: Readonly<Record<ComposerMode, string>> = {
+  request: 'Request feedback',
+  give: 'Give feedback',
+};
 
 export type FeedbackComposerProps = {
   teammates: readonly Teammate[];
@@ -18,24 +21,33 @@ export type FeedbackComposerProps = {
 /**
  * One form, two modes: ask a teammate for Feedback, or give it without being asked — the two
  * moments `ADR-0022` holds equally important. The mode is not in the URL: it is a choice made
- * on the way to writing, not a place to come back to. Radix unmounts an inactive panel, which
- * would drop what was typed, so both panels stay mounted and the inactive one is hidden.
+ * on the way to writing, not a place to come back to. The two buttons are pressed one at a
+ * time. Both forms stay mounted and the other one is hidden, so switching keeps what was typed.
  */
 export function FeedbackComposer({ teammates }: FeedbackComposerProps) {
-  const [mode, setMode] = useState('request');
+  const [mode, setMode] = useState<ComposerMode>('request');
 
   return (
-    <Tabs value={mode} onValueChange={setMode}>
-      <TabsList aria-label="Feedback form">
-        <TabsTrigger value="request">Request feedback</TabsTrigger>
-        <TabsTrigger value="give">Give feedback</TabsTrigger>
-      </TabsList>
-      <TabsContent value="request" forceMount hidden={mode !== 'request'}>
+    <div className="flex flex-col gap-4">
+      <ButtonGroup aria-label="Feedback form">
+        {(['request', 'give'] as const).map((value) => (
+          <Button
+            key={value}
+            variant={mode === value ? 'highlight' : 'secondary'}
+            size="sm"
+            aria-pressed={mode === value}
+            onClick={() => setMode(value)}
+          >
+            {MODE_NAMES[value]}
+          </Button>
+        ))}
+      </ButtonGroup>
+      <div hidden={mode !== 'request'}>
         <RequestFeedbackForm teammates={teammates} />
-      </TabsContent>
-      <TabsContent value="give" forceMount hidden={mode !== 'give'}>
+      </div>
+      <div hidden={mode !== 'give'}>
         <GiveFeedbackForm teammates={teammates} />
-      </TabsContent>
-    </Tabs>
+      </div>
+    </div>
   );
 }
