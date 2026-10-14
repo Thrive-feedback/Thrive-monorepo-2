@@ -100,6 +100,50 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run test
 
+  scenarios:
+    name: Scenarios
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The `@api` Gherkin suite boots the real API against a real Postgres, the same version
+    # compose.yaml runs locally. Only the email provider is faked, inside the suite itself.
+    services:
+      db:
+        image: postgres:17.11
+        env:
+          POSTGRES_DB: thrive
+          POSTGRES_USER: thrive
+          POSTGRES_PASSWORD: local_only
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U thrive -d thrive"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    # Throwaway values for a database that lives as long as this job. Nothing here reaches
+    # Google or Resend: the suite never follows Google's URL and replaces the email sender.
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://thrive:local_only@127.0.0.1:54329/thrive
+      DATABASE_MIGRATION_URL: postgresql://thrive:local_only@127.0.0.1:54329/thrive
+      CORS_ALLOWED_ORIGINS: http://localhost:3001
+      BETTER_AUTH_SECRET: ci-only-secret-for-a-database-that-dies-with-the-job
+      BETTER_AUTH_URL: http://localhost:3001
+      GOOGLE_CLIENT_ID: ci-placeholder.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: ci-placeholder
+      RESEND_API_KEY: ci-placeholder
+      RESEND_FROM_ADDRESS: scenarios@thrive.test
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.0.2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      # The commands features/README.md gives for a laptop, after `docker compose up`.
+      - run: bun run --cwd apps/api db:generate
+      - run: bun run --cwd apps/api db:migrate:deploy
+      - run: bun run --cwd apps/api test:bdd
+
   build:
     name: Build
     runs-on: ubuntu-latest
