@@ -46,6 +46,24 @@ export interface FeedbackAnswerRow {
   readonly answeredAt: Date;
 }
 
+/**
+ * One piece of Feedback as the Member it was written to reads it, carrying the Topic of the
+ * request it answers. The Giver's name is Identity's and is added above this port.
+ */
+export interface FeedbackRow {
+  readonly id: string;
+  readonly feedbackRequestId: string;
+  readonly topic: string;
+  readonly giverAccountId: string;
+  readonly body: string;
+  readonly createdAt: Date;
+}
+
+export interface FeedbackPageRow {
+  readonly items: readonly FeedbackRow[];
+  readonly total: number;
+}
+
 export abstract class FeedbackRequestQuery {
   /**
    * One request of one Workspace with its Asks, or `null`. The Workspace is a required
@@ -83,6 +101,17 @@ export abstract class FeedbackRequestQuery {
     status: AskStatusValue,
     page: PageRequest,
   ): Promise<FeedbackAskPageRow>;
+
+  /**
+   * The Feedback written to one Member in one Workspace, newest first. The Receiver is a
+   * required argument for the same reason the Workspace is: one Member's Feedback is not
+   * another's, and a read scoped to nobody cannot be written.
+   */
+  abstract receivedBy(
+    workspaceId: string,
+    receiverAccountId: string,
+    page: PageRequest,
+  ): Promise<FeedbackPageRow>;
 
   /** One Ask addressed to one Member, or `null` when it is not theirs or does not exist. */
   abstract askFor(

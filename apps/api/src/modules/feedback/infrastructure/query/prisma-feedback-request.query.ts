@@ -4,6 +4,7 @@ import {
   type FeedbackAnswerRow,
   type FeedbackAskPageRow,
   type FeedbackAskRow,
+  type FeedbackPageRow,
   type FeedbackRequestPageRow,
   FeedbackRequestQuery,
   type FeedbackRequestRow,
@@ -162,6 +163,48 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       client.feedbackAsk.count({ where }),
     ]);
     return { items: records.map(toFeedbackAskRow), total };
+  }
+
+  async receivedBy(
+    workspaceId: string,
+    receiverAccountId: string,
+    page: PageRequest,
+  ): Promise<FeedbackPageRow> {
+    const where = { workspaceId, receiverAccountId };
+    const client = this.prismaTransactionContext.client;
+    const [records, total] = await Promise.all([
+      client.feedback.findMany({
+        where,
+        orderBy: NEWEST_FIRST,
+        skip: skipFor(page),
+        take: page.pageSize,
+        select: {
+          id: true,
+          feedbackRequestId: true,
+          giverAccountId: true,
+          body: true,
+          createdAt: true,
+          // The Topic lives on the request, and Feedback holds `feedbackRequestId` as a bare
+          // column — its only relation out is the Ask it answers (schema.prisma `Feedback`).
+          // So the Topic is reached through that Ask, in this one read rather than a second.
+          feedbackAsk: {
+            select: { feedbackRequest: { select: { topic: true } } },
+          },
+        },
+      }),
+      client.feedback.count({ where }),
+    ]);
+    return {
+      items: records.map((record) => ({
+        id: record.id,
+        feedbackRequestId: record.feedbackRequestId,
+        topic: record.feedbackAsk.feedbackRequest.topic,
+        giverAccountId: record.giverAccountId,
+        body: record.body,
+        createdAt: record.createdAt,
+      })),
+      total,
+    };
   }
 
   async askFor(
