@@ -17,6 +17,7 @@ Every scenario is `@api`. No `@browser` steps exist yet (`FE_15`; Playwright is 
 
 ```
 docker compose up -d                          # Postgres
+bun run --cwd apps/api db:generate
 bun run --cwd apps/api db:migrate:deploy
 bun run --cwd apps/api test:bdd
 ```
@@ -27,5 +28,5 @@ so a signed-in person is a session written the way Better Auth writes one; the S
 is what proves that cookie is a real session. Every other given goes through the API. Each
 scenario creates its own people and removes everything it made, and the order is random.
 
-Nothing runs this suite automatically yet: like `test:integration`, it needs a migrated
-Postgres, which CI does not have.
+CI runs the same commands on every pull request, as the *Scenarios* job in
+`.github/workflows/pr.yml`, against a Postgres service of the version compose runs.
