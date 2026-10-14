@@ -46,6 +46,22 @@ export class WorkspaceFixtures {
     };
   }
 
+  /**
+   * Moves `account`'s session back by `ageMs`, as if it had been signed in that long ago and
+   * not used since. No endpoint makes a session old; only time does.
+   */
+  async ageSession(account: SignedInAccount, ageMs: number): Promise<void> {
+    const sessions = await this.prismaService.session.findMany({
+      where: { userId: account.accountId },
+    });
+    for (const session of sessions) {
+      await this.prismaService.session.update({
+        where: { id: session.id },
+        data: { expiresAt: new Date(session.expiresAt.getTime() - ageMs) },
+      });
+    }
+  }
+
   /** A Workspace named `name`, founded by `owner` through the plugin. */
   async aWorkspace(owner: SignedInAccount, name = 'Acme'): Promise<string> {
     const workspace = await this.auth.api.createOrganization({

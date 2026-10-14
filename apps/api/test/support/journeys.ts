@@ -50,16 +50,17 @@ export async function ownAWorkspace(
   );
 }
 
+/** `inviter` invites one or several people in a single send. */
 export function invite(
   world: ThriveWorld,
   inviter: string,
-  invitee: string,
+  ...invitees: string[]
 ): Promise<ApiResponse> {
   return world.as(
     inviter,
     'POST',
     `/v1/workspaces/${world.workspaceOf(inviter)}/invitations`,
-    { emails: [world.person(invitee).email] },
+    { emails: invitees.map((invitee) => world.person(invitee).email) },
   );
 }
 

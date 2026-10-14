@@ -20,3 +20,20 @@ Feature: Workspace
     Given Ann owns a Workspace called "Acme"
     When Ann creates a Workspace called "Globex"
     Then Ann is told they already belong to a Workspace
+
+  @api
+  Scenario: A Member sees who is in their Workspace
+    Given Ann owns a Workspace called "Acme"
+    And Ben is a Member of Ann's Workspace
+    When Ben looks at who is in Ann's Workspace
+    Then Ben sees these Members, earliest first:
+      | Member | Role   |
+      | Ann    | OWNER  |
+      | Ben    | MEMBER |
+
+  @api
+  Scenario: Someone outside a Workspace cannot see who is in it
+    Given Ann owns a Workspace called "Acme"
+    And Cara owns a Workspace called "Globex"
+    When Cara looks at who is in Ann's Workspace
+    Then Cara is told it cannot be found

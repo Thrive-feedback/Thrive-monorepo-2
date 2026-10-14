@@ -5,10 +5,11 @@ Step definitions live with the stack that runs them: `@api` steps in `apps/api/t
 
 | Feature                     | Covers                                                                                                          |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `sessions.feature`          | being recognised while signed in; signing out                                                                   |
-| `workspace.feature`         | founding a Workspace; the two refusals a founder can meet                                                       |
-| `invitations.feature`       | inviting, joining from the email or from the Invitations waiting on sign-in, revoking, resending, who may do which |
-| `feedback-requests.feature` | asking for Feedback; what was sent and what is waiting; only its parties may read it, and an Ask only its Giver |
+| `sessions.feature`          | being recognised while signed in; signing out; starting Google sign-in; being turned away while signed out; renewing a session |
+| `profiles.feature`          | introducing yourself, once                                                                                      |
+| `workspace.feature`         | founding a Workspace; the two refusals a founder can meet; who is in a Workspace, and only for its Members       |
+| `invitations.feature`       | inviting one or several people and each outcome; the link read while signed out; joining from the email or from the Invitations waiting on sign-in; revoking, resending, accepting an expired one or a second one; who may do which |
+| `feedback-requests.feature` | asking for Feedback, and only a Member of the Workspace; what was sent, what is waiting and what was answered; only its parties may read it, and an Ask only its Giver |
 
 Every scenario is `@api`. No `@browser` steps exist yet (`FE_15`; Playwright is planned).
 

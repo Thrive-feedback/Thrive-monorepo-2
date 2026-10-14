@@ -28,17 +28,45 @@ Given(
   },
 );
 
+/** `name` revokes the Invitation emailed to `invitee`, from their own Workspace's list. */
+function revoke(world: ThriveWorld, name: string, invitee: string) {
+  return world.as(
+    name,
+    'POST',
+    `/v1/workspaces/${world.workspaceOf(name)}/invitations/${invitationIdEmailedTo(world, invitee)}/revoke`,
+  );
+}
+
+/** The Invitation `invitee` holds: one written to the store, or else the one emailed to them. */
+function invitationIdHeldBy(world: ThriveWorld, invitee: string): string {
+  return (
+    world.storedInvitationTo(invitee) ?? invitationIdEmailedTo(world, invitee)
+  );
+}
+
 Given(
   "{person} has revoked {person}'s Invitation",
   async function (this: ThriveWorld, owner: string, invitee: string) {
-    const invitationId = invitationIdEmailedTo(this, invitee);
     this.succeeded(
-      await this.as(
-        owner,
-        'POST',
-        `/v1/workspaces/${this.workspaceOf(owner)}/invitations/${invitationId}/revoke`,
-      ),
+      await revoke(this, owner, invitee),
       `${owner} revoking ${invitee}'s Invitation`,
+    );
+  },
+);
+
+When(
+  "{person} revokes {person}'s Invitation",
+  async function (this: ThriveWorld, name: string, invitee: string) {
+    await revoke(this, name, invitee);
+  },
+);
+
+Given(
+  '{person} has accepted the Invitation',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await accept(this, name, invitationIdHeldBy(this, name)),
+      `${name} accepting the Invitation`,
     );
   },
 );
@@ -53,7 +81,7 @@ When(
 When(
   '{person} accepts the Invitation',
   async function (this: ThriveWorld, name: string) {
-    await accept(this, name, invitationIdEmailedTo(this, name));
+    await accept(this, name, invitationIdHeldBy(this, name));
   },
 );
 
@@ -244,12 +272,10 @@ Given(
 When(
   "{person} resends {person}'s Invitation",
   async function (this: ThriveWorld, name: string, invitee: string) {
-    const invitationId =
-      this.storedInvitationTo(invitee) ?? invitationIdEmailedTo(this, invitee);
     await this.as(
       name,
       'POST',
-      `/v1/workspaces/${this.workspaceOf(name)}/invitations/${invitationId}/resend`,
+      `/v1/workspaces/${this.workspaceOf(name)}/invitations/${invitationIdHeldBy(this, invitee)}/resend`,
     );
   },
 );
@@ -295,5 +321,141 @@ Then(
   '{person} is told they may not resend Invitations',
   function (this: ThriveWorld, _name: string) {
     this.refusedWith('NOT_ALLOWED_TO_RESEND_INVITATIONS');
+  },
+);
+
+When(
+  '{person} opens the link in their Invitation while signed out',
+  async function (this: ThriveWorld, invitee: string) {
+    await this.anonymously(
+      'GET',
+      `/v1/invitations/${invitationIdEmailedTo(this, invitee)}`,
+    );
+  },
+);
+
+Then(
+  '{person} sees an Invitation from {string} to {string} waiting to be accepted',
+  function (
+    this: ThriveWorld,
+    invitee: string,
+    inviterName: string,
+    workspaceName: string,
+  ) {
+    assert.equal(this.lastResponse?.status, 200);
+    const { body } = this.lastResponse;
+    assert.deepEqual(
+      [body.workspaceName, body.inviterName, body.status],
+      [workspaceName, inviterName, 'PENDING'],
+    );
+    // Only enough of the address for its owner to recognise it, never all of it.
+    assert.notEqual(body.invitedEmailMasked, this.person(invitee).email);
+  },
+);
+
+When(
+  '{person} invites these people at once:',
+  async function (this: ThriveWorld, inviter: string, table: DataTable) {
+    await invite(
+      this,
+      inviter,
+      ...table.hashes().map((row) => row.Person as string),
+    );
+  },
+);
+
+const OUTCOMES: Record<string, string> = {
+  invited: 'invited',
+  'already a Member': 'already_member',
+  'already invited': 'already_invited',
+  'could not be sent': 'failed',
+};
+
+/** The outcome the last send reported for `invitee`'s address. */
+function outcomeFor(world: ThriveWorld, invitee: string): string | undefined {
+  const { email } = world.person(invitee);
+  const results: { email: string; outcome: string }[] =
+    world.lastResponse?.body?.results ?? [];
+  return results.find((result) => result.email === email)?.outcome;
+}
+
+Then(
+  '{person} is told how each Invitation went:',
+  function (this: ThriveWorld, _inviter: string, table: DataTable) {
+    const rows = table.hashes();
+    assert.deepEqual(
+      rows.map((row) => [row.Person, outcomeFor(this, row.Person as string)]),
+      rows.map((row) => [row.Person, OUTCOMES[row.Outcome as string]]),
+    );
+  },
+);
+
+Given(
+  'email to {person} cannot be delivered',
+  function (this: ThriveWorld, name: string) {
+    // Each person's address is unique to this scenario, so it fails nowhere else.
+    harness().emailSender.failingFor.add(this.person(name).email);
+  },
+);
+
+Then(
+  '{person} is told the Invitation to {person} could not be sent',
+  function (this: ThriveWorld, _inviter: string, invitee: string) {
+    assert.equal(outcomeFor(this, invitee), OUTCOMES['could not be sent']);
+  },
+);
+
+When(
+  '{person} looks at the Invitations waiting to be accepted',
+  async function (this: ThriveWorld, name: string) {
+    await this.as(
+      name,
+      'GET',
+      `/v1/workspaces/${this.workspaceOf(name)}/invitations`,
+    );
+  },
+);
+
+Then(
+  '{person} sees no Invitations waiting to be accepted',
+  async function (this: ThriveWorld, owner: string) {
+    const response = this.succeeded(
+      await this.as(
+        owner,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(owner)}/invitations`,
+      ),
+      `${owner} listing Invitations`,
+    );
+    assert.deepEqual(response.body.items, []);
+  },
+);
+
+Then(
+  '{person} is told they may not revoke Invitations',
+  function (this: ThriveWorld, _name: string) {
+    this.refusedWith('NOT_ALLOWED_TO_REVOKE_INVITATIONS');
+  },
+);
+
+Then(
+  '{person} is told they may not see Invitations',
+  function (this: ThriveWorld, _name: string) {
+    this.refusedWith('NOT_ALLOWED_TO_SEE_INVITATIONS');
+  },
+);
+
+Then(
+  '{person} is told the Invitation has expired',
+  function (this: ThriveWorld, _name: string) {
+    this.refusedWith('INVITATION_EXPIRED');
+  },
+);
+
+Then(
+  '{person} is let in without complaint',
+  function (this: ThriveWorld, _name: string) {
+    // Accepting is safe to repeat (a second click, a reload): the contract answers 204 again.
+    assert.equal(this.lastResponse?.status, 204);
   },
 );

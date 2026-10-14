@@ -90,3 +90,16 @@ Feature: Feedback requests
     And Ann has asked Ben for Feedback on "Running the planning meeting"
     When Cara answers the Ask waiting for Ben
     Then Cara is told the Ask cannot be found
+
+  @api
+  Scenario: A Member cannot ask someone outside their Workspace
+    Given Dan owns a Workspace called "Globex"
+    When Ann asks Dan for Feedback on "Running the planning meeting"
+    Then Ann is told Dan is not in their Workspace
+
+  @api
+  Scenario: A teammate sees what they have already answered
+    Given Ann has asked Ben for Feedback on "Running the planning meeting"
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When Ben looks at what they have answered
+    Then Ben sees an Ask from Ann about "Running the planning meeting" that they have answered

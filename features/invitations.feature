@@ -116,3 +116,80 @@ Feature: Invitations
     And Ann invited Cara an hour ago
     When Ben resends Cara's Invitation
     Then Ben is told they may not resend Invitations
+
+  @api
+  Scenario: Someone holding an Invitation's link sees who invited them before signing in
+    Given Ben is signed in
+    And Ann has invited Ben
+    When Ben opens the link in their Invitation while signed out
+    Then Ben sees an Invitation from "Ann" to "Acme" waiting to be accepted
+
+  @api
+  Scenario: An Owner invites several people at once and hears how each went
+    Given Ben is a Member of Ann's Workspace
+    And Cara is signed in
+    And Dan is signed in
+    And Ann has invited Cara
+    When Ann invites these people at once:
+      | Person |
+      | Ben    |
+      | Cara   |
+      | Dan    |
+    Then Ann is told how each Invitation went:
+      | Person | Outcome          |
+      | Ben    | already a Member |
+      | Cara   | already invited  |
+      | Dan    | invited          |
+    And Dan is emailed an Invitation to "Acme"
+
+  @api
+  Scenario: An Invitation whose email does not go out is not left waiting
+    Given Ben is signed in
+    And email to Ben cannot be delivered
+    When Ann invites Ben
+    Then Ann is told the Invitation to Ben could not be sent
+    And Ann sees no Invitations waiting to be accepted
+
+  @api
+  Scenario: An Owner revokes an Invitation
+    Given Ben is signed in
+    And Ann has invited Ben
+    When Ann revokes Ben's Invitation
+    Then Ann sees no Invitations waiting to be accepted
+
+  @api
+  Scenario: A Member cannot revoke an Invitation
+    Given Ben is a Member of Ann's Workspace
+    And Cara is signed in
+    And Ann has invited Cara
+    When Ben revokes Cara's Invitation
+    Then Ben is told they may not revoke Invitations
+
+  @api
+  Scenario: A Member cannot see the Invitations of their Workspace
+    Given Ben is a Member of Ann's Workspace
+    When Ben looks at the Invitations waiting to be accepted
+    Then Ben is told they may not see Invitations
+
+  @api
+  Scenario: An expired Invitation cannot be accepted
+    Given Ben is signed in
+    And Ann's Invitation to Ben has expired
+    When Ben accepts the Invitation
+    Then Ben is told the Invitation has expired
+
+  @api
+  Scenario: Someone already in a Workspace cannot join another
+    Given Dan owns a Workspace called "Globex"
+    And Dan has invited Ann
+    When Ann accepts the Invitation
+    Then Ann is told they already belong to a Workspace
+
+  @api
+  Scenario: Accepting an Invitation again changes nothing
+    Given Ben is signed in
+    And Ann has invited Ben
+    And Ben has accepted the Invitation
+    When Ben accepts the Invitation
+    Then Ben is let in without complaint
+    And Ben is a Member of "Acme"

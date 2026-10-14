@@ -23,6 +23,8 @@ export interface ApiResponse {
   readonly body: any;
 }
 
+type HttpMethod = 'GET' | 'POST' | 'DELETE';
+
 export interface FeedbackRequestSent {
   readonly id: string;
   readonly workspaceId: string;
@@ -102,16 +104,36 @@ export class ThriveWorld extends World {
   }
 
   /** Calls the API as `name` would from the web — their session cookie, a correlation id. */
-  async as(
+  as(
     name: string,
-    method: 'GET' | 'POST' | 'DELETE',
+    method: HttpMethod,
+    path: string,
+    body?: unknown,
+  ): Promise<ApiResponse> {
+    return this.call(this.person(name).credential, method, path, body);
+  }
+
+  /** Calls the API as a browser holding no session would — a visitor, or someone signed out. */
+  anonymously(
+    method: HttpMethod,
+    path: string,
+    body?: unknown,
+  ): Promise<ApiResponse> {
+    return this.call(undefined, method, path, body);
+  }
+
+  private async call(
+    credential: string | undefined,
+    method: HttpMethod,
     path: string,
     body?: unknown,
   ): Promise<ApiResponse> {
     const headers: Record<string, string> = {
-      cookie: this.person(name).credential,
       [CORRELATION_ID_HEADER]: `scenario-${uuidv7()}`,
     };
+    if (credential !== undefined) {
+      headers.cookie = credential;
+    }
     if (body !== undefined) {
       headers['content-type'] = 'application/json';
     }
