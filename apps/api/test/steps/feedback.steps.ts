@@ -257,3 +257,44 @@ Then(
     this.refusedWith('ASK_ALREADY_ANSWERED');
   },
 );
+
+Then(
+  '{person} is told {person} is not in their Workspace',
+  function (this: ThriveWorld, _name: string, _giver: string) {
+    this.refusedWith('GIVER_NOT_IN_WORKSPACE');
+  },
+);
+
+When(
+  '{person} looks at what they have answered',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await this.as(
+        name,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(name)}/feedback-asks?status=ANSWERED`,
+      ),
+      `${name} listing what they have answered`,
+    );
+  },
+);
+
+Then(
+  '{person} sees an Ask from {person} about {string} that they have answered',
+  function (
+    this: ThriveWorld,
+    _name: string,
+    requester: string,
+    topic: string,
+  ) {
+    const items: {
+      topic: string;
+      requester: { accountId: string };
+      status: string;
+    }[] = this.lastResponse?.body.items;
+    assert.deepEqual(
+      items.map((ask) => [ask.topic, ask.requester.accountId, ask.status]),
+      [[topic, this.person(requester).accountId, 'ANSWERED']],
+    );
+  },
+);
