@@ -103,3 +103,18 @@ Feature: Feedback requests
     And Ben has answered "You open strongly and lose the room at the detail."
     When Ben looks at what they have answered
     Then Ben sees an Ask from Ann about "Running the planning meeting" that they have answered
+
+  @api
+  Scenario: A Member reads the Feedback written to them
+    Given Ann has asked Ben for Feedback on "Running the planning meeting"
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When Ann looks at the Feedback written to them
+    Then Ann reads "You open strongly and lose the room at the detail." from Ben about "Running the planning meeting"
+
+  @api
+  Scenario: Feedback written to one Member is not another Member's to read
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben for Feedback on "Running the planning meeting"
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When Cara looks at the Feedback written to them
+    Then Cara has no Feedback written to them
