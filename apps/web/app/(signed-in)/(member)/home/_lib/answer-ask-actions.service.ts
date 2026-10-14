@@ -2,7 +2,7 @@
 
 import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
-import { notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import { ROUTES } from '@/lib/routes.constant';
@@ -40,9 +40,9 @@ const ELSEWHERE: Readonly<Record<string, string>> = {
  * Treated as a public endpoint, because it is one: the session is read again here and the
  * answer is validated again, whatever the form already checked.
  *
- * On success it goes back to the same Ask, which then shows what was written instead of the
- * box — a confirmation that survives a refresh, as the request's own confirmation does. An Ask
- * that was already answered lands in the same place, where the page says so.
+ * On success it goes back to the same Ask's dialog on Home, which then says it was answered
+ * instead of offering the box — a confirmation that survives a refresh. An Ask that was already
+ * answered, or is not theirs, lands in the same place, where the dialog says so.
  */
 export async function answerAsk(
   _previous: AnswerAskState,
@@ -87,21 +87,22 @@ export async function answerAsk(
         },
       ),
     );
-    next = ROUTES.feedback.askById(input.data.askId);
+    next = ROUTES.homeAsk(input.data.askId);
   } catch (error) {
     if (!(error instanceof ApiError)) {
       throw error;
-    }
-    if (error.code === 'FEEDBACK_ASK_NOT_FOUND') {
-      notFound();
     }
     const answerError = ANSWER_ERRORS[error.code];
     if (answerError) {
       return { fieldErrors: { body: answerError } };
     }
-    if (error.code === 'ASK_ALREADY_ANSWERED') {
-      // Sent twice: the Ask holds the first answer, and the page it goes back to says so.
-      next = ROUTES.feedback.askById(input.data.askId);
+    if (
+      error.code === 'ASK_ALREADY_ANSWERED' ||
+      error.code === 'FEEDBACK_ASK_NOT_FOUND'
+    ) {
+      // Sent twice, or not theirs: the dialog it goes back to says which, rather than Home
+      // turning into a 404.
+      next = ROUTES.homeAsk(input.data.askId);
     } else {
       const elsewhere = ELSEWHERE[error.code];
       if (!elsewhere) {

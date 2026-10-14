@@ -22,11 +22,11 @@ export const ROUTES = {
   /** One tab of Home's feed. `workspace` is the tab Home opens on, so it needs no query. */
   homeTab: (tab: HomeTab) =>
     tab === HOME_TABS[0] ? '/home' : `/home?tab=${tab}`,
-  feedback: {
-    /** One Ask waiting for them, where they write the answer. */
-    askById: (askId: string) => `/feedback/asks/${askId}`,
-    requestById: (requestId: string) => `/feedback/requests/${requestId}`,
-  },
+  /** A Feedback Request the person sent, open in a dialog over My requests. */
+  homeRequest: (requestId: string) =>
+    `/home?tab=my-requests&request=${requestId}`,
+  /** One Ask waiting for them, open in a dialog over Waiting for me, where they answer it. */
+  homeAsk: (askId: string) => `/home?tab=waiting&ask=${askId}`,
   settings: {
     /** The settings menu; beside it on a wide screen, the Account section. */
     index: '/settings',

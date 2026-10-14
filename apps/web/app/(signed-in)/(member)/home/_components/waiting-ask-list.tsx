@@ -33,7 +33,9 @@ export async function WaitingAskList({ membership }: WaitingAskListProps) {
           className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
         >
           <Text as="h2" variant="subtitle-4" className="break-words">
-            <Link href={ROUTES.feedback.askById(ask.askId)}>{ask.topic}</Link>
+            <Link href={ROUTES.homeAsk(ask.askId)} scroll={false}>
+              {ask.topic}
+            </Link>
           </Text>
           <Text as="p" variant="body-2">
             Asked by {ask.requesterName ?? 'a teammate'}

@@ -88,6 +88,8 @@ inside PR 1 rather than filed as its own Bug card; #23, #17 and #22 are closed a
 Topic's 200 stays as 0015 left it. Both numbers are still readings of "a short text" / "one
 free-text answer" and are noted on #24 for kritpavin.
 
+> **Superseded, 2026-10-14:** the Ask no longer has a page of its own. `/feedback/asks/{askId}` is gone; an Ask opens in a dialog over Home at `/home?tab=waiting&ask={askId}`, and answering it goes back there. Its files now sit under `app/(signed-in)/(member)/home/`.
+
 ## 4. Domain model
 
 New, in `modules/feedback/domain/`:

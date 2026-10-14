@@ -1,4 +1,4 @@
-import type { AskStatus } from '@/app/(signed-in)/(member)/feedback/_lib/ask-status.constant';
+import type { AskStatus } from '@/app/(signed-in)/(member)/home/_lib/ask-status.constant';
 
 /** One Ask waiting for the signed-in person, as Waiting for me lists it. */
 export type MyAsk = {

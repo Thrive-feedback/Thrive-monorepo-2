@@ -1,36 +1,27 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { WaitingAsk } from './_lib/feedback-ask.service';
+import type { WaitingAsk } from '@/app/(signed-in)/(member)/home/_lib/feedback-ask.service';
+import { AnswerAskDetail } from './answer-ask-detail';
 
 const ASK_ID = '0199a0f0-0000-7000-8000-0000000000a1';
 
 const readFeedbackAsk = vi.fn<() => Promise<WaitingAsk | null>>();
-vi.mock('./_lib/feedback-ask.service', () => ({
+vi.mock('@/app/(signed-in)/(member)/home/_lib/feedback-ask.service', () => ({
   readFeedbackAsk: () => readFeedbackAsk(),
 }));
-vi.mock('./_lib/answer-ask-actions.service', () => ({ answerAsk: vi.fn() }));
-vi.mock('@/lib/session/session.service', () => ({
-  requireMember: async () => ({
-    email: 'ben@acme.test',
-    membership: {
-      workspace: { id: '0199a0f0-0000-7000-8000-0000000000aa', name: 'Acme' },
-      role: 'MEMBER',
-    },
+vi.mock(
+  '@/app/(signed-in)/(member)/home/_lib/answer-ask-actions.service',
+  () => ({
+    answerAsk: vi.fn(),
   }),
-}));
+);
+const MEMBERSHIP = {
+  workspace: { id: '0199a0f0-0000-7000-8000-0000000000aa', name: 'Acme' },
+  role: 'MEMBER',
+} as const;
 
-/** `notFound` works by throwing, so the fake does too. */
-class NotFound extends Error {}
-vi.mock('next/navigation', () => ({
-  notFound: () => {
-    throw new NotFound('not found');
-  },
-}));
-
-const { default: AnswerAskPage } = await import('./page');
-
-function params(askId = ASK_ID) {
-  return { params: Promise.resolve({ askId }) };
+async function renderDetail() {
+  render(await AnswerAskDetail({ membership: MEMBERSHIP, askId: ASK_ID }));
 }
 
 const WAITING: WaitingAsk = {
@@ -41,11 +32,11 @@ const WAITING: WaitingAsk = {
   status: 'PENDING',
 };
 
-describe('the page where an Ask is answered', () => {
+describe('an Ask, open over Home to be answered', () => {
   it('says who asked and about what, and offers the box', async () => {
     readFeedbackAsk.mockResolvedValue(WAITING);
 
-    render(await AnswerAskPage(params()));
+    await renderDetail();
 
     expect(
       screen.getByRole('heading', {
@@ -60,7 +51,7 @@ describe('the page where an Ask is answered', () => {
   it('offers no box once the Ask has been answered, because the first answer is final', async () => {
     readFeedbackAsk.mockResolvedValue({ ...WAITING, status: 'ANSWERED' });
 
-    render(await AnswerAskPage(params()));
+    await renderDetail();
 
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(
@@ -73,7 +64,7 @@ describe('the page where an Ask is answered', () => {
   it('calls a Requester without a name a teammate', async () => {
     readFeedbackAsk.mockResolvedValue({ ...WAITING, requesterName: null });
 
-    render(await AnswerAskPage(params()));
+    await renderDetail();
 
     expect(
       screen.getByRole('heading', {
@@ -82,16 +73,14 @@ describe('the page where an Ask is answered', () => {
     ).toBeInTheDocument();
   });
 
-  it('is not found when no such Ask is waiting for this person', async () => {
+  it('says so in the dialog when no such Ask is waiting for this person', async () => {
     readFeedbackAsk.mockResolvedValue(null);
 
-    await expect(AnswerAskPage(params())).rejects.toThrow(NotFound);
-  });
+    await renderDetail();
 
-  it('is not found for a segment that is not an id at all', async () => {
-    readFeedbackAsk.mockResolvedValue(WAITING);
-
-    await expect(AnswerAskPage(params('not-an-id'))).rejects.toThrow(NotFound);
-    expect(readFeedbackAsk).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("This Ask isn't waiting for you."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).toBeNull();
   });
 });

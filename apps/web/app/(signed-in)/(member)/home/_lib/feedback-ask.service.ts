@@ -1,11 +1,11 @@
 import 'server-only';
 import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
-import type { AskStatus } from '@/app/(signed-in)/(member)/feedback/_lib/ask-status.constant';
+import type { AskStatus } from '@/app/(signed-in)/(member)/home/_lib/ask-status.constant';
 import { apiClient } from '@/lib/api-client.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
-/** One Ask as the Member it waits on reads it, on the screen where they answer it. */
+/** One Ask as the Member it waits on reads it, in the dialog where they answer it. */
 export type WaitingAsk = {
   readonly askId: string;
   readonly feedbackRequestId: string;
