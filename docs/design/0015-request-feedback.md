@@ -45,6 +45,8 @@ one free-text box — and the Requester chooses Visibility when sending, which i
 
 > **Superseded, 2026-10-11:** D1 and D2 no longer hold. The form now lives on `/home`, `/feedback/request` and the navbar link are gone, and "Ask someone else" on the confirmation goes to `/home`. The routes below now sit in nested groups: the form's files under `app/(signed-in)/(side-nav)/home/`, the confirmation under `app/(signed-in)/(top-nav)/feedback/requests/[requestId]/`.
 
+> **Superseded, 2026-10-14:** the confirmation page is gone too. `/feedback/requests/{requestId}` no longer exists; a sent request opens in a dialog over Home at `/home?tab=my-requests&request={requestId}`, with its files under `app/(signed-in)/(member)/home/`.
+
 ## 3. Domain model
 
 Glossary rows this uses verbatim (`GEN_14`): **Feedback Request** (`FeedbackRequest`),

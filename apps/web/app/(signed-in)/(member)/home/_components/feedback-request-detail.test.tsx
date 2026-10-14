@@ -1,38 +1,32 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { SentFeedbackRequest } from './_lib/feedback-request.service';
+import type { SentFeedbackRequest } from '@/app/(signed-in)/(member)/home/_lib/feedback-request.service';
+import { FeedbackRequestDetail } from './feedback-request-detail';
 
 const REQUEST_ID = '0199a0f0-0000-7000-8000-0000000000f1';
 
 const readFeedbackRequest = vi.fn<() => Promise<SentFeedbackRequest | null>>();
-vi.mock('./_lib/feedback-request.service', () => ({
-  readFeedbackRequest: () => readFeedbackRequest(),
-}));
-vi.mock('@/lib/session/session.service', () => ({
-  requireMember: async () => ({
-    email: 'ann@acme.test',
-    membership: {
-      workspace: { id: '0199a0f0-0000-7000-8000-0000000000aa', name: 'Acme' },
-      role: 'OWNER',
-    },
+vi.mock(
+  '@/app/(signed-in)/(member)/home/_lib/feedback-request.service',
+  () => ({
+    readFeedbackRequest: () => readFeedbackRequest(),
   }),
-}));
+);
+const MEMBERSHIP = {
+  workspace: { id: '0199a0f0-0000-7000-8000-0000000000aa', name: 'Acme' },
+  role: 'OWNER',
+} as const;
 
-/** `notFound` works by throwing, so the fake does too. */
-class NotFound extends Error {}
-vi.mock('next/navigation', () => ({
-  notFound: () => {
-    throw new NotFound('not found');
-  },
-}));
-
-const { default: FeedbackRequestPage } = await import('./page');
-
-function params(requestId = REQUEST_ID) {
-  return { params: Promise.resolve({ requestId }) };
+async function renderDetail() {
+  render(
+    await FeedbackRequestDetail({
+      membership: MEMBERSHIP,
+      requestId: REQUEST_ID,
+    }),
+  );
 }
 
-describe('the page showing a sent Feedback Request', () => {
+describe('a sent Feedback Request, open over Home', () => {
   it('names who was asked, the Topic, and that it is waiting', async () => {
     readFeedbackRequest.mockResolvedValue({
       id: REQUEST_ID,
@@ -47,7 +41,7 @@ describe('the page showing a sent Feedback Request', () => {
       ],
     });
 
-    render(await FeedbackRequestPage(params()));
+    await renderDetail();
 
     expect(
       screen.getByRole('heading', {
@@ -68,7 +62,7 @@ describe('the page showing a sent Feedback Request', () => {
       ],
     });
 
-    render(await FeedbackRequestPage(params()));
+    await renderDetail();
 
     expect(
       screen.getByRole('heading', {
@@ -76,27 +70,6 @@ describe('the page showing a sent Feedback Request', () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText('Now answered.')).toBeInTheDocument();
-  });
-
-  it('offers a way to ask somebody else', async () => {
-    readFeedbackRequest.mockResolvedValue({
-      id: REQUEST_ID,
-      topic: 'my sprint review talk',
-      asks: [
-        {
-          askId: 'ask-1',
-          giverName: 'Ben Carter',
-          status: 'PENDING',
-          answer: null,
-        },
-      ],
-    });
-
-    render(await FeedbackRequestPage(params()));
-
-    expect(
-      screen.getByRole('link', { name: 'Ask someone else' }),
-    ).toHaveAttribute('href', '/home');
   });
 
   it('shows what the Giver wrote, once they have written it', async () => {
@@ -113,23 +86,20 @@ describe('the page showing a sent Feedback Request', () => {
       ],
     });
 
-    render(await FeedbackRequestPage(params()));
+    await renderDetail();
 
     expect(
       screen.getByText('You open strongly and lose the room at the detail.'),
     ).toBeInTheDocument();
   });
 
-  it('is not found when the Workspace has no such request', async () => {
+  it('says so in the dialog when the Workspace has no such request', async () => {
     readFeedbackRequest.mockResolvedValue(null);
 
-    await expect(FeedbackRequestPage(params())).rejects.toThrow(NotFound);
-  });
+    await renderDetail();
 
-  it('is not found when the id in the path is not an id at all', async () => {
-    await expect(FeedbackRequestPage(params('nonsense'))).rejects.toThrow(
-      NotFound,
-    );
-    expect(readFeedbackRequest).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("This request isn't here any more."),
+    ).toBeInTheDocument();
   });
 });

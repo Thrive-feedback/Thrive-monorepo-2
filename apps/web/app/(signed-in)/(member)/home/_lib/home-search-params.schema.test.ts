@@ -7,6 +7,8 @@ describe('HomeSearchParams', () => {
       signedIn: '1',
       sent: undefined,
       tab: 'workspace',
+      request: undefined,
+      ask: undefined,
     });
   });
 
@@ -15,6 +17,8 @@ describe('HomeSearchParams', () => {
       signedIn: undefined,
       sent: '1',
       tab: 'my-requests',
+      request: undefined,
+      ask: undefined,
     });
   });
 
@@ -33,6 +37,27 @@ describe('HomeSearchParams', () => {
       signedIn: undefined,
       sent: undefined,
       tab: 'workspace',
+      request: undefined,
+      ask: undefined,
     });
+  });
+
+  it('reads the Feedback Request or Ask open in a dialog', () => {
+    const id = '0199a0f0-0000-7000-8000-0000000000f1';
+
+    expect(HomeSearchParams.parse({ tab: 'my-requests', request: id })).toEqual(
+      expect.objectContaining({ tab: 'my-requests', request: id }),
+    );
+    expect(HomeSearchParams.parse({ tab: 'waiting', ask: id }).ask).toBe(id);
+  });
+
+  it('opens no dialog for a request or Ask that is not an id', () => {
+    const parsed = HomeSearchParams.parse({
+      request: 'nonsense',
+      ask: ['a', 'b'],
+    });
+
+    expect(parsed.request).toBeUndefined();
+    expect(parsed.ask).toBeUndefined();
   });
 });

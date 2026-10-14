@@ -26,6 +26,31 @@ vi.mock('./_components/home-tabs', () => ({
     <output>{`tab: ${tab} of ${tabs?.join(', ') ?? 'all'}`}</output>
   ),
 }));
+vi.mock('./_components/home-dialog', () => ({
+  HomeDialog: ({
+    title,
+    closeHref,
+    children,
+  }: {
+    title: string;
+    closeHref: string;
+    children: React.ReactNode;
+  }) => (
+    <section aria-label={title} data-close={closeHref}>
+      {children}
+    </section>
+  ),
+}));
+vi.mock('./_components/feedback-request-detail', () => ({
+  FeedbackRequestDetail: ({ requestId }: { requestId: string }) => (
+    <output>{`request ${requestId}`}</output>
+  ),
+}));
+vi.mock('./_components/answer-ask-detail', () => ({
+  AnswerAskDetail: ({ askId }: { askId: string }) => (
+    <output>{`ask ${askId}`}</output>
+  ),
+}));
 vi.mock('@/components/atoms/one-time-toast', () => ({
   OneTimeToast: ({
     type,
@@ -147,5 +172,37 @@ describe('Home', () => {
     render(await open());
 
     expect(screen.queryByText(/toast/)).toBeNull();
+  });
+
+  const ID = '0199a0f0-0000-7000-8000-0000000000f1';
+
+  it('opens the Feedback Request the address names in a dialog, closing back to its tab', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open({ tab: 'my-requests', request: ID }));
+
+    const dialog = screen.getByRole('region', {
+      name: 'Your feedback request',
+    });
+    expect(dialog).toHaveTextContent(`request ${ID}`);
+    expect(dialog).toHaveAttribute('data-close', '/home?tab=my-requests');
+  });
+
+  it('opens the Ask the address names in a dialog, closing back to its tab', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open({ tab: 'waiting', ask: ID }));
+
+    const dialog = screen.getByRole('region', { name: 'Give your feedback' });
+    expect(dialog).toHaveTextContent(`ask ${ID}`);
+    expect(dialog).toHaveAttribute('data-close', '/home?tab=waiting');
+  });
+
+  it('opens no dialog on an ordinary visit', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open());
+
+    expect(screen.queryByRole('region')).toBeNull();
   });
 });

@@ -1,7 +1,7 @@
 import {
   ASK_STATUS_COLOURS,
   ASK_STATUS_NAMES,
-} from '@/app/(signed-in)/(member)/feedback/_lib/ask-status.constant';
+} from '@/app/(signed-in)/(member)/home/_lib/ask-status.constant';
 import { readSentRequests } from '@/app/(signed-in)/(member)/home/_lib/sent-requests.service';
 import { Link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
@@ -14,7 +14,7 @@ export type SentRequestListProps = {
 };
 
 /**
- * Every Feedback Request the person sent, newest first: the Topic, linking to the request, the
+ * Every Feedback Request the person sent, newest first: the Topic, opening the request in a dialog, the
  * day it went out, and one line per Member asked with where their Ask stands. It reads its own
  * data, so the page renders around it while the read is in flight.
  */
@@ -36,7 +36,7 @@ export async function SentRequestList({ membership }: SentRequestListProps) {
           className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
         >
           <Text as="h2" variant="subtitle-4" className="break-words">
-            <Link href={ROUTES.feedback.requestById(request.id)}>
+            <Link href={ROUTES.homeRequest(request.id)} scroll={false}>
               {request.topic}
             </Link>
           </Text>

@@ -26,19 +26,15 @@ vi.mock('@/lib/session/session.service', () => ({
   requireMember: () => requireMember(),
 }));
 
-/** `redirect` and `notFound` both work by throwing, so the fakes do too. */
+/** `redirect` works by throwing, so the fake does too. */
 class Redirected extends Error {
   constructor(readonly to: string) {
     super(`redirected to ${to}`);
   }
 }
-class NotFound extends Error {}
 vi.mock('next/navigation', () => ({
   redirect: (to: string) => {
     throw new Redirected(to);
-  },
-  notFound: () => {
-    throw new NotFound('not found');
   },
 }));
 
@@ -80,7 +76,9 @@ describe('answering an Ask', () => {
   it('sends what was written and goes back to the Ask, which then shows it', async () => {
     apiAccepts();
 
-    await expect(answerAsk({}, answering(WRITTEN))).rejects.toThrow(Redirected);
+    await expect(answerAsk({}, answering(WRITTEN))).rejects.toThrow(
+      new Redirected(`/home?tab=waiting&ask=${ASK_ID}`),
+    );
     expect(sentBody).toEqual({ body: WRITTEN });
   });
 
@@ -108,14 +106,16 @@ describe('answering an Ask', () => {
     apiRefuses('ASK_ALREADY_ANSWERED', 409);
 
     await expect(answerAsk({}, answering(WRITTEN))).rejects.toThrow(
-      new Redirected(`/feedback/asks/${ASK_ID}`),
+      new Redirected(`/home?tab=waiting&ask=${ASK_ID}`),
     );
   });
 
-  it('answers not-found for an Ask that is not theirs', async () => {
+  it('sends the person back to the Ask’s dialog, which says it is not there, when it is not theirs', async () => {
     apiRefuses('FEEDBACK_ASK_NOT_FOUND', 404);
 
-    await expect(answerAsk({}, answering(WRITTEN))).rejects.toThrow(NotFound);
+    await expect(answerAsk({}, answering(WRITTEN))).rejects.toThrow(
+      new Redirected(`/home?tab=waiting&ask=${ASK_ID}`),
+    );
   });
 
   it('sends a signed-out person to sign in', async () => {

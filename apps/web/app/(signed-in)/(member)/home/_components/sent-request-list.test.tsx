@@ -75,7 +75,7 @@ describe('SentRequestList', () => {
     ).toHaveTextContent('Ask a teammate with the form above.');
   });
 
-  it('links each request to its own page', async () => {
+  it('opens each request in a dialog over My requests', async () => {
     readSentRequests.mockResolvedValue([
       {
         id: 'request-1',
@@ -89,6 +89,6 @@ describe('SentRequestList', () => {
 
     expect(
       screen.getByRole('link', { name: 'my presentation skills' }),
-    ).toHaveAttribute('href', '/feedback/requests/request-1');
+    ).toHaveAttribute('href', '/home?tab=my-requests&request=request-1');
   });
 });

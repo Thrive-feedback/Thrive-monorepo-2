@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { apiClient } from '@/lib/api-client.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
-/** One Feedback Request as the confirmation reads it. */
+/** One Feedback Request as its dialog on Home reads it. */
 export type SentFeedbackRequest = {
   readonly id: string;
   readonly topic: string;

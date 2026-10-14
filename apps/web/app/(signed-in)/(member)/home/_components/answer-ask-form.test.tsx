@@ -4,10 +4,13 @@ import { describe, expect, it, vi } from 'vitest';
 import { AnswerAskForm } from './answer-ask-form';
 
 const answerAsk = vi.fn();
-vi.mock('../_lib/answer-ask-actions.service', () => ({
-  answerAsk: (previous: unknown, formData: FormData) =>
-    answerAsk(previous, formData),
-}));
+vi.mock(
+  '@/app/(signed-in)/(member)/home/_lib/answer-ask-actions.service',
+  () => ({
+    answerAsk: (previous: unknown, formData: FormData) =>
+      answerAsk(previous, formData),
+  }),
+);
 
 const ASK_ID = '0199a0f0-0000-7000-8000-0000000000a1';
 const WRITTEN = 'You lose the room at the detail.';
