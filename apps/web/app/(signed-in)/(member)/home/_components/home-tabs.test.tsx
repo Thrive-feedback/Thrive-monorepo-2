@@ -7,6 +7,9 @@ vi.mock('./sent-request-list', () => ({
 vi.mock('./waiting-ask-list', () => ({
   WaitingAskList: () => <output>waiting list</output>,
 }));
+vi.mock('./received-feedback-list', () => ({
+  ReceivedFeedbackList: () => <output>feedback for me list</output>,
+}));
 
 const { HomeTabs } = await import('./home-tabs');
 
@@ -28,6 +31,7 @@ describe('HomeTabs', () => {
       ['Shared with me', '/home?tab=shared'],
       ['My requests', '/home?tab=my-requests'],
       ['Waiting for me', '/home?tab=waiting'],
+      ['Feedback for me', '/home?tab=received'],
     ]);
   });
 
@@ -68,6 +72,13 @@ describe('HomeTabs', () => {
 
     expect(screen.getByText('my requests list')).toBeInTheDocument();
     expect(screen.queryByText('waiting list')).toBeNull();
+    expect(screen.queryByText('feedback for me list')).toBeNull();
     expect(screen.queryByText(/Preview data/)).toBeNull();
+  });
+
+  it('opens the Feedback written to the person on its own tab', () => {
+    render(<HomeTabs tab="received" membership={MEMBERSHIP} />);
+
+    expect(screen.getByText('feedback for me list')).toBeInTheDocument();
   });
 });

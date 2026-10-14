@@ -12,6 +12,7 @@ import { HOME_TABS, type HomeTab, ROUTES } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { FeedbackFeed } from './feedback-feed';
 import styles from './home-tabs.module.css';
+import { ReceivedFeedbackList } from './received-feedback-list';
 import { SentRequestList } from './sent-request-list';
 import { WaitingAskList } from './waiting-ask-list';
 
@@ -20,6 +21,7 @@ const TAB_NAMES: Readonly<Record<HomeTab, string>> = {
   shared: 'Shared with me',
   'my-requests': 'My requests',
   waiting: 'Waiting for me',
+  received: 'Feedback for me',
 };
 
 export type HomeTabsProps = {
@@ -50,6 +52,8 @@ function TabPanel({ tab, membership }: Omit<HomeTabsProps, 'tabs'>) {
       return <SentRequestList membership={membership} />;
     case 'waiting':
       return <WaitingAskList membership={membership} />;
+    case 'received':
+      return <ReceivedFeedbackList membership={membership} />;
   }
 }
 
