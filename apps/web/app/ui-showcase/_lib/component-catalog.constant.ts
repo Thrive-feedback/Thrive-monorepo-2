@@ -15,6 +15,10 @@ import {
   ButtonPreview,
 } from '@/app/ui-showcase/_components/entries/button-entry';
 import {
+  ButtonGroupEntry,
+  ButtonGroupPreview,
+} from '@/app/ui-showcase/_components/entries/button-group-entry';
+import {
   CardEntry,
   CardPreview,
 } from '@/app/ui-showcase/_components/entries/card-entry';
@@ -148,6 +152,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'atom',
     Preview: ButtonPreview,
     Entry: ButtonEntry,
+  },
+  {
+    slug: 'button-group',
+    name: 'ButtonGroup',
+    level: 'atom',
+    Preview: ButtonGroupPreview,
+    Entry: ButtonGroupEntry,
   },
   {
     slug: 'link',

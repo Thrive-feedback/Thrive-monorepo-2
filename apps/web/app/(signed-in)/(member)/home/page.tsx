@@ -6,6 +6,7 @@ import { Text } from '@/components/atoms/text';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 import { FeedbackComposerCard } from './_components/feedback-composer-card';
+import { HomeSplitView } from './_components/home-split-view';
 import { HomeTabs } from './_components/home-tabs';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
 
@@ -29,16 +30,18 @@ type HomeProps = {
 
 /**
  * Home of the person's Workspace, where a Member lands after signing in; `/` stays public for
- * the landing page. On top, asking for Feedback or giving it; below, the Workspace's Feedback
- * and the person's own requests and Asks, one tab at a time. Who the person is now lives on
- * their Profile.
+ * the landing page. On a narrow screen, one column: asking for Feedback or giving it on top,
+ * and below, the Workspace's Feedback and the person's own requests and Asks, one tab at a time.
+ * On a wide screen, the Workspace feed and the rest side by side (`HomeSplitView`). Both are
+ * drawn and CSS shows one, so the page needs no script to choose; each read is deduplicated, so
+ * drawing both reads the API once. Who the person is now lives on their Profile.
  */
 export default async function Home({ searchParams }: HomeProps) {
   const { signedIn, sent, tab } = HomeSearchParams.parse(await searchParams);
   const session = await requireMember(signedIn);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <>
       {signedIn !== undefined && (
         <OneTimeToast
           type="success"
@@ -53,16 +56,24 @@ export default async function Home({ searchParams }: HomeProps) {
           then={ROUTES.homeTab(tab)}
         />
       )}
-      <Text variant="display-5" as="h1">
-        {session.membership.workspace.name}
-      </Text>
-      <Suspense fallback={<Skeleton shape="card" className="h-80" />}>
-        <FeedbackComposerCard
-          membership={session.membership}
-          ownEmail={session.email}
-        />
-      </Suspense>
-      <HomeTabs tab={tab} membership={session.membership} />
-    </div>
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 lg:hidden">
+        <Text variant="display-5" as="h1">
+          {session.membership.workspace.name}
+        </Text>
+        <Suspense fallback={<Skeleton shape="card" className="h-80" />}>
+          <FeedbackComposerCard
+            membership={session.membership}
+            ownEmail={session.email}
+          />
+        </Suspense>
+        <HomeTabs tab={tab} membership={session.membership} />
+      </div>
+      <HomeSplitView
+        tab={tab}
+        membership={session.membership}
+        ownEmail={session.email}
+        className="hidden lg:block"
+      />
+    </>
   );
 }

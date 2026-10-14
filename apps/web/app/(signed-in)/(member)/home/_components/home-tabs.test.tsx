@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('./sent-request-list', () => ({
@@ -20,9 +20,9 @@ describe('HomeTabs', () => {
     render(<HomeTabs tab="workspace" membership={MEMBERSHIP} />);
 
     expect(
-      screen
-        .getAllByRole('tab')
-        .map((tab) => [tab.textContent, tab.getAttribute('href')]),
+      within(screen.getByRole('navigation', { name: 'Feedback' }))
+        .getAllByRole('link')
+        .map((link) => [link.textContent, link.getAttribute('href')]),
     ).toEqual([
       ['Workspace feed', '/home'],
       ['Shared with me', '/home?tab=shared'],
@@ -31,17 +31,29 @@ describe('HomeTabs', () => {
     ]);
   });
 
+  it('offers only the tabs it is given, in their order', () => {
+    render(
+      <HomeTabs
+        tab="shared"
+        membership={MEMBERSHIP}
+        tabs={['shared', 'my-requests', 'waiting']}
+      />,
+    );
+
+    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(
+      ['Shared with me', 'My requests', 'Waiting for me'],
+    );
+  });
+
   it('marks the open tab', () => {
     render(<HomeTabs tab="waiting" membership={MEMBERSHIP} />);
 
-    expect(screen.getByRole('tab', { name: 'Waiting for me' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
-    expect(screen.getByRole('tab', { name: 'Workspace feed' })).toHaveAttribute(
-      'aria-selected',
-      'false',
-    );
+    expect(
+      screen.getByRole('link', { name: 'Waiting for me' }),
+    ).toHaveAttribute('aria-current', 'page');
+    expect(
+      screen.getByRole('link', { name: 'Workspace feed' }),
+    ).not.toHaveAttribute('aria-current');
   });
 
   it('shows the Workspace feed as preview data', () => {

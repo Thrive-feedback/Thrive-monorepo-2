@@ -1,0 +1,11 @@
+/*
+ * Four tabs do not fit a phone, so the group scrolls sideways — by trackpad, touch or Tab —
+ * without a bar under it. Hiding a scrollbar has no utility, which is why this is CSS.
+ */
+.scroller {
+  scrollbar-width: none;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}

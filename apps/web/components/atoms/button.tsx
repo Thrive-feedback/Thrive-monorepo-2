@@ -10,6 +10,8 @@ const buttonVariants = cva(
       variant: {
         primary:
           'bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover',
+        highlight:
+          'bg-action-secondary text-fg-on-secondary enabled:active:bg-action-secondary-active enabled:hover:bg-action-secondary-hover',
         outlined:
           'border border-action-primary-border bg-action-primary-surface text-action-primary enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
         secondary:

@@ -22,7 +22,9 @@ vi.mock('./_components/feedback-composer-card', () => ({
   ),
 }));
 vi.mock('./_components/home-tabs', () => ({
-  HomeTabs: ({ tab }: { tab: string }) => <output>{`tab: ${tab}`}</output>,
+  HomeTabs: ({ tab, tabs }: { tab: string; tabs?: readonly string[] }) => (
+    <output>{`tab: ${tab} of ${tabs?.join(', ') ?? 'all'}`}</output>
+  ),
 }));
 vi.mock('@/components/atoms/one-time-toast', () => ({
   OneTimeToast: ({
@@ -55,13 +57,27 @@ describe('Home', () => {
     expect(requireMember).toHaveBeenLastCalledWith('1');
   });
 
-  it('is headed with the Workspace’s name', async () => {
+  it('is headed with the Workspace’s name, and welcomes the person on a wide screen', async () => {
     requireMember.mockResolvedValue(ANN);
 
     render(await open());
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Acme Corp' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Welcome to Acme Corp' }),
+    ).toBeInTheDocument();
+  });
+
+  it('shows the Workspace feed beside the forms on a wide screen, with a handle to resize it', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open());
+
+    expect(screen.getByText(/Preview data/)).toBeInTheDocument();
+    expect(
+      screen.getByRole('separator', { name: 'Resize Workspace feed' }),
     ).toBeInTheDocument();
   });
 
@@ -70,28 +86,35 @@ describe('Home', () => {
 
     render(await open());
 
+    // Once for each layout; CSS shows one.
     expect(
-      screen.getByText('feedback composer as ann@acme.test'),
-    ).toBeInTheDocument();
+      screen.getAllByText('feedback composer as ann@acme.test'),
+    ).toHaveLength(2);
   });
 
-  it('opens the Workspace feed by default', async () => {
+  it('opens the Workspace feed by default, and Shared with me beside the feed on a wide screen', async () => {
     requireMember.mockResolvedValue(ANN);
 
     render(await open());
 
-    expect(screen.getByText('tab: workspace')).toBeInTheDocument();
+    expect(screen.getByText('tab: workspace of all')).toBeInTheDocument();
+    expect(
+      screen.getByText('tab: shared of shared, my-requests, waiting'),
+    ).toBeInTheDocument();
   });
 
   it('opens the tab the address names, and the Workspace feed for an unknown one', async () => {
     requireMember.mockResolvedValue(ANN);
 
     const { unmount } = render(await open({ tab: 'waiting' }));
-    expect(screen.getByText('tab: waiting')).toBeInTheDocument();
+    expect(screen.getByText('tab: waiting of all')).toBeInTheDocument();
+    expect(
+      screen.getByText('tab: waiting of shared, my-requests, waiting'),
+    ).toBeInTheDocument();
     unmount();
 
     render(await open({ tab: 'nope' }));
-    expect(screen.getByText('tab: workspace')).toBeInTheDocument();
+    expect(screen.getByText('tab: workspace of all')).toBeInTheDocument();
   });
 
   it('says who signed in when Google has just sent them back', async () => {
