@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import Members from './page';
+import Workspace from './page';
 
 function sessionAs(role: 'OWNER' | 'ADMIN' | 'MEMBER') {
   return {
@@ -27,26 +27,29 @@ vi.mock('./_components/invite-members-form', () => ({
   InviteMembersForm: () => <output>invite form</output>,
 }));
 
-describe('Members', () => {
+describe('Workspace', () => {
   it('lets the gate turn away anyone who may not be here', async () => {
     requireMember.mockRejectedValue(new Error('redirect:/signin'));
 
-    await expect(Members()).rejects.toThrow('redirect:/signin');
+    await expect(Workspace()).rejects.toThrow('redirect:/signin');
   });
 
   it('shows the Owner who is in the Workspace and the Invitations still open', async () => {
     requireMember.mockResolvedValue(sessionAs('OWNER'));
 
-    render(await Members());
+    render(await Workspace());
 
     expect(
-      screen.getByRole('heading', { level: 2, name: 'In Acme Corp' }),
+      screen.getByRole('heading', { level: 2, name: 'Acme Corp' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'Members' }),
     ).toBeInTheDocument();
     expect(
       screen.getByText('members, with ann@acme.test marked'),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Open invitations' }),
+      screen.getByRole('heading', { level: 3, name: 'Open invitations' }),
     ).toBeInTheDocument();
     expect(screen.getByText('open invitations')).toBeInTheDocument();
   });
@@ -54,7 +57,7 @@ describe('Members', () => {
   it('shows an Admin the Invitations too', async () => {
     requireMember.mockResolvedValue(sessionAs('ADMIN'));
 
-    render(await Members());
+    render(await Workspace());
 
     expect(screen.getByText('open invitations')).toBeInTheDocument();
   });
@@ -63,13 +66,13 @@ describe('Members', () => {
     for (const role of ['OWNER', 'ADMIN'] as const) {
       requireMember.mockResolvedValue(sessionAs(role));
 
-      const { unmount } = render(await Members());
+      const { unmount } = render(await Workspace());
 
       const headings = screen
-        .getAllByRole('heading', { level: 2 })
+        .getAllByRole('heading', { level: 3 })
         .map((heading) => heading.textContent);
       expect(headings).toEqual([
-        'In Acme Corp',
+        'Members',
         'Invite teammates',
         'Open invitations',
       ]);
@@ -78,10 +81,10 @@ describe('Members', () => {
     }
   });
 
-  it('shows a Member who is in the Workspace, and no Invitations', async () => {
+  it('shows a Member the Workspace and who is in it, and no Invitations', async () => {
     requireMember.mockResolvedValue(sessionAs('MEMBER'));
 
-    render(await Members());
+    render(await Workspace());
 
     expect(
       screen.getByText('members, with ann@acme.test marked'),

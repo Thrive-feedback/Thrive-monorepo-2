@@ -8,12 +8,10 @@ vi.mock('@/lib/session/session.service', () => ({
   readSession: () => readSession(),
   readSessionNeedsRefresh: () => readSessionNeedsRefresh(),
 }));
-vi.mock('next/navigation', () => ({ usePathname: () => '/home' }));
+const pathname = vi.fn(() => '/home');
+vi.mock('next/navigation', () => ({ usePathname: () => pathname() }));
 vi.mock('./session-refresher', () => ({
   SessionRefresher: () => <output>session refresher</output>,
-}));
-vi.mock('@/lib/session/session-actions.service', () => ({
-  signOut: vi.fn(),
 }));
 
 const ANN = {
@@ -23,24 +21,44 @@ const ANN = {
 };
 
 describe('MemberNavbar', () => {
-  it('links to Home, and marks it as the page the person is on', async () => {
+  it('leads the logo Home', async () => {
     readSession.mockResolvedValue(ANN);
 
     render(await MemberNavbar());
 
-    const home = screen.getByRole('link', { name: 'Home' });
-    expect(home).toHaveAttribute('href', '/home');
-    expect(home).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Thrive' })).toHaveAttribute(
+      'href',
+      '/home',
+    );
   });
 
-  it('offers the account menu, named for the person', async () => {
+  it('links to Settings, and marks it while the person is in Settings', async () => {
+    readSession.mockResolvedValue(ANN);
+    pathname.mockReturnValue('/settings/workspace');
+
+    render(await MemberNavbar());
+
+    const settings = screen.getByRole('link', { name: 'Settings' });
+    expect(settings).toHaveAttribute('href', '/settings');
+    expect(settings).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('leads the avatar, named for the person, to their Account', async () => {
     readSession.mockResolvedValue(ANN);
 
     render(await MemberNavbar());
 
     expect(
-      screen.getByRole('button', { name: 'Account menu for Ann Lee' }),
-    ).toBeInTheDocument();
+      screen.getByRole('link', { name: 'Account: Ann Lee' }),
+    ).toHaveAttribute('href', '/settings/account');
+  });
+
+  it('has no colour mode switch, since that is in Settings', async () => {
+    readSession.mockResolvedValue(ANN);
+
+    render(await MemberNavbar());
+
+    expect(screen.queryByRole('button', { name: 'Dark theme' })).toBeNull();
   });
 
   it('shows only the logo when nobody is signed in', async () => {
@@ -48,8 +66,8 @@ describe('MemberNavbar', () => {
 
     render(await MemberNavbar());
 
-    expect(screen.queryByRole('navigation')).toBeNull();
-    expect(screen.queryByRole('button', { name: /Account menu/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Settings' })).toBeNull();
+    expect(screen.queryByRole('link', { name: /Account/ })).toBeNull();
     expect(screen.getByRole('link')).toHaveAttribute('href', '/');
   });
 

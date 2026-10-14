@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn.util';
 
 /**
  * The page shape of every page a Member uses: the Member navbar, then content. It is
- * `SiteShell` with the navbar that has Home and the account menu, inside a frame of frosted
+ * `SiteShell` with the navbar that has Settings and the account avatar, inside a frame of frosted
  * glass: the navbar across the top and a strip down each side and along the bottom, all fixed
  * to the window with the same tint and blur. The page scrolls underneath, as if through a
  * rounded window. The strips are decoration, hidden from screen readers and from the pointer.

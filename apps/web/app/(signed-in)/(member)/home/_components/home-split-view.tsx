@@ -86,7 +86,11 @@ export function HomeSplitView({
               />
             </Suspense>
             <hr className="border-border-subtle" />
-            <Text as="h2" variant="subtitle-handwrite-2">
+            <Text
+              as="h2"
+              variant="subtitle-handwrite-2"
+              className="text-action-secondary-fg"
+            >
               My Activity
             </Text>
             <HomeTabs

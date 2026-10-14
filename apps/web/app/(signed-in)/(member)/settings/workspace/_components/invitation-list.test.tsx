@@ -4,13 +4,13 @@ import { InvitationList } from './invitation-list';
 
 const readInvitations = vi.fn();
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/members/_lib/invitations.service',
+  '@/app/(signed-in)/(member)/settings/workspace/_lib/invitations.service',
   () => ({
     readInvitations: (...args: unknown[]) => readInvitations(...args),
   }),
 );
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service',
+  '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service',
   () => ({ revokeInvitation: vi.fn(), resendInvitation: vi.fn() }),
 );
 

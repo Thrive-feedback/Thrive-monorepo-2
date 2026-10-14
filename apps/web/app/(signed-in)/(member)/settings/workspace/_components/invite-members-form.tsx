@@ -5,9 +5,9 @@ import {
   checkEmailList,
   MAX_INVITES_PER_SEND,
   parseEmailList,
-} from '@/app/(signed-in)/(member)/settings/members/_lib/email-list.util';
-import { inviteMembers } from '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service';
-import type { InviteMemberResult } from '@/app/(signed-in)/(member)/settings/members/_lib/invite-members-state.type';
+} from '@/app/(signed-in)/(member)/settings/workspace/_lib/email-list.util';
+import { inviteMembers } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service';
+import type { InviteMemberResult } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invite-members-state.type';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { TextAreaField } from '@/components/molecules/text-area-field';

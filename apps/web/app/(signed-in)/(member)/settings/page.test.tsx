@@ -2,9 +2,19 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import Settings from './page';
 
+const ANN = {
+  email: 'ann@acme.test',
+  name: 'Ann Google',
+  profile: { fullName: 'Ann Marie Lee', displayName: 'Ann Lee', slug: 'ann' },
+  membership: { workspace: { id: 'w-1', name: 'Acme Corp' }, role: 'OWNER' },
+};
+
 const requireMember = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
   requireMember: () => requireMember(),
+}));
+vi.mock('@/lib/session/session-actions.service', () => ({
+  signOut: vi.fn(),
 }));
 
 describe('Settings', () => {
@@ -14,19 +24,13 @@ describe('Settings', () => {
     await expect(Settings()).rejects.toThrow('redirect:/signin');
   });
 
-  it('lists each category, linking to its page', async () => {
-    requireMember.mockResolvedValue({});
+  it('opens on the Account section', async () => {
+    requireMember.mockResolvedValue(ANN);
 
     render(await Settings());
 
-    expect(screen.getByRole('link', { name: 'Members' })).toHaveAttribute(
-      'href',
-      '/settings/members',
-    );
     expect(
-      screen.getByText(
-        'Who is in your Workspace, and the invitations still open.',
-      ),
+      screen.getByRole('heading', { level: 2, name: 'Ann Lee' }),
     ).toBeInTheDocument();
   });
 });

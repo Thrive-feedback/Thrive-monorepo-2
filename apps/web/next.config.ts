@@ -19,6 +19,21 @@ const nextConfig: NextConfig = {
   // its own directory, and the trace must be able to reach them.
   outputFileTracingRoot: join(import.meta.dirname, '../..'),
   allowedDevOrigins: ['http://localhost:3000'],
+  // Settings took in the Profile and Members pages; old links and bookmarks land on their sections.
+  async redirects() {
+    return [
+      {
+        source: '/profile',
+        destination: '/settings/account',
+        permanent: false,
+      },
+      {
+        source: '/settings/members',
+        destination: '/settings/workspace',
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

@@ -37,4 +37,38 @@ describe('FeedbackComposer', () => {
     expect(screen.getByText('give form')).toBeVisible();
     expect(screen.getByText('request form')).not.toBeVisible();
   });
+
+  it('hides the forms but keeps the buttons, and shows them again', async () => {
+    const user = userEvent.setup();
+    render(<FeedbackComposer teammates={[]} />);
+
+    await user.click(screen.getByRole('button', { name: 'Hide form' }));
+
+    expect(screen.getByText('request form')).not.toBeVisible();
+    expect(
+      screen.getByRole('button', { name: 'Request feedback' }),
+    ).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Show form' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Show form' }));
+
+    expect(screen.getByText('request form')).toBeVisible();
+  });
+
+  it('opens the forms again when a mode is picked', async () => {
+    const user = userEvent.setup();
+    render(<FeedbackComposer teammates={[]} />);
+
+    await user.click(screen.getByRole('button', { name: 'Hide form' }));
+    await user.click(screen.getByRole('button', { name: 'Give feedback' }));
+
+    expect(screen.getByText('give form')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Hide form' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+  });
 });

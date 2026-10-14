@@ -1,49 +1,18 @@
 'use client';
 
 import { MoonIcon, SunIcon } from 'lucide-react';
-import { useSyncExternalStore } from 'react';
 import { Button } from '@/components/atoms/button';
-import { THEME_STORAGE_KEY, type Theme } from '@/lib/theme.constant';
-
-function subscribe(onChange: () => void): () => void {
-  const observer = new MutationObserver(onChange);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-theme'],
-  });
-  return () => observer.disconnect();
-}
-
-function readTheme(): Theme {
-  return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
-}
-
-function readServerTheme(): Theme {
-  return 'light';
-}
+import { useTheme } from '@/lib/use-theme';
 
 /**
- * Switches the page between the token layer's light and dark modes. The mode lives on
- * `<html data-theme>`, so nothing else learns a theme exists (`FE_03` R7); this only flips the
- * attribute and remembers the choice for the root layout's head script to apply next time.
- *
- * The state is read from the attribute rather than held here, because the head script may
- * already have set it before hydration. The server always renders the light state, and React
- * swaps in the attribute's value straight after hydrating.
+ * Switches the page between the token layer's light and dark modes, for the pages that have no
+ * Settings to choose in. The mode lives on `<html data-theme>`, so nothing else learns a theme
+ * exists (`FE_03` R7). It flips the mode in effect — whatever the operating system gave on
+ * `system` — and remembers the opposite as an explicit choice.
  */
 export function ThemeToggle() {
-  const theme = useSyncExternalStore(subscribe, readTheme, readServerTheme);
+  const { theme, setPreference } = useTheme();
   const isDark = theme === 'dark';
-
-  function handleClick() {
-    const next: Theme = isDark ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, next);
-    } catch {
-      // Storage can be blocked; the mode still applies for this visit.
-    }
-  }
 
   return (
     <Button
@@ -52,7 +21,7 @@ export function ThemeToggle() {
       aria-label="Dark theme"
       aria-pressed={isDark}
       className="text-action-primary enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover aria-pressed:text-action-secondary aria-pressed:enabled:active:bg-action-secondary-surface-hover aria-pressed:enabled:hover:bg-action-secondary-surface-hover"
-      onClick={handleClick}
+      onClick={() => setPreference(isDark ? 'light' : 'dark')}
     >
       {isDark ? (
         <SunIcon aria-hidden="true" className="size-5" />

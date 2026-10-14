@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import { Text } from '@/components/atoms/text';
 import { requireMember } from '@/lib/session/session.service';
-import { SettingsCategoryList } from './_components/settings-category-list';
+import { AccountSection } from './_components/account-section';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
 export const metadata: Metadata = {
@@ -9,16 +8,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** The Workspace's settings, one category per page beneath this one. Every Member may come here. */
+/**
+ * Settings' landing. A wide screen shows Account beside the menu, so there is never an empty
+ * pane; a narrow one shows only the menu (`SettingsPanes`). Every Member may come here.
+ */
 export default async function Settings() {
-  await requireMember();
+  const session = await requireMember();
 
-  return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
-      <Text variant="display-5" as="h1">
-        Settings
-      </Text>
-      <SettingsCategoryList />
-    </div>
-  );
+  return <AccountSection session={session} />;
 }

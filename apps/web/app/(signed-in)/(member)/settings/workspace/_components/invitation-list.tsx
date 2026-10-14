@@ -1,5 +1,5 @@
-import { readInvitations } from '@/app/(signed-in)/(member)/settings/members/_lib/invitations.service';
-import type { OpenInvitation } from '@/app/(signed-in)/(member)/settings/members/_lib/open-invitation.type';
+import { readInvitations } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invitations.service';
+import type { OpenInvitation } from '@/app/(signed-in)/(member)/settings/workspace/_lib/open-invitation.type';
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';

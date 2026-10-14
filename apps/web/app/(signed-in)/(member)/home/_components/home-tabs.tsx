@@ -72,7 +72,7 @@ export function HomeTabs({ tab, membership, tabs = HOME_TABS }: HomeTabsProps) {
           {tabs.map((value) => (
             <Button
               key={value}
-              variant={value === tab ? 'highlight' : 'secondary'}
+              variant={value === tab ? 'primary' : 'secondary'}
               size="sm"
               asChild
             >
