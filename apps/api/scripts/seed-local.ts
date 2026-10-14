@@ -214,8 +214,10 @@ What is on screen:
   My requests     2 sent — "Running the planning meeting" answered by Ben, "How I handled the
                   incident review" still waiting
   Waiting for me  2 Asks from Ben to answer, and a third she has already answered
+  Feedback for me 1 piece — what Ben wrote back. The one she gave Ben is his, not hers
   The answer      ${WEB_BASE_URL}/feedback/requests/${answeredRequest}
   Still waiting   ${WEB_BASE_URL}/feedback/requests/${waitingRequest}
+  Written to her  ${WEB_BASE_URL}/home?tab=received
 
 Run this again for another Workspace with its own people; nothing is overwritten.
 `);

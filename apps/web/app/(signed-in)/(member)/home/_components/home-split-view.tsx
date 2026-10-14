@@ -16,7 +16,7 @@ import styles from './home-split-view.module.css';
 import { HomeTabs } from './home-tabs';
 
 /** The Workspace feed has a column of its own here, so the tabs beside it are the person's. */
-const PERSONAL_TABS = ['shared', 'my-requests', 'waiting'] as const;
+const PERSONAL_TABS = ['shared', 'my-requests', 'waiting', 'received'] as const;
 
 export type HomeSplitViewProps = {
   tab: HomeTab;

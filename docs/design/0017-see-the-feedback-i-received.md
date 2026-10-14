@@ -189,22 +189,30 @@ Feedback, not Feedback Requests, and `feedback-ask.controller.ts` set the preced
 
 ## 5. Web
 
+**Changed 2026-10-14: it is a tab on Home, not a page.** PR #180 landed while the API half was
+in review and rebuilt the signed-in app — the `(side-nav)` group is gone, `/feedback/sent` and
+`/feedback/asks` are gone with it, and what they showed is now tabs on Home (`workspace`,
+`shared`, `my-requests`, `waiting`). A fifth page in a layout that no longer exists is not an
+option, so *Feedback for me* becomes the fifth tab. What it shows is unchanged.
+
 ```
-app/(signed-in)/(side-nav)/feedback/received/                       #26
-  page.tsx                                  server; requireMember(); Suspense around the list
+app/(signed-in)/(member)/home/                                      #26
   _components/received-feedback-list.tsx    server; one entry per piece, newest first
   _components/received-feedback-list.test.tsx
-  _lib/received-feedback.service.ts         'server-only'; cache: 'no-store'
+  _lib/received-feedback.service.ts         'server-only'; cache(); cache: 'no-store'
   _lib/received-feedback.type.ts            the view model (FE_10 R6)
+  _components/home-tabs.tsx                 + the tab's name and its panel
+  _components/home-split-view.tsx           + the tab, in the personal column
+lib/routes.constant.ts                      + 'received' in HOME_TABS
 ```
 
-Modified: `lib/routes.constant.ts` (`feedback.received: '/feedback/received'`);
-`components/organisms/side-nav-links.tsx` + its test — a fourth product link, **"Feedback for
-me"**, after *Waiting for me* and before *Settings*, in the order a person meets the product. The
-day format is `lib/calendar-day.util.ts` (D8), which PR #172 already extracted.
+The tab is **last of the five**, after *Waiting for me*: what I asked for, what is asked of me,
+then what came back. The address is `/home?tab=received`, which `ROUTES.homeTab` already builds and
+`HomeSearchParams` already validates, so the tab survives a reload and a shared link (`FE_11` R7).
+The day format is `lib/calendar-day.util.ts` (D8).
 
-- **URL `/feedback/received`** (`FE_11` R1 — the URL is a contract, chosen for the person reading
-  it). It parallels `/feedback/sent`; the nav label is the card's own words, *Feedback for me*.
+- **URL `/home?tab=received`** (`FE_11` R1/R7 — the URL is a contract, and the open tab belongs in
+  it). The tab's name is the card's own words, *Feedback for me*.
 - **Every file is a server component** (`FE_08` R1). There is nothing interactive on this screen —
   no form, no state, no event handler — so PR 2 adds no `'use client'` and no `useState`.
 - **Read on the server, in the component that renders it** (`FE_09` R1), `cache: 'no-store'`
@@ -219,8 +227,14 @@ day format is `lib/calendar-day.util.ts` (D8), which PR #172 already extracted.
   the `Card` atom — `Card` carries a titled, divided header for a screen that *is* one card, which
   is why `answer-ask-card.tsx` uses it and the lists do not. **PR 2 adds no component**
   (`FE_02` R8, `GEN_16` R1).
-- **A Giver with no name** renders as `—`, as `sent-request-list.tsx` already does for an Account
-  that has not introduced itself. It is never blamed on the Receiver.
+- **A Giver with no name** reads *"From a teammate"*, as `waiting-ask-list.tsx` already says of a
+  Requester. It is never blamed on the Receiver.
+
+  **Changed while building, from the `—` this design first wrote.** `sent-request-list.tsx` uses
+  `—` because its line is `name : status`, a column where a dash reads as "no value". Here the
+  name sits inside a sentence — *"From {name} · 11 Oct 2026"* — and *"From —"* reads as damage
+  rather than as a missing Profile. The two existing lists already differ on this for the same
+  reason, so this follows the prose one.
 - **Empty state** (`FE_18`, `todo` — the index entry is the binding text): *"No one has written you
   feedback yet."* with a link to Home's form, *Ask a teammate for feedback* — the same pair
   `/feedback/sent` uses. Loading: inline `<Suspense>` with `Skeleton`. Errors: the root
@@ -290,7 +304,7 @@ Three pull requests. Each is green on all six CI checks before the next starts.
 | --- | --- | --- | --- |
 | 0 | `refactor/account-names-service` | — | D7: extract `namesOf` to `application/service/account-names.service.ts` — the first `application/service/` file on `main` — move both call sites, delete both copies. No behaviour change, no contract change |
 | 1 | `feat/26-api-read-received-feedback` | #26 | `receivedBy()` on the query port + its Prisma read; `ListReceivedFeedbackUseCase`; `FeedbackController`; the DTO; the module wiring; unit tests; the two `@api` scenarios; regenerated contract |
-| 2 | `feat/26-web-feedback-for-me` | #26 | `/feedback/received` page, list, service, view model; the nav link and routes constant; web tests; one line added to `seed-local.ts`'s printed addresses |
+| 2 | `feat/26-web-feedback-for-me` | #26 | the *Feedback for me* tab: list, service, view model, the tab wiring in `home-tabs` and `home-split-view`, `HOME_TABS`; web tests; two lines added to `seed-local.ts`'s printed addresses |
 
 PR 0 is small and mechanical and exists because `GEN_16` R5 and `GEN_15` R2 both say a move is its
 own change. **If you would rather not have a third PR**, say so and PR 1 carries the extraction with

@@ -99,7 +99,7 @@ describe('Home', () => {
 
     expect(screen.getByText('tab: workspace of all')).toBeInTheDocument();
     expect(
-      screen.getByText('tab: shared of shared, my-requests, waiting'),
+      screen.getByText('tab: shared of shared, my-requests, waiting, received'),
     ).toBeInTheDocument();
   });
 
@@ -109,7 +109,9 @@ describe('Home', () => {
     const { unmount } = render(await open({ tab: 'waiting' }));
     expect(screen.getByText('tab: waiting of all')).toBeInTheDocument();
     expect(
-      screen.getByText('tab: waiting of shared, my-requests, waiting'),
+      screen.getByText(
+        'tab: waiting of shared, my-requests, waiting, received',
+      ),
     ).toBeInTheDocument();
     unmount();
 
