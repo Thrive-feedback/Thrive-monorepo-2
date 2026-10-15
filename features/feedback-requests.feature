@@ -1,6 +1,7 @@
 Feature: Feedback requests
   A Member asks a teammate for Feedback on a Topic. The request is read by the
-  person who sent it and the people it asks, and by nobody else.
+  person who sent it and the people it asks, and by nobody else. The Feedback it
+  collects is also read by whoever the Requester chose to share it with.
 
   Background:
     Given Ann owns a Workspace called "Acme"
@@ -118,3 +119,65 @@ Feature: Feedback requests
     And Ben has answered "You open strongly and lose the room at the detail."
     When Cara looks at the Feedback written to them
     Then Cara has no Feedback written to them
+
+  @api
+  Scenario Outline: Feedback from a request reaches the people its Requester chose
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben for Feedback on "Running the planning meeting", shared with <audience>
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When <reader> opens the Feedback Ben wrote
+    Then <reader> reads "You open strongly and lose the room at the detail." written by Ben
+
+    Examples:
+      | audience                  | reader |
+      | nobody else               | Ann    |
+      | nobody else               | Ben    |
+      | Cara                      | Cara   |
+      | everyone in the Workspace | Cara   |
+
+  @api
+  Scenario Outline: Feedback from a request reaches nobody its Requester did not choose
+    Given Cara is a Member of Ann's Workspace
+    And Dan is a Member of Ann's Workspace
+    And Ann has asked Ben for Feedback on "Running the planning meeting", shared with <audience>
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When Cara opens the Feedback Ben wrote
+    Then Cara is told the Feedback cannot be found
+
+    Examples:
+      | audience    |
+      | nobody else |
+      | Dan         |
+
+  @api
+  Scenario: Feedback shared with everyone stays inside the Workspace
+    Given Dan owns a Workspace called "Globex"
+    And Ann has asked Ben for Feedback on "Running the planning meeting", shared with everyone in the Workspace
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When Dan opens the Feedback Ben wrote
+    Then Dan is told the Feedback cannot be found
+
+  @api
+  Scenario: Sharing with selected people needs somebody to share with
+    When Ann asks Ben for Feedback on "Running the planning meeting", shared with selected people but picks nobody
+    Then Ann is told to pick somebody to share it with
+
+  @api
+  Scenario: A request cannot be shared with somebody outside the Workspace
+    Given Dan owns a Workspace called "Globex"
+    When Ann asks Ben for Feedback on "Running the planning meeting", shared with Dan
+    Then Ann is told they can only share it inside their Workspace
+
+  @api
+  Scenario: The Requester sees who they shared a request with
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben for Feedback on "Running the planning meeting", shared with Cara
+    When Ann opens Ann's Feedback request
+    Then Ann sees it is shared with Cara
+
+  @api
+  Scenario: The Giver is not told who else reads their answer
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben for Feedback on "Running the planning meeting", shared with Cara
+    When Ben opens Ann's Feedback request
+    Then Ben is not told who else can read it

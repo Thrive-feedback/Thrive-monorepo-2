@@ -1,0 +1,91 @@
+import { describe, expect, it } from 'bun:test';
+import {
+  NoPeopleSelectedError,
+  PeopleSelectedForAnotherVisibilityError,
+  PersonAlreadySelectedError,
+  VisibilityInvalidError,
+} from '../feedback-request.errors';
+import { Visibility } from './visibility.vo';
+
+const GIVER = 'account-ben';
+const RECEIVER = 'account-ann';
+
+function reading(readerAccountId: string) {
+  return {
+    readerAccountId,
+    giverAccountId: GIVER,
+    receiverAccountId: RECEIVER,
+  };
+}
+
+function selecting(...selectedAccountIds: string[]) {
+  return Visibility.of({ value: 'SELECTED_PEOPLE', selectedAccountIds });
+}
+
+describe('choosing who may read a request’s answers', () => {
+  it('keeps the people selected for Selected people', () => {
+    expect(selecting('account-cara').selectedAccountIds()).toEqual([
+      'account-cara',
+    ]);
+  });
+
+  it('refuses Selected people with nobody selected', () => {
+    expect(() => selecting()).toThrow(NoPeopleSelectedError);
+  });
+
+  it('refuses the same person selected twice', () => {
+    expect(() => selecting('account-cara', 'account-cara')).toThrow(
+      PersonAlreadySelectedError,
+    );
+  });
+
+  it('refuses people selected for Everyone, who would not be the ones reading it', () => {
+    expect(() =>
+      Visibility.of({
+        value: 'EVERYONE',
+        selectedAccountIds: ['account-cara'],
+      }),
+    ).toThrow(PeopleSelectedForAnotherVisibilityError);
+  });
+
+  it('refuses a Visibility nothing in the product has', () => {
+    expect(() =>
+      Visibility.of({ value: 'MANAGERS', selectedAccountIds: [] }),
+    ).toThrow(VisibilityInvalidError);
+  });
+});
+
+describe('who may read a piece of Feedback', () => {
+  it('lets the Receiver read it, whatever the Visibility', () => {
+    expect(Visibility.onlyMe().letsRead(reading(RECEIVER))).toBe(true);
+  });
+
+  it('lets the Giver read what they wrote, whatever the Visibility', () => {
+    expect(Visibility.onlyMe().letsRead(reading(GIVER))).toBe(true);
+  });
+
+  it('keeps Only me from every other Member', () => {
+    expect(Visibility.onlyMe().letsRead(reading('account-cara'))).toBe(false);
+  });
+
+  it('lets a selected Member read it', () => {
+    expect(selecting('account-cara').letsRead(reading('account-cara'))).toBe(
+      true,
+    );
+  });
+
+  it('keeps it from a Member who was not selected', () => {
+    expect(selecting('account-cara').letsRead(reading('account-dan'))).toBe(
+      false,
+    );
+  });
+
+  it('lets any Member read it when it is shared with Everyone', () => {
+    const everyone = Visibility.of({
+      value: 'EVERYONE',
+      selectedAccountIds: [],
+    });
+
+    expect(everyone.letsRead(reading('account-dan'))).toBe(true);
+  });
+});

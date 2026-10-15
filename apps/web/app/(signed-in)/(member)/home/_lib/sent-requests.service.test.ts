@@ -43,7 +43,7 @@ describe('reading the Feedback Requests I sent', () => {
       {
         id: 'request-1',
         topic: 'my presentation skills',
-        visibility: 'ONLY_ME',
+        visibility: { value: 'ONLY_ME', selectedPeople: [] },
         createdAt: '2026-10-11T03:00:00.000Z',
         asks: [
           {
@@ -71,7 +71,7 @@ describe('reading the Feedback Requests I sent', () => {
       {
         id: 'request-1',
         topic: 'my presentation skills',
-        visibility: 'ONLY_ME',
+        visibility: { value: 'ONLY_ME', selectedPeople: [] },
         createdAt: '2026-10-11T03:00:00.000Z',
         asks: [
           {

@@ -22,6 +22,7 @@ function setUp() {
       requesterAccountId: ANA,
       topic: 'my presentation skills',
       visibility: 'ONLY_ME',
+      selectedAccountIds: [],
       createdAt: new Date('2026-10-11T03:00:00.000Z'),
       asks: [
         { askId: ASK_FOR_BEN, giverAccountId: BEN, status: 'PENDING' },
@@ -34,6 +35,7 @@ function setUp() {
       requesterAccountId: CARA,
       topic: 'how I run stand-up',
       visibility: 'ONLY_ME',
+      selectedAccountIds: [],
       createdAt: new Date('2026-10-09T03:00:00.000Z'),
       asks: [
         {

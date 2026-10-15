@@ -14,6 +14,34 @@ export class GiverNotInWorkspaceError extends ApplicationError {
 }
 
 /**
+ * The Requester selected somebody outside their Workspace to read the answers. Checked here
+ * for the same reason the Givers are: the body is where a client could name anybody, and an
+ * answer must never reach a stranger.
+ */
+export class SelectedPersonNotInWorkspaceError extends ApplicationError {
+  readonly code = 'SELECTED_PERSON_NOT_IN_WORKSPACE';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('One of the Members selected is not in this Workspace.');
+  }
+}
+
+/**
+ * No Feedback with this id is the caller's to read in this Workspace. One answer for "it does
+ * not exist" and "its Visibility leaves you out", so no id can be probed for and no Member
+ * learns what was written about somebody else.
+ */
+export class FeedbackNotFoundError extends ApplicationError {
+  readonly code = 'FEEDBACK_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super('No Feedback with this id is yours to read in this Workspace.');
+  }
+}
+
+/**
  * No Feedback Request with this id belongs to the Workspace in the path. One answer for both
  * "it does not exist" and "it is someone else's", so no id can be probed for.
  */

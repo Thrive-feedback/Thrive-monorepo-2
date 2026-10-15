@@ -24,4 +24,17 @@ export class WorkspaceMembershipAdapter extends WorkspaceMembershipPort {
       )) !== null
     );
   }
+
+  async membersAmong(members: {
+    readonly workspaceId: string;
+    readonly accountIds: readonly string[];
+  }): Promise<readonly string[]> {
+    if (members.accountIds.length === 0) {
+      return [];
+    }
+    return this.membershipQuery.membersAmong(
+      members.workspaceId,
+      members.accountIds,
+    );
+  }
 }

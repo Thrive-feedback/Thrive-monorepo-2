@@ -22,6 +22,7 @@ function setUp() {
     requesterAccountId: REQUESTER,
     topic: 'my presentation skills',
     visibility: 'ONLY_ME',
+    selectedAccountIds: [],
     createdAt: CREATED_AT,
     asks: [{ askId: ASK_ID, giverAccountId: GIVER, status: 'PENDING' }],
   });
@@ -58,6 +59,25 @@ function benHasAnswered(setUpResult: ReturnType<typeof setUp>): void {
   });
 }
 
+function sharedWithBystander(setUpResult: ReturnType<typeof setUp>): void {
+  const { accountSummaryPort, feedbackRequestQuery } = setUpResult;
+  const row = feedbackRequestQuery.rows[0];
+  if (!row) {
+    throw new Error('The fixture has no Feedback Request.');
+  }
+  feedbackRequestQuery.rows[0] = {
+    ...row,
+    visibility: 'SELECTED_PEOPLE',
+    selectedAccountIds: [BYSTANDER],
+  };
+  accountSummaryPort.summaries.push({
+    accountId: BYSTANDER,
+    email: 'cara@acme.test',
+    fullName: 'Cara Diaz',
+    displayName: 'Cara',
+  });
+}
+
 describe('reading one Feedback Request', () => {
   it('names the Member asked and says where their Ask stands', async () => {
     const { useCase } = setUp();
@@ -71,7 +91,7 @@ describe('reading one Feedback Request', () => {
     expect(found).toEqual({
       id: REQUEST_ID,
       topic: 'my presentation skills',
-      visibility: 'ONLY_ME',
+      visibility: { value: 'ONLY_ME', selectedPeople: [] },
       asks: [
         {
           askId: ASK_ID,
@@ -113,6 +133,48 @@ describe('reading one Feedback Request', () => {
     });
 
     expect(found.topic).toBe('my presentation skills');
+  });
+
+  it('tells the Requester who they shared it with, by name', async () => {
+    const context = setUp();
+    sharedWithBystander(context);
+
+    const found = await context.useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      callerAccountId: REQUESTER,
+      requestId: REQUEST_ID,
+    });
+
+    expect(found.visibility).toEqual({
+      value: 'SELECTED_PEOPLE',
+      selectedPeople: [{ accountId: BYSTANDER, name: 'Cara Diaz' }],
+    });
+  });
+
+  it('does not tell the Giver who else reads their answer', async () => {
+    const context = setUp();
+    sharedWithBystander(context);
+
+    const found = await context.useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      callerAccountId: GIVER,
+      requestId: REQUEST_ID,
+    });
+
+    expect(found.visibility).toBeNull();
+  });
+
+  it('answers not-found to a Member it is shared with, who reads its Feedback rather than the request', async () => {
+    const context = setUp();
+    sharedWithBystander(context);
+
+    await expect(
+      context.useCase.execute({
+        workspaceId: WORKSPACE_ID,
+        callerAccountId: BYSTANDER,
+        requestId: REQUEST_ID,
+      }),
+    ).rejects.toThrow(FeedbackRequestNotFoundError);
   });
 
   it('answers not-found to a Member who is neither the Requester nor a Giver', async () => {

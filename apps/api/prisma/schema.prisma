@@ -189,14 +189,28 @@ model FeedbackRequest {
   /// The Account of the Member who asked. They become the Receiver of what it collects.
   requesterAccountId String
   topic              String
-  /// Interim: every request is ONLY_ME until #83 lets the Requester choose.
+  /// Who besides the Giver and the Requester reads what it collects. Fixed once sent. The
+  /// default only fills rows written before the Requester could choose.
   visibility         Visibility    @default(ONLY_ME)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
   asks               FeedbackAsk[]
+  selectedPeople     FeedbackRequestSelectedPerson[]
 
   @@index([workspaceId, requesterAccountId])
   @@map("feedback_request")
+}
+
+/// One Member the Requester chose to read what a request collects, when its Visibility is
+/// SELECTED_PEOPLE (glossary: Visibility, Selected people). Personal data: an Account id only.
+model FeedbackRequestSelectedPerson {
+  feedbackRequestId String
+  feedbackRequest   FeedbackRequest @relation(fields: [feedbackRequestId], references: [id], onDelete: Cascade)
+  /// The Account of the Member selected. No foreign key: Accounts are Identity's.
+  accountId         String
+
+  @@id([feedbackRequestId, accountId])
+  @@map("feedback_request_selected_person")
 }
 
 /// One Member being asked, inside a Feedback Request (glossary: Ask).

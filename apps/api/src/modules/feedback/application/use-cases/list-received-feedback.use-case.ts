@@ -22,7 +22,7 @@ export interface ListReceivedFeedbackInput {
  * of this that lists somebody else's Feedback cannot be written by accident — which is the
  * whole authorization rule for this screen. A Member owns their own history: not an Admin, not
  * the Owner (`#26`, `BE_21` R4/R6). Who *else* may read a piece of Feedback is the Requester's
- * or the Giver's choice, and that is #84 and #86, not this route.
+ * or the Giver's choice, applied where one piece is opened, not on this route.
  */
 @Injectable()
 export class ListReceivedFeedbackUseCase {

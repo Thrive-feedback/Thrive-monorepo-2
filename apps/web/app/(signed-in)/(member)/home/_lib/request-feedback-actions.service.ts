@@ -73,6 +73,7 @@ export async function requestFeedback(
         body: {
           topic: input.data.topic,
           giverAccountIds: [input.data.giverAccountId],
+          visibility: 'ONLY_ME',
         },
       }),
     );

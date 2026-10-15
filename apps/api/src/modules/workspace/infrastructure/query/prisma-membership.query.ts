@@ -58,6 +58,17 @@ export class PrismaMembershipQuery extends MembershipQuery {
     return member ? toMembershipView(member) : null;
   }
 
+  async membersAmong(
+    workspaceId: string,
+    accountIds: readonly string[],
+  ): Promise<readonly string[]> {
+    const members = await this.prismaTransactionContext.client.member.findMany({
+      where: { workspaceId, userId: { in: [...accountIds] } },
+      select: { userId: true },
+    });
+    return members.map((member) => member.userId);
+  }
+
   async membersOfWorkspace(
     workspaceId: string,
     page: PageRequest,

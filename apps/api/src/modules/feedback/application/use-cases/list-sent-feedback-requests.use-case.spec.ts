@@ -20,6 +20,7 @@ function setUp() {
       requesterAccountId: ANA,
       topic: 'my presentation skills',
       visibility: 'ONLY_ME',
+      selectedAccountIds: [],
       createdAt: new Date('2026-10-11T03:00:00.000Z'),
       asks: [
         {
@@ -35,6 +36,7 @@ function setUp() {
       requesterAccountId: ANA,
       topic: 'how I run stand-up',
       visibility: 'ONLY_ME',
+      selectedAccountIds: [],
       createdAt: new Date('2026-10-12T03:00:00.000Z'),
       asks: [
         {
@@ -50,6 +52,7 @@ function setUp() {
       requesterAccountId: BEN,
       topic: "Ben's own request",
       visibility: 'ONLY_ME',
+      selectedAccountIds: [],
       createdAt: new Date('2026-10-12T04:00:00.000Z'),
       asks: [
         {

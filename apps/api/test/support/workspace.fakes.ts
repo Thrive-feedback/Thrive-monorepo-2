@@ -202,6 +202,18 @@ export class FakeMembershipQuery extends MembershipQuery {
     return found ? { workspace: found.workspace, role: found.role } : null;
   }
 
+  async membersAmong(
+    workspaceId: string,
+    accountIds: readonly string[],
+  ): Promise<readonly string[]> {
+    return this.memberships
+      .filter(
+        (m) =>
+          m.workspace.id === workspaceId && accountIds.includes(m.accountId),
+      )
+      .map((m) => m.accountId);
+  }
+
   async membersOfWorkspace(
     workspaceId: string,
     page: PageRequest,

@@ -1,6 +1,7 @@
 import type {
   FeedbackAsk as FeedbackAskRecord,
   FeedbackRequest as FeedbackRequestRecord,
+  FeedbackRequestSelectedPerson as FeedbackRequestSelectedPersonRecord,
 } from '@app/infrastructure/database/generated/client';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 
@@ -8,6 +9,7 @@ import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 
 type StoredRequest = FeedbackRequestRecord & {
   readonly asks: readonly FeedbackAskRecord[];
+  readonly selectedPeople: readonly FeedbackRequestSelectedPersonRecord[];
 };
 
 export function toFeedbackRequest(record: StoredRequest): FeedbackRequest {
@@ -17,6 +19,7 @@ export function toFeedbackRequest(record: StoredRequest): FeedbackRequest {
     requesterAccountId: record.requesterAccountId,
     topic: record.topic,
     visibility: record.visibility,
+    selectedAccountIds: record.selectedPeople.map((person) => person.accountId),
     asks: record.asks.map((ask) => ({
       id: ask.id,
       giverAccountId: ask.giverAccountId,
@@ -34,6 +37,10 @@ export function toFeedbackRequestRecord(request: FeedbackRequest): Omit<
     FeedbackAskRecord,
     'createdAt' | 'updatedAt' | 'feedbackRequestId'
   >[];
+  readonly selectedPeople: readonly Omit<
+    FeedbackRequestSelectedPersonRecord,
+    'feedbackRequestId'
+  >[];
 } {
   const snapshot = request.snapshot();
   return {
@@ -46,6 +53,9 @@ export function toFeedbackRequestRecord(request: FeedbackRequest): Omit<
       id: ask.id,
       giverAccountId: ask.giverAccountId,
       status: ask.status as FeedbackAskRecord['status'],
+    })),
+    selectedPeople: snapshot.selectedAccountIds.map((accountId) => ({
+      accountId,
     })),
   };
 }

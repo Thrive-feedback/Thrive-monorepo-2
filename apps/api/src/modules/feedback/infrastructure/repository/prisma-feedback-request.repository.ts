@@ -43,11 +43,19 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
   }
 
   async save(request: FeedbackRequest): Promise<void> {
-    const { asks, ...record } = toFeedbackRequestRecord(request);
-    // The request and its Asks are one aggregate, so they are written in one statement:
-    // a request stored without its Asks would be a request nobody was asked for.
+    const { asks, selectedPeople, ...record } =
+      toFeedbackRequestRecord(request);
+    // The request, its Asks and the people it is shared with are one aggregate, so they are
+    // written in one statement: a request stored without its Asks would be a request nobody
+    // was asked for, and one without its selected people would be read by nobody it promised.
     await this.prismaTransactionContext.client.feedbackRequest.create({
-      data: { ...record, asks: { create: asks.map((ask) => ({ ...ask })) } },
+      data: {
+        ...record,
+        asks: { create: asks.map((ask) => ({ ...ask })) },
+        selectedPeople: {
+          create: selectedPeople.map((person) => ({ ...person })),
+        },
+      },
     });
   }
 
@@ -62,7 +70,10 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
           workspaceId,
           asks: { some: { id: askId, giverAccountId } },
         },
-        include: { asks: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] } },
+        include: {
+          asks: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
+          selectedPeople: { orderBy: { accountId: 'asc' } },
+        },
       });
     return record ? toFeedbackRequest(record) : null;
   }
@@ -107,7 +118,10 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
     const record =
       await this.prismaTransactionContext.client.feedbackRequest.findFirst({
         where: { id: requestId, workspaceId },
-        include: { asks: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] } },
+        include: {
+          asks: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
+          selectedPeople: { orderBy: { accountId: 'asc' } },
+        },
       });
     return record ? toFeedbackRequest(record) : null;
   }

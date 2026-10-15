@@ -110,18 +110,25 @@ export async function joinWorkspaceOf(
   world.joined(name, world.workspaceOf(owner));
 }
 
+/** Who besides the Requester and the Giver may read what a request collects, as sent. */
+export interface VisibilityChosen {
+  readonly visibility: 'ONLY_ME' | 'SELECTED_PEOPLE' | 'EVERYONE';
+  readonly selectedAccountIds?: readonly string[];
+}
+
 export async function askForFeedback(
   world: ThriveWorld,
   requester: string,
   giver: string,
   topic: string,
+  visibility: VisibilityChosen = { visibility: 'ONLY_ME' },
 ): Promise<ApiResponse> {
   const workspaceId = world.workspaceOf(requester);
   const response = await world.as(
     requester,
     'POST',
     `/v1/workspaces/${workspaceId}/feedback-requests`,
-    { topic, giverAccountIds: [world.person(giver).accountId] },
+    { topic, giverAccountIds: [world.person(giver).accountId], ...visibility },
   );
   if (response.status === 201) {
     world.feedbackRequest = { id: response.body.id, workspaceId };
@@ -162,12 +169,17 @@ export async function answerTheirAsk(
   giver: string,
   body: string,
 ): Promise<ApiResponse> {
-  return world.as(
+  const workspaceId = world.workspaceOf(giver);
+  const response = await world.as(
     giver,
     'POST',
-    `/v1/workspaces/${world.workspaceOf(giver)}/feedback-asks/${await askIdWaitingFor(world, giver)}/answers`,
+    `/v1/workspaces/${workspaceId}/feedback-asks/${await askIdWaitingFor(world, giver)}/answers`,
     { body },
   );
+  if (response.status === 201) {
+    world.feedback = { id: response.body.feedbackId, workspaceId };
+  }
+  return response;
 }
 
 /**

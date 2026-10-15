@@ -254,7 +254,7 @@ export interface paths {
         /** List the Feedback Requests the caller sent in this Workspace */
         get: operations["FeedbackRequestController_listSentFeedbackRequests"];
         put?: never;
-        /** Ask a Member of this Workspace for Feedback on a Topic */
+        /** Ask a Member of this Workspace for Feedback on a Topic, choosing who else reads the answers */
         post: operations["FeedbackRequestController_sendFeedbackRequest"];
         delete?: never;
         options?: never;
@@ -339,6 +339,23 @@ export interface paths {
         };
         /** List the Feedback written to the caller in this Workspace */
         get: operations["FeedbackController_listReceivedFeedback"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/feedback/{feedbackId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one piece of Feedback, if its Visibility lets the caller read it */
+        get: operations["FeedbackController_getFeedback"];
         put?: never;
         post?: never;
         delete?: never;
@@ -496,6 +513,9 @@ export interface components {
         SendFeedbackRequestRequestDto: {
             topic: string;
             giverAccountIds: string[];
+            /** @enum {string} */
+            visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
+            selectedAccountIds?: string[];
         };
         SendFeedbackRequestResponseDto_Output: {
             /** Format: uuid */
@@ -506,8 +526,15 @@ export interface components {
                 /** Format: uuid */
                 id: string;
                 topic: string;
-                /** @enum {string} */
-                visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
+                visibility: {
+                    /** @enum {string} */
+                    value: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
+                    selectedPeople: {
+                        /** Format: uuid */
+                        accountId: string;
+                        name: string | null;
+                    }[];
+                } | null;
                 asks: {
                     /** Format: uuid */
                     askId: string;
@@ -533,8 +560,15 @@ export interface components {
             /** Format: uuid */
             id: string;
             topic: string;
-            /** @enum {string} */
-            visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
+            visibility: {
+                /** @enum {string} */
+                value: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
+                selectedPeople: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                }[];
+            } | null;
             asks: {
                 /** Format: uuid */
                 askId: string;
@@ -613,6 +647,26 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+        };
+        GetFeedbackResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            feedbackRequestId: string;
+            topic: string;
+            giver: {
+                /** Format: uuid */
+                accountId: string;
+                name: string | null;
+            };
+            receiver: {
+                /** Format: uuid */
+                accountId: string;
+                name: string | null;
+            };
+            body: string;
+            /** Format: date-time */
+            createdAt: string;
         };
     };
     responses: never;
@@ -1288,7 +1342,7 @@ export interface operations {
                     "application/json": components["schemas"]["SendFeedbackRequestResponseDto_Output"];
                 };
             };
-            /** @description REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED or GIVER_NOT_IN_WORKSPACE */
+            /** @description REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF or SELECTED_PERSON_NOT_IN_WORKSPACE */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1535,6 +1589,52 @@ export interface operations {
                 content?: never;
             };
             /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedbackController_getFeedback: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                feedbackId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetFeedbackResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or FEEDBACK_NOT_FOUND */
             404: {
                 headers: {
                     [name: string]: unknown;

@@ -29,11 +29,26 @@ export interface AskView {
   readonly answer: AnswerView | null;
 }
 
+/** A Member a request is shared with, by name. */
+export interface SelectedPersonView {
+  readonly accountId: string;
+  /** `null` while that Member has not introduced themselves. */
+  readonly name: string | null;
+}
+
+/** Who besides the Giver and the Requester reads a request's answers. */
+export interface VisibilityView {
+  readonly value: VisibilityValue;
+  /** Empty unless `value` is Selected people. */
+  readonly selectedPeople: readonly SelectedPersonView[];
+}
+
 /** One Feedback Request as a screen reads it. */
 export interface FeedbackRequestView {
   readonly id: string;
   readonly topic: string;
-  readonly visibility: VisibilityValue;
+  /** `null` when the caller is a Giver, who is not told who else reads it (`ADR-0022`). */
+  readonly visibility: VisibilityView | null;
   readonly asks: readonly AskView[];
   readonly createdAt: Date;
 }
@@ -74,6 +89,24 @@ export interface ReceivedFeedbackView {
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
+  readonly body: string;
+  readonly createdAt: Date;
+}
+
+/**
+ * One piece of Feedback, the same for every reader its Visibility lets in: the Receiver, the Giver, or a
+ * Member its Visibility reaches — who needs to be told who it is about.
+ */
+export interface FeedbackView {
+  readonly id: string;
+  readonly feedbackRequestId: string;
+  readonly topic: string;
+  readonly giverAccountId: string;
+  /** `null` while the Giver has not introduced themselves. */
+  readonly giverName: string | null;
+  readonly receiverAccountId: string;
+  /** `null` while the Receiver has not introduced themselves. */
+  readonly receiverName: string | null;
   readonly body: string;
   readonly createdAt: Date;
 }
