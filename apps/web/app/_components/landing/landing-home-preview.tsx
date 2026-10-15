@@ -11,6 +11,7 @@ import { SentRequestListView } from '@/components/organisms/sent-request-list-vi
 import { WaitingAskListView } from '@/components/organisms/waiting-ask-list-view';
 import { HomeView } from '@/components/templates/home-view';
 import type { AnswerAskAction } from '@/lib/feedback/answer-ask-state.type';
+import type { GiveFeedbackAction } from '@/lib/feedback/give-feedback-state.type';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { RequestFeedbackAction } from '@/lib/feedback/request-feedback-state.type';
 import type { SentRequest } from '@/lib/feedback/sent-request.type';
@@ -70,6 +71,12 @@ export function LandingHomePreview() {
     };
     setSentRequests((current) => [sent, ...current]);
     setTab('my-requests');
+    setComposerKey((key) => key + 1);
+    return {};
+  };
+
+  // What was given goes to someone else, so nothing here lists it; the composer starts over.
+  const giveFeedback: GiveFeedbackAction = async () => {
     setComposerKey((key) => key + 1);
     return {};
   };
@@ -149,6 +156,7 @@ export function LandingHomePreview() {
                 key={composerKey}
                 teammates={PREVIEW_TEAMMATES}
                 requestAction={requestFeedback}
+                giveAction={giveFeedback}
               />
             }
             workspaceFeed={

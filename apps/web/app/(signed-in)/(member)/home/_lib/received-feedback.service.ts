@@ -33,6 +33,7 @@ export const readReceivedFeedback = cache(
     return received.items.map((feedback) => ({
       id: feedback.id,
       topic: feedback.topic,
+      offered: feedback.origin === 'OFFERED',
       giverName: feedback.giverName,
       body: feedback.body,
       writtenAt: feedback.createdAt,

@@ -104,6 +104,7 @@ export const PREVIEW_RECEIVED: readonly ReceivedFeedback[] = [
   {
     id: 'preview-received-1',
     topic: 'How I ran Monday’s sprint planning',
+    offered: false,
     giverName: 'Arm Wattana',
     body: 'Keep the five-minute recap at the start. Next time, share the agenda the day before so we can come prepared.',
     writtenAt: '2026-10-13T04:15:00.000Z',

@@ -1,60 +1,68 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { startTransition, useActionState, useRef, useState } from 'react';
 import { Button } from '@/components/atoms/button';
+import { Text } from '@/components/atoms/text';
 import { TextAreaField } from '@/components/molecules/text-area-field';
 import { TextField } from '@/components/molecules/text-field';
+import type {
+  GiveFeedbackAction,
+  GiveFeedbackState,
+} from '@/lib/feedback/give-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { MemberPicker } from './member-picker';
 import { SELECTED_PEOPLE, VisibilityPicker } from './visibility-picker';
 
 export type GiveFeedbackFormProps = {
   teammates: readonly Teammate[];
+  /** Sends the Feedback: Home's server action, or a stand-in. */
+  action: GiveFeedbackAction;
 };
 
-/** Who besides the Giver and the Receiver may read Offered Feedback (`ADR-0022`). */
+/**
+ * Who besides the Giver and the Receiver may read Offered Feedback (`ADR-0022`). "Only them" is
+ * the Giver's name for the audience a Requester calls "Only me": nobody besides the two of them.
+ */
 const VISIBILITIES = [
-  { value: 'ONLY_THEM', label: 'Only them' },
+  { value: 'ONLY_ME', label: 'Only them' },
   { value: SELECTED_PEOPLE, label: 'Selected people' },
   { value: 'EVERYONE', label: 'Everyone in the Workspace' },
 ] as const;
 
 type Visibility = (typeof VISIBILITIES)[number]['value'];
 
-type FieldErrors = {
-  readonly receiverAccountId?: string;
-  readonly topic?: string;
-  readonly body?: string;
-  readonly selectedAccountIds?: string;
-};
+type FieldErrors = NonNullable<GiveFeedbackState['fieldErrors']>;
 
-/** As long as an answer to an Ask may be. */
+/** As long as the API lets Feedback be. */
 const MAX_BODY_LENGTH = 4000;
-
-const PREVIEW_ONLY =
-  'Preview only: Give feedback isn’t connected yet, so nothing was sent.';
 
 /**
  * Giving Feedback without being asked — Offered Feedback. The Giver picks the Receiver, a Topic,
- * writes one answer, and chooses who else may read it, which never changes afterwards.
+ * writes one answer, and chooses who else may read it, which never changes afterwards. Sending
+ * goes back to Home, which says once that it went.
  *
- * Not connected: the API cannot take Offered Feedback yet. Sending checks the form as the real
- * one will, then says nothing was sent and clears it.
+ * Every field stays controlled, so what was picked and typed survives a refusal. The form is
+ * submitted by hand rather than through `action`, because React resets a form after its action.
  */
-export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
+export function GiveFeedbackForm({ teammates, action }: GiveFeedbackFormProps) {
   const [receiverAccountId, setReceiverAccountId] = useState('');
   const [topic, setTopic] = useState('');
   const [body, setBody] = useState('');
-  const [visibility, setVisibility] = useState<Visibility>('ONLY_THEM');
+  const [visibility, setVisibility] = useState<Visibility>('ONLY_ME');
   const [selectedAccountIds, setSelectedAccountIds] = useState<
     ReadonlySet<string>
   >(new Set());
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [clientErrors, setClientErrors] = useState<FieldErrors>({});
+  const [state, formAction, isSending] = useActionState<
+    GiveFeedbackState,
+    FormData
+  >(action, {});
   const pickerRef = useRef<HTMLButtonElement>(null);
   const topicRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const selectedRef = useRef<HTMLFieldSetElement>(null);
+
+  const errors: FieldErrors = { ...state.fieldErrors, ...clientErrors };
 
   // The Receiver always reads it, so they are not one of the people to select.
   const othersToShareWith = teammates.filter(
@@ -71,16 +79,10 @@ export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
       }
       return next;
     });
-    setErrors((current) => ({ ...current, selectedAccountIds: undefined }));
-  }
-
-  function reset() {
-    setReceiverAccountId('');
-    setTopic('');
-    setBody('');
-    setVisibility('ONLY_THEM');
-    setSelectedAccountIds(new Set());
-    setErrors({});
+    setClientErrors((current) => ({
+      ...current,
+      selectedAccountIds: undefined,
+    }));
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -109,7 +111,7 @@ export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
       found.body ||
       found.selectedAccountIds
     ) {
-      setErrors(found);
+      setClientErrors(found);
       // Focus the first field in error, in the order the page reads.
       if (found.receiverAccountId) pickerRef.current?.focus();
       else if (found.topic) topicRef.current?.focus();
@@ -117,8 +119,18 @@ export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
       else selectedRef.current?.querySelector('button')?.focus();
       return;
     }
-    toast.info(PREVIEW_ONLY, { id: PREVIEW_ONLY });
-    reset();
+    setClientErrors({});
+    const formData = new FormData();
+    formData.set('receiverAccountId', receiverAccountId);
+    formData.set('topic', topic);
+    formData.set('body', body);
+    formData.set('visibility', visibility);
+    if (visibility === SELECTED_PEOPLE) {
+      for (const teammate of selectedOthers) {
+        formData.append('selectedAccountIds', teammate.accountId);
+      }
+    }
+    startTransition(() => formAction(formData));
   }
 
   return (
@@ -132,7 +144,7 @@ export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
         errorMessage={errors.receiverAccountId}
         onChange={(accountId) => {
           setReceiverAccountId(accountId);
-          setErrors((current) => ({
+          setClientErrors((current) => ({
             ...current,
             receiverAccountId: undefined,
           }));
@@ -147,7 +159,7 @@ export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
         value={topic}
         onChange={(event) => {
           setTopic(event.target.value);
-          setErrors((current) => ({ ...current, topic: undefined }));
+          setClientErrors((current) => ({ ...current, topic: undefined }));
         }}
         errorMessage={errors.topic}
       />
@@ -161,7 +173,7 @@ export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
         value={body}
         onChange={(event) => {
           setBody(event.target.value);
-          setErrors((current) => ({ ...current, body: undefined }));
+          setClientErrors((current) => ({ ...current, body: undefined }));
         }}
         errorMessage={errors.body}
         helperText="Your name is shown with it."
@@ -176,14 +188,24 @@ export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
         errorMessage={errors.selectedAccountIds}
         onValueChange={(value) => {
           setVisibility(value);
-          setErrors((current) => ({
+          setClientErrors((current) => ({
             ...current,
             selectedAccountIds: undefined,
           }));
         }}
         onSelectedChange={toggleSelected}
       />
-      <Button type="submit" variant="primary" className="mt-2 w-full">
+      {state.formError && (
+        <Text role="alert" variant="body-2" tone="danger">
+          {state.formError}
+        </Text>
+      )}
+      <Button
+        type="submit"
+        variant="primary"
+        disabled={isSending}
+        className="mt-2 w-full"
+      >
         Send feedback
       </Button>
     </form>

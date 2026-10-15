@@ -18,6 +18,7 @@ const MEMBERSHIP = {
 const ONE_PIECE = {
   id: 'fb-1',
   topic: 'my presentation skills',
+  offered: false,
   giverName: 'Ben Carter',
   body: 'You open strongly and lose the room at the detail.',
   writtenAt: '2026-10-11T03:00:00.000Z',
@@ -50,6 +51,17 @@ describe('ReceivedFeedbackList', () => {
     expect(
       screen.getByText('You open strongly and lose the room at the detail.'),
     ).toBeInTheDocument();
+  });
+
+  it('marks Feedback given without being asked, and only that', async () => {
+    readReceivedFeedback.mockResolvedValue([
+      { ...ONE_PIECE, id: 'fb-2', topic: 'the customer demo', offered: true },
+      ONE_PIECE,
+    ]);
+
+    await renderList();
+
+    expect(screen.getAllByText(/Given without a request/)).toHaveLength(1);
   });
 
   it('keeps the line breaks the Giver wrote', async () => {

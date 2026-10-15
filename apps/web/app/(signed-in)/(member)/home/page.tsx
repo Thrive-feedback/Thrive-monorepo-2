@@ -24,12 +24,14 @@ export const metadata: Metadata = {
 type HomeProps = {
   /**
    * `signedIn` is set when Google sent a returning person back here, `sent` when they have just
-   * sent a Feedback Request, `tab` is the feed tab that is open, and `request` or `ask` is the
-   * one open in a dialog over it.
+   * sent a Feedback Request, `given` when they have just given Feedback without being asked,
+   * `tab` is the feed tab that is open, and `request` or `ask` is the one open in a dialog over
+   * it.
    */
   searchParams: Promise<{
     signedIn?: string | string[];
     sent?: string | string[];
+    given?: string | string[];
     tab?: string | string[];
     request?: string | string[];
     ask?: string | string[];
@@ -48,7 +50,7 @@ type HomeProps = {
  * the address, so a reload or a shared link opens it again; a request wins if both are named.
  */
 export default async function Home({ searchParams }: HomeProps) {
-  const { signedIn, sent, tab, request, ask } = HomeSearchParams.parse(
+  const { signedIn, sent, given, tab, request, ask } = HomeSearchParams.parse(
     await searchParams,
   );
   const session = await requireMember(signedIn);
@@ -66,6 +68,13 @@ export default async function Home({ searchParams }: HomeProps) {
         <OneTimeToast
           type="success"
           message="Request sent"
+          then={ROUTES.homeTab(tab)}
+        />
+      )}
+      {given !== undefined && (
+        <OneTimeToast
+          type="success"
+          message="Feedback sent"
           then={ROUTES.homeTab(tab)}
         />
       )}
