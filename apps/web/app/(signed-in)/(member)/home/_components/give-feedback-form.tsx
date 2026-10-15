@@ -1,16 +1,13 @@
 'use client';
 
-import { useId, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { Teammate } from '@/app/(signed-in)/(member)/home/_lib/teammate.type';
 import { Button } from '@/components/atoms/button';
-import { Checkbox } from '@/components/atoms/checkbox';
-import { Label } from '@/components/atoms/label';
-import { RadioGroup, RadioGroupItem } from '@/components/atoms/radio-group';
-import { Text } from '@/components/atoms/text';
 import { TextAreaField } from '@/components/molecules/text-area-field';
 import { TextField } from '@/components/molecules/text-field';
 import { MemberPicker } from './member-picker';
+import { SELECTED_PEOPLE, VisibilityPicker } from './visibility-picker';
 
 export type GiveFeedbackFormProps = {
   teammates: readonly Teammate[];
@@ -19,7 +16,7 @@ export type GiveFeedbackFormProps = {
 /** Who besides the Giver and the Receiver may read Offered Feedback (`ADR-0022`). */
 const VISIBILITIES = [
   { value: 'ONLY_THEM', label: 'Only them' },
-  { value: 'SELECTED_PEOPLE', label: 'Selected people' },
+  { value: SELECTED_PEOPLE, label: 'Selected people' },
   { value: 'EVERYONE', label: 'Everyone in the Workspace' },
 ] as const;
 
@@ -58,8 +55,6 @@ export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
   const topicRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const selectedRef = useRef<HTMLFieldSetElement>(null);
-  const visibilityLabelId = useId();
-  const selectedMessageId = useId();
 
   // The Receiver always reads it, so they are not one of the people to select.
   const othersToShareWith = teammates.filter(
@@ -104,7 +99,7 @@ export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
             ? `Keep it under ${MAX_BODY_LENGTH} characters.`
             : undefined,
       selectedAccountIds:
-        visibility === 'SELECTED_PEOPLE' && selectedOthers.length === 0
+        visibility === SELECTED_PEOPLE && selectedOthers.length === 0
           ? 'Pick at least one person to share it with.'
           : undefined,
     };
@@ -171,83 +166,23 @@ export function GiveFeedbackForm({ teammates }: GiveFeedbackFormProps) {
         errorMessage={errors.body}
         helperText="Your name is shown with it."
       />
-      <div className="flex flex-col gap-2">
-        <Text as="span" id={visibilityLabelId} variant="label">
-          Who else can read it?
-        </Text>
-        <RadioGroup
-          aria-labelledby={visibilityLabelId}
-          value={visibility}
-          onValueChange={(value) => {
-            setVisibility(value as Visibility);
-            setErrors((current) => ({
-              ...current,
-              selectedAccountIds: undefined,
-            }));
-          }}
-        >
-          {VISIBILITIES.map((option) => (
-            <div key={option.value} className="flex items-center gap-2">
-              <RadioGroupItem
-                value={option.value}
-                id={`${visibilityLabelId}-${option.value}`}
-              />
-              <Label htmlFor={`${visibilityLabelId}-${option.value}`}>
-                {option.label}
-              </Label>
-            </div>
-          ))}
-        </RadioGroup>
-        <Text as="p" variant="caption" tone="muted">
-          This can&apos;t be changed after you send it.
-        </Text>
-      </div>
-      {visibility === 'SELECTED_PEOPLE' && (
-        <fieldset
-          ref={selectedRef}
-          aria-describedby={
-            errors.selectedAccountIds ? selectedMessageId : undefined
-          }
-          className="flex flex-col gap-2 rounded-element border border-border-subtle p-3"
-        >
-          <Text as="legend" variant="label" className="px-1">
-            Share it with
-          </Text>
-          {othersToShareWith.length === 0 ? (
-            <Text variant="body-2" tone="muted">
-              Nobody else is in your Workspace yet.
-            </Text>
-          ) : (
-            othersToShareWith.map((teammate) => {
-              const id = `${visibilityLabelId}-share-${teammate.accountId}`;
-              return (
-                <div
-                  key={teammate.accountId}
-                  className="flex items-center gap-2"
-                >
-                  <Checkbox
-                    id={id}
-                    checked={selectedAccountIds.has(teammate.accountId)}
-                    onCheckedChange={(checked) =>
-                      toggleSelected(teammate.accountId, checked === true)
-                    }
-                    aria-invalid={errors.selectedAccountIds ? true : undefined}
-                  />
-                  <Label htmlFor={id}>{teammate.name}</Label>
-                </div>
-              );
-            })
-          )}
-          {errors.selectedAccountIds && (
-            <p
-              id={selectedMessageId}
-              className="text-input-helper text-status-error-fg"
-            >
-              {errors.selectedAccountIds}
-            </p>
-          )}
-        </fieldset>
-      )}
+      <VisibilityPicker
+        ref={selectedRef}
+        options={VISIBILITIES}
+        value={visibility}
+        people={othersToShareWith}
+        selectedAccountIds={selectedAccountIds}
+        helperText="This can't be changed after you send it."
+        errorMessage={errors.selectedAccountIds}
+        onValueChange={(value) => {
+          setVisibility(value);
+          setErrors((current) => ({
+            ...current,
+            selectedAccountIds: undefined,
+          }));
+        }}
+        onSelectedChange={toggleSelected}
+      />
       <Button type="submit" variant="primary" className="mt-2 w-full">
         Send feedback
       </Button>
