@@ -36,12 +36,14 @@ function setUp(visibility: string, selectedAccountIds: string[] = []) {
       email: 'ben@acme.test',
       fullName: 'Ben Carter',
       displayName: 'Ben',
+      photoUrl: null,
     },
     {
       accountId: RECEIVER,
       email: 'ana@acme.test',
       fullName: 'Ana Lee',
       displayName: 'Ana',
+      photoUrl: null,
     },
   );
   return new GetFeedbackUseCase(
