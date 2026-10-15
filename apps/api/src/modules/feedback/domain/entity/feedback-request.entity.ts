@@ -1,5 +1,6 @@
 import {
   CannotAskYourselfError,
+  CannotSelectYourselfError,
   GiverAlreadyAskedError,
   NoGiversToAskError,
 } from '../feedback-request.errors';
@@ -15,6 +16,8 @@ export interface FeedbackRequestSnapshot {
   readonly requesterAccountId: string;
   readonly topic: string;
   readonly visibility: string;
+  /** The Members the Requester selected; empty unless the Visibility is Selected people. */
+  readonly selectedAccountIds: readonly string[];
   readonly asks: readonly FeedbackAskSnapshot[];
 }
 
@@ -43,8 +46,9 @@ export class FeedbackRequest {
   ) {}
 
   /**
-   * The Requester sends the request: a Topic and one Ask per Member asked. Every rule holds
-   * before it exists — at least one Giver, never the Requester, never the same Giver twice —
+   * The Requester sends the request: a Topic, who besides them may read the answers, and one
+   * Ask per Member asked. Every rule holds before it exists — at least one Giver, never the
+   * Requester, never the same Giver twice, and the Requester not among the people they select —
    * so there is no half-built request to save.
    */
   static send(details: {
@@ -57,6 +61,13 @@ export class FeedbackRequest {
   }): FeedbackRequest {
     if (details.givers.length === 0) {
       throw new NoGiversToAskError();
+    }
+    if (
+      details.visibility
+        .selectedAccountIds()
+        .includes(details.requesterAccountId)
+    ) {
+      throw new CannotSelectYourselfError();
     }
     const asked = new Set<string>();
     for (const giver of details.givers) {
@@ -87,10 +98,11 @@ export class FeedbackRequest {
    * Rebuilds a stored request with its Asks.
    *
    * Deliberately does not re-check what `send` checked. A stored row was valid when it was
-   * written, and the rules will change — more Givers per request, a chosen Visibility — so a
-   * load enforcing today's rules would refuse to read yesterday's rows. The checks stay where
-   * the aggregate is created, and the store holds the one invariant it can: a unique index on
-   * `(feedbackRequestId, giverAccountId)`.
+   * written, and the rules will change — more Givers per request, for one — so a load enforcing
+   * today's rules would refuse to read yesterday's rows. The checks stay where the aggregate is
+   * created, and the store holds the one invariant it can: a unique index on
+   * `(feedbackRequestId, giverAccountId)`. Only the Topic and the Visibility are rebuilt through
+   * their own factories, because a value that fails those is not a value at all.
    */
   static restore(snapshot: FeedbackRequestSnapshot): FeedbackRequest {
     return new FeedbackRequest(
@@ -98,7 +110,10 @@ export class FeedbackRequest {
       snapshot.workspaceId,
       snapshot.requesterAccountId,
       Topic.of(snapshot.topic),
-      Visibility.of(snapshot.visibility),
+      Visibility.of({
+        value: snapshot.visibility,
+        selectedAccountIds: snapshot.selectedAccountIds,
+      }),
       snapshot.asks.map((ask) => FeedbackAsk.restore(ask)),
     );
   }
@@ -146,6 +161,7 @@ export class FeedbackRequest {
       requesterAccountId: this.requesterAccountId,
       topic: this.topic.toString(),
       visibility: this.visibility.toString(),
+      selectedAccountIds: this.visibility.selectedAccountIds(),
       asks: this.asks.map((ask) => ask.snapshot()),
     };
   }

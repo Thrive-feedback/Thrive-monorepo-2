@@ -8,6 +8,7 @@ import {
   type FeedbackRequestPageRow,
   FeedbackRequestQuery,
   type FeedbackRequestRow,
+  type FeedbackWithVisibilityRow,
 } from '../../application/query-port/feedback-request.query-port';
 import type { PageRequest } from '../../application/types/feedback-request.types';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
@@ -26,6 +27,22 @@ const ASK_FIELDS = {
   id: true,
   giverAccountId: true,
   status: true,
+} as const;
+
+/** Selected people in a fixed order, so a request reads the same on every open. */
+const SELECTED_PEOPLE_IN_ORDER = {
+  orderBy: { accountId: 'asc' },
+  select: { accountId: true },
+} as const;
+
+const REQUEST_FIELDS = {
+  id: true,
+  requesterAccountId: true,
+  topic: true,
+  visibility: true,
+  createdAt: true,
+  asks: { orderBy: ASKS_IN_ORDER_ASKED, select: ASK_FIELDS },
+  selectedPeople: SELECTED_PEOPLE_IN_ORDER,
 } as const;
 
 const REQUEST_OF_ASK = {
@@ -52,29 +69,9 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     const record =
       await this.prismaTransactionContext.client.feedbackRequest.findFirst({
         where: { id: requestId, workspaceId },
-        select: {
-          id: true,
-          requesterAccountId: true,
-          topic: true,
-          visibility: true,
-          createdAt: true,
-          asks: { orderBy: ASKS_IN_ORDER_ASKED, select: ASK_FIELDS },
-        },
+        select: REQUEST_FIELDS,
       });
-    return record
-      ? {
-          id: record.id,
-          requesterAccountId: record.requesterAccountId,
-          topic: record.topic,
-          visibility: record.visibility,
-          createdAt: record.createdAt,
-          asks: record.asks.map((ask) => ({
-            askId: ask.id,
-            giverAccountId: ask.giverAccountId,
-            status: ask.status,
-          })),
-        }
-      : null;
+    return record ? toFeedbackRequestRow(record) : null;
   }
 
   async answersInRequest(
@@ -107,30 +104,12 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         orderBy: NEWEST_FIRST,
         skip: skipFor(page),
         take: page.pageSize,
-        select: {
-          id: true,
-          requesterAccountId: true,
-          topic: true,
-          visibility: true,
-          createdAt: true,
-          asks: { orderBy: ASKS_IN_ORDER_ASKED, select: ASK_FIELDS },
-        },
+        select: REQUEST_FIELDS,
       }),
       client.feedbackRequest.count({ where }),
     ]);
     return {
-      items: records.map((record) => ({
-        id: record.id,
-        requesterAccountId: record.requesterAccountId,
-        topic: record.topic,
-        visibility: record.visibility,
-        createdAt: record.createdAt,
-        asks: record.asks.map((ask) => ({
-          askId: ask.id,
-          giverAccountId: ask.giverAccountId,
-          status: ask.status,
-        })),
-      })),
+      items: records.map(toFeedbackRequestRow),
       total,
     };
   }
@@ -207,6 +186,53 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     };
   }
 
+  async feedbackInWorkspace(
+    workspaceId: string,
+    feedbackId: string,
+  ): Promise<FeedbackWithVisibilityRow | null> {
+    const record =
+      await this.prismaTransactionContext.client.feedback.findFirst({
+        where: { id: feedbackId, workspaceId },
+        select: {
+          id: true,
+          feedbackRequestId: true,
+          giverAccountId: true,
+          receiverAccountId: true,
+          body: true,
+          createdAt: true,
+          // Reached through the Ask, as in `receivedBy`: Feedback's one relation out.
+          feedbackAsk: {
+            select: {
+              feedbackRequest: {
+                select: {
+                  topic: true,
+                  visibility: true,
+                  selectedPeople: SELECTED_PEOPLE_IN_ORDER,
+                },
+              },
+            },
+          },
+        },
+      });
+    if (!record) {
+      return null;
+    }
+    const request = record.feedbackAsk.feedbackRequest;
+    return {
+      id: record.id,
+      feedbackRequestId: record.feedbackRequestId,
+      topic: request.topic,
+      giverAccountId: record.giverAccountId,
+      receiverAccountId: record.receiverAccountId,
+      body: record.body,
+      createdAt: record.createdAt,
+      visibility: request.visibility,
+      selectedAccountIds: request.selectedPeople.map(
+        (person) => person.accountId,
+      ),
+    };
+  }
+
   async askFor(
     workspaceId: string,
     giverAccountId: string,
@@ -247,5 +273,33 @@ function toFeedbackAskRow(record: {
     requesterAccountId: record.feedbackRequest.requesterAccountId,
     status: record.status,
     createdAt: record.createdAt,
+  };
+}
+
+function toFeedbackRequestRow(record: {
+  readonly id: string;
+  readonly requesterAccountId: string;
+  readonly topic: string;
+  readonly visibility: string;
+  readonly createdAt: Date;
+  readonly asks: readonly {
+    readonly id: string;
+    readonly giverAccountId: string;
+    readonly status: string;
+  }[];
+  readonly selectedPeople: readonly { readonly accountId: string }[];
+}): FeedbackRequestRow {
+  return {
+    id: record.id,
+    requesterAccountId: record.requesterAccountId,
+    topic: record.topic,
+    visibility: record.visibility,
+    selectedAccountIds: record.selectedPeople.map((person) => person.accountId),
+    createdAt: record.createdAt,
+    asks: record.asks.map((ask) => ({
+      askId: ask.id,
+      giverAccountId: ask.giverAccountId,
+      status: ask.status,
+    })),
   };
 }

@@ -1,11 +1,53 @@
 import assert from 'node:assert/strict';
-import { Given, Then, When } from '@cucumber/cucumber';
+import { defineParameterType, Given, Then, When } from '@cucumber/cucumber';
 import {
   answerTheirAsk,
   askForFeedback,
   askIdWaitingFor,
+  type VisibilityChosen,
 } from '../support/journeys';
 import type { ThriveWorld } from '../support/world';
+
+/**
+ * Who a Requester shares a request with, in the words the feature file uses: nobody else,
+ * everyone in the Workspace, or the people they pick by name. Names stay names here and become
+ * Accounts in `visibilityOf`, once the scenario has signed them in.
+ */
+defineParameterType({
+  name: 'sharedWith',
+  regexp:
+    /nobody else|everyone in the Workspace|[A-Z][a-z]+(?: and [A-Z][a-z]+)*/,
+});
+
+function visibilityOf(
+  world: ThriveWorld,
+  sharedWith: string,
+): VisibilityChosen {
+  if (sharedWith === 'nobody else') {
+    return { visibility: 'ONLY_ME' };
+  }
+  if (sharedWith === 'everyone in the Workspace') {
+    return { visibility: 'EVERYONE' };
+  }
+  return {
+    visibility: 'SELECTED_PEOPLE',
+    selectedAccountIds: sharedWith
+      .split(' and ')
+      .map((name) => world.person(name).accountId),
+  };
+}
+
+/** The answer the `When` step just got, which must have been a success. */
+function lastSucceeded(world: ThriveWorld, what: string) {
+  assert.ok(world.lastResponse, 'Nothing was asked of the API.');
+  return world.succeeded(world.lastResponse, what);
+}
+
+function openFeedback(world: ThriveWorld, name: string) {
+  assert.ok(world.feedback, 'No Feedback was written in this scenario.');
+  const { id, workspaceId } = world.feedback;
+  return world.as(name, 'GET', `/v1/workspaces/${workspaceId}/feedback/${id}`);
+}
 
 function openFeedbackRequest(world: ThriveWorld, name: string) {
   assert.ok(
@@ -343,5 +385,138 @@ Then(
   function (this: ThriveWorld, _name: string) {
     assert.deepEqual(this.lastResponse?.body.items, []);
     assert.equal(this.lastResponse?.body.total, 0);
+  },
+);
+
+Given(
+  '{person} has asked {person} for Feedback on {string}, shared with {sharedWith}',
+  async function (
+    this: ThriveWorld,
+    requester: string,
+    giver: string,
+    topic: string,
+    sharedWith: string,
+  ) {
+    this.succeeded(
+      await askForFeedback(
+        this,
+        requester,
+        giver,
+        topic,
+        visibilityOf(this, sharedWith),
+      ),
+      `${requester} asking ${giver} for Feedback, shared with ${sharedWith}`,
+    );
+  },
+);
+
+When(
+  '{person} asks {person} for Feedback on {string}, shared with {sharedWith}',
+  async function (
+    this: ThriveWorld,
+    requester: string,
+    giver: string,
+    topic: string,
+    sharedWith: string,
+  ) {
+    await askForFeedback(
+      this,
+      requester,
+      giver,
+      topic,
+      visibilityOf(this, sharedWith),
+    );
+  },
+);
+
+When(
+  '{person} asks {person} for Feedback on {string}, shared with selected people but picks nobody',
+  async function (
+    this: ThriveWorld,
+    requester: string,
+    giver: string,
+    topic: string,
+  ) {
+    await askForFeedback(this, requester, giver, topic, {
+      visibility: 'SELECTED_PEOPLE',
+      selectedAccountIds: [],
+    });
+  },
+);
+
+Then(
+  '{person} is told to pick somebody to share it with',
+  function (this: ThriveWorld, _name: string) {
+    assert.equal(this.lastResponse?.status, 400);
+    this.refusedWith('NO_PEOPLE_SELECTED');
+  },
+);
+
+Then(
+  '{person} is told they can only share it inside their Workspace',
+  function (this: ThriveWorld, _name: string) {
+    assert.equal(this.lastResponse?.status, 400);
+    this.refusedWith('SELECTED_PERSON_NOT_IN_WORKSPACE');
+  },
+);
+
+When(
+  '{person} opens the Feedback {person} wrote',
+  async function (this: ThriveWorld, name: string, _giver: string) {
+    await openFeedback(this, name);
+  },
+);
+
+Then(
+  '{person} reads {string} written by {person}',
+  function (this: ThriveWorld, name: string, body: string, giver: string) {
+    const response = lastSucceeded(this, `${name} opening the Feedback`);
+    assert.deepEqual(
+      [response.body.body, response.body.giver.accountId],
+      [body, this.person(giver).accountId],
+    );
+  },
+);
+
+Then(
+  '{person} is told the Feedback cannot be found',
+  function (this: ThriveWorld, _name: string) {
+    // Outside the Workspace, the Workspace is not found; inside it but not chosen, the Feedback
+    // is not found. Either way the caller learns nothing about it.
+    assert.equal(this.lastResponse?.status, 404);
+    assert.ok(
+      ['WORKSPACE_NOT_FOUND', 'FEEDBACK_NOT_FOUND'].includes(
+        this.lastResponse?.body?.error?.code,
+      ),
+      `Expected a not-found refusal, got ${JSON.stringify(this.lastResponse?.body)}`,
+    );
+  },
+);
+
+Then(
+  '{person} sees it is shared with {sharedWith}',
+  function (this: ThriveWorld, _name: string, sharedWith: string) {
+    const response = lastSucceeded(this, 'Opening the Feedback request');
+    const expected = visibilityOf(this, sharedWith);
+    assert.deepEqual(
+      [
+        response.body.visibility.value,
+        response.body.visibility.selectedPeople.map(
+          (person: { accountId: string }) => person.accountId,
+        ),
+      ],
+      [expected.visibility, expected.selectedAccountIds ?? []],
+    );
+  },
+);
+
+Then(
+  '{person} is not told who else can read it',
+  function (this: ThriveWorld, name: string) {
+    const response = lastSucceeded(
+      this,
+      `${name} opening the Feedback request`,
+    );
+    assert.equal(response.body.visibility, null);
   },
 );

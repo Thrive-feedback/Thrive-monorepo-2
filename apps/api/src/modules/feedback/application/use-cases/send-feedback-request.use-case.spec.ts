@@ -9,7 +9,10 @@ import {
   CannotAskYourselfError,
   TopicEmptyError,
 } from '../../domain/feedback-request.errors';
-import { GiverNotInWorkspaceError } from '../feedback-request.errors';
+import {
+  GiverNotInWorkspaceError,
+  SelectedPersonNotInWorkspaceError,
+} from '../feedback-request.errors';
 import { SendFeedbackRequestUseCase } from './send-feedback-request.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -17,15 +20,23 @@ const REQUEST_ID = '0199a0f0-0000-7000-8000-0000000000f1';
 const ASK_ID = '0199a0f0-0000-7000-8000-0000000000a1';
 const ANN = 'account-ann';
 const BEN = 'account-ben';
+const CARA = 'account-cara';
 
 function request(
-  overrides: Partial<{ topic: string; giverAccountIds: string[] }> = {},
+  overrides: Partial<{
+    topic: string;
+    giverAccountIds: string[];
+    visibility: string;
+    selectedAccountIds: string[];
+  }> = {},
 ) {
   return {
     workspaceId: WORKSPACE_ID,
     requesterAccountId: ANN,
     topic: '  my presentation   skills ',
     giverAccountIds: [BEN],
+    visibility: 'ONLY_ME',
+    selectedAccountIds: [],
     ...overrides,
   };
 }
@@ -36,6 +47,7 @@ function setUp() {
     WORKSPACE_ID,
     ANN,
     BEN,
+    CARA,
   );
   const unitOfWork = new FakeUnitOfWork();
   const useCase = new SendFeedbackRequestUseCase(
@@ -66,6 +78,7 @@ describe('a Requester asking a teammate for Feedback', () => {
         requesterAccountId: ANN,
         topic: 'my presentation skills',
         visibility: 'ONLY_ME',
+        selectedAccountIds: [],
         asks: [{ id: ASK_ID, giverAccountId: BEN, status: 'PENDING' }],
       },
     ]);
@@ -79,12 +92,31 @@ describe('a Requester asking a teammate for Feedback', () => {
     expect(unitOfWork.opened).toHaveLength(1);
   });
 
-  it('keeps it ONLY_ME until the Requester can choose who may read the answers', async () => {
+  it('stores the people the Requester chose to read the answers', async () => {
     const { feedbackRequestRepository, useCase } = setUp();
 
-    await useCase.execute(request());
+    await useCase.execute(
+      request({ visibility: 'SELECTED_PEOPLE', selectedAccountIds: [CARA] }),
+    );
 
-    expect(feedbackRequestRepository.saved[0]?.visibility).toBe('ONLY_ME');
+    expect(feedbackRequestRepository.saved[0]).toMatchObject({
+      visibility: 'SELECTED_PEOPLE',
+      selectedAccountIds: [CARA],
+    });
+  });
+
+  it('refuses sharing it with somebody outside the Workspace and stores nothing', async () => {
+    const { feedbackRequestRepository, useCase } = setUp();
+
+    await expect(
+      useCase.execute(
+        request({
+          visibility: 'SELECTED_PEOPLE',
+          selectedAccountIds: ['account-outsider'],
+        }),
+      ),
+    ).rejects.toThrow(SelectedPersonNotInWorkspaceError);
+    expect(feedbackRequestRepository.saved).toEqual([]);
   });
 
   it('refuses a Member of another Workspace and stores nothing', async () => {

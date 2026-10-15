@@ -30,6 +30,11 @@ export interface FeedbackRequestSent {
   readonly workspaceId: string;
 }
 
+export interface FeedbackWritten {
+  readonly id: string;
+  readonly workspaceId: string;
+}
+
 /**
  * One scenario's state: who is in it, what they made, and the last answer the API gave
  * (`BE_13` R5). Cucumber builds a new one for every scenario.
@@ -38,6 +43,7 @@ export class ThriveWorld extends World {
   fixtures!: WorkspaceFixtures;
   lastResponse?: ApiResponse;
   feedbackRequest?: FeedbackRequestSent;
+  feedback?: FeedbackWritten;
   private readonly people = new Map<string, SignedInAccount>();
   /** The Ask each person has open, so answering it twice does not need it to still be waiting. */
   private readonly asksOnScreen = new Map<string, string>();

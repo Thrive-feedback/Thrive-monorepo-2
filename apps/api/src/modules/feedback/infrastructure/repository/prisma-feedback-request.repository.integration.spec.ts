@@ -22,7 +22,11 @@ const written: string[] = [];
  * No Account and no Workspace is created first: Feedback's tables hold their ids without a
  * foreign key, which is the boundary this suite also proves.
  */
-function aRequest(workspaceId: string, requesterAccountId: string) {
+function aRequest(
+  workspaceId: string,
+  requesterAccountId: string,
+  visibility: Visibility = Visibility.onlyMe(),
+) {
   const id = uuidv7();
   written.push(id);
   return FeedbackRequest.send({
@@ -30,7 +34,7 @@ function aRequest(workspaceId: string, requesterAccountId: string) {
     workspaceId,
     requesterAccountId,
     topic: Topic.of('my presentation skills'),
-    visibility: Visibility.onlyMe(),
+    visibility,
     givers: [{ askId: uuidv7(), giverAccountId: uuidv7() }],
   });
 }
@@ -46,6 +50,24 @@ describe('storing a Feedback Request', () => {
   it('saves the request with its Asks and reads both back', async () => {
     const workspaceId = uuidv7();
     const request = aRequest(workspaceId, uuidv7());
+
+    await repository.save(request);
+
+    const found = await repository.findInWorkspace(
+      workspaceId,
+      request.snapshot().id,
+    );
+    expect(found?.snapshot()).toEqual(request.snapshot());
+  });
+
+  it('saves the people a request is shared with and reads them back', async () => {
+    const workspaceId = uuidv7();
+    const selectedAccountIds = [uuidv7(), uuidv7()].sort();
+    const request = aRequest(
+      workspaceId,
+      uuidv7(),
+      Visibility.of({ value: 'SELECTED_PEOPLE', selectedAccountIds }),
+    );
 
     await repository.save(request);
 
@@ -81,6 +103,7 @@ describe('storing a Feedback Request', () => {
       requesterAccountId: uuidv7(),
       topic: 'my presentation skills',
       visibility: 'ONLY_ME',
+      selectedAccountIds: [],
       asks: [
         { id: uuidv7(), giverAccountId, status: 'PENDING' },
         { id: uuidv7(), giverAccountId, status: 'PENDING' },

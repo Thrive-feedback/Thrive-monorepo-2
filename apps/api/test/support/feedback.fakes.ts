@@ -6,6 +6,7 @@ import type {
   FeedbackRequestPageRow,
   FeedbackRequestRow,
   FeedbackRow,
+  FeedbackWithVisibilityRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import type { PageRequest } from '@app/modules/feedback/application/types/feedback-request.types';
@@ -41,6 +42,14 @@ export class FakeWorkspaceMembershipPort extends WorkspaceMembershipPort {
       this.members.get(membership.workspaceId)?.has(membership.accountId) ===
       true
     );
+  }
+
+  async membersAmong(members: {
+    readonly workspaceId: string;
+    readonly accountIds: readonly string[];
+  }): Promise<readonly string[]> {
+    const held = this.members.get(members.workspaceId);
+    return members.accountIds.filter((accountId) => held?.has(accountId));
   }
 }
 
@@ -164,6 +173,22 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
       )
       .sort(newestFirst);
     return { items: pageOf(waiting, page), total: waiting.length };
+  }
+
+  /** Single pieces of Feedback with the Visibility of their request, as the test writes them. */
+  readonly feedbackWithVisibility: (FeedbackWithVisibilityRow & {
+    readonly workspaceId: string;
+  })[] = [];
+
+  async feedbackInWorkspace(
+    workspaceId: string,
+    feedbackId: string,
+  ): Promise<FeedbackWithVisibilityRow | null> {
+    return (
+      this.feedbackWithVisibility.find(
+        (row) => row.id === feedbackId && row.workspaceId === workspaceId,
+      ) ?? null
+    );
   }
 
   async askFor(

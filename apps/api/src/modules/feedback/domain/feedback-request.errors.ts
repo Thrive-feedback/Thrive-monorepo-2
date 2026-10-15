@@ -47,7 +47,7 @@ export class NoGiversToAskError extends DomainError {
   }
 }
 
-/** Only a stored value can fail this: nobody sends a status or a Visibility. */
+/** Only a stored value can fail this: nobody sends a status. */
 export class AskStatusInvalidError extends DomainError {
   readonly code = 'ASK_STATUS_INVALID';
   readonly category = 'validation' as const;
@@ -57,12 +57,59 @@ export class AskStatusInvalidError extends DomainError {
   }
 }
 
+/** The request body's schema names the Visibilities it accepts, so a stored value fails this first. */
 export class VisibilityInvalidError extends DomainError {
   readonly code = 'VISIBILITY_INVALID';
   readonly category = 'validation' as const;
 
   constructor() {
-    super('A Visibility must be one of the known audiences.');
+    super('A Visibility must be Only me, Selected people or Everyone.');
+  }
+}
+
+/** Selected people with nobody selected would be Only me under another name. */
+export class NoPeopleSelectedError extends DomainError {
+  readonly code = 'NO_PEOPLE_SELECTED';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('Select at least one Member to share it with.');
+  }
+}
+
+/**
+ * People picked alongside Only me or Everyone. Neither reads a list, so keeping one would store
+ * a choice the Requester believes they made and nobody honours.
+ */
+export class PeopleSelectedForAnotherVisibilityError extends DomainError {
+  readonly code = 'PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super(
+      'Members can only be selected when the Visibility is Selected people.',
+    );
+  }
+}
+
+export class PersonAlreadySelectedError extends DomainError {
+  readonly code = 'PERSON_ALREADY_SELECTED';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('This Member has already been selected.');
+  }
+}
+
+/** The Requester is the Receiver of everything the request collects, so they always read it. */
+export class CannotSelectYourselfError extends DomainError {
+  readonly code = 'CANNOT_SELECT_YOURSELF';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super(
+      'A Requester cannot select themselves; they already read every answer.',
+    );
   }
 }
 

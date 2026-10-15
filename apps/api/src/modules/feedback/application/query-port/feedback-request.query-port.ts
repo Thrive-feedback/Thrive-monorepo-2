@@ -15,6 +15,7 @@ export interface FeedbackRequestRow {
   readonly requesterAccountId: string;
   readonly topic: string;
   readonly visibility: string;
+  readonly selectedAccountIds: readonly string[];
   readonly asks: readonly FeedbackRequestAskRow[];
   readonly createdAt: Date;
 }
@@ -57,6 +58,22 @@ export interface FeedbackRow {
   readonly giverAccountId: string;
   readonly body: string;
   readonly createdAt: Date;
+}
+
+/**
+ * One piece of Feedback with the Visibility of the request that collected it: everything needed
+ * to decide who may read it, in one row. Names are Identity's and are added above this port.
+ */
+export interface FeedbackWithVisibilityRow {
+  readonly id: string;
+  readonly feedbackRequestId: string;
+  readonly topic: string;
+  readonly giverAccountId: string;
+  readonly receiverAccountId: string;
+  readonly body: string;
+  readonly createdAt: Date;
+  readonly visibility: string;
+  readonly selectedAccountIds: readonly string[];
 }
 
 export interface FeedbackPageRow {
@@ -112,6 +129,15 @@ export abstract class FeedbackRequestQuery {
     receiverAccountId: string,
     page: PageRequest,
   ): Promise<FeedbackPageRow>;
+
+  /**
+   * One piece of Feedback of one Workspace, or `null`. Not scoped to a reader: who may read it
+   * depends on the Visibility it carries, which is the use case's to apply.
+   */
+  abstract feedbackInWorkspace(
+    workspaceId: string,
+    feedbackId: string,
+  ): Promise<FeedbackWithVisibilityRow | null>;
 
   /** One Ask addressed to one Member, or `null` when it is not theirs or does not exist. */
   abstract askFor(

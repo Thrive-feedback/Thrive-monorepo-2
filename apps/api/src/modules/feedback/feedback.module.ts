@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import { FeedbackRequestQuery } from './application/query-port/feedback-request.query-port';
 import { AccountNamesService } from './application/service/account-names.service';
 import { AnswerFeedbackAskUseCase } from './application/use-cases/answer-feedback-ask.use-case';
+import { GetFeedbackUseCase } from './application/use-cases/get-feedback.use-case';
 import { GetFeedbackAskUseCase } from './application/use-cases/get-feedback-ask.use-case';
 import { GetFeedbackRequestUseCase } from './application/use-cases/get-feedback-request.use-case';
 import { ListMyFeedbackAsksUseCase } from './application/use-cases/list-my-feedback-asks.use-case';
@@ -44,6 +45,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ListSentFeedbackRequestsUseCase,
     ListMyFeedbackAsksUseCase,
     ListReceivedFeedbackUseCase,
+    GetFeedbackUseCase,
     GetFeedbackAskUseCase,
     AnswerFeedbackAskUseCase,
     WorkspaceMemberGuard,

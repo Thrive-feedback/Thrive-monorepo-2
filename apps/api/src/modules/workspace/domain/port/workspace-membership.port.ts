@@ -11,4 +11,14 @@ export abstract class WorkspaceMembershipPort {
     readonly workspaceId: string;
     readonly accountId: string;
   }): Promise<boolean>;
+
+  /**
+   * Which of these Accounts are Members of one Workspace, in one read however many are named —
+   * for a request that names several people at once. An Account that is not a Member is
+   * simply absent from the answer.
+   */
+  abstract membersAmong(members: {
+    readonly workspaceId: string;
+    readonly accountIds: readonly string[];
+  }): Promise<readonly string[]>;
 }

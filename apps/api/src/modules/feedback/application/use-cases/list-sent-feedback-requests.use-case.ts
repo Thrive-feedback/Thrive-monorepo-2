@@ -40,28 +40,44 @@ export class ListSentFeedbackRequestsUseCase {
       input.page,
     );
     const names = await this.accountNamesService.namesOf(
-      sent.items.flatMap((request) =>
-        request.asks.map((ask) => ask.giverAccountId),
-      ),
+      sent.items.flatMap((request) => [
+        ...request.asks.map((ask) => ask.giverAccountId),
+        ...request.selectedAccountIds,
+      ]),
     );
 
     return {
-      items: sent.items.map((request) => ({
-        id: request.id,
-        topic: request.topic,
-        visibility: Visibility.of(request.visibility).toString(),
-        asks: request.asks.map((ask) => ({
-          askId: ask.askId,
-          giverAccountId: ask.giverAccountId,
-          giverName: names.get(ask.giverAccountId) ?? null,
-          status: AskStatus.of(ask.status).toString(),
-          // The list says where each Ask stands, not what was written: a page of twenty
-          // requests would carry twenty answers nobody is reading yet. The Receiver opens one
-          // request to read its answers.
-          answer: null,
-        })),
-        createdAt: request.createdAt,
-      })),
+      items: sent.items.map((request) => {
+        const visibility = Visibility.of({
+          value: request.visibility,
+          selectedAccountIds: request.selectedAccountIds,
+        });
+        return {
+          id: request.id,
+          topic: request.topic,
+          // Every request listed is the caller's own, so they are always told who reads it.
+          visibility: {
+            value: visibility.toString(),
+            selectedPeople: visibility
+              .selectedAccountIds()
+              .map((accountId) => ({
+                accountId,
+                name: names.get(accountId) ?? null,
+              })),
+          },
+          asks: request.asks.map((ask) => ({
+            askId: ask.askId,
+            giverAccountId: ask.giverAccountId,
+            giverName: names.get(ask.giverAccountId) ?? null,
+            status: AskStatus.of(ask.status).toString(),
+            // The list says where each Ask stands, not what was written: a page of twenty
+            // requests would carry twenty answers nobody is reading yet. The Receiver opens one
+            // request to read its answers.
+            answer: null,
+          })),
+          createdAt: request.createdAt,
+        };
+      }),
       total: sent.total,
     };
   }

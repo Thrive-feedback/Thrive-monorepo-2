@@ -23,9 +23,11 @@ export interface GetFeedbackRequestInput {
 
 /**
  * Two people may read a Feedback Request: the Requester, whose request it is, and a Giver, who
- * cannot answer what they may not read. Being a Member of the Workspace is not enough — every
- * request is `ONLY_ME` until #83, and a Member who is neither gets the same answer as for a
- * request that does not exist.
+ * cannot answer what they may not read. Being a Member of the Workspace is not enough, and
+ * neither is being one of the people it is shared with: Visibility decides who reads the
+ * Feedback a request collects, not the request itself — who else was asked, and who has not
+ * answered yet. A Member who is neither gets the same answer as for a request that does not
+ * exist (ADR 0039, ADR 0042).
  */
 function mayRead(row: FeedbackRequestRow, callerAccountId: string): boolean {
   return (
@@ -37,8 +39,9 @@ function mayRead(row: FeedbackRequestRow, callerAccountId: string): boolean {
 /**
  * What the caller may read of one Ask's answer: everything, if the request is theirs and they
  * are the Receiver of what it collected; their own answer, if they are the Giver who wrote it;
- * nothing otherwise. Until #84 gives the Requester a choice of audience, those two are the
- * only people an answer reaches (`ADR-0022`, `#24` AC 5).
+ * nothing otherwise. A Giver reads no other Giver's answer here even when the Visibility would
+ * let them, because this screen is the Requester's and the Giver's; the people a request is
+ * shared with read its Feedback one piece at a time (`ADR-0022`, `#24` AC 5).
  */
 function answerFor(
   ask: { readonly askId: string; readonly giverAccountId: string },
@@ -57,8 +60,9 @@ function answerFor(
 
 /**
  * A query: one Feedback Request of the caller's Workspace, with each Giver named and each
- * answer the caller may read. The names are Identity's, read through its published port in one
- * batch rather than one call per Ask.
+ * answer the caller may read. Only the Requester is told who else reads the answers; a Giver is
+ * not (`ADR-0022`). The names are Identity's, read through its published port in one batch
+ * rather than one call per Ask.
  */
 @Injectable()
 export class GetFeedbackRequestUseCase {
@@ -76,10 +80,16 @@ export class GetFeedbackRequestUseCase {
       throw new FeedbackRequestNotFoundError();
     }
 
+    const isRequester = row.requesterAccountId === input.callerAccountId;
+    const visibility = Visibility.of({
+      value: row.visibility,
+      selectedAccountIds: row.selectedAccountIds,
+    });
     const [names, answerRows] = await Promise.all([
-      this.accountNamesService.namesOf(
-        row.asks.map((ask) => ask.giverAccountId),
-      ),
+      this.accountNamesService.namesOf([
+        ...row.asks.map((ask) => ask.giverAccountId),
+        ...(isRequester ? visibility.selectedAccountIds() : []),
+      ]),
       this.feedbackRequestQuery.answersInRequest(
         input.workspaceId,
         input.requestId,
@@ -90,7 +100,17 @@ export class GetFeedbackRequestUseCase {
     return {
       id: row.id,
       topic: row.topic,
-      visibility: Visibility.of(row.visibility).toString(),
+      visibility: isRequester
+        ? {
+            value: visibility.toString(),
+            selectedPeople: visibility
+              .selectedAccountIds()
+              .map((accountId) => ({
+                accountId,
+                name: names.get(accountId) ?? null,
+              })),
+          }
+        : null,
       asks: row.asks.map((ask) => ({
         askId: ask.askId,
         giverAccountId: ask.giverAccountId,

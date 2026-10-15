@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
   AskAlreadyAnsweredError,
   CannotAskYourselfError,
+  CannotSelectYourselfError,
   GiverAlreadyAskedError,
   NoGiversToAskError,
 } from '../feedback-request.errors';
@@ -14,14 +15,18 @@ const REQUEST_ID = '0199a0f0-0000-7000-8000-0000000000f1';
 const ASK_ID = '0199a0f0-0000-7000-8000-0000000000a1';
 
 function sending(
-  overrides: { requester?: string; givers?: GiverToAsk[] } = {},
+  overrides: {
+    requester?: string;
+    givers?: GiverToAsk[];
+    visibility?: Visibility;
+  } = {},
 ) {
   return {
     id: REQUEST_ID,
     workspaceId: '0199a0f0-0000-7000-8000-0000000000w1',
     requesterAccountId: overrides.requester ?? 'account-ann',
     topic: Topic.of('my presentation skills'),
-    visibility: Visibility.onlyMe(),
+    visibility: overrides.visibility ?? Visibility.onlyMe(),
     givers: overrides.givers ?? [
       { askId: ASK_ID, giverAccountId: 'account-ben' },
     ],
@@ -37,6 +42,7 @@ describe('sending a Feedback Request', () => {
       requesterAccountId: 'account-ann',
       topic: 'my presentation skills',
       visibility: 'ONLY_ME',
+      selectedAccountIds: [],
       asks: [{ id: ASK_ID, giverAccountId: 'account-ben', status: 'PENDING' }],
     });
   });
@@ -70,8 +76,44 @@ describe('sending a Feedback Request', () => {
     );
   });
 
-  it('rebuilds a stored request with its Asks', () => {
-    const stored = FeedbackRequest.send(sending()).snapshot();
+  it('keeps who the Requester selected to read the answers', () => {
+    const request = FeedbackRequest.send(
+      sending({
+        visibility: Visibility.of({
+          value: 'SELECTED_PEOPLE',
+          selectedAccountIds: ['account-cara'],
+        }),
+      }),
+    );
+
+    expect(request.snapshot()).toMatchObject({
+      visibility: 'SELECTED_PEOPLE',
+      selectedAccountIds: ['account-cara'],
+    });
+  });
+
+  it('refuses a Requester selecting themselves, who reads every answer already', () => {
+    expect(() =>
+      FeedbackRequest.send(
+        sending({
+          visibility: Visibility.of({
+            value: 'SELECTED_PEOPLE',
+            selectedAccountIds: ['account-ann'],
+          }),
+        }),
+      ),
+    ).toThrow(CannotSelectYourselfError);
+  });
+
+  it('rebuilds a stored request with its Asks and the people it was shared with', () => {
+    const stored = FeedbackRequest.send(
+      sending({
+        visibility: Visibility.of({
+          value: 'SELECTED_PEOPLE',
+          selectedAccountIds: ['account-cara'],
+        }),
+      }),
+    ).snapshot();
 
     expect(FeedbackRequest.restore(stored).snapshot()).toEqual(stored);
   });

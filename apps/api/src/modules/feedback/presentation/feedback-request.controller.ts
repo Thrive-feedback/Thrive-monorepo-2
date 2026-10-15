@@ -43,7 +43,13 @@ function toResponse(request: FeedbackRequestView) {
   return {
     id: request.id,
     topic: request.topic,
-    visibility: request.visibility,
+    visibility: request.visibility && {
+      value: request.visibility.value,
+      selectedPeople: request.visibility.selectedPeople.map((person) => ({
+        accountId: person.accountId,
+        name: person.name,
+      })),
+    },
     asks: request.asks.map((ask) => ({
       askId: ask.askId,
       giverAccountId: ask.giverAccountId,
@@ -76,7 +82,8 @@ export class FeedbackRequestController {
 
   @Post()
   @ApiOperation({
-    summary: 'Ask a Member of this Workspace for Feedback on a Topic',
+    summary:
+      'Ask a Member of this Workspace for Feedback on a Topic, choosing who else reads the answers',
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({
@@ -85,7 +92,7 @@ export class FeedbackRequestController {
   })
   @ApiBadRequestResponse({
     description:
-      'REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED or GIVER_NOT_IN_WORKSPACE',
+      'REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF or SELECTED_PERSON_NOT_IN_WORKSPACE',
   })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
   @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
@@ -99,6 +106,8 @@ export class FeedbackRequestController {
       requesterAccountId: actor.accountId,
       topic: body.topic,
       giverAccountIds: body.giverAccountIds,
+      visibility: body.visibility,
+      selectedAccountIds: body.selectedAccountIds ?? [],
     });
     return { id: sent.id };
   }

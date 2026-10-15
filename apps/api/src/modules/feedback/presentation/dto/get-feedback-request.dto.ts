@@ -21,11 +21,29 @@ const askSchema = z.object({
   answer: answerSchema.nullable(),
 });
 
+const selectedPersonSchema = z.object({
+  accountId: z.uuid(),
+  /** `null` while that Member has not introduced themselves. */
+  name: z.string().nullable(),
+});
+
+/**
+ * Who besides the Giver and the Requester reads the answers. An object rather than a bare enum
+ * so that `null` — a Giver is not told — generates correctly: a nullable primitive on a
+ * response root comes out of the contract as an array (`docs/design/0016` §10).
+ */
+const visibilitySchema = z.object({
+  value: z.enum(VISIBILITIES),
+  /** The Members picked, ordered by Account; empty unless `value` is `SELECTED_PEOPLE`. */
+  selectedPeople: z.array(selectedPersonSchema),
+});
+
 /** One Feedback Request on the wire. The list of them sends the same shape, so it is one. */
 export const feedbackRequestSchema = z.object({
   id: z.uuid(),
   topic: z.string(),
-  visibility: z.enum(VISIBILITIES),
+  /** `null` when the caller is a Giver, who is not told who else reads their answer. */
+  visibility: visibilitySchema.nullable(),
   /** One per Member asked, oldest first. */
   asks: z.array(askSchema),
   createdAt: z.iso.datetime({ offset: true }),

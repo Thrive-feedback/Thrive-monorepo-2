@@ -22,6 +22,7 @@ function setUp() {
     requesterAccountId: ANA,
     topic: 'my presentation skills',
     visibility: 'ONLY_ME',
+    selectedAccountIds: [],
     createdAt: CREATED_AT,
     asks: [{ askId: ASK_FOR_BEN, giverAccountId: BEN, status: 'PENDING' }],
   });
