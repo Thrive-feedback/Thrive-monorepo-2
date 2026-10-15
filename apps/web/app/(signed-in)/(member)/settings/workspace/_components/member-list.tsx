@@ -1,5 +1,6 @@
 import { readMembers } from '@/app/(signed-in)/(member)/settings/workspace/_lib/members.service';
 import { Text } from '@/components/atoms/text';
+import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { ROLE_NAMES } from '@/lib/session/role-names.constant';
 
@@ -10,8 +11,9 @@ export type MemberListProps = {
 };
 
 /**
- * Everyone in the Workspace, one line each: their name, with a dash until they have introduced
- * themselves, their email and their Role. It reads its own data, so the page renders around it
+ * Everyone in the Workspace, one line each: their photo, their name, with a dash until they have
+ * introduced themselves, their email and their Role. Someone with no photo, or none that loads,
+ * shows their initials, taken from their email until they have a name. It reads its own data, so the page renders around it
  * while the read is in flight.
  */
 export async function MemberList({ membership, ownEmail }: MemberListProps) {
@@ -21,8 +23,13 @@ export async function MemberList({ membership, ownEmail }: MemberListProps) {
       {members.map((member) => (
         <li
           key={member.accountId}
-          className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1"
         >
+          <PhotoAvatar
+            name={member.name ?? member.email}
+            photoUrl={member.photoUrl}
+            size="sm"
+          />
           <Text as="span" variant="subtitle-4">
             {member.name ?? '—'}
           </Text>

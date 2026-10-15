@@ -47,6 +47,10 @@ import {
   LinkPreview,
 } from '@/app/ui-showcase/_components/entries/link-entry';
 import {
+  PhotoAvatarEntry,
+  PhotoAvatarPreview,
+} from '@/app/ui-showcase/_components/entries/photo-avatar-entry';
+import {
   RadioGroupEntry,
   RadioGroupPreview,
 } from '@/app/ui-showcase/_components/entries/radio-group-entry';
@@ -327,5 +331,12 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'molecule',
     Preview: AvatarGroupPreview,
     Entry: AvatarGroupEntry,
+  },
+  {
+    slug: 'photo-avatar',
+    name: 'PhotoAvatar',
+    level: 'molecule',
+    Preview: PhotoAvatarPreview,
+    Entry: PhotoAvatarEntry,
   },
 ];

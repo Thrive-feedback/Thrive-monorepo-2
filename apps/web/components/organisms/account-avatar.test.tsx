@@ -5,7 +5,9 @@ import { AccountAvatar } from './account-avatar';
 
 describe('AccountAvatar', () => {
   it('shows the address the person signs in with on focus', async () => {
-    render(<AccountAvatar name="Ann Lee" email="ann@acme.test" />);
+    render(
+      <AccountAvatar name="Ann Lee" email="ann@acme.test" photoUrl={null} />,
+    );
 
     await userEvent.tab();
 

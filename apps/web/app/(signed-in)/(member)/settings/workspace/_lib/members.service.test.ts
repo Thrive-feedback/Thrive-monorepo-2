@@ -18,6 +18,8 @@ const { readMembers } = await import('./members.service');
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
 
+const ANN_PHOTO = 'https://lh3.googleusercontent.com/a/ann=s96-c';
+
 describe('reading the Members for Members', () => {
   it('lists everyone in the Workspace, the person included, as them', async () => {
     const seen: Request[] = [];
@@ -36,6 +38,7 @@ describe('reading the Members for Members', () => {
                 email: 'ann@acme.test',
                 fullName: 'Ann Lee',
                 displayName: 'Ann',
+                photoUrl: ANN_PHOTO,
                 role: 'OWNER',
               },
               {
@@ -43,6 +46,7 @@ describe('reading the Members for Members', () => {
                 email: 'ben@acme.test',
                 fullName: null,
                 displayName: null,
+                photoUrl: null,
                 role: 'MEMBER',
               },
             ],
@@ -61,12 +65,14 @@ describe('reading the Members for Members', () => {
         accountId: '0199a0f0-0000-7000-8000-000000000001',
         email: 'ann@acme.test',
         name: 'Ann',
+        photoUrl: ANN_PHOTO,
         role: 'OWNER',
       },
       {
         accountId: '0199a0f0-0000-7000-8000-000000000002',
         email: 'ben@acme.test',
         name: null,
+        photoUrl: null,
         role: 'MEMBER',
       },
     ]);

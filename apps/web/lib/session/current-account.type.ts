@@ -12,6 +12,8 @@ export type CurrentAccount = {
   readonly email: string;
   /** The name Google gave, which pre-fills Introduce yourself. */
   readonly name: string;
+  /** Their photo from Google; `null` when Google has none. */
+  readonly photoUrl: string | null;
   /** `null` until the person has introduced themselves. */
   readonly profile: CurrentProfile | null;
 };

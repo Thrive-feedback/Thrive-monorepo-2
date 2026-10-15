@@ -18,10 +18,11 @@ export function toCurrentAccount(
   if (!wire.account) {
     return null;
   }
-  const { email, name, profile } = wire.account;
+  const { email, name, photoUrl, profile } = wire.account;
   return {
     email,
     name,
+    photoUrl,
     profile: profile
       ? {
           fullName: profile.fullName,

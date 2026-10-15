@@ -1,19 +1,20 @@
 'use client';
 
 import NextLink from 'next/link';
-import { Avatar, AvatarFallback } from '@/components/atoms/avatar';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/atoms/tooltip';
-import { initials } from '@/lib/initials.util';
+import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { ROUTES } from '@/lib/routes.constant';
 
 export type AccountAvatarProps = {
   /** The name the person goes by: their Profile's display name. */
   name: string;
   email: string;
+  /** Their photo from Google; `null` shows their initials. */
+  photoUrl: string | null;
 };
 
 /**
@@ -21,7 +22,7 @@ export type AccountAvatarProps = {
  * the address they are signed in with; the link is named for the person, so the tooltip only adds
  * to that name and touch screens lose nothing.
  */
-export function AccountAvatar({ name, email }: AccountAvatarProps) {
+export function AccountAvatar({ name, email, photoUrl }: AccountAvatarProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -30,9 +31,7 @@ export function AccountAvatar({ name, email }: AccountAvatarProps) {
           aria-label={`Account: ${name}`}
           className="rounded-full"
         >
-          <Avatar size="md" aria-hidden="true">
-            <AvatarFallback>{initials(name)}</AvatarFallback>
-          </Avatar>
+          <PhotoAvatar name={name} photoUrl={photoUrl} size="md" />
         </NextLink>
       </TooltipTrigger>
       <TooltipContent>{email}</TooltipContent>
