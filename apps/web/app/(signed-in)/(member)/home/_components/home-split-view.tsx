@@ -79,6 +79,13 @@ export function HomeSplitView({
           className={styles.column}
         >
           <div className="flex flex-col gap-6 pl-6">
+            <Text
+              as="h2"
+              variant="subtitle-handwrite-1"
+              className="text-action-secondary-fg"
+            >
+              Feedback
+            </Text>
             <Suspense fallback={<Skeleton shape="card" className="h-80" />}>
               <FeedbackComposerCard
                 membership={membership}
@@ -88,7 +95,7 @@ export function HomeSplitView({
             <hr className="border-border-subtle" />
             <Text
               as="h2"
-              variant="subtitle-handwrite-2"
+              variant="subtitle-handwrite-1"
               className="text-action-secondary-fg"
             >
               My Activity
