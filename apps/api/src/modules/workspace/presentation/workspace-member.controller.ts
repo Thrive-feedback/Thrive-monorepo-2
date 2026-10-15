@@ -59,6 +59,7 @@ export class WorkspaceMemberController {
         email: member.email,
         fullName: member.fullName,
         displayName: member.displayName,
+        photoUrl: member.photoUrl,
         role: member.role,
       })),
       total: members.total,

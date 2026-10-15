@@ -8,6 +8,8 @@ import { ListWorkspaceMembersUseCase } from './list-workspace-members.use-case';
 const ACME_ID = '0199a0f0-0000-7000-8000-0000000000aa';
 const PAGE = { page: 1, pageSize: 20 };
 
+const ANN_PHOTO = 'https://lh3.googleusercontent.com/a/ann=s96-c';
+
 function setUp() {
   const membershipQuery = new FakeMembershipQuery();
   const accountSummaryPort = new FakeAccountSummaryPort();
@@ -27,25 +29,28 @@ function setUp() {
       email: 'ann@acme.co',
       fullName: 'Ann Lee',
       displayName: 'Ann',
+      photoUrl: ANN_PHOTO,
     },
     {
       accountId: 'account-ben',
       email: 'ben@acme.co',
       fullName: null,
       displayName: null,
+      photoUrl: null,
     },
     {
       accountId: 'account-cat',
       email: 'cat@globex.co',
       fullName: 'Cat',
       displayName: 'Cat',
+      photoUrl: null,
     },
   );
   return new ListWorkspaceMembersUseCase(membershipQuery, accountSummaryPort);
 }
 
 describe('listing the Members of a Workspace', () => {
-  it('names each Member of the caller’s Workspace by email and Profile name, with their Role', async () => {
+  it('names each Member of the caller’s Workspace by email, Profile name and photo, with their Role', async () => {
     const members = await setUp().execute({
       membership: { workspace: { id: ACME_ID, name: 'Acme' }, role: 'MEMBER' },
       page: PAGE,
@@ -58,6 +63,7 @@ describe('listing the Members of a Workspace', () => {
           email: 'ann@acme.co',
           fullName: 'Ann Lee',
           displayName: 'Ann',
+          photoUrl: ANN_PHOTO,
           role: 'OWNER',
         },
         {
@@ -65,6 +71,7 @@ describe('listing the Members of a Workspace', () => {
           email: 'ben@acme.co',
           fullName: null,
           displayName: null,
+          photoUrl: null,
           role: 'MEMBER',
         },
       ],

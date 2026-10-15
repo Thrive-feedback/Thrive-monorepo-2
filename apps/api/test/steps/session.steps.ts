@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { Given, Then, When } from '@cucumber/cucumber';
+import { googlePhotoUrlOf } from '../support/workspace.integration-fixtures';
 import type { ThriveWorld } from '../support/world';
 
 Given(
@@ -22,6 +23,23 @@ Then(
     assert.equal(
       this.lastResponse?.body?.account?.email,
       this.person(owner).email,
+    );
+  },
+);
+
+Given(
+  "{person}'s Google account has a photo",
+  async function (this: ThriveWorld, name: string) {
+    await this.fixtures.aGooglePhoto(this.person(name));
+  },
+);
+
+Then(
+  "{person} is told the session shows {person}'s Google photo",
+  function (this: ThriveWorld, _asker: string, owner: string) {
+    assert.equal(
+      this.lastResponse?.body?.account?.photoUrl,
+      googlePhotoUrlOf(this.person(owner)),
     );
   },
 );

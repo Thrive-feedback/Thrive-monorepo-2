@@ -74,7 +74,7 @@ describe('Better Auth identity, through the port', () => {
     const { accountId, email, credential } = await aSignedInAccount();
 
     expect(await identityPort.currentSession(credential)).toEqual({
-      account: { id: accountId, email, name: 'Ann Lee' },
+      account: { id: accountId, email, name: 'Ann Lee', photoUrl: null },
       needsRefresh: false,
     });
   });

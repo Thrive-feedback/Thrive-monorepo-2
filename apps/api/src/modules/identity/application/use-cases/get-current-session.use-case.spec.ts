@@ -5,7 +5,12 @@ import {
 } from '@test/support/identity.fakes';
 import { GetCurrentSessionUseCase } from './get-current-session.use-case';
 
-const ANN = { id: 'account-ann', email: 'ann@acme.test', name: 'Ann Lee' };
+const ANN = {
+  id: 'account-ann',
+  email: 'ann@acme.test',
+  name: 'Ann Lee',
+  photoUrl: null,
+};
 const ANN_PROFILE = { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' };
 
 function signedInAs(account: typeof ANN, needsRefresh = false) {

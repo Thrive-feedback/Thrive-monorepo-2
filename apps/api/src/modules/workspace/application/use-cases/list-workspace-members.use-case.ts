@@ -17,6 +17,8 @@ export interface WorkspaceMember {
   readonly fullName: string | null;
   /** The name others see and call them by; `null` while they have not introduced themselves. */
   readonly displayName: string | null;
+  /** Their photo from Google; `null` when Google has none. */
+  readonly photoUrl: string | null;
   readonly role: MemberRoleValue;
 }
 
@@ -25,7 +27,7 @@ export interface WorkspaceMemberList {
   readonly total: number;
 }
 
-/** A query: who is in the caller's Workspace, with the email and name each is known by. */
+/** A query: who is in the caller's Workspace, with the email, name and photo each is known by. */
 @Injectable()
 export class ListWorkspaceMembersUseCase {
   constructor(
@@ -58,6 +60,7 @@ export class ListWorkspaceMembersUseCase {
                 email: summary.email,
                 fullName: summary.fullName,
                 displayName: summary.displayName,
+                photoUrl: summary.photoUrl,
                 role: member.role,
               },
             ]

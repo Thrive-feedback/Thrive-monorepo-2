@@ -1,4 +1,4 @@
-/** How another module may show an Account: its email and the name it introduced itself with. */
+/** How another module may show an Account: its email, the name it introduced itself with, and its photo. */
 export interface AccountSummary {
   readonly accountId: string;
   readonly email: string;
@@ -6,6 +6,8 @@ export interface AccountSummary {
   readonly fullName: string | null;
   /** The name others see and call them by; `null` while the Account has not introduced itself. */
   readonly displayName: string | null;
+  /** Their photo from Google; `null` when Google has none. */
+  readonly photoUrl: string | null;
 }
 
 /**

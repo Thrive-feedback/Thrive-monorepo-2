@@ -46,6 +46,36 @@ describe('createAuth against Postgres', () => {
     ).toMatchObject({ userId: account.id, token: session.token });
   });
 
+  it("takes Google's new photo at a later sign-in, and keeps the Account's email", async () => {
+    const { internalAdapter } = await auth.$context;
+    const email = `auth-photo-${uuidv7()}@example.test`;
+    const person = await internalAdapter.createUser(
+      {
+        email,
+        name: 'Photo Test',
+        emailVerified: true,
+        image: 'https://lh3.googleusercontent.com/a/old=s96-c',
+      },
+      { method: 'oauth', oauth: { providerId: 'google' } },
+    );
+    createdAccountIds.push(person.id);
+
+    // The update Better Auth's Google callback makes when it refreshes the profile at sign-in.
+    await internalAdapter.updateUser(person.id, {
+      name: 'Photo Test',
+      image: 'https://lh3.googleusercontent.com/a/new=s96-c',
+      email: `renamed-${email}`,
+      emailVerified: true,
+    });
+
+    expect(
+      await prisma.user.findUniqueOrThrow({ where: { id: person.id } }),
+    ).toMatchObject({
+      email,
+      image: 'https://lh3.googleusercontent.com/a/new=s96-c',
+    });
+  });
+
   it("stores Google's tokens encrypted, and keeps no ID token", async () => {
     // Better Auth types these helpers against its generic context; ours is narrowed by our
     // own options, which TypeScript will not widen on its own. Same object at run time.

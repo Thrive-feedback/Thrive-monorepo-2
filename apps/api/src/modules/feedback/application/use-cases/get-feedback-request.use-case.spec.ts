@@ -32,6 +32,7 @@ function setUp() {
     email: 'ben@acme.test',
     fullName: 'Ben Carter',
     displayName: 'Ben',
+    photoUrl: null,
   });
   const useCase = new GetFeedbackRequestUseCase(
     feedbackRequestQuery,
@@ -112,6 +113,7 @@ describe('reading one Feedback Request', () => {
       email: 'ben@acme.test',
       fullName: null,
       displayName: null,
+      photoUrl: null,
     });
 
     const found = await useCase.execute({

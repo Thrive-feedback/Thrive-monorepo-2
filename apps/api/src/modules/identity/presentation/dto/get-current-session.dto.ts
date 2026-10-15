@@ -11,6 +11,8 @@ const currentAccountSchema = z.object({
   email: z.email(),
   /** The name the sign-in provider gave, which pre-fills "Introduce yourself". */
   name: z.string(),
+  /** Their photo from Google, refreshed at every sign-in; `null` when Google has none. */
+  photoUrl: z.url().nullable(),
   /** `null` until the person has introduced themselves. */
   profile: profileSchema.nullable(),
 });

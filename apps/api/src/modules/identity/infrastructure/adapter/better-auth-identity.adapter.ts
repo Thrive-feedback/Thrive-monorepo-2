@@ -8,6 +8,7 @@ import {
   type RefreshedSession,
   type SignedOut,
 } from '../../application/port/identity.port';
+import { toPhotoUrl } from '../mapper/photo-url.mapper';
 
 /**
  * Where Google sends the person after the callback. Paths, not URLs: Better Auth resolves
@@ -51,6 +52,7 @@ export class BetterAuthIdentityAdapter extends IdentityPort {
         id: session.user.id,
         email: session.user.email,
         name: session.user.name,
+        photoUrl: toPhotoUrl(session.user.image),
       },
       needsRefresh: 'needsRefresh' in session && session.needsRefresh === true,
     };

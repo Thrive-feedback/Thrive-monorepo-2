@@ -25,6 +25,19 @@ function withoutIdToken<T extends { idToken?: string | null }>(account: T): T {
 }
 
 /**
+ * Keeps the email an Account was made with. Refreshing the profile at sign-in would otherwise
+ * also overwrite it with whatever address Google now reports, and Invitations and Members are
+ * matched on that email; Thrive has no way yet to change it on purpose. Better Auth merges what
+ * this returns over the update, so the fields are blanked rather than left out, and its adapter
+ * skips a blank field on update.
+ */
+function withoutEmailChange<
+  T extends { email?: string; emailVerified?: boolean },
+>(user: T): T {
+  return { ...user, email: undefined, emailVerified: undefined };
+}
+
+/**
  * Builds the Better Auth instance on the application's one Prisma client, so auth shares
  * the connection pool rather than opening a second one. Configuration arrives as an
  * argument; Better Auth is never left to read the environment itself.
@@ -59,6 +72,11 @@ function authOptions(
     // needed during sign-in, and Better Auth does not encrypt it.
     account: { encryptOAuthTokens: true },
     databaseHooks: {
+      user: {
+        update: {
+          before: async (user) => ({ data: withoutEmailChange(user) }),
+        },
+      },
       account: {
         create: {
           before: async (account) => ({ data: withoutIdToken(account) }),
@@ -82,6 +100,10 @@ function authOptions(
         // Without it, Google signs straight back into the last account, so signing out
         // and choosing a different account would be impossible.
         prompt: 'select_account',
+        // Takes the name and photo Google sends at every sign-in, not only the first, so a
+        // photo changed in Google shows after the next sign-in. The email stays put; see
+        // `withoutEmailChange`.
+        overrideUserInfoOnSignIn: true,
       },
     },
     plugins: [

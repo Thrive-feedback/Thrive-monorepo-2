@@ -12,6 +12,7 @@ function setUp() {
     email: 'ben@acme.test',
     fullName: 'Ben Carter',
     displayName: 'Ben',
+    photoUrl: null,
   });
   return {
     accountSummaryPort,

@@ -44,18 +44,21 @@ describe('listing the Members of a Workspace', () => {
         email: owner.email,
         fullName: 'Ann Lee',
         displayName: 'Ann',
+        photoUrl: null,
       },
       {
         accountId: member.accountId,
         email: member.email,
         fullName: null,
         displayName: null,
+        photoUrl: null,
       },
       {
         accountId: outsider.accountId,
         email: outsider.email,
         fullName: 'Cat',
         displayName: 'Cat',
+        photoUrl: null,
       },
     );
 
@@ -74,6 +77,7 @@ describe('listing the Members of a Workspace', () => {
           email: owner.email,
           fullName: 'Ann Lee',
           displayName: 'Ann',
+          photoUrl: null,
           role: 'OWNER',
         },
         {
@@ -81,6 +85,7 @@ describe('listing the Members of a Workspace', () => {
           email: member.email,
           fullName: null,
           displayName: null,
+          photoUrl: null,
           role: 'MEMBER',
         },
       ],

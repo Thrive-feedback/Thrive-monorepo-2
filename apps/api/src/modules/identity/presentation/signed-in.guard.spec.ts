@@ -31,7 +31,12 @@ describe('the signed-in guard', () => {
   it('lets a signed-in caller through and hands the route who they are', async () => {
     const identityPort = new FakeIdentityPort();
     identityPort.session = {
-      account: { id: 'account-ann', email: 'ann@acme.test', name: 'Ann Lee' },
+      account: {
+        id: 'account-ann',
+        email: 'ann@acme.test',
+        name: 'Ann Lee',
+        photoUrl: null,
+      },
       needsRefresh: false,
     };
     const request: Partial<ActorRequest> = { headers: { cookie: 'cookie-a' } };

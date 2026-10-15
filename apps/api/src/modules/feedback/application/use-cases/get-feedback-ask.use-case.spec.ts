@@ -32,6 +32,7 @@ function setUp() {
     email: 'ana@acme.test',
     fullName: 'Ana Silva',
     displayName: 'Ana',
+    photoUrl: null,
   });
   const useCase = new GetFeedbackAskUseCase(
     feedbackRequestQuery,

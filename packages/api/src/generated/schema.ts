@@ -385,6 +385,8 @@ export interface components {
                 /** Format: email */
                 email: string;
                 name: string;
+                /** Format: uri */
+                photoUrl: string | null;
                 profile: {
                     fullName: string;
                     displayName: string;
@@ -431,6 +433,8 @@ export interface components {
                 email: string;
                 fullName: string | null;
                 displayName: string | null;
+                /** Format: uri */
+                photoUrl: string | null;
                 /** @enum {string} */
                 role: "OWNER" | "ADMIN" | "MEMBER";
             }[];

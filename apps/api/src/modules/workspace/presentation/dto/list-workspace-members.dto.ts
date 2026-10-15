@@ -18,6 +18,8 @@ const workspaceMemberSchema = z.object({
   fullName: z.string().nullable(),
   /** The name others see and call them by; `null` while they have not introduced themselves. */
   displayName: z.string().nullable(),
+  /** Their photo from Google; `null` when Google has none. */
+  photoUrl: z.url().nullable(),
   role: z.enum(MEMBER_ROLES),
 });
 
