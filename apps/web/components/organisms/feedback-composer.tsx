@@ -4,6 +4,7 @@ import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { ButtonGroup } from '@/components/atoms/button-group';
+import type { GiveFeedbackAction } from '@/lib/feedback/give-feedback-state.type';
 import type { RequestFeedbackAction } from '@/lib/feedback/request-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { GiveFeedbackForm } from './give-feedback-form';
@@ -20,6 +21,8 @@ export type FeedbackComposerProps = {
   teammates: readonly Teammate[];
   /** Sends a Feedback Request: Home's server action, or a stand-in. */
   requestAction: RequestFeedbackAction;
+  /** Gives Feedback without being asked: Home's server action, or a stand-in. */
+  giveAction: GiveFeedbackAction;
 };
 
 /**
@@ -36,6 +39,7 @@ export type FeedbackComposerProps = {
 export function FeedbackComposer({
   teammates,
   requestAction,
+  giveAction,
 }: FeedbackComposerProps) {
   const [mode, setMode] = useState<ComposerMode>('request');
   const [expanded, setExpanded] = useState(true);
@@ -83,7 +87,7 @@ export function FeedbackComposer({
           <RequestFeedbackForm teammates={teammates} action={requestAction} />
         </div>
         <div hidden={mode !== 'give'}>
-          <GiveFeedbackForm teammates={teammates} />
+          <GiveFeedbackForm teammates={teammates} action={giveAction} />
         </div>
       </div>
     </section>

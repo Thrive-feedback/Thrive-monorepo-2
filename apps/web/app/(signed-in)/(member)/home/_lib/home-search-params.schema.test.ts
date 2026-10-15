@@ -6,6 +6,7 @@ describe('HomeSearchParams', () => {
     expect(HomeSearchParams.parse({ signedIn: '1' })).toEqual({
       signedIn: '1',
       sent: undefined,
+      given: undefined,
       tab: 'workspace',
       request: undefined,
       ask: undefined,
@@ -16,10 +17,16 @@ describe('HomeSearchParams', () => {
     expect(HomeSearchParams.parse({ tab: 'my-requests', sent: '1' })).toEqual({
       signedIn: undefined,
       sent: '1',
+      given: undefined,
       tab: 'my-requests',
       request: undefined,
       ask: undefined,
     });
+  });
+
+  it('reads given=1 from Feedback just given without being asked', () => {
+    expect(HomeSearchParams.parse({ given: '1' }).given).toBe('1');
+    expect(HomeSearchParams.parse({ given: 'yes' }).given).toBeUndefined();
   });
 
   it('opens the Workspace feed for a missing or unknown tab', () => {
@@ -36,6 +43,7 @@ describe('HomeSearchParams', () => {
     ).toEqual({
       signedIn: undefined,
       sent: undefined,
+      given: undefined,
       tab: 'workspace',
       request: undefined,
       ask: undefined,

@@ -22,6 +22,8 @@ export const ROUTES = {
   /** One tab of Home's feed. `workspace` is the tab Home opens on, so it needs no query. */
   homeTab: (tab: HomeTab) =>
     tab === HOME_TABS[0] ? '/home' : `/home?tab=${tab}`,
+  /** Home, saying once that the Feedback the person just gave was sent. */
+  homeGiven: '/home?given=1',
   /** A Feedback Request the person sent, open in a dialog over My requests. */
   homeRequest: (requestId: string) =>
     `/home?tab=my-requests&request=${requestId}`,

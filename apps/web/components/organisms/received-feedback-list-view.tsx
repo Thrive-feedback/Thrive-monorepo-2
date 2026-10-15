@@ -7,8 +7,8 @@ export type ReceivedFeedbackListViewProps = {
 };
 
 /**
- * Everything people have written to this person, newest first: the Topic they were asked
- * about, who wrote it, when, and what they wrote in full.
+ * Everything people have written to this person, newest first: what it is about, who wrote it,
+ * when, whether it was given without being asked, and what they wrote in full.
  *
  * The body is shown whole rather than trimmed to a preview — it is at most a few paragraphs,
  * and a Receiver reading their own feedback has no second screen to open for the rest. Its
@@ -39,6 +39,7 @@ export function ReceivedFeedbackListView({
             <time dateTime={feedback.writtenAt}>
               {calendarDay(feedback.writtenAt)}
             </time>
+            {feedback.offered && ' · Given without a request'}
           </Text>
           <Text
             as="p"
