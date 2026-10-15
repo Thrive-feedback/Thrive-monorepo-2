@@ -10,6 +10,7 @@ Step definitions live with the stack that runs them: `@api` steps in `apps/api/t
 | `workspace.feature`         | founding a Workspace; the two refusals a founder can meet; who is in a Workspace, and only for its Members       |
 | `invitations.feature`       | inviting one or several people and each outcome; the link read while signed out; joining from the email or from the Invitations waiting on sign-in; revoking, resending, accepting an expired one or a second one; who may do which |
 | `feedback-requests.feature` | asking for Feedback, and only a Member of the Workspace; what was sent, what is waiting and what was answered; only its parties may read it, and an Ask only its Giver |
+| `offered-feedback.feature`  | giving Feedback without being asked, and only to a Member of the Workspace; the Receiver reads it as given without a request; it asks nobody anything; only the people the Giver chose read it, and only inside the Workspace |
 
 Every scenario is `@api`. No `@browser` steps exist yet (`FE_15`; Playwright is planned).
 

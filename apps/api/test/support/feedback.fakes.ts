@@ -16,6 +16,7 @@ import {
   type FeedbackRequestSnapshot,
 } from '@app/modules/feedback/domain/entity/feedback-request.entity';
 import { AskAlreadyAnsweredError } from '@app/modules/feedback/domain/feedback-request.errors';
+import { FeedbackRepository } from '@app/modules/feedback/domain/repository/feedback-repository.port';
 import { FeedbackRequestRepository } from '@app/modules/feedback/domain/repository/feedback-request-repository.port';
 import type { AskStatusValue } from '@app/modules/feedback/domain/value-object/ask-status.vo';
 import { WorkspaceMembershipPort } from '@app/modules/workspace';
@@ -113,6 +114,14 @@ export class FakeFeedbackRequestRepository extends FeedbackRequestRepository {
     }
     this.saved[stored] = request.snapshot();
     this.answers.push(answer);
+  }
+}
+
+export class FakeFeedbackRepository extends FeedbackRepository {
+  readonly saved: ReturnType<Feedback['snapshot']>[] = [];
+
+  async save(feedback: Feedback): Promise<void> {
+    this.saved.push(feedback.snapshot());
   }
 }
 

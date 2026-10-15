@@ -84,11 +84,19 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
         select: { feedbackAskId: true, body: true, createdAt: true },
       });
-    return records.map((record) => ({
-      askId: record.feedbackAskId,
-      body: record.body,
-      answeredAt: record.createdAt,
-    }));
+    // Feedback that names a request answers one of its Asks, so every row here has an Ask id;
+    // the column is nullable only for Feedback given without being asked.
+    return records.flatMap((record) =>
+      record.feedbackAskId === null
+        ? []
+        : [
+            {
+              askId: record.feedbackAskId,
+              body: record.body,
+              answeredAt: record.createdAt,
+            },
+          ],
+    );
   }
 
   async sentInWorkspace(
@@ -159,16 +167,12 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         take: page.pageSize,
         select: {
           id: true,
+          origin: true,
           feedbackRequestId: true,
+          topic: true,
           giverAccountId: true,
           body: true,
           createdAt: true,
-          // The Topic lives on the request, and Feedback holds `feedbackRequestId` as a bare
-          // column — its only relation out is the Ask it answers (schema.prisma `Feedback`).
-          // So the Topic is reached through that Ask, in this one read rather than a second.
-          feedbackAsk: {
-            select: { feedbackRequest: { select: { topic: true } } },
-          },
         },
       }),
       client.feedback.count({ where }),
@@ -176,8 +180,9 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     return {
       items: records.map((record) => ({
         id: record.id,
+        origin: record.origin,
         feedbackRequestId: record.feedbackRequestId,
-        topic: record.feedbackAsk.feedbackRequest.topic,
+        topic: record.topic,
         giverAccountId: record.giverAccountId,
         body: record.body,
         createdAt: record.createdAt,
@@ -193,41 +198,35 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     const record =
       await this.prismaTransactionContext.client.feedback.findFirst({
         where: { id: feedbackId, workspaceId },
+        // Every piece holds its own Topic and Visibility, so Offered Feedback — which has no
+        // request to read them from — is opened the same way as an answer.
         select: {
           id: true,
+          origin: true,
           feedbackRequestId: true,
+          topic: true,
           giverAccountId: true,
           receiverAccountId: true,
           body: true,
           createdAt: true,
-          // Reached through the Ask, as in `receivedBy`: Feedback's one relation out.
-          feedbackAsk: {
-            select: {
-              feedbackRequest: {
-                select: {
-                  topic: true,
-                  visibility: true,
-                  selectedPeople: SELECTED_PEOPLE_IN_ORDER,
-                },
-              },
-            },
-          },
+          visibility: true,
+          selectedPeople: SELECTED_PEOPLE_IN_ORDER,
         },
       });
     if (!record) {
       return null;
     }
-    const request = record.feedbackAsk.feedbackRequest;
     return {
       id: record.id,
+      origin: record.origin,
       feedbackRequestId: record.feedbackRequestId,
-      topic: request.topic,
+      topic: record.topic,
       giverAccountId: record.giverAccountId,
       receiverAccountId: record.receiverAccountId,
       body: record.body,
       createdAt: record.createdAt,
-      visibility: request.visibility,
-      selectedAccountIds: request.selectedPeople.map(
+      visibility: record.visibility,
+      selectedAccountIds: record.selectedPeople.map(
         (person) => person.accountId,
       ),
     };

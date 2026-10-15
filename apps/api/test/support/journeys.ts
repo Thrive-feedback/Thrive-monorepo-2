@@ -110,10 +110,56 @@ export async function joinWorkspaceOf(
   world.joined(name, world.workspaceOf(owner));
 }
 
-/** Who besides the Requester and the Giver may read what a request collects, as sent. */
+/** Who besides the Giver and the Receiver may read Feedback, as a request or a gift sends it. */
 export interface VisibilityChosen {
   readonly visibility: 'ONLY_ME' | 'SELECTED_PEOPLE' | 'EVERYONE';
   readonly selectedAccountIds?: readonly string[];
+}
+
+/** The `{sharedWith}` words of a feature file, as the API is sent them. */
+export function visibilityOf(
+  world: ThriveWorld,
+  sharedWith: string,
+): VisibilityChosen {
+  if (sharedWith === 'nobody else') {
+    return { visibility: 'ONLY_ME' };
+  }
+  if (sharedWith === 'everyone in the Workspace') {
+    return { visibility: 'EVERYONE' };
+  }
+  return {
+    visibility: 'SELECTED_PEOPLE',
+    selectedAccountIds: sharedWith
+      .split(' and ')
+      .map((name) => world.person(name).accountId),
+  };
+}
+
+/** The Giver gives the Receiver Feedback without being asked, as Give feedback sends it. */
+export async function giveFeedback(
+  world: ThriveWorld,
+  giver: string,
+  receiver: string,
+  topic: string,
+  body: string,
+  visibility: VisibilityChosen = { visibility: 'ONLY_ME' },
+): Promise<ApiResponse> {
+  const workspaceId = world.workspaceOf(giver);
+  const response = await world.as(
+    giver,
+    'POST',
+    `/v1/workspaces/${workspaceId}/feedback`,
+    {
+      receiverAccountId: world.person(receiver).accountId,
+      topic,
+      body,
+      ...visibility,
+    },
+  );
+  if (response.status === 201) {
+    world.feedback = { id: response.body.id, workspaceId };
+  }
+  return response;
 }
 
 export async function askForFeedback(

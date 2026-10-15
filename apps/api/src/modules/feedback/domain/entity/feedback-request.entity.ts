@@ -150,6 +150,8 @@ export class FeedbackRequest {
       giverAccountId: details.giverAccountId,
       // The Requester asked, so the Requester is who the answer is for. Never a client's word.
       receiverAccountId: this.requesterAccountId,
+      topic: this.topic,
+      visibility: this.visibility,
       body: details.body,
     });
   }

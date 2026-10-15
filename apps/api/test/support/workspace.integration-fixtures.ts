@@ -142,6 +142,9 @@ export class WorkspaceFixtures {
     await this.prismaService.feedbackRequest.deleteMany({
       where: { requesterAccountId: { in: this.accountIds } },
     });
+    await this.prismaService.feedback.deleteMany({
+      where: { giverAccountId: { in: this.accountIds } },
+    });
     await this.prismaService.workspace.deleteMany({
       where: { members: { some: { userId: { in: this.accountIds } } } },
     });

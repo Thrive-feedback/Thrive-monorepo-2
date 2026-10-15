@@ -11,9 +11,12 @@ import { GetFeedbackRequestUseCase } from './application/use-cases/get-feedback-
 import { ListMyFeedbackAsksUseCase } from './application/use-cases/list-my-feedback-asks.use-case';
 import { ListReceivedFeedbackUseCase } from './application/use-cases/list-received-feedback.use-case';
 import { ListSentFeedbackRequestsUseCase } from './application/use-cases/list-sent-feedback-requests.use-case';
+import { OfferFeedbackUseCase } from './application/use-cases/offer-feedback.use-case';
 import { SendFeedbackRequestUseCase } from './application/use-cases/send-feedback-request.use-case';
+import { FeedbackRepository } from './domain/repository/feedback-repository.port';
 import { FeedbackRequestRepository } from './domain/repository/feedback-request-repository.port';
 import { PrismaFeedbackRequestQuery } from './infrastructure/query/prisma-feedback-request.query';
+import { PrismaFeedbackRepository } from './infrastructure/repository/prisma-feedback.repository';
 import { PrismaFeedbackRequestRepository } from './infrastructure/repository/prisma-feedback-request.repository';
 import { FeedbackController } from './presentation/feedback.controller';
 import { FeedbackAskController } from './presentation/feedback-ask.controller';
@@ -21,9 +24,9 @@ import { FeedbackRequestController } from './presentation/feedback-request.contr
 import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
 
 /**
- * Feedback owns Feedback Requests and their Asks. It depends on Workspace, for whether an
- * Account is a Member of the Workspace a request is sent in, and on Identity, for the name
- * each Giver is known by. Neither depends on Feedback: a Workspace and its Members exist
+ * Feedback owns Feedback Requests, their Asks, and the Feedback written — in answer or offered.
+ * It depends on Workspace, for whether an Account is a Member of the Workspace Feedback is asked
+ * for or given in, and on Identity, for the name each Giver is known by. Neither depends on Feedback: a Workspace and its Members exist
  * whether or not anybody has asked for Feedback.
  */
 @Module({
@@ -38,6 +41,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
       provide: FeedbackRequestRepository,
       useClass: PrismaFeedbackRequestRepository,
     },
+    { provide: FeedbackRepository, useClass: PrismaFeedbackRepository },
     { provide: FeedbackRequestQuery, useClass: PrismaFeedbackRequestQuery },
     AccountNamesService,
     SendFeedbackRequestUseCase,
@@ -48,6 +52,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     GetFeedbackUseCase,
     GetFeedbackAskUseCase,
     AnswerFeedbackAskUseCase,
+    OfferFeedbackUseCase,
     WorkspaceMemberGuard,
   ],
 })

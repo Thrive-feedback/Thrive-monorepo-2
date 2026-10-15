@@ -135,11 +135,32 @@ describe('sending a Feedback Request', () => {
       expect(feedback?.snapshot()).toEqual({
         id: FEEDBACK_ID,
         workspaceId: '0199a0f0-0000-7000-8000-0000000000w1',
+        origin: 'REQUESTED',
         feedbackRequestId: REQUEST_ID,
         feedbackAskId: ASK_ID,
         giverAccountId: 'account-ben',
         receiverAccountId: 'account-ann',
+        topic: 'my presentation skills',
+        visibility: 'ONLY_ME',
+        selectedAccountIds: [],
         body: 'You lose the room at the detail.',
+      });
+    });
+
+    it('carries the people the Requester selected, so the answer is read as they chose', () => {
+      const request = FeedbackRequest.send({
+        ...sending(),
+        visibility: Visibility.of({
+          value: 'SELECTED_PEOPLE',
+          selectedAccountIds: ['account-cara'],
+        }),
+      });
+
+      const feedback = request.answerAsk(answering);
+
+      expect(feedback?.snapshot()).toMatchObject({
+        visibility: 'SELECTED_PEOPLE',
+        selectedAccountIds: ['account-cara'],
       });
     });
 

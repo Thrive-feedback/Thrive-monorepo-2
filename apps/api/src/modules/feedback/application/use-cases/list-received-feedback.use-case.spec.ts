@@ -18,6 +18,7 @@ function setUp() {
       id: '0199a0f0-0000-7000-8000-0000000000d1',
       workspaceId: WORKSPACE_ID,
       receiverAccountId: ANA,
+      origin: 'REQUESTED',
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
       topic: 'my presentation skills',
       giverAccountId: BEN,
@@ -28,7 +29,8 @@ function setUp() {
       id: '0199a0f0-0000-7000-8000-0000000000d2',
       workspaceId: WORKSPACE_ID,
       receiverAccountId: ANA,
-      feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f2',
+      origin: 'OFFERED',
+      feedbackRequestId: null,
       topic: 'how I run stand-up',
       giverAccountId: CARA,
       body: 'Short and clear. Keep leaving the last five minutes open.',
@@ -38,6 +40,7 @@ function setUp() {
       id: '0199a0f0-0000-7000-8000-0000000000d3',
       workspaceId: WORKSPACE_ID,
       receiverAccountId: BEN,
+      origin: 'REQUESTED',
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f3',
       topic: 'how Ben writes release notes',
       giverAccountId: ANA,
@@ -88,6 +91,26 @@ describe('reading the Feedback written to me', () => {
     expect(received.items[0]?.body).toBe(
       'Short and clear. Keep leaving the last five minutes open.',
     );
+  });
+
+  it('tells Feedback given without being asked from an answer, which names its request', async () => {
+    const { useCase } = setUp();
+
+    const received = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      receiverAccountId: ANA,
+      page: ONE_PAGE,
+    });
+
+    expect(
+      received.items.map((feedback) => [
+        feedback.origin,
+        feedback.feedbackRequestId,
+      ]),
+    ).toEqual([
+      ['OFFERED', null],
+      ['REQUESTED', '0199a0f0-0000-7000-8000-0000000000f1'],
+    ]);
   });
 
   it('leaves out Feedback written to another Member of my own Workspace', async () => {

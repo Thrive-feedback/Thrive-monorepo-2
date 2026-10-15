@@ -15,8 +15,8 @@ export interface ListReceivedFeedbackInput {
 }
 
 /**
- * A query: the Feedback written to the caller in this Workspace, newest first, with every
- * Giver named.
+ * A query: the Feedback written to the caller in this Workspace — answers to their requests
+ * and Feedback given without being asked alike — newest first, with every Giver named.
  *
  * The Receiver is an argument to the read rather than a filter applied after it, so a version
  * of this that lists somebody else's Feedback cannot be written by accident — which is the
@@ -46,6 +46,7 @@ export class ListReceivedFeedbackUseCase {
     return {
       items: received.items.map((feedback) => ({
         id: feedback.id,
+        origin: feedback.origin,
         feedbackRequestId: feedback.feedbackRequestId,
         topic: feedback.topic,
         giverAccountId: feedback.giverAccountId,

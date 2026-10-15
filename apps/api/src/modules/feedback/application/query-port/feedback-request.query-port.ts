@@ -1,3 +1,4 @@
+import type { FeedbackOrigin } from '../../domain/entity/feedback.entity';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
 import type { PageRequest } from '../types/feedback-request.types';
 
@@ -48,12 +49,14 @@ export interface FeedbackAnswerRow {
 }
 
 /**
- * One piece of Feedback as the Member it was written to reads it, carrying the Topic of the
- * request it answers. The Giver's name is Identity's and is added above this port.
+ * One piece of Feedback as the Member it was written to reads it. The Giver's name is
+ * Identity's and is added above this port.
  */
 export interface FeedbackRow {
   readonly id: string;
-  readonly feedbackRequestId: string;
+  readonly origin: FeedbackOrigin;
+  /** The request it answers, or `null` for Feedback given without being asked. */
+  readonly feedbackRequestId: string | null;
   readonly topic: string;
   readonly giverAccountId: string;
   readonly body: string;
@@ -61,12 +64,14 @@ export interface FeedbackRow {
 }
 
 /**
- * One piece of Feedback with the Visibility of the request that collected it: everything needed
- * to decide who may read it, in one row. Names are Identity's and are added above this port.
+ * One piece of Feedback with its Visibility: everything needed to decide who may read it, in
+ * one row. Names are Identity's and are added above this port.
  */
 export interface FeedbackWithVisibilityRow {
   readonly id: string;
-  readonly feedbackRequestId: string;
+  readonly origin: FeedbackOrigin;
+  /** The request it answers, or `null` for Feedback given without being asked. */
+  readonly feedbackRequestId: string | null;
   readonly topic: string;
   readonly giverAccountId: string;
   readonly receiverAccountId: string;

@@ -14,9 +14,10 @@ function isVisibility(raw: string): raw is VisibilityValue {
 }
 
 /**
- * Who besides the Giver and the Receiver may read the Feedback a request collects: nobody, the
- * Members the Requester selected, or every Member of the Workspace. Chosen when sending and never
- * changed afterwards (`ADR-0022`).
+ * Who besides the Giver and the Receiver may read a piece of Feedback: nobody, the Members
+ * selected, or every Member of the Workspace. Chosen when sending — by the Requester for what a
+ * request collects, by the Giver for Offered Feedback — and never changed afterwards
+ * (`ADR-0022`).
  *
  * The selected people belong to the Visibility rather than sitting beside it, so a Visibility of
  * Selected people with nobody in it, or of Everyone with somebody picked, cannot be built.
@@ -60,10 +61,10 @@ export class Visibility {
   }
 
   /**
-   * Whether one Member may read a piece of Feedback the request collected. The Giver who wrote it
-   * and the Receiver it is for always may; anyone else only as this Visibility allows.
+   * Whether one Member may read a piece of Feedback. The Giver who wrote it and the Receiver it
+   * is for always may; anyone else only as this Visibility allows.
    *
-   * The reader must already be known to be a Member of the request's Workspace: Everyone means
+   * The reader must already be known to be a Member of the Feedback's Workspace: Everyone means
    * every Member, and this cannot tell a Member from a stranger.
    */
   letsRead(reading: {

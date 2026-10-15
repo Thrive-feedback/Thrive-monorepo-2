@@ -20,6 +20,7 @@ function setUp(visibility: string, selectedAccountIds: string[] = []) {
   feedbackRequestQuery.feedbackWithVisibility.push({
     id: FEEDBACK_ID,
     workspaceId: WORKSPACE_ID,
+    origin: 'REQUESTED',
     feedbackRequestId: REQUEST_ID,
     topic: 'my presentation skills',
     giverAccountId: GIVER,
@@ -70,6 +71,7 @@ describe('reading one piece of Feedback', () => {
 
     expect(await readAs(useCase, CARA)).toEqual({
       id: FEEDBACK_ID,
+      origin: 'REQUESTED',
       feedbackRequestId: REQUEST_ID,
       topic: 'my presentation skills',
       giverAccountId: GIVER,
