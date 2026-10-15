@@ -14,9 +14,22 @@ export class GiverNotInWorkspaceError extends ApplicationError {
 }
 
 /**
- * The Requester selected somebody outside their Workspace to read the answers. Checked here
- * for the same reason the Givers are: the body is where a client could name anybody, and an
- * answer must never reach a stranger.
+ * Offered Feedback only ever reaches people in the Giver's own Workspace. Checked here rather
+ * than trusted from the request body, which is where a client could name anybody.
+ */
+export class ReceiverNotInWorkspaceError extends ApplicationError {
+  readonly code = 'RECEIVER_NOT_IN_WORKSPACE';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('The Member this Feedback is for is not in this Workspace.');
+  }
+}
+
+/**
+ * Somebody outside the Workspace was selected to read Feedback — by a Requester, for the answers,
+ * or by the Giver of Offered Feedback. Checked here for the same reason the Givers are: the body
+ * is where a client could name anybody, and Feedback must never reach a stranger.
  */
 export class SelectedPersonNotInWorkspaceError extends ApplicationError {
   readonly code = 'SELECTED_PERSON_NOT_IN_WORKSPACE';

@@ -4,6 +4,7 @@ import {
 } from '@app/shared/presentation/dto/page.dto';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
 
 export const listReceivedFeedbackQuerySchema = z.strictObject(pageQueryShape);
 export class ListReceivedFeedbackQueryDto extends createZodDto(
@@ -18,8 +19,10 @@ export class ListReceivedFeedbackQueryDto extends createZodDto(
  */
 const receivedFeedbackSchema = z.object({
   id: z.uuid(),
-  /** The request this answers. Becomes nullable when #29 lands Feedback given unasked. */
-  feedbackRequestId: z.uuid(),
+  /** `REQUESTED` answered one of the caller's Asks; `OFFERED` was given without being asked. */
+  origin: z.enum(FEEDBACK_ORIGINS),
+  /** The request this answers, or `null` for Feedback given without being asked. */
+  feedbackRequestId: z.uuid().nullable(),
   topic: z.string(),
   giverAccountId: z.uuid(),
   /** `null` while the Giver has not introduced themselves. */

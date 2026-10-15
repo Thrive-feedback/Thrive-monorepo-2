@@ -5,7 +5,10 @@ import type { Feedback } from '../../domain/entity/feedback.entity';
 import type { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import { AskAlreadyAnsweredError } from '../../domain/feedback-request.errors';
 import { FeedbackRequestRepository } from '../../domain/repository/feedback-request-repository.port';
-import { toFeedbackRecord } from '../mapper/feedback.mapper';
+import {
+  toFeedbackRecord,
+  toFeedbackSelectedPersonRecords,
+} from '../mapper/feedback.mapper';
 import {
   toFeedbackRequest,
   toFeedbackRequestRecord,
@@ -84,10 +87,11 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
   ): Promise<void> {
     const client = this.prismaTransactionContext.client;
     const answer = toFeedbackRecord(feedback);
+    const answeredAskId = answer.feedbackAskId;
     const answered = request
       .snapshot()
-      .asks.find((ask) => ask.id === answer.feedbackAskId);
-    if (!answered) {
+      .asks.find((ask) => ask.id === answeredAskId);
+    if (answeredAskId === null || !answered) {
       throw new Error(
         'The answer names an Ask the Feedback Request does not hold.',
       );
@@ -95,14 +99,19 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
     // Guarded on Pending rather than written blind: no rows updated means another request
     // answered first, which is the same refusal the unique index gives below.
     const flipped = await client.feedbackAsk.updateMany({
-      where: { id: answer.feedbackAskId, status: 'PENDING' },
+      where: { id: answeredAskId, status: 'PENDING' },
       data: { status: answered.status as 'ANSWERED' },
     });
     if (flipped.count === 0) {
       throw new AskAlreadyAnsweredError();
     }
     try {
-      await client.feedback.create({ data: answer });
+      await client.feedback.create({
+        data: {
+          ...answer,
+          selectedPeople: { create: toFeedbackSelectedPersonRecords(feedback) },
+        },
+      });
     } catch (error) {
       if (isSecondAnswerToOneAsk(error)) {
         throw new AskAlreadyAnsweredError();

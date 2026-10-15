@@ -170,10 +170,18 @@ model Invitation {
 // migrates across another module's tables (BE_03 R7). The cost is that a deleted Account
 // leaves its id behind on an Ask, which the read resolves to no name.
 
+/// ONLY_ME is nobody besides the Giver and the Receiver. The glossary calls it "Only me" when a
+/// Requester chooses it and "Only them" when the Giver of Offered Feedback does: one audience.
 enum Visibility {
   ONLY_ME
   SELECTED_PEOPLE
   EVERYONE
+}
+
+/// Why a piece of Feedback was written (glossary: Requested Feedback, Offered Feedback).
+enum FeedbackOrigin {
+  REQUESTED
+  OFFERED
 }
 
 enum AskStatus {
@@ -184,16 +192,16 @@ enum AskStatus {
 
 /// A Member asking other Members for Feedback on a Topic (glossary: Feedback Request).
 model FeedbackRequest {
-  id                 String        @id
+  id                 String                          @id
   workspaceId        String
   /// The Account of the Member who asked. They become the Receiver of what it collects.
   requesterAccountId String
   topic              String
   /// Who besides the Giver and the Requester reads what it collects. Fixed once sent. The
   /// default only fills rows written before the Requester could choose.
-  visibility         Visibility    @default(ONLY_ME)
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  visibility         Visibility                      @default(ONLY_ME)
+  createdAt          DateTime                        @default(now())
+  updatedAt          DateTime                        @updatedAt
   asks               FeedbackAsk[]
   selectedPeople     FeedbackRequestSelectedPerson[]
 
@@ -224,7 +232,7 @@ model FeedbackAsk {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  feedback          Feedback?
+  feedback Feedback?
 
   @@unique([feedbackRequestId, giverAccountId])
   /// For "the Asks waiting for me" (#18), the one read that has no request id.
@@ -232,29 +240,51 @@ model FeedbackAsk {
   @@map("feedback_ask")
 }
 
-/// One Giver's answer to one Ask (glossary: Feedback, origin Requested). Offered Feedback —
-/// written without being asked, so with no Ask and no request — is #29, which makes
-/// feedbackAskId nullable and adds FeedbackOrigin.
+/// A message from a Giver to a Receiver (glossary: Feedback) — either an answer to an Ask
+/// (REQUESTED) or given without being asked (OFFERED), which has no request and no Ask. A CHECK
+/// constraint in the migration holds that pairing, which Prisma cannot declare.
 model Feedback {
-  id                String      @id
+  id                String                   @id
   /// Workspace's id, held without a foreign key (BE_03 R7), as on FeedbackRequest.
   workspaceId       String
-  feedbackRequestId String
+  origin            FeedbackOrigin
+  /// Set exactly when origin is REQUESTED.
+  feedbackRequestId String?
   /// Inside Feedback's own module, so a real relation. One answer per Ask, ever: this unique
   /// index is what refuses a second answer when two requests race, which no check in the
-  /// application can do on its own.
-  feedbackAskId     String      @unique
-  feedbackAsk       FeedbackAsk @relation(fields: [feedbackAskId], references: [id], onDelete: Cascade)
+  /// application can do on its own. Set exactly when origin is REQUESTED.
+  feedbackAskId     String?                  @unique
+  feedbackAsk       FeedbackAsk?             @relation(fields: [feedbackAskId], references: [id], onDelete: Cascade)
   /// The Accounts of the Member who wrote it and the Member it is for. No foreign keys.
   giverAccountId    String
   receiverAccountId String
+  /// The Requester's Topic for Requested Feedback, the Giver's own for Offered. Never changes,
+  /// so it is held here rather than read back through the request.
+  topic             String
+  /// Who besides the Giver and the Receiver may read it, with the people in selectedPeople.
+  /// The Giver's choice for Offered Feedback, the request's copied for Requested. Never changes.
+  visibility        Visibility
   body              String
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  selectedPeople    FeedbackSelectedPerson[]
 
   /// For "the Feedback I received", newest first (#26).
   @@index([workspaceId, receiverAccountId, createdAt])
   /// For "the Feedback I gave" (#27).
   @@index([workspaceId, giverAccountId, createdAt])
   @@map("feedback")
+}
+
+/// One Member selected to read one piece of Feedback, when its Visibility is SELECTED_PEOPLE
+/// (glossary: Visibility, Selected people) — the Giver's pick for Offered Feedback, the request's
+/// copied for Requested. Personal data: an Account id only.
+model FeedbackSelectedPerson {
+  feedbackId String
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  /// The Account of the Member selected. No foreign key: Accounts are Identity's.
+  accountId  String
+
+  @@id([feedbackId, accountId])
+  @@map("feedback_selected_person")
 }

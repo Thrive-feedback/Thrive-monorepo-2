@@ -4,38 +4,20 @@ import {
   answerTheirAsk,
   askForFeedback,
   askIdWaitingFor,
-  type VisibilityChosen,
+  visibilityOf,
 } from '../support/journeys';
 import type { ThriveWorld } from '../support/world';
 
 /**
- * Who a Requester shares a request with, in the words the feature file uses: nobody else,
- * everyone in the Workspace, or the people they pick by name. Names stay names here and become
- * Accounts in `visibilityOf`, once the scenario has signed them in.
+ * Who a Requester or a Giver shares Feedback with, in the words the feature file uses: nobody
+ * else, everyone in the Workspace, or the people they pick by name. Names stay names here and
+ * become Accounts in `visibilityOf`, once the scenario has signed them in.
  */
 defineParameterType({
   name: 'sharedWith',
   regexp:
     /nobody else|everyone in the Workspace|[A-Z][a-z]+(?: and [A-Z][a-z]+)*/,
 });
-
-function visibilityOf(
-  world: ThriveWorld,
-  sharedWith: string,
-): VisibilityChosen {
-  if (sharedWith === 'nobody else') {
-    return { visibility: 'ONLY_ME' };
-  }
-  if (sharedWith === 'everyone in the Workspace') {
-    return { visibility: 'EVERYONE' };
-  }
-  return {
-    visibility: 'SELECTED_PEOPLE',
-    selectedAccountIds: sharedWith
-      .split(' and ')
-      .map((name) => world.person(name).accountId),
-  };
-}
 
 /** The answer the `When` step just got, which must have been a success. */
 function lastSucceeded(world: ThriveWorld, what: string) {

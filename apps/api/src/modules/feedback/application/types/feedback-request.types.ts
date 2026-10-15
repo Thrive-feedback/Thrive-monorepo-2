@@ -1,3 +1,4 @@
+import type { FeedbackOrigin } from '../../domain/entity/feedback.entity';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
 import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
 
@@ -78,13 +79,17 @@ export interface MyAskListView {
 }
 
 /**
- * One piece of Feedback as its Receiver reads it: who wrote it, what it was about, and what
- * they wrote. There is no `visibility` here — Visibility governs who *besides* the Giver and
- * the Receiver may read, and the Receiver is never the person it excludes.
+ * One piece of Feedback as its Receiver reads it: who wrote it, what it was about, whether they
+ * were asked, and what they wrote. There is no `visibility` here — Visibility governs who
+ * *besides* the Giver and the Receiver may read, and the Receiver is never the person it
+ * excludes.
  */
 export interface ReceivedFeedbackView {
   readonly id: string;
-  readonly feedbackRequestId: string;
+  /** Whether it answered an Ask or was given without being asked. */
+  readonly origin: FeedbackOrigin;
+  /** The request it answers, or `null` for Feedback given without being asked. */
+  readonly feedbackRequestId: string | null;
   readonly topic: string;
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */
@@ -99,7 +104,10 @@ export interface ReceivedFeedbackView {
  */
 export interface FeedbackView {
   readonly id: string;
-  readonly feedbackRequestId: string;
+  /** Whether it answered an Ask or was given without being asked. */
+  readonly origin: FeedbackOrigin;
+  /** The request it answers, or `null` for Feedback given without being asked. */
+  readonly feedbackRequestId: string | null;
   readonly topic: string;
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */

@@ -101,15 +101,16 @@ export class PersonAlreadySelectedError extends DomainError {
   }
 }
 
-/** The Requester is the Receiver of everything the request collects, so they always read it. */
+/**
+ * Whoever chooses the Visibility always reads the Feedback — a Requester as its Receiver, the
+ * Giver of Offered Feedback as its writer — so selecting themselves would mean nothing.
+ */
 export class CannotSelectYourselfError extends DomainError {
   readonly code = 'CANNOT_SELECT_YOURSELF';
   readonly category = 'validation' as const;
 
   constructor() {
-    super(
-      'A Requester cannot select themselves; they already read every answer.',
-    );
+    super('You cannot select yourself; you already read this Feedback.');
   }
 }
 
@@ -118,7 +119,7 @@ export class FeedbackBodyEmptyError extends DomainError {
   readonly category = 'validation' as const;
 
   constructor() {
-    super('An answer must contain at least one non-space character.');
+    super('Feedback must contain at least one non-space character.');
   }
 }
 
@@ -127,7 +128,27 @@ export class FeedbackBodyTooLongError extends DomainError {
   readonly category = 'validation' as const;
 
   constructor(readonly maxLength: number) {
-    super(`An answer must be at most ${maxLength} characters.`);
+    super(`Feedback must be at most ${maxLength} characters.`);
+  }
+}
+
+/** The Giver is never the Receiver: Feedback is for somebody else. */
+export class CannotGiveYourselfFeedbackError extends DomainError {
+  readonly code = 'CANNOT_GIVE_YOURSELF_FEEDBACK';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('A Giver cannot give Feedback to themselves.');
+  }
+}
+
+/** The Receiver always reads Feedback written to them, so they are not somebody to select. */
+export class CannotSelectTheReceiverError extends DomainError {
+  readonly code = 'CANNOT_SELECT_THE_RECEIVER';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('The Receiver already reads this Feedback; select other Members.');
   }
 }
 

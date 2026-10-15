@@ -15,8 +15,8 @@ export interface GetFeedbackInput {
 
 /**
  * A query: one piece of Feedback, for anybody its Visibility lets read it — the Giver, the
- * Receiver, and whoever the Requester chose. Everybody else is told it does not exist, the
- * same answer as for an id nothing was written under.
+ * Receiver, and whoever the Requester or, for Offered Feedback, the Giver chose. Everybody else
+ * is told it does not exist, the same answer as for an id nothing was written under.
  *
  * Membership of the Workspace is proven before this runs, which is what lets Everyone mean
  * every Member and nobody outside the Workspace (ADR 0042).
@@ -56,6 +56,7 @@ export class GetFeedbackUseCase {
     ]);
     return {
       id: row.id,
+      origin: row.origin,
       feedbackRequestId: row.feedbackRequestId,
       topic: row.topic,
       giverAccountId: row.giverAccountId,

@@ -63,10 +63,14 @@ describe('a Giver answering an Ask', () => {
       {
         id: FEEDBACK_ID,
         workspaceId: WORKSPACE_ID,
+        origin: 'REQUESTED',
         feedbackRequestId: REQUEST_ID,
         feedbackAskId: ASK_ID,
         giverAccountId: BEN,
         receiverAccountId: ANN,
+        topic: 'my presentation skills',
+        visibility: 'ONLY_ME',
+        selectedAccountIds: [],
         body: WRITTEN,
       },
     ]);

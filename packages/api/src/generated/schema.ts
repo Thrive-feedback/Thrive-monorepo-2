@@ -340,7 +340,8 @@ export interface paths {
         /** List the Feedback written to the caller in this Workspace */
         get: operations["FeedbackController_listReceivedFeedback"];
         put?: never;
-        post?: never;
+        /** Give a Member of this Workspace Feedback without being asked for it */
+        post: operations["FeedbackController_offerFeedback"];
         delete?: never;
         options?: never;
         head?: never;
@@ -634,12 +635,27 @@ export interface components {
             /** Format: uuid */
             feedbackId: string;
         };
+        OfferFeedbackRequestDto: {
+            /** Format: uuid */
+            receiverAccountId: string;
+            topic: string;
+            body: string;
+            /** @enum {string} */
+            visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
+            selectedAccountIds?: string[];
+        };
+        OfferFeedbackResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
+        };
         ListReceivedFeedbackResponseDto_Output: {
             items: {
                 /** Format: uuid */
                 id: string;
+                /** @enum {string} */
+                origin: "REQUESTED" | "OFFERED";
                 /** Format: uuid */
-                feedbackRequestId: string;
+                feedbackRequestId: string | null;
                 topic: string;
                 /** Format: uuid */
                 giverAccountId: string;
@@ -655,8 +671,10 @@ export interface components {
         GetFeedbackResponseDto_Output: {
             /** Format: uuid */
             id: string;
+            /** @enum {string} */
+            origin: "REQUESTED" | "OFFERED";
             /** Format: uuid */
-            feedbackRequestId: string;
+            feedbackRequestId: string | null;
             topic: string;
             giver: {
                 /** Format: uuid */
@@ -1579,6 +1597,55 @@ export interface operations {
                 };
             };
             /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedbackController_offerFeedback: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfferFeedbackRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfferFeedbackResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, FEEDBACK_BODY_EMPTY, FEEDBACK_BODY_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE */
             400: {
                 headers: {
                     [name: string]: unknown;

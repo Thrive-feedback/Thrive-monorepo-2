@@ -195,6 +195,13 @@ async function main(): Promise<void> {
     'They read clearly and they land a day late. Draft them while the work is fresh, rather than writing them at the end.',
   );
 
+  await call(teammate, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
+    receiverAccountId: owner.accountId,
+    topic: 'The customer demo on Tuesday',
+    body: 'You kept the room with you when the demo broke, and the recap at the end landed. Keep doing that.',
+    visibility: 'ONLY_ME',
+  });
+
   await prismaService.$disconnect();
 
   console.log(`
@@ -214,7 +221,8 @@ What is on screen:
   My requests     2 sent — "Running the planning meeting" answered by Ben, "How I handled the
                   incident review" still waiting
   Waiting for me  2 Asks from Ben to answer, and a third she has already answered
-  Feedback for me 1 piece — what Ben wrote back. The one she gave Ben is his, not hers
+  Feedback for me 2 pieces — what Ben wrote back, and what he gave her without being asked.
+                  The one she gave Ben is his, not hers
   The answer      ${WEB_BASE_URL}/home?tab=my-requests&request=${answeredRequest}
   Still waiting   ${WEB_BASE_URL}/home?tab=my-requests&request=${waitingRequest}
   Written to her  ${WEB_BASE_URL}/home?tab=received
