@@ -6,5 +6,7 @@ export type WorkspaceMember = {
   readonly email: string;
   /** The Display name; `null` until they have introduced themselves. */
   readonly name: string | null;
+  /** Their photo from Google; `null` when Google has none. */
+  readonly photoUrl: string | null;
   readonly role: MemberRole;
 };

@@ -28,6 +28,7 @@ export async function readMembers(
     accountId: member.accountId,
     email: member.email,
     name: member.displayName,
+    photoUrl: member.photoUrl,
     role: member.role,
   }));
 }

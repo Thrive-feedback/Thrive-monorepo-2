@@ -43,7 +43,7 @@ const ACME = {
   workspace: { id: '0199a0f0-0000-7000-8000-0000000000w1', name: 'Acme Corp' },
   role: 'OWNER' as const,
 };
-const ANN = { email: 'ann@acme.test', name: 'Ann Lee' };
+const ANN = { email: 'ann@acme.test', name: 'Ann Lee', photoUrl: null };
 const TO_GLOBEX = {
   invitationId: '0199a0f0-0000-7000-8000-000000000001',
   workspace: {
@@ -64,7 +64,12 @@ function answerSignedInAs(profile: typeof ANN_PROFILE | null) {
   server.use(
     http.get(CURRENT_SESSION, () =>
       HttpResponse.json({
-        account: { email: 'ann@acme.test', name: 'Ann Lee', profile },
+        account: {
+          email: 'ann@acme.test',
+          name: 'Ann Lee',
+          photoUrl: null,
+          profile,
+        },
         needsRefresh: false,
       }),
     ),
@@ -129,7 +134,12 @@ describe('readSession', () => {
       http.get(CURRENT_SESSION, ({ request }) => {
         seen.push(request);
         return HttpResponse.json({
-          account: { email: 'ann@acme.test', name: 'Ann Lee', profile: null },
+          account: {
+            email: 'ann@acme.test',
+            name: 'Ann Lee',
+            photoUrl: null,
+            profile: null,
+          },
           needsRefresh: false,
         });
       }),
@@ -138,6 +148,7 @@ describe('readSession', () => {
     expect(await readSession()).toEqual({
       email: 'ann@acme.test',
       name: 'Ann Lee',
+      photoUrl: null,
       profile: null,
     });
     expect(seen[0]?.headers.get('cookie')).toBe('thrive.session_token=abc');
@@ -184,7 +195,12 @@ describe('readSession', () => {
     server.use(
       http.get(CURRENT_SESSION, () =>
         HttpResponse.json({
-          account: { email: 'ann@acme.test', name: 'Ann Lee', profile: null },
+          account: {
+            email: 'ann@acme.test',
+            name: 'Ann Lee',
+            photoUrl: null,
+            profile: null,
+          },
           needsRefresh: true,
         }),
       ),

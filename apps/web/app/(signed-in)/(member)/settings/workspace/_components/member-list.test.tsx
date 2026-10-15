@@ -16,18 +16,20 @@ const MEMBERSHIP = {
 } as const;
 
 describe('MemberList', () => {
-  it('shows each Member as name, email and Role, with a dash for no name, and marks the person', async () => {
+  it('shows each Member as initials, name, email and Role, with a dash and the first letter of the email for no name, and marks the person', async () => {
     readMembers.mockResolvedValue([
       {
         accountId: 'a-1',
         email: 'ann@acme.test',
         name: 'Ann',
+        photoUrl: null,
         role: 'OWNER',
       },
       {
         accountId: 'a-2',
         email: 'ben@acme.test',
         name: null,
+        photoUrl: null,
         role: 'MEMBER',
       },
     ]);
@@ -38,7 +40,7 @@ describe('MemberList', () => {
 
     expect(
       screen.getAllByRole('listitem').map((item) => item.textContent),
-    ).toEqual(['Annann@acme.testOwner', '—ben@acme.testMember (you)']);
+    ).toEqual(['AAnnann@acme.testOwner', 'B—ben@acme.testMember (you)']);
     expect(readMembers).toHaveBeenCalledWith(MEMBERSHIP);
   });
 });
