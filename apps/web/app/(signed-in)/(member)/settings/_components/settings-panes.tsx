@@ -3,6 +3,15 @@
 import { ChevronLeftIcon } from 'lucide-react';
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/atoms/breadcrumb';
+import { Link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
@@ -30,6 +39,19 @@ export function SettingsPanes({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href={ROUTES.home}>Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Settings</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <Text
         variant="display-5"
         as="h1"
