@@ -20,7 +20,11 @@ vi.mock(
 );
 
 const BEN = '0199a0f0-0000-7000-8000-00000000000b';
-const TEAMMATES = [{ accountId: BEN, name: 'Ben Carter' }];
+const CARA = '0199a0f0-0000-7000-8000-00000000000c';
+const TEAMMATES = [
+  { accountId: BEN, name: 'Ben Carter' },
+  { accountId: CARA, name: 'Cara Diaz' },
+];
 
 function trigger() {
   return screen.getByRole('combobox', { name: /Who do you want to ask/ });
@@ -38,6 +42,15 @@ function sendButton() {
 function sentFormData() {
   const formData = requestFeedback.mock.calls[0]?.[1];
   return formData ? Object.fromEntries(formData.entries()) : undefined;
+}
+
+function sentSelectedPeople() {
+  return requestFeedback.mock.calls[0]?.[1].getAll('selectedAccountIds');
+}
+
+async function fillIn(user: ReturnType<typeof userEvent.setup>) {
+  await pickBen(user);
+  await user.type(topicField(), 'my sprint review talk');
 }
 
 async function pickBen(user: ReturnType<typeof userEvent.setup>) {
@@ -71,7 +84,86 @@ describe('RequestFeedbackForm', () => {
     expect(sentFormData()).toEqual({
       giverAccountId: BEN,
       topic: 'my sprint review talk',
+      visibility: 'ONLY_ME',
     });
+  });
+
+  it('keeps the answers for the Requester alone unless they choose otherwise, and says so', () => {
+    render(<RequestFeedbackForm teammates={TEAMMATES} />);
+
+    expect(screen.getByRole('radio', { name: 'Only me' })).toBeChecked();
+    expect(
+      screen.getByText(/Only you will read what they send back\./),
+    ).toBeInTheDocument();
+  });
+
+  it('says the people picked can also read what comes back', async () => {
+    const user = userEvent.setup();
+    render(<RequestFeedbackForm teammates={TEAMMATES} />);
+
+    await user.click(screen.getByRole('radio', { name: 'Selected people' }));
+
+    expect(
+      screen.getByText(
+        /The people you pick can also read what they send back\./,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('says everyone in the Workspace can read what comes back', async () => {
+    const user = userEvent.setup();
+    render(<RequestFeedbackForm teammates={TEAMMATES} />);
+
+    await user.click(
+      screen.getByRole('radio', { name: 'Everyone in the Workspace' }),
+    );
+
+    expect(
+      screen.getByText(
+        /Everyone in your Workspace can read what they send back\./,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('asks who to share it with, leaving out the teammate being asked', async () => {
+    const user = userEvent.setup();
+    render(<RequestFeedbackForm teammates={TEAMMATES} />);
+
+    await pickBen(user);
+    await user.click(screen.getByRole('radio', { name: 'Selected people' }));
+
+    expect(
+      screen.getByRole('checkbox', { name: 'Cara Diaz' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: 'Ben Carter' })).toBeNull();
+  });
+
+  it('sends the people picked to read the answers', async () => {
+    const user = userEvent.setup();
+    render(<RequestFeedbackForm teammates={TEAMMATES} />);
+
+    await fillIn(user);
+    await user.click(screen.getByRole('radio', { name: 'Selected people' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Cara Diaz' }));
+    await user.click(sendButton());
+
+    expect(sentFormData()?.visibility).toBe('SELECTED_PEOPLE');
+    expect(sentSelectedPeople()).toEqual([CARA]);
+  });
+
+  it('needs at least one person when sharing with selected people, and puts focus there', async () => {
+    const user = userEvent.setup();
+    render(<RequestFeedbackForm teammates={TEAMMATES} />);
+
+    await fillIn(user);
+    await user.click(screen.getByRole('radio', { name: 'Selected people' }));
+    await user.click(sendButton());
+
+    expect(
+      screen.getByText('Pick at least one person to share it with.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Cara Diaz' })).toHaveFocus();
+    expect(requestFeedback).not.toHaveBeenCalled();
   });
 
   it('refuses an empty form, says what is missing on both fields, and sends nothing', async () => {
