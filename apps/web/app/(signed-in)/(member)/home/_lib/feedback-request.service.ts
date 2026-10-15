@@ -16,6 +16,15 @@ export type SentFeedbackRequest = {
     /** What they wrote, once they have — and only for the people allowed to read it. */
     readonly answer: string | null;
   }[];
+  /**
+   * Who besides the Requester reads the answers, with the names of the people selected — `null`
+   * for a Giver, whom the API does not tell.
+   */
+  readonly visibility: {
+    readonly value: 'ONLY_ME' | 'SELECTED_PEOPLE' | 'EVERYONE';
+    /** `null` for a Member who has not introduced themselves. */
+    readonly selectedNames: readonly (string | null)[];
+  } | null;
 };
 
 /**
@@ -52,6 +61,12 @@ export async function readFeedbackRequest(
         status: ask.status,
         answer: ask.answer?.body ?? null,
       })),
+      visibility: request.visibility && {
+        value: request.visibility.value,
+        selectedNames: request.visibility.selectedPeople.map(
+          (person) => person.name,
+        ),
+      },
     };
   } catch (error) {
     if (

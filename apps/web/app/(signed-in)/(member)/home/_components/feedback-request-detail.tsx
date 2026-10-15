@@ -19,6 +19,24 @@ const ASK_STATUS_WORDS: Readonly<
   EXPIRED: 'expired without an answer',
 };
 
+const names = new Intl.ListFormat('en', { type: 'conjunction' });
+
+/** Who reads what comes back, in the words the form used when the request was sent. */
+function whoReadsTheAnswers(
+  visibility: NonNullable<SentFeedbackRequest['visibility']>,
+): string {
+  switch (visibility.value) {
+    case 'ONLY_ME':
+      return 'Only you can read what they send back.';
+    case 'EVERYONE':
+      return 'Everyone in your Workspace can read what they send back.';
+    case 'SELECTED_PEOPLE':
+      return `You and ${names.format(
+        visibility.selectedNames.map((name) => name ?? 'a teammate'),
+      )} can read what they send back.`;
+  }
+}
+
 /**
  * One request the person sent, and the place they read what came back. It is read from what
  * was stored on every open, so a reload or a shared link shows the same thing — and an answer
@@ -41,26 +59,33 @@ export async function FeedbackRequestDetail({
   }
 
   return (
-    <ul className="flex flex-col gap-3">
-      {request.asks.map((ask) => (
-        <li key={ask.askId} className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <Text variant="subtitle-3" as="h3">
-              You asked {ask.giverName ?? 'a teammate'} about {request.topic}
-            </Text>
-            <Text variant="body-3" tone="muted">
-              Now {ASK_STATUS_WORDS[ask.status]}.
-            </Text>
-          </div>
-          {ask.answer !== null && (
-            // Their words, kept as they wrote them: the line breaks they chose are part of
-            // the answer, and a paragraph run together reads as a different message.
-            <Text variant="body-2" className="whitespace-pre-line">
-              {ask.answer}
-            </Text>
-          )}
-        </li>
-      ))}
-    </ul>
+    <div className="flex flex-col gap-4">
+      <ul className="flex flex-col gap-3">
+        {request.asks.map((ask) => (
+          <li key={ask.askId} className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
+              <Text variant="subtitle-3" as="h3">
+                You asked {ask.giverName ?? 'a teammate'} about {request.topic}
+              </Text>
+              <Text variant="body-3" tone="muted">
+                Now {ASK_STATUS_WORDS[ask.status]}.
+              </Text>
+            </div>
+            {ask.answer !== null && (
+              // Their words, kept as they wrote them: the line breaks they chose are part of
+              // the answer, and a paragraph run together reads as a different message.
+              <Text variant="body-2" className="whitespace-pre-line">
+                {ask.answer}
+              </Text>
+            )}
+          </li>
+        ))}
+      </ul>
+      {request.visibility && (
+        <Text variant="body-3" tone="muted">
+          {whoReadsTheAnswers(request.visibility)}
+        </Text>
+      )}
+    </div>
   );
 }

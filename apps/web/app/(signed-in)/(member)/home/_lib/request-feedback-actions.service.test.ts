@@ -16,6 +16,7 @@ vi.mock('next/headers', () => ({
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
 const REQUEST_ID = '0199a0f0-0000-7000-8000-0000000000f1';
 const BEN = '0199a0f0-0000-7000-8000-00000000000b';
+const CARA = '0199a0f0-0000-7000-8000-00000000000c';
 
 const requireMember = vi.fn(async () => ({
   email: 'ann@acme.test',
@@ -41,12 +42,16 @@ const { requestFeedback } = await import('./request-feedback-actions.service');
 
 const ENDPOINT = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/feedback-requests`;
 
-function apiAccepts() {
+/** Accepts the send, keeping the body the API was given. */
+function apiAccepts(): { body?: unknown } {
+  const received: { body?: unknown } = {};
   server.use(
-    http.post(ENDPOINT, () =>
-      HttpResponse.json({ id: REQUEST_ID }, { status: 201 }),
-    ),
+    http.post(ENDPOINT, async ({ request }) => {
+      received.body = await request.json();
+      return HttpResponse.json({ id: REQUEST_ID }, { status: 201 });
+    }),
   );
+  return received;
 }
 
 function apiRefuses(code: string, status: number) {
@@ -63,11 +68,20 @@ function apiRefuses(code: string, status: number) {
 }
 
 function form(
-  fields: Partial<{ giverAccountId: string; topic: string }> = {},
+  fields: Partial<{
+    giverAccountId: string;
+    topic: string;
+    visibility: string;
+    selectedAccountIds: string[];
+  }> = {},
 ): FormData {
   const formData = new FormData();
   formData.set('giverAccountId', fields.giverAccountId ?? BEN);
   formData.set('topic', fields.topic ?? 'my sprint review talk');
+  formData.set('visibility', fields.visibility ?? 'ONLY_ME');
+  for (const accountId of fields.selectedAccountIds ?? []) {
+    formData.append('selectedAccountIds', accountId);
+  }
   return formData;
 }
 
@@ -101,7 +115,59 @@ describe('asking a teammate for Feedback', () => {
     const { state } = await send(form({ topic: '   ' }));
 
     expect(state).toEqual({
-      fieldErrors: { giverAccountId: undefined, topic: 'Add a Topic.' },
+      fieldErrors: {
+        giverAccountId: undefined,
+        topic: 'Add a Topic.',
+        selectedAccountIds: undefined,
+      },
+    });
+  });
+
+  it('sends who besides the Requester may read the answers', async () => {
+    const received = apiAccepts();
+
+    await send(
+      form({ visibility: 'SELECTED_PEOPLE', selectedAccountIds: [CARA] }),
+    );
+
+    expect(received.body).toEqual({
+      topic: 'my sprint review talk',
+      giverAccountIds: [BEN],
+      visibility: 'SELECTED_PEOPLE',
+      selectedAccountIds: [CARA],
+    });
+  });
+
+  it('sends no people with any other choice', async () => {
+    const received = apiAccepts();
+
+    await send(form({ visibility: 'EVERYONE' }));
+
+    expect(received.body).toEqual({
+      topic: 'my sprint review talk',
+      giverAccountIds: [BEN],
+      visibility: 'EVERYONE',
+    });
+  });
+
+  it('refuses Selected people with nobody picked, without calling the API', async () => {
+    const { state } = await send(form({ visibility: 'SELECTED_PEOPLE' }));
+
+    expect(state?.fieldErrors?.selectedAccountIds).toBe(
+      'Pick at least one person to share it with.',
+    );
+  });
+
+  it('says it plainly when somebody picked has left the Workspace', async () => {
+    apiRefuses('SELECTED_PERSON_NOT_IN_WORKSPACE', 400);
+
+    const { state } = await send(
+      form({ visibility: 'SELECTED_PEOPLE', selectedAccountIds: [CARA] }),
+    );
+
+    expect(state).toEqual({
+      formError:
+        'Someone you picked to share it with is no longer in your Workspace.',
     });
   });
 
