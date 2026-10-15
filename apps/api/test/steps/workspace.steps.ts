@@ -6,6 +6,7 @@ import {
   myMemberships,
   ownAWorkspace,
 } from '../support/journeys';
+import { googlePhotoUrlOf } from '../support/workspace.integration-fixtures';
 import type { ThriveWorld } from '../support/world';
 
 Given(
@@ -80,5 +81,34 @@ Then(
         .hashes()
         .map((row) => [this.person(row.Member as string).accountId, row.Role]),
     );
+  },
+);
+
+/** The photo the last list of Members showed for `name`, or `undefined` if they were not in it. */
+function listedPhotoOf(
+  world: ThriveWorld,
+  name: string,
+): string | null | undefined {
+  assert.equal(world.lastResponse?.status, 200);
+  const items: { accountId: string; photoUrl: string | null }[] =
+    world.lastResponse?.body.items;
+  const { accountId } = world.person(name);
+  return items.find((member) => member.accountId === accountId)?.photoUrl;
+}
+
+Then(
+  "{person} sees {person}'s Google photo",
+  function (this: ThriveWorld, _viewer: string, name: string) {
+    assert.equal(
+      listedPhotoOf(this, name),
+      googlePhotoUrlOf(this.person(name)),
+    );
+  },
+);
+
+Then(
+  '{person} sees no photo for {person}',
+  function (this: ThriveWorld, _viewer: string, name: string) {
+    assert.equal(listedPhotoOf(this, name), null);
   },
 );

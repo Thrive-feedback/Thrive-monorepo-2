@@ -11,6 +11,11 @@ export interface SignedInAccount {
   readonly credential: string;
 }
 
+/** The photo link `aGooglePhoto` gives `account`, shaped like the ones Google sends. */
+export function googlePhotoUrlOf(account: SignedInAccount): string {
+  return `https://lh3.googleusercontent.com/a/${account.accountId}=s96-c`;
+}
+
 /**
  * Builds signed-in Accounts and Workspaces in the real database for the Invitation suites and
  * the `@api` scenarios, and removes everything it built.
@@ -44,6 +49,17 @@ export class WorkspaceFixtures {
       email,
       credential: `thrive.session_token=${encodeURIComponent(`${session.token}.${signature}`)}`,
     };
+  }
+
+  /**
+   * Gives `account` the photo Google sends at sign-in, where Better Auth keeps it. Google cannot
+   * be driven from a test, so the link is written the way the sign-in would write it.
+   */
+  async aGooglePhoto(account: SignedInAccount): Promise<void> {
+    await this.prismaService.user.update({
+      where: { id: account.accountId },
+      data: { image: googlePhotoUrlOf(account) },
+    });
   }
 
   /**

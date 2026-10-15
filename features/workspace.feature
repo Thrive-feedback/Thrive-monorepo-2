@@ -32,6 +32,15 @@ Feature: Workspace
       | Ben    | MEMBER |
 
   @api
+  Scenario: Members see each other's Google photo
+    Given Ann owns a Workspace called "Acme"
+    And Ann's Google account has a photo
+    And Ben is a Member of Ann's Workspace
+    When Ben looks at who is in Ann's Workspace
+    Then Ben sees Ann's Google photo
+    And Ben sees no photo for Ben
+
+  @api
   Scenario: Someone outside a Workspace cannot see who is in it
     Given Ann owns a Workspace called "Acme"
     And Cara owns a Workspace called "Globex"

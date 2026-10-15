@@ -23,12 +23,18 @@ const accountSummaryPort: AccountSummaryPort = identityAdapter;
 
 const createdAccountIds: string[] = [];
 
+const ANN_PHOTO = 'https://lh3.googleusercontent.com/a/ann=s96-c';
+
 async function anAccount(): Promise<{ id: string; email: string }> {
   const id = uuidv7();
   const email = `identity-adapter-${id}@acme.test`;
   await prismaService.user.create({ data: { id, name: 'Google Name', email } });
   createdAccountIds.push(id);
   return { id, email };
+}
+
+async function withGooglePhoto(id: string, image: string): Promise<void> {
+  await prismaService.user.update({ where: { id }, data: { image } });
 }
 
 async function introduce(
@@ -85,9 +91,10 @@ describe('the name an Account introduced itself with, as Workspace asks it', () 
 });
 
 describe('who several Accounts are, as Workspace asks it', () => {
-  it('answers each with its email and Profile names, null where there is no Profile, and leaves out unknown ids', async () => {
+  it('answers each with its email, Profile names and Google photo, null where there is none, and leaves out unknown ids', async () => {
     const introduced = await anAccount();
     await introduce(introduced.id, 'Ann Lee');
+    await withGooglePhoto(introduced.id, ANN_PHOTO);
     const notIntroduced = await anAccount();
 
     const summaries = await accountSummaryPort.summariesOf([
@@ -105,12 +112,14 @@ describe('who several Accounts are, as Workspace asks it', () => {
           email: introduced.email,
           fullName: 'Ann Lee',
           displayName: 'Ann',
+          photoUrl: ANN_PHOTO,
         },
         {
           accountId: notIntroduced.id,
           email: notIntroduced.email,
           fullName: null,
           displayName: null,
+          photoUrl: null,
         },
       ].sort((a, b) => a.accountId.localeCompare(b.accountId)),
     );

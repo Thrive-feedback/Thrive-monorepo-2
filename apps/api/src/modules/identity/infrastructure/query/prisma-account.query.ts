@@ -2,6 +2,7 @@ import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { AccountQuery } from '../../application/query-port/account.query-port';
 import type { AccountSummaryView } from '../../application/types/account.types';
+import { toPhotoUrl } from '../mapper/photo-url.mapper';
 
 /** One query for the whole batch, with each Account's Profile alongside. */
 @Injectable()
@@ -21,6 +22,7 @@ export class PrismaAccountQuery extends AccountQuery {
       select: {
         id: true,
         email: true,
+        image: true,
         profile: { select: { fullName: true, displayName: true } },
       },
     });
@@ -29,6 +31,7 @@ export class PrismaAccountQuery extends AccountQuery {
       email: account.email,
       fullName: account.profile?.fullName ?? null,
       displayName: account.profile?.displayName ?? null,
+      photoUrl: toPhotoUrl(account.image),
     }));
   }
 }

@@ -52,12 +52,14 @@ function setUp() {
       email: 'ben@acme.test',
       fullName: 'Ben Carter',
       displayName: 'Ben',
+      photoUrl: null,
     },
     {
       accountId: CARA,
       email: 'cara@acme.test',
       fullName: 'Cara Diaz',
       displayName: 'Cara',
+      photoUrl: null,
     },
   );
   const useCase = new ListReceivedFeedbackUseCase(

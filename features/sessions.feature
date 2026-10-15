@@ -9,6 +9,13 @@ Feature: Sessions
     Then Ann is told the session is Ann's
 
   @api
+  Scenario: A signed-in person sees their own Google photo
+    Given Ann is signed in
+    And Ann's Google account has a photo
+    When Ann asks who is signed in
+    Then Ann is told the session shows Ann's Google photo
+
+  @api
   Scenario: Signing out ends the session
     Given Ann is signed in
     When Ann signs out

@@ -3,6 +3,8 @@ export interface CurrentAccount {
   readonly id: string;
   readonly email: string;
   readonly name: string;
+  /** Their photo from Google, refreshed at every sign-in; `null` when Google has none. */
+  readonly photoUrl: string | null;
 }
 
 /**

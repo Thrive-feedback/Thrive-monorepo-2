@@ -6,7 +6,7 @@ export interface FindAccountSummariesInput {
   readonly accountIds: readonly string[];
 }
 
-/** A query: the email and Profile name of each Account named. */
+/** A query: the email, Profile name and photo of each Account named. */
 @Injectable()
 export class FindAccountSummariesUseCase {
   constructor(private readonly accountQuery: AccountQuery) {}

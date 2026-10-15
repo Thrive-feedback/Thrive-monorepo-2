@@ -85,6 +85,7 @@ export class SessionController {
         ? {
             email: account.email,
             name: account.name,
+            photoUrl: account.photoUrl,
             profile: account.profile
               ? {
                   fullName: account.profile.fullName,
