@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { SettingsPanes } from './settings-panes';
 
@@ -6,6 +6,21 @@ const pathname = vi.fn(() => '/settings');
 vi.mock('next/navigation', () => ({ usePathname: () => pathname() }));
 
 describe('SettingsPanes', () => {
+  it('leads back to Home from Settings', () => {
+    pathname.mockReturnValue('/settings/account');
+    render(<SettingsPanes>section</SettingsPanes>);
+
+    const trail = screen.getByRole('navigation', { name: 'Breadcrumb' });
+    expect(within(trail).getByRole('link', { name: 'Home' })).toHaveAttribute(
+      'href',
+      '/home',
+    );
+    expect(within(trail).getByText('Settings')).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
   it('lists every section, for every Member', () => {
     render(<SettingsPanes>section</SettingsPanes>);
 
