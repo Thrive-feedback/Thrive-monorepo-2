@@ -76,6 +76,7 @@ function sharedWithBystander(setUpResult: ReturnType<typeof setUp>): void {
     email: 'cara@acme.test',
     fullName: 'Cara Diaz',
     displayName: 'Cara',
+    photoUrl: null,
   });
 }
 
