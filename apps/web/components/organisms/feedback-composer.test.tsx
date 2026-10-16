@@ -13,7 +13,7 @@ const { FeedbackComposer } = await import('./feedback-composer');
 
 describe('FeedbackComposer', () => {
   it('opens on asking for Feedback', () => {
-    render(<FeedbackComposer teammates={[]} />);
+    render(<FeedbackComposer teammates={[]} requestAction={vi.fn()} />);
 
     expect(
       screen.getByRole('button', { name: 'Request feedback' }),
@@ -24,7 +24,7 @@ describe('FeedbackComposer', () => {
 
   it('switches to giving Feedback', async () => {
     const user = userEvent.setup();
-    render(<FeedbackComposer teammates={[]} />);
+    render(<FeedbackComposer teammates={[]} requestAction={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: 'Give feedback' }));
 
@@ -40,7 +40,7 @@ describe('FeedbackComposer', () => {
 
   it('hides the forms but keeps the buttons, and shows them again', async () => {
     const user = userEvent.setup();
-    render(<FeedbackComposer teammates={[]} />);
+    render(<FeedbackComposer teammates={[]} requestAction={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: 'Hide form' }));
 
@@ -60,7 +60,7 @@ describe('FeedbackComposer', () => {
 
   it('opens the forms again when a mode is picked', async () => {
     const user = userEvent.setup();
-    render(<FeedbackComposer teammates={[]} />);
+    render(<FeedbackComposer teammates={[]} requestAction={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: 'Hide form' }));
     await user.click(screen.getByRole('button', { name: 'Give feedback' }));

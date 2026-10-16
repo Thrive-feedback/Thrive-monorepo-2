@@ -1,16 +1,20 @@
 'use client';
 
 import { startTransition, useActionState, useRef, useState } from 'react';
-import { answerAsk } from '@/app/(signed-in)/(member)/home/_lib/answer-ask-actions.service';
-import type { AnswerAskState } from '@/app/(signed-in)/(member)/home/_lib/answer-ask-state.type';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { TextAreaField } from '@/components/molecules/text-area-field';
+import type {
+  AnswerAskAction,
+  AnswerAskState,
+} from '@/lib/feedback/answer-ask-state.type';
 
 export type AnswerAskFormProps = {
   askId: string;
   /** Named in the label, so the box says who will read this. */
   requesterName: string | null;
+  /** Sends the answer: Home's server action, or a stand-in. */
+  action: AnswerAskAction;
 };
 
 const MAX_ANSWER_LENGTH = 4000;
@@ -26,13 +30,17 @@ const WRITE_SOMETHING = 'Write your answer before sending it.';
  * Submitted by hand rather than through `action`, because React resets a form after its
  * action, which would clear the box while the state behind it still held the text.
  */
-export function AnswerAskForm({ askId, requesterName }: AnswerAskFormProps) {
+export function AnswerAskForm({
+  askId,
+  requesterName,
+  action,
+}: AnswerAskFormProps) {
   const [body, setBody] = useState('');
   const [clientError, setClientError] = useState<string | undefined>();
   const [state, formAction, isSending] = useActionState<
     AnswerAskState,
     FormData
-  >(answerAsk, {});
+  >(action, {});
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   const errorMessage = clientError ?? state.fieldErrors?.body;

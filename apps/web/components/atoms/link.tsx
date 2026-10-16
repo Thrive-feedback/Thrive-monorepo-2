@@ -2,7 +2,8 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import NextLink from 'next/link';
 import { cn } from '@/lib/cn.util';
 
-const link = cva(
+/** Exported so an in-place action can look like a link without being one. */
+export const link = cva(
   'rounded-element font-medium text-fg-accent underline-offset-4',
   {
     variants: {

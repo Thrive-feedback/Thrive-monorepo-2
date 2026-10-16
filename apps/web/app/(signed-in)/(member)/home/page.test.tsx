@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import Home from './page';
 
@@ -21,22 +21,22 @@ vi.mock('./_components/feedback-composer-card', () => ({
     <output>{`feedback composer as ${ownEmail}`}</output>
   ),
 }));
-vi.mock('./_components/home-tabs', () => ({
-  HomeTabs: ({ tab, tabs }: { tab: string; tabs?: readonly string[] }) => (
-    <output>{`tab: ${tab} of ${tabs?.join(', ') ?? 'all'}`}</output>
+vi.mock('./_components/home-tab-panel', () => ({
+  HomeTabPanel: ({ tab }: { tab: string }) => (
+    <output>{`panel: ${tab}`}</output>
   ),
 }));
-vi.mock('./_components/home-dialog', () => ({
+vi.mock('@/components/organisms/home-dialog', () => ({
   HomeDialog: ({
     title,
-    closeHref,
+    close,
     children,
   }: {
     title: string;
-    closeHref: string;
+    close: { href: string };
     children: React.ReactNode;
   }) => (
-    <section aria-label={title} data-close={closeHref}>
+    <section aria-label={title} data-close={close.href}>
       {children}
     </section>
   ),
@@ -122,26 +122,38 @@ describe('Home', () => {
 
     render(await open());
 
-    expect(screen.getByText('tab: workspace of all')).toBeInTheDocument();
+    expect(screen.getByText('panel: workspace')).toBeInTheDocument();
+    expect(screen.getByText('panel: shared')).toBeInTheDocument();
+    const [narrow, wide] = screen.getAllByRole('navigation', {
+      name: 'Feedback',
+    });
     expect(
-      screen.getByText('tab: shared of shared, my-requests, waiting, received'),
-    ).toBeInTheDocument();
+      within(narrow as HTMLElement).getByRole('link', {
+        name: 'Workspace feed',
+      }),
+    ).toHaveAttribute('aria-current', 'page');
+    expect(
+      within(wide as HTMLElement)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual([
+      'Shared with me',
+      'My requests',
+      'Waiting for me',
+      'Feedback for me',
+    ]);
   });
 
   it('opens the tab the address names, and the Workspace feed for an unknown one', async () => {
     requireMember.mockResolvedValue(ANN);
 
     const { unmount } = render(await open({ tab: 'waiting' }));
-    expect(screen.getByText('tab: waiting of all')).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'tab: waiting of shared, my-requests, waiting, received',
-      ),
-    ).toBeInTheDocument();
+    // Once for each layout; CSS shows one.
+    expect(screen.getAllByText('panel: waiting')).toHaveLength(2);
     unmount();
 
     render(await open({ tab: 'nope' }));
-    expect(screen.getByText('tab: workspace of all')).toBeInTheDocument();
+    expect(screen.getByText('panel: workspace')).toBeInTheDocument();
   });
 
   it('says who signed in when Google has just sent them back', async () => {

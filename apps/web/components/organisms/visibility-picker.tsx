@@ -1,9 +1,9 @@
 import { useId } from 'react';
-import type { Teammate } from '@/app/(signed-in)/(member)/home/_lib/teammate.type';
 import { Checkbox } from '@/components/atoms/checkbox';
 import { Label } from '@/components/atoms/label';
 import { RadioGroup, RadioGroupItem } from '@/components/atoms/radio-group';
 import { Text } from '@/components/atoms/text';
+import type { Teammate } from '@/lib/feedback/teammate.type';
 
 /** The Visibility that asks for a list of people. Both forms call it the same. */
 export const SELECTED_PEOPLE = 'SELECTED_PEOPLE';

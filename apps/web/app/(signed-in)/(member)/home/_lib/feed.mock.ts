@@ -1,4 +1,4 @@
-import type { FeedItem } from './feed-item.type';
+import type { FeedItem } from '@/lib/feedback/feed-item.type';
 
 /*
  * PREVIEW DATA. The API has no Workspace feed, Shared with me or Offered Feedback yet, so these

@@ -1,4 +1,4 @@
-import type { AskStatus } from '@/app/(signed-in)/(member)/home/_lib/ask-status.constant';
+import type { AskStatus } from './ask-status.constant';
 
 /** One Member asked, as My requests lists them. */
 export type SentAsk = {

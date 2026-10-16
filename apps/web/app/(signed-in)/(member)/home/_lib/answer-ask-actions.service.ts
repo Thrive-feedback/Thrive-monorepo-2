@@ -5,9 +5,9 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
+import type { AnswerAskState } from '@/lib/feedback/answer-ask-state.type';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
-import type { AnswerAskState } from './answer-ask-state.type';
 
 /** What the API's own schema accepts, so the browser is never the first to check it. */
 const MAX_ANSWER_LENGTH = 4000;

@@ -1,5 +1,4 @@
 import { useId } from 'react';
-import type { Teammate } from '@/app/(signed-in)/(member)/home/_lib/teammate.type';
 import { Label } from '@/components/atoms/label';
 import {
   Select,
@@ -8,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/atoms/select';
+import type { Teammate } from '@/lib/feedback/teammate.type';
 
 export type MemberPickerProps = {
   teammates: readonly Teammate[];

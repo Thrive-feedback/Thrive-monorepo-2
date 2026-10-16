@@ -1,6 +1,7 @@
+import { requestFeedback } from '@/app/(signed-in)/(member)/home/_lib/request-feedback-actions.service';
 import { readTeammates } from '@/app/(signed-in)/(member)/home/_lib/teammates.service';
+import { FeedbackComposer } from '@/components/organisms/feedback-composer';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import { FeedbackComposer } from './feedback-composer';
 
 export type FeedbackComposerCardProps = {
   membership: CurrentMembership;
@@ -18,11 +19,6 @@ export async function FeedbackComposerCard({
   const teammates = await readTeammates(membership, ownEmail);
 
   return (
-    <section
-      aria-label="Ask for or give feedback"
-      className="flex w-full flex-col rounded-page bg-surface-raised p-6"
-    >
-      <FeedbackComposer teammates={teammates} />
-    </section>
+    <FeedbackComposer teammates={teammates} requestAction={requestFeedback} />
   );
 }

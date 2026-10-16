@@ -2,10 +2,10 @@
 
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
-import type { Teammate } from '@/app/(signed-in)/(member)/home/_lib/teammate.type';
 import { Button } from '@/components/atoms/button';
 import { TextAreaField } from '@/components/molecules/text-area-field';
 import { TextField } from '@/components/molecules/text-field';
+import type { Teammate } from '@/lib/feedback/teammate.type';
 import { MemberPicker } from './member-picker';
 import { SELECTED_PEOPLE, VisibilityPicker } from './visibility-picker';
 

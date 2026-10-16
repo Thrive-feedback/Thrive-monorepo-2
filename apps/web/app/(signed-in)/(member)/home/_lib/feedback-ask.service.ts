@@ -1,19 +1,9 @@
 import 'server-only';
 import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
-import type { AskStatus } from '@/app/(signed-in)/(member)/home/_lib/ask-status.constant';
 import { apiClient } from '@/lib/api-client.service';
+import type { WaitingAsk } from '@/lib/feedback/waiting-ask.type';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-
-/** One Ask as the Member it waits on reads it, in the dialog where they answer it. */
-export type WaitingAsk = {
-  readonly askId: string;
-  readonly feedbackRequestId: string;
-  readonly topic: string;
-  /** The Member who asked, or `null` while they have not introduced themselves. */
-  readonly requesterName: string | null;
-  readonly status: AskStatus;
-};
 
 /**
  * The Ask, or `null` when none with that id is waiting for this person — which is also the

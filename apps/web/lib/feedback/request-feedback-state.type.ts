@@ -10,3 +10,12 @@ export type RequestFeedbackState = {
   };
   readonly formError?: string;
 };
+
+/**
+ * What sending a Feedback Request calls: Home's server action, or anything shaped like it. The
+ * form takes it as a prop, so the same form can run against something other than the API.
+ */
+export type RequestFeedbackAction = (
+  previous: RequestFeedbackState,
+  formData: FormData,
+) => Promise<RequestFeedbackState>;

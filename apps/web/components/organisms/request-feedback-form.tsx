@@ -1,17 +1,24 @@
 'use client';
 
 import { startTransition, useActionState, useRef, useState } from 'react';
-import { requestFeedback } from '@/app/(signed-in)/(member)/home/_lib/request-feedback-actions.service';
-import type { RequestFeedbackState } from '@/app/(signed-in)/(member)/home/_lib/request-feedback-state.type';
-import type { Teammate } from '@/app/(signed-in)/(member)/home/_lib/teammate.type';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { TextField } from '@/components/molecules/text-field';
-import { MemberPicker } from './member-picker';
-import { SELECTED_PEOPLE, VisibilityPicker } from './visibility-picker';
+import { MemberPicker } from '@/components/organisms/member-picker';
+import {
+  SELECTED_PEOPLE,
+  VisibilityPicker,
+} from '@/components/organisms/visibility-picker';
+import type {
+  RequestFeedbackAction,
+  RequestFeedbackState,
+} from '@/lib/feedback/request-feedback-state.type';
+import type { Teammate } from '@/lib/feedback/teammate.type';
 
 export type RequestFeedbackFormProps = {
   teammates: readonly Teammate[];
+  /** Sends the request: Home's server action, or a stand-in. */
+  action: RequestFeedbackAction;
 };
 
 type FieldErrors = NonNullable<RequestFeedbackState['fieldErrors']>;
@@ -48,7 +55,10 @@ const PICK_SOMEONE_TO_SHARE_WITH = 'Pick at least one person to share it with.';
  * The form is submitted by hand rather than through `action`, because React resets a form
  * after its action, which would clear the picked teammate from the page but not from state.
  */
-export function RequestFeedbackForm({ teammates }: RequestFeedbackFormProps) {
+export function RequestFeedbackForm({
+  teammates,
+  action,
+}: RequestFeedbackFormProps) {
   const [giverAccountId, setGiverAccountId] = useState('');
   const [topic, setTopic] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('ONLY_ME');
@@ -59,7 +69,7 @@ export function RequestFeedbackForm({ teammates }: RequestFeedbackFormProps) {
   const [state, formAction, isSending] = useActionState<
     RequestFeedbackState,
     FormData
-  >(requestFeedback, {});
+  >(action, {});
   const pickerRef = useRef<HTMLButtonElement>(null);
   const topicRef = useRef<HTMLInputElement>(null);
   const selectedRef = useRef<HTMLFieldSetElement>(null);

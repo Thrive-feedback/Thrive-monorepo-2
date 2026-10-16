@@ -1,16 +1,4 @@
 /*
- * The split fills the window below the navbar, so the page itself never scrolls: each column
- * scrolls on its own and the forms stay in view while the feed moves. It reaches 8 steps into
- * the main region's padding (`py-12`) at each end, so only 4 steps of it are left. Its height is
- * the window less `MemberShell`'s navbar offset (`mt-18`) and what is left of that padding, top
- * and bottom: a subtraction no utility expresses without an arbitrary value.
- */
-.split {
-  margin-block: calc(var(--spacing) * -8);
-  height: calc(100dvh - var(--spacing) * 26);
-}
-
-/*
  * Each column scrolls without a visible bar, so the split reads as two sheets rather than two
  * windows. The wheel, a trackpad and the keyboard still scroll it. No utility hides a scrollbar.
  */
