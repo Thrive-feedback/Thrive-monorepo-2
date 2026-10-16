@@ -286,5 +286,8 @@ model FeedbackSelectedPerson {
   accountId  String
 
   @@id([feedbackId, accountId])
+  /// For "Shared with me" (#88): that read starts at the reader, which the primary key's
+  /// (feedbackId, accountId) order cannot serve.
+  @@index([accountId])
   @@map("feedback_selected_person")
 }

@@ -19,13 +19,11 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import type {
-  FeedbackView,
-  ReceivedFeedbackView,
-} from '../application/types/feedback-request.types';
+import type { ReceivedFeedbackView } from '../application/types/feedback-request.types';
 import { GetFeedbackUseCase } from '../application/use-cases/get-feedback.use-case';
 import { ListReceivedFeedbackUseCase } from '../application/use-cases/list-received-feedback.use-case';
 import { OfferFeedbackUseCase } from '../application/use-cases/offer-feedback.use-case';
+import { toFeedbackResponse } from './dto/feedback-response.mapper';
 import { GetFeedbackResponseDto } from './dto/get-feedback.dto';
 import {
   ListReceivedFeedbackQueryDto,
@@ -50,23 +48,6 @@ function toResponse(feedback: ReceivedFeedbackView) {
     topic: feedback.topic,
     giverAccountId: feedback.giverAccountId,
     giverName: feedback.giverName,
-    body: feedback.body,
-    createdAt: feedback.createdAt.toISOString(),
-  };
-}
-
-/** One piece of Feedback on the wire, the same for every reader its Visibility lets in. */
-function toFeedbackResponse(feedback: FeedbackView) {
-  return {
-    id: feedback.id,
-    origin: feedback.origin,
-    feedbackRequestId: feedback.feedbackRequestId,
-    topic: feedback.topic,
-    giver: { accountId: feedback.giverAccountId, name: feedback.giverName },
-    receiver: {
-      accountId: feedback.receiverAccountId,
-      name: feedback.receiverName,
-    },
     body: feedback.body,
     createdAt: feedback.createdAt.toISOString(),
   };

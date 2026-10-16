@@ -124,3 +124,12 @@ export interface ReceivedFeedbackListView {
   readonly items: readonly ReceivedFeedbackView[];
   readonly total: number;
 }
+
+/**
+ * The Feedback one Member was selected to read, newest first. Every piece names both people,
+ * because the reader is neither of them.
+ */
+export interface SharedFeedbackListView {
+  readonly items: readonly FeedbackView[];
+  readonly total: number;
+}

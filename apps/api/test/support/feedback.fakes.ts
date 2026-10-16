@@ -6,6 +6,7 @@ import type {
   FeedbackRequestPageRow,
   FeedbackRequestRow,
   FeedbackRow,
+  FeedbackWithPeoplePageRow,
   FeedbackWithVisibilityRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
@@ -198,6 +199,33 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
         (row) => row.id === feedbackId && row.workspaceId === workspaceId,
       ) ?? null
     );
+  }
+
+  async sharedWith(
+    workspaceId: string,
+    readerAccountId: string,
+    page: PageRequest,
+  ): Promise<FeedbackWithPeoplePageRow> {
+    const shared = this.feedbackWithVisibility
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          row.visibility === 'SELECTED_PEOPLE' &&
+          row.selectedAccountIds.includes(readerAccountId),
+      )
+      .sort(newestFirst)
+      // The real read hands back no Visibility: it applied it (ADR 0044).
+      .map((row) => ({
+        id: row.id,
+        origin: row.origin,
+        feedbackRequestId: row.feedbackRequestId,
+        topic: row.topic,
+        giverAccountId: row.giverAccountId,
+        receiverAccountId: row.receiverAccountId,
+        body: row.body,
+        createdAt: row.createdAt,
+      }));
+    return { items: pageOf(shared, page), total: shared.length };
   }
 
   async askFor(

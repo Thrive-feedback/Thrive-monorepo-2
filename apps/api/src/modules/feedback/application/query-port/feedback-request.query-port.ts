@@ -86,6 +86,29 @@ export interface FeedbackPageRow {
   readonly total: number;
 }
 
+/**
+ * One piece of Feedback with both of its people, as a list read that has already applied the
+ * Visibility hands it over. It carries no Visibility: the read decided who may see it, and the
+ * use case above has nothing left to re-check (ADR 0044). Names are Identity's and are added
+ * above this port.
+ */
+export interface FeedbackWithPeopleRow {
+  readonly id: string;
+  readonly origin: FeedbackOrigin;
+  /** The request it answers, or `null` for Feedback given without being asked. */
+  readonly feedbackRequestId: string | null;
+  readonly topic: string;
+  readonly giverAccountId: string;
+  readonly receiverAccountId: string;
+  readonly body: string;
+  readonly createdAt: Date;
+}
+
+export interface FeedbackWithPeoplePageRow {
+  readonly items: readonly FeedbackWithPeopleRow[];
+  readonly total: number;
+}
+
 export abstract class FeedbackRequestQuery {
   /**
    * One request of one Workspace with its Asks, or `null`. The Workspace is a required
@@ -134,6 +157,20 @@ export abstract class FeedbackRequestQuery {
     receiverAccountId: string,
     page: PageRequest,
   ): Promise<FeedbackPageRow>;
+
+  /**
+   * The Feedback one Member was selected to read in one Workspace, newest first — Selected people
+   * and nothing else. The reader is a required argument for the same reason the Workspace is: what
+   * one Member was shown is not another's, and a read scoped to nobody cannot be written.
+   *
+   * The Visibility is applied here rather than above, because a page and its total have to count
+   * only what this reader may read (ADR 0044).
+   */
+  abstract sharedWith(
+    workspaceId: string,
+    readerAccountId: string,
+    page: PageRequest,
+  ): Promise<FeedbackWithPeoplePageRow>;
 
   /**
    * One piece of Feedback of one Workspace, or `null`. Not scoped to a reader: who may read it
