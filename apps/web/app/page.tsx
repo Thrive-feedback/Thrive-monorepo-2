@@ -1,43 +1,34 @@
-import Link from 'next/link';
-import { Button } from '@/components/atoms/button';
-import { Text } from '@/components/atoms/text';
-import { apiBaseUrl } from '@/lib/api-base-url.util';
+import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { ROUTES } from '@/lib/routes.constant';
+import { readSession } from '@/lib/session/session.service';
+import { hasSessionCookie } from '@/lib/session/session-cookie.constant';
+import { Landing } from './_components/landing/landing';
+import { LANDING_COPY } from './_components/landing/landing-copy.constant';
+
+const { title, description } = LANDING_COPY.meta;
 
 /**
- * The public landing route, deliberately empty of product: nothing is built ahead of the
- * first real feature, and the landing page replaces this. Until then it offers sign-in, and
- * points developers at the component showcase and the API's Scalar reference.
- *
- * Every class resolves to a token: a role for colour, shape and type, a scale for spacing.
- * `bg-primary-500` is not a class that exists, because the theme exposes colour only as roles.
+ * The title is absolute, skipping the layout's "· Thrive" template, since it already leads with
+ * the name. Indexable: this is the page a founder searching for Thrive should find.
  */
-export default function Landing() {
-  return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-24">
-      <Text variant="display-5" as="h1">
-        Thrive
-      </Text>
-      <Text tone="muted">Ask for, give and act on feedback.</Text>
-      <div className="flex flex-wrap gap-3">
-        <Button asChild variant="primary" size="sm" className="w-fit">
-          <Link href={ROUTES.signIn}>Sign in</Link>
-        </Button>
-        <Button asChild size="sm" className="w-fit">
-          <Link href={ROUTES.uiShowcase.index}>See the components</Link>
-        </Button>
-        {/* Another origin, so a plain link: Next's `Link` is for this app's own routes. */}
-        <Button asChild size="sm" className="w-fit">
-          <a
-            href={`${apiBaseUrl()}/reference`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Open the API reference
-            <span className="sr-only"> (opens in a new tab)</span>
-          </a>
-        </Button>
-      </div>
-    </main>
-  );
+export const metadata: Metadata = {
+  title: { absolute: title },
+  description,
+  robots: { index: true, follow: true },
+  openGraph: { title, description },
+};
+
+/**
+ * Rendered per request, because it reads the request's cookies. Someone signed in has Home and
+ * goes there, which sends them on if they have no Workspace yet. The API is asked only when a
+ * session cookie is present, so a visitor without one is answered without it, and the page
+ * stays up while the API is down.
+ */
+export default async function LandingPage() {
+  if (hasSessionCookie(await cookies()) && (await readSession())) {
+    redirect(ROUTES.home);
+  }
+  return <Landing />;
 }
