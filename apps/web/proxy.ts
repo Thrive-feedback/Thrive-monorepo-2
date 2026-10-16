@@ -1,13 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { ROUTES } from '@/lib/routes.constant';
-
-/**
- * Better Auth's session cookie (ADR 0027). It carries the `__Secure-` prefix on https.
- */
-const SESSION_COOKIES = [
-  'thrive.session_token',
-  '__Secure-thrive.session_token',
-];
+import { hasSessionCookie } from '@/lib/session/session-cookie.constant';
 
 /**
  * Sends a visitor with no session cookie straight to sign-in, without asking the API. It is
@@ -15,10 +8,7 @@ const SESSION_COOKIES = [
  * asks the API who is signed in before it renders anything.
  */
 export function proxy(request: NextRequest) {
-  const hasSessionCookie = SESSION_COOKIES.some((name) =>
-    request.cookies.has(name),
-  );
-  if (hasSessionCookie) {
+  if (hasSessionCookie(request.cookies)) {
     return NextResponse.next();
   }
   return NextResponse.redirect(new URL(ROUTES.signIn, request.url));
