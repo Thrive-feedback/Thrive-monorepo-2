@@ -8,6 +8,7 @@ import {
   type FeedbackRequestPageRow,
   FeedbackRequestQuery,
   type FeedbackRequestRow,
+  type FeedbackWithPeoplePageRow,
   type FeedbackWithVisibilityRow,
 } from '../../application/query-port/feedback-request.query-port';
 import type { PageRequest } from '../../application/types/feedback-request.types';
@@ -47,6 +48,17 @@ const REQUEST_FIELDS = {
 
 const REQUEST_OF_ASK = {
   select: { id: true, topic: true, requesterAccountId: true },
+} as const;
+
+const FEEDBACK_WITH_PEOPLE_FIELDS = {
+  id: true,
+  origin: true,
+  feedbackRequestId: true,
+  topic: true,
+  giverAccountId: true,
+  receiverAccountId: true,
+  body: true,
+  createdAt: true,
 } as const;
 
 function skipFor(page: PageRequest): number {
@@ -189,6 +201,33 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       })),
       total,
     };
+  }
+
+  async sharedWith(
+    workspaceId: string,
+    readerAccountId: string,
+    page: PageRequest,
+  ): Promise<FeedbackWithPeoplePageRow> {
+    // The join alone would answer this — a selected person exists only for SELECTED_PEOPLE,
+    // which the Visibility itself holds — and the value is matched anyway, so a row left behind
+    // by any other choice is unreadable rather than shared.
+    const where = {
+      workspaceId,
+      visibility: 'SELECTED_PEOPLE',
+      selectedPeople: { some: { accountId: readerAccountId } },
+    } as const;
+    const client = this.prismaTransactionContext.client;
+    const [records, total] = await Promise.all([
+      client.feedback.findMany({
+        where,
+        orderBy: NEWEST_FIRST,
+        skip: skipFor(page),
+        take: page.pageSize,
+        select: FEEDBACK_WITH_PEOPLE_FIELDS,
+      }),
+      client.feedback.count({ where }),
+    ]);
+    return { items: records, total };
   }
 
   async feedbackInWorkspace(
