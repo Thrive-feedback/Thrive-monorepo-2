@@ -207,7 +207,16 @@ wording (R6). One scenario per rule (R8):
 
 - `workspace-feed.service.test.ts` — contract → `FeedItem`, order, cookie, one page
 - `workspace-feed.test.tsx` — cards, empty state, **no preview banner**
-- `page.test.tsx` — both layouts render the feed and the service is called once (D6)
+- `page.test.tsx` — the wide-screen column holds the real feed and nothing says *Preview data*
+
+**Corrected 2026-10-17, having been wrong when this design was written:** no unit test can assert
+D6's "one call for two call sites". React's `cache` deduplicates within a render scope, and outside
+one it does not — a probe that called the read twice in Vitest made two requests. A test with the
+read mocked would assert the mock, and a test calling it twice would assert the opposite of the
+truth. **It is verified by measurement instead**: with a counting proxy between the web app and the
+API, one render of `/home` makes exactly one `GET …/feed` (and one `…/shared-feedback`, one
+`…/members`, one `/v1/members/mine`), with both layouts drawn. Re-measure that way if the call
+sites change.
 - `feedback-feed.test.tsx` — updated for the removed prop
 
 **Seed** (`seed-local.ts`): one `POST …/feedback` from Ben to Cara (the third Member #88's PR 2

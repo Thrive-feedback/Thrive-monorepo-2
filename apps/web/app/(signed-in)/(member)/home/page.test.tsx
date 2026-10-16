@@ -21,6 +21,9 @@ vi.mock('./_components/feedback-composer-card', () => ({
     <output>{`feedback composer as ${ownEmail}`}</output>
   ),
 }));
+vi.mock('./_components/workspace-feed', () => ({
+  WorkspaceFeed: () => <output>workspace feed</output>,
+}));
 vi.mock('./_components/home-tab-panel', () => ({
   HomeTabPanel: ({ tab }: { tab: string }) => (
     <output>{`panel: ${tab}`}</output>
@@ -100,7 +103,8 @@ describe('Home', () => {
 
     render(await open());
 
-    expect(screen.getByText(/Preview data/)).toBeInTheDocument();
+    expect(screen.getByText('workspace feed')).toBeInTheDocument();
+    expect(screen.queryByText(/Preview data/)).toBeNull();
     expect(
       screen.getByRole('separator', { name: 'Resize Workspace feed' }),
     ).toBeInTheDocument();

@@ -209,6 +209,13 @@ async function main(): Promise<void> {
     visibility: 'ONLY_ME',
   });
 
+  await call(third, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
+    receiverAccountId: teammate.accountId,
+    topic: 'The pricing page rewrite',
+    body: 'The second paragraph does the work now, and the rest got out of its way. Worth saying what it costs a bit earlier.',
+    visibility: 'EVERYONE',
+  });
+
   await call(teammate, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
     receiverAccountId: third.accountId,
     topic: 'Onboarding the new designers',
@@ -240,10 +247,13 @@ What is on screen:
                   The one she gave Ben is his, not hers
   Shared with me  1 piece — what Ben wrote to Cara and chose to show Ann. She is neither its
                   Giver nor its Receiver, which is the whole point of the tab
+  Workspace feed  1 piece — what Cara wrote to Ben and shared with everyone. Every Member of
+                  Acme reads the same feed, and nobody outside it reads any of it
   The answer      ${WEB_BASE_URL}/home?tab=my-requests&request=${answeredRequest}
   Still waiting   ${WEB_BASE_URL}/home?tab=my-requests&request=${waitingRequest}
   Written to her  ${WEB_BASE_URL}/home?tab=received
   Shared with her ${WEB_BASE_URL}/home?tab=shared
+  The feed        ${WEB_BASE_URL}/home
 
 Run this again for another Workspace with its own people; nothing is overwritten.
 `);

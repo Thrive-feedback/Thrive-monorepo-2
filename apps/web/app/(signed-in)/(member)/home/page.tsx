@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Skeleton } from '@/components/atoms/skeleton';
-import { FeedbackFeed } from '@/components/organisms/feedback-feed';
 import { HomeDialog } from '@/components/organisms/home-dialog';
 import { HomeView } from '@/components/templates/home-view';
 import { ROUTES } from '@/lib/routes.constant';
@@ -12,7 +11,7 @@ import { FeedbackComposerCard } from './_components/feedback-composer-card';
 import { FeedbackRequestDetail } from './_components/feedback-request-detail';
 import styles from './_components/home-split.module.css';
 import { HomeTabPanel } from './_components/home-tab-panel';
-import { previewWorkspaceFeed } from './_lib/feed.mock';
+import { WorkspaceFeed } from './_components/workspace-feed';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
@@ -89,11 +88,9 @@ export default async function Home({ searchParams }: HomeProps) {
           </Suspense>
         }
         workspaceFeed={
-          <FeedbackFeed
-            items={previewWorkspaceFeed()}
-            isPreviewData
-            emptyMessage="Nothing has been shared with everyone yet."
-          />
+          <Suspense fallback={<Skeleton shape="card" className="h-80" />}>
+            <WorkspaceFeed membership={session.membership} />
+          </Suspense>
         }
         tab={tab}
         targetFor={(value) => ({ href: ROUTES.homeTab(value) })}
