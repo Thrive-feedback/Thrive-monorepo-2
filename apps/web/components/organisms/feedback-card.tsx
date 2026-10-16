@@ -14,22 +14,27 @@ export type FeedbackCardProps = {
   item: FeedItem;
 };
 
+/** What a card calls somebody who has not introduced themselves yet. */
+const GIVER_WITH_NO_NAME = 'A teammate';
+const RECEIVER_WITH_NO_NAME = 'a teammate';
+
 /**
- * One piece of Feedback on a feed: who gave it to whom — always named (`ADR-0022`) — whether it
- * was asked for, the Topic, the answer, the day, and the Reactions.
+ * One piece of Feedback on a feed: who gave it to whom — never anonymous (`ADR-0022`), though a
+ * Member who has not introduced themselves has no name to show — whether it was asked for, the
+ * Topic, the answer, the day, and the Reactions.
  */
 export function FeedbackCard({ item }: FeedbackCardProps) {
   return (
     <article className="flex flex-col gap-3 rounded-page bg-surface-raised p-4">
       <header className="flex items-center gap-3">
         <Avatar size="md" aria-hidden="true">
-          <AvatarFallback>{initials(item.giverName)}</AvatarFallback>
+          <AvatarFallback>{initials(item.giverName ?? '')}</AvatarFallback>
         </Avatar>
         <div className="flex min-w-0 flex-1 flex-col">
           <Text as="p" variant="subtitle-4" className="break-words">
-            {item.giverName}
+            {item.giverName ?? GIVER_WITH_NO_NAME}
             <span className="text-fg-secondary"> to </span>
-            {item.receiverName}
+            {item.receiverName ?? RECEIVER_WITH_NO_NAME}
           </Text>
           <Text as="p" variant="body-3" tone="muted">
             {ORIGIN_NAMES[item.origin]} ·{' '}

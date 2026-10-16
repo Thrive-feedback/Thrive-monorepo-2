@@ -1,9 +1,8 @@
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
 
 /*
- * PREVIEW DATA. The API has no Workspace feed, Shared with me or Offered Feedback yet, so these
- * tabs show these made-up items. Each function stands where a `server-only` read will go; swap
- * the body for an API call and delete this file once the endpoints exist.
+ * PREVIEW DATA. The API has no Workspace feed yet, so that tab shows these made-up items. This
+ * function stands where a `server-only` read will go; #90 replaces it and deletes this file.
  */
 
 const WORKSPACE_FEED: readonly FeedItem[] = [
@@ -39,25 +38,7 @@ const WORKSPACE_FEED: readonly FeedItem[] = [
   },
 ];
 
-const SHARED_WITH_ME: readonly FeedItem[] = [
-  {
-    id: 'preview-4',
-    giverName: 'Cara Diaz',
-    receiverName: 'Dan Evans',
-    origin: 'REQUESTED',
-    topic: 'My first month as team lead',
-    body: 'You make time for one-to-ones even in busy weeks, and it shows. When priorities change, writing the reason in the channel would help the people who were not in the room.',
-    givenAt: '2026-10-11T07:45:00.000Z',
-    reactions: {},
-  },
-];
-
 /** Feedback whose Visibility is Everyone in the Workspace, newest first. */
 export function previewWorkspaceFeed(): readonly FeedItem[] {
   return WORKSPACE_FEED;
-}
-
-/** Feedback shared with the signed-in person as one of the Selected people, newest first. */
-export function previewSharedWithMe(): readonly FeedItem[] {
-  return SHARED_WITH_ME;
 }

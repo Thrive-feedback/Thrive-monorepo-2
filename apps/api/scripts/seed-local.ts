@@ -7,12 +7,12 @@ import { v7 as uuidv7 } from 'uuid';
 import { assertLocalDatabase } from './seed-local.guard';
 
 /**
- * Fills a local database with a Workspace, two Members and Feedback in every state a screen can
+ * Fills a local database with a Workspace, three Members and Feedback in every state a screen can
  * show, then prints how to be signed in as the Owner (#173).
  *
  * Everything that can go through the product's own API does, so the rows this leaves behind obey
  * the same rules a person's clicks would. Two things cannot, and only those are written directly:
- * a session, because Google cannot be driven from a script, and the second Member's membership,
+ * a session, because Google cannot be driven from a script, and the other Members' memberships,
  * because inviting them would send a real email — local included, there is no switch (ADR 0038).
  *
  * Each run seeds its own Workspace with its own people, so running it twice collides with nothing.
@@ -105,8 +105,11 @@ async function main(): Promise<void> {
 
   const owner = await signIn('ann', 'Ann Lee');
   const teammate = await signIn('ben', 'Ben Carter');
+  // A third Member, because a piece shared *with* Ann has to be written by somebody else to
+  // somebody else: neither the Giver nor the Receiver can be selected to read it (#88).
+  const third = await signIn('cara', 'Cara Diaz');
 
-  for (const person of [owner, teammate]) {
+  for (const person of [owner, teammate, third]) {
     await call(person, 'POST', '/v1/profiles', {
       fullName: person.name,
       displayName: person.name.split(' ')[0],
@@ -117,14 +120,16 @@ async function main(): Promise<void> {
     name: 'Acme',
   });
   const workspaceId = workspace.id as string;
-  await prismaService.member.create({
-    data: {
-      id: uuidv7(),
-      workspaceId,
-      userId: teammate.accountId,
-      role: 'member',
-    },
-  });
+  for (const person of [teammate, third]) {
+    await prismaService.member.create({
+      data: {
+        id: uuidv7(),
+        workspaceId,
+        userId: person.accountId,
+        role: 'member',
+      },
+    });
+  }
 
   async function ask(
     requester: Person,
@@ -135,7 +140,9 @@ async function main(): Promise<void> {
       requester,
       'POST',
       `/v1/workspaces/${workspaceId}/feedback-requests`,
-      { topic, giverAccountIds: [giver.accountId] },
+      // Required since #84 gave the Requester the choice; the narrowest one keeps these
+      // requests out of Shared with me and the feed, which have their own seeded pieces.
+      { topic, giverAccountIds: [giver.accountId], visibility: 'ONLY_ME' },
     );
     return request.id as string;
   }
@@ -202,13 +209,21 @@ async function main(): Promise<void> {
     visibility: 'ONLY_ME',
   });
 
+  await call(teammate, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
+    receiverAccountId: third.accountId,
+    topic: 'Onboarding the new designers',
+    body: 'Your onboarding notes answered every question I had in my first week. Writing them down instead of only explaining them is what made the difference.',
+    visibility: 'SELECTED_PEOPLE',
+    selectedAccountIds: [owner.accountId],
+  });
+
   await prismaService.$disconnect();
 
   console.log(`
 Seeded a Workspace called Acme.
 
   Open        ${WEB_BASE_URL}/home
-  Signed in as ${owner.name} <${owner.email}>, its Owner
+  Signed in as ${owner.name} <${owner.email}>, its Owner, with ${teammate.name} and ${third.name}
 
 To be them, add this cookie for ${WEB_BASE_URL} in your browser's developer tools
 (Application → Cookies). Google sign-in needs real credentials, which is why this exists:
@@ -223,9 +238,12 @@ What is on screen:
   Waiting for me  2 Asks from Ben to answer, and a third she has already answered
   Feedback for me 2 pieces — what Ben wrote back, and what he gave her without being asked.
                   The one she gave Ben is his, not hers
+  Shared with me  1 piece — what Ben wrote to Cara and chose to show Ann. She is neither its
+                  Giver nor its Receiver, which is the whole point of the tab
   The answer      ${WEB_BASE_URL}/home?tab=my-requests&request=${answeredRequest}
   Still waiting   ${WEB_BASE_URL}/home?tab=my-requests&request=${waitingRequest}
   Written to her  ${WEB_BASE_URL}/home?tab=received
+  Shared with her ${WEB_BASE_URL}/home?tab=shared
 
 Run this again for another Workspace with its own people; nothing is overwritten.
 `);

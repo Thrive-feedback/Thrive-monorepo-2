@@ -10,6 +10,9 @@ vi.mock('./waiting-ask-list', () => ({
 vi.mock('./received-feedback-list', () => ({
   ReceivedFeedbackList: () => <output>feedback for me list</output>,
 }));
+vi.mock('./shared-feedback-list', () => ({
+  SharedFeedbackList: () => <output>shared with me list</output>,
+}));
 
 const { HomeTabPanel } = await import('./home-tab-panel');
 
@@ -32,6 +35,14 @@ describe('HomeTabPanel', () => {
     expect(screen.getByText('my requests list')).toBeInTheDocument();
     expect(screen.queryByText('waiting list')).toBeNull();
     expect(screen.queryByText('feedback for me list')).toBeNull();
+    expect(screen.queryByText('shared with me list')).toBeNull();
+    expect(screen.queryByText(/Preview data/)).toBeNull();
+  });
+
+  it('shows what was shared with the person, from the API rather than a mock', () => {
+    render(<HomeTabPanel tab="shared" membership={MEMBERSHIP} />);
+
+    expect(screen.getByText('shared with me list')).toBeInTheDocument();
     expect(screen.queryByText(/Preview data/)).toBeNull();
   });
 
