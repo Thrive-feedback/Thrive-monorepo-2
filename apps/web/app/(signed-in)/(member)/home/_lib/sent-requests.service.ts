@@ -3,8 +3,8 @@ import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
+import type { SentRequest } from '@/lib/feedback/sent-request.type';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import type { SentRequest } from './sent-request.type';
 
 /**
  * One page of the largest size the API allows. A Workspace holds 20–50 people and one request

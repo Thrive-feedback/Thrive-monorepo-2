@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { WaitingAsk } from '@/app/(signed-in)/(member)/home/_lib/feedback-ask.service';
+import type { WaitingAsk } from '@/lib/feedback/waiting-ask.type';
 import { AnswerAskDetail } from './answer-ask-detail';
 
 const ASK_ID = '0199a0f0-0000-7000-8000-0000000000a1';

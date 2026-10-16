@@ -8,7 +8,10 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ replace }) }));
 
 function renderDialog() {
   render(
-    <HomeDialog title="Your feedback request" closeHref="/home?tab=my-requests">
+    <HomeDialog
+      title="Your feedback request"
+      close={{ href: '/home?tab=my-requests' }}
+    >
       <p>What came back</p>
     </HomeDialog>,
   );
@@ -50,5 +53,21 @@ describe('HomeDialog', () => {
     expect(replace).toHaveBeenCalledWith('/home?tab=my-requests', {
       scroll: false,
     });
+  });
+
+  it('closes in place when it is given a callback instead of an address', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(
+      <HomeDialog title="Give your feedback" close={{ onSelect }}>
+        <p>The box</p>
+      </HomeDialog>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(onSelect).toHaveBeenCalledOnce();
+    expect(replace).not.toHaveBeenCalled();
   });
 });

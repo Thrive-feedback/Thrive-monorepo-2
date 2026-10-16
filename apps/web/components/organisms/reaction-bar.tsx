@@ -1,11 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  REACTIONS,
-  type ReactionEmoji,
-} from '@/app/(signed-in)/(member)/home/_lib/feed-item.type';
 import { cn } from '@/lib/cn.util';
+import { REACTIONS, type ReactionEmoji } from '@/lib/feedback/feed-item.type';
 
 export type ReactionBarProps = {
   /** Who has reacted, by Reaction, before the person does anything. */

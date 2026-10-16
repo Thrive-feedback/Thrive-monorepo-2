@@ -4,13 +4,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { AnswerAskForm } from './answer-ask-form';
 
 const answerAsk = vi.fn();
-vi.mock(
-  '@/app/(signed-in)/(member)/home/_lib/answer-ask-actions.service',
-  () => ({
-    answerAsk: (previous: unknown, formData: FormData) =>
-      answerAsk(previous, formData),
-  }),
-);
 
 const ASK_ID = '0199a0f0-0000-7000-8000-0000000000a1';
 const WRITTEN = 'You lose the room at the detail.';
@@ -27,7 +20,13 @@ function sendButton() {
 
 function renderForm(requesterName: string | null = 'Ann') {
   answerAsk.mockResolvedValue({});
-  render(<AnswerAskForm askId={ASK_ID} requesterName={requesterName} />);
+  render(
+    <AnswerAskForm
+      askId={ASK_ID}
+      requesterName={requesterName}
+      action={answerAsk}
+    />,
+  );
 }
 
 function sentFormData() {
@@ -75,7 +74,9 @@ describe('AnswerAskForm', () => {
     answerAsk.mockResolvedValue({
       fieldErrors: { body: 'Write your answer before sending it.' },
     });
-    render(<AnswerAskForm askId={ASK_ID} requesterName="Ann" />);
+    render(
+      <AnswerAskForm askId={ASK_ID} requesterName="Ann" action={answerAsk} />,
+    );
 
     await user.type(answerBox(), WRITTEN);
     await user.click(sendButton());
@@ -110,7 +111,9 @@ describe('AnswerAskForm', () => {
     answerAsk.mockResolvedValue({
       formError: "We couldn't send your answer. Please try again.",
     });
-    render(<AnswerAskForm askId={ASK_ID} requesterName="Ann" />);
+    render(
+      <AnswerAskForm askId={ASK_ID} requesterName="Ann" action={answerAsk} />,
+    );
 
     await user.type(answerBox(), WRITTEN);
     await user.click(sendButton());

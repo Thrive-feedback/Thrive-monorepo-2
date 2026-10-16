@@ -3,8 +3,8 @@ import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
+import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import type { MyAsk } from './my-ask.type';
 
 /** As on My requests: one page covers a Workspace of 20–50 people asking one another. */
 const ONE_PAGE = { page: 1, pageSize: 100 };

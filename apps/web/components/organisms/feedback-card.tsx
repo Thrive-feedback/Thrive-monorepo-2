@@ -1,7 +1,7 @@
-import type { FeedItem } from '@/app/(signed-in)/(member)/home/_lib/feed-item.type';
 import { Avatar, AvatarFallback } from '@/components/atoms/avatar';
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
+import type { FeedItem } from '@/lib/feedback/feed-item.type';
 import { initials } from '@/lib/initials.util';
 import { ReactionBar } from './reaction-bar';
 

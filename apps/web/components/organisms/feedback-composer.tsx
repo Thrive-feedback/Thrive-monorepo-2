@@ -2,9 +2,10 @@
 
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { useId, useState } from 'react';
-import type { Teammate } from '@/app/(signed-in)/(member)/home/_lib/teammate.type';
 import { Button } from '@/components/atoms/button';
 import { ButtonGroup } from '@/components/atoms/button-group';
+import type { RequestFeedbackAction } from '@/lib/feedback/request-feedback-state.type';
+import type { Teammate } from '@/lib/feedback/teammate.type';
 import { GiveFeedbackForm } from './give-feedback-form';
 import { RequestFeedbackForm } from './request-feedback-form';
 
@@ -17,6 +18,8 @@ const MODE_NAMES: Readonly<Record<ComposerMode, string>> = {
 
 export type FeedbackComposerProps = {
   teammates: readonly Teammate[];
+  /** Sends a Feedback Request: Home's server action, or a stand-in. */
+  requestAction: RequestFeedbackAction;
 };
 
 /**
@@ -27,14 +30,22 @@ export type FeedbackComposerProps = {
  *
  * The forms fold away under the buttons for someone reading rather than writing; picking a mode
  * opens them again, since that is a step towards writing. It always opens expanded.
+ *
+ * It draws its own card, so every page that offers it shows the same one.
  */
-export function FeedbackComposer({ teammates }: FeedbackComposerProps) {
+export function FeedbackComposer({
+  teammates,
+  requestAction,
+}: FeedbackComposerProps) {
   const [mode, setMode] = useState<ComposerMode>('request');
   const [expanded, setExpanded] = useState(true);
   const formsId = useId();
 
   return (
-    <div className="flex flex-col gap-4">
+    <section
+      aria-label="Ask for or give feedback"
+      className="flex w-full flex-col gap-4 rounded-page bg-surface-raised p-6"
+    >
       <div className="flex items-start justify-between gap-4">
         <ButtonGroup aria-label="Feedback form">
           {(['request', 'give'] as const).map((value) => (
@@ -69,12 +80,12 @@ export function FeedbackComposer({ teammates }: FeedbackComposerProps) {
       </div>
       <div id={formsId} hidden={!expanded}>
         <div hidden={mode !== 'request'}>
-          <RequestFeedbackForm teammates={teammates} />
+          <RequestFeedbackForm teammates={teammates} action={requestAction} />
         </div>
         <div hidden={mode !== 'give'}>
           <GiveFeedbackForm teammates={teammates} />
         </div>
       </div>
-    </div>
+    </section>
   );
 }

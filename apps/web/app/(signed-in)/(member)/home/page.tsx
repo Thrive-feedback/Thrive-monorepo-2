@@ -2,15 +2,17 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Skeleton } from '@/components/atoms/skeleton';
-import { Text } from '@/components/atoms/text';
+import { FeedbackFeed } from '@/components/organisms/feedback-feed';
+import { HomeDialog } from '@/components/organisms/home-dialog';
+import { HomeView } from '@/components/templates/home-view';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 import { AnswerAskDetail } from './_components/answer-ask-detail';
 import { FeedbackComposerCard } from './_components/feedback-composer-card';
 import { FeedbackRequestDetail } from './_components/feedback-request-detail';
-import { HomeDialog } from './_components/home-dialog';
-import { HomeSplitView } from './_components/home-split-view';
-import { HomeTabs } from './_components/home-tabs';
+import styles from './_components/home-split.module.css';
+import { HomeTabPanel } from './_components/home-tab-panel';
+import { previewWorkspaceFeed } from './_lib/feed.mock';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
@@ -38,7 +40,7 @@ type HomeProps = {
  * Home of the person's Workspace, where a Member lands after signing in; `/` stays public for
  * the landing page. On a narrow screen, one column: asking for Feedback or giving it on top,
  * and below, the Workspace's Feedback and the person's own requests and Asks, one tab at a time.
- * On a wide screen, the Workspace feed and the rest side by side (`HomeSplitView`). Both are
+ * On a wide screen, the Workspace feed and the rest side by side; `HomeView` draws both. Both are
  * drawn and CSS shows one, so the page needs no script to choose; each read is deduplicated, so
  * drawing both reads the API once. Who the person is now lives on their Profile.
  *
@@ -67,29 +69,35 @@ export default async function Home({ searchParams }: HomeProps) {
           then={ROUTES.homeTab(tab)}
         />
       )}
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 lg:hidden">
-        <Text variant="display-5" as="h1">
-          {session.membership.workspace.name}
-        </Text>
-        <Suspense fallback={<Skeleton shape="card" className="h-80" />}>
-          <FeedbackComposerCard
-            membership={session.membership}
-            ownEmail={session.email}
+      <HomeView
+        workspaceName={session.membership.workspace.name}
+        composer={
+          <Suspense fallback={<Skeleton shape="card" className="h-80" />}>
+            <FeedbackComposerCard
+              membership={session.membership}
+              ownEmail={session.email}
+            />
+          </Suspense>
+        }
+        workspaceFeed={
+          <FeedbackFeed
+            items={previewWorkspaceFeed()}
+            isPreviewData
+            emptyMessage="Nothing has been shared with everyone yet."
           />
-        </Suspense>
-        <HomeTabs tab={tab} membership={session.membership} />
-      </div>
-      <HomeSplitView
+        }
         tab={tab}
-        membership={session.membership}
-        ownEmail={session.email}
-        className="hidden lg:block"
+        targetFor={(value) => ({ href: ROUTES.homeTab(value) })}
+        panelFor={(value) => (
+          <HomeTabPanel tab={value} membership={session.membership} />
+        )}
+        splitClassName={styles.split}
       />
       {request !== undefined ? (
         <HomeDialog
           key={request}
           title="Your feedback request"
-          closeHref={ROUTES.homeTab(tab)}
+          close={{ href: ROUTES.homeTab(tab) }}
         >
           <Suspense fallback={<Skeleton shape="card" className="h-40" />}>
             <FeedbackRequestDetail
@@ -103,7 +111,7 @@ export default async function Home({ searchParams }: HomeProps) {
           <HomeDialog
             key={ask}
             title="Give your feedback"
-            closeHref={ROUTES.homeTab(tab)}
+            close={{ href: ROUTES.homeTab(tab) }}
           >
             <Suspense fallback={<Skeleton shape="card" className="h-40" />}>
               <AnswerAskDetail membership={session.membership} askId={ask} />

@@ -5,9 +5,9 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
+import type { RequestFeedbackState } from '@/lib/feedback/request-feedback-state.type';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
-import type { RequestFeedbackState } from './request-feedback-state.type';
 
 type Visibility =
   components['schemas']['SendFeedbackRequestRequestDto']['visibility'];
