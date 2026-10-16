@@ -13,6 +13,9 @@ vi.mock('./received-feedback-list', () => ({
 vi.mock('./shared-feedback-list', () => ({
   SharedFeedbackList: () => <output>shared with me list</output>,
 }));
+vi.mock('./workspace-feed', () => ({
+  WorkspaceFeed: () => <output>workspace feed</output>,
+}));
 
 const { HomeTabPanel } = await import('./home-tab-panel');
 
@@ -22,11 +25,11 @@ const MEMBERSHIP = {
 } as const;
 
 describe('HomeTabPanel', () => {
-  it('shows the Workspace feed as preview data', () => {
+  it('shows the Workspace feed, read from the API rather than a mock', () => {
     render(<HomeTabPanel tab="workspace" membership={MEMBERSHIP} />);
 
-    expect(screen.getByText(/Preview data/)).toBeInTheDocument();
-    expect(screen.getAllByRole('article').length).toBeGreaterThan(0);
+    expect(screen.getByText('workspace feed')).toBeInTheDocument();
+    expect(screen.queryByText(/Preview data/)).toBeNull();
   });
 
   it('draws only the open tab, so only its data is read', () => {
@@ -36,7 +39,7 @@ describe('HomeTabPanel', () => {
     expect(screen.queryByText('waiting list')).toBeNull();
     expect(screen.queryByText('feedback for me list')).toBeNull();
     expect(screen.queryByText('shared with me list')).toBeNull();
-    expect(screen.queryByText(/Preview data/)).toBeNull();
+    expect(screen.queryByText('workspace feed')).toBeNull();
   });
 
   it('shows what was shared with the person, from the API rather than a mock', () => {
