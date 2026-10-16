@@ -133,3 +133,12 @@ export interface SharedFeedbackListView {
   readonly items: readonly FeedbackView[];
   readonly total: number;
 }
+
+/**
+ * The Feedback of a Workspace that every Member may read, newest first. Every piece names both
+ * people: the reader is usually neither of them.
+ */
+export interface WorkspaceFeedView {
+  readonly items: readonly FeedbackView[];
+  readonly total: number;
+}

@@ -1,0 +1,214 @@
+import { describe, expect, it } from 'bun:test';
+import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
+import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
+import { AccountNamesService } from '../service/account-names.service';
+import { ListWorkspaceFeedUseCase } from './list-workspace-feed.use-case';
+
+const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
+const OTHER_WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w2';
+const ANA = 'account-ana';
+const BEN = 'account-ben';
+const CARA = 'account-cara';
+const ONE_PAGE = { page: 1, pageSize: 20 };
+
+function setUp() {
+  const feedbackRequestQuery = new FakeFeedbackRequestQuery();
+  feedbackRequestQuery.feedbackWithVisibility.push(
+    {
+      id: '0199a0f0-0000-7000-8000-0000000000d1',
+      workspaceId: WORKSPACE_ID,
+      origin: 'REQUESTED',
+      feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
+      topic: 'how Ben runs the planning meeting',
+      giverAccountId: CARA,
+      receiverAccountId: BEN,
+      body: 'You start with the three goals on one slide.',
+      createdAt: new Date('2026-10-11T03:00:00.000Z'),
+      visibility: 'EVERYONE',
+      selectedAccountIds: [],
+    },
+    {
+      id: '0199a0f0-0000-7000-8000-0000000000d2',
+      workspaceId: WORKSPACE_ID,
+      origin: 'OFFERED',
+      feedbackRequestId: null,
+      topic: 'the customer demo on Tuesday',
+      giverAccountId: BEN,
+      receiverAccountId: CARA,
+      body: 'You kept the room with you when the demo broke.',
+      createdAt: new Date('2026-10-12T03:00:00.000Z'),
+      visibility: 'EVERYONE',
+      selectedAccountIds: [],
+    },
+    {
+      id: '0199a0f0-0000-7000-8000-0000000000d3',
+      workspaceId: WORKSPACE_ID,
+      origin: 'OFFERED',
+      feedbackRequestId: null,
+      topic: 'onboarding the new designers',
+      giverAccountId: BEN,
+      receiverAccountId: CARA,
+      body: 'Your notes answered every question I had.',
+      createdAt: new Date('2026-10-13T03:00:00.000Z'),
+      visibility: 'SELECTED_PEOPLE',
+      selectedAccountIds: [ANA],
+    },
+    {
+      id: '0199a0f0-0000-7000-8000-0000000000d4',
+      workspaceId: WORKSPACE_ID,
+      origin: 'OFFERED',
+      feedbackRequestId: null,
+      topic: 'the release notes',
+      giverAccountId: BEN,
+      receiverAccountId: CARA,
+      body: 'They read clearly and they land a day late.',
+      createdAt: new Date('2026-10-14T03:00:00.000Z'),
+      visibility: 'ONLY_ME',
+      selectedAccountIds: [],
+    },
+    {
+      id: '0199a0f0-0000-7000-8000-0000000000d5',
+      workspaceId: OTHER_WORKSPACE_ID,
+      origin: 'OFFERED',
+      feedbackRequestId: null,
+      topic: 'another Workspace entirely',
+      giverAccountId: BEN,
+      receiverAccountId: CARA,
+      body: 'Nobody here should read this.',
+      createdAt: new Date('2026-10-15T03:00:00.000Z'),
+      visibility: 'EVERYONE',
+      selectedAccountIds: [],
+    },
+  );
+  const accountSummaryPort = new FakeAccountSummaryPort();
+  accountSummaryPort.summaries.push(
+    {
+      accountId: BEN,
+      email: 'ben@acme.test',
+      fullName: 'Ben Carter',
+      displayName: 'Ben',
+      photoUrl: null,
+    },
+    {
+      accountId: CARA,
+      email: 'cara@acme.test',
+      fullName: 'Cara Diaz',
+      displayName: 'Cara',
+      photoUrl: null,
+    },
+  );
+  const useCase = new ListWorkspaceFeedUseCase(
+    feedbackRequestQuery,
+    new AccountNamesService(accountSummaryPort),
+  );
+  return { accountSummaryPort, useCase };
+}
+
+describe('reading the Workspace feed', () => {
+  it('lists what was shared with everyone, newest first, naming both people', async () => {
+    const { useCase } = setUp();
+
+    const feed = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      page: ONE_PAGE,
+    });
+
+    expect(feed.total).toBe(2);
+    expect(feed.items.map((feedback) => feedback.topic)).toEqual([
+      'the customer demo on Tuesday',
+      'how Ben runs the planning meeting',
+    ]);
+    expect(feed.items[0]?.giverName).toBe('Ben Carter');
+    expect(feed.items[0]?.receiverName).toBe('Cara Diaz');
+  });
+
+  it('tells an answer from Feedback given without being asked', async () => {
+    const { useCase } = setUp();
+
+    const feed = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      page: ONE_PAGE,
+    });
+
+    expect(
+      feed.items.map((feedback) => [
+        feedback.origin,
+        feedback.feedbackRequestId,
+      ]),
+    ).toEqual([
+      ['OFFERED', null],
+      ['REQUESTED', '0199a0f0-0000-7000-8000-0000000000f1'],
+    ]);
+  });
+
+  it('leaves out everything somebody kept narrower than Everyone', async () => {
+    const { useCase } = setUp();
+
+    const feed = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      page: ONE_PAGE,
+    });
+
+    const topics = feed.items.map((feedback) => feedback.topic);
+    expect(topics).not.toContain('onboarding the new designers');
+    expect(topics).not.toContain('the release notes');
+  });
+
+  it('leaves out another Workspace’s feed, however public it is there', async () => {
+    const { useCase } = setUp();
+
+    const feed = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      page: ONE_PAGE,
+    });
+
+    expect(feed.items.map((feedback) => feedback.topic)).not.toContain(
+      'another Workspace entirely',
+    );
+  });
+
+  it('shows an empty feed where nobody has shared anything with everyone', async () => {
+    const { useCase } = setUp();
+
+    const feed = await useCase.execute({
+      workspaceId: '0199a0f0-0000-7000-8000-0000000000w3',
+      page: ONE_PAGE,
+    });
+
+    expect(feed).toEqual({ items: [], total: 0 });
+  });
+
+  it('names everybody on the page in one call, however many pieces it holds', async () => {
+    const { accountSummaryPort, useCase } = setUp();
+
+    await useCase.execute({ workspaceId: WORKSPACE_ID, page: ONE_PAGE });
+
+    expect(accountSummaryPort.calls).toHaveLength(1);
+    expect(accountSummaryPort.calls[0]).toEqual([BEN, CARA]);
+  });
+
+  it('leaves somebody unnamed while they have not introduced themselves', async () => {
+    const { accountSummaryPort, useCase } = setUp();
+    accountSummaryPort.summaries.length = 0;
+
+    const feed = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      page: ONE_PAGE,
+    });
+
+    expect(feed.items[0]?.giverName).toBeNull();
+    expect(feed.items[0]?.receiverName).toBeNull();
+  });
+
+  it('counts the whole feed, not only the page asked for', async () => {
+    const { useCase } = setUp();
+
+    const feed = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      page: { page: 1, pageSize: 1 },
+    });
+
+    expect(feed.items).toHaveLength(1);
+    expect(feed.total).toBe(2);
+  });
+});

@@ -173,6 +173,17 @@ export abstract class FeedbackRequestQuery {
   ): Promise<FeedbackWithPeoplePageRow>;
 
   /**
+   * The Feedback of one Workspace that every Member may read — Everyone and nothing else —
+   * newest first. There is no reader argument, and that is the point: Everyone means every
+   * Member, and a parameter the read would have to ignore is one somebody later believes.
+   * Membership is proven before this runs (ADR 0042, ADR 0044).
+   */
+  abstract publicIn(
+    workspaceId: string,
+    page: PageRequest,
+  ): Promise<FeedbackWithPeoplePageRow>;
+
+  /**
    * One piece of Feedback of one Workspace, or `null`. Not scoped to a reader: who may read it
    * depends on the Visibility it carries, which is the use case's to apply.
    */

@@ -382,6 +382,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Feedback shared with everyone in this Workspace */
+        get: operations["WorkspaceFeedController_listWorkspaceFeed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -708,6 +725,33 @@ export interface components {
             createdAt: string;
         };
         ListSharedFeedbackResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                origin: "REQUESTED" | "OFFERED";
+                /** Format: uuid */
+                feedbackRequestId: string | null;
+                topic: string;
+                giver: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                };
+                receiver: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                };
+                body: string;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        ListWorkspaceFeedResponseDto_Output: {
             items: {
                 /** Format: uuid */
                 id: string;
@@ -1781,6 +1825,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListSharedFeedbackResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceFeedController_listWorkspaceFeed: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListWorkspaceFeedResponseDto_Output"];
                 };
             };
             /** @description REQUEST_INVALID */

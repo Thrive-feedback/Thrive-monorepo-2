@@ -273,6 +273,9 @@ model Feedback {
   @@index([workspaceId, receiverAccountId, createdAt])
   /// For "the Feedback I gave" (#27).
   @@index([workspaceId, giverAccountId, createdAt])
+  /// For the Workspace feed (#90): everything set to Everyone, newest first. The two indexes
+  /// above lead with a person, which that read does not filter on.
+  @@index([workspaceId, visibility, createdAt])
   @@map("feedback")
 }
 
