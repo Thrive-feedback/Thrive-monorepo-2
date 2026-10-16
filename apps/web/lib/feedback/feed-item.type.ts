@@ -11,8 +11,10 @@ export type ReactionEmoji = (typeof REACTIONS)[number]['emoji'];
 /** One piece of Feedback as a feed card shows it. */
 export type FeedItem = {
   readonly id: string;
-  readonly giverName: string;
-  readonly receiverName: string;
+  /** `null` while the Giver has not introduced themselves. */
+  readonly giverName: string | null;
+  /** `null` while the Receiver has not introduced themselves. */
+  readonly receiverName: string | null;
   /** Requested answers an Ask; Offered was given without being asked. */
   readonly origin: 'REQUESTED' | 'OFFERED';
   readonly topic: string;

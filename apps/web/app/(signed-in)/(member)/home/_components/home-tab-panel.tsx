@@ -1,12 +1,10 @@
-import {
-  previewSharedWithMe,
-  previewWorkspaceFeed,
-} from '@/app/(signed-in)/(member)/home/_lib/feed.mock';
+import { previewWorkspaceFeed } from '@/app/(signed-in)/(member)/home/_lib/feed.mock';
 import { FeedbackFeed } from '@/components/organisms/feedback-feed';
 import type { HomeTab } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { ReceivedFeedbackList } from './received-feedback-list';
 import { SentRequestList } from './sent-request-list';
+import { SharedFeedbackList } from './shared-feedback-list';
 import { WaitingAskList } from './waiting-ask-list';
 
 export type HomeTabPanelProps = {
@@ -26,13 +24,7 @@ export function HomeTabPanel({ tab, membership }: HomeTabPanelProps) {
         />
       );
     case 'shared':
-      return (
-        <FeedbackFeed
-          items={previewSharedWithMe()}
-          isPreviewData
-          emptyMessage="Nobody has shared Feedback with you yet."
-        />
-      );
+      return <SharedFeedbackList membership={membership} />;
     case 'my-requests':
       return <SentRequestList membership={membership} />;
     case 'waiting':
