@@ -230,6 +230,25 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     return { items: records, total };
   }
 
+  async publicIn(
+    workspaceId: string,
+    page: PageRequest,
+  ): Promise<FeedbackWithPeoplePageRow> {
+    const where = { workspaceId, visibility: 'EVERYONE' } as const;
+    const client = this.prismaTransactionContext.client;
+    const [records, total] = await Promise.all([
+      client.feedback.findMany({
+        where,
+        orderBy: NEWEST_FIRST,
+        skip: skipFor(page),
+        take: page.pageSize,
+        select: FEEDBACK_WITH_PEOPLE_FIELDS,
+      }),
+      client.feedback.count({ where }),
+    ]);
+    return { items: records, total };
+  }
+
   async feedbackInWorkspace(
     workspaceId: string,
     feedbackId: string,

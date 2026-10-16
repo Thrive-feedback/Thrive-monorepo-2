@@ -17,8 +17,7 @@ interface StoredRow {
 
 /**
  * What `sharedWith` asks the database, in TypeScript: the `visibility` column is Selected people
- * and a `feedback_selected_person` row names the reader. Kept beside the query it mirrors, so a
- * change to one is read next to the other.
+ * and a `feedback_selected_person` row names the reader.
  */
 function theSharedReadReturns(
   row: StoredRow,
@@ -28,6 +27,14 @@ function theSharedReadReturns(
     row.visibility === 'SELECTED_PEOPLE' &&
     row.selectedAccountIds.includes(readerAccountId)
   );
+}
+
+/**
+ * What `publicIn` asks: the `visibility` column is Everyone. No reader appears in it, which is
+ * why the Workspace guard is what keeps the feed inside the Workspace.
+ */
+function theFeedReadReturns(row: StoredRow): boolean {
+  return row.visibility === 'EVERYONE';
 }
 
 function theVisibilityLetsRead(
@@ -52,6 +59,8 @@ const ROWS: readonly StoredRow[] = VISIBILITIES.flatMap((visibility) =>
   ).map((selectedAccountIds) => ({ visibility, selectedAccountIds })),
 );
 
+const READERS = [READER, SOMEBODY_ELSE] as const;
+
 function named(row: StoredRow): string {
   const selected =
     row.selectedAccountIds.length === 0
@@ -61,48 +70,40 @@ function named(row: StoredRow): string {
 }
 
 /**
- * ADR 0044 states one rule in two places: `Visibility.letsRead` decides one piece, and a list
- * read decides a page of them in its `WHERE`. This holds the two readings together for a reader
- * who is neither the Giver nor the Receiver — the only reader *Shared with me* is about.
- *
- * `sharedWith` is deliberately **narrower** than the value object: it returns Selected people
- * only, because Everyone belongs to the Workspace feed (#90), which reads the same rule from the
- * other side. So the invariant is a subset, plus exact agreement wherever somebody was selected.
+ * ADR 0044 states one rule in two places: `Visibility.letsRead` decides one piece, and the list
+ * reads decide a page of them in their `WHERE`. These hold the readings together for a reader
+ * who is neither the Giver nor the Receiver — the only reader these two screens are about.
  *
  * The Giver and the Receiver sit outside it: both always read a piece, and neither can be
- * selected to (`Feedback.offer` refuses it), so no row this list returns can name them as its
- * reader. They read their own Feedback on their own screens.
+ * selected to (`Feedback.offer` refuses it). They read their own Feedback on their own screens,
+ * so a row either list returns can still be one of theirs — that is the feed, not a leak.
  */
-describe('the Visibility and the Shared with me read', () => {
+describe('the Visibility and the list reads', () => {
   for (const row of ROWS) {
-    it(`never shares ${named(row)} with somebody the Visibility shuts out`, () => {
-      for (const reader of [READER, SOMEBODY_ELSE]) {
-        if (theSharedReadReturns(row, reader)) {
+    it(`never lists ${named(row)} to somebody the Visibility shuts out`, () => {
+      for (const reader of READERS) {
+        if (theSharedReadReturns(row, reader) || theFeedReadReturns(row)) {
           expect(theVisibilityLetsRead(row, reader)).toBe(true);
         }
       }
     });
-  }
 
-  for (const row of ROWS.filter(
-    (candidate) => candidate.visibility === 'SELECTED_PEOPLE',
-  )) {
-    it(`answers exactly as the Visibility does for ${named(row)}`, () => {
-      for (const reader of [READER, SOMEBODY_ELSE]) {
-        expect(theSharedReadReturns(row, reader)).toBe(
-          theVisibilityLetsRead(row, reader),
-        );
+    it(`lists ${named(row)} on exactly one of the two screens, or neither`, () => {
+      for (const reader of READERS) {
+        expect(
+          [theSharedReadReturns(row, reader), theFeedReadReturns(row)].filter(
+            Boolean,
+          ).length,
+        ).toBeLessThanOrEqual(1);
+      }
+    });
+
+    it(`shows ${named(row)} on a screen whenever the Visibility allows it`, () => {
+      for (const reader of READERS) {
+        expect(
+          theSharedReadReturns(row, reader) || theFeedReadReturns(row),
+        ).toBe(theVisibilityLetsRead(row, reader));
       }
     });
   }
-
-  it('leaves Everyone to the Workspace feed, although the Visibility allows it', () => {
-    const everyone: StoredRow = {
-      visibility: 'EVERYONE',
-      selectedAccountIds: [],
-    };
-
-    expect(theVisibilityLetsRead(everyone, READER)).toBe(true);
-    expect(theSharedReadReturns(everyone, READER)).toBe(false);
-  });
 });

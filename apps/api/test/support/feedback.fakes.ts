@@ -7,6 +7,7 @@ import type {
   FeedbackRequestRow,
   FeedbackRow,
   FeedbackWithPeoplePageRow,
+  FeedbackWithPeopleRow,
   FeedbackWithVisibilityRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
@@ -214,18 +215,22 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
           row.selectedAccountIds.includes(readerAccountId),
       )
       .sort(newestFirst)
-      // The real read hands back no Visibility: it applied it (ADR 0044).
-      .map((row) => ({
-        id: row.id,
-        origin: row.origin,
-        feedbackRequestId: row.feedbackRequestId,
-        topic: row.topic,
-        giverAccountId: row.giverAccountId,
-        receiverAccountId: row.receiverAccountId,
-        body: row.body,
-        createdAt: row.createdAt,
-      }));
+      .map(withoutVisibility);
     return { items: pageOf(shared, page), total: shared.length };
+  }
+
+  async publicIn(
+    workspaceId: string,
+    page: PageRequest,
+  ): Promise<FeedbackWithPeoplePageRow> {
+    const feed = this.feedbackWithVisibility
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId && row.visibility === 'EVERYONE',
+      )
+      .sort(newestFirst)
+      .map(withoutVisibility);
+    return { items: pageOf(feed, page), total: feed.length };
   }
 
   async askFor(
@@ -282,6 +287,22 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
         })),
       );
   }
+}
+
+/** The real list reads hand back no Visibility: they applied it (ADR 0044). */
+function withoutVisibility(
+  row: FeedbackWithVisibilityRow,
+): FeedbackWithPeopleRow {
+  return {
+    id: row.id,
+    origin: row.origin,
+    feedbackRequestId: row.feedbackRequestId,
+    topic: row.topic,
+    giverAccountId: row.giverAccountId,
+    receiverAccountId: row.receiverAccountId,
+    body: row.body,
+    createdAt: row.createdAt,
+  };
 }
 
 function newestFirst(
