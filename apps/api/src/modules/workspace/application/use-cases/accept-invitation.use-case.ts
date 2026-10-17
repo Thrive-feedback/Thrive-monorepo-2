@@ -59,7 +59,8 @@ export class AcceptInvitationUseCase {
         }
         InvitationStatus.of(invitation.status).ensureAcceptable();
         // A Deactivated person's membership is kept (#192), so the plugin would fail to add
-        // them a second time. Coming back is not decided yet (#194, #209).
+        // them a second time. Accepting is to bring it back (#209); until then an Admin
+        // Reactivates them instead.
         if (
           await this.membershipQuery.isDeactivatedIn(
             input.accountId,
