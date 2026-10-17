@@ -12,18 +12,24 @@ export type SentFeedbackRequest = {
     readonly askId: string;
     /** The Member asked, or `null` while they have not introduced themselves. */
     readonly giverName: string | null;
+    /** Deactivated in this Workspace, so shown as inactive; their Ask stays. */
+    readonly giverInactive: boolean;
     readonly status: 'PENDING' | 'ANSWERED' | 'EXPIRED';
     /** What they wrote, once they have — and only for the people allowed to read it. */
     readonly answer: string | null;
   }[];
   /**
-   * Who besides the Requester reads the answers, with the names of the people selected — `null`
-   * for a Giver, whom the API does not tell.
+   * Who besides the Requester reads the answers, with the people selected — `null` for a Giver,
+   * whom the API does not tell.
    */
   readonly visibility: {
     readonly value: 'ONLY_ME' | 'SELECTED_PEOPLE' | 'EVERYONE';
-    /** `null` for a Member who has not introduced themselves. */
-    readonly selectedNames: readonly (string | null)[];
+    readonly selectedPeople: readonly {
+      /** `null` for a Member who has not introduced themselves. */
+      readonly name: string | null;
+      /** Deactivated in this Workspace, so shown as inactive. */
+      readonly inactive: boolean;
+    }[];
   } | null;
 };
 
@@ -58,14 +64,16 @@ export async function readFeedbackRequest(
       asks: request.asks.map((ask) => ({
         askId: ask.askId,
         giverName: ask.giverName,
+        giverInactive: ask.giverStatus === 'DEACTIVATED',
         status: ask.status,
         answer: ask.answer?.body ?? null,
       })),
       visibility: request.visibility && {
         value: request.visibility.value,
-        selectedNames: request.visibility.selectedPeople.map(
-          (person) => person.name,
-        ),
+        selectedPeople: request.visibility.selectedPeople.map((person) => ({
+          name: person.name,
+          inactive: person.status === 'DEACTIVATED',
+        })),
       },
     };
   } catch (error) {

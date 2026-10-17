@@ -47,7 +47,7 @@ const ONE_ASK = {
   askId: 'ask-1',
   feedbackRequestId: 'request-1',
   topic: 'my presentation skills',
-  requester: { accountId: 'account-ana', name: 'Ana Silva' },
+  requester: { accountId: 'account-ana', name: 'Ana Silva', status: 'ACTIVE' },
   status: 'PENDING',
   createdAt: '2026-10-11T03:00:00.000Z',
 };
@@ -61,6 +61,7 @@ describe('reading the Asks waiting for me', () => {
         askId: 'ask-1',
         topic: 'my presentation skills',
         requesterName: 'Ana Silva',
+        requesterInactive: false,
         askedAt: '2026-10-11T03:00:00.000Z',
         status: 'PENDING',
       },
@@ -75,9 +76,29 @@ describe('reading the Asks waiting for me', () => {
     expect(askedFor?.get('status')).toBe('PENDING');
   });
 
+  it('shows a Requester Deactivated in the Workspace as inactive', async () => {
+    apiHolds([
+      {
+        ...ONE_ASK,
+        requester: {
+          accountId: 'account-ana',
+          name: 'Ana Silva',
+          status: 'DEACTIVATED',
+        },
+      },
+    ]);
+
+    const [ask] = await readMyAsks(MEMBERSHIP);
+
+    expect(ask?.requesterInactive).toBe(true);
+  });
+
   it('leaves the Requester unnamed while they have not introduced themselves', async () => {
     apiHolds([
-      { ...ONE_ASK, requester: { accountId: 'account-ana', name: null } },
+      {
+        ...ONE_ASK,
+        requester: { accountId: 'account-ana', name: null, status: 'ACTIVE' },
+      },
     ]);
 
     const [ask] = await readMyAsks(MEMBERSHIP);

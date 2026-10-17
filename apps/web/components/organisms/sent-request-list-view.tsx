@@ -7,6 +7,7 @@ import {
 } from '@/lib/feedback/ask-status.constant';
 import type { SentRequest } from '@/lib/feedback/sent-request.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
+import { PersonName } from './person-name';
 
 export type SentRequestListViewProps = {
   requests: readonly SentRequest[];
@@ -54,7 +55,11 @@ export function SentRequestListView({
             {request.asks.map((ask) => (
               <li key={ask.askId}>
                 <Text as="span" variant="body-2" className="break-all">
-                  {ask.giverName ?? '—'} :{' '}
+                  <PersonName
+                    name={ask.giverName ?? '—'}
+                    inactive={ask.giverInactive}
+                  />{' '}
+                  :{' '}
                   <span className={ASK_STATUS_COLOURS[ask.status]}>
                     {ASK_STATUS_NAMES[ask.status]}
                   </span>

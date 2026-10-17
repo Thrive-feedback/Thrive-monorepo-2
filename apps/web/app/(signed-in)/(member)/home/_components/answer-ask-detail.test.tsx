@@ -29,6 +29,7 @@ const WAITING: WaitingAsk = {
   feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
   topic: 'Running the planning meeting',
   requesterName: 'Ann Lee',
+  requesterInactive: false,
   status: 'PENDING',
 };
 

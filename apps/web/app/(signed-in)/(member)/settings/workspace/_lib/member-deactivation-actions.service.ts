@@ -18,6 +18,12 @@ const DEACTIVATION_ERRORS: Readonly<Record<string, string>> = {
   MEMBER_NOT_FOUND: 'They are no longer in this Workspace.',
 };
 
+/** What to say when the API refused a Reactivation, by the API's error code. */
+const REACTIVATION_ERRORS: Readonly<Record<string, string>> = {
+  NOT_ALLOWED_TO_REACTIVATE: 'Only Admins can Reactivate people.',
+  MEMBER_NOT_FOUND: 'They were never in this Workspace.',
+};
+
 const COULD_NOT_DEACTIVATE = "We couldn't do that. Please try again.";
 
 export type MemberDeactivationResult =
@@ -48,6 +54,44 @@ export async function leaveWorkspace(
     redirect(ROUTES.home);
   }
   return result;
+}
+
+/**
+ * Reactivates someone Deactivated in the person's own Workspace, with the Role they had. As with
+ * Deactivating, the Workspace is the session's and the API checks they may. Members is drawn
+ * again either way, the person back among the active.
+ */
+export async function reactivateMember(
+  accountId: string,
+): Promise<MemberDeactivationResult> {
+  const id = AccountId.safeParse(accountId);
+  if (!id.success) {
+    return { ok: false, message: COULD_NOT_DEACTIVATE };
+  }
+  const { membership } = await requireMember();
+  const cookie = (await headers()).get('cookie') ?? undefined;
+  try {
+    await apiClient().POST(
+      '/v1/workspaces/{workspaceId}/members/{accountId}/reactivate',
+      {
+        params: {
+          path: { workspaceId: membership.workspace.id, accountId: id.data },
+          header: { cookie },
+        },
+      },
+    );
+    return { ok: true };
+  } catch (error) {
+    if (!(error instanceof ApiError)) {
+      throw error;
+    }
+    return {
+      ok: false,
+      message: REACTIVATION_ERRORS[error.code] ?? COULD_NOT_DEACTIVATE,
+    };
+  } finally {
+    revalidatePath(ROUTES.settings.workspace);
+  }
 }
 
 async function deactivate(

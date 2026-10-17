@@ -13,8 +13,12 @@ export type FeedItem = {
   readonly id: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
+  /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
+  readonly giverInactive: boolean;
   /** `null` while the Receiver has not introduced themselves. */
   readonly receiverName: string | null;
+  /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
+  readonly receiverInactive: boolean;
   /** Requested answers an Ask; Offered was given without being asked. */
   readonly origin: 'REQUESTED' | 'OFFERED';
   readonly topic: string;

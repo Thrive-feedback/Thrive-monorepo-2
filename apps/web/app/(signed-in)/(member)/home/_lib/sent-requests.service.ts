@@ -41,6 +41,7 @@ export const readSentRequests = cache(
       asks: request.asks.map((ask) => ({
         askId: ask.askId,
         giverName: ask.giverName,
+        giverInactive: ask.giverStatus === 'DEACTIVATED',
         status: ask.status,
       })),
     }));

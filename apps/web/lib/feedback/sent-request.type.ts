@@ -5,6 +5,8 @@ export type SentAsk = {
   readonly askId: string;
   /** The Member asked, by the name on their Profile, or their Account id while they have none. */
   readonly giverName: string | null;
+  /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
+  readonly giverInactive: boolean;
   readonly status: AskStatus;
 };
 

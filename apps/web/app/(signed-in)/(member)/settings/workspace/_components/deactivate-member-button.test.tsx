@@ -41,7 +41,7 @@ describe('DeactivateMemberButton', () => {
 
     const dialog = screen.getByRole('alertdialog', { name: 'Deactivate Ben?' });
     expect(dialog).toHaveTextContent(
-      "They won't be able to open Acme any more. The Feedback they gave and received stays, with “Deactivated” beside their name.",
+      "They won't be able to open Acme any more. The Feedback they gave and received stays, with “(inactive)” after their name, until an Admin Reactivates them.",
     );
     expect(deactivateMember).not.toHaveBeenCalled();
   });
@@ -119,7 +119,7 @@ describe('DeactivateMemberButton', () => {
     expect(
       screen.getByRole('alertdialog', { name: 'Leave Acme?' }),
     ).toHaveTextContent(
-      "You won't be able to open Acme again. The Feedback you gave and received stays, with “Deactivated” beside your name.",
+      "You won't be able to open Acme again. The Feedback you gave and received stays, with “(inactive)” after your name.",
     );
     await user.click(
       screen

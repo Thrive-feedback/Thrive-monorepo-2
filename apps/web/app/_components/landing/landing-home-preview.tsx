@@ -65,6 +65,7 @@ export function LandingHomePreview() {
         {
           askId: `preview-sent-ask-${composerKey}`,
           giverName: giver?.name ?? null,
+          giverInactive: false,
           status: 'PENDING',
         },
       ],

@@ -65,6 +65,24 @@ describe('WaitingAskList', () => {
     expect(screen.getByText('Asked by a teammate')).toBeInTheDocument();
   });
 
+  it('shows a Requester who was Deactivated as inactive, and keeps their Ask', async () => {
+    readMyAsks.mockResolvedValue([
+      {
+        askId: 'ask-1',
+        topic: 'my presentation skills',
+        requesterName: 'Ana Silva',
+        requesterInactive: true,
+        askedAt: '2026-10-11T03:00:00.000Z',
+        status: 'PENDING',
+      },
+    ]);
+
+    await renderList();
+
+    expect(screen.getByText('Ana Silva (inactive)')).toBeInTheDocument();
+    expect(screen.getByText('my presentation skills')).toBeInTheDocument();
+  });
+
   it('says so when nothing is waiting', async () => {
     readMyAsks.mockResolvedValue([]);
 

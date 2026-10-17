@@ -1,6 +1,7 @@
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { ReceivedFeedback } from '@/lib/feedback/received-feedback.type';
+import { PersonName } from './person-name';
 
 export type ReceivedFeedbackListViewProps = {
   items: readonly ReceivedFeedback[];
@@ -35,7 +36,12 @@ export function ReceivedFeedbackListView({
             {feedback.topic}
           </Text>
           <Text as="p" variant="body-3" tone="muted">
-            From {feedback.giverName ?? 'a teammate'} ·{' '}
+            From{' '}
+            <PersonName
+              name={feedback.giverName ?? 'a teammate'}
+              inactive={feedback.giverInactive}
+            />{' '}
+            ·{' '}
             <time dateTime={feedback.writtenAt}>
               {calendarDay(feedback.writtenAt)}
             </time>

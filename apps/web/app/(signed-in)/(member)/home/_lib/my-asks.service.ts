@@ -34,6 +34,7 @@ export const readMyAsks = cache(
       askId: ask.askId,
       topic: ask.topic,
       requesterName: ask.requester.name,
+      requesterInactive: ask.requester.status === 'DEACTIVATED',
       askedAt: ask.createdAt,
       status: ask.status,
     }));

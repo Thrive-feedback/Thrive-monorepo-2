@@ -2,6 +2,7 @@ import { Text } from '@/components/atoms/text';
 import type { AnswerAskAction } from '@/lib/feedback/answer-ask-state.type';
 import type { WaitingAsk } from '@/lib/feedback/waiting-ask.type';
 import { AnswerAskForm } from './answer-ask-form';
+import { PersonName } from './person-name';
 
 export type AnswerAskViewProps = {
   /** The Ask, or `null` when none with that id is waiting for this person. */
@@ -31,10 +32,12 @@ export function AnswerAskView({ ask, action }: AnswerAskViewProps) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <Text variant="subtitle-3" as="h3">
-          {asker} asked about {ask.topic}
+          <PersonName name={asker} inactive={ask.requesterInactive} /> asked
+          about {ask.topic}
         </Text>
         <Text variant="body-3" tone="muted">
-          Only {asker} can read what you write, and your name goes with it.
+          Only <PersonName name={asker} inactive={ask.requesterInactive} /> can
+          read what you write, and your name goes with it.
         </Text>
       </div>
       {ask.status === 'PENDING' ? (

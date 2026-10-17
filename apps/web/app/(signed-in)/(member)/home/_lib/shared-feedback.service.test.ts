@@ -27,8 +27,8 @@ const ONE_PIECE = {
   origin: 'OFFERED',
   feedbackRequestId: null,
   topic: 'the customer demo',
-  giver: { accountId: 'account-ben', name: 'Ben Carter' },
-  receiver: { accountId: 'account-cara', name: 'Cara Diaz' },
+  giver: { accountId: 'account-ben', name: 'Ben Carter', status: 'ACTIVE' },
+  receiver: { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
   body: 'You kept the room with you.',
   createdAt: '2026-10-12T03:00:00.000Z',
 };
@@ -60,7 +60,9 @@ describe('reading the Feedback shared with me', () => {
       {
         id: 'fb-1',
         giverName: 'Ben Carter',
+        giverInactive: false,
         receiverName: 'Cara Diaz',
+        receiverInactive: false,
         origin: 'OFFERED',
         topic: 'the customer demo',
         body: 'You kept the room with you.',
@@ -88,8 +90,8 @@ describe('reading the Feedback shared with me', () => {
     apiHolds([
       {
         ...ONE_PIECE,
-        giver: { accountId: 'account-ben', name: null },
-        receiver: { accountId: 'account-cara', name: null },
+        giver: { accountId: 'account-ben', name: null, status: 'ACTIVE' },
+        receiver: { accountId: 'account-cara', name: null, status: 'ACTIVE' },
       },
     ]);
 

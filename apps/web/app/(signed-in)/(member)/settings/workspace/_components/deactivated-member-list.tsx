@@ -1,7 +1,10 @@
+import { mayReactivate } from '@/app/(signed-in)/(member)/settings/workspace/_lib/member-role-access.util';
 import { readMembers } from '@/app/(signed-in)/(member)/settings/workspace/_lib/members.service';
 import { Text } from '@/components/atoms/text';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
+import { PersonName } from '@/components/organisms/person-name';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { ReactivateMemberButton } from './reactivate-member-button';
 
 export type DeactivatedMemberListProps = {
   membership: CurrentMembership;
@@ -9,8 +12,8 @@ export type DeactivatedMemberListProps = {
 
 /**
  * Everyone who left the Workspace or was Deactivated there, listed apart from those still in it,
- * each with "Deactivated" beside their name. It reads its own data, so the page renders around
- * it while the read is in flight.
+ * each named as inactive, and each with Reactivate for an Admin. It reads its own data, so the
+ * page renders around it while the read is in flight.
  */
 export async function DeactivatedMemberList({
   membership,
@@ -23,6 +26,7 @@ export async function DeactivatedMemberList({
       </Text>
     );
   }
+  const canReactivate = mayReactivate(membership);
   return (
     <ul className="flex flex-col gap-2">
       {members.map((member) => (
@@ -36,14 +40,19 @@ export async function DeactivatedMemberList({
             size="sm"
           />
           <Text as="span" variant="subtitle-4">
-            {member.name ?? '—'}
+            <PersonName name={member.name ?? '—'} inactive />
           </Text>
           <Text as="span" variant="body-2" tone="muted" className="break-all">
             {member.email}
           </Text>
-          <Text as="span" variant="caption" tone="muted">
-            Deactivated
-          </Text>
+          {canReactivate && (
+            <ReactivateMemberButton
+              accountId={member.accountId}
+              name={member.name ?? member.email}
+              memberRole={member.role}
+              workspaceName={membership.workspace.name}
+            />
+          )}
         </li>
       ))}
     </ul>

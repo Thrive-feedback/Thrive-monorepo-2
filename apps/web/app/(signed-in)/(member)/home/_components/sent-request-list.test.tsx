@@ -65,6 +65,28 @@ describe('SentRequestList', () => {
     expect(screen.getByText(/—/)).toBeInTheDocument();
   });
 
+  it('shows a Member asked who was Deactivated as inactive', async () => {
+    readSentRequests.mockResolvedValue([
+      {
+        id: 'request-1',
+        topic: 'my presentation skills',
+        sentAt: '2026-10-11T03:00:00.000Z',
+        asks: [
+          {
+            askId: 'ask-1',
+            giverName: 'Ben Carter',
+            giverInactive: true,
+            status: 'PENDING',
+          },
+        ],
+      },
+    ]);
+
+    await renderList();
+
+    expect(screen.getByText('Ben Carter (inactive)')).toBeInTheDocument();
+  });
+
   it('points at asking somebody when nothing has been sent', async () => {
     readSentRequests.mockResolvedValue([]);
 

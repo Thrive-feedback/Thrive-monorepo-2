@@ -33,6 +33,7 @@ function apiHolds(requesterName: string | null, status = 'PENDING') {
         requester: {
           accountId: '0199a0f0-0000-7000-8000-00000000000a',
           name: requesterName,
+          status: 'ACTIVE',
         },
         status,
         createdAt: '2026-10-13T03:00:00.000Z',
@@ -61,6 +62,7 @@ describe('reading the Ask to answer', () => {
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
       topic: 'Running the planning meeting',
       requesterName: 'Ann Lee',
+      requesterInactive: false,
       status: 'PENDING',
     });
   });

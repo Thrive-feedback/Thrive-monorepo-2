@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react';
 import {
   readFeedbackRequest,
   type SentFeedbackRequest,
 } from '@/app/(signed-in)/(member)/home/_lib/feedback-request.service';
 import { Text } from '@/components/atoms/text';
+import { PersonName } from '@/components/organisms/person-name';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 export type FeedbackRequestDetailProps = {
@@ -21,19 +23,45 @@ const ASK_STATUS_WORDS: Readonly<
 
 const names = new Intl.ListFormat('en', { type: 'conjunction' });
 
+/** The people selected, as one list — "Ann, Ben and Cara" — each shown as inactive if they are. */
+function selectedPeopleList(
+  people: NonNullable<SentFeedbackRequest['visibility']>['selectedPeople'],
+): ReactNode {
+  let next = 0;
+  return names
+    .formatToParts(people.map((_, index) => String(index)))
+    .map((part) => {
+      if (part.type === 'literal') {
+        return part.value;
+      }
+      const index = next++;
+      const person = people[index];
+      return (
+        <PersonName
+          key={index}
+          name={person?.name ?? 'a teammate'}
+          inactive={person?.inactive}
+        />
+      );
+    });
+}
+
 /** Who reads what comes back, in the words the form used when the request was sent. */
 function whoReadsTheAnswers(
   visibility: NonNullable<SentFeedbackRequest['visibility']>,
-): string {
+): ReactNode {
   switch (visibility.value) {
     case 'ONLY_ME':
       return 'Only you can read what they send back.';
     case 'EVERYONE':
       return 'Everyone in your Workspace can read what they send back.';
     case 'SELECTED_PEOPLE':
-      return `You and ${names.format(
-        visibility.selectedNames.map((name) => name ?? 'a teammate'),
-      )} can read what they send back.`;
+      return (
+        <>
+          You and {selectedPeopleList(visibility.selectedPeople)} can read what
+          they send back.
+        </>
+      );
   }
 }
 
@@ -65,7 +93,12 @@ export async function FeedbackRequestDetail({
           <li key={ask.askId} className="flex flex-col gap-2">
             <div className="flex flex-col gap-1">
               <Text variant="subtitle-3" as="h3">
-                You asked {ask.giverName ?? 'a teammate'} about {request.topic}
+                You asked{' '}
+                <PersonName
+                  name={ask.giverName ?? 'a teammate'}
+                  inactive={ask.giverInactive}
+                />{' '}
+                about {request.topic}
               </Text>
               <Text variant="body-3" tone="muted">
                 Now {ASK_STATUS_WORDS[ask.status]}.
