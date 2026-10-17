@@ -20,6 +20,14 @@ vi.mock('./_components/member-list', () => ({
     <output>{`members, with ${ownEmail} marked`}</output>
   ),
 }));
+vi.mock('./_components/deactivated-member-list', () => ({
+  DeactivatedMemberList: () => <output>deactivated people</output>,
+}));
+vi.mock('./_components/leave-workspace-row', () => ({
+  LeaveWorkspaceRow: ({ ownEmail }: { ownEmail: string }) => (
+    <output>{`leave, as ${ownEmail}`}</output>
+  ),
+}));
 vi.mock('./_components/invitation-list', () => ({
   InvitationList: () => <output>open invitations</output>,
 }));
@@ -64,6 +72,7 @@ describe('Workspace', () => {
       .map((heading) => heading.textContent);
     expect(headings).toEqual([
       'Members',
+      'Deactivated',
       'Invite teammates',
       'Open invitations',
     ]);
@@ -78,6 +87,11 @@ describe('Workspace', () => {
     expect(
       screen.getByText('members, with ann@acme.test marked'),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'Deactivated' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('deactivated people')).toBeInTheDocument();
+    expect(screen.getByText('leave, as ann@acme.test')).toBeInTheDocument();
     expect(
       screen.queryByRole('heading', { name: 'Open invitations' }),
     ).toBeNull();

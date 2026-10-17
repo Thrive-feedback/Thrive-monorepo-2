@@ -1,0 +1,84 @@
+'use server';
+
+import { ApiError } from '@repo/api';
+import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { z } from 'zod';
+import { apiClient } from '@/lib/api-client.service';
+import { ROUTES } from '@/lib/routes.constant';
+import { requireMember } from '@/lib/session/session.service';
+
+const AccountId = z.uuid();
+
+/** What to say when the API refused a Deactivation, by the API's error code. */
+const DEACTIVATION_ERRORS: Readonly<Record<string, string>> = {
+  LAST_ADMIN: 'Make someone else an Admin first.',
+  NOT_ALLOWED_TO_DEACTIVATE: 'Only Admins can Deactivate other people.',
+  MEMBER_NOT_FOUND: 'They are no longer in this Workspace.',
+};
+
+const COULD_NOT_DEACTIVATE = "We couldn't do that. Please try again.";
+
+export type MemberDeactivationResult =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly message: string };
+
+/**
+ * Deactivates someone in the person's own Workspace. The Workspace is the one the session
+ * belongs to, never one the browser names, and the API checks they may. Members is drawn again
+ * either way, the Deactivated person among the Deactivated.
+ */
+export async function deactivateMember(
+  accountId: string,
+): Promise<MemberDeactivationResult> {
+  return deactivate(accountId);
+}
+
+/**
+ * Leaves the person's own Workspace, by Deactivating their own Account there; `accountId` is
+ * theirs, as their row in Members names it. Once out they can no longer open it, so they go on
+ * to wherever they belong now.
+ */
+export async function leaveWorkspace(
+  accountId: string,
+): Promise<MemberDeactivationResult> {
+  const result = await deactivate(accountId);
+  if (result.ok) {
+    redirect(ROUTES.home);
+  }
+  return result;
+}
+
+async function deactivate(
+  accountId: string,
+): Promise<MemberDeactivationResult> {
+  const id = AccountId.safeParse(accountId);
+  if (!id.success) {
+    return { ok: false, message: COULD_NOT_DEACTIVATE };
+  }
+  const { membership } = await requireMember();
+  const cookie = (await headers()).get('cookie') ?? undefined;
+  try {
+    await apiClient().POST(
+      '/v1/workspaces/{workspaceId}/members/{accountId}/deactivate',
+      {
+        params: {
+          path: { workspaceId: membership.workspace.id, accountId: id.data },
+          header: { cookie },
+        },
+      },
+    );
+    return { ok: true };
+  } catch (error) {
+    if (!(error instanceof ApiError)) {
+      throw error;
+    }
+    return {
+      ok: false,
+      message: DEACTIVATION_ERRORS[error.code] ?? COULD_NOT_DEACTIVATE,
+    };
+  } finally {
+    revalidatePath(ROUTES.settings.workspace);
+  }
+}

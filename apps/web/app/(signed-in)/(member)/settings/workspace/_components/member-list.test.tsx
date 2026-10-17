@@ -13,6 +13,10 @@ vi.mock(
   '@/app/(signed-in)/(member)/settings/workspace/_lib/member-role-actions.service',
   () => ({ changeMemberRole: vi.fn() }),
 );
+vi.mock(
+  '@/app/(signed-in)/(member)/settings/workspace/_lib/member-deactivation-actions.service',
+  () => ({ deactivateMember: vi.fn(), leaveWorkspace: vi.fn() }),
+);
 
 const WORKSPACE = { id: 'w-1', name: 'Acme Corp' };
 
@@ -70,5 +74,36 @@ describe('MemberList', () => {
     expect(
       screen.getByRole('combobox', { name: "ben@acme.test's Role" }),
     ).toBeEnabled();
+  });
+
+  it('lets a Member Deactivate nobody', async () => {
+    readMembers.mockResolvedValue([ANN, BEN]);
+    const membership = { workspace: WORKSPACE, role: 'MEMBER' } as const;
+
+    render(await MemberList({ membership, ownEmail: 'ben@acme.test' }));
+
+    expect(screen.queryByRole('button', { name: /Deactivate/ })).toBeNull();
+  });
+
+  it('lets an Admin Deactivate everyone else, other Admins included, and not themselves', async () => {
+    readMembers.mockResolvedValue([
+      ANN,
+      { ...BEN, role: 'ADMIN' },
+      { ...BEN, accountId: 'a-3', email: 'cat@acme.test', name: 'Cat' },
+    ]);
+    const membership = { workspace: WORKSPACE, role: 'ADMIN' } as const;
+
+    render(await MemberList({ membership, ownEmail: 'ann@acme.test' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Deactivate ben@acme.test' }),
+    ).toBeEnabled();
+    expect(
+      screen.getByRole('button', { name: 'Deactivate Cat' }),
+    ).toBeEnabled();
+    expect(screen.queryByRole('button', { name: 'Deactivate Ann' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Leave Workspace' }),
+    ).toBeNull();
   });
 });

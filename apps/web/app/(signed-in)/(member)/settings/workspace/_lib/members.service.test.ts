@@ -79,5 +79,36 @@ describe('reading the Members for Members', () => {
     expect(seen[0]?.headers.get('cookie')).toContain(
       'thrive.session_token=abc',
     );
+    expect(new URL(seen[0]?.url ?? '').searchParams.get('status')).toBe(
+      'ACTIVE',
+    );
+  });
+
+  it('asks for those Deactivated in the Workspace when told to', async () => {
+    const seen: Request[] = [];
+    server.use(
+      http.get(
+        `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/members`,
+        ({ request }) => {
+          seen.push(request);
+          return HttpResponse.json({
+            total: 0,
+            page: 1,
+            pageSize: 100,
+            items: [],
+          });
+        },
+      ),
+    );
+
+    expect(
+      await readMembers(
+        { workspace: { id: WORKSPACE_ID, name: 'Acme' }, role: 'MEMBER' },
+        'DEACTIVATED',
+      ),
+    ).toEqual([]);
+    expect(new URL(seen[0]?.url ?? '').searchParams.get('status')).toBe(
+      'DEACTIVATED',
+    );
   });
 });

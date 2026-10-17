@@ -4,3 +4,8 @@ import type { CurrentMembership } from '@/lib/session/current-account.type';
 export function mayChangeRoles(membership: CurrentMembership): boolean {
   return membership.role === 'ADMIN';
 }
+
+/** Admins Deactivate anyone else, other Admins included; everyone may only leave themselves. */
+export function mayDeactivateOthers(membership: CurrentMembership): boolean {
+  return membership.role === 'ADMIN';
+}
