@@ -43,19 +43,20 @@ function apiHolds(item: ReturnType<typeof invitationFrom>) {
   );
 }
 
-const OWNER = {
+const ADMIN = {
   workspace: { id: WORKSPACE_ID, name: 'Acme' },
-  role: 'OWNER',
+  role: 'ADMIN',
 } as const;
 
 describe('reading the open Invitations for Members', () => {
   it('names who sent each by their Display name, with when it was sent and expires', async () => {
     apiHolds(invitationFrom({ email: 'ann@acme.test', displayName: 'Ann' }));
 
-    expect(await readInvitations(OWNER)).toEqual([
+    expect(await readInvitations(ADMIN)).toEqual([
       {
         invitationId: '0199a0f0-0000-7000-8000-000000000003',
         email: 'cat@acme.test',
+        role: 'MEMBER',
         status: 'PENDING',
         invitedBy: 'Ann',
         invitedAt: '2026-10-06T03:00:00.000Z',
@@ -67,6 +68,6 @@ describe('reading the open Invitations for Members', () => {
   it('names a sender who has not introduced themselves by their address', async () => {
     apiHolds(invitationFrom({ email: 'ann@acme.test', displayName: null }));
 
-    expect((await readInvitations(OWNER))[0]?.invitedBy).toBe('ann@acme.test');
+    expect((await readInvitations(ADMIN))[0]?.invitedBy).toBe('ann@acme.test');
   });
 });

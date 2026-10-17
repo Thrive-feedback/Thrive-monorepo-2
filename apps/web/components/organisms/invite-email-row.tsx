@@ -2,29 +2,36 @@ import { Trash2Icon } from 'lucide-react';
 import { useId } from 'react';
 import { Button } from '@/components/atoms/button';
 import { Input } from '@/components/atoms/input';
+import type { MemberRole } from '@/lib/session/current-account.type';
+import { RoleSelect } from './role-select';
 
 export type InviteEmailRowProps = {
   label: string;
   value: string;
+  role: MemberRole;
   errorMessage?: string;
   ref?: React.Ref<HTMLInputElement>;
   isRemovable: boolean;
   onChange: (value: string) => void;
+  onRoleChange: (role: MemberRole) => void;
   onBlur: () => void;
   onRemove: () => void;
 };
 
 /**
- * One address per row. The list shares one visible label, so each input is named by `label`
- * instead, which keeps rows apart for a screen reader and names the Remove button after its row.
+ * One person per row: their address and the Role they join with. The list shares one visible
+ * label, so each input is named by `label` instead, which keeps rows apart for a screen reader
+ * and names the Role select and the Remove button after their row.
  */
 export function InviteEmailRow({
   label,
   value,
+  role,
   errorMessage,
   ref,
   isRemovable,
   onChange,
+  onRoleChange,
   onBlur,
   onRemove,
 }: InviteEmailRowProps) {
@@ -44,6 +51,11 @@ export function InviteEmailRow({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           onBlur={onBlur}
+        />
+        <RoleSelect
+          label={`Role for ${label.toLowerCase()}`}
+          value={role}
+          onChange={onRoleChange}
         />
         {isRemovable && (
           <Button

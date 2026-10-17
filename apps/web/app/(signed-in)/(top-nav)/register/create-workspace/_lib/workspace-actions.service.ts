@@ -35,7 +35,7 @@ const ELSEWHERE: Readonly<Record<string, string>> = {
 const COULD_NOT_CREATE = "We couldn't create your Workspace. Please try again.";
 
 /**
- * Creates the Workspace with the person as its Owner, then moves on to Invite your
+ * Creates the Workspace with the person as its first Admin, then moves on to Invite your
  * teammates. The API decides who is creating, from the browser's own session cookie.
  */
 export async function createWorkspace(

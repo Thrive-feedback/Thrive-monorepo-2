@@ -39,7 +39,7 @@ describe('reading the Members for Members', () => {
                 fullName: 'Ann Lee',
                 displayName: 'Ann',
                 photoUrl: ANN_PHOTO,
-                role: 'OWNER',
+                role: 'ADMIN',
               },
               {
                 accountId: '0199a0f0-0000-7000-8000-000000000002',
@@ -66,7 +66,7 @@ describe('reading the Members for Members', () => {
         email: 'ann@acme.test',
         name: 'Ann',
         photoUrl: ANN_PHOTO,
-        role: 'OWNER',
+        role: 'ADMIN',
       },
       {
         accountId: '0199a0f0-0000-7000-8000-000000000002',

@@ -1,4 +1,5 @@
 import type { components } from '@repo/api';
+import type { MemberRole } from '@/lib/session/current-account.type';
 
 type OpenInvitationStatus =
   components['schemas']['ListWorkspaceInvitationsResponseDto_Output']['items'][number]['status'];
@@ -7,6 +8,8 @@ type OpenInvitationStatus =
 export type OpenInvitation = {
   readonly invitationId: string;
   readonly email: string;
+  /** The Role the person joins with once they accept. */
+  readonly role: MemberRole;
   /** `PENDING` until its 7 days pass, then `EXPIRED`. */
   readonly status: OpenInvitationStatus;
   /** Who sent it: their Display name, or their address until they have introduced themselves. */

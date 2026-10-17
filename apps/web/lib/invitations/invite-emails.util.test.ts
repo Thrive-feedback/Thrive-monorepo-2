@@ -5,28 +5,41 @@ import {
   INVITE_EMAIL_MESSAGES,
 } from './invite-emails.util';
 
+/** Rows inviting each address as a Member. */
+function members(...values: string[]) {
+  return values.map((value) => ({ value, role: 'MEMBER' as const }));
+}
+
 describe('checkInviteEmails', () => {
   it('ignores empty rows and trims the rest', () => {
-    expect(checkInviteEmails(['', ' pepper@stark.com ', '   '])).toEqual({
-      ok: true,
-      emails: ['pepper@stark.com'],
-    });
+    expect(checkInviteEmails(members('', ' pepper@stark.com ', '   '))).toEqual(
+      {
+        ok: true,
+        invitations: [{ email: 'pepper@stark.com', role: 'MEMBER' }],
+      },
+    );
   });
 
-  it('merges duplicates regardless of case, keeping the first spelling', () => {
+  it('merges duplicates regardless of case, keeping the first spelling and its Role', () => {
     expect(
       checkInviteEmails([
-        'Pepper@Stark.com',
-        'happy@stark.com',
-        'pepper@stark.com',
+        { value: 'Pepper@Stark.com', role: 'ADMIN' },
+        { value: 'happy@stark.com', role: 'MEMBER' },
+        { value: 'pepper@stark.com', role: 'MEMBER' },
       ]),
-    ).toEqual({ ok: true, emails: ['Pepper@Stark.com', 'happy@stark.com'] });
+    ).toEqual({
+      ok: true,
+      invitations: [
+        { email: 'Pepper@Stark.com', role: 'ADMIN' },
+        { email: 'happy@stark.com', role: 'MEMBER' },
+      ],
+    });
   });
 
   it.each(['pepper', 'pepper@stark', 'pepper stark@stark.com', '@stark.com'])(
     'flags %s as malformed under its own row',
     (malformed) => {
-      expect(checkInviteEmails(['happy@stark.com', malformed])).toEqual({
+      expect(checkInviteEmails(members('happy@stark.com', malformed))).toEqual({
         ok: false,
         errors: [undefined, INVITE_EMAIL_MESSAGES.malformed],
       });
@@ -34,9 +47,9 @@ describe('checkInviteEmails', () => {
   );
 
   it('accepts a personal Gmail address, since any Google account can sign in', () => {
-    expect(checkInviteEmails(['tony@gmail.com'])).toEqual({
+    expect(checkInviteEmails(members('tony@gmail.com'))).toEqual({
       ok: true,
-      emails: ['tony@gmail.com'],
+      invitations: [{ email: 'tony@gmail.com', role: 'MEMBER' }],
     });
   });
 });

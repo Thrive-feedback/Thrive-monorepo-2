@@ -14,7 +14,7 @@ vi.mock(
 );
 const MEMBERSHIP = {
   workspace: { id: '0199a0f0-0000-7000-8000-0000000000aa', name: 'Acme' },
-  role: 'OWNER',
+  role: 'ADMIN',
 } as const;
 
 async function renderDetail() {

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import Workspace from './page';
 
-function sessionAs(role: 'OWNER' | 'ADMIN' | 'MEMBER') {
+function sessionAs(role: 'ADMIN' | 'MEMBER') {
   return {
     email: 'ann@acme.test',
     name: 'Ann Lee',
@@ -34,8 +34,8 @@ describe('Workspace', () => {
     await expect(Workspace()).rejects.toThrow('redirect:/signin');
   });
 
-  it('shows the Owner who is in the Workspace and the Invitations still open', async () => {
-    requireMember.mockResolvedValue(sessionAs('OWNER'));
+  it('shows an Admin who is in the Workspace and the Invitations still open', async () => {
+    requireMember.mockResolvedValue(sessionAs('ADMIN'));
 
     render(await Workspace());
 
@@ -54,31 +54,20 @@ describe('Workspace', () => {
     expect(screen.getByText('open invitations')).toBeInTheDocument();
   });
 
-  it('shows an Admin the Invitations too', async () => {
+  it('lets an Admin invite teammates, above the open Invitations', async () => {
     requireMember.mockResolvedValue(sessionAs('ADMIN'));
 
     render(await Workspace());
 
-    expect(screen.getByText('open invitations')).toBeInTheDocument();
-  });
-
-  it('lets the Owner and Admins invite teammates, above the open Invitations', async () => {
-    for (const role of ['OWNER', 'ADMIN'] as const) {
-      requireMember.mockResolvedValue(sessionAs(role));
-
-      const { unmount } = render(await Workspace());
-
-      const headings = screen
-        .getAllByRole('heading', { level: 3 })
-        .map((heading) => heading.textContent);
-      expect(headings).toEqual([
-        'Members',
-        'Invite teammates',
-        'Open invitations',
-      ]);
-      expect(screen.getByText('invite form')).toBeInTheDocument();
-      unmount();
-    }
+    const headings = screen
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent);
+    expect(headings).toEqual([
+      'Members',
+      'Invite teammates',
+      'Open invitations',
+    ]);
+    expect(screen.getByText('invite form')).toBeInTheDocument();
   });
 
   it('shows a Member the Workspace and who is in it, and no Invitations', async () => {

@@ -6,6 +6,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
+import type { Invitee } from '@/lib/invitations/invite-emails.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 import { checkEmailList, parseEmailList } from './email-list.util';
@@ -15,8 +16,7 @@ const InvitationId = z.uuid();
 
 /** What to say when the API refused a revoke, by the API's error code. */
 const REVOKE_ERRORS: Readonly<Record<string, string>> = {
-  NOT_ALLOWED_TO_REVOKE_INVITATIONS:
-    'Only the Owner and Admins can revoke invitations.',
+  NOT_ALLOWED_TO_REVOKE_INVITATIONS: 'Only Admins can revoke invitations.',
   INVITATION_ALREADY_ACCEPTED: 'They have already joined.',
   INVITATION_REVOKED: 'That invitation was already revoked.',
 };
@@ -26,8 +26,7 @@ const COULD_NOT_REVOKE =
 
 /** What to say when the API refused a resend, by the API's error code. */
 const RESEND_ERRORS: Readonly<Record<string, string>> = {
-  NOT_ALLOWED_TO_RESEND_INVITATIONS:
-    'Only the Owner and Admins can resend invitations.',
+  NOT_ALLOWED_TO_RESEND_INVITATIONS: 'Only Admins can resend invitations.',
   INVITATION_ALREADY_ACCEPTED: 'They have already joined.',
   INVITATION_REVOKED: 'That invitation was revoked.',
   INVITATION_RESENT_TOO_SOON:
@@ -113,28 +112,40 @@ export async function resendInvitation(
 
 /** What to say when the API refused the whole send, by its error code. */
 const INVITE_ERRORS: Readonly<Record<string, string>> = {
-  NOT_ALLOWED_TO_INVITE: 'Only the Owner and Admins can invite teammates.',
+  NOT_ALLOWED_TO_INVITE: 'Only Admins can invite teammates.',
   TOO_MANY_INVITATIONS: 'You can invite up to 10 people at a time.',
 };
 
 const COULD_NOT_INVITE = "We couldn't send your invitations. Please try again.";
 
-const InviteEmails = z.array(z.string()).min(1);
+const InviteInvitations = z
+  .array(z.object({ email: z.string(), role: z.enum(['ADMIN', 'MEMBER']) }))
+  .min(1);
 
 /**
- * Invites the addresses to the person's own Workspace, answering what happened to each. The
+ * Invites each person to the person's own Workspace with the Role chosen for them, answering
+ * what happened to each. The
  * Workspace is the one the session belongs to, never one the browser names. The list is checked
  * again here, whatever the form already checked, and Members is drawn again so Open invitations
  * shows the new ones.
  */
 export async function inviteMembers(
-  emails: readonly string[],
+  invitations: readonly Invitee[],
 ): Promise<InviteMembersState> {
-  const input = InviteEmails.safeParse(emails);
-  const list = parseEmailList(input.success ? input.data.join('\n') : '');
+  const input = InviteInvitations.safeParse(invitations);
+  const given = input.success ? input.data : [];
+  const list = parseEmailList(given.map((i) => i.email).join('\n'));
   const refusal = checkEmailList(list);
   if (refusal) {
     return { formError: refusal };
+  }
+  // The list merges repeats and keeps the first spelling, so each keeps that entry's Role.
+  const roleOf = new Map<string, Invitee['role']>();
+  for (const { email, role } of given) {
+    const key = email.trim().toLowerCase();
+    if (!roleOf.has(key)) {
+      roleOf.set(key, role);
+    }
   }
 
   const { membership } = await requireMember();
@@ -146,7 +157,12 @@ export async function inviteMembers(
           path: { workspaceId: membership.workspace.id },
           header: { cookie },
         },
-        body: { emails: [...list.emails] },
+        body: {
+          invitations: list.emails.map((email) => ({
+            email,
+            role: roleOf.get(email.toLowerCase()) ?? 'MEMBER',
+          })),
+        },
       }),
     );
     revalidatePath(ROUTES.settings.workspace);

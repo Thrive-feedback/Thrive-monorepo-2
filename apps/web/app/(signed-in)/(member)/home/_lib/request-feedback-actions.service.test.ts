@@ -20,7 +20,7 @@ const CARA = '0199a0f0-0000-7000-8000-00000000000c';
 
 const requireMember = vi.fn(async () => ({
   email: 'ann@acme.test',
-  membership: { workspace: { id: WORKSPACE_ID, name: 'Acme' }, role: 'OWNER' },
+  membership: { workspace: { id: WORKSPACE_ID, name: 'Acme' }, role: 'ADMIN' },
 }));
 vi.mock('@/lib/session/session.service', () => ({
   requireMember: () => requireMember(),

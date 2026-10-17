@@ -2,22 +2,15 @@
 
 import { InfoIcon, PlusIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { sendInvitations } from '@/app/(signed-in)/(top-nav)/register/invite-teammates/_lib/invitation-actions.service';
-import {
-  checkInviteEmail,
-  checkInviteEmails,
-} from '@/app/(signed-in)/(top-nav)/register/invite-teammates/_lib/invite-emails.util';
 import type { InviteResult } from '@/app/(signed-in)/(top-nav)/register/invite-teammates/_lib/invite-teammates-state.type';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
+import { InviteEmailRow } from '@/components/organisms/invite-email-row';
+import { useInviteRows } from '@/lib/invitations/use-invite-rows';
 import { ROUTES } from '@/lib/routes.constant';
-import { InviteEmailRow } from './invite-email-row';
 import { InviteResults } from './invite-results';
-
-type Row = { id: number; value: string; errorMessage?: string };
-
-const STARTING_ROW_COUNT = 1;
 
 /** The API invites at most this many people per send. */
 const MAX_ROW_COUNT = 10;
@@ -25,86 +18,35 @@ const MAX_ROW_COUNT = 10;
 const COULD_NOT_SEND_TO_ROW = "Couldn't send. Try again.";
 
 /**
- * A row's address is checked when the person leaves it, and every row again on Send. Editing a
- * flagged row clears its flag until they leave it again, so it never nags mid-word.
+ * One person per row, each with the Role they join with, Member unless the founder picks Admin.
+ * Rows are checked as `useInviteRows` describes.
  *
  * Send is disabled until a row holds an address, so there is always someone to invite. A
  * flagged row refuses the whole send rather than sending the rest, so nobody is told their
  * invites went out while some are still waiting to be fixed.
  *
- * Each address is answered on its own. One whose email could not go out stays in its row,
- * flagged, and the rest leave the form, so sending again retries only those. Once none is
- * left, the form gives way to what happened to every address.
+ * Each address is answered on its own. One whose email could not go out stays in its row with
+ * its Role, flagged, and the rest leave the form, so sending again retries only those. Once none
+ * is left, the form gives way to what happened to every address.
  */
 export function InviteTeammatesForm() {
   const router = useRouter();
-  const nextId = useRef(STARTING_ROW_COUNT);
-  const inputs = useRef(new Map<number, HTMLInputElement>());
-  const [rows, setRows] = useState<Row[]>(() =>
-    Array.from({ length: STARTING_ROW_COUNT }, (_, id) => ({ id, value: '' })),
-  );
-  const [focusRowId, setFocusRowId] = useState<number | null>(null);
+  const inviteRows = useInviteRows();
+  const { rows } = inviteRows;
   const [formError, setFormError] = useState<string>();
   const [settled, setSettled] = useState<readonly InviteResult[]>([]);
   const [isDone, setIsDone] = useState(false);
   const [isSending, startSending] = useTransition();
 
-  const hasAnyEmail = rows.some((row) => row.value.trim() !== '');
-
-  useEffect(() => {
-    if (focusRowId !== null) {
-      inputs.current.get(focusRowId)?.focus();
-      setFocusRowId(null);
-    }
-  }, [focusRowId]);
-
-  function handleRowChange(id: number, value: string) {
-    setRows((current) =>
-      current.map((row) => (row.id === id ? { id, value } : row)),
-    );
-  }
-
-  function handleRowBlur(id: number) {
-    setRows((current) =>
-      current.map((row) =>
-        row.id === id
-          ? { ...row, errorMessage: checkInviteEmail(row.value) }
-          : row,
-      ),
-    );
-  }
-
-  function handleAddRow() {
-    const id = nextId.current++;
-    setRows((current) => [...current, { id, value: '' }]);
-    setFocusRowId(id);
-  }
-
-  /** Focus goes to the row that slides into the removed one's place, or the one above it. */
-  function handleRemoveRow(id: number) {
-    const index = rows.findIndex((row) => row.id === id);
-    const remaining = rows.filter((row) => row.id !== id);
-    setRows(remaining);
-    setFocusRowId(remaining[Math.min(index, remaining.length - 1)]?.id ?? null);
-  }
-
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const check = checkInviteEmails(rows.map((row) => row.value));
-    if (!check.ok) {
-      setRows(
-        rows.map((row, index) => ({
-          ...row,
-          errorMessage: check.errors[index],
-        })),
-      );
-      const firstFlagged = rows.find((_, index) => check.errors[index]);
-      setFocusRowId(firstFlagged?.id ?? null);
+    const invitations = inviteRows.check();
+    if (!invitations) {
       return;
     }
     setFormError(undefined);
     startSending(async () => {
-      const sent = await sendInvitations(check.emails);
+      const sent = await sendInvitations(invitations);
       if ('formError' in sent) {
         setFormError(sent.formError);
         return;
@@ -118,13 +60,16 @@ export function InviteTeammatesForm() {
         setIsDone(true);
         return;
       }
-      const retryRows = failed.map((result) => ({
-        id: nextId.current++,
-        value: result.email,
-        errorMessage: COULD_NOT_SEND_TO_ROW,
-      }));
-      setRows(retryRows);
-      setFocusRowId(retryRows[0]?.id ?? null);
+      inviteRows.replaceWith(
+        failed.map((result) => ({
+          email: result.email,
+          role:
+            invitations.find(
+              (i) => i.email.toLowerCase() === result.email.toLowerCase(),
+            )?.role ?? 'MEMBER',
+          errorMessage: COULD_NOT_SEND_TO_ROW,
+        })),
+      );
     });
   }
 
@@ -152,20 +97,16 @@ export function InviteTeammatesForm() {
           {rows.map((row, index) => (
             <InviteEmailRow
               key={row.id}
-              ref={(input) => {
-                if (input) {
-                  inputs.current.set(row.id, input);
-                } else {
-                  inputs.current.delete(row.id);
-                }
-              }}
+              ref={inviteRows.inputRef(row.id)}
               label={`Email address ${index + 1}`}
               value={row.value}
+              role={row.role}
               errorMessage={row.errorMessage}
               isRemovable={rows.length > 1}
-              onChange={(value) => handleRowChange(row.id, value)}
-              onBlur={() => handleRowBlur(row.id)}
-              onRemove={() => handleRemoveRow(row.id)}
+              onChange={(value) => inviteRows.changeEmail(row.id, value)}
+              onRoleChange={(role) => inviteRows.changeRole(row.id, role)}
+              onBlur={() => inviteRows.leave(row.id)}
+              onRemove={() => inviteRows.remove(row.id)}
             />
           ))}
         </div>
@@ -174,7 +115,7 @@ export function InviteTeammatesForm() {
             variant="ghost"
             size="sm"
             className="w-fit"
-            onClick={handleAddRow}
+            onClick={inviteRows.add}
           >
             <PlusIcon aria-hidden="true" className="size-4" />
             Add another
@@ -197,7 +138,7 @@ export function InviteTeammatesForm() {
       <Button
         type="submit"
         variant="primary"
-        disabled={!hasAnyEmail || isSending}
+        disabled={!inviteRows.hasAnyEmail || isSending}
         className="mt-2 w-full"
       >
         {isSending ? 'Sending…' : 'Send invites & Done'}

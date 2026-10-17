@@ -1,5 +1,6 @@
 'use client';
 
+import { PlusIcon } from 'lucide-react';
 import { useRef, useState, useTransition } from 'react';
 import {
   checkEmailList,
@@ -7,10 +8,24 @@ import {
   parseEmailList,
 } from '@/app/(signed-in)/(member)/settings/workspace/_lib/email-list.util';
 import { inviteMembers } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service';
-import type { InviteMemberResult } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invite-members-state.type';
+import type {
+  InviteMemberResult,
+  InviteMembersState,
+} from '@/app/(signed-in)/(member)/settings/workspace/_lib/invite-members-state.type';
 import { Button } from '@/components/atoms/button';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/atoms/tabs';
 import { Text } from '@/components/atoms/text';
 import { TextAreaField } from '@/components/molecules/text-area-field';
+import { InviteEmailRow } from '@/components/organisms/invite-email-row';
+import { RoleSelect } from '@/components/organisms/role-select';
+import type { Invitee } from '@/lib/invitations/invite-emails.util';
+import { useInviteRows } from '@/lib/invitations/use-invite-rows';
+import type { MemberRole } from '@/lib/session/current-account.type';
 
 /** How each outcome reads beside its address. */
 const OUTCOME_TEXT: Readonly<Record<InviteMemberResult['outcome'], string>> = {
@@ -32,80 +47,71 @@ const OUTCOME_COLOUR: Readonly<Record<InviteMemberResult['outcome'], string>> =
     failed: 'text-status-error',
   };
 
+const COULD_NOT_SEND_TO_ROW = "Couldn't send. Try again.";
+
+/** The Role an address was sent with, for putting a failed one back as it was. */
+function roleSentTo(
+  invitations: readonly Invitee[],
+  email: string,
+): MemberRole {
+  return (
+    invitations.find((i) => i.email.toLowerCase() === email.toLowerCase())
+      ?.role ?? 'MEMBER'
+  );
+}
+
 /**
- * Invites teammates from Members: addresses typed into one box, sent together. The list is
- * checked before it goes, so nothing is sent while part of it is wrong.
+ * Invites teammates from Members, each as an Admin or a Member (Member unless the Admin picks
+ * otherwise). One by one is a row per person with their own Role, as in the register flow; Paste
+ * a list is addresses typed into one box, all with the one Role beside it. Either is checked
+ * before it goes, so nothing is sent while part of it is wrong.
  *
- * After a send the box empties, except for addresses whose email could not go out, which stay
- * so sending again retries only those. What happened to each address is listed underneath and
+ * After a send, addresses whose email could not go out stay, with their Role, so sending again
+ * retries only those; the rest clear. What happened to each address is listed underneath and
  * announced politely; the new Invitations appear under Open invitations, which the action draws
  * again.
  */
 export function InviteMembersForm() {
-  const [text, setText] = useState('');
-  const [fieldError, setFieldError] = useState<string>();
-  const [formError, setFormError] = useState<string>();
   const [results, setResults] = useState<readonly InviteMemberResult[]>([]);
+  const [formError, setFormError] = useState<string>();
   const [isSending, startSending] = useTransition();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const list = parseEmailList(text);
-    const refusal = checkEmailList(list);
-    if (refusal) {
-      setFieldError(refusal);
-      textareaRef.current?.focus();
-      return;
-    }
-    setFieldError(undefined);
+  /** Sends, and answers the addresses that failed, so the mode can put them back. */
+  function send(
+    invitations: Invitee[],
+    onFailed: (failed: readonly InviteMemberResult[]) => void,
+  ) {
     setFormError(undefined);
     startSending(async () => {
-      const sent = await inviteMembers(list.emails);
+      const sent: InviteMembersState = await inviteMembers(invitations);
       if ('formError' in sent) {
         setFormError(sent.formError);
         return;
       }
       setResults(sent.results);
-      setText(
-        sent.results
-          .filter((result) => result.outcome === 'failed')
-          .map((result) => result.email)
-          .join('\n'),
-      );
+      onFailed(sent.results.filter((result) => result.outcome === 'failed'));
     });
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-      <TextAreaField
-        ref={textareaRef}
-        label="Email addresses"
-        name="emails"
-        rows={3}
-        placeholder="name@company.com, another@company.com"
-        required
-        value={text}
-        onChange={(event) => {
-          setText(event.target.value);
-          setFieldError(undefined);
-        }}
-        errorMessage={fieldError}
-        helperText={`One per line or separated by commas. Up to ${MAX_INVITES_PER_SEND} at a time.`}
-      />
+    <div className="flex flex-col gap-4">
+      <Tabs defaultValue="one-by-one">
+        <TabsList aria-label="How to invite">
+          <TabsTrigger value="one-by-one">One by one</TabsTrigger>
+          <TabsTrigger value="list">Paste a list</TabsTrigger>
+        </TabsList>
+        <TabsContent value="one-by-one">
+          <OneByOne isSending={isSending} onSend={send} />
+        </TabsContent>
+        <TabsContent value="list">
+          <PasteAList isSending={isSending} onSend={send} />
+        </TabsContent>
+      </Tabs>
       {formError && (
         <Text role="alert" variant="body-2" tone="danger">
           {formError}
         </Text>
       )}
-      <Button
-        type="submit"
-        variant="primary"
-        loading={isSending}
-        className="w-fit"
-      >
-        Send invites
-      </Button>
       <div aria-live="polite">
         {results.length > 0 && (
           <ul aria-label="What happened" className="flex flex-col gap-2">
@@ -126,6 +132,135 @@ export function InviteMembersForm() {
           </ul>
         )}
       </div>
+    </div>
+  );
+}
+
+type ModeProps = {
+  isSending: boolean;
+  onSend: (
+    invitations: Invitee[],
+    onFailed: (failed: readonly InviteMemberResult[]) => void,
+  ) => void;
+};
+
+/** A row per person, each with their own Role. */
+function OneByOne({ isSending, onSend }: ModeProps) {
+  const inviteRows = useInviteRows();
+  const { rows } = inviteRows;
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const invitations = inviteRows.check();
+    if (!invitations) {
+      return;
+    }
+    onSend(invitations, (failed) =>
+      inviteRows.replaceWith(
+        failed.map((result) => ({
+          email: result.email,
+          role: roleSentTo(invitations, result.email),
+          errorMessage: COULD_NOT_SEND_TO_ROW,
+        })),
+      ),
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
+      {rows.map((row, index) => (
+        <InviteEmailRow
+          key={row.id}
+          ref={inviteRows.inputRef(row.id)}
+          label={`Email address ${index + 1}`}
+          value={row.value}
+          role={row.role}
+          errorMessage={row.errorMessage}
+          isRemovable={rows.length > 1}
+          onChange={(value) => inviteRows.changeEmail(row.id, value)}
+          onRoleChange={(role) => inviteRows.changeRole(row.id, role)}
+          onBlur={() => inviteRows.leave(row.id)}
+          onRemove={() => inviteRows.remove(row.id)}
+        />
+      ))}
+      {rows.length < MAX_INVITES_PER_SEND && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-fit"
+          onClick={inviteRows.add}
+        >
+          <PlusIcon aria-hidden="true" className="size-4" />
+          Add another
+        </Button>
+      )}
+      <Button
+        type="submit"
+        variant="primary"
+        loading={isSending}
+        disabled={!inviteRows.hasAnyEmail}
+        className="w-fit"
+      >
+        Send invites
+      </Button>
+    </form>
+  );
+}
+
+/** Addresses typed into one box, all sent with the one Role beside it. */
+function PasteAList({ isSending, onSend }: ModeProps) {
+  const [text, setText] = useState('');
+  const [role, setRole] = useState<MemberRole>('MEMBER');
+  const [fieldError, setFieldError] = useState<string>();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const list = parseEmailList(text);
+    const refusal = checkEmailList(list);
+    if (refusal) {
+      setFieldError(refusal);
+      textareaRef.current?.focus();
+      return;
+    }
+    setFieldError(undefined);
+    onSend(
+      list.emails.map((email) => ({ email, role })),
+      (failed) => setText(failed.map((result) => result.email).join('\n')),
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+      <TextAreaField
+        ref={textareaRef}
+        label="Email addresses"
+        name="emails"
+        rows={3}
+        placeholder="name@company.com, another@company.com"
+        required
+        value={text}
+        onChange={(event) => {
+          setText(event.target.value);
+          setFieldError(undefined);
+        }}
+        errorMessage={fieldError}
+        helperText={`One per line or separated by commas. Up to ${MAX_INVITES_PER_SEND} at a time.`}
+      />
+      <div className="flex items-center gap-2">
+        <Text as="span" variant="body-2">
+          Invite them as
+        </Text>
+        <RoleSelect label="Role for everyone" value={role} onChange={setRole} />
+      </div>
+      <Button
+        type="submit"
+        variant="primary"
+        loading={isSending}
+        className="w-fit"
+      >
+        Send invites
+      </Button>
     </form>
   );
 }

@@ -16,12 +16,13 @@ vi.mock(
 
 const MEMBERSHIP = {
   workspace: { id: 'w-1', name: 'Acme Corp' },
-  role: 'OWNER',
+  role: 'ADMIN',
 } as const;
 
 const CAT = {
   invitationId: '0199a0f0-0000-7000-8000-000000000003',
   email: 'cat@acme.test',
+  role: 'MEMBER',
   status: 'PENDING',
   invitedBy: 'Ann',
   invitedAt: '2026-10-06T03:00:00.000Z',
@@ -31,6 +32,7 @@ const CAT = {
 const DAN = {
   invitationId: '0199a0f0-0000-7000-8000-000000000004',
   email: 'dan@acme.test',
+  role: 'ADMIN',
   status: 'EXPIRED',
   invitedBy: 'ben@acme.test',
   invitedAt: '2026-10-01T03:00:00.000Z',
@@ -42,17 +44,17 @@ async function renderList() {
 }
 
 describe('InvitationList', () => {
-  it('shows who sent each, when, and when it expires or expired', async () => {
+  it('shows the Role each joins with, who sent it, when, and when it expires or expired', async () => {
     readInvitations.mockResolvedValue([CAT, DAN]);
 
     await renderList();
 
     const [cat, dan] = screen.getAllByRole('listitem');
     expect(cat).toHaveTextContent(
-      'by Ann · sent 6 Oct 2026 · expires 13 Oct 2026',
+      'as Member · by Ann · sent 6 Oct 2026 · expires 13 Oct 2026',
     );
     expect(dan).toHaveTextContent(
-      'by ben@acme.test · sent 1 Oct 2026 · expired 8 Oct 2026',
+      'as Admin · by ben@acme.test · sent 1 Oct 2026 · expired 8 Oct 2026',
     );
   });
 
