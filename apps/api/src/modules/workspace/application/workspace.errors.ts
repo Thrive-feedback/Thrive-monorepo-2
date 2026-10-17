@@ -138,7 +138,8 @@ export class NotAllowedToReactivateError extends ApplicationError {
 
 /**
  * The Account was Deactivated in the Workspace it is invited to. Its membership is kept, so it
- * cannot be added again, and how someone comes back is not decided yet.
+ * cannot be added again; until accepting brings that membership back (#209), only an Admin's
+ * Reactivate does.
  */
 export class DeactivatedInWorkspaceError extends ApplicationError {
   readonly code = 'DEACTIVATED_IN_WORKSPACE';
