@@ -1,0 +1,42 @@
+# Turns a merge labelled `deploy` into a run of the Deploy workflow on main.
+#
+# It does not deploy anything itself. A run started by a pull_request event belongs to
+# that pull request's merge ref, not to main, and the Actions cache refuses to reserve new
+# keys under the ref of a pull request that has already merged — so a deploy run from here
+# could never write the image layer cache, and every merge-started build would start cold.
+# Dispatching deploy.yml on main makes a merge-started deploy the same run as one started
+# by hand: same ref, same cache, same guards.
+name: Deploy on merge
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions: {}
+
+jobs:
+  dispatch:
+    name: Start Deploy on main
+    # A closed pull request is not a merged one, and a merged one deploys only when it was
+    # labelled for it. A pull request into any other branch never deploys. Everything else
+    # stops here, without a failed run to explain away.
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      contains(github.event.pull_request.labels.*.name, 'deploy')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      # Starting a workflow_dispatch run. It is the one kind of run a GITHUB_TOKEN may start.
+      actions: write
+    steps:
+      - name: Dispatch Deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh workflow run deploy.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f reason="Merged #$PR_NUMBER with the 'deploy' label"
+          echo "Started Deploy on main for #$PR_NUMBER."
