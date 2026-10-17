@@ -56,11 +56,44 @@ export function invite(
   inviter: string,
   ...invitees: string[]
 ): Promise<ApiResponse> {
+  return inviteWithRoles(
+    world,
+    inviter,
+    invitees.map((invitee) => [invitee, 'MEMBER']),
+  );
+}
+
+/** `inviter` invites each person with the Role beside them, in one send. */
+export function inviteWithRoles(
+  world: ThriveWorld,
+  inviter: string,
+  invitees: readonly (readonly [string, 'ADMIN' | 'MEMBER'])[],
+): Promise<ApiResponse> {
   return world.as(
     inviter,
     'POST',
     `/v1/workspaces/${world.workspaceOf(inviter)}/invitations`,
-    { emails: invitees.map((invitee) => world.person(invitee).email) },
+    {
+      invitations: invitees.map(([invitee, role]) => ({
+        email: world.person(invitee).email,
+        role,
+      })),
+    },
+  );
+}
+
+/** `changer` gives `name` a Role in `changer`'s Workspace, from the Members screen. */
+export function changeRole(
+  world: ThriveWorld,
+  changer: string,
+  name: string,
+  role: 'ADMIN' | 'MEMBER',
+): Promise<ApiResponse> {
+  return world.as(
+    changer,
+    'PATCH',
+    `/v1/workspaces/${world.workspaceOf(changer)}/members/${world.person(name).accountId}`,
+    { role },
   );
 }
 
@@ -90,24 +123,24 @@ export function accept(
   return world.as(name, 'POST', `/v1/invitations/${invitationId}/accept`);
 }
 
-/** Signs `name` in, has `owner` invite them, and accepts from the email. */
+/** Signs `name` in, has `admin` invite them, and accepts from the email. */
 export async function joinWorkspaceOf(
   world: ThriveWorld,
   name: string,
-  owner: string,
+  admin: string,
 ): Promise<void> {
   if (!world.isSignedIn(name)) {
     await world.signIn(name);
   }
   world.succeeded(
-    await invite(world, owner, name),
-    `${owner} inviting ${name}`,
+    await invite(world, admin, name),
+    `${admin} inviting ${name}`,
   );
   world.succeeded(
     await accept(world, name, invitationIdEmailedTo(world, name)),
     `${name} accepting the Invitation`,
   );
-  world.joined(name, world.workspaceOf(owner));
+  world.joined(name, world.workspaceOf(admin));
 }
 
 /** Who besides the Giver and the Receiver may read Feedback, as a request or a gift sends it. */

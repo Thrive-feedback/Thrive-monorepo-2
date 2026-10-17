@@ -20,9 +20,9 @@ export interface ListReceivedFeedbackInput {
  *
  * The Receiver is an argument to the read rather than a filter applied after it, so a version
  * of this that lists somebody else's Feedback cannot be written by accident — which is the
- * whole authorization rule for this screen. A Member owns their own history: not an Admin, not
- * the Owner (`#26`, `BE_21` R4/R6). Who *else* may read a piece of Feedback is the Requester's
- * or the Giver's choice, applied where one piece is opened, not on this route.
+ * whole authorization rule for this screen. A Member owns their own history: not even an Admin
+ * reads it (`#26`, brain `ADR-0033`, `BE_21` R4/R6). Who *else* may read a piece of Feedback is
+ * the Requester's or the Giver's choice, applied where one piece is opened, not on this route.
  */
 @Injectable()
 export class ListReceivedFeedbackUseCase {

@@ -16,7 +16,7 @@ function requestHeaders(credential: string): Headers {
 /**
  * The only file in Workspace that knows Better Auth's organization plugin exists. It creates
  * the organization on the founder's own session, so the plugin applies its limit, makes them
- * its `owner` and sets it as their active one.
+ * its first `admin` and sets it as their active one.
  */
 @Injectable()
 export class BetterAuthWorkspaceFoundingAdapter extends WorkspaceFounding {

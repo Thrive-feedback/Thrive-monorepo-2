@@ -23,7 +23,7 @@ export interface ApiResponse {
   readonly body: any;
 }
 
-type HttpMethod = 'GET' | 'POST' | 'DELETE';
+type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 export interface FeedbackRequestSent {
   readonly id: string;

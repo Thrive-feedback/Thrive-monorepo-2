@@ -43,21 +43,22 @@ function reissuedOf(reissued: InvitationReissued) {
   return reissued;
 }
 
-async function anOwnerWithAWorkspace() {
-  const owner = await fixtures.aSignedInAccount('inviting-owner');
-  return { owner, workspaceId: await fixtures.aWorkspace(owner) };
+async function anAdminWithAWorkspace() {
+  const admin = await fixtures.aSignedInAccount('inviting-admin');
+  return { admin, workspaceId: await fixtures.aWorkspace(admin) };
 }
 
 describe('storing Invitations through the organization plugin', () => {
   it('stores a Pending Invitation for the Member role, expiring in 7 days', async () => {
-    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
     const before = Date.now();
 
     const stored = invited(
       await workspaceInviting.invite({
-        credential: owner.credential,
+        credential: admin.credential,
         workspaceId,
         email: 'ben@acme.test',
+        role: 'MEMBER' as const,
       }),
     );
 
@@ -69,7 +70,7 @@ describe('storing Invitations through the organization plugin', () => {
       email: 'ben@acme.test',
       role: 'member',
       status: 'pending',
-      inviterId: owner.accountId,
+      inviterId: admin.accountId,
     });
     expect(stored.expiresAt.getTime() - before).toBeGreaterThanOrEqual(
       SEVEN_DAYS_MS - 1000,
@@ -80,11 +81,12 @@ describe('storing Invitations through the organization plugin', () => {
   });
 
   it('answers already invited for an address with a Pending Invitation', async () => {
-    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
     const request = {
-      credential: owner.credential,
+      credential: admin.credential,
       workspaceId,
       email: 'ben@acme.test',
+      role: 'MEMBER' as const,
     };
     await workspaceInviting.invite(request);
 
@@ -94,30 +96,32 @@ describe('storing Invitations through the organization plugin', () => {
   });
 
   it('answers already a Member for the address of someone in the Workspace', async () => {
-    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
     const member = await fixtures.aSignedInAccount('inviting-member');
     await fixtures.addMember(workspaceId, member, 'member');
 
     expect(
       await workspaceInviting.invite({
-        credential: owner.credential,
+        credential: admin.credential,
         workspaceId,
         email: member.email,
+        role: 'MEMBER' as const,
       }),
     ).toEqual({ outcome: 'already_member' });
   });
 
   it('revokes an Invitation, after which the address can be invited again', async () => {
-    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
     const request = {
-      credential: owner.credential,
+      credential: admin.credential,
       workspaceId,
       email: 'ben@acme.test',
+      role: 'MEMBER' as const,
     };
     const first = invited(await workspaceInviting.invite(request));
 
     await workspaceInviting.revoke({
-      credential: owner.credential,
+      credential: admin.credential,
       invitationId: first.invitationId,
     });
 
@@ -131,13 +135,17 @@ describe('storing Invitations through the organization plugin', () => {
 });
 
 describe('accepting an Invitation through the organization plugin', () => {
-  async function anInvitationFor(email: string) {
-    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+  async function anInvitationFor(
+    email: string,
+    role: 'ADMIN' | 'MEMBER' = 'MEMBER',
+  ) {
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
     const stored = invited(
       await workspaceInviting.invite({
-        credential: owner.credential,
+        credential: admin.credential,
         workspaceId,
         email,
+        role,
       }),
     );
     return { workspaceId, invitationId: stored.invitationId };
@@ -164,6 +172,27 @@ describe('accepting an Invitation through the organization plugin', () => {
         where: { id: invitationId },
       }),
     ).toMatchObject({ status: 'accepted' });
+  });
+
+  it('makes someone invited as an Admin an Admin', async () => {
+    const invitee = await fixtures.aSignedInAccount('accepting-admin');
+    const { workspaceId, invitationId } = await anInvitationFor(
+      invitee.email,
+      'ADMIN',
+    );
+
+    await workspaceInviting.accept({
+      credential: invitee.credential,
+      invitationId,
+    });
+
+    expect(
+      await prismaService.member.findUniqueOrThrow({
+        where: {
+          workspaceId_userId: { workspaceId, userId: invitee.accountId },
+        },
+      }),
+    ).toMatchObject({ role: 'admin' });
   });
 
   it("makes the Workspace the invited person's active one", async () => {
@@ -193,9 +222,9 @@ describe('accepting an Invitation through the organization plugin', () => {
 
 describe('reissuing an Invitation through the organization plugin', () => {
   it('extends a Pending one for another 7 days, keeping its id', async () => {
-    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
     const sentAt = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const invitationId = await fixtures.anInvitation(workspaceId, owner, {
+    const invitationId = await fixtures.anInvitation(workspaceId, admin, {
       email: 'ben@acme.test',
       createdAt: sentAt,
       expiresAt: new Date(sentAt.getTime() + SEVEN_DAYS_MS),
@@ -204,9 +233,10 @@ describe('reissuing an Invitation through the organization plugin', () => {
 
     const reissued = reissuedOf(
       await workspaceInviting.reissue({
-        credential: owner.credential,
+        credential: admin.credential,
         workspaceId,
         email: 'ben@acme.test',
+        role: 'MEMBER' as const,
       }),
     );
 
@@ -217,17 +247,18 @@ describe('reissuing an Invitation through the organization plugin', () => {
   });
 
   it('stores a new one beside an expired one, leaving the expired one as it was', async () => {
-    const { owner, workspaceId } = await anOwnerWithAWorkspace();
-    const expiredId = await fixtures.anInvitation(workspaceId, owner, {
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
+    const expiredId = await fixtures.anInvitation(workspaceId, admin, {
       email: 'ben@acme.test',
       expiresAt: new Date(Date.now() - 1000),
     });
 
     const reissued = reissuedOf(
       await workspaceInviting.reissue({
-        credential: owner.credential,
+        credential: admin.credential,
         workspaceId,
         email: 'ben@acme.test',
+        role: 'MEMBER' as const,
       }),
     );
 
@@ -239,22 +270,23 @@ describe('reissuing an Invitation through the organization plugin', () => {
   });
 
   it('answers already a member for an address that joined meanwhile', async () => {
-    const { owner, workspaceId } = await anOwnerWithAWorkspace();
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
     const ben = await fixtures.aSignedInAccount('reissue-ben');
     await fixtures.addMember(workspaceId, ben, 'member');
 
     expect(
       await workspaceInviting.reissue({
-        credential: owner.credential,
+        credential: admin.credential,
         workspaceId,
         email: ben.email,
+        role: 'MEMBER' as const,
       }),
     ).toEqual({ outcome: 'already_member' });
   });
 
   it('records when the email last went out', async () => {
-    const { owner, workspaceId } = await anOwnerWithAWorkspace();
-    const invitationId = await fixtures.anInvitation(workspaceId, owner, {
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
+    const invitationId = await fixtures.anInvitation(workspaceId, admin, {
       expiresAt: new Date(Date.now() + SEVEN_DAYS_MS),
     });
     const sentAt = new Date('2026-10-13T05:00:00Z');

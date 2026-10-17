@@ -107,7 +107,7 @@ export class InvitationController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:
-      'Invite several people to a Workspace by email, at most 10 at a time',
+      'Invite several people to a Workspace by email, each as an Admin or a Member, at most 10 at a time',
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.OK, type: SendInvitationsResponseDto })
@@ -131,7 +131,7 @@ export class InvitationController {
       inviterEmail: actor.email,
       credential: cookie ?? '',
       membership,
-      emails: body.emails,
+      invitations: body.invitations,
     });
     return {
       results: outcomes.map((result) =>

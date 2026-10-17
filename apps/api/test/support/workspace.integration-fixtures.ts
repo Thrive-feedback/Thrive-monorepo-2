@@ -78,11 +78,11 @@ export class WorkspaceFixtures {
     }
   }
 
-  /** A Workspace named `name`, founded by `owner` through the plugin. */
-  async aWorkspace(owner: SignedInAccount, name = 'Acme'): Promise<string> {
+  /** A Workspace named `name`, founded by `founder` through the plugin. */
+  async aWorkspace(founder: SignedInAccount, name = 'Acme'): Promise<string> {
     const workspace = await this.auth.api.createOrganization({
       body: { name, slug: uuidv7() },
-      headers: new Headers({ cookie: owner.credential }),
+      headers: new Headers({ cookie: founder.credential }),
     });
     return workspace.id;
   }

@@ -133,7 +133,7 @@ model Member {
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  /// The plugin's lowercase role name, e.g. `owner`. The mapper turns it into a Role.
+  /// The plugin's lowercase role name, e.g. `admin`. The mapper turns it into a Role.
   role        String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -145,8 +145,8 @@ model Member {
 }
 
 /// An offer to join a Workspace, written by the plugin's `createInvitation`. `status` is the
-/// plugin's lowercase name (`pending`, `accepted`, `canceled`, `rejected`); `role` is always
-/// `member` until Roles can be chosen when inviting.
+/// plugin's lowercase name (`pending`, `accepted`, `canceled`, `rejected`); `role` is the
+/// plugin's lowercase Role the inviter chose, `admin` or `member` (#190).
 model Invitation {
   id          String    @id
   workspaceId String

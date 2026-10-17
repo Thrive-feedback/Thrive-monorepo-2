@@ -21,7 +21,11 @@ const FIRST_INVITATION_ID = '0199a0f0-0000-7000-8000-000000000001';
 const SECOND_INVITATION_ID = '0199a0f0-0000-7000-8000-000000000002';
 
 function request(
-  overrides: Partial<{ role: MemberRoleValue; emails: string[] }> = {},
+  overrides: Partial<{
+    role: MemberRoleValue;
+    emails: string[];
+    invitations: { email: string; role: MemberRoleValue }[];
+  }> = {},
 ) {
   return {
     accountId: 'account-ann',
@@ -29,9 +33,14 @@ function request(
     credential: ANN_COOKIE,
     membership: {
       workspace: { id: WORKSPACE_ID, name: 'Acme' },
-      role: overrides.role ?? 'OWNER',
+      role: overrides.role ?? 'ADMIN',
     },
-    emails: overrides.emails ?? ['ben@acme.co'],
+    invitations:
+      overrides.invitations ??
+      (overrides.emails ?? ['ben@acme.co']).map((email) => ({
+        email,
+        role: 'MEMBER' as const,
+      })),
   };
 }
 
@@ -65,7 +74,7 @@ function setUp() {
 }
 
 describe('sending Invitations to a Workspace', () => {
-  it('lets the Owner invite, and sends the Invitation from them', async () => {
+  it('lets an Admin invite, and sends the Invitation from them', async () => {
     const { emailSender, useCase } = setUp();
 
     const outcomes = await useCase.execute(request());
@@ -88,14 +97,6 @@ describe('sending Invitations to a Workspace', () => {
     expect(emailSender.sent[0]?.text).toContain(
       `https://thrive.test/invitations/${FIRST_INVITATION_ID}`,
     );
-  });
-
-  it('lets an Admin invite', async () => {
-    const { useCase } = setUp();
-
-    const outcomes = await useCase.execute(request({ role: 'ADMIN' }));
-
-    expect(outcomes.map((o) => o.outcome)).toEqual(['invited']);
   });
 
   it('refuses a Member with no management rights, and stores and sends nothing', async () => {
@@ -182,7 +183,26 @@ describe('sending Invitations to a Workspace', () => {
         credential: ANN_COOKIE,
         workspaceId: WORKSPACE_ID,
         email: 'ben@acme.co',
+        role: 'MEMBER',
       },
+    ]);
+  });
+
+  it('stores each Invitation with the Role chosen for that person', async () => {
+    const { workspaceInviting, useCase } = setUp();
+
+    await useCase.execute(
+      request({
+        invitations: [
+          { email: 'ben@acme.co', role: 'MEMBER' },
+          { email: 'cat@acme.co', role: 'ADMIN' },
+        ],
+      }),
+    );
+
+    expect(workspaceInviting.requests.map((r) => [r.email, r.role])).toEqual([
+      ['ben@acme.co', 'MEMBER'],
+      ['cat@acme.co', 'ADMIN'],
     ]);
   });
 

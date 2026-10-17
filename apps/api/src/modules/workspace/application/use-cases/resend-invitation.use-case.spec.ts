@@ -38,6 +38,7 @@ function setUp(
     status?: InvitationStatusValue;
     workspace?: { id: string; name: string };
     lastSentAt?: Date;
+    role?: MemberRoleValue;
   } = {},
 ) {
   const status = options.status ?? 'PENDING';
@@ -55,6 +56,7 @@ function setUp(
     workspace: options.workspace ?? ACME,
     inviterAccountId: 'account-ann',
     email: SOMCHAI,
+    role: options.role ?? 'MEMBER',
     status,
     lastSentAt: options.lastSentAt ?? AN_HOUR_AGO,
   });
@@ -77,7 +79,7 @@ function setUp(
   return { workspaceInviting, emailSender, useCase };
 }
 
-function resend(role: MemberRoleValue = 'OWNER') {
+function resend(role: MemberRoleValue = 'ADMIN') {
   return {
     accountId: 'account-ann',
     resenderEmail: 'ann@acme.co',
@@ -88,10 +90,10 @@ function resend(role: MemberRoleValue = 'OWNER') {
 }
 
 describe('resending a Pending Invitation', () => {
-  it('lets the Owner send it again, extending the same Invitation', async () => {
+  it('lets an Admin send it again, extending the same Invitation', async () => {
     const { workspaceInviting, emailSender, useCase } = setUp();
 
-    const resent = await useCase.execute(resend('OWNER'));
+    const resent = await useCase.execute(resend('ADMIN'));
 
     expect(resent).toEqual({
       invitationId: INVITATION_ID,
@@ -107,6 +109,14 @@ describe('resending a Pending Invitation', () => {
       `https://thrive.test/invitations/${INVITATION_ID}`,
     );
     expect(workspaceInviting.revoked).toEqual([]);
+  });
+
+  it('sends it again with the Role it was first sent with', async () => {
+    const { workspaceInviting, useCase } = setUp({ role: 'ADMIN' });
+
+    await useCase.execute(resend());
+
+    expect(workspaceInviting.reissues.map((r) => r.role)).toEqual(['ADMIN']);
   });
 
   it('records the send, so the cooldown starts again', async () => {
@@ -125,14 +135,6 @@ describe('resending a Pending Invitation', () => {
     expect(emailSender.sent[0]?.idempotencyKey).toBe(
       `${INVITATION_ID}:${NOW.toISOString()}`,
     );
-  });
-
-  it('lets an Admin resend one', async () => {
-    const { emailSender, useCase } = setUp();
-
-    await useCase.execute(resend('ADMIN'));
-
-    expect(emailSender.sent).toHaveLength(1);
   });
 });
 

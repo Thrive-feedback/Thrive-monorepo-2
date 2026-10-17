@@ -18,7 +18,7 @@ export interface CreateWorkspaceResult {
   readonly id: string;
 }
 
-/** The founder creates their company's Workspace and becomes its only Owner. */
+/** The founder creates their company's Workspace and becomes its first Admin. */
 @Injectable()
 export class CreateWorkspaceUseCase {
   constructor(

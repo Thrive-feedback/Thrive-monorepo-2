@@ -30,8 +30,8 @@ afterAll(async () => {
 
 describe('telling another module who is a Member', () => {
   it('answers which of the Accounts named are Members, leaving out everyone else', async () => {
-    const owner = await fixtures.aSignedInAccount('among-owner');
-    const workspaceId = await fixtures.aWorkspace(owner);
+    const admin = await fixtures.aSignedInAccount('among-admin');
+    const workspaceId = await fixtures.aWorkspace(admin);
     const member = await fixtures.aSignedInAccount('among-member');
     await fixtures.addMember(workspaceId, member, 'member');
     const outsider = await fixtures.aSignedInAccount('among-outsider');
@@ -39,17 +39,17 @@ describe('telling another module who is a Member', () => {
 
     const members = await workspaceMembershipPort.membersAmong({
       workspaceId,
-      accountIds: [owner.accountId, member.accountId, outsider.accountId],
+      accountIds: [admin.accountId, member.accountId, outsider.accountId],
     });
 
     expect([...members].sort()).toEqual(
-      [owner.accountId, member.accountId].sort(),
+      [admin.accountId, member.accountId].sort(),
     );
   });
 
   it('answers nobody when nobody is named', async () => {
-    const owner = await fixtures.aSignedInAccount('among-alone');
-    const workspaceId = await fixtures.aWorkspace(owner);
+    const admin = await fixtures.aSignedInAccount('among-alone');
+    const workspaceId = await fixtures.aWorkspace(admin);
 
     expect(
       await workspaceMembershipPort.membersAmong({

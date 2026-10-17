@@ -6,7 +6,7 @@ import { MemberRole } from '../../domain/value-object/member-role.vo';
 
 /**
  * The only place that knows both a stored `member` row and a Membership. The organization
- * plugin stores a Role by its own lowercase name (`owner`); the contract names it `OWNER`.
+ * plugin stores a Role by its own lowercase name (`admin`); the contract names it `ADMIN`.
  */
 export function toMembershipView(record: {
   readonly role: string;

@@ -29,6 +29,8 @@ export interface InvitationDetailView {
   readonly inviterAccountId: string;
   /** The address it was sent to, exactly as stored. */
   readonly email: string;
+  /** The Role the person joins with once they accept. */
+  readonly role: MemberRoleValue;
   readonly status: InvitationStatusValue;
   /** When its email last went out: when it was sent, or last resent. */
   readonly lastSentAt: Date;
@@ -43,7 +45,7 @@ export interface PendingInvitationView {
   readonly workspace: {
     readonly id: string;
     readonly name: string;
-    /** Everyone with a Membership there, the Owner included. */
+    /** Everyone with a Membership there, Admins included. */
     readonly memberCount: number;
   };
   /** When it was first sent. A resend moves its expiry, never this. */

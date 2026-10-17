@@ -66,16 +66,16 @@ async function inviteAs(
     inviterEmail: inviter.email,
     credential: inviter.credential,
     membership,
-    emails,
+    invitations: emails.map((email) => ({ email, role: 'MEMBER' })),
   });
 }
 
 async function aWorkspaceWith(role: 'admin' | 'member') {
-  const owner = await fixtures.aSignedInAccount('invite-owner');
-  const workspaceId = await fixtures.aWorkspace(owner);
+  const founder = await fixtures.aSignedInAccount('invite-founder');
+  const workspaceId = await fixtures.aWorkspace(founder);
   const colleague = await fixtures.aSignedInAccount(`invite-${role}`);
   await fixtures.addMember(workspaceId, colleague, role);
-  return { owner, workspaceId, colleague };
+  return { founder, workspaceId, colleague };
 }
 
 describe('who may invite people into a Workspace', () => {
@@ -98,23 +98,23 @@ describe('who may invite people into a Workspace', () => {
     ).toBe(0);
   });
 
-  it('refuses the Owner of one Workspace inviting into another, as not found', async () => {
-    const { owner } = await aWorkspaceWith('member');
+  it('refuses an Admin of one Workspace inviting into another, as not found', async () => {
+    const { founder } = await aWorkspaceWith('member');
     const { workspaceId: otherWorkspaceId } = await aWorkspaceWith('member');
 
     await expect(
-      inviteAs(owner, otherWorkspaceId, ['cat@acme.test']),
+      inviteAs(founder, otherWorkspaceId, ['cat@acme.test']),
     ).rejects.toThrow(WorkspaceNotFoundError);
   });
 });
 
 describe('inviting from two tabs at once', () => {
   it('leaves one Pending Invitation for an address both name', async () => {
-    const { owner, workspaceId } = await aWorkspaceWith('member');
+    const { founder, workspaceId } = await aWorkspaceWith('member');
 
     const results = await Promise.all([
-      inviteAs(owner, workspaceId, ['dan@acme.test']),
-      inviteAs(owner, workspaceId, ['dan@acme.test']),
+      inviteAs(founder, workspaceId, ['dan@acme.test']),
+      inviteAs(founder, workspaceId, ['dan@acme.test']),
     ]);
 
     expect(

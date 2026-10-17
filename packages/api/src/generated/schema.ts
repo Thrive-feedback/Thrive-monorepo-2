@@ -99,7 +99,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create a Workspace, with the caller as its Owner */
+        /** Create a Workspace, with the caller as its first Admin */
         post: operations["WorkspaceController_createWorkspace"];
         delete?: never;
         options?: never;
@@ -141,6 +141,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/members/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change a Member's Role to Admin or Member; the Workspace always keeps an Admin */
+        patch: operations["WorkspaceMemberController_changeMemberRole"];
+        trace?: never;
+    };
     "/v1/workspaces/{workspaceId}/invitations": {
         parameters: {
             query?: never;
@@ -151,7 +168,7 @@ export interface paths {
         /** List the Invitations of a Workspace still waiting on someone, pending or expired */
         get: operations["InvitationController_listWorkspaceInvitations"];
         put?: never;
-        /** Invite several people to a Workspace by email, at most 10 at a time */
+        /** Invite several people to a Workspace by email, each as an Admin or a Member, at most 10 at a time */
         post: operations["InvitationController_sendInvitations"];
         delete?: never;
         options?: never;
@@ -455,7 +472,7 @@ export interface components {
                     name: string;
                 };
                 /** @enum {string} */
-                role: "OWNER" | "ADMIN" | "MEMBER";
+                role: "ADMIN" | "MEMBER";
             }[];
             total: number;
             page: number;
@@ -471,11 +488,15 @@ export interface components {
                 /** Format: uri */
                 photoUrl: string | null;
                 /** @enum {string} */
-                role: "OWNER" | "ADMIN" | "MEMBER";
+                role: "ADMIN" | "MEMBER";
             }[];
             total: number;
             page: number;
             pageSize: number;
+        };
+        ChangeMemberRoleRequestDto: {
+            /** @enum {string} */
+            role: "ADMIN" | "MEMBER";
         };
         ListWorkspaceInvitationsResponseDto_Output: {
             items: {
@@ -483,7 +504,7 @@ export interface components {
                 invitationId: string;
                 email: string;
                 /** @enum {string} */
-                role: "OWNER" | "ADMIN" | "MEMBER";
+                role: "ADMIN" | "MEMBER";
                 /** @enum {string} */
                 status: "PENDING" | "EXPIRED";
                 /** Format: date-time */
@@ -500,7 +521,11 @@ export interface components {
             pageSize: number;
         };
         SendInvitationsRequestDto: {
-            emails: string[];
+            invitations: {
+                email: string;
+                /** @enum {string} */
+                role: "ADMIN" | "MEMBER";
+            }[];
         };
         SendInvitationsResponseDto_Output: {
             results: ({
@@ -1051,6 +1076,69 @@ export interface operations {
             };
             /** @description WORKSPACE_NOT_FOUND */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceMemberController_changeMemberRole: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeMemberRoleRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Changed, or already that Role */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_ALLOWED_TO_CHANGE_ROLES */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or MEMBER_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description LAST_ADMIN */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

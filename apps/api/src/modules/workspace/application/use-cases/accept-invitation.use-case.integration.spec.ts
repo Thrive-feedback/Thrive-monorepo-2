@@ -39,14 +39,15 @@ afterAll(async () => {
   await prismaService.$disconnect();
 });
 
-/** A fresh Workspace whose Owner has invited `invitee`; answers the Invitation's id. */
+/** A fresh Workspace whose Admin has invited `invitee`; answers the Invitation's id. */
 async function anInvitationFor(invitee: SignedInAccount): Promise<string> {
-  const owner = await fixtures.aSignedInAccount('accept-owner');
-  const workspaceId = await fixtures.aWorkspace(owner);
+  const admin = await fixtures.aSignedInAccount('accept-admin');
+  const workspaceId = await fixtures.aWorkspace(admin);
   const stored = await workspaceInviting.invite({
-    credential: owner.credential,
+    credential: admin.credential,
     workspaceId,
     email: invitee.email,
+    role: 'MEMBER',
   });
   if (stored.outcome !== 'invited') {
     throw new Error(`Expected an Invitation, got ${stored.outcome}.`);

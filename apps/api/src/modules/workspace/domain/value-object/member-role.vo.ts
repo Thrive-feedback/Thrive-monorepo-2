@@ -1,6 +1,6 @@
-import { MemberRoleInvalidError } from '../workspace.errors';
+import { LastAdminError, MemberRoleInvalidError } from '../workspace.errors';
 
-export const MEMBER_ROLES = ['OWNER', 'ADMIN', 'MEMBER'] as const;
+export const MEMBER_ROLES = ['ADMIN', 'MEMBER'] as const;
 
 export type MemberRoleValue = (typeof MEMBER_ROLES)[number];
 
@@ -10,10 +10,10 @@ function isMemberRole(raw: string): raw is MemberRoleValue {
 
 /**
  * What a Member is allowed to manage in their Workspace. `MEMBER` is the Role with no
- * management rights: every Owner and Admin is a Member too, but only these hold the Role.
+ * management rights: every Admin is a Member too, but only Admins hold the other Role. There is
+ * no Owner, and every Admin has the same powers (brain `ADR-0033`).
  */
 export class MemberRole {
-  static readonly Owner = new MemberRole('OWNER');
   static readonly Admin = new MemberRole('ADMIN');
   static readonly Member = new MemberRole('MEMBER');
 
@@ -26,9 +26,28 @@ export class MemberRole {
     return new MemberRole(raw);
   }
 
-  /** Owner and Admins invite people into the Workspace; a Member with no rights cannot. */
+  /** Admins invite people into the Workspace; a Member with no rights cannot. */
   mayInvite(): boolean {
-    return this.value === 'OWNER' || this.value === 'ADMIN';
+    return this.value === 'ADMIN';
+  }
+
+  /** Admins change anyone's Role, other Admins' and their own included. */
+  mayChangeRoles(): boolean {
+    return this.value === 'ADMIN';
+  }
+
+  /**
+   * Refuses to make the Workspace's last Admin a Member, so it is never left with nobody to
+   * manage it. `adminCount` is how many Admins the Workspace has now, this one included.
+   */
+  ensureMayBecome(next: MemberRole, adminCount: number): void {
+    if (
+      this.equals(MemberRole.Admin) &&
+      next.equals(MemberRole.Member) &&
+      adminCount <= 1
+    ) {
+      throw new LastAdminError();
+    }
   }
 
   equals(other: MemberRole): boolean {

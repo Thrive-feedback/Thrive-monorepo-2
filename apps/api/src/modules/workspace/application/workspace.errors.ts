@@ -1,6 +1,6 @@
 import { ApplicationError } from '@app/shared/errors/coded-error';
 
-/** A Workspace shows its Owner to everyone in it, so the founder introduces themselves first. */
+/** A Workspace shows its Admins to everyone in it, so the founder introduces themselves first. */
 export class ProfileRequiredError extends ApplicationError {
   readonly code = 'PROFILE_REQUIRED';
   readonly category = 'conflict' as const;
@@ -36,23 +36,23 @@ export class WorkspaceNotFoundError extends ApplicationError {
   }
 }
 
-/** Owner and Admins invite people; a Member with no management rights cannot. */
+/** Admins invite people; a Member with no management rights cannot. */
 export class NotAllowedToInviteError extends ApplicationError {
   readonly code = 'NOT_ALLOWED_TO_INVITE';
   readonly category = 'forbidden' as const;
 
   constructor() {
-    super('Only the Owner and Admins can invite people to this Workspace.');
+    super('Only Admins can invite people to this Workspace.');
   }
 }
 
-/** Pending Invitations are for those who can invite: the Owner and Admins. */
+/** Pending Invitations are for those who can invite: Admins. */
 export class NotAllowedToSeeInvitationsError extends ApplicationError {
   readonly code = 'NOT_ALLOWED_TO_SEE_INVITATIONS';
   readonly category = 'forbidden' as const;
 
   constructor() {
-    super("Only the Owner and Admins can see this Workspace's Invitations.");
+    super("Only Admins can see this Workspace's Invitations.");
   }
 }
 
@@ -66,27 +66,23 @@ export class InvitationNotFoundError extends ApplicationError {
   }
 }
 
-/** Revoking is for those who can invite: the Owner and Admins. */
+/** Revoking is for those who can invite: Admins. */
 export class NotAllowedToRevokeInvitationsError extends ApplicationError {
   readonly code = 'NOT_ALLOWED_TO_REVOKE_INVITATIONS';
   readonly category = 'forbidden' as const;
 
   constructor() {
-    super(
-      'Only the Owner and Admins can revoke Invitations to this Workspace.',
-    );
+    super('Only Admins can revoke Invitations to this Workspace.');
   }
 }
 
-/** Resending is for those who can invite: the Owner and Admins. */
+/** Resending is for those who can invite: Admins. */
 export class NotAllowedToResendInvitationsError extends ApplicationError {
   readonly code = 'NOT_ALLOWED_TO_RESEND_INVITATIONS';
   readonly category = 'forbidden' as const;
 
   constructor() {
-    super(
-      'Only the Owner and Admins can resend Invitations to this Workspace.',
-    );
+    super('Only Admins can resend Invitations to this Workspace.');
   }
 }
 
@@ -97,5 +93,25 @@ export class AlreadyAMemberError extends ApplicationError {
 
   constructor() {
     super('This address already belongs to a Member of the Workspace.');
+  }
+}
+
+/** Admins change Roles; a Member with no management rights cannot. */
+export class NotAllowedToChangeRolesError extends ApplicationError {
+  readonly code = 'NOT_ALLOWED_TO_CHANGE_ROLES';
+  readonly category = 'forbidden' as const;
+
+  constructor() {
+    super('Only Admins can change Roles in this Workspace.');
+  }
+}
+
+/** No Member of this Workspace has this Account. One answer for absent and for elsewhere. */
+export class MemberNotFoundError extends ApplicationError {
+  readonly code = 'MEMBER_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super('No Member of this Workspace has this Account.');
   }
 }

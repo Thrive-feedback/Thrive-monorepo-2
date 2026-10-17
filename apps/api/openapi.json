@@ -231,7 +231,7 @@
             "description": "PROFILE_REQUIRED or ALREADY_IN_A_WORKSPACE"
           }
         },
-        "summary": "Create a Workspace, with the caller as its Owner",
+        "summary": "Create a Workspace, with the caller as its first Admin",
         "tags": [
           "workspace"
         ]
@@ -359,6 +359,76 @@
           }
         },
         "summary": "List the Members of a Workspace and their Roles",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/members/{accountId}": {
+      "patch": {
+        "operationId": "WorkspaceMemberController_changeMemberRole",
+        "parameters": [
+          {
+            "name": "cookie",
+            "required": false,
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeMemberRoleRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Changed, or already that Role"
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "NOT_ALLOWED_TO_CHANGE_ROLES"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND or MEMBER_NOT_FOUND"
+          },
+          "409": {
+            "description": "LAST_ADMIN"
+          }
+        },
+        "summary": "Change a Member's Role to Admin or Member; the Workspace always keeps an Admin",
         "tags": [
           "workspace"
         ]
@@ -493,7 +563,7 @@
             "description": "WORKSPACE_NOT_FOUND"
           }
         },
-        "summary": "Invite several people to a Workspace by email, at most 10 at a time",
+        "summary": "Invite several people to a Workspace by email, each as an Admin or a Member, at most 10 at a time",
         "tags": [
           "workspace"
         ]
@@ -1731,7 +1801,6 @@
                 "role": {
                   "type": "string",
                   "enum": [
-                    "OWNER",
                     "ADMIN",
                     "MEMBER"
                   ]
@@ -1804,7 +1873,6 @@
                 "role": {
                   "type": "string",
                   "enum": [
-                    "OWNER",
                     "ADMIN",
                     "MEMBER"
                   ]
@@ -1845,6 +1913,22 @@
         ],
         "additionalProperties": false
       },
+      "ChangeMemberRoleRequestDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "MEMBER"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "additionalProperties": false
+      },
       "ListWorkspaceInvitationsResponseDto_Output": {
         "type": "object",
         "properties": {
@@ -1864,7 +1948,6 @@
                 "role": {
                   "type": "string",
                   "enum": [
-                    "OWNER",
                     "ADMIN",
                     "MEMBER"
                   ]
@@ -1945,15 +2028,32 @@
       "SendInvitationsRequestDto": {
         "type": "object",
         "properties": {
-          "emails": {
+          "invitations": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "ADMIN",
+                    "MEMBER"
+                  ]
+                }
+              },
+              "required": [
+                "email",
+                "role"
+              ],
+              "additionalProperties": false
             }
           }
         },
         "required": [
-          "emails"
+          "invitations"
         ],
         "additionalProperties": false
       },

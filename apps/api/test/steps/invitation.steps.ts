@@ -5,6 +5,7 @@ import {
   accept,
   invitationIdEmailedTo,
   invite,
+  inviteWithRoles,
   joinWorkspaceOf,
   myInvitations,
   myMemberships,
@@ -13,8 +14,8 @@ import type { ThriveWorld } from '../support/world';
 
 Given(
   "{person} is a Member of {person}'s Workspace",
-  async function (this: ThriveWorld, name: string, owner: string) {
-    await joinWorkspaceOf(this, name, owner);
+  async function (this: ThriveWorld, name: string, admin: string) {
+    await joinWorkspaceOf(this, name, admin);
   },
 );
 
@@ -46,10 +47,10 @@ function invitationIdHeldBy(world: ThriveWorld, invitee: string): string {
 
 Given(
   "{person} has revoked {person}'s Invitation",
-  async function (this: ThriveWorld, owner: string, invitee: string) {
+  async function (this: ThriveWorld, admin: string, invitee: string) {
     this.succeeded(
-      await revoke(this, owner, invitee),
-      `${owner} revoking ${invitee}'s Invitation`,
+      await revoke(this, admin, invitee),
+      `${admin} revoking ${invitee}'s Invitation`,
     );
   },
 );
@@ -67,6 +68,16 @@ Given(
     this.succeeded(
       await accept(this, name, invitationIdHeldBy(this, name)),
       `${name} accepting the Invitation`,
+    );
+  },
+);
+
+Given(
+  '{person} has invited {person} as an Admin',
+  async function (this: ThriveWorld, inviter: string, invitee: string) {
+    this.succeeded(
+      await inviteWithRoles(this, inviter, [[invitee, 'ADMIN']]),
+      `${inviter} inviting ${invitee} as an Admin`,
     );
   },
 );
@@ -111,14 +122,14 @@ Then(
 
 Then(
   "{person} sees {person}'s Invitation waiting to be accepted",
-  async function (this: ThriveWorld, owner: string, invitee: string) {
+  async function (this: ThriveWorld, admin: string, invitee: string) {
     const response = this.succeeded(
       await this.as(
-        owner,
+        admin,
         'GET',
-        `/v1/workspaces/${this.workspaceOf(owner)}/invitations`,
+        `/v1/workspaces/${this.workspaceOf(admin)}/invitations`,
       ),
-      `${owner} listing Invitations`,
+      `${admin} listing Invitations`,
     );
     const items: { email: string; status: string }[] = response.body.items;
     assert.deepEqual(
@@ -219,29 +230,30 @@ async function storeInvitation(
   world.invitationStoredFor(invitee, invitationId);
 }
 
-/** `owner`'s view of the Invitation to `invitee`, as the Members screen lists it. */
+/** `admin`'s view of the Invitation to `invitee`, as the Members screen lists it. */
 async function listedInvitationTo(
   world: ThriveWorld,
-  owner: string,
+  admin: string,
   invitee: string,
 ): Promise<{
+  role: string;
   status: string;
   expiresAt: string;
   invitedBy: { displayName: string | null; email: string };
 }> {
   const response = world.succeeded(
     await world.as(
-      owner,
+      admin,
       'GET',
-      `/v1/workspaces/${world.workspaceOf(owner)}/invitations`,
+      `/v1/workspaces/${world.workspaceOf(admin)}/invitations`,
     ),
-    `${owner} listing Invitations`,
+    `${admin} listing Invitations`,
   );
   const { email } = world.person(invitee);
   const listed = response.body.items.find(
     (item: { email: string }) => item.email === email,
   );
-  assert.ok(listed, `${owner} does not see an Invitation to ${invitee}.`);
+  assert.ok(listed, `${admin} does not see an Invitation to ${invitee}.`);
   return listed;
 }
 
@@ -281,14 +293,22 @@ When(
 );
 
 Then(
+  "{person} sees {person}'s Invitation is for an Admin",
+  async function (this: ThriveWorld, admin: string, invitee: string) {
+    const listed = await listedInvitationTo(this, admin, invitee);
+    assert.equal(listed.role, 'ADMIN');
+  },
+);
+
+Then(
   "{person} sees {person}'s Invitation was sent by {person}",
   async function (
     this: ThriveWorld,
-    owner: string,
+    admin: string,
     invitee: string,
     inviter: string,
   ) {
-    const listed = await listedInvitationTo(this, owner, invitee);
+    const listed = await listedInvitationTo(this, admin, invitee);
     assert.deepEqual(listed.invitedBy, {
       displayName: inviter,
       email: this.person(inviter).email,
@@ -298,8 +318,8 @@ Then(
 
 Then(
   "{person} sees {person}'s Invitation is good for another 7 days",
-  async function (this: ThriveWorld, owner: string, invitee: string) {
-    const listed = await listedInvitationTo(this, owner, invitee);
+  async function (this: ThriveWorld, admin: string, invitee: string) {
+    const listed = await listedInvitationTo(this, admin, invitee);
     const left = new Date(listed.expiresAt).getTime() - Date.now();
     assert.equal(listed.status, 'PENDING');
     // A minute's slack for the time the request itself took.
@@ -418,14 +438,14 @@ When(
 
 Then(
   '{person} sees no Invitations waiting to be accepted',
-  async function (this: ThriveWorld, owner: string) {
+  async function (this: ThriveWorld, admin: string) {
     const response = this.succeeded(
       await this.as(
-        owner,
+        admin,
         'GET',
-        `/v1/workspaces/${this.workspaceOf(owner)}/invitations`,
+        `/v1/workspaces/${this.workspaceOf(admin)}/invitations`,
       ),
-      `${owner} listing Invitations`,
+      `${admin} listing Invitations`,
     );
     assert.deepEqual(response.body.items, []);
   },

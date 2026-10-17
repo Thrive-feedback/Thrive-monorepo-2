@@ -15,12 +15,12 @@ function setUp() {
   const accountSummaryPort = new FakeAccountSummaryPort();
   const acme = { id: ACME_ID, name: 'Acme' };
   membershipQuery.memberships.push(
-    { accountId: 'account-ann', workspace: acme, role: 'OWNER' },
+    { accountId: 'account-ann', workspace: acme, role: 'ADMIN' },
     { accountId: 'account-ben', workspace: acme, role: 'MEMBER' },
     {
       accountId: 'account-cat',
       workspace: { id: 'other', name: 'Globex' },
-      role: 'OWNER',
+      role: 'ADMIN',
     },
   );
   accountSummaryPort.summaries.push(
@@ -64,7 +64,7 @@ describe('listing the Members of a Workspace', () => {
           fullName: 'Ann Lee',
           displayName: 'Ann',
           photoUrl: ANN_PHOTO,
-          role: 'OWNER',
+          role: 'ADMIN',
         },
         {
           accountId: 'account-ben',

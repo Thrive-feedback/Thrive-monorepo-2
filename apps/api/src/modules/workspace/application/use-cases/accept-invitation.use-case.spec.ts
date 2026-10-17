@@ -33,6 +33,7 @@ function setUp(status: InvitationStatusValue = 'PENDING') {
     workspace: ACME,
     inviterAccountId: 'account-ann',
     email: 'somchai@acme.co',
+    role: 'MEMBER',
     status,
     lastSentAt: NOW,
   });
@@ -148,7 +149,7 @@ describe('accepting an Invitation', () => {
     membershipQuery.memberships.push({
       accountId: 'account-somchai',
       workspace: OTHER,
-      role: 'OWNER',
+      role: 'ADMIN',
     });
 
     await expect(useCase.execute(acceptance())).rejects.toThrow(

@@ -1,12 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import { MemberRoleInvalidError } from '../workspace.errors';
+import { LastAdminError, MemberRoleInvalidError } from '../workspace.errors';
 import { MemberRole } from './member-role.vo';
 
 describe('a Member role', () => {
-  it('reads a stored Owner back as the Owner', () => {
-    expect(MemberRole.of('OWNER').equals(MemberRole.Owner)).toBe(true);
-  });
-
   it('reads a stored Admin back as an Admin', () => {
     expect(MemberRole.of('ADMIN').equals(MemberRole.Admin)).toBe(true);
   });
@@ -18,18 +14,54 @@ describe('a Member role', () => {
   it('is refused when it is not a known Role', () => {
     expect(() => MemberRole.of('EMPEROR')).toThrow(MemberRoleInvalidError);
   });
+
+  it('knows no Owner', () => {
+    expect(() => MemberRole.of('OWNER')).toThrow(MemberRoleInvalidError);
+  });
 });
 
 describe('who may invite people into a Workspace', () => {
-  it('lets the Owner invite', () => {
-    expect(MemberRole.Owner.mayInvite()).toBe(true);
-  });
-
   it('lets an Admin invite', () => {
     expect(MemberRole.Admin.mayInvite()).toBe(true);
   });
 
   it('does not let a Member with no management rights invite', () => {
     expect(MemberRole.Member.mayInvite()).toBe(false);
+  });
+});
+
+describe('who may change Roles in a Workspace', () => {
+  it('lets an Admin change Roles', () => {
+    expect(MemberRole.Admin.mayChangeRoles()).toBe(true);
+  });
+
+  it('does not let a Member with no management rights change Roles', () => {
+    expect(MemberRole.Member.mayChangeRoles()).toBe(false);
+  });
+});
+
+describe('changing a Role', () => {
+  it('lets an Admin become a Member while another Admin remains', () => {
+    expect(() =>
+      MemberRole.Admin.ensureMayBecome(MemberRole.Member, 2),
+    ).not.toThrow();
+  });
+
+  it('refuses to make the last Admin a Member', () => {
+    expect(() =>
+      MemberRole.Admin.ensureMayBecome(MemberRole.Member, 1),
+    ).toThrow(LastAdminError);
+  });
+
+  it('lets a Member become an Admin however few Admins there are', () => {
+    expect(() =>
+      MemberRole.Member.ensureMayBecome(MemberRole.Admin, 1),
+    ).not.toThrow();
+  });
+
+  it('lets the last Admin stay an Admin', () => {
+    expect(() =>
+      MemberRole.Admin.ensureMayBecome(MemberRole.Admin, 1),
+    ).not.toThrow();
   });
 });

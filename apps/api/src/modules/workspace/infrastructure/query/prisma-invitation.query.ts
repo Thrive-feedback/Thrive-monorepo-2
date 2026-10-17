@@ -62,6 +62,7 @@ export class PrismaInvitationQuery extends InvitationQuery {
         select: {
           id: true,
           email: true,
+          role: true,
           status: true,
           createdAt: true,
           expiresAt: true,

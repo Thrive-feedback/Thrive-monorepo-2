@@ -66,7 +66,7 @@ afterAll(async () => {
 });
 
 describe('founding a Workspace through the organization plugin', () => {
-  it('stores the Workspace with its team size, and the founder as its owner', async () => {
+  it('stores the Workspace with its team size, and the founder as its first admin', async () => {
     const { accountId, credential } = await aSignedInAccount();
 
     const { workspaceId } = await workspaceFounding.found({
@@ -83,7 +83,7 @@ describe('founding a Workspace through the organization plugin', () => {
         where: { workspaceId },
         select: { userId: true, role: true },
       }),
-    ).toEqual([{ userId: accountId, role: 'owner' }]);
+    ).toEqual([{ userId: accountId, role: 'admin' }]);
   });
 
   it("makes it the founder's active Workspace", async () => {
@@ -103,7 +103,7 @@ describe('founding a Workspace through the organization plugin', () => {
     ).toEqual({ activeOrganizationId: workspaceId });
   });
 
-  it('is read back as an OWNER membership', async () => {
+  it('is read back as an ADMIN membership', async () => {
     const { accountId, credential } = await aSignedInAccount();
     const { workspaceId } = await workspaceFounding.found({
       credential,
@@ -118,7 +118,7 @@ describe('founding a Workspace through the organization plugin', () => {
       }),
     ).toEqual({
       items: [
-        { workspace: { id: workspaceId, name: 'Acme Corp' }, role: 'OWNER' },
+        { workspace: { id: workspaceId, name: 'Acme Corp' }, role: 'ADMIN' },
       ],
       total: 1,
     });

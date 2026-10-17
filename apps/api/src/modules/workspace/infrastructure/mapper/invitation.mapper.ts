@@ -4,11 +4,14 @@ import type {
   PendingInvitationView,
 } from '../../application/types/invitation.types';
 import { InvitationStatus } from '../../domain/value-object/invitation-status.vo';
-import { MemberRole } from '../../domain/value-object/member-role.vo';
+import {
+  MemberRole,
+  type MemberRoleValue,
+} from '../../domain/value-object/member-role.vo';
 
 /**
  * The only place that knows both a stored `invitation` row and an Invitation. A row with no role
- * is one the plugin wrote with its default, which Thrive always sets to `member`.
+ * is one the plugin wrote with its default, `member`.
  */
 export function toInvitationView(
   record: {
@@ -24,12 +27,16 @@ export function toInvitationView(
   return {
     invitationId: record.id,
     email: record.email,
-    role: MemberRole.of((record.role ?? 'member').toUpperCase()).toString(),
+    role: roleOf(record.role),
     status: InvitationStatus.openAt(record.expiresAt, now),
     invitedAt: record.createdAt,
     expiresAt: record.expiresAt,
     inviterAccountId: record.inviterId,
   };
+}
+
+function roleOf(stored: string | null): MemberRoleValue {
+  return MemberRole.of((stored ?? 'member').toUpperCase()).toString();
 }
 
 /**
@@ -54,6 +61,7 @@ export function toInvitationDetailView(
   record: {
     readonly id: string;
     readonly email: string;
+    readonly role: string | null;
     readonly status: string;
     readonly createdAt: Date;
     readonly expiresAt: Date;
@@ -69,6 +77,7 @@ export function toInvitationDetailView(
     workspace: { id: record.workspace.id, name: record.workspace.name },
     inviterAccountId: record.inviterId,
     email: record.email,
+    role: roleOf(record.role),
     status: statusOf(record.status, record.expiresAt, now).toString(),
     lastSentAt: record.lastSentAt ?? record.createdAt,
   };
