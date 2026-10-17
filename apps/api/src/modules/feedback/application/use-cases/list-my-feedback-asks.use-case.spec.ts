@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
+import {
+  FakeFeedbackRequestQuery,
+  FakeWorkspaceMembershipPort,
+} from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import { ListMyFeedbackAsksUseCase } from './list-my-feedback-asks.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -46,6 +49,7 @@ function setUp() {
       ],
     },
   );
+  const workspaceMembershipPort = new FakeWorkspaceMembershipPort();
   const accountSummaryPort = new FakeAccountSummaryPort();
   accountSummaryPort.summaries.push({
     accountId: ANA,
@@ -56,9 +60,9 @@ function setUp() {
   });
   const useCase = new ListMyFeedbackAsksUseCase(
     feedbackRequestQuery,
-    new AccountNamesService(accountSummaryPort),
+    new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { accountSummaryPort, useCase };
+  return { workspaceMembershipPort, accountSummaryPort, useCase };
 }
 
 describe('listing the Asks waiting for me', () => {
@@ -79,6 +83,24 @@ describe('listing the Asks waiting for me', () => {
       requesterAccountId: ANA,
       requesterName: 'Ana Silva',
       status: 'PENDING',
+    });
+  });
+
+  it('shows a Requester who has since been Deactivated as inactive, and keeps the Ask', async () => {
+    const { workspaceMembershipPort, useCase } = setUp();
+    workspaceMembershipPort.withDeactivated(WORKSPACE_ID, ANA);
+
+    const waiting = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      giverAccountId: BEN,
+      status: 'PENDING',
+      page: ONE_PAGE,
+    });
+
+    expect(waiting.items[0]).toMatchObject({
+      askId: ASK_FOR_BEN,
+      requesterName: 'Ana Silva',
+      requesterStatus: 'DEACTIVATED',
     });
   });
 

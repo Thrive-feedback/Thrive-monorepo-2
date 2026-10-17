@@ -7,7 +7,7 @@ import type {
 } from '../types/membership.types';
 
 /**
- * Every answer but `membersOfWorkspace` with `DEACTIVATED`, and `isDeactivatedIn`, is about active
+ * Every answer but `membersOfWorkspace` with `DEACTIVATED`, `deactivatedAmong` and `isDeactivatedIn`, is about active
  * Members only: a Deactivated person is no longer in the Workspace for anything they or others
  * do there.
  */
@@ -26,6 +26,12 @@ export abstract class MembershipQuery {
 
   /** The Accounts among `accountIds` that are Members of the Workspace, in no set order. */
   abstract membersAmong(
+    workspaceId: string,
+    accountIds: readonly string[],
+  ): Promise<readonly string[]>;
+
+  /** The Accounts among `accountIds` that are Deactivated in the Workspace, in no set order. */
+  abstract deactivatedAmong(
     workspaceId: string,
     accountIds: readonly string[],
   ): Promise<readonly string[]>;

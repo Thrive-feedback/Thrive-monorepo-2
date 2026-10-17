@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
+import {
+  FakeFeedbackRequestQuery,
+  FakeWorkspaceMembershipPort,
+} from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import { ListWorkspaceFeedUseCase } from './list-workspace-feed.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -80,6 +83,7 @@ function setUp() {
       selectedAccountIds: [],
     },
   );
+  const workspaceMembershipPort = new FakeWorkspaceMembershipPort();
   const accountSummaryPort = new FakeAccountSummaryPort();
   accountSummaryPort.summaries.push(
     {
@@ -99,9 +103,9 @@ function setUp() {
   );
   const useCase = new ListWorkspaceFeedUseCase(
     feedbackRequestQuery,
-    new AccountNamesService(accountSummaryPort),
+    new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { accountSummaryPort, useCase };
+  return { workspaceMembershipPort, accountSummaryPort, useCase };
 }
 
 describe('reading the Workspace feed', () => {
@@ -120,6 +124,27 @@ describe('reading the Workspace feed', () => {
     ]);
     expect(feed.items[0]?.giverName).toBe('Ben Carter');
     expect(feed.items[0]?.receiverName).toBe('Cara Diaz');
+  });
+
+  it('shows a person who has since been Deactivated as inactive, and keeps their Feedback on the feed', async () => {
+    const { workspaceMembershipPort, useCase } = setUp();
+    workspaceMembershipPort.withDeactivated(WORKSPACE_ID, BEN);
+
+    const feed = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      page: ONE_PAGE,
+    });
+
+    expect(feed.total).toBe(2);
+    expect(
+      feed.items.map((feedback) => [
+        feedback.giverStatus,
+        feedback.receiverStatus,
+      ]),
+    ).toEqual([
+      ['DEACTIVATED', 'ACTIVE'],
+      ['ACTIVE', 'DEACTIVATED'],
+    ]);
   });
 
   it('tells an answer from Feedback given without being asked', async () => {

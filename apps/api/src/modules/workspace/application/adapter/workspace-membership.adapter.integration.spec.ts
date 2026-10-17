@@ -59,3 +59,39 @@ describe('telling another module who is a Member', () => {
     ).toEqual([]);
   });
 });
+
+describe('telling another module who was Deactivated', () => {
+  it('answers which of the Accounts named are Deactivated in this Workspace only', async () => {
+    const admin = await fixtures.aSignedInAccount('deactivated-among-admin');
+    const workspaceId = await fixtures.aWorkspace(admin);
+    const left = await fixtures.aSignedInAccount('deactivated-among-left');
+    await fixtures.addMember(workspaceId, left, 'member');
+    await prismaService.member.update({
+      where: { workspaceId_userId: { workspaceId, userId: left.accountId } },
+      data: { deactivatedAt: new Date() },
+    });
+    const outsider = await fixtures.aSignedInAccount(
+      'deactivated-among-outsider',
+    );
+    await fixtures.aWorkspace(outsider, 'Globex');
+
+    const deactivated = await workspaceMembershipPort.deactivatedAmong({
+      workspaceId,
+      accountIds: [admin.accountId, left.accountId, outsider.accountId],
+    });
+
+    expect(deactivated).toEqual([left.accountId]);
+  });
+
+  it('answers nobody when nobody is named', async () => {
+    const admin = await fixtures.aSignedInAccount('deactivated-among-alone');
+    const workspaceId = await fixtures.aWorkspace(admin);
+
+    expect(
+      await workspaceMembershipPort.deactivatedAmong({
+        workspaceId,
+        accountIds: [],
+      }),
+    ).toEqual([]);
+  });
+});

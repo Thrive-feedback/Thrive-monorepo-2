@@ -1,5 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
 import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
 
@@ -13,6 +14,8 @@ const askSchema = z.object({
   giverAccountId: z.uuid(),
   /** `null` while that Member has not introduced themselves. */
   giverName: z.string().nullable(),
+  /** `DEACTIVATED` once the Giver was Deactivated in this Workspace; their Ask stays. */
+  giverStatus: z.enum(PERSON_STATUSES),
   status: z.enum(ASK_STATUSES),
   /**
    * What was written, or `null`: the Ask is still waiting, the caller may not read it, or the
@@ -25,6 +28,8 @@ const selectedPersonSchema = z.object({
   accountId: z.uuid(),
   /** `null` while that Member has not introduced themselves. */
   name: z.string().nullable(),
+  /** `DEACTIVATED` once they were Deactivated in this Workspace; their Feedback stays. */
+  status: z.enum(PERSON_STATUSES),
 });
 
 /**

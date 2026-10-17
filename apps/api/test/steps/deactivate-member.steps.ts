@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { Given, Then, When } from '@cucumber/cucumber';
-import { deactivate, myMemberships } from '../support/journeys';
+import { deactivate, myMemberships, reactivate } from '../support/journeys';
 import type { ThriveWorld } from '../support/world';
 
 Given(
@@ -49,5 +49,35 @@ Then(
   '{person} is told they may not Deactivate anyone else',
   function (this: ThriveWorld, _name: string) {
     this.refusedWith('NOT_ALLOWED_TO_DEACTIVATE');
+  },
+);
+
+When(
+  '{person} Reactivates {person}',
+  async function (this: ThriveWorld, reactivator: string, name: string) {
+    await reactivate(this, reactivator, name);
+  },
+);
+
+Then(
+  '{person} is told they may not Reactivate anyone',
+  function (this: ThriveWorld, _name: string) {
+    this.refusedWith('NOT_ALLOWED_TO_REACTIVATE');
+  },
+);
+
+Then(
+  '{person} belongs to {string} and {string}',
+  async function (
+    this: ThriveWorld,
+    name: string,
+    first: string,
+    second: string,
+  ) {
+    const memberships = await myMemberships(this, name);
+    assert.deepEqual(
+      memberships.map((membership) => membership.workspace.name).sort(),
+      [first, second].sort(),
+    );
   },
 );

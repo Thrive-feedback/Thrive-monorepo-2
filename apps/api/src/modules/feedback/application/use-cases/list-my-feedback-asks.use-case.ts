@@ -4,7 +4,7 @@ import {
   type AskStatusValue,
 } from '../../domain/value-object/ask-status.vo';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import type {
   MyAskListView,
   PageRequest,
@@ -29,7 +29,7 @@ export interface ListMyFeedbackAsksInput {
 export class ListMyFeedbackAsksUseCase {
   constructor(
     private readonly feedbackRequestQuery: FeedbackRequestQuery,
-    private readonly accountNamesService: AccountNamesService,
+    private readonly peopleService: PeopleService,
   ) {}
 
   async execute(input: ListMyFeedbackAsksInput): Promise<MyAskListView> {
@@ -39,7 +39,8 @@ export class ListMyFeedbackAsksUseCase {
       input.status,
       input.page,
     );
-    const names = await this.accountNamesService.namesOf(
+    const people = await this.peopleService.peopleIn(
+      input.workspaceId,
       asks.items.map((ask) => ask.requesterAccountId),
     );
 
@@ -50,7 +51,8 @@ export class ListMyFeedbackAsksUseCase {
         topic: ask.topic,
         requesterAccountId: ask.requesterAccountId,
         // The Requester's Account cascades away with them, as a Giver's does.
-        requesterName: names.get(ask.requesterAccountId) ?? null,
+        requesterName: people.nameOf(ask.requesterAccountId),
+        requesterStatus: people.statusOf(ask.requesterAccountId),
         status: AskStatus.of(ask.status).toString(),
         createdAt: ask.createdAt,
       })),

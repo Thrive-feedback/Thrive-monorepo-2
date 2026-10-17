@@ -45,7 +45,11 @@ function toResponse(ask: MyAskView) {
     askId: ask.askId,
     feedbackRequestId: ask.feedbackRequestId,
     topic: ask.topic,
-    requester: { accountId: ask.requesterAccountId, name: ask.requesterName },
+    requester: {
+      accountId: ask.requesterAccountId,
+      name: ask.requesterName,
+      status: ask.requesterStatus,
+    },
     status: ask.status,
     createdAt: ask.createdAt.toISOString(),
   };

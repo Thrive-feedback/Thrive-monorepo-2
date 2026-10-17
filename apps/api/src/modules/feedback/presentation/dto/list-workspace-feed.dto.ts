@@ -4,6 +4,7 @@ import {
 } from '@app/shared/presentation/dto/page.dto';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
 
 export const listWorkspaceFeedQuerySchema = z.strictObject(pageQueryShape);
@@ -15,6 +16,8 @@ const personSchema = z.object({
   accountId: z.uuid(),
   /** `null` while they have not introduced themselves. */
   name: z.string().nullable(),
+  /** `DEACTIVATED` once they were Deactivated in this Workspace; their Feedback stays. */
+  status: z.enum(PERSON_STATUSES),
 });
 
 /**

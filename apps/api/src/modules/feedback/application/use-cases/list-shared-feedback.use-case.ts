@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import type {
   PageRequest,
   SharedFeedbackListView,
@@ -30,7 +30,7 @@ export interface ListSharedFeedbackInput {
 export class ListSharedFeedbackUseCase {
   constructor(
     private readonly feedbackRequestQuery: FeedbackRequestQuery,
-    private readonly accountNamesService: AccountNamesService,
+    private readonly peopleService: PeopleService,
   ) {}
 
   async execute(
@@ -41,7 +41,8 @@ export class ListSharedFeedbackUseCase {
       input.readerAccountId,
       input.page,
     );
-    const names = await this.accountNamesService.namesOf(
+    const people = await this.peopleService.peopleIn(
+      input.workspaceId,
       shared.items.flatMap((feedback) => [
         feedback.giverAccountId,
         feedback.receiverAccountId,
@@ -56,9 +57,11 @@ export class ListSharedFeedbackUseCase {
         topic: feedback.topic,
         giverAccountId: feedback.giverAccountId,
         // An Account cascades away with the person, so a missing one was deleted mid-read.
-        giverName: names.get(feedback.giverAccountId) ?? null,
+        giverName: people.nameOf(feedback.giverAccountId),
+        giverStatus: people.statusOf(feedback.giverAccountId),
         receiverAccountId: feedback.receiverAccountId,
-        receiverName: names.get(feedback.receiverAccountId) ?? null,
+        receiverName: people.nameOf(feedback.receiverAccountId),
+        receiverStatus: people.statusOf(feedback.receiverAccountId),
         body: feedback.body,
         createdAt: feedback.createdAt,
       })),

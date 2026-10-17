@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
+import {
+  FakeFeedbackRequestQuery,
+  FakeWorkspaceMembershipPort,
+} from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import { ListSharedFeedbackUseCase } from './list-shared-feedback.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -68,6 +71,7 @@ function setUp() {
       selectedAccountIds: [],
     },
   );
+  const workspaceMembershipPort = new FakeWorkspaceMembershipPort();
   const accountSummaryPort = new FakeAccountSummaryPort();
   accountSummaryPort.summaries.push(
     {
@@ -87,9 +91,9 @@ function setUp() {
   );
   const useCase = new ListSharedFeedbackUseCase(
     feedbackRequestQuery,
-    new AccountNamesService(accountSummaryPort),
+    new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { accountSummaryPort, useCase };
+  return { workspaceMembershipPort, accountSummaryPort, useCase };
 }
 
 describe('reading the Feedback shared with me', () => {
@@ -109,6 +113,24 @@ describe('reading the Feedback shared with me', () => {
     ]);
     expect(shared.items[0]?.giverName).toBe('Ben Carter');
     expect(shared.items[0]?.receiverName).toBe('Cara Diaz');
+  });
+
+  it('shows whichever of the two people has since been Deactivated as inactive', async () => {
+    const { workspaceMembershipPort, useCase } = setUp();
+    workspaceMembershipPort.withDeactivated(WORKSPACE_ID, CARA);
+
+    const shared = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      readerAccountId: ANA,
+      page: ONE_PAGE,
+    });
+
+    expect(shared.items[0]).toMatchObject({
+      giverName: 'Ben Carter',
+      giverStatus: 'ACTIVE',
+      receiverName: 'Cara Diaz',
+      receiverStatus: 'DEACTIVATED',
+    });
   });
 
   it('tells Feedback given without being asked from an answer, which names its request', async () => {

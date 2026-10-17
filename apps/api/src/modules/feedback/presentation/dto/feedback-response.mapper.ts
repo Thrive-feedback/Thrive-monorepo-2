@@ -11,10 +11,15 @@ export function toFeedbackResponse(feedback: FeedbackView) {
     origin: feedback.origin,
     feedbackRequestId: feedback.feedbackRequestId,
     topic: feedback.topic,
-    giver: { accountId: feedback.giverAccountId, name: feedback.giverName },
+    giver: {
+      accountId: feedback.giverAccountId,
+      name: feedback.giverName,
+      status: feedback.giverStatus,
+    },
     receiver: {
       accountId: feedback.receiverAccountId,
       name: feedback.receiverName,
+      status: feedback.receiverStatus,
     },
     body: feedback.body,
     createdAt: feedback.createdAt.toISOString(),

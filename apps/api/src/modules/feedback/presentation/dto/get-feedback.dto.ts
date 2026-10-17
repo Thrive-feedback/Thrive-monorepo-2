@@ -1,5 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
 
 /** A Member a piece of Feedback names, with the name they introduced themselves by. */
@@ -7,6 +8,8 @@ const personSchema = z.object({
   accountId: z.uuid(),
   /** `null` while that Member has not introduced themselves. */
   name: z.string().nullable(),
+  /** `DEACTIVATED` once they were Deactivated in this Workspace; their Feedback stays. */
+  status: z.enum(PERSON_STATUSES),
 });
 
 /**

@@ -76,6 +76,16 @@ describe('who may Deactivate other people in a Workspace', () => {
   });
 });
 
+describe('who may Reactivate people in a Workspace', () => {
+  it('lets an Admin Reactivate someone', () => {
+    expect(MemberRole.Admin.mayReactivate()).toBe(true);
+  });
+
+  it('does not let a Member with no management rights Reactivate anyone', () => {
+    expect(MemberRole.Member.mayReactivate()).toBe(false);
+  });
+});
+
 describe('being Deactivated, or leaving', () => {
   it('lets an Admin go while another active Admin remains', () => {
     expect(() => MemberRole.Admin.ensureMayBeDeactivated(2)).not.toThrow();

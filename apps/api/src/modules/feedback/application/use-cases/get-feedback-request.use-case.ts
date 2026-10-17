@@ -7,7 +7,7 @@ import type {
   FeedbackRequestRow,
 } from '../query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import type {
   AnswerView,
   FeedbackRequestView,
@@ -61,14 +61,14 @@ function answerFor(
 /**
  * A query: one Feedback Request of the caller's Workspace, with each Giver named and each
  * answer the caller may read. Only the Requester is told who else reads the answers; a Giver is
- * not (`ADR-0022`). The names are Identity's, read through its published port in one batch
- * rather than one call per Ask.
+ * not (`ADR-0022`). The names are Identity's and whether each person is still active is
+ * Workspace's, both read through their published ports in one batch rather than one call per Ask.
  */
 @Injectable()
 export class GetFeedbackRequestUseCase {
   constructor(
     private readonly feedbackRequestQuery: FeedbackRequestQuery,
-    private readonly accountNamesService: AccountNamesService,
+    private readonly peopleService: PeopleService,
   ) {}
 
   async execute(input: GetFeedbackRequestInput): Promise<FeedbackRequestView> {
@@ -85,8 +85,8 @@ export class GetFeedbackRequestUseCase {
       value: row.visibility,
       selectedAccountIds: row.selectedAccountIds,
     });
-    const [names, answerRows] = await Promise.all([
-      this.accountNamesService.namesOf([
+    const [people, answerRows] = await Promise.all([
+      this.peopleService.peopleIn(input.workspaceId, [
         ...row.asks.map((ask) => ask.giverAccountId),
         ...(isRequester ? visibility.selectedAccountIds() : []),
       ]),
@@ -107,7 +107,8 @@ export class GetFeedbackRequestUseCase {
               .selectedAccountIds()
               .map((accountId) => ({
                 accountId,
-                name: names.get(accountId) ?? null,
+                name: people.nameOf(accountId),
+                status: people.statusOf(accountId),
               })),
           }
         : null,
@@ -115,7 +116,8 @@ export class GetFeedbackRequestUseCase {
         askId: ask.askId,
         giverAccountId: ask.giverAccountId,
         // A Giver's Account cascades away with them, so a missing one was deleted mid-read.
-        giverName: names.get(ask.giverAccountId) ?? null,
+        giverName: people.nameOf(ask.giverAccountId),
+        giverStatus: people.statusOf(ask.giverAccountId),
         status: AskStatus.of(ask.status).toString(),
         answer: answerFor(
           ask,

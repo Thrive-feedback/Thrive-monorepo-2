@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
+import {
+  FakeFeedbackRequestQuery,
+  FakeWorkspaceMembershipPort,
+} from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import { ListSentFeedbackRequestsUseCase } from './list-sent-feedback-requests.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -63,6 +66,7 @@ function setUp() {
       ],
     },
   );
+  const workspaceMembershipPort = new FakeWorkspaceMembershipPort();
   const accountSummaryPort = new FakeAccountSummaryPort();
   accountSummaryPort.summaries.push(
     {
@@ -82,9 +86,9 @@ function setUp() {
   );
   const useCase = new ListSentFeedbackRequestsUseCase(
     feedbackRequestQuery,
-    new AccountNamesService(accountSummaryPort),
+    new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { accountSummaryPort, useCase };
+  return { workspaceMembershipPort, accountSummaryPort, useCase };
 }
 
 describe('listing the Feedback Requests I sent', () => {
@@ -103,6 +107,22 @@ describe('listing the Feedback Requests I sent', () => {
       'my presentation skills',
     ]);
     expect(sent.items[0]?.asks[0]?.giverName).toBe('Cara Diaz');
+  });
+
+  it('shows a Giver who has since been Deactivated as inactive, and keeps their Ask', async () => {
+    const { workspaceMembershipPort, useCase } = setUp();
+    workspaceMembershipPort.withDeactivated(WORKSPACE_ID, CARA);
+
+    const sent = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      requesterAccountId: ANA,
+      page: ONE_PAGE,
+    });
+
+    expect(sent.items[0]?.asks[0]).toMatchObject({
+      giverName: 'Cara Diaz',
+      giverStatus: 'DEACTIVATED',
+    });
   });
 
   it("leaves out another Member's requests, even in my own Workspace", async () => {

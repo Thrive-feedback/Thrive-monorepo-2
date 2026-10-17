@@ -73,6 +73,21 @@ describe('reading memberships once some have been Deactivated', () => {
     ).toEqual([ann.accountId]);
   });
 
+  it('says which of the people named are Deactivated, leaving out the active', async () => {
+    const { workspaceId, ann, ben, cat } =
+      await aWorkspaceWithDeactivatedPeople();
+
+    const deactivated = await membershipQuery.deactivatedAmong(workspaceId, [
+      ann.accountId,
+      ben.accountId,
+      cat.accountId,
+    ]);
+
+    expect([...deactivated].sort()).toEqual(
+      [ben.accountId, cat.accountId].sort(),
+    );
+  });
+
   it('counts only active Admins', async () => {
     const { workspaceId } = await aWorkspaceWithDeactivatedPeople();
 

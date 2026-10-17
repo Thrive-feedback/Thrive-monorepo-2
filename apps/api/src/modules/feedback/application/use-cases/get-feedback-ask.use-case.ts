@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AskStatus } from '../../domain/value-object/ask-status.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import type { MyAskView } from '../types/feedback-request.types';
 
 export interface GetFeedbackAskInput {
@@ -22,7 +22,7 @@ export interface GetFeedbackAskInput {
 export class GetFeedbackAskUseCase {
   constructor(
     private readonly feedbackRequestQuery: FeedbackRequestQuery,
-    private readonly accountNamesService: AccountNamesService,
+    private readonly peopleService: PeopleService,
   ) {}
 
   async execute(input: GetFeedbackAskInput): Promise<MyAskView> {
@@ -34,7 +34,7 @@ export class GetFeedbackAskUseCase {
     if (!ask) {
       throw new FeedbackAskNotFoundError();
     }
-    const names = await this.accountNamesService.namesOf([
+    const people = await this.peopleService.peopleIn(input.workspaceId, [
       ask.requesterAccountId,
     ]);
 
@@ -43,7 +43,8 @@ export class GetFeedbackAskUseCase {
       feedbackRequestId: ask.feedbackRequestId,
       topic: ask.topic,
       requesterAccountId: ask.requesterAccountId,
-      requesterName: names.get(ask.requesterAccountId) ?? null,
+      requesterName: people.nameOf(ask.requesterAccountId),
+      requesterStatus: people.statusOf(ask.requesterAccountId),
       status: AskStatus.of(ask.status).toString(),
       createdAt: ask.createdAt,
     };

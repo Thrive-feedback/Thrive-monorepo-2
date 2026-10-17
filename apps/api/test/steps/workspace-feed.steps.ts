@@ -1,13 +1,21 @@
 import assert from 'node:assert/strict';
-import { Then, When } from '@cucumber/cucumber';
+import { defineParameterType, Then, When } from '@cucumber/cucumber';
 import type { ThriveWorld } from '../support/world';
 
 interface FeedItem {
   readonly body: string;
   readonly topic: string;
-  readonly giver: { readonly accountId: string };
-  readonly receiver: { readonly accountId: string };
+  readonly giver: { readonly accountId: string; readonly status: string };
+  readonly receiver: { readonly accountId: string; readonly status: string };
 }
+
+/** How a person is shown: `inactive` while they are Deactivated in the Workspace. */
+defineParameterType({
+  name: 'personStatus',
+  regexp: /active|inactive/,
+  transformer: (shown: string) =>
+    shown === 'inactive' ? 'DEACTIVATED' : 'ACTIVE',
+});
 
 function feedItems(world: ThriveWorld): FeedItem[] {
   const items: FeedItem[] | undefined = world.lastResponse?.body?.items;
@@ -93,6 +101,23 @@ Then(
     assert.deepEqual(
       feedItems(this).map((feedback) => feedback.topic),
       [first, second],
+    );
+  },
+);
+
+Then(
+  '{person} sees {person} as {personStatus} on the feed',
+  function (this: ThriveWorld, _name: string, person: string, status: string) {
+    const accountId = this.person(person).accountId;
+    const shown = feedItems(this).flatMap((feedback) =>
+      [feedback.giver, feedback.receiver].filter(
+        (named) => named.accountId === accountId,
+      ),
+    );
+    assert.ok(shown.length > 0, `${person} is not named on the feed.`);
+    assert.deepEqual(
+      [...new Set(shown.map((named) => named.status))],
+      [status],
     );
   },
 );

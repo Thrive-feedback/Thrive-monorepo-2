@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { FeedbackNotFoundError } from '../feedback-request.errors';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import type { FeedbackView } from '../types/feedback-request.types';
 
 export interface GetFeedbackInput {
@@ -25,7 +25,7 @@ export interface GetFeedbackInput {
 export class GetFeedbackUseCase {
   constructor(
     private readonly feedbackRequestQuery: FeedbackRequestQuery,
-    private readonly accountNamesService: AccountNamesService,
+    private readonly peopleService: PeopleService,
   ) {}
 
   async execute(input: GetFeedbackInput): Promise<FeedbackView> {
@@ -50,7 +50,7 @@ export class GetFeedbackUseCase {
       throw new FeedbackNotFoundError();
     }
 
-    const names = await this.accountNamesService.namesOf([
+    const people = await this.peopleService.peopleIn(input.workspaceId, [
       row.giverAccountId,
       row.receiverAccountId,
     ]);
@@ -60,9 +60,11 @@ export class GetFeedbackUseCase {
       feedbackRequestId: row.feedbackRequestId,
       topic: row.topic,
       giverAccountId: row.giverAccountId,
-      giverName: names.get(row.giverAccountId) ?? null,
+      giverName: people.nameOf(row.giverAccountId),
+      giverStatus: people.statusOf(row.giverAccountId),
       receiverAccountId: row.receiverAccountId,
-      receiverName: names.get(row.receiverAccountId) ?? null,
+      receiverName: people.nameOf(row.receiverAccountId),
+      receiverStatus: people.statusOf(row.receiverAccountId),
       body: row.body,
       createdAt: row.createdAt,
     };
