@@ -4,8 +4,10 @@ import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { requireMember } from '@/lib/session/session.service';
 import { SettingValues } from '../_components/setting-row';
+import { DeactivatedMemberList } from './_components/deactivated-member-list';
 import { InvitationList } from './_components/invitation-list';
 import { InviteMembersForm } from './_components/invite-members-form';
+import { LeaveWorkspaceRow } from './_components/leave-workspace-row';
 import { MemberList } from './_components/member-list';
 import { mayManageInvitations } from './_lib/invitation-access.util';
 
@@ -17,9 +19,10 @@ export const metadata: Metadata = {
 
 /**
  * The person's Workspace by name, and who is in it, for every Member, with each Role an Admin
- * can change; and, for Admins, a form to invite more and the Invitations still open — Pending
- * or Expired — to resend or revoke. The lists read their own data, so each fills in when its
- * read returns.
+ * can change and anyone else an Admin can Deactivate; who has left or been Deactivated, apart;
+ * for Admins, a form to invite more and the Invitations still open — Pending or Expired — to
+ * resend or revoke; and, last, the way to leave. The lists read their own data, so each fills
+ * in when its read returns.
  */
 export default async function Workspace() {
   const session = await requireMember();
@@ -40,6 +43,14 @@ export default async function Workspace() {
           />
         </Suspense>
       </section>
+      <section className="flex flex-col gap-3 border-border-subtle border-b py-5">
+        <Text as="h3" variant="subtitle-4">
+          Deactivated
+        </Text>
+        <Suspense fallback={<Skeleton className="h-10 w-full" />}>
+          <DeactivatedMemberList membership={session.membership} />
+        </Suspense>
+      </section>
       {mayManageInvitations(session.membership) && (
         <section className="flex flex-col gap-3 border-border-subtle border-b py-5">
           <Text as="h3" variant="subtitle-4">
@@ -58,6 +69,12 @@ export default async function Workspace() {
           </Suspense>
         </section>
       )}
+      <Suspense fallback={<Skeleton className="my-5 h-10 w-full" />}>
+        <LeaveWorkspaceRow
+          membership={session.membership}
+          ownEmail={session.email}
+        />
+      </Suspense>
     </section>
   );
 }

@@ -4,6 +4,8 @@ export type SettingRowProps = {
   label: string;
   /** A muted line under the label, saying what the control does. */
   description?: string;
+  /** Gives the description an id, for a control it explains to point at. */
+  descriptionId?: string;
   /** The control, on the right of a wide row and under the label on a narrow one. */
   children: React.ReactNode;
 };
@@ -12,7 +14,12 @@ export type SettingRowProps = {
  * One setting a person can act on: what it is on the left, the control on the right, and a
  * divider under it, so a section's rows line up in one column.
  */
-export function SettingRow({ label, description, children }: SettingRowProps) {
+export function SettingRow({
+  label,
+  description,
+  descriptionId,
+  children,
+}: SettingRowProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border-border-subtle border-b py-5">
       <div className="flex flex-col gap-1">
@@ -20,7 +27,7 @@ export function SettingRow({ label, description, children }: SettingRowProps) {
           {label}
         </Text>
         {description && (
-          <Text as="p" variant="body-3" tone="muted">
+          <Text as="p" id={descriptionId} variant="body-3" tone="muted">
             {description}
           </Text>
         )}
