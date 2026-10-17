@@ -34,7 +34,7 @@ describe('Account', () => {
     render(await Account());
 
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Ann Lee' }),
+      screen.getByRole('heading', { level: 3, name: 'Ann Lee' }),
     ).toBeInTheDocument();
   });
 

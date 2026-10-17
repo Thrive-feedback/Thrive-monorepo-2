@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { requireMember } from '@/lib/session/session.service';
+import { SettingValues } from '../_components/setting-row';
 import { InvitationList } from './_components/invitation-list';
 import { InviteMembersForm } from './_components/invite-members-form';
 import { MemberList } from './_components/member-list';
@@ -24,17 +25,12 @@ export default async function Workspace() {
   const session = await requireMember();
 
   return (
-    <section className="flex flex-col gap-8">
-      <div className="flex flex-col gap-1">
-        <Text as="p" variant="label" tone="muted">
-          Workspace
-        </Text>
-        <Text variant="subtitle-1" as="h2">
-          {session.membership.workspace.name}
-        </Text>
-      </div>
-      <section className="flex flex-col gap-3">
-        <Text as="h3" variant="subtitle-2">
+    <section className="flex flex-col">
+      <SettingValues
+        rows={[{ label: 'Name', value: session.membership.workspace.name }]}
+      />
+      <section className="flex flex-col gap-3 border-border-subtle border-b py-5">
+        <Text as="h3" variant="subtitle-4">
           Members
         </Text>
         <Suspense fallback={<Skeleton className="h-20 w-full" />}>
@@ -45,16 +41,16 @@ export default async function Workspace() {
         </Suspense>
       </section>
       {mayManageInvitations(session.membership) && (
-        <section className="flex flex-col gap-3">
-          <Text as="h3" variant="subtitle-2">
+        <section className="flex flex-col gap-3 border-border-subtle border-b py-5">
+          <Text as="h3" variant="subtitle-4">
             Invite teammates
           </Text>
           <InviteMembersForm />
         </section>
       )}
       {mayManageInvitations(session.membership) && (
-        <section className="flex flex-col gap-3">
-          <Text as="h3" variant="subtitle-2">
+        <section className="flex flex-col gap-3 border-border-subtle border-b py-5">
+          <Text as="h3" variant="subtitle-4">
             Open invitations
           </Text>
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>
