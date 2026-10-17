@@ -6,6 +6,14 @@ export interface MembershipView {
   readonly role: MemberRoleValue;
 }
 
+/**
+ * Whether a Member can still open their Workspace. A Deactivated one cannot, but stays on record,
+ * because the Feedback they gave and received stays (glossary: Deactivate).
+ */
+export const MEMBER_STATUSES = ['ACTIVE', 'DEACTIVATED'] as const;
+
+export type MemberStatus = (typeof MEMBER_STATUSES)[number];
+
 export interface PageRequest {
   /** 1-based. */
   readonly page: number;

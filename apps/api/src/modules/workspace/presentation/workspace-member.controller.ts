@@ -9,6 +9,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -26,6 +27,7 @@ import {
 import { ZodResponse } from 'nestjs-zod';
 import type { MembershipView } from '../application/types/membership.types';
 import { ChangeMemberRoleUseCase } from '../application/use-cases/change-member-role.use-case';
+import { DeactivateMemberUseCase } from '../application/use-cases/deactivate-member.use-case';
 import { ListWorkspaceMembersUseCase } from '../application/use-cases/list-workspace-members.use-case';
 import { ChangeMemberRoleRequestDto } from './dto/change-member-role.dto';
 import {
@@ -39,7 +41,10 @@ import {
   WorkspaceMemberGuard,
 } from './workspace-member.guard';
 
-/** The Members of one Workspace, readable by anyone who is one of them, managed by its Admins. */
+/**
+ * The Members of one Workspace, readable by anyone who is one of them, managed by its Admins.
+ * Each Member may also leave, by Deactivating themselves.
+ */
 @ApiTags('workspace')
 @Controller({ path: 'v1/workspaces/:workspaceId/members' })
 @UseGuards(WorkspaceMemberGuard)
@@ -47,10 +52,14 @@ export class WorkspaceMemberController {
   constructor(
     private readonly listWorkspaceMembersUseCase: ListWorkspaceMembersUseCase,
     private readonly changeMemberRoleUseCase: ChangeMemberRoleUseCase,
+    private readonly deactivateMemberUseCase: DeactivateMemberUseCase,
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'List the Members of a Workspace and their Roles' })
+  @ApiOperation({
+    summary:
+      'List the active Members of a Workspace and their Roles, or those Deactivated there',
+  })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.OK, type: ListWorkspaceMembersResponseDto })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
@@ -65,6 +74,7 @@ export class WorkspaceMemberController {
     const members = await this.listWorkspaceMembersUseCase.execute({
       membership,
       page,
+      status: query.status,
     });
     return {
       items: members.items.map((member) => ({
@@ -109,6 +119,33 @@ export class WorkspaceMemberController {
       membership,
       accountId: params.accountId,
       role: body.role,
+    });
+  }
+
+  @Post(':accountId/deactivate')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      "End a Member's access to the Workspace, keeping their Feedback; anyone may Deactivate themselves, which is leaving, and an Admin anyone else",
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ApiNoContentResponse({ description: 'Deactivated' })
+  @ApiBadRequestResponse({ description: 'REQUEST_INVALID' })
+  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
+  @ApiForbiddenResponse({ description: 'NOT_ALLOWED_TO_DEACTIVATE' })
+  @ApiNotFoundResponse({
+    description: 'WORKSPACE_NOT_FOUND or MEMBER_NOT_FOUND',
+  })
+  @ApiConflictResponse({ description: 'LAST_ADMIN' })
+  async deactivateMember(
+    @CurrentActor() actor: Actor,
+    @CurrentMembership() membership: MembershipView,
+    @Param() params: WorkspaceMemberPathParamsDto,
+  ): Promise<void> {
+    await this.deactivateMemberUseCase.execute({
+      deactivatorAccountId: actor.accountId,
+      membership,
+      accountId: params.accountId,
     });
   }
 }

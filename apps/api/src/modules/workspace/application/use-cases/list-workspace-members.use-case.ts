@@ -2,12 +2,17 @@ import { AccountSummaryPort } from '@app/modules/identity';
 import { Injectable } from '@nestjs/common';
 import type { MemberRoleValue } from '../../domain/value-object/member-role.vo';
 import { MembershipQuery } from '../query-port/membership.query-port';
-import type { MembershipView, PageRequest } from '../types/membership.types';
+import type {
+  MemberStatus,
+  MembershipView,
+  PageRequest,
+} from '../types/membership.types';
 
 export interface ListWorkspaceMembersInput {
   /** The caller's own membership, already resolved. Every Member may see who else is in. */
   readonly membership: MembershipView;
   readonly page: PageRequest;
+  readonly status: MemberStatus;
 }
 
 export interface WorkspaceMember {
@@ -27,7 +32,10 @@ export interface WorkspaceMemberList {
   readonly total: number;
 }
 
-/** A query: who is in the caller's Workspace, with the email, name and photo each is known by. */
+/**
+ * A query: who is in the caller's Workspace, or who was and has been Deactivated, with the
+ * email, name and photo each is known by.
+ */
 @Injectable()
 export class ListWorkspaceMembersUseCase {
   constructor(
@@ -41,6 +49,7 @@ export class ListWorkspaceMembersUseCase {
     const members = await this.membershipQuery.membersOfWorkspace(
       input.membership.workspace.id,
       input.page,
+      input.status,
     );
     const summaries = new Map(
       (

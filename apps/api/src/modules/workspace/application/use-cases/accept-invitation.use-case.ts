@@ -8,6 +8,7 @@ import { InvitationQuery } from '../query-port/invitation.query-port';
 import { MembershipQuery } from '../query-port/membership.query-port';
 import {
   AlreadyInAWorkspaceError,
+  DeactivatedInWorkspaceError,
   InvitationNotFoundError,
 } from '../workspace.errors';
 
@@ -57,6 +58,16 @@ export class AcceptInvitationUseCase {
           return;
         }
         InvitationStatus.of(invitation.status).ensureAcceptable();
+        // A Deactivated person's membership is kept (#192), so the plugin would fail to add
+        // them a second time. Coming back is not decided yet (#194, #209).
+        if (
+          await this.membershipQuery.isDeactivatedIn(
+            input.accountId,
+            invitation.workspace.id,
+          )
+        ) {
+          throw new DeactivatedInWorkspaceError();
+        }
 
         const memberships = await this.membershipQuery.membershipsOfAccount(
           input.accountId,

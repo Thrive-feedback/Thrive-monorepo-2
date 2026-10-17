@@ -68,6 +68,7 @@ describe('listing the Members of a Workspace', () => {
         role: 'MEMBER',
       },
       page: { page: 1, pageSize: 20 },
+      status: 'ACTIVE',
     });
 
     expect(members).toEqual({

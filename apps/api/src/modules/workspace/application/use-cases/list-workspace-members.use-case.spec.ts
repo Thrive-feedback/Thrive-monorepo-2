@@ -54,6 +54,7 @@ describe('listing the Members of a Workspace', () => {
     const members = await setUp().execute({
       membership: { workspace: { id: ACME_ID, name: 'Acme' }, role: 'MEMBER' },
       page: PAGE,
+      status: 'ACTIVE',
     });
 
     expect(members).toEqual({

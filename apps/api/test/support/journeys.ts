@@ -123,6 +123,19 @@ export function accept(
   return world.as(name, 'POST', `/v1/invitations/${invitationId}/accept`);
 }
 
+/** `deactivator` Deactivates `name` in `deactivator`'s Workspace; themselves, that is leaving. */
+export function deactivate(
+  world: ThriveWorld,
+  deactivator: string,
+  name: string,
+): Promise<ApiResponse> {
+  return world.as(
+    deactivator,
+    'POST',
+    `/v1/workspaces/${world.workspaceOf(deactivator)}/members/${world.person(name).accountId}/deactivate`,
+  );
+}
+
 /** Signs `name` in, has `admin` invite them, and accepts from the email. */
 export async function joinWorkspaceOf(
   world: ThriveWorld,
