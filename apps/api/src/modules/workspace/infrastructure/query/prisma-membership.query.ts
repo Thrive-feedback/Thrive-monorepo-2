@@ -2,6 +2,7 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { Injectable } from '@nestjs/common';
 import { MembershipQuery } from '../../application/query-port/membership.query-port';
 import type {
+  MemberStatus,
   MembershipPage,
   MembershipView,
   PageRequest,
@@ -25,7 +26,7 @@ export class PrismaMembershipQuery extends MembershipQuery {
     accountId: string,
     page: PageRequest,
   ): Promise<MembershipPage> {
-    const where = { userId: accountId };
+    const where = { userId: accountId, deactivatedAt: null };
     const [members, total] = await Promise.all([
       this.prismaTransactionContext.client.member.findMany({
         where,
@@ -51,11 +52,14 @@ export class PrismaMembershipQuery extends MembershipQuery {
         where: { workspaceId_userId: { workspaceId, userId: accountId } },
         select: {
           role: true,
+          deactivatedAt: true,
           workspace: { select: { id: true, name: true } },
         },
       },
     );
-    return member ? toMembershipView(member) : null;
+    return member && member.deactivatedAt === null
+      ? toMembershipView(member)
+      : null;
   }
 
   async membersAmong(
@@ -63,7 +67,11 @@ export class PrismaMembershipQuery extends MembershipQuery {
     accountIds: readonly string[],
   ): Promise<readonly string[]> {
     const members = await this.prismaTransactionContext.client.member.findMany({
-      where: { workspaceId, userId: { in: [...accountIds] } },
+      where: {
+        workspaceId,
+        userId: { in: [...accountIds] },
+        deactivatedAt: null,
+      },
       select: { userId: true },
     });
     return members.map((member) => member.userId);
@@ -72,8 +80,12 @@ export class PrismaMembershipQuery extends MembershipQuery {
   async membersOfWorkspace(
     workspaceId: string,
     page: PageRequest,
+    status: MemberStatus,
   ): Promise<WorkspaceMemberPage> {
-    const where = { workspaceId };
+    const where = {
+      workspaceId,
+      deactivatedAt: status === 'ACTIVE' ? null : { not: null },
+    };
     const [members, total] = await Promise.all([
       this.prismaTransactionContext.client.member.findMany({
         where,
@@ -89,7 +101,20 @@ export class PrismaMembershipQuery extends MembershipQuery {
 
   async adminCountOf(workspaceId: string): Promise<number> {
     return this.prismaTransactionContext.client.member.count({
-      where: { workspaceId, role: 'admin' },
+      where: { workspaceId, role: 'admin', deactivatedAt: null },
     });
+  }
+
+  async isDeactivatedIn(
+    accountId: string,
+    workspaceId: string,
+  ): Promise<boolean> {
+    const member = await this.prismaTransactionContext.client.member.findUnique(
+      {
+        where: { workspaceId_userId: { workspaceId, userId: accountId } },
+        select: { deactivatedAt: true },
+      },
+    );
+    return member !== null && member.deactivatedAt !== null;
   }
 }

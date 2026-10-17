@@ -15,6 +15,7 @@ import {
 } from '../../domain/workspace.errors';
 import {
   AlreadyInAWorkspaceError,
+  DeactivatedInWorkspaceError,
   InvitationNotFoundError,
 } from '../workspace.errors';
 import { AcceptInvitationUseCase } from './accept-invitation.use-case';
@@ -156,5 +157,34 @@ describe('accepting an Invitation', () => {
       AlreadyInAWorkspaceError,
     );
     expect(workspaceInviting.accepted).toEqual([]);
+  });
+
+  it('refuses someone who was Deactivated in that Workspace', async () => {
+    const { workspaceInviting, membershipQuery, useCase } = setUp();
+    membershipQuery.memberships.push({
+      accountId: 'account-somchai',
+      workspace: ACME,
+      role: 'MEMBER',
+      deactivatedAt: NOW,
+    });
+
+    await expect(useCase.execute(acceptance())).rejects.toThrow(
+      DeactivatedInWorkspaceError,
+    );
+    expect(workspaceInviting.accepted).toEqual([]);
+  });
+
+  it('lets someone Deactivated elsewhere join, since they are no longer in a Workspace', async () => {
+    const { workspaceInviting, membershipQuery, useCase } = setUp();
+    membershipQuery.memberships.push({
+      accountId: 'account-somchai',
+      workspace: OTHER,
+      role: 'MEMBER',
+      deactivatedAt: NOW,
+    });
+
+    await useCase.execute(acceptance());
+
+    expect(workspaceInviting.accepted).toHaveLength(1);
   });
 });

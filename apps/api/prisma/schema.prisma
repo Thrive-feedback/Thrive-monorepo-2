@@ -128,15 +128,18 @@ model Workspace {
 // No unique index on `userId` alone: one Workspace per person is a rule of this release
 // (ADR-0020), held by the plugin's `organizationLimit`, so lifting it needs no migration.
 model Member {
-  id          String    @id
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String    @id
+  workspaceId   String
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// The plugin's lowercase role name, e.g. `admin`. The mapper turns it into a Role.
-  role        String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  role          String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  /// When the Member was Deactivated (glossary: Deactivate); `null` while they are active.
+  /// Written by the Workspace module, since the plugin can only delete a Member (ADR 0047).
+  deactivatedAt DateTime?
 
   @@unique([workspaceId, userId])
   @@index([workspaceId])

@@ -131,7 +131,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the Members of a Workspace and their Roles */
+        /** List the active Members of a Workspace and their Roles, or those Deactivated there */
         get: operations["WorkspaceMemberController_listWorkspaceMembers"];
         put?: never;
         post?: never;
@@ -156,6 +156,23 @@ export interface paths {
         head?: never;
         /** Change a Member's Role to Admin or Member; the Workspace always keeps an Admin */
         patch: operations["WorkspaceMemberController_changeMemberRole"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/members/{accountId}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** End a Member's access to the Workspace, keeping their Feedback; anyone may Deactivate themselves, which is leaving, and an Admin anyone else */
+        post: operations["WorkspaceMemberController_deactivateMember"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/workspaces/{workspaceId}/invitations": {
@@ -1047,6 +1064,7 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
+                status?: "ACTIVE" | "DEACTIVATED";
             };
             header?: {
                 /** @description The browser's cookie header, forwarded by the web server. */
@@ -1124,6 +1142,65 @@ export interface operations {
                 content?: never;
             };
             /** @description NOT_ALLOWED_TO_CHANGE_ROLES */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or MEMBER_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description LAST_ADMIN */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceMemberController_deactivateMember: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deactivated */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_ALLOWED_TO_DEACTIVATE */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1457,7 +1534,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description INVITATION_EXPIRED, INVITATION_REVOKED, INVITATION_ALREADY_ACCEPTED or ALREADY_IN_A_WORKSPACE */
+            /** @description INVITATION_EXPIRED, INVITATION_REVOKED, INVITATION_ALREADY_ACCEPTED, ALREADY_IN_A_WORKSPACE or DEACTIVATED_IN_WORKSPACE */
             409: {
                 headers: {
                     [name: string]: unknown;

@@ -5,6 +5,10 @@ import {
   ProfileNamePort,
 } from '@app/modules/identity';
 import {
+  MemberDeactivating,
+  type MemberDeactivation,
+} from '@app/modules/workspace/application/port/member-deactivating.port';
+import {
   type MemberRoleChange,
   MemberRoleChanging,
 } from '@app/modules/workspace/application/port/member-role-changing.port';
@@ -31,6 +35,7 @@ import type {
   PendingInvitationView,
 } from '@app/modules/workspace/application/types/invitation.types';
 import type {
+  MemberStatus,
   MembershipPage,
   MembershipView,
   PageRequest,
@@ -183,16 +188,27 @@ export class FakeWorkspaceInviting extends WorkspaceInviting {
   }
 }
 
-/** Memberships held in memory, keyed by Account and Workspace. */
+/**
+ * Memberships held in memory, keyed by Account and Workspace. One with a `deactivatedAt` is kept
+ * but, like the real store, answered only where Deactivated Members are asked for.
+ */
 export class FakeMembershipQuery extends MembershipQuery {
-  readonly memberships: (MembershipView & { readonly accountId: string })[] =
-    [];
+  readonly memberships: (MembershipView & {
+    readonly accountId: string;
+    readonly deactivatedAt?: Date;
+  })[] = [];
+
+  private get active() {
+    return this.memberships.filter((m) => m.deactivatedAt === undefined);
+  }
 
   async membershipsOfAccount(
     accountId: string,
     page: PageRequest,
   ): Promise<MembershipPage> {
-    const items = this.memberships.filter((m) => m.accountId === accountId);
+    const items = this.active
+      .filter((m) => m.accountId === accountId)
+      .map((m) => ({ workspace: m.workspace, role: m.role }));
     const start = (page.page - 1) * page.pageSize;
     return {
       items: items.slice(start, start + page.pageSize),
@@ -204,7 +220,7 @@ export class FakeMembershipQuery extends MembershipQuery {
     accountId: string,
     workspaceId: string,
   ): Promise<MembershipView | null> {
-    const found = this.memberships.find(
+    const found = this.active.find(
       (m) => m.accountId === accountId && m.workspace.id === workspaceId,
     );
     return found ? { workspace: found.workspace, role: found.role } : null;
@@ -214,7 +230,7 @@ export class FakeMembershipQuery extends MembershipQuery {
     workspaceId: string,
     accountIds: readonly string[],
   ): Promise<readonly string[]> {
-    return this.memberships
+    return this.active
       .filter(
         (m) =>
           m.workspace.id === workspaceId && accountIds.includes(m.accountId),
@@ -225,9 +241,14 @@ export class FakeMembershipQuery extends MembershipQuery {
   async membersOfWorkspace(
     workspaceId: string,
     page: PageRequest,
+    status: MemberStatus,
   ): Promise<WorkspaceMemberPage> {
     const items = this.memberships
-      .filter((m) => m.workspace.id === workspaceId)
+      .filter(
+        (m) =>
+          m.workspace.id === workspaceId &&
+          (m.deactivatedAt === undefined) === (status === 'ACTIVE'),
+      )
       .map((m) => ({ accountId: m.accountId, role: m.role }));
     const start = (page.page - 1) * page.pageSize;
     return {
@@ -237,9 +258,46 @@ export class FakeMembershipQuery extends MembershipQuery {
   }
 
   async adminCountOf(workspaceId: string): Promise<number> {
-    return this.memberships.filter(
+    return this.active.filter(
       (m) => m.workspace.id === workspaceId && m.role === 'ADMIN',
     ).length;
+  }
+
+  async isDeactivatedIn(
+    accountId: string,
+    workspaceId: string,
+  ): Promise<boolean> {
+    return this.memberships.some(
+      (m) =>
+        m.accountId === accountId &&
+        m.workspace.id === workspaceId &&
+        m.deactivatedAt !== undefined,
+    );
+  }
+}
+
+/** Deactivates in the memberships a `FakeMembershipQuery` holds, and records each one. */
+export class FakeMemberDeactivating extends MemberDeactivating {
+  readonly deactivations: MemberDeactivation[] = [];
+
+  constructor(private readonly membershipQuery: FakeMembershipQuery) {
+    super();
+  }
+
+  async deactivate(deactivation: MemberDeactivation): Promise<void> {
+    this.deactivations.push(deactivation);
+    const index = this.membershipQuery.memberships.findIndex(
+      (m) =>
+        m.accountId === deactivation.accountId &&
+        m.workspace.id === deactivation.workspaceId,
+    );
+    const found = this.membershipQuery.memberships[index];
+    if (found) {
+      this.membershipQuery.memberships[index] = {
+        ...found,
+        deactivatedAt: deactivation.deactivatedAt,
+      };
+    }
   }
 }
 

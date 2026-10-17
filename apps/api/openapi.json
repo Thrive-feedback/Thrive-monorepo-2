@@ -331,6 +331,19 @@
             }
           },
           {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ACTIVE",
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "DEACTIVATED"
+              ]
+            }
+          },
+          {
             "name": "cookie",
             "in": "header",
             "description": "The browser's cookie header, forwarded by the web server.",
@@ -358,7 +371,7 @@
             "description": "WORKSPACE_NOT_FOUND"
           }
         },
-        "summary": "List the Members of a Workspace and their Roles",
+        "summary": "List the active Members of a Workspace and their Roles, or those Deactivated there",
         "tags": [
           "workspace"
         ]
@@ -429,6 +442,66 @@
           }
         },
         "summary": "Change a Member's Role to Admin or Member; the Workspace always keeps an Admin",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/members/{accountId}/deactivate": {
+      "post": {
+        "operationId": "WorkspaceMemberController_deactivateMember",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deactivated"
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "NOT_ALLOWED_TO_DEACTIVATE"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND or MEMBER_NOT_FOUND"
+          },
+          "409": {
+            "description": "LAST_ADMIN"
+          }
+        },
+        "summary": "End a Member's access to the Workspace, keeping their Feedback; anyone may Deactivate themselves, which is leaving, and an Admin anyone else",
         "tags": [
           "workspace"
         ]
@@ -821,7 +894,7 @@
             "description": "INVITATION_NOT_FOUND"
           },
           "409": {
-            "description": "INVITATION_EXPIRED, INVITATION_REVOKED, INVITATION_ALREADY_ACCEPTED or ALREADY_IN_A_WORKSPACE"
+            "description": "INVITATION_EXPIRED, INVITATION_REVOKED, INVITATION_ALREADY_ACCEPTED, ALREADY_IN_A_WORKSPACE or DEACTIVATED_IN_WORKSPACE"
           }
         },
         "summary": "Accept an Invitation, joining its Workspace; repeating it once in changes nothing",

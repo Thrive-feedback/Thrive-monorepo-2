@@ -4,9 +4,14 @@ import {
 } from '@app/shared/presentation/dto/page.dto';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { MEMBER_STATUSES } from '../../application/types/membership.types';
 import { MEMBER_ROLES } from '../../domain/value-object/member-role.vo';
 
-export const listWorkspaceMembersQuerySchema = z.strictObject(pageQueryShape);
+export const listWorkspaceMembersQuerySchema = z.strictObject({
+  ...pageQueryShape,
+  /** Active Members, who can open the Workspace, or those Deactivated there. */
+  status: z.enum(MEMBER_STATUSES).default('ACTIVE'),
+});
 export class ListWorkspaceMembersQueryDto extends createZodDto(
   listWorkspaceMembersQuerySchema,
 ) {}
@@ -24,7 +29,7 @@ const workspaceMemberSchema = z.object({
 });
 
 export const listWorkspaceMembersResponseSchema = z.object({
-  /** Oldest first, so the Admin who founded the Workspace comes first. */
+  /** Oldest first, so among active Members the Admin who founded the Workspace comes first. */
   items: z.array(workspaceMemberSchema),
   ...pageResultShape,
 });

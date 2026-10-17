@@ -75,7 +75,7 @@ export class InvitationLinkController {
   @ApiNotFoundResponse({ description: 'INVITATION_NOT_FOUND' })
   @ApiConflictResponse({
     description:
-      'INVITATION_EXPIRED, INVITATION_REVOKED, INVITATION_ALREADY_ACCEPTED or ALREADY_IN_A_WORKSPACE',
+      'INVITATION_EXPIRED, INVITATION_REVOKED, INVITATION_ALREADY_ACCEPTED, ALREADY_IN_A_WORKSPACE or DEACTIVATED_IN_WORKSPACE',
   })
   async acceptInvitation(
     @CurrentActor() actor: Actor,

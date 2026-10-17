@@ -4,6 +4,7 @@ import { EmailModule } from '@app/infrastructure/email/email.module';
 import { IdentityModule } from '@app/modules/identity';
 import { Module } from '@nestjs/common';
 import { WorkspaceMembershipAdapter } from './application/adapter/workspace-membership.adapter';
+import { MemberDeactivating } from './application/port/member-deactivating.port';
 import { MemberRoleChanging } from './application/port/member-role-changing.port';
 import { WorkspaceFounding } from './application/port/workspace-founding.port';
 import { WorkspaceInviting } from './application/port/workspace-inviting.port';
@@ -13,6 +14,7 @@ import { InvitationDelivery } from './application/service/invitation-delivery.se
 import { AcceptInvitationUseCase } from './application/use-cases/accept-invitation.use-case';
 import { ChangeMemberRoleUseCase } from './application/use-cases/change-member-role.use-case';
 import { CreateWorkspaceUseCase } from './application/use-cases/create-workspace.use-case';
+import { DeactivateMemberUseCase } from './application/use-cases/deactivate-member.use-case';
 import { GetInvitationUseCase } from './application/use-cases/get-invitation.use-case';
 import { ListMyInvitationsUseCase } from './application/use-cases/list-my-invitations.use-case';
 import { ListMyMembershipsUseCase } from './application/use-cases/list-my-memberships.use-case';
@@ -26,6 +28,7 @@ import { WorkspaceMembershipPort } from './domain/port/workspace-membership.port
 import { BetterAuthMemberRoleChangingAdapter } from './infrastructure/adapter/better-auth-member-role-changing.adapter';
 import { BetterAuthWorkspaceFoundingAdapter } from './infrastructure/adapter/better-auth-workspace-founding.adapter';
 import { BetterAuthWorkspaceInvitingAdapter } from './infrastructure/adapter/better-auth-workspace-inviting.adapter';
+import { PrismaMemberDeactivatingAdapter } from './infrastructure/adapter/prisma-member-deactivating.adapter';
 import { PrismaInvitationQuery } from './infrastructure/query/prisma-invitation.query';
 import { PrismaMembershipQuery } from './infrastructure/query/prisma-membership.query';
 import { InvitationController } from './presentation/invitation.controller';
@@ -66,6 +69,10 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
       provide: MemberRoleChanging,
       useClass: BetterAuthMemberRoleChangingAdapter,
     },
+    {
+      provide: MemberDeactivating,
+      useClass: PrismaMemberDeactivatingAdapter,
+    },
     { provide: MembershipQuery, useClass: PrismaMembershipQuery },
     { provide: WorkspaceMembershipPort, useClass: WorkspaceMembershipAdapter },
     { provide: InvitationQuery, useClass: PrismaInvitationQuery },
@@ -76,6 +83,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     SendInvitationsUseCase,
     ListWorkspaceMembersUseCase,
     ChangeMemberRoleUseCase,
+    DeactivateMemberUseCase,
     ListWorkspaceInvitationsUseCase,
     GetInvitationUseCase,
     AcceptInvitationUseCase,

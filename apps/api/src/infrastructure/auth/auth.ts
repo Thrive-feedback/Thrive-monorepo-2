@@ -129,7 +129,14 @@ function authOptions(
               teamSize: { type: 'string', required: false, input: true },
             },
           },
-          member: { fields: { organizationId: 'workspaceId' } },
+          member: {
+            fields: { organizationId: 'workspaceId' },
+            additionalFields: {
+              // When the Member was Deactivated; `null` while they are active. The plugin can
+              // only delete a Member, so the Workspace module writes this itself (ADR 0047).
+              deactivatedAt: { type: 'date', required: false, input: false },
+            },
+          },
           invitation: {
             fields: { organizationId: 'workspaceId' },
             additionalFields: {

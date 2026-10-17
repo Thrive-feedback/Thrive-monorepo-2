@@ -36,16 +36,31 @@ export class MemberRole {
     return this.value === 'ADMIN';
   }
 
+  /** Admins Deactivate anyone in the Workspace, other Admins included; everyone else only themselves. */
+  mayDeactivateOthers(): boolean {
+    return this.value === 'ADMIN';
+  }
+
   /**
    * Refuses to make the Workspace's last Admin a Member, so it is never left with nobody to
-   * manage it. `adminCount` is how many Admins the Workspace has now, this one included.
+   * manage it. `adminCount` is how many active Admins the Workspace has now, this one included.
    */
   ensureMayBecome(next: MemberRole, adminCount: number): void {
-    if (
-      this.equals(MemberRole.Admin) &&
-      next.equals(MemberRole.Member) &&
-      adminCount <= 1
-    ) {
+    if (next.equals(MemberRole.Member)) {
+      this.ensureIsNotLastAdmin(adminCount);
+    }
+  }
+
+  /**
+   * Refuses to Deactivate the Workspace's last active Admin, by an Admin or by leaving, for the
+   * same reason. `adminCount` is how many active Admins the Workspace has now.
+   */
+  ensureMayBeDeactivated(adminCount: number): void {
+    this.ensureIsNotLastAdmin(adminCount);
+  }
+
+  private ensureIsNotLastAdmin(adminCount: number): void {
+    if (this.equals(MemberRole.Admin) && adminCount <= 1) {
       throw new LastAdminError();
     }
   }

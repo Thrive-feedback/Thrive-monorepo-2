@@ -115,3 +115,26 @@ export class MemberNotFoundError extends ApplicationError {
     super('No Member of this Workspace has this Account.');
   }
 }
+
+/** Admins Deactivate others; a Member with no management rights can only Deactivate themselves. */
+export class NotAllowedToDeactivateError extends ApplicationError {
+  readonly code = 'NOT_ALLOWED_TO_DEACTIVATE';
+  readonly category = 'forbidden' as const;
+
+  constructor() {
+    super('Only Admins can Deactivate other people in this Workspace.');
+  }
+}
+
+/**
+ * The Account was Deactivated in the Workspace it is invited to. Its membership is kept, so it
+ * cannot be added again, and how someone comes back is not decided yet.
+ */
+export class DeactivatedInWorkspaceError extends ApplicationError {
+  readonly code = 'DEACTIVATED_IN_WORKSPACE';
+  readonly category = 'conflict' as const;
+
+  constructor() {
+    super('This Account was Deactivated in this Workspace.');
+  }
+}
