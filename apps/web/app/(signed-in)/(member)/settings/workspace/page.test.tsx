@@ -40,8 +40,8 @@ describe('Workspace', () => {
     render(await Workspace());
 
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Acme Corp' }),
-    ).toBeInTheDocument();
+      screen.getByText('Name', { selector: 'dt' }).nextElementSibling,
+    ).toHaveTextContent('Acme Corp');
     expect(
       screen.getByRole('heading', { level: 3, name: 'Members' }),
     ).toBeInTheDocument();

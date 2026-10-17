@@ -7,7 +7,7 @@ vi.mock('next/navigation', () => ({ usePathname: () => pathname() }));
 
 describe('SettingsPanes', () => {
   it('leads back to Home from Settings', () => {
-    pathname.mockReturnValue('/settings/account');
+    pathname.mockReturnValue('/settings');
     render(<SettingsPanes>section</SettingsPanes>);
 
     const trail = screen.getByRole('navigation', { name: 'Breadcrumb' });
@@ -19,6 +19,27 @@ describe('SettingsPanes', () => {
       'aria-current',
       'page',
     );
+  });
+
+  it('heads the pane with the open section', () => {
+    pathname.mockReturnValue('/settings/workspace');
+    render(<SettingsPanes>section</SettingsPanes>);
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Settings' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Workspace' }),
+    ).toBeInTheDocument();
+  });
+
+  it('heads the landing with Account, since that is what it shows', () => {
+    pathname.mockReturnValue('/settings');
+    render(<SettingsPanes>section</SettingsPanes>);
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Account' }),
+    ).toBeInTheDocument();
   });
 
   it('lists every section, for every Member', () => {

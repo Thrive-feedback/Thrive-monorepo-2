@@ -3,6 +3,7 @@ import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { SignOutForm } from '@/components/organisms/sign-out-form';
 import { ROLE_NAMES } from '@/lib/session/role-names.constant';
 import type { MemberAccount } from '@/lib/session/session.service';
+import { SettingRow, SettingValues } from './setting-row';
 
 /**
  * The person's own Profile, as the session already knows it — their photo, the names they
@@ -11,32 +12,29 @@ import type { MemberAccount } from '@/lib/session/session.service';
  */
 export function AccountSection({ session }: { session: MemberAccount }) {
   const { profile, membership } = session;
-  const rows: readonly { readonly label: string; readonly value: string }[] = [
-    { label: 'Full name', value: profile.fullName },
-    { label: 'Display name', value: profile.displayName },
-    { label: 'Email', value: session.email },
-    { label: 'Role', value: ROLE_NAMES[membership.role] },
-  ];
 
   return (
-    <section className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <PhotoAvatar name={profile.displayName} photoUrl={session.photoUrl} />
-          <Text variant="subtitle-1" as="h2">
-            {profile.displayName}
-          </Text>
-        </div>
-        <SignOutForm />
+    <section className="flex flex-col">
+      <div className="flex items-center gap-4 border-border-subtle border-b py-5">
+        <PhotoAvatar name={profile.displayName} photoUrl={session.photoUrl} />
+        <Text variant="subtitle-3" as="h3">
+          {profile.displayName}
+        </Text>
       </div>
-      <dl className="flex flex-col gap-4 rounded-page bg-surface-raised p-6">
-        {rows.map((row) => (
-          <div key={row.label} className="flex flex-col gap-1">
-            <dt className="text-fg-secondary text-label">{row.label}</dt>
-            <dd className="break-all text-body-1">{row.value}</dd>
-          </div>
-        ))}
-      </dl>
+      <SettingValues
+        rows={[
+          { label: 'Full name', value: profile.fullName },
+          { label: 'Display name', value: profile.displayName },
+          { label: 'Email', value: session.email },
+          { label: 'Role', value: ROLE_NAMES[membership.role] },
+        ]}
+      />
+      <SettingRow
+        label="Sign out"
+        description="Sign out of Thrive on this device."
+      >
+        <SignOutForm />
+      </SettingRow>
     </section>
   );
 }
