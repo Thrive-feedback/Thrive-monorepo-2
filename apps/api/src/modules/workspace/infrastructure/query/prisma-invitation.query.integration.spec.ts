@@ -30,8 +30,8 @@ afterAll(async () => {
 
 describe('reading the open Invitations of a Workspace', () => {
   it('answers pending ones and expired ones, and leaves out revoked and accepted ones', async () => {
-    const owner = await fixtures.aSignedInAccount('invitation-query');
-    const workspaceId = await fixtures.aWorkspace(owner);
+    const admin = await fixtures.aSignedInAccount('invitation-query');
+    const workspaceId = await fixtures.aWorkspace(admin);
     const now = new Date();
     const inDays = (days: number) => new Date(now.getTime() + days * DAY_MS);
     const send = (
@@ -39,7 +39,7 @@ describe('reading the open Invitations of a Workspace', () => {
       status: 'pending' | 'accepted' | 'canceled',
       expiresAt: Date,
     ) =>
-      fixtures.anInvitation(workspaceId, owner, { email, status, expiresAt });
+      fixtures.anInvitation(workspaceId, admin, { email, status, expiresAt });
     await send('pending@acme.test', 'pending', inDays(7));
     await send('expired@acme.test', 'pending', inDays(-1));
     await send('canceled@acme.test', 'canceled', inDays(7));
@@ -59,10 +59,10 @@ describe('reading the open Invitations of a Workspace', () => {
   });
 
   it('answers when each was first sent and who sent it', async () => {
-    const owner = await fixtures.aSignedInAccount('invitation-sender');
-    const workspaceId = await fixtures.aWorkspace(owner);
+    const admin = await fixtures.aSignedInAccount('invitation-sender');
+    const workspaceId = await fixtures.aWorkspace(admin);
     const sentAt = new Date(Date.now() - DAY_MS);
-    await fixtures.anInvitation(workspaceId, owner, {
+    await fixtures.anInvitation(workspaceId, admin, {
       createdAt: sentAt,
       lastSentAt: new Date(),
       expiresAt: new Date(Date.now() + 7 * DAY_MS),
@@ -76,21 +76,21 @@ describe('reading the open Invitations of a Workspace', () => {
 
     expect(page.items[0]).toMatchObject({
       invitedAt: sentAt,
-      inviterAccountId: owner.accountId,
+      inviterAccountId: admin.accountId,
     });
   });
 });
 
 describe('reading one Invitation by its id', () => {
   it('answers each stored status as Thrive names it, with its Workspace and inviter', async () => {
-    const owner = await fixtures.aSignedInAccount('invitation-by-id');
-    const workspaceId = await fixtures.aWorkspace(owner, 'Acme');
+    const admin = await fixtures.aSignedInAccount('invitation-by-id');
+    const workspaceId = await fixtures.aWorkspace(admin, 'Acme');
     const now = new Date();
     const statusOf = async (
       status: 'pending' | 'accepted' | 'canceled' | 'rejected',
       expiresInDays: number,
     ) => {
-      const id = await fixtures.anInvitation(workspaceId, owner, {
+      const id = await fixtures.anInvitation(workspaceId, admin, {
         status,
         expiresAt: new Date(now.getTime() + expiresInDays * DAY_MS),
       });
@@ -105,10 +105,10 @@ describe('reading one Invitation by its id', () => {
   });
 
   it('answers the Workspace, the inviter and the address it was sent to', async () => {
-    const owner = await fixtures.aSignedInAccount('invitation-detail');
-    const workspaceId = await fixtures.aWorkspace(owner, 'Acme');
+    const admin = await fixtures.aSignedInAccount('invitation-detail');
+    const workspaceId = await fixtures.aWorkspace(admin, 'Acme');
     const sentAt = new Date(Date.now() - DAY_MS);
-    const id = await fixtures.anInvitation(workspaceId, owner, {
+    const id = await fixtures.anInvitation(workspaceId, admin, {
       email: 'somchai@acme.test',
       createdAt: sentAt,
       expiresAt: new Date(sentAt.getTime() + 7 * DAY_MS),
@@ -117,18 +117,19 @@ describe('reading one Invitation by its id', () => {
     expect(await invitationQuery.invitationById(id, new Date())).toEqual({
       invitationId: id,
       workspace: { id: workspaceId, name: 'Acme' },
-      inviterAccountId: owner.accountId,
+      inviterAccountId: admin.accountId,
       email: 'somchai@acme.test',
+      role: 'MEMBER',
       status: 'PENDING',
       lastSentAt: sentAt,
     });
   });
 
   it('answers the last resend as when it was last sent', async () => {
-    const owner = await fixtures.aSignedInAccount('invitation-resent');
-    const workspaceId = await fixtures.aWorkspace(owner);
+    const admin = await fixtures.aSignedInAccount('invitation-resent');
+    const workspaceId = await fixtures.aWorkspace(admin);
     const resentAt = new Date(Date.now() - 60_000);
-    const id = await fixtures.anInvitation(workspaceId, owner, {
+    const id = await fixtures.anInvitation(workspaceId, admin, {
       createdAt: new Date(Date.now() - DAY_MS),
       lastSentAt: resentAt,
       expiresAt: new Date(Date.now() + 7 * DAY_MS),
@@ -148,21 +149,21 @@ describe('reading one Invitation by its id', () => {
 
 describe('reading the Invitations Pending for one address', () => {
   it('answers them across Workspaces, newest first, with each Workspace and its Member count', async () => {
-    const owner = await fixtures.aSignedInAccount('invitations-to-email');
+    const admin = await fixtures.aSignedInAccount('invitations-to-email');
     const teammate = await fixtures.aSignedInAccount('invitations-teammate');
-    const acmeId = await fixtures.aWorkspace(owner, 'Acme');
-    const otherOwner = await fixtures.aSignedInAccount('invitations-other');
-    const globexId = await fixtures.aWorkspace(otherOwner, 'Globex');
+    const acmeId = await fixtures.aWorkspace(admin, 'Acme');
+    const otherAdmin = await fixtures.aSignedInAccount('invitations-other');
+    const globexId = await fixtures.aWorkspace(otherAdmin, 'Globex');
     await fixtures.addMember(acmeId, teammate, 'member');
     const invitee = `invitee-${uuidv7()}@acme.test`;
     const now = new Date();
     const inDays = (days: number) => new Date(now.getTime() + days * DAY_MS);
-    const toAcme = await fixtures.anInvitation(acmeId, owner, {
+    const toAcme = await fixtures.anInvitation(acmeId, admin, {
       email: invitee,
       createdAt: inDays(-2),
       expiresAt: inDays(5),
     });
-    const toGlobex = await fixtures.anInvitation(globexId, otherOwner, {
+    const toGlobex = await fixtures.anInvitation(globexId, otherAdmin, {
       email: invitee,
       createdAt: inDays(-1),
       expiresAt: inDays(6),
@@ -188,30 +189,30 @@ describe('reading the Invitations Pending for one address', () => {
   });
 
   it('leaves out the ones expired, at their expiry or after, revoked, accepted, or sent to someone else', async () => {
-    const owner = await fixtures.aSignedInAccount('invitations-closed');
-    const workspaceId = await fixtures.aWorkspace(owner, 'Acme');
+    const admin = await fixtures.aSignedInAccount('invitations-closed');
+    const workspaceId = await fixtures.aWorkspace(admin, 'Acme');
     const invitee = `invitee-${uuidv7()}@acme.test`;
     const now = new Date();
     const inDays = (days: number) => new Date(now.getTime() + days * DAY_MS);
-    await fixtures.anInvitation(workspaceId, owner, {
+    await fixtures.anInvitation(workspaceId, admin, {
       email: invitee,
       expiresAt: inDays(-1),
     });
-    await fixtures.anInvitation(workspaceId, owner, {
+    await fixtures.anInvitation(workspaceId, admin, {
       email: invitee,
       expiresAt: now,
     });
-    await fixtures.anInvitation(workspaceId, owner, {
+    await fixtures.anInvitation(workspaceId, admin, {
       email: invitee,
       status: 'canceled',
       expiresAt: inDays(7),
     });
-    await fixtures.anInvitation(workspaceId, owner, {
+    await fixtures.anInvitation(workspaceId, admin, {
       email: invitee,
       status: 'accepted',
       expiresAt: inDays(7),
     });
-    await fixtures.anInvitation(workspaceId, owner, { expiresAt: inDays(7) });
+    await fixtures.anInvitation(workspaceId, admin, { expiresAt: inDays(7) });
 
     const page = await invitationQuery.pendingInvitationsTo(
       InvitationRecipient.of(invitee),

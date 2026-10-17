@@ -1,9 +1,13 @@
+import type { MemberRoleValue } from '../../domain/value-object/member-role.vo';
+
 export interface InvitationRequest {
   /** The inviter's `cookie` header, opaque to everyone but the adapter. */
   readonly credential: string;
   readonly workspaceId: string;
   /** Already trimmed and lowercased. */
   readonly email: string;
+  /** The Role the person joins with once they accept. */
+  readonly role: MemberRoleValue;
 }
 
 /** What happened to one address. Only `invited` stored anything. */

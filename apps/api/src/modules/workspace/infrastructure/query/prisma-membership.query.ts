@@ -86,4 +86,10 @@ export class PrismaMembershipQuery extends MembershipQuery {
     ]);
     return { items: members.map(toWorkspaceMemberView), total };
   }
+
+  async adminCountOf(workspaceId: string): Promise<number> {
+    return this.prismaTransactionContext.client.member.count({
+      where: { workspaceId, role: 'admin' },
+    });
+  }
 }

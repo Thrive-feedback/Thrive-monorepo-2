@@ -24,7 +24,7 @@ const workspaceMemberSchema = z.object({
 });
 
 export const listWorkspaceMembersResponseSchema = z.object({
-  /** Oldest first, so the Owner who founded the Workspace comes first. */
+  /** Oldest first, so the Admin who founded the Workspace comes first. */
   items: z.array(workspaceMemberSchema),
   ...pageResultShape,
 });

@@ -18,7 +18,7 @@ export interface RevokeInvitationInput {
 }
 
 /**
- * The Owner or an Admin revokes an Invitation to their Workspace, so its link stops working.
+ * An Admin revokes an Invitation to their Workspace, so its link stops working.
  * It stays on record as revoked; only an open one can be.
  */
 @Injectable()

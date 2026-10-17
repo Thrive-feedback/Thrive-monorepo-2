@@ -18,6 +18,7 @@ function setUp(status: InvitationStatusValue = 'PENDING') {
     workspace: { id: '0199a0f0-0000-7000-8000-0000000000aa', name: 'Acme' },
     inviterAccountId: 'account-ann',
     email: 'somchai@acme.co',
+    role: 'MEMBER',
     status,
     lastSentAt: NOW,
   });

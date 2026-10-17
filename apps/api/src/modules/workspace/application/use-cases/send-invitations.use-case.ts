@@ -20,7 +20,11 @@ export interface SendInvitationsInput {
   /** The inviter's `cookie` header, passed through to the store untouched. */
   readonly credential: string;
   readonly membership: MembershipView;
-  readonly emails: readonly string[];
+  /** Each person, with the Role the inviter chose for them. */
+  readonly invitations: readonly {
+    readonly email: string;
+    readonly role: string;
+  }[];
 }
 
 export type InvitationOutcome =
@@ -41,7 +45,8 @@ interface Stored {
 }
 
 /**
- * The Owner or an Admin invites several people to their Workspace at once. Each address gets
+ * An Admin invites several people to their Workspace at once, each as an Admin or a Member.
+ * Each address gets
  * its own outcome: invited, already a Member, already invited, or failed — an Invitation whose
  * email did not go out is revoked, so sending again starts it afresh.
  */
@@ -59,7 +64,7 @@ export class SendInvitationsUseCase {
     if (!MemberRole.of(input.membership.role).mayInvite()) {
       throw new NotAllowedToInviteError();
     }
-    const addresses = InvitedAddresses.of(input.emails);
+    const addresses = InvitedAddresses.of(input.invitations);
     const workspaceId = input.membership.workspace.id;
 
     // Serialized per Workspace: the store checks "already invited" before it writes, so two
@@ -68,13 +73,14 @@ export class SendInvitationsUseCase {
     const stored = await this.unitOfWork.run(
       async () => {
         const results: Stored[] = [];
-        for (const email of addresses.toArray()) {
+        for (const { email, role } of addresses.toArray()) {
           results.push({
             email,
             stored: await this.workspaceInviting.invite({
               credential: input.credential,
               workspaceId,
               email,
+              role: role.toString(),
             }),
           });
         }

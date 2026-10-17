@@ -8,7 +8,7 @@ import { assertLocalDatabase } from './seed-local.guard';
 
 /**
  * Fills a local database with a Workspace, three Members and Feedback in every state a screen can
- * show, then prints how to be signed in as the Owner (#173).
+ * show, then prints how to be signed in as its Admin (#173).
  *
  * Everything that can go through the product's own API does, so the rows this leaves behind obey
  * the same rules a person's clicks would. Two things cannot, and only those are written directly:
@@ -103,20 +103,20 @@ async function main(): Promise<void> {
     };
   }
 
-  const owner = await signIn('ann', 'Ann Lee');
+  const admin = await signIn('ann', 'Ann Lee');
   const teammate = await signIn('ben', 'Ben Carter');
   // A third Member, because a piece shared *with* Ann has to be written by somebody else to
   // somebody else: neither the Giver nor the Receiver can be selected to read it (#88).
   const third = await signIn('cara', 'Cara Diaz');
 
-  for (const person of [owner, teammate, third]) {
+  for (const person of [admin, teammate, third]) {
     await call(person, 'POST', '/v1/profiles', {
       fullName: person.name,
       displayName: person.name.split(' ')[0],
     });
   }
 
-  const workspace = await call(owner, 'POST', '/v1/workspaces', {
+  const workspace = await call(admin, 'POST', '/v1/workspaces', {
     name: 'Acme',
   });
   const workspaceId = workspace.id as string;
@@ -174,12 +174,12 @@ async function main(): Promise<void> {
   }
 
   const answeredRequest = await ask(
-    owner,
+    admin,
     teammate,
     'Running the planning meeting',
   );
   const waitingRequest = await ask(
-    owner,
+    admin,
     teammate,
     'How I handled the incident review',
   );
@@ -191,19 +191,19 @@ async function main(): Promise<void> {
 
   const alreadyAnswered = await ask(
     teammate,
-    owner,
+    admin,
     'The way I write release notes',
   );
-  await ask(teammate, owner, 'My pull request reviews');
-  await ask(teammate, owner, 'How I ran the retro last week');
+  await ask(teammate, admin, 'My pull request reviews');
+  await ask(teammate, admin, 'How I ran the retro last week');
   await answer(
-    owner,
+    admin,
     alreadyAnswered,
     'They read clearly and they land a day late. Draft them while the work is fresh, rather than writing them at the end.',
   );
 
   await call(teammate, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
-    receiverAccountId: owner.accountId,
+    receiverAccountId: admin.accountId,
     topic: 'The customer demo on Tuesday',
     body: 'You kept the room with you when the demo broke, and the recap at the end landed. Keep doing that.',
     visibility: 'ONLY_ME',
@@ -221,7 +221,7 @@ async function main(): Promise<void> {
     topic: 'Onboarding the new designers',
     body: 'Your onboarding notes answered every question I had in my first week. Writing them down instead of only explaining them is what made the difference.',
     visibility: 'SELECTED_PEOPLE',
-    selectedAccountIds: [owner.accountId],
+    selectedAccountIds: [admin.accountId],
   });
 
   await prismaService.$disconnect();
@@ -230,13 +230,13 @@ async function main(): Promise<void> {
 Seeded a Workspace called Acme.
 
   Open        ${WEB_BASE_URL}/home
-  Signed in as ${owner.name} <${owner.email}>, its Owner, with ${teammate.name} and ${third.name}
+  Signed in as ${admin.name} <${admin.email}>, its Admin, with ${teammate.name} and ${third.name}
 
 To be them, add this cookie for ${WEB_BASE_URL} in your browser's developer tools
 (Application → Cookies). Google sign-in needs real credentials, which is why this exists:
 
   name   thrive.session_token
-  value  ${owner.credential.replace('thrive.session_token=', '')}
+  value  ${admin.credential.replace('thrive.session_token=', '')}
 
 What is on screen:
 

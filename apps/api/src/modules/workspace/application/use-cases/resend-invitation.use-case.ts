@@ -31,7 +31,7 @@ export interface InvitationResent {
 }
 
 /**
- * The Owner or an Admin sends an Invitation's email again, good for another 7 days. A Pending
+ * An Admin sends an Invitation's email again, good for another 7 days. A Pending
  * one is extended, so the link already sent keeps working; an expired one is replaced by a new
  * one, and only once its email has gone out is the expired one revoked.
  */
@@ -72,6 +72,9 @@ export class ResendInvitationUseCase {
           credential: input.credential,
           workspaceId,
           email: invitation.email,
+          // Sent again with the Role it was first sent with; choosing another is revoking it
+          // and inviting afresh.
+          role: invitation.role,
         });
         if (reissued.outcome === 'already_member') {
           throw new AlreadyAMemberError();

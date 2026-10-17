@@ -9,6 +9,13 @@ import {
   type InvitationStored,
   WorkspaceInviting,
 } from '../../application/port/workspace-inviting.port';
+import type { MemberRoleValue } from '../../domain/value-object/member-role.vo';
+
+/** The plugin stores a Role by its own lowercase name. */
+const PLUGIN_ROLES = {
+  ADMIN: 'admin',
+  MEMBER: 'member',
+} as const satisfies Record<MemberRoleValue, string>;
 
 function requestHeaders(credential: string): Headers {
   return new Headers(credential ? { cookie: credential } : {});
@@ -33,8 +40,8 @@ export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
       const invitation = await this.auth.api.createInvitation({
         body: {
           email: request.email,
-          // Everyone invited joins with no management rights; Roles change afterwards.
-          role: 'member',
+          // The plugin only lets an `admin` invite someone as one.
+          role: PLUGIN_ROLES[request.role],
           organizationId: request.workspaceId,
         },
         headers: requestHeaders(request.credential),
@@ -96,7 +103,7 @@ export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
       const invitation = await this.auth.api.createInvitation({
         body: {
           email: request.email,
-          role: 'member',
+          role: PLUGIN_ROLES[request.role],
           organizationId: request.workspaceId,
           resend: true,
         },

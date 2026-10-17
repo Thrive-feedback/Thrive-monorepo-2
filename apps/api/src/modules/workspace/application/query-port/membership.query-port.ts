@@ -24,9 +24,15 @@ export abstract class MembershipQuery {
     accountIds: readonly string[],
   ): Promise<readonly string[]>;
 
-  /** The Workspace's Members, oldest first, so the Owner who founded it comes first. */
+  /** The Workspace's Members, oldest first, so the Admin who founded it comes first. */
   abstract membersOfWorkspace(
     workspaceId: string,
     page: PageRequest,
   ): Promise<WorkspaceMemberPage>;
+
+  /**
+   * How many Admins the Workspace has. Every Member is active until Deactivating exists (#192);
+   * from then on, only active Admins count.
+   */
+  abstract adminCountOf(workspaceId: string): Promise<number>;
 }

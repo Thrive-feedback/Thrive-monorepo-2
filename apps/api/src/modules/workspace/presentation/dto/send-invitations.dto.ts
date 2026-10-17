@@ -1,13 +1,22 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { MEMBER_ROLES } from '../../domain/value-object/member-role.vo';
 
 /**
  * Only the shape is checked here. How many people one send may invite, and which addresses
  * are the same person, belong to the invited addresses, which answer with their own error codes.
  */
 export const sendInvitationsRequestSchema = z.strictObject({
-  /** One address per person, each sent its own Invitation. Up to 10 people per send. */
-  emails: z.array(z.string().trim().pipe(z.email())),
+  /**
+   * One entry per person, each sent its own Invitation with the Role they join with. Up to 10
+   * people per send; an address named twice is invited once, with the Role it was first given.
+   */
+  invitations: z.array(
+    z.strictObject({
+      email: z.string().trim().pipe(z.email()),
+      role: z.enum(MEMBER_ROLES),
+    }),
+  ),
 });
 export class SendInvitationsRequestDto extends createZodDto(
   sendInvitationsRequestSchema,

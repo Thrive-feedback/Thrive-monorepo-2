@@ -57,8 +57,8 @@ function asA(role: MemberRoleValue) {
 }
 
 describe('listing the Invitations of a Workspace', () => {
-  it('shows the Owner each one still waiting, as pending or expired', async () => {
-    const invitations = await setUp().useCase.execute(asA('OWNER'));
+  it('shows an Admin each one still waiting, as pending or expired', async () => {
+    const invitations = await setUp().useCase.execute(asA('ADMIN'));
 
     expect(invitations.items.map((i) => [i.email, i.status])).toEqual([
       ['ben@acme.co', 'PENDING'],
@@ -69,17 +69,13 @@ describe('listing the Invitations of a Workspace', () => {
   it('names who sent each one, asking Identity once for them all', async () => {
     const { accountSummaryPort, useCase } = setUp();
 
-    const invitations = await useCase.execute(asA('OWNER'));
+    const invitations = await useCase.execute(asA('ADMIN'));
 
     expect(invitations.items.map((i) => i.invitedBy)).toEqual([
       { email: 'ann@acme.co', displayName: 'Ann' },
       { email: 'ann@acme.co', displayName: 'Ann' },
     ]);
     expect(accountSummaryPort.calls).toEqual([['account-ann']]);
-  });
-
-  it('shows an Admin them too', async () => {
-    expect((await setUp().useCase.execute(asA('ADMIN'))).total).toBe(2);
   });
 
   it('refuses a Member with no management rights', async () => {

@@ -33,6 +33,7 @@ function setUp(
     workspace,
     inviterAccountId: 'account-ann',
     email: 'somchai@acme.co',
+    role: 'MEMBER',
     status,
     lastSentAt: NOW,
   });
@@ -44,7 +45,7 @@ function setUp(
   return { workspaceInviting, useCase };
 }
 
-function revocation(role: MemberRoleValue = 'OWNER') {
+function revocation(role: MemberRoleValue = 'ADMIN') {
   return {
     credential: ANN_COOKIE,
     membership: { workspace: ACME, role },
@@ -53,22 +54,14 @@ function revocation(role: MemberRoleValue = 'OWNER') {
 }
 
 describe('revoking an Invitation', () => {
-  it('lets the Owner revoke one, on their own session', async () => {
-    const { workspaceInviting, useCase } = setUp();
-
-    await useCase.execute(revocation('OWNER'));
-
-    expect(workspaceInviting.revoked).toEqual([
-      { credential: ANN_COOKIE, invitationId: INVITATION_ID },
-    ]);
-  });
-
-  it('lets an Admin revoke one', async () => {
+  it('lets an Admin revoke one, on their own session', async () => {
     const { workspaceInviting, useCase } = setUp();
 
     await useCase.execute(revocation('ADMIN'));
 
-    expect(workspaceInviting.revoked).toHaveLength(1);
+    expect(workspaceInviting.revoked).toEqual([
+      { credential: ANN_COOKIE, invitationId: INVITATION_ID },
+    ]);
   });
 
   it('lets an expired one be revoked, to clear it away', async () => {

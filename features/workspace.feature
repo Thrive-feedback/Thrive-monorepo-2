@@ -1,13 +1,13 @@
 Feature: Workspace
   A founder introduces themselves and creates the Workspace their team will use,
-  becoming its Owner. A person belongs to one Workspace.
+  becoming its first Admin. A person belongs to one Workspace.
 
   @api
-  Scenario: A founder creates a Workspace and becomes its Owner
+  Scenario: A founder creates a Workspace and becomes its first Admin
     Given Ann is signed in
     And Ann has introduced themselves
     When Ann creates a Workspace called "Acme"
-    Then Ann is the Owner of "Acme"
+    Then Ann is an Admin of "Acme"
 
   @api
   Scenario: Someone who has not introduced themselves cannot create a Workspace
@@ -28,7 +28,7 @@ Feature: Workspace
     When Ben looks at who is in Ann's Workspace
     Then Ben sees these Members, earliest first:
       | Member | Role   |
-      | Ann    | OWNER  |
+      | Ann    | ADMIN  |
       | Ben    | MEMBER |
 
   @api

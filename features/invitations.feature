@@ -1,5 +1,5 @@
 Feature: Invitations
-  An Owner brings teammates into their Workspace by email. Each teammate
+  An Admin brings teammates into their Workspace by email. Each teammate
   joins from the link in their Invitation, or finds it waiting when they
   sign in without the link.
 
@@ -7,7 +7,7 @@ Feature: Invitations
     Given Ann owns a Workspace called "Acme"
 
   @api
-  Scenario: An Owner invites a teammate
+  Scenario: An Admin invites a teammate
     Given Ben is signed in
     When Ann invites Ben
     Then Ben is emailed an Invitation to "Acme"
@@ -19,6 +19,19 @@ Feature: Invitations
     And Ann has invited Ben
     When Ben accepts the Invitation
     Then Ben is a Member of "Acme"
+
+  @api
+  Scenario: An Admin invites a teammate as an Admin, who joins as one
+    Given Ben is signed in
+    And Ann has invited Ben as an Admin
+    When Ben accepts the Invitation
+    Then Ben is an Admin of "Acme"
+
+  @api
+  Scenario: An Admin sees the Role each Invitation was sent with
+    Given Ben is signed in
+    And Ann has invited Ben as an Admin
+    Then Ann sees Ben's Invitation is for an Admin
 
   @api
   Scenario: A Member cannot invite
@@ -81,13 +94,13 @@ Feature: Invitations
     Then Cara is offered no Workspaces
 
   @api
-  Scenario: An Owner sees who sent each Invitation
+  Scenario: An Admin sees who sent each Invitation
     Given Ben is signed in
     When Ann invites Ben
     Then Ann sees Ben's Invitation was sent by Ann
 
   @api
-  Scenario: An Owner resends an Invitation sent a while ago
+  Scenario: An Admin resends an Invitation sent a while ago
     Given Ben is signed in
     And Ann invited Ben an hour ago
     When Ann resends Ben's Invitation
@@ -125,7 +138,7 @@ Feature: Invitations
     Then Ben sees an Invitation from "Ann" to "Acme" waiting to be accepted
 
   @api
-  Scenario: An Owner invites several people at once and hears how each went
+  Scenario: An Admin invites several people at once and hears how each went
     Given Ben is a Member of Ann's Workspace
     And Cara is signed in
     And Dan is signed in
@@ -151,7 +164,7 @@ Feature: Invitations
     And Ann sees no Invitations waiting to be accepted
 
   @api
-  Scenario: An Owner revokes an Invitation
+  Scenario: An Admin revokes an Invitation
     Given Ben is signed in
     And Ann has invited Ben
     When Ann revokes Ben's Invitation

@@ -31,17 +31,17 @@ afterAll(async () => {
 });
 
 describe('listing the Members of a Workspace', () => {
-  it('names each by email and Profile name, the founding Owner first, and no one from elsewhere', async () => {
-    const owner = await fixtures.aSignedInAccount('members-owner');
-    const workspaceId = await fixtures.aWorkspace(owner);
+  it('names each by email and Profile name, the founding Admin first, and no one from elsewhere', async () => {
+    const admin = await fixtures.aSignedInAccount('members-admin');
+    const workspaceId = await fixtures.aWorkspace(admin);
     const member = await fixtures.aSignedInAccount('members-member');
     await fixtures.addMember(workspaceId, member, 'member');
     const outsider = await fixtures.aSignedInAccount('members-outsider');
     await fixtures.aWorkspace(outsider, 'Globex');
     accountSummaryPort.summaries.push(
       {
-        accountId: owner.accountId,
-        email: owner.email,
+        accountId: admin.accountId,
+        email: admin.email,
         fullName: 'Ann Lee',
         displayName: 'Ann',
         photoUrl: null,
@@ -73,12 +73,12 @@ describe('listing the Members of a Workspace', () => {
     expect(members).toEqual({
       items: [
         {
-          accountId: owner.accountId,
-          email: owner.email,
+          accountId: admin.accountId,
+          email: admin.email,
           fullName: 'Ann Lee',
           displayName: 'Ann',
           photoUrl: null,
-          role: 'OWNER',
+          role: 'ADMIN',
         },
         {
           accountId: member.accountId,

@@ -5,6 +5,10 @@ import {
   ProfileNamePort,
 } from '@app/modules/identity';
 import {
+  type MemberRoleChange,
+  MemberRoleChanging,
+} from '@app/modules/workspace/application/port/member-role-changing.port';
+import {
   type FoundedWorkspace,
   WorkspaceFounding,
   type WorkspaceFoundingInput,
@@ -145,7 +149,11 @@ export class FakeWorkspaceInviting extends WorkspaceInviting {
    */
   readonly expired = new Set<string>();
 
+  /** Every resend asked for, in order. */
+  readonly reissues: InvitationRequest[] = [];
+
   async reissue(request: InvitationRequest): Promise<InvitationReissued> {
+    this.reissues.push(request);
     if (this.members.has(request.email)) {
       return { outcome: 'already_member' };
     }
@@ -226,6 +234,34 @@ export class FakeMembershipQuery extends MembershipQuery {
       items: items.slice(start, start + page.pageSize),
       total: items.length,
     };
+  }
+
+  async adminCountOf(workspaceId: string): Promise<number> {
+    return this.memberships.filter(
+      (m) => m.workspace.id === workspaceId && m.role === 'ADMIN',
+    ).length;
+  }
+}
+
+/** Changes Roles in the memberships a `FakeMembershipQuery` holds, and records each change. */
+export class FakeMemberRoleChanging extends MemberRoleChanging {
+  readonly changes: MemberRoleChange[] = [];
+
+  constructor(private readonly membershipQuery: FakeMembershipQuery) {
+    super();
+  }
+
+  async change(change: MemberRoleChange): Promise<void> {
+    this.changes.push(change);
+    const index = this.membershipQuery.memberships.findIndex(
+      (m) =>
+        m.accountId === change.accountId &&
+        m.workspace.id === change.workspaceId,
+    );
+    const found = this.membershipQuery.memberships[index];
+    if (found) {
+      this.membershipQuery.memberships[index] = { ...found, role: change.role };
+    }
   }
 }
 

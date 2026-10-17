@@ -34,12 +34,12 @@ When(
 );
 
 Then(
-  '{person} is the Owner of {string}',
+  '{person} is an Admin of {string}',
   async function (this: ThriveWorld, name: string, workspaceName: string) {
     const memberships = await myMemberships(this, name);
     assert.deepEqual(
       memberships.map((m) => [m.workspace.name, m.role]),
-      [[workspaceName, 'OWNER']],
+      [[workspaceName, 'ADMIN']],
     );
   },
 );
@@ -60,11 +60,11 @@ Then(
 
 When(
   "{person} looks at who is in {person}'s Workspace",
-  async function (this: ThriveWorld, name: string, owner: string) {
+  async function (this: ThriveWorld, name: string, admin: string) {
     await this.as(
       name,
       'GET',
-      `/v1/workspaces/${this.workspaceOf(owner)}/members`,
+      `/v1/workspaces/${this.workspaceOf(admin)}/members`,
     );
   },
 );

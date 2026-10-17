@@ -24,7 +24,9 @@ export class WorkspaceController {
   ) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a Workspace, with the caller as its Owner' })
+  @ApiOperation({
+    summary: 'Create a Workspace, with the caller as its first Admin',
+  })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.CREATED, type: CreateWorkspaceResponseDto })
   @ApiBadRequestResponse({

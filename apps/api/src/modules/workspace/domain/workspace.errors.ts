@@ -30,13 +30,23 @@ export class TeamSizeInvalidError extends DomainError {
   }
 }
 
-/** Only a stored value can fail this: nobody sends a Role when creating a Workspace. */
+/** Only a stored value can fail this: the request schema accepts only the known Roles. */
 export class MemberRoleInvalidError extends DomainError {
   readonly code = 'MEMBER_ROLE_INVALID';
   readonly category = 'validation' as const;
 
   constructor() {
     super('A Member role must be one of the known Roles.');
+  }
+}
+
+/** A Workspace always keeps at least one Admin (brain `ADR-0033`). */
+export class LastAdminError extends DomainError {
+  readonly code = 'LAST_ADMIN';
+  readonly category = 'conflict' as const;
+
+  constructor() {
+    super('Make someone else an Admin first.');
   }
 }
 

@@ -113,7 +113,10 @@ function authOptions(
       organization({
         // One Workspace per person in this release (ADR-0020).
         organizationLimit: 1,
-        creatorRole: 'owner',
+        // There is no Owner: the founder is the first Admin (brain ADR-0033, ADR 0045). The
+        // plugin gives its creator Role extra standing — only it may grant that Role, and its
+        // last holder may not give it up — which is exactly what an Admin is.
+        creatorRole: 'admin',
         disableOrganizationDeletion: true,
         invitationExpiresIn: INVITATION_LIFETIME_SECONDS,
         // No `sendInvitationEmail`: the Workspace module's use case sends the Invitation

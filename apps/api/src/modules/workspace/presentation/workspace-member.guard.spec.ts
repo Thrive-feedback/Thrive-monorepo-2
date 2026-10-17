@@ -22,7 +22,7 @@ function guard(): WorkspaceMemberGuard {
   membershipQuery.memberships.push({
     accountId: 'account-ann',
     workspace: { id: ACME_ID, name: 'Acme' },
-    role: 'OWNER',
+    role: 'ADMIN',
   });
   return new WorkspaceMemberGuard(
     new ResolveMembershipUseCase(membershipQuery),
@@ -43,7 +43,7 @@ describe('the Workspace member guard', () => {
     expect(await guard().canActivate(contextFor(request))).toBe(true);
     expect(request.membership).toEqual({
       workspace: { id: ACME_ID, name: 'Acme' },
-      role: 'OWNER',
+      role: 'ADMIN',
     });
   });
 
