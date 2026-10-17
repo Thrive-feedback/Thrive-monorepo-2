@@ -1,8 +1,9 @@
-Feature: Deactivating Members, and leaving
+Feature: Deactivating Members, leaving, and Reactivating
   Deactivating ends someone's access to a Workspace and keeps everything they
-  gave and received there. Anyone can Deactivate themselves, which is how they
-  leave; an Admin can also Deactivate anyone else, other Admins included. A
-  Workspace always keeps an active Admin.
+  gave and received there, with their name shown as inactive. Anyone can
+  Deactivate themselves, which is how they leave; an Admin can also Deactivate
+  anyone else, other Admins included. A Workspace always keeps an active Admin.
+  An Admin can Reactivate someone, who comes back with the Role they had.
 
   Background:
     Given Ann owns a Workspace called "Acme"
@@ -53,3 +54,45 @@ Feature: Deactivating Members, and leaving
   Scenario: The only Admin cannot leave
     When Ann leaves their Workspace
     Then Ann is told to make someone else an Admin first
+
+  @api
+  Scenario: Feedback from someone Deactivated stays, showing them as inactive
+    Given Ben has given Ann Feedback on "The customer demo": "You kept the room with you.", shared with everyone in the Workspace
+    And Ann has Deactivated Ben
+    When Ann looks at the Workspace feed
+    Then Ann reads "You kept the room with you." from Ben to Ann about "The customer demo" on the feed
+    And Ann sees Ben as inactive on the feed
+
+  @api
+  Scenario: An Admin Reactivates a former Admin, who can open the Workspace again as an Admin
+    Given Ann has made Ben an Admin
+    And Ann has Deactivated Ben
+    When Ann Reactivates Ben
+    And Ben looks at who is in Ann's Workspace
+    Then Ben sees these Members, earliest first:
+      | Member | Role  |
+      | Ann    | ADMIN |
+      | Ben    | ADMIN |
+
+  @api
+  Scenario: Someone Reactivated is shown as active again
+    Given Ben has given Ann Feedback on "The customer demo": "You kept the room with you.", shared with everyone in the Workspace
+    And Ann has Deactivated Ben
+    When Ann Reactivates Ben
+    And Ann looks at the Workspace feed
+    Then Ann sees Ben as active on the feed
+
+  @api
+  Scenario: A Member cannot Reactivate anyone
+    Given Cara is a Member of Ann's Workspace
+    And Ann has Deactivated Cara
+    When Ben Reactivates Cara
+    Then Ben is told they may not Reactivate anyone
+
+  @api
+  Scenario: Someone who joined another Workspace meanwhile is Reactivated and keeps both
+    Given Ann has Deactivated Ben
+    And Dan owns a Workspace called "Globex"
+    And Ben is a Member of Dan's Workspace
+    When Ann Reactivates Ben
+    Then Ben belongs to "Acme" and "Globex"

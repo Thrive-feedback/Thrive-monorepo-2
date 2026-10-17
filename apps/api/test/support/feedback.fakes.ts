@@ -23,10 +23,24 @@ import { FeedbackRequestRepository } from '@app/modules/feedback/domain/reposito
 import type { AskStatusValue } from '@app/modules/feedback/domain/value-object/ask-status.vo';
 import { WorkspaceMembershipPort } from '@app/modules/workspace';
 
-/** Which Accounts are Members of which Workspace, as the test sets it up. */
+/** Which Accounts are Members of which Workspace, and which were Deactivated, as the test sets it up. */
 export class FakeWorkspaceMembershipPort extends WorkspaceMembershipPort {
   /** Keyed `workspaceId`, holding the Accounts that are Members there. */
   private readonly members = new Map<string, Set<string>>();
+  /** Keyed `workspaceId`, holding the Accounts Deactivated there. */
+  private readonly deactivated = new Map<string, Set<string>>();
+
+  withDeactivated(workspaceId: string, ...accountIds: string[]): this {
+    const held = this.deactivated.get(workspaceId) ?? new Set<string>();
+    for (const accountId of accountIds) {
+      held.add(accountId);
+    }
+    this.deactivated.set(workspaceId, held);
+    return this;
+  }
+
+  /** One entry per `deactivatedAmong` call, holding what was asked: how a test sees an N+1 read. */
+  readonly deactivatedCalls: (readonly string[])[] = [];
 
   with(workspaceId: string, ...accountIds: string[]): this {
     const held = this.members.get(workspaceId) ?? new Set<string>();
@@ -52,6 +66,15 @@ export class FakeWorkspaceMembershipPort extends WorkspaceMembershipPort {
     readonly accountIds: readonly string[];
   }): Promise<readonly string[]> {
     const held = this.members.get(members.workspaceId);
+    return members.accountIds.filter((accountId) => held?.has(accountId));
+  }
+
+  async deactivatedAmong(members: {
+    readonly workspaceId: string;
+    readonly accountIds: readonly string[];
+  }): Promise<readonly string[]> {
+    this.deactivatedCalls.push([...members.accountIds]);
+    const held = this.deactivated.get(members.workspaceId);
     return members.accountIds.filter((accountId) => held?.has(accountId));
   }
 }

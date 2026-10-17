@@ -29,6 +29,7 @@ import type { MembershipView } from '../application/types/membership.types';
 import { ChangeMemberRoleUseCase } from '../application/use-cases/change-member-role.use-case';
 import { DeactivateMemberUseCase } from '../application/use-cases/deactivate-member.use-case';
 import { ListWorkspaceMembersUseCase } from '../application/use-cases/list-workspace-members.use-case';
+import { ReactivateMemberUseCase } from '../application/use-cases/reactivate-member.use-case';
 import { ChangeMemberRoleRequestDto } from './dto/change-member-role.dto';
 import {
   ListWorkspaceMembersQueryDto,
@@ -43,7 +44,7 @@ import {
 
 /**
  * The Members of one Workspace, readable by anyone who is one of them, managed by its Admins.
- * Each Member may also leave, by Deactivating themselves.
+ * Each Member may also leave, by Deactivating themselves, and an Admin may bring them back.
  */
 @ApiTags('workspace')
 @Controller({ path: 'v1/workspaces/:workspaceId/members' })
@@ -53,6 +54,7 @@ export class WorkspaceMemberController {
     private readonly listWorkspaceMembersUseCase: ListWorkspaceMembersUseCase,
     private readonly changeMemberRoleUseCase: ChangeMemberRoleUseCase,
     private readonly deactivateMemberUseCase: DeactivateMemberUseCase,
+    private readonly reactivateMemberUseCase: ReactivateMemberUseCase,
   ) {}
 
   @Get()
@@ -144,6 +146,32 @@ export class WorkspaceMemberController {
   ): Promise<void> {
     await this.deactivateMemberUseCase.execute({
       deactivatorAccountId: actor.accountId,
+      membership,
+      accountId: params.accountId,
+    });
+  }
+
+  @Post(':accountId/reactivate')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Give a Deactivated Member their access back, with the Role they had; only Admins may',
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ApiNoContentResponse({ description: 'Reactivated, or already active' })
+  @ApiBadRequestResponse({ description: 'REQUEST_INVALID' })
+  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
+  @ApiForbiddenResponse({ description: 'NOT_ALLOWED_TO_REACTIVATE' })
+  @ApiNotFoundResponse({
+    description: 'WORKSPACE_NOT_FOUND or MEMBER_NOT_FOUND',
+  })
+  async reactivateMember(
+    @CurrentActor() actor: Actor,
+    @CurrentMembership() membership: MembershipView,
+    @Param() params: WorkspaceMemberPathParamsDto,
+  ): Promise<void> {
+    await this.reactivateMemberUseCase.execute({
+      reactivatorAccountId: actor.accountId,
       membership,
       accountId: params.accountId,
     });

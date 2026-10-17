@@ -9,6 +9,21 @@ export interface PageRequest {
   readonly pageSize: number;
 }
 
+/**
+ * Whether a person named on Feedback is still active in its Workspace, or was Deactivated there
+ * and is shown as inactive. Their Feedback stays either way (glossary: Deactivate).
+ */
+export const PERSON_STATUSES = ['ACTIVE', 'DEACTIVATED'] as const;
+
+export type PersonStatus = (typeof PERSON_STATUSES)[number];
+
+/** The people named on one page, as `PeopleService` answers them. */
+export interface People {
+  /** `null` while they have not introduced themselves, or when their Account is gone. */
+  nameOf(accountId: string): string | null;
+  statusOf(accountId: string): PersonStatus;
+}
+
 export interface AnswerView {
   readonly body: string;
   readonly answeredAt: Date;
@@ -20,6 +35,7 @@ export interface AskView {
   readonly giverAccountId: string;
   /** `null` while that Member has not introduced themselves. */
   readonly giverName: string | null;
+  readonly giverStatus: PersonStatus;
   readonly status: AskStatusValue;
   /**
    * What was written, or `null` — because the Ask is still waiting, because this caller may
@@ -35,6 +51,7 @@ export interface SelectedPersonView {
   readonly accountId: string;
   /** `null` while that Member has not introduced themselves. */
   readonly name: string | null;
+  readonly status: PersonStatus;
 }
 
 /** Who besides the Giver and the Requester reads a request's answers. */
@@ -68,6 +85,7 @@ export interface MyAskView {
   readonly requesterAccountId: string;
   /** `null` while the Requester has not introduced themselves. */
   readonly requesterName: string | null;
+  readonly requesterStatus: PersonStatus;
   readonly status: AskStatusValue;
   readonly createdAt: Date;
 }
@@ -94,6 +112,7 @@ export interface ReceivedFeedbackView {
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
+  readonly giverStatus: PersonStatus;
   readonly body: string;
   readonly createdAt: Date;
 }
@@ -112,9 +131,11 @@ export interface FeedbackView {
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
+  readonly giverStatus: PersonStatus;
   readonly receiverAccountId: string;
   /** `null` while the Receiver has not introduced themselves. */
   readonly receiverName: string | null;
+  readonly receiverStatus: PersonStatus;
   readonly body: string;
   readonly createdAt: Date;
 }

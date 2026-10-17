@@ -9,6 +9,10 @@ import {
   type MemberDeactivation,
 } from '@app/modules/workspace/application/port/member-deactivating.port';
 import {
+  MemberReactivating,
+  type MemberReactivation,
+} from '@app/modules/workspace/application/port/member-reactivating.port';
+import {
   type MemberRoleChange,
   MemberRoleChanging,
 } from '@app/modules/workspace/application/port/member-role-changing.port';
@@ -238,6 +242,20 @@ export class FakeMembershipQuery extends MembershipQuery {
       .map((m) => m.accountId);
   }
 
+  async deactivatedAmong(
+    workspaceId: string,
+    accountIds: readonly string[],
+  ): Promise<readonly string[]> {
+    return this.memberships
+      .filter(
+        (m) =>
+          m.workspace.id === workspaceId &&
+          m.deactivatedAt !== undefined &&
+          accountIds.includes(m.accountId),
+      )
+      .map((m) => m.accountId);
+  }
+
   async membersOfWorkspace(
     workspaceId: string,
     page: PageRequest,
@@ -297,6 +315,29 @@ export class FakeMemberDeactivating extends MemberDeactivating {
         ...found,
         deactivatedAt: deactivation.deactivatedAt,
       };
+    }
+  }
+}
+
+/** Reactivates in the memberships a `FakeMembershipQuery` holds, and records each one. */
+export class FakeMemberReactivating extends MemberReactivating {
+  readonly reactivations: MemberReactivation[] = [];
+
+  constructor(private readonly membershipQuery: FakeMembershipQuery) {
+    super();
+  }
+
+  async reactivate(reactivation: MemberReactivation): Promise<void> {
+    this.reactivations.push(reactivation);
+    const index = this.membershipQuery.memberships.findIndex(
+      (m) =>
+        m.accountId === reactivation.accountId &&
+        m.workspace.id === reactivation.workspaceId,
+    );
+    const found = this.membershipQuery.memberships[index];
+    if (found) {
+      const { deactivatedAt: _, ...active } = found;
+      this.membershipQuery.memberships[index] = active;
     }
   }
 }

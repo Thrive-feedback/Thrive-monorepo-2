@@ -48,6 +48,7 @@ function toResponse(feedback: ReceivedFeedbackView) {
     topic: feedback.topic,
     giverAccountId: feedback.giverAccountId,
     giverName: feedback.giverName,
+    giverStatus: feedback.giverStatus,
     body: feedback.body,
     createdAt: feedback.createdAt.toISOString(),
   };

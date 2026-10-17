@@ -126,6 +126,16 @@ export class NotAllowedToDeactivateError extends ApplicationError {
   }
 }
 
+/** Only Admins Reactivate someone; nobody can Reactivate themselves, since they cannot get in. */
+export class NotAllowedToReactivateError extends ApplicationError {
+  readonly code = 'NOT_ALLOWED_TO_REACTIVATE';
+  readonly category = 'forbidden' as const;
+
+  constructor() {
+    super('Only Admins can Reactivate people in this Workspace.');
+  }
+}
+
 /**
  * The Account was Deactivated in the Workspace it is invited to. Its membership is kept, so it
  * cannot be added again, and how someone comes back is not decided yet.

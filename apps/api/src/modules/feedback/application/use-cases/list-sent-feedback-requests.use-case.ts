@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AskStatus } from '../../domain/value-object/ask-status.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import type {
   FeedbackRequestListView,
   PageRequest,
@@ -22,13 +22,13 @@ export interface ListSentFeedbackRequestsInput {
  * version of this that lists somebody else's requests cannot be written by accident.
  *
  * Every Giver on the page is named in one call, not one per request (`BE_06` R9), so a page of
- * twenty costs one read and one port call however many Members each request asked.
+ * twenty costs one read and one call to each port however many Members each request asked.
  */
 @Injectable()
 export class ListSentFeedbackRequestsUseCase {
   constructor(
     private readonly feedbackRequestQuery: FeedbackRequestQuery,
-    private readonly accountNamesService: AccountNamesService,
+    private readonly peopleService: PeopleService,
   ) {}
 
   async execute(
@@ -39,7 +39,8 @@ export class ListSentFeedbackRequestsUseCase {
       input.requesterAccountId,
       input.page,
     );
-    const names = await this.accountNamesService.namesOf(
+    const people = await this.peopleService.peopleIn(
+      input.workspaceId,
       sent.items.flatMap((request) => [
         ...request.asks.map((ask) => ask.giverAccountId),
         ...request.selectedAccountIds,
@@ -62,13 +63,15 @@ export class ListSentFeedbackRequestsUseCase {
               .selectedAccountIds()
               .map((accountId) => ({
                 accountId,
-                name: names.get(accountId) ?? null,
+                name: people.nameOf(accountId),
+                status: people.statusOf(accountId),
               })),
           },
           asks: request.asks.map((ask) => ({
             askId: ask.askId,
             giverAccountId: ask.giverAccountId,
-            giverName: names.get(ask.giverAccountId) ?? null,
+            giverName: people.nameOf(ask.giverAccountId),
+            giverStatus: people.statusOf(ask.giverAccountId),
             status: AskStatus.of(ask.status).toString(),
             // The list says where each Ask stands, not what was written: a page of twenty
             // requests would carry twenty answers nobody is reading yet. The Receiver opens one

@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
+import {
+  FakeFeedbackRequestQuery,
+  FakeWorkspaceMembershipPort,
+} from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import { ListReceivedFeedbackUseCase } from './list-received-feedback.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -48,6 +51,7 @@ function setUp() {
       createdAt: new Date('2026-10-12T04:00:00.000Z'),
     },
   );
+  const workspaceMembershipPort = new FakeWorkspaceMembershipPort();
   const accountSummaryPort = new FakeAccountSummaryPort();
   accountSummaryPort.summaries.push(
     {
@@ -67,9 +71,9 @@ function setUp() {
   );
   const useCase = new ListReceivedFeedbackUseCase(
     feedbackRequestQuery,
-    new AccountNamesService(accountSummaryPort),
+    new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { accountSummaryPort, useCase };
+  return { workspaceMembershipPort, accountSummaryPort, useCase };
 }
 
 describe('reading the Feedback written to me', () => {
@@ -139,6 +143,37 @@ describe('reading the Feedback written to me', () => {
     });
 
     expect(received).toEqual({ items: [], total: 0 });
+  });
+
+  it('shows a Giver who has since been Deactivated as inactive, and keeps what they wrote', async () => {
+    const { workspaceMembershipPort, useCase } = setUp();
+    workspaceMembershipPort.withDeactivated(WORKSPACE_ID, CARA);
+
+    const received = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      receiverAccountId: ANA,
+      page: ONE_PAGE,
+    });
+
+    expect(received.items.map((feedback) => feedback.giverStatus)).toEqual([
+      'DEACTIVATED',
+      'ACTIVE',
+    ]);
+    expect(received.items[0]?.body).toBe(
+      'Short and clear. Keep leaving the last five minutes open.',
+    );
+  });
+
+  it('asks which Givers are Deactivated in one call, however many pieces the page holds', async () => {
+    const { workspaceMembershipPort, useCase } = setUp();
+
+    await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      receiverAccountId: ANA,
+      page: ONE_PAGE,
+    });
+
+    expect(workspaceMembershipPort.deactivatedCalls).toEqual([[CARA, BEN]]);
   });
 
   it('names every Giver on the page in one call, however many pieces it holds', async () => {

@@ -48,12 +48,14 @@ function toResponse(request: FeedbackRequestView) {
       selectedPeople: request.visibility.selectedPeople.map((person) => ({
         accountId: person.accountId,
         name: person.name,
+        status: person.status,
       })),
     },
     asks: request.asks.map((ask) => ({
       askId: ask.askId,
       giverAccountId: ask.giverAccountId,
       giverName: ask.giverName,
+      giverStatus: ask.giverStatus,
       status: ask.status,
       answer: ask.answer
         ? {

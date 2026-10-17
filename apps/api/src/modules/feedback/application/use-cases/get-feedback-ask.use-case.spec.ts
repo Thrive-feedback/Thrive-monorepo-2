@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
+import {
+  FakeFeedbackRequestQuery,
+  FakeWorkspaceMembershipPort,
+} from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import { GetFeedbackAskUseCase } from './get-feedback-ask.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -26,6 +29,7 @@ function setUp() {
     createdAt: CREATED_AT,
     asks: [{ askId: ASK_FOR_BEN, giverAccountId: BEN, status: 'PENDING' }],
   });
+  const workspaceMembershipPort = new FakeWorkspaceMembershipPort();
   const accountSummaryPort = new FakeAccountSummaryPort();
   accountSummaryPort.summaries.push({
     accountId: ANA,
@@ -36,9 +40,9 @@ function setUp() {
   });
   const useCase = new GetFeedbackAskUseCase(
     feedbackRequestQuery,
-    new AccountNamesService(accountSummaryPort),
+    new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { accountSummaryPort, useCase };
+  return { workspaceMembershipPort, accountSummaryPort, useCase };
 }
 
 describe('reading one Ask waiting for me', () => {
@@ -57,9 +61,23 @@ describe('reading one Ask waiting for me', () => {
       topic: 'my presentation skills',
       requesterAccountId: ANA,
       requesterName: 'Ana Silva',
+      requesterStatus: 'ACTIVE',
       status: 'PENDING',
       createdAt: CREATED_AT,
     });
+  });
+
+  it('shows a Requester who has since been Deactivated as inactive', async () => {
+    const { workspaceMembershipPort, useCase } = setUp();
+    workspaceMembershipPort.withDeactivated(WORKSPACE_ID, ANA);
+
+    const ask = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      giverAccountId: BEN,
+      askId: ASK_FOR_BEN,
+    });
+
+    expect(ask.requesterStatus).toBe('DEACTIVATED');
   });
 
   it('leaves the Requester unnamed while they have not introduced themselves', async () => {

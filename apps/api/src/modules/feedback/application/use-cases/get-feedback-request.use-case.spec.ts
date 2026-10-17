@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
+import {
+  FakeFeedbackRequestQuery,
+  FakeWorkspaceMembershipPort,
+} from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { FeedbackRequestNotFoundError } from '../feedback-request.errors';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import { GetFeedbackRequestUseCase } from './get-feedback-request.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -26,6 +29,7 @@ function setUp() {
     createdAt: CREATED_AT,
     asks: [{ askId: ASK_ID, giverAccountId: GIVER, status: 'PENDING' }],
   });
+  const workspaceMembershipPort = new FakeWorkspaceMembershipPort();
   const accountSummaryPort = new FakeAccountSummaryPort();
   accountSummaryPort.summaries.push({
     accountId: GIVER,
@@ -36,9 +40,14 @@ function setUp() {
   });
   const useCase = new GetFeedbackRequestUseCase(
     feedbackRequestQuery,
-    new AccountNamesService(accountSummaryPort),
+    new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { accountSummaryPort, feedbackRequestQuery, useCase };
+  return {
+    workspaceMembershipPort,
+    accountSummaryPort,
+    feedbackRequestQuery,
+    useCase,
+  };
 }
 
 const ANSWERED_AT = new Date('2026-10-12T04:00:00.000Z');
@@ -99,6 +108,7 @@ describe('reading one Feedback Request', () => {
           askId: ASK_ID,
           giverAccountId: GIVER,
           giverName: 'Ben Carter',
+          giverStatus: 'ACTIVE',
           status: 'PENDING',
           answer: null,
         },
@@ -150,8 +160,31 @@ describe('reading one Feedback Request', () => {
 
     expect(found.visibility).toEqual({
       value: 'SELECTED_PEOPLE',
-      selectedPeople: [{ accountId: BYSTANDER, name: 'Cara Diaz' }],
+      selectedPeople: [
+        { accountId: BYSTANDER, name: 'Cara Diaz', status: 'ACTIVE' },
+      ],
     });
+  });
+
+  it('shows the Requester which of the people named have since been Deactivated', async () => {
+    const context = setUp();
+    sharedWithBystander(context);
+    context.workspaceMembershipPort.withDeactivated(
+      WORKSPACE_ID,
+      GIVER,
+      BYSTANDER,
+    );
+
+    const found = await context.useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      callerAccountId: REQUESTER,
+      requestId: REQUEST_ID,
+    });
+
+    expect(found.asks.map((ask) => ask.giverStatus)).toEqual(['DEACTIVATED']);
+    expect(
+      found.visibility?.selectedPeople.map((person) => person.status),
+    ).toEqual(['DEACTIVATED']);
   });
 
   it('does not tell the Giver who else reads their answer', async () => {

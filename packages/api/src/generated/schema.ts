@@ -175,6 +175,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/members/{accountId}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Give a Deactivated Member their access back, with the Role they had; only Admins may */
+        post: operations["WorkspaceMemberController_reactivateMember"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspaceId}/invitations": {
         parameters: {
             query?: never;
@@ -614,6 +631,8 @@ export interface components {
                         /** Format: uuid */
                         accountId: string;
                         name: string | null;
+                        /** @enum {string} */
+                        status: "ACTIVE" | "DEACTIVATED";
                     }[];
                 } | null;
                 asks: {
@@ -622,6 +641,8 @@ export interface components {
                     /** Format: uuid */
                     giverAccountId: string;
                     giverName: string | null;
+                    /** @enum {string} */
+                    giverStatus: "ACTIVE" | "DEACTIVATED";
                     /** @enum {string} */
                     status: "PENDING" | "ANSWERED" | "EXPIRED";
                     answer: {
@@ -648,6 +669,8 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
                 }[];
             } | null;
             asks: {
@@ -656,6 +679,8 @@ export interface components {
                 /** Format: uuid */
                 giverAccountId: string;
                 giverName: string | null;
+                /** @enum {string} */
+                giverStatus: "ACTIVE" | "DEACTIVATED";
                 /** @enum {string} */
                 status: "PENDING" | "ANSWERED" | "EXPIRED";
                 answer: {
@@ -678,6 +703,8 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
                 };
                 /** @enum {string} */
                 status: "PENDING" | "ANSWERED" | "EXPIRED";
@@ -698,6 +725,8 @@ export interface components {
                 /** Format: uuid */
                 accountId: string;
                 name: string | null;
+                /** @enum {string} */
+                status: "ACTIVE" | "DEACTIVATED";
             };
             /** @enum {string} */
             status: "PENDING" | "ANSWERED" | "EXPIRED";
@@ -736,6 +765,8 @@ export interface components {
                 /** Format: uuid */
                 giverAccountId: string;
                 giverName: string | null;
+                /** @enum {string} */
+                giverStatus: "ACTIVE" | "DEACTIVATED";
                 body: string;
                 /** Format: date-time */
                 createdAt: string;
@@ -756,11 +787,15 @@ export interface components {
                 /** Format: uuid */
                 accountId: string;
                 name: string | null;
+                /** @enum {string} */
+                status: "ACTIVE" | "DEACTIVATED";
             };
             receiver: {
                 /** Format: uuid */
                 accountId: string;
                 name: string | null;
+                /** @enum {string} */
+                status: "ACTIVE" | "DEACTIVATED";
             };
             body: string;
             /** Format: date-time */
@@ -779,11 +814,15 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
                 };
                 receiver: {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
                 };
                 body: string;
                 /** Format: date-time */
@@ -806,11 +845,15 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
                 };
                 receiver: {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
                 };
                 body: string;
                 /** Format: date-time */
@@ -1216,6 +1259,58 @@ export interface operations {
             };
             /** @description LAST_ADMIN */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceMemberController_reactivateMember: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reactivated, or already active */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_ALLOWED_TO_REACTIVATE */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or MEMBER_NOT_FOUND */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

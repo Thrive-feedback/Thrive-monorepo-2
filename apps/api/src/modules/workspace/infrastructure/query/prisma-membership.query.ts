@@ -77,6 +77,21 @@ export class PrismaMembershipQuery extends MembershipQuery {
     return members.map((member) => member.userId);
   }
 
+  async deactivatedAmong(
+    workspaceId: string,
+    accountIds: readonly string[],
+  ): Promise<readonly string[]> {
+    const members = await this.prismaTransactionContext.client.member.findMany({
+      where: {
+        workspaceId,
+        userId: { in: [...accountIds] },
+        deactivatedAt: { not: null },
+      },
+      select: { userId: true },
+    });
+    return members.map((member) => member.userId);
+  }
+
   async membersOfWorkspace(
     workspaceId: string,
     page: PageRequest,

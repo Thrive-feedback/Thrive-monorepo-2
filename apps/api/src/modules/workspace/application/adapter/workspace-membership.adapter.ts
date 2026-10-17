@@ -37,4 +37,17 @@ export class WorkspaceMembershipAdapter extends WorkspaceMembershipPort {
       members.accountIds,
     );
   }
+
+  async deactivatedAmong(members: {
+    readonly workspaceId: string;
+    readonly accountIds: readonly string[];
+  }): Promise<readonly string[]> {
+    if (members.accountIds.length === 0) {
+      return [];
+    }
+    return this.membershipQuery.deactivatedAmong(
+      members.workspaceId,
+      members.accountIds,
+    );
+  }
 }

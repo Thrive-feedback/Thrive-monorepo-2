@@ -136,6 +136,19 @@ export function deactivate(
   );
 }
 
+/** `reactivator` Reactivates `name` in `reactivator`'s Workspace. */
+export function reactivate(
+  world: ThriveWorld,
+  reactivator: string,
+  name: string,
+): Promise<ApiResponse> {
+  return world.as(
+    reactivator,
+    'POST',
+    `/v1/workspaces/${world.workspaceOf(reactivator)}/members/${world.person(name).accountId}/reactivate`,
+  );
+}
+
 /** Signs `name` in, has `admin` invite them, and accepts from the email. */
 export async function joinWorkspaceOf(
   world: ThriveWorld,

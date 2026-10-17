@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { FakeFeedbackRequestQuery } from '@test/support/feedback.fakes';
+import {
+  FakeFeedbackRequestQuery,
+  FakeWorkspaceMembershipPort,
+} from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { FeedbackNotFoundError } from '../feedback-request.errors';
-import { AccountNamesService } from '../service/account-names.service';
+import { PeopleService } from '../service/people.service';
 import { GetFeedbackUseCase } from './get-feedback.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -15,7 +18,11 @@ const CARA = 'account-cara';
 const DAN = 'account-dan';
 const CREATED_AT = new Date('2026-10-12T04:00:00.000Z');
 
-function setUp(visibility: string, selectedAccountIds: string[] = []) {
+function setUp(
+  visibility: string,
+  selectedAccountIds: string[] = [],
+  deactivatedAccountIds: string[] = [],
+) {
   const feedbackRequestQuery = new FakeFeedbackRequestQuery();
   feedbackRequestQuery.feedbackWithVisibility.push({
     id: FEEDBACK_ID,
@@ -49,7 +56,13 @@ function setUp(visibility: string, selectedAccountIds: string[] = []) {
   );
   return new GetFeedbackUseCase(
     feedbackRequestQuery,
-    new AccountNamesService(accountSummaryPort),
+    new PeopleService(
+      accountSummaryPort,
+      new FakeWorkspaceMembershipPort().withDeactivated(
+        WORKSPACE_ID,
+        ...deactivatedAccountIds,
+      ),
+    ),
   );
 }
 
@@ -76,11 +89,27 @@ describe('reading one piece of Feedback', () => {
       topic: 'my presentation skills',
       giverAccountId: GIVER,
       giverName: 'Ben Carter',
+      giverStatus: 'ACTIVE',
       receiverAccountId: RECEIVER,
       receiverName: 'Ana Lee',
+      receiverStatus: 'ACTIVE',
       body: 'You open strongly and lose the room at the detail.',
       createdAt: CREATED_AT,
     });
+  });
+
+  it('shows a Giver who has since been Deactivated as inactive, and keeps what they wrote', async () => {
+    const useCase = setUp('ONLY_ME', [], [GIVER]);
+
+    const feedback = await readAs(useCase, RECEIVER);
+
+    expect([feedback.giverStatus, feedback.receiverStatus]).toEqual([
+      'DEACTIVATED',
+      'ACTIVE',
+    ]);
+    expect(feedback.body).toBe(
+      'You open strongly and lose the room at the detail.',
+    );
   });
 
   it('lets the Receiver read it when nobody else may', async () => {

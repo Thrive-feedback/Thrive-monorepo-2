@@ -41,6 +41,11 @@ export class MemberRole {
     return this.value === 'ADMIN';
   }
 
+  /** Admins Reactivate anyone Deactivated in the Workspace, who comes back with their old Role. */
+  mayReactivate(): boolean {
+    return this.value === 'ADMIN';
+  }
+
   /**
    * Refuses to make the Workspace's last Admin a Member, so it is never left with nobody to
    * manage it. `adminCount` is how many active Admins the Workspace has now, this one included.

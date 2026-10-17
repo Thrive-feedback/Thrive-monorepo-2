@@ -1,5 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
 
 /**
@@ -13,6 +14,8 @@ const requesterSchema = z.object({
   accountId: z.uuid(),
   /** `null` while the Requester has not introduced themselves. */
   name: z.string().nullable(),
+  /** `DEACTIVATED` once they were Deactivated in this Workspace; their Feedback stays. */
+  status: z.enum(PERSON_STATUSES),
 });
 
 /** One Ask as the Member asked reads it. The waiting list sends the same shape. */

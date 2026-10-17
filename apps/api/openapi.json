@@ -507,6 +507,63 @@
         ]
       }
     },
+    "/v1/workspaces/{workspaceId}/members/{accountId}/reactivate": {
+      "post": {
+        "operationId": "WorkspaceMemberController_reactivateMember",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Reactivated, or already active"
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "NOT_ALLOWED_TO_REACTIVATE"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND or MEMBER_NOT_FOUND"
+          }
+        },
+        "summary": "Give a Deactivated Member their access back, with the Role they had; only Admins may",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
     "/v1/workspaces/{workspaceId}/invitations": {
       "get": {
         "operationId": "InvitationController_listWorkspaceInvitations",
@@ -2425,11 +2482,19 @@
                               "string",
                               "null"
                             ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "ACTIVE",
+                              "DEACTIVATED"
+                            ]
                           }
                         },
                         "required": [
                           "accountId",
-                          "name"
+                          "name",
+                          "status"
                         ],
                         "additionalProperties": false
                       }
@@ -2461,6 +2526,13 @@
                         "type": [
                           "string",
                           "null"
+                        ]
+                      },
+                      "giverStatus": {
+                        "type": "string",
+                        "enum": [
+                          "ACTIVE",
+                          "DEACTIVATED"
                         ]
                       },
                       "status": {
@@ -2495,6 +2567,7 @@
                       "askId",
                       "giverAccountId",
                       "giverName",
+                      "giverStatus",
                       "status",
                       "answer"
                     ],
@@ -2578,11 +2651,19 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "DEACTIVATED"
+                      ]
                     }
                   },
                   "required": [
                     "accountId",
-                    "name"
+                    "name",
+                    "status"
                   ],
                   "additionalProperties": false
                 }
@@ -2614,6 +2695,13 @@
                   "type": [
                     "string",
                     "null"
+                  ]
+                },
+                "giverStatus": {
+                  "type": "string",
+                  "enum": [
+                    "ACTIVE",
+                    "DEACTIVATED"
                   ]
                 },
                 "status": {
@@ -2648,6 +2736,7 @@
                 "askId",
                 "giverAccountId",
                 "giverName",
+                "giverStatus",
                 "status",
                 "answer"
               ],
@@ -2703,11 +2792,19 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "DEACTIVATED"
+                      ]
                     }
                   },
                   "required": [
                     "accountId",
-                    "name"
+                    "name",
+                    "status"
                   ],
                   "additionalProperties": false
                 },
@@ -2789,11 +2886,19 @@
                   "string",
                   "null"
                 ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE",
+                  "DEACTIVATED"
+                ]
               }
             },
             "required": [
               "accountId",
-              "name"
+              "name",
+              "status"
             ],
             "additionalProperties": false
           },
@@ -2941,6 +3046,13 @@
                     "null"
                   ]
                 },
+                "giverStatus": {
+                  "type": "string",
+                  "enum": [
+                    "ACTIVE",
+                    "DEACTIVATED"
+                  ]
+                },
                 "body": {
                   "type": "string"
                 },
@@ -2957,6 +3069,7 @@
                 "topic",
                 "giverAccountId",
                 "giverName",
+                "giverStatus",
                 "body",
                 "createdAt"
               ],
@@ -3024,11 +3137,19 @@
                   "string",
                   "null"
                 ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE",
+                  "DEACTIVATED"
+                ]
               }
             },
             "required": [
               "accountId",
-              "name"
+              "name",
+              "status"
             ],
             "additionalProperties": false
           },
@@ -3045,11 +3166,19 @@
                   "string",
                   "null"
                 ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE",
+                  "DEACTIVATED"
+                ]
               }
             },
             "required": [
               "accountId",
-              "name"
+              "name",
+              "status"
             ],
             "additionalProperties": false
           },
@@ -3116,11 +3245,19 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "DEACTIVATED"
+                      ]
                     }
                   },
                   "required": [
                     "accountId",
-                    "name"
+                    "name",
+                    "status"
                   ],
                   "additionalProperties": false
                 },
@@ -3137,11 +3274,19 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "DEACTIVATED"
+                      ]
                     }
                   },
                   "required": [
                     "accountId",
-                    "name"
+                    "name",
+                    "status"
                   ],
                   "additionalProperties": false
                 },
@@ -3233,11 +3378,19 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "DEACTIVATED"
+                      ]
                     }
                   },
                   "required": [
                     "accountId",
-                    "name"
+                    "name",
+                    "status"
                   ],
                   "additionalProperties": false
                 },
@@ -3254,11 +3407,19 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "DEACTIVATED"
+                      ]
                     }
                   },
                   "required": [
                     "accountId",
-                    "name"
+                    "name",
+                    "status"
                   ],
                   "additionalProperties": false
                 },
