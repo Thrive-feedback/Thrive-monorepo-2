@@ -7,6 +7,8 @@ export type ReceivedFeedback = {
   readonly offered: boolean;
   /** The Giver, by the name on their Profile, or `null` while they have none. */
   readonly giverName: string | null;
+  /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
+  readonly giverInactive: boolean;
   /** What they wrote, as they wrote it — line breaks and all. */
   readonly body: string;
   /** ISO 8601, formatted where it is shown. */

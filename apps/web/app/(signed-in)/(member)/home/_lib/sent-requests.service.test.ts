@@ -50,6 +50,7 @@ describe('reading the Feedback Requests I sent', () => {
             askId: 'ask-1',
             giverAccountId: 'account-ben',
             giverName: 'Ben Carter',
+            giverStatus: 'ACTIVE',
             status: 'PENDING',
           },
         ],
@@ -61,7 +62,14 @@ describe('reading the Feedback Requests I sent', () => {
         id: 'request-1',
         topic: 'my presentation skills',
         sentAt: '2026-10-11T03:00:00.000Z',
-        asks: [{ askId: 'ask-1', giverName: 'Ben Carter', status: 'PENDING' }],
+        asks: [
+          {
+            askId: 'ask-1',
+            giverName: 'Ben Carter',
+            giverInactive: false,
+            status: 'PENDING',
+          },
+        ],
       },
     ]);
   });
@@ -78,6 +86,7 @@ describe('reading the Feedback Requests I sent', () => {
             askId: 'ask-1',
             giverAccountId: 'account-ben',
             giverName: null,
+            giverStatus: 'ACTIVE',
             status: 'PENDING',
           },
         ],

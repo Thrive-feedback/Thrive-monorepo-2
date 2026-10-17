@@ -6,7 +6,9 @@ import { FeedbackCard } from './feedback-card';
 const OFFERED: FeedItem = {
   id: 'fb-1',
   giverName: 'Ben Carter',
+  giverInactive: false,
   receiverName: 'Cara Diaz',
+  receiverInactive: false,
   origin: 'OFFERED',
   topic: 'The customer demo',
   body: 'You kept the room with you.\nThe recap landed.',
@@ -56,6 +58,17 @@ describe('FeedbackCard', () => {
 
     expect(screen.getByText(/Ben Carter/)).toBeInTheDocument();
     expect(screen.getByText(/a teammate/)).toBeInTheDocument();
+  });
+
+  it('shows a Giver or Receiver who was Deactivated as inactive', () => {
+    render(
+      <FeedbackCard
+        item={{ ...OFFERED, giverInactive: true, receiverInactive: true }}
+      />,
+    );
+
+    expect(screen.getByText('Ben Carter (inactive)')).toBeInTheDocument();
+    expect(screen.getByText('Cara Diaz (inactive)')).toBeInTheDocument();
   });
 
   it('shows who reacted, so a Reaction is never anonymous', () => {

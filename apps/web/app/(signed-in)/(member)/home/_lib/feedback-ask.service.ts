@@ -35,6 +35,7 @@ export async function readFeedbackAsk(
       feedbackRequestId: ask.feedbackRequestId,
       topic: ask.topic,
       requesterName: ask.requester.name,
+      requesterInactive: ask.requester.status === 'DEACTIVATED',
       status: ask.status,
     };
   } catch (error) {

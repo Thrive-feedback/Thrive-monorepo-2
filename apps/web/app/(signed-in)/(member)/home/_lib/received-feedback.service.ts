@@ -35,6 +35,7 @@ export const readReceivedFeedback = cache(
       topic: feedback.topic,
       offered: feedback.origin === 'OFFERED',
       giverName: feedback.giverName,
+      giverInactive: feedback.giverStatus === 'DEACTIVATED',
       body: feedback.body,
       writtenAt: feedback.createdAt,
     }));

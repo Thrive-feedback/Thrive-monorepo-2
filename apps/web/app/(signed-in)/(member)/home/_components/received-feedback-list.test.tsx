@@ -53,6 +53,19 @@ describe('ReceivedFeedbackList', () => {
     ).toBeInTheDocument();
   });
 
+  it('shows a Giver who was Deactivated as inactive, and keeps what they wrote', async () => {
+    readReceivedFeedback.mockResolvedValue([
+      { ...ONE_PIECE, giverInactive: true },
+    ]);
+
+    await renderList();
+
+    expect(screen.getByText('Ben Carter (inactive)')).toBeInTheDocument();
+    expect(
+      screen.getByText('You open strongly and lose the room at the detail.'),
+    ).toBeInTheDocument();
+  });
+
   it('marks Feedback given without being asked, and only that', async () => {
     readReceivedFeedback.mockResolvedValue([
       { ...ONE_PIECE, id: 'fb-2', topic: 'the customer demo', offered: true },

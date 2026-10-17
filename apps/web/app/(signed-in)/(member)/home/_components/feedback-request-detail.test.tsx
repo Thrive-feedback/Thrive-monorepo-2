@@ -28,7 +28,7 @@ async function renderDetail() {
 
 function waitingRequest(
   value: 'ONLY_ME' | 'SELECTED_PEOPLE' | 'EVERYONE',
-  selectedNames: (string | null)[],
+  selectedPeople: { name: string | null; inactive: boolean }[],
 ): SentFeedbackRequest {
   return {
     id: REQUEST_ID,
@@ -37,11 +37,12 @@ function waitingRequest(
       {
         askId: 'ask-1',
         giverName: 'Ben Carter',
+        giverInactive: false,
         status: 'PENDING',
         answer: null,
       },
     ],
-    visibility: { value, selectedNames },
+    visibility: { value, selectedPeople },
   };
 }
 
@@ -54,11 +55,12 @@ describe('a sent Feedback Request, open over Home', () => {
         {
           askId: 'ask-1',
           giverName: 'Ben Carter',
+          giverInactive: false,
           status: 'PENDING',
           answer: null,
         },
       ],
-      visibility: { value: 'ONLY_ME', selectedNames: [] },
+      visibility: { value: 'ONLY_ME', selectedPeople: [] },
     });
 
     await renderDetail();
@@ -78,9 +80,15 @@ describe('a sent Feedback Request, open over Home', () => {
       id: REQUEST_ID,
       topic: 'my sprint review talk',
       asks: [
-        { askId: 'ask-1', giverName: null, status: 'ANSWERED', answer: null },
+        {
+          askId: 'ask-1',
+          giverName: null,
+          giverInactive: false,
+          status: 'ANSWERED',
+          answer: null,
+        },
       ],
-      visibility: { value: 'ONLY_ME', selectedNames: [] },
+      visibility: { value: 'ONLY_ME', selectedPeople: [] },
     });
 
     await renderDetail();
@@ -101,11 +109,12 @@ describe('a sent Feedback Request, open over Home', () => {
         {
           askId: 'ask-1',
           giverName: 'Ben Carter',
+          giverInactive: false,
           status: 'ANSWERED',
           answer: 'You open strongly and lose the room at the detail.',
         },
       ],
-      visibility: { value: 'ONLY_ME', selectedNames: [] },
+      visibility: { value: 'ONLY_ME', selectedPeople: [] },
     });
 
     await renderDetail();
@@ -127,7 +136,10 @@ describe('a sent Feedback Request, open over Home', () => {
 
   it('names the people the Requester shared the answers with', async () => {
     readFeedbackRequest.mockResolvedValue(
-      waitingRequest('SELECTED_PEOPLE', ['Cara Diaz', null]),
+      waitingRequest('SELECTED_PEOPLE', [
+        { name: 'Cara Diaz', inactive: false },
+        { name: null, inactive: false },
+      ]),
     );
 
     await renderDetail();
@@ -137,6 +149,21 @@ describe('a sent Feedback Request, open over Home', () => {
         'You and Cara Diaz and a teammate can read what they send back.',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('shows a Giver and a selected person who were Deactivated as inactive', async () => {
+    const request = waitingRequest('SELECTED_PEOPLE', [
+      { name: 'Cara Diaz', inactive: true },
+    ]);
+    readFeedbackRequest.mockResolvedValue({
+      ...request,
+      asks: request.asks.map((ask) => ({ ...ask, giverInactive: true })),
+    });
+
+    await renderDetail();
+
+    expect(screen.getByText('Ben Carter (inactive)')).toBeInTheDocument();
+    expect(screen.getByText('Cara Diaz (inactive)')).toBeInTheDocument();
   });
 
   it('says everyone in the Workspace reads what comes back', async () => {

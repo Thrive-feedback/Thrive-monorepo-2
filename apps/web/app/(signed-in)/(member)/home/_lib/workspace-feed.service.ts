@@ -32,7 +32,9 @@ export const readWorkspaceFeed = cache(
     return feed.items.map((feedback) => ({
       id: feedback.id,
       giverName: feedback.giver.name,
+      giverInactive: feedback.giver.status === 'DEACTIVATED',
       receiverName: feedback.receiver.name,
+      receiverInactive: feedback.receiver.status === 'DEACTIVATED',
       origin: feedback.origin,
       topic: feedback.topic,
       body: feedback.body,

@@ -3,6 +3,7 @@ import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
 import { initials } from '@/lib/initials.util';
+import { PersonName } from './person-name';
 import { ReactionBar } from './reaction-bar';
 
 const ORIGIN_NAMES: Readonly<Record<FeedItem['origin'], string>> = {
@@ -32,9 +33,15 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
         </Avatar>
         <div className="flex min-w-0 flex-1 flex-col">
           <Text as="p" variant="subtitle-4" className="break-words">
-            {item.giverName ?? GIVER_WITH_NO_NAME}
+            <PersonName
+              name={item.giverName ?? GIVER_WITH_NO_NAME}
+              inactive={item.giverInactive}
+            />
             <span className="text-fg-secondary"> to </span>
-            {item.receiverName ?? RECEIVER_WITH_NO_NAME}
+            <PersonName
+              name={item.receiverName ?? RECEIVER_WITH_NO_NAME}
+              inactive={item.receiverInactive}
+            />
           </Text>
           <Text as="p" variant="body-3" tone="muted">
             {ORIGIN_NAMES[item.origin]} ·{' '}

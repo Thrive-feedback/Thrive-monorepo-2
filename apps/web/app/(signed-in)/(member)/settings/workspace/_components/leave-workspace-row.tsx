@@ -35,7 +35,7 @@ export async function LeaveWorkspaceRow({
       description={
         isLastAdmin
           ? `You're the only Admin of ${workspaceName}. Make someone else an Admin first to leave.`
-          : `You won't be able to open ${workspaceName} again. Your Feedback stays, with “Deactivated” beside your name.`
+          : `You won't be able to open ${workspaceName} again. Your Feedback stays, with “(inactive)” after your name.`
       }
       descriptionId={DESCRIPTION_ID}
     >

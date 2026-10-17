@@ -27,8 +27,8 @@ const ONE_PIECE = {
   origin: 'REQUESTED',
   feedbackRequestId: 'request-1',
   topic: 'running the planning meeting',
-  giver: { accountId: 'account-ben', name: 'Ben Carter' },
-  receiver: { accountId: 'account-cara', name: 'Cara Diaz' },
+  giver: { accountId: 'account-ben', name: 'Ben Carter', status: 'ACTIVE' },
+  receiver: { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
   body: 'You start with the three goals on one slide.',
   createdAt: '2026-10-12T03:00:00.000Z',
 };
@@ -60,7 +60,9 @@ describe('reading the Workspace feed', () => {
       {
         id: 'fb-1',
         giverName: 'Ben Carter',
+        giverInactive: false,
         receiverName: 'Cara Diaz',
+        receiverInactive: false,
         origin: 'REQUESTED',
         topic: 'running the planning meeting',
         body: 'You start with the three goals on one slide.',
@@ -88,8 +90,8 @@ describe('reading the Workspace feed', () => {
     apiHolds([
       {
         ...ONE_PIECE,
-        giver: { accountId: 'account-ben', name: null },
-        receiver: { accountId: 'account-cara', name: null },
+        giver: { accountId: 'account-ben', name: null, status: 'ACTIVE' },
+        receiver: { accountId: 'account-cara', name: null, status: 'ACTIVE' },
       },
     ]);
 
@@ -97,6 +99,26 @@ describe('reading the Workspace feed', () => {
 
     expect(feed[0]?.giverName).toBeNull();
     expect(feed[0]?.receiverName).toBeNull();
+  });
+
+  it('shows somebody Deactivated in the Workspace as inactive', async () => {
+    apiHolds([
+      {
+        ...ONE_PIECE,
+        giver: {
+          accountId: 'account-ben',
+          name: 'Ben Carter',
+          status: 'DEACTIVATED',
+        },
+      },
+    ]);
+
+    const feed = await readWorkspaceFeed(MEMBERSHIP);
+
+    expect([feed[0]?.giverInactive, feed[0]?.receiverInactive]).toEqual([
+      true,
+      false,
+    ]);
   });
 
   it('asks once, for one page of the signed-in person’s own Workspace', async () => {

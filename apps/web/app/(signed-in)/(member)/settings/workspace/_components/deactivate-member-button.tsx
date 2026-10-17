@@ -25,8 +25,8 @@ export type DeactivateMemberButtonProps = {
 
 /**
  * Ends someone's access to the Workspace, or the person's own, which is leaving. Asked first,
- * because it cannot be taken back from here, and the question says what stays: the Feedback they
- * gave and received, with "Deactivated" beside their name. The dialog stays open while the
+ * because only an Admin can take it back, and the question says what stays: the Feedback they
+ * gave and received, with "(inactive)" after their name. The dialog stays open while the
  * request is in flight, so it cannot be sent twice.
  */
 export function DeactivateMemberButton({
@@ -80,8 +80,8 @@ export function DeactivateMemberButton({
           <AlertDialog.Description asChild>
             <Text variant="body-2" tone="muted">
               {isSelf
-                ? `You won't be able to open ${workspaceName} again. The Feedback you gave and received stays, with “Deactivated” beside your name.`
-                : `They won't be able to open ${workspaceName} any more. The Feedback they gave and received stays, with “Deactivated” beside their name.`}
+                ? `You won't be able to open ${workspaceName} again. The Feedback you gave and received stays, with “(inactive)” after your name.`
+                : `They won't be able to open ${workspaceName} any more. The Feedback they gave and received stays, with “(inactive)” after their name, until an Admin Reactivates them.`}
             </Text>
           </AlertDialog.Description>
           <div className="flex flex-wrap justify-end gap-2">

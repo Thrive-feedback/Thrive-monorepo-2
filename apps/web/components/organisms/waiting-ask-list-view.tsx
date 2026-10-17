@@ -3,6 +3,7 @@ import { TargetLink } from '@/components/molecules/target-link';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
+import { PersonName } from './person-name';
 
 export type WaitingAskListViewProps = {
   asks: readonly MyAsk[];
@@ -39,7 +40,11 @@ export function WaitingAskListView({
             <TargetLink target={askTarget(ask.askId)}>{ask.topic}</TargetLink>
           </Text>
           <Text as="p" variant="body-2">
-            Asked by {ask.requesterName ?? 'a teammate'}
+            Asked by{' '}
+            <PersonName
+              name={ask.requesterName ?? 'a teammate'}
+              inactive={ask.requesterInactive}
+            />
           </Text>
           <Text as="p" variant="body-3" tone="muted">
             <time dateTime={ask.askedAt}>{calendarDay(ask.askedAt)}</time>
