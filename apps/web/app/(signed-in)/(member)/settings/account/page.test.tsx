@@ -6,7 +6,7 @@ const ANN = {
   email: 'ann@acme.test',
   name: 'Ann Google',
   profile: { fullName: 'Ann Marie Lee', displayName: 'Ann Lee', slug: 'ann' },
-  membership: { workspace: { id: 'w-1', name: 'Acme Corp' }, role: 'OWNER' },
+  membership: { workspace: { id: 'w-1', name: 'Acme Corp' }, role: 'ADMIN' },
 };
 
 const requireMember = vi.fn();
@@ -46,7 +46,7 @@ describe('Account', () => {
     expect(definitionOf('Full name')).toHaveTextContent('Ann Marie Lee');
     expect(definitionOf('Display name')).toHaveTextContent('Ann Lee');
     expect(definitionOf('Email')).toHaveTextContent('ann@acme.test');
-    expect(definitionOf('Role')).toHaveTextContent('Owner');
+    expect(definitionOf('Role')).toHaveTextContent('Admin');
   });
 
   it('offers Sign out', async () => {

@@ -3,6 +3,7 @@ import type { OpenInvitation } from '@/app/(signed-in)/(member)/settings/workspa
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { ROLE_NAMES } from '@/lib/session/role-names.constant';
 import { ResendInvitationButton } from './resend-invitation-button';
 import { RevokeInvitationButton } from './revoke-invitation-button';
 
@@ -32,9 +33,10 @@ const EXPIRY_WORDS: Readonly<Record<OpenInvitation['status'], string>> = {
 };
 
 /**
- * Everyone invited and not yet in, newest first: the address, who sent it and when, when it
- * expires and where it stands, with Resend and Revoke beside each. Only for the Owner and
- * Admins. It reads its own data, so the page renders around it while the read is in flight.
+ * Everyone invited and not yet in, newest first: the address, the Role they will join with, who
+ * sent it and when, when it
+ * expires and where it stands, with Resend and Revoke beside each. Only for Admins.
+ * It reads its own data, so the page renders around it while the read is in flight.
  */
 export async function InvitationList({ membership }: InvitationListProps) {
   const invitations = await readInvitations(membership);
@@ -57,7 +59,8 @@ export async function InvitationList({ membership }: InvitationListProps) {
               {invitation.email}
             </Text>
             <Text as="span" variant="body-3" tone="muted">
-              by {invitation.invitedBy} · sent{' '}
+              as {ROLE_NAMES[invitation.role]} · by {invitation.invitedBy} ·
+              sent{' '}
               <time dateTime={invitation.invitedAt}>
                 {calendarDay(invitation.invitedAt)}
               </time>{' '}

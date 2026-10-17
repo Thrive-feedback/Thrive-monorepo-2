@@ -41,7 +41,7 @@ const MY_INVITATIONS = `${TEST_API_BASE_URL}/v1/invitations/mine`;
 const ANN_PROFILE = { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' };
 const ACME = {
   workspace: { id: '0199a0f0-0000-7000-8000-0000000000w1', name: 'Acme Corp' },
-  role: 'OWNER' as const,
+  role: 'ADMIN' as const,
 };
 const ANN = { email: 'ann@acme.test', name: 'Ann Lee', photoUrl: null };
 const TO_GLOBEX = {

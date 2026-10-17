@@ -8,7 +8,7 @@ const ANN = {
   profile: { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' },
   membership: {
     workspace: { id: 'w-1', name: 'Acme Corp' },
-    role: 'OWNER',
+    role: 'ADMIN',
   },
 };
 

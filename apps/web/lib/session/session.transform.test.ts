@@ -77,7 +77,7 @@ describe('toCurrentMembership', () => {
   it("maps the person's Workspace and Role", () => {
     const membership = {
       workspace: { id: 'w-1', name: 'Acme Corp' },
-      role: 'OWNER' as const,
+      role: 'ADMIN' as const,
     };
 
     expect(

@@ -5,24 +5,26 @@ import type {
   InviteResult,
   SendInvitationsState,
 } from '@/app/(signed-in)/(top-nav)/register/invite-teammates/_lib/invite-teammates-state.type';
+import type { Invitee } from '@/lib/invitations/invite-emails.util';
 import { InviteTeammatesForm } from './invite-teammates-form';
 
 const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 const sendInvitations =
-  vi.fn<(emails: readonly string[]) => Promise<SendInvitationsState>>();
+  vi.fn<(invitations: readonly Invitee[]) => Promise<SendInvitationsState>>();
 vi.mock(
   '@/app/(signed-in)/(top-nav)/register/invite-teammates/_lib/invitation-actions.service',
   () => ({
-    sendInvitations: (emails: readonly string[]) => sendInvitations(emails),
+    sendInvitations: (invitations: readonly Invitee[]) =>
+      sendInvitations(invitations),
   }),
 );
 
 /** The API answers each address with the outcome the test names, `invited` by default. */
 function apiAnswers(outcomes: Record<string, InviteResult['outcome']> = {}) {
-  sendInvitations.mockImplementation(async (emails) => ({
-    results: emails.map((email) => ({
+  sendInvitations.mockImplementation(async (invitations) => ({
+    results: invitations.map(({ email }) => ({
       email: email.toLowerCase(),
       outcome: outcomes[email.toLowerCase()] ?? 'invited',
     })),
@@ -35,6 +37,19 @@ function emailField(position: number) {
 
 function emailFields() {
   return screen.getAllByRole('textbox', { name: /^Email address \d+$/ });
+}
+
+async function pickRole(
+  user: ReturnType<typeof userEvent.setup>,
+  position: number,
+  role: 'Admin' | 'Member',
+) {
+  await user.click(
+    screen.getByRole('combobox', {
+      name: `Role for email address ${position}`,
+    }),
+  );
+  await user.click(screen.getByRole('option', { name: role }));
 }
 
 function button(name: string) {
@@ -171,8 +186,8 @@ describe('InviteTeammatesForm', () => {
     await user.click(button('Send invites & Done'));
 
     expect(sendInvitations).toHaveBeenCalledWith([
-      'pepper@stark.com',
-      'happy@stark.com',
+      { email: 'pepper@stark.com', role: 'MEMBER' },
+      { email: 'happy@stark.com', role: 'MEMBER' },
     ]);
     const heading = await screen.findByRole('heading', {
       name: 'Invitations status',
@@ -183,6 +198,35 @@ describe('InviteTeammatesForm', () => {
       screen.getByText('is already in this Workspace'),
     ).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it('offers each field a Role, Member until another is picked', async () => {
+    const user = userEvent.setup();
+    render(<InviteTeammatesForm />);
+    await user.click(button('Add another'));
+
+    expect(
+      screen.getByRole('combobox', { name: 'Role for email address 1' }),
+    ).toHaveTextContent('Member');
+    expect(
+      screen.getByRole('combobox', { name: 'Role for email address 2' }),
+    ).toHaveTextContent('Member');
+  });
+
+  it('sends each address with the Role picked beside it', async () => {
+    const user = userEvent.setup();
+    render(<InviteTeammatesForm />);
+    await user.type(emailField(1), 'pepper@stark.com');
+    await user.click(button('Add another'));
+    await user.type(emailField(2), 'happy@stark.com');
+    await pickRole(user, 2, 'Admin');
+
+    await user.click(button('Send invites & Done'));
+
+    expect(sendInvitations).toHaveBeenCalledWith([
+      { email: 'pepper@stark.com', role: 'MEMBER' },
+      { email: 'happy@stark.com', role: 'ADMIN' },
+    ]);
   });
 
   it('goes Home on Continue once the Invitations are sent', async () => {
@@ -203,6 +247,7 @@ describe('InviteTeammatesForm', () => {
     await user.type(emailField(1), 'pepper@stark.com');
     await user.click(button('Add another'));
     await user.type(emailField(2), 'happy@stark.com');
+    await pickRole(user, 2, 'Admin');
 
     await user.click(button('Send invites & Done'));
 
@@ -216,11 +261,16 @@ describe('InviteTeammatesForm', () => {
       "Couldn't send. Try again.",
     );
     expect(emailField(1)).toHaveFocus();
+    expect(
+      screen.getByRole('combobox', { name: 'Role for email address 1' }),
+    ).toHaveTextContent('Admin');
 
     apiAnswers();
     await user.click(button('Send invites & Done'));
 
-    expect(sendInvitations).toHaveBeenLastCalledWith(['happy@stark.com']);
+    expect(sendInvitations).toHaveBeenLastCalledWith([
+      { email: 'happy@stark.com', role: 'ADMIN' },
+    ]);
     expect(
       await screen.findByRole('heading', { name: 'Invitations status' }),
     ).toBeInTheDocument();
@@ -230,7 +280,7 @@ describe('InviteTeammatesForm', () => {
   it('says why when the whole send is refused', async () => {
     const user = userEvent.setup();
     sendInvitations.mockResolvedValue({
-      formError: 'Only the Owner and Admins can invite teammates.',
+      formError: 'Only Admins can invite teammates.',
     });
     render(<InviteTeammatesForm />);
     await user.type(emailField(1), 'pepper@stark.com');
@@ -238,7 +288,7 @@ describe('InviteTeammatesForm', () => {
     await user.click(button('Send invites & Done'));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Only the Owner and Admins can invite teammates.',
+      'Only Admins can invite teammates.',
     );
     expect(emailField(1)).toHaveValue('pepper@stark.com');
   });

@@ -10,7 +10,7 @@ const ONE_PAGE = { page: 1, pageSize: 100 };
 
 /**
  * The Invitations to the person's Workspace that nobody has accepted or revoked, newest first.
- * Only for the Owner and Admins; the API refuses anyone else. Not cached: a resend or a revoke
+ * Only for Admins; the API refuses anyone else. Not cached: a resend or a revoke
  * changes it at once.
  */
 export async function readInvitations(
@@ -31,6 +31,7 @@ export async function readInvitations(
   return unwrap(invitations).items.map((invitation) => ({
     invitationId: invitation.invitationId,
     email: invitation.email,
+    role: invitation.role,
     status: invitation.status,
     invitedBy: invitation.invitedBy.displayName ?? invitation.invitedBy.email,
     invitedAt: invitation.invitedAt,

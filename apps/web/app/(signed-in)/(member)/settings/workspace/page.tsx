@@ -15,9 +15,10 @@ export const metadata: Metadata = {
 };
 
 /**
- * The person's Workspace by name, and who is in it, for every Member; and, for the Owner and
- * Admins, a form to invite more and the Invitations still open — Pending or Expired — to resend
- * or revoke. The lists read their own data, so each fills in when its read returns.
+ * The person's Workspace by name, and who is in it, for every Member, with each Role an Admin
+ * can change; and, for Admins, a form to invite more and the Invitations still open — Pending
+ * or Expired — to resend or revoke. The lists read their own data, so each fills in when its
+ * read returns.
  */
 export default async function Workspace() {
   const session = await requireMember();

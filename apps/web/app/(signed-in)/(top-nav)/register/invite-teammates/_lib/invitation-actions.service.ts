@@ -5,15 +5,18 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
+import type { Invitee } from '@/lib/invitations/invite-emails.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 import type { SendInvitationsState } from './invite-teammates-state.type';
 
-const SendInvitationsInput = z.array(z.string()).min(1);
+const SendInvitationsInput = z
+  .array(z.object({ email: z.string(), role: z.enum(['ADMIN', 'MEMBER']) }))
+  .min(1);
 
 /** What to say when the API refused the whole send, by the API's error code. */
 const SEND_ERRORS: Readonly<Record<string, string>> = {
-  NOT_ALLOWED_TO_INVITE: 'Only the Owner and Admins can invite teammates.',
+  NOT_ALLOWED_TO_INVITE: 'Only Admins can invite teammates.',
   TOO_MANY_INVITATIONS: 'You can invite up to 10 teammates at a time.',
 };
 
@@ -27,14 +30,14 @@ const ELSEWHERE: Readonly<Record<string, string>> = {
 const COULD_NOT_SEND = "We couldn't send your invitations. Please try again.";
 
 /**
- * Invites the addresses to the person's own Workspace. The Workspace is the one the session
+ * Invites each person to the person's own Workspace with the Role chosen for them. The Workspace is the one the session
  * belongs to, never one the browser names, and the API decides who is inviting from the
  * browser's own session cookie.
  */
 export async function sendInvitations(
-  emails: readonly string[],
+  invitations: readonly Invitee[],
 ): Promise<SendInvitationsState> {
-  const input = SendInvitationsInput.safeParse(emails);
+  const input = SendInvitationsInput.safeParse(invitations);
   if (!input.success) {
     return { formError: COULD_NOT_SEND };
   }
@@ -49,7 +52,7 @@ export async function sendInvitations(
           path: { workspaceId: membership.workspace.id },
           header: { cookie },
         },
-        body: { emails: input.data },
+        body: { invitations: input.data },
       }),
     );
     return {

@@ -23,10 +23,12 @@ vi.mock('@/lib/session/session.service', () => ({
   requireMember: async () => ({
     membership: {
       workspace: { id: WORKSPACE_ID, name: 'Acme' },
-      role: 'OWNER',
+      role: 'ADMIN',
     },
   }),
 }));
+
+const BEN = { email: 'ben@acme.co', role: 'MEMBER' } as const;
 
 const { sendInvitations } = await import('./invitation-actions.service');
 
@@ -68,7 +70,10 @@ describe('sending the Invitations', () => {
       }),
     );
 
-    const sent = await sendInvitations(['ben@acme.co', 'cat@acme.co']);
+    const sent = await sendInvitations([
+      { email: 'ben@acme.co', role: 'MEMBER' },
+      { email: 'cat@acme.co', role: 'ADMIN' },
+    ]);
 
     expect(sent).toEqual({
       results: [
@@ -78,38 +83,37 @@ describe('sending the Invitations', () => {
     });
     expect(seen[0]?.headers.get('cookie')).toBe('thrive.session_token=abc');
     expect(await seen[0]?.json()).toEqual({
-      emails: ['ben@acme.co', 'cat@acme.co'],
+      invitations: [
+        { email: 'ben@acme.co', role: 'MEMBER' },
+        { email: 'cat@acme.co', role: 'ADMIN' },
+      ],
     });
   });
 
-  it('says only the Owner and Admins can invite when the API refuses the role', async () => {
+  it('says only Admins can invite when the API refuses the role', async () => {
     apiRefusesWith('NOT_ALLOWED_TO_INVITE', 403);
 
-    expect(await sendInvitations(['ben@acme.co'])).toEqual({
-      formError: 'Only the Owner and Admins can invite teammates.',
+    expect(await sendInvitations([BEN])).toEqual({
+      formError: 'Only Admins can invite teammates.',
     });
   });
 
   it('sends someone whose session ended to sign in', async () => {
     apiRefusesWith('NOT_SIGNED_IN', 401);
 
-    await expect(sendInvitations(['ben@acme.co'])).rejects.toThrow(
-      'redirect:/signin',
-    );
+    await expect(sendInvitations([BEN])).rejects.toThrow('redirect:/signin');
   });
 
   it('sends someone no longer in the Workspace Home', async () => {
     apiRefusesWith('WORKSPACE_NOT_FOUND', 404);
 
-    await expect(sendInvitations(['ben@acme.co'])).rejects.toThrow(
-      'redirect:/home',
-    );
+    await expect(sendInvitations([BEN])).rejects.toThrow('redirect:/home');
   });
 
   it('asks to try again on any other failure', async () => {
     apiRefusesWith('INTERNAL_ERROR', 500);
 
-    expect(await sendInvitations(['ben@acme.co'])).toEqual({
+    expect(await sendInvitations([BEN])).toEqual({
       formError: "We couldn't send your invitations. Please try again.",
     });
   });

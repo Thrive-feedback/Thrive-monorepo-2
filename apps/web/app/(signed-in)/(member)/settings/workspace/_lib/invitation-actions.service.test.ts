@@ -32,10 +32,14 @@ vi.mock('@/lib/session/session.service', () => ({
   requireMember: async () => ({
     membership: {
       workspace: { id: WORKSPACE_ID, name: 'Acme' },
-      role: 'OWNER',
+      role: 'ADMIN',
     },
   }),
 }));
+
+function asMember(email: string) {
+  return { email, role: 'MEMBER' as const };
+}
 
 const { inviteMembers, resendInvitation, revokeInvitation } = await import(
   './invitation-actions.service'
@@ -154,7 +158,11 @@ describe('inviting teammates from Members', () => {
     revalidatePath.mockClear();
 
     expect(
-      await inviteMembers(['ben@acme.test', 'cara@acme.test', 'BEN@acme.test']),
+      await inviteMembers([
+        { email: 'ben@acme.test', role: 'ADMIN' },
+        { email: 'cara@acme.test', role: 'MEMBER' },
+        { email: 'BEN@acme.test', role: 'MEMBER' },
+      ]),
     ).toEqual({
       results: [
         { email: 'ben@acme.test', outcome: 'invited' },
@@ -162,7 +170,10 @@ describe('inviting teammates from Members', () => {
       ],
     });
     expect(await seen[0]?.json()).toEqual({
-      emails: ['ben@acme.test', 'cara@acme.test'],
+      invitations: [
+        { email: 'ben@acme.test', role: 'ADMIN' },
+        { email: 'cara@acme.test', role: 'MEMBER' },
+      ],
     });
     expect(seen[0]?.headers.get('cookie')).toContain(
       'thrive.session_token=abc',
@@ -179,7 +190,7 @@ describe('inviting teammates from Members', () => {
       }),
     );
 
-    expect(await inviteMembers(['ben'])).toEqual({
+    expect(await inviteMembers([asMember('ben')])).toEqual({
       formError: 'Not an email address: ben',
     });
     expect(await inviteMembers([])).toEqual({
@@ -191,15 +202,15 @@ describe('inviting teammates from Members', () => {
   it('says why when the person may not invite', async () => {
     apiRefusesWith(INVITE, 'NOT_ALLOWED_TO_INVITE', 403);
 
-    expect(await inviteMembers(['ben@acme.test'])).toEqual({
-      formError: 'Only the Owner and Admins can invite teammates.',
+    expect(await inviteMembers([asMember('ben@acme.test')])).toEqual({
+      formError: 'Only Admins can invite teammates.',
     });
   });
 
   it('answers a generic failure for a code it does not explain', async () => {
     apiRefusesWith(INVITE, 'SOMETHING_ELSE', 500);
 
-    expect(await inviteMembers(['ben@acme.test'])).toEqual({
+    expect(await inviteMembers([asMember('ben@acme.test')])).toEqual({
       formError: "We couldn't send your invitations. Please try again.",
     });
   });
@@ -207,7 +218,7 @@ describe('inviting teammates from Members', () => {
   it('sends someone signed out to sign in', async () => {
     apiRefusesWith(INVITE, 'NOT_SIGNED_IN', 401);
 
-    await expect(inviteMembers(['ben@acme.test'])).rejects.toThrow(
+    await expect(inviteMembers([asMember('ben@acme.test')])).rejects.toThrow(
       'redirect:/signin',
     );
   });
