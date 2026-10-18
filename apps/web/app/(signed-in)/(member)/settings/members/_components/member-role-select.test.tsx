@@ -76,7 +76,7 @@ describe('MemberRoleSelect', () => {
 
     expect(changeMemberRole).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2', 'ADMIN');
     expect(toast.success).toHaveBeenCalledWith('Ben is now an Admin');
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('makes another Admin a Member without asking', async () => {
@@ -140,7 +140,7 @@ describe('MemberRoleSelect', () => {
     await pick(user, 'Your Role', 'Member');
 
     expect(
-      screen.getByRole('alertdialog', { name: 'Make yourself a Member?' }),
+      screen.getByRole('dialog', { name: 'Make yourself a Member?' }),
     ).toHaveAccessibleDescription(
       "You won't be able to invite people or change anyone's Role. Another Admin can make you an Admin again.",
     );
@@ -187,7 +187,7 @@ describe('MemberRoleSelect', () => {
     await user.click(screen.getByRole('button', { name: 'Stay an Admin' }));
 
     expect(changeMemberRole).not.toHaveBeenCalled();
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
     expect(
       screen.getByRole('combobox', { name: 'Your Role' }),
     ).toHaveTextContent('Admin');
