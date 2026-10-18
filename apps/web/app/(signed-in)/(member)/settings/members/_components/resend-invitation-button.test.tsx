@@ -51,7 +51,7 @@ describe('ResendInvitationButton', () => {
   it('asks before resending, naming who the Invitation was sent to', async () => {
     await openDialog();
 
-    const dialog = screen.getByRole('alertdialog', {
+    const dialog = screen.getByRole('dialog', {
       name: 'Resend this Invitation?',
     });
     expect(dialog).toHaveAccessibleDescription(
@@ -70,7 +70,7 @@ describe('ResendInvitationButton', () => {
     expect(toast.success).toHaveBeenCalledWith(
       'Invitation resent to cat@acme.test',
     );
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('says why when the resend is refused', async () => {
