@@ -252,6 +252,18 @@ export async function myMemberships(
   return response.body.items;
 }
 
+/** The Workspace `name`'s session is in, or `null` while they are to choose one. */
+export async function myCurrentMembership(
+  world: ThriveWorld,
+  name: string,
+): Promise<{ workspace: { id: string; name: string }; role: string } | null> {
+  const response = world.succeeded(
+    await world.as(name, 'GET', '/v1/members/mine/current'),
+    `Reading the Workspace ${name}'s session is in`,
+  );
+  return response.body.membership;
+}
+
 export async function myInvitations(
   world: ThriveWorld,
   name: string,

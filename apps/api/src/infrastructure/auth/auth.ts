@@ -133,8 +133,8 @@ function authOptions(
               // When the Member was Deactivated; `null` while they are active. The plugin can
               // only delete a Member, so the Workspace module writes this itself (ADR 0047).
               deactivatedAt: { type: 'date', required: false, input: false },
-              // When the Account last switched to this Workspace; the newest active one is the
-              // Workspace they are in (ADR 0049). The Workspace module writes it itself.
+              // When the Account last went into this Workspace, which orders their list of them.
+              // The Workspace module writes it itself.
               lastUsedAt: { type: 'date', required: false, input: false },
             },
           },

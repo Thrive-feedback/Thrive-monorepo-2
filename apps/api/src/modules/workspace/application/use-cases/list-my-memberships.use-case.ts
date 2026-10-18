@@ -13,7 +13,7 @@ export interface ListMyMembershipsInput {
 }
 
 /**
- * A query: the Workspaces the caller is active in, the one they are in first, or those they were
+ * A query: the Workspaces the caller is active in, the one used last first, or those they were
  * Deactivated in; and their Role in each.
  */
 @Injectable()

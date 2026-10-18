@@ -10,6 +10,7 @@ import {
   type SignedInAccount,
   WorkspaceFixtures,
 } from '@test/support/workspace.integration-fixtures';
+import { BetterAuthSessionWorkspaceAdapter } from '../../infrastructure/adapter/better-auth-session-workspace.adapter';
 import { BetterAuthWorkspaceInvitingAdapter } from '../../infrastructure/adapter/better-auth-workspace-inviting.adapter';
 import { PrismaInvitationSettlingAdapter } from '../../infrastructure/adapter/prisma-invitation-settling.adapter';
 import { PrismaMemberRejoiningAdapter } from '../../infrastructure/adapter/prisma-member-rejoining.adapter';
@@ -33,6 +34,7 @@ const acceptInvitationUseCase = new AcceptInvitationUseCase(
   new PrismaMemberRejoiningAdapter(prismaTransactionContext),
   new PrismaInvitationSettlingAdapter(prismaTransactionContext),
   new PrismaWorkspaceSwitchingAdapter(prismaTransactionContext),
+  new BetterAuthSessionWorkspaceAdapter(auth),
   new PrismaInvitationQuery(prismaTransactionContext),
   new PrismaMembershipQuery(prismaTransactionContext),
   new PrismaUnitOfWork(prismaService, prismaTransactionContext),
@@ -124,7 +126,7 @@ describe('accepting an Invitation in Postgres', () => {
     ).toBe(2);
   });
 
-  it('makes the Workspace joined the one the person is in', async () => {
+  it("puts the person's session in the Workspace joined, and lists it first", async () => {
     const invitee = await fixtures.aSignedInAccount('accept-current');
     const home = await fixtures.aWorkspace(invitee, 'Home');
     const { workspaceId, invitationId } = await anInvitationFor(invitee);
@@ -142,6 +144,11 @@ describe('accepting an Invitation in Postgres', () => {
       workspaceId,
       home,
     ]);
+    expect(
+      await new BetterAuthSessionWorkspaceAdapter(auth).selectedIn(
+        invitee.credential,
+      ),
+    ).toBe(workspaceId);
   });
 
   it('brings back someone Deactivated there, once, with the Role the Invitation names', async () => {

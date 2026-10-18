@@ -18,8 +18,8 @@ export class PrismaWorkspaceSwitchingAdapter extends WorkspaceSwitching {
   }
 
   async switchTo(workspaceSwitch: WorkspaceSwitch): Promise<void> {
-    // A Member Deactivated since the caller checked is left alone: their row is not the
-    // current Workspace for anyone, whatever it says.
+    // A Member Deactivated since the caller checked is left alone: their row is listed apart,
+    // whatever it says.
     await this.prismaTransactionContext.client.member.updateMany({
       where: {
         workspaceId: workspaceSwitch.workspaceId,

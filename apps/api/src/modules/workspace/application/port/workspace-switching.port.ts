@@ -6,9 +6,9 @@ export interface WorkspaceSwitch {
 }
 
 /**
- * Makes a Workspace the one the Account is in: the last used, which every device opens until
- * they switch again (brain `ADR-0034` decision 2). The caller has already checked they are an
- * active Member there.
+ * Records when the Account last went into a Workspace, so lists of their Workspaces put the one
+ * used last first. Which Workspace a session is in is `SessionWorkspace`'s. The caller has already
+ * checked they are an active Member there.
  */
 export abstract class WorkspaceSwitching {
   abstract switchTo(workspaceSwitch: WorkspaceSwitch): Promise<void>;

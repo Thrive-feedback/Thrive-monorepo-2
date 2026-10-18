@@ -9,6 +9,7 @@ import { MemberDeactivating } from './application/port/member-deactivating.port'
 import { MemberReactivating } from './application/port/member-reactivating.port';
 import { MemberRejoining } from './application/port/member-rejoining.port';
 import { MemberRoleChanging } from './application/port/member-role-changing.port';
+import { SessionWorkspace } from './application/port/session-workspace.port';
 import { WorkspaceFounding } from './application/port/workspace-founding.port';
 import { WorkspaceInviting } from './application/port/workspace-inviting.port';
 import { WorkspaceSwitching } from './application/port/workspace-switching.port';
@@ -20,6 +21,7 @@ import { AcceptInvitationUseCase } from './application/use-cases/accept-invitati
 import { ChangeMemberRoleUseCase } from './application/use-cases/change-member-role.use-case';
 import { CreateWorkspaceUseCase } from './application/use-cases/create-workspace.use-case';
 import { DeactivateMemberUseCase } from './application/use-cases/deactivate-member.use-case';
+import { GetCurrentMembershipUseCase } from './application/use-cases/get-current-membership.use-case';
 import { GetInvitationUseCase } from './application/use-cases/get-invitation.use-case';
 import { ListMyInvitationsUseCase } from './application/use-cases/list-my-invitations.use-case';
 import { ListMyMembershipsUseCase } from './application/use-cases/list-my-memberships.use-case';
@@ -33,6 +35,7 @@ import { SendInvitationsUseCase } from './application/use-cases/send-invitations
 import { SwitchWorkspaceUseCase } from './application/use-cases/switch-workspace.use-case';
 import { WorkspaceMembershipPort } from './domain/port/workspace-membership.port';
 import { BetterAuthMemberRoleChangingAdapter } from './infrastructure/adapter/better-auth-member-role-changing.adapter';
+import { BetterAuthSessionWorkspaceAdapter } from './infrastructure/adapter/better-auth-session-workspace.adapter';
 import { BetterAuthWorkspaceFoundingAdapter } from './infrastructure/adapter/better-auth-workspace-founding.adapter';
 import { BetterAuthWorkspaceInvitingAdapter } from './infrastructure/adapter/better-auth-workspace-inviting.adapter';
 import { PrismaInvitationSettlingAdapter } from './infrastructure/adapter/prisma-invitation-settling.adapter';
@@ -93,6 +96,10 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
       useClass: PrismaMemberRejoiningAdapter,
     },
     {
+      provide: SessionWorkspace,
+      useClass: BetterAuthSessionWorkspaceAdapter,
+    },
+    {
       provide: InvitationSettling,
       useClass: PrismaInvitationSettlingAdapter,
     },
@@ -106,6 +113,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     CreateWorkspaceUseCase,
     SwitchWorkspaceUseCase,
     ListMyMembershipsUseCase,
+    GetCurrentMembershipUseCase,
     ListMyInvitationsUseCase,
     ResolveMembershipUseCase,
     SendInvitationsUseCase,

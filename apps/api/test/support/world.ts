@@ -66,6 +66,14 @@ export class ThriveWorld extends World {
     return account;
   }
 
+  /** Signs `name` in afresh, as on another device: a new session, in no Workspace yet. */
+  async signInAgain(name: string): Promise<void> {
+    this.people.set(
+      name,
+      await this.fixtures.anotherSessionOf(this.person(name)),
+    );
+  }
+
   /** Remembers the Ask `name` is looking at, the way their screen holds the id. */
   opened(name: string, askId: string): void {
     this.asksOnScreen.set(name, askId);

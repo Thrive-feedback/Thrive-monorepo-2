@@ -1,7 +1,7 @@
 Feature: Workspace
   A founder introduces themselves and creates the Workspace their team will use,
-  becoming its first Admin. A person can belong to several Workspaces, and is in
-  the one they used last until they switch.
+  becoming its first Admin. A person can belong to several Workspaces. Each
+  sign-in chooses which one it is in, and stays there until they switch.
 
   @api
   Scenario: A founder creates a Workspace and becomes its first Admin
@@ -44,7 +44,7 @@ Feature: Workspace
     Then Cara is told it cannot be found
 
   @api
-  Scenario: Someone Deactivated in the Workspace they are in is moved to the one they used before
+  Scenario: Someone Deactivated in the Workspace they are in is moved to the only one left
     Given Ann owns a Workspace called "Acme"
     And Dan owns a Workspace called "Globex"
     And Ann is a Member of Dan's Workspace
@@ -76,3 +76,27 @@ Feature: Workspace
     And Cara owns a Workspace called "Globex"
     When Cara looks at who is in Ann's Workspace
     Then Cara is told it cannot be found
+
+  @api
+  Scenario: Someone in two Workspaces chooses one when they sign in again
+    Given Ann owns a Workspace called "Acme"
+    And Dan owns a Workspace called "Globex"
+    And Ann is a Member of Dan's Workspace
+    When Ann signs in again
+    Then Ann is asked to choose a Workspace
+
+  @api
+  Scenario: Someone in one Workspace goes straight to it when they sign in again
+    Given Ann owns a Workspace called "Acme"
+    When Ann signs in again
+    Then Ann is in "Acme"
+
+  @api
+  Scenario: Someone Deactivated in the Workspace they are in chooses again while two remain
+    Given Ann owns a Workspace called "Acme"
+    And Dan owns a Workspace called "Globex"
+    And Cara owns a Workspace called "Initech"
+    And Ann is a Member of Dan's Workspace
+    And Ann is a Member of Cara's Workspace
+    When Cara Deactivates Ann
+    Then Ann is asked to choose a Workspace

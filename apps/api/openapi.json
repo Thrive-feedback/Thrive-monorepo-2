@@ -231,7 +231,7 @@
             "description": "PROFILE_REQUIRED"
           }
         },
-        "summary": "Create a Workspace, with the caller as its first Admin, and make it the one they are in",
+        "summary": "Create a Workspace, with the caller as its first Admin, and put the caller's session in it",
         "tags": [
           "workspace"
         ]
@@ -242,21 +242,21 @@
         "operationId": "WorkspaceController_switchWorkspace",
         "parameters": [
           {
+            "name": "cookie",
+            "required": false,
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "workspaceId",
             "required": true,
             "in": "path",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-              "type": "string"
-            }
-          },
-          {
-            "name": "cookie",
-            "in": "header",
-            "description": "The browser's cookie header, forwarded by the web server.",
-            "required": false,
-            "schema": {
               "type": "string"
             }
           }
@@ -272,7 +272,42 @@
             "description": "WORKSPACE_NOT_FOUND"
           }
         },
-        "summary": "Make this Workspace the one the caller is in, on every device, until they switch again",
+        "summary": "Put the caller's session in this Workspace, so every page there acts on it",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/v1/members/mine/current": {
+      "get": {
+        "operationId": "MemberController_getCurrentMembership",
+        "parameters": [
+          {
+            "name": "cookie",
+            "required": false,
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCurrentMembershipResponseDto_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          }
+        },
+        "summary": "The Workspace the caller's session is in, or none while they are to choose one",
         "tags": [
           "workspace"
         ]
@@ -342,7 +377,7 @@
             "description": "NOT_SIGNED_IN"
           }
         },
-        "summary": "List the Workspaces the caller is a Member of, the one they are in first, or those they were Deactivated in",
+        "summary": "List the Workspaces the caller is a Member of, the one used last first, or those they were Deactivated in",
         "tags": [
           "workspace"
         ]
@@ -1953,6 +1988,51 @@
         },
         "required": [
           "id"
+        ],
+        "additionalProperties": false
+      },
+      "GetCurrentMembershipResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "membership": {
+            "type": "object",
+            "properties": {
+              "workspace": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "ADMIN",
+                  "MEMBER"
+                ]
+              }
+            },
+            "required": [
+              "workspace",
+              "role"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "membership"
         ],
         "additionalProperties": false
       },

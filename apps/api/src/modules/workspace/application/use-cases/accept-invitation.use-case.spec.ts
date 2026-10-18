@@ -6,6 +6,7 @@ import {
   FakeInvitationSettling,
   FakeMemberRejoining,
   FakeMembershipQuery,
+  FakeSessionWorkspace,
   FakeWorkspaceInviting,
   FakeWorkspaceSwitching,
 } from '@test/support/workspace.fakes';
@@ -41,12 +42,14 @@ function setUp(status: InvitationStatusValue = 'PENDING') {
   const memberRejoining = new FakeMemberRejoining(membershipQuery);
   const workspaceSwitching = new FakeWorkspaceSwitching(membershipQuery);
   const invitationSettling = new FakeInvitationSettling();
+  const sessionWorkspace = new FakeSessionWorkspace();
   const unitOfWork = new FakeUnitOfWork();
   const useCase = new AcceptInvitationUseCase(
     workspaceInviting,
     memberRejoining,
     invitationSettling,
     workspaceSwitching,
+    sessionWorkspace,
     invitationQuery,
     membershipQuery,
     unitOfWork,
@@ -56,6 +59,7 @@ function setUp(status: InvitationStatusValue = 'PENDING') {
     workspaceInviting,
     memberRejoining,
     invitationSettling,
+    sessionWorkspace,
     workspaceSwitching,
     membershipQuery,
     unitOfWork,
@@ -91,7 +95,15 @@ describe('accepting an Invitation', () => {
     expect(workspaceInviting.accepted).toHaveLength(1);
   });
 
-  it('makes the Workspace joined the one the person is in', async () => {
+  it("puts the person's session in the Workspace joined", async () => {
+    const { sessionWorkspace, useCase } = setUp();
+
+    await useCase.execute(acceptance());
+
+    expect(await sessionWorkspace.selectedIn(SOMCHAI_COOKIE)).toBe(ACME.id);
+  });
+
+  it('lists the Workspace joined first, as the one used last', async () => {
     const { workspaceSwitching, useCase } = setUp();
 
     await useCase.execute(acceptance());
@@ -239,8 +251,9 @@ describe('accepting an Invitation', () => {
     ).toEqual({ workspace: ACME, role: 'MEMBER' });
   });
 
-  it('makes the Workspace someone came back to the one they are in', async () => {
-    const { workspaceSwitching, membershipQuery, useCase } = setUp();
+  it('puts the session of someone who came back in that Workspace', async () => {
+    const { workspaceSwitching, sessionWorkspace, membershipQuery, useCase } =
+      setUp();
     membershipQuery.memberships.push({
       accountId: 'account-somchai',
       workspace: ACME,
@@ -253,6 +266,7 @@ describe('accepting an Invitation', () => {
     expect(workspaceSwitching.switches).toEqual([
       { workspaceId: ACME.id, accountId: 'account-somchai', switchedAt: NOW },
     ]);
+    expect(await sessionWorkspace.selectedIn(SOMCHAI_COOKIE)).toBe(ACME.id);
   });
 
   it('switches to nothing when the person was already in that Workspace', async () => {

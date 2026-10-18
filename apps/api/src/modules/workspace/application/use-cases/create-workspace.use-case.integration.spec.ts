@@ -9,6 +9,7 @@ import { UuidIdGenerator } from '@app/infrastructure/uuid-id-generator.adapter';
 import { FakeHasProfilePort } from '@test/support/workspace.fakes';
 import { makeSignature } from 'better-auth/crypto';
 import { v7 as uuidv7 } from 'uuid';
+import { BetterAuthSessionWorkspaceAdapter } from '../../infrastructure/adapter/better-auth-session-workspace.adapter';
 import { BetterAuthWorkspaceFoundingAdapter } from '../../infrastructure/adapter/better-auth-workspace-founding.adapter';
 import { PrismaWorkspaceSwitchingAdapter } from '../../infrastructure/adapter/prisma-workspace-switching.adapter';
 import { PrismaMembershipQuery } from '../../infrastructure/query/prisma-membership.query';
@@ -23,6 +24,7 @@ const auth = createAuth(prismaService, configuration.auth, idGenerator);
 const createWorkspaceUseCase = new CreateWorkspaceUseCase(
   new BetterAuthWorkspaceFoundingAdapter(auth, idGenerator),
   new PrismaWorkspaceSwitchingAdapter(prismaTransactionContext),
+  new BetterAuthSessionWorkspaceAdapter(auth),
   hasProfilePort,
   new PrismaUnitOfWork(prismaService, prismaTransactionContext),
   new SystemClock(),
@@ -83,7 +85,7 @@ describe('creating Workspaces in Postgres', () => {
     ).toBe(2);
   });
 
-  it('makes the new Workspace the one its founder is in', async () => {
+  it("puts the founder's session in the new Workspace, and lists it first", async () => {
     const { accountId, credential } = await aFounder();
     const request = { accountId, credential, teamSize: null };
     await createWorkspaceUseCase.execute({ ...request, name: 'First' });
@@ -97,5 +99,8 @@ describe('creating Workspaces in Postgres', () => {
       prismaTransactionContext,
     ).membershipsOfAccount(accountId, { page: 1, pageSize: 1 }, 'ACTIVE');
     expect(current.items.map((m) => m.workspace.id)).toEqual([second.id]);
+    expect(
+      await new BetterAuthSessionWorkspaceAdapter(auth).selectedIn(credential),
+    ).toBe(second.id);
   });
 });

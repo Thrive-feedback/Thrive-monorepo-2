@@ -141,7 +141,7 @@ model Member {
   /// Written by the Workspace module, since the plugin can only delete a Member (ADR 0047).
   deactivatedAt DateTime?
   /// When the Account last switched to this Workspace, by choosing it, creating it or accepting an
-  /// Invitation to it; `null` until then. Its newest active row is the current Workspace (ADR 0049).
+  /// Invitation to it; `null` until then. Orders a person's Workspaces, the one used last first.
   lastUsedAt    DateTime?
 
   @@unique([workspaceId, userId])

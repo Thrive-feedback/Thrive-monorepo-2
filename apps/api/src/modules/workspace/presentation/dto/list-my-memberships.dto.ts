@@ -23,8 +23,8 @@ const membershipSchema = z.object({
 
 export const listMyMembershipsResponseSchema = z.object({
   /**
-   * The one used last first, so among active ones the first is the Workspace the caller is in.
-   * Empty while they belong to no Workspace.
+   * The one used last first. Empty while the caller belongs to no Workspace; which one their session
+   * is in is `members/mine/current`.
    */
   items: z.array(membershipSchema),
   ...pageResultShape,

@@ -45,7 +45,7 @@ export class WorkspaceController {
   @Post()
   @ApiOperation({
     summary:
-      'Create a Workspace, with the caller as its first Admin, and make it the one they are in',
+      "Create a Workspace, with the caller as its first Admin, and put the caller's session in it",
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.CREATED, type: CreateWorkspaceResponseDto })
@@ -76,7 +76,7 @@ export class WorkspaceController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary:
-      'Make this Workspace the one the caller is in, on every device, until they switch again',
+      "Put the caller's session in this Workspace, so every page there acts on it",
   })
   @ApiHeader(COOKIE_HEADER)
   @ApiNoContentResponse({ description: 'Switched' })
@@ -84,12 +84,14 @@ export class WorkspaceController {
   @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
   async switchWorkspace(
     @CurrentActor() actor: Actor,
+    @Headers('cookie') cookie: string | undefined,
     @CurrentMembership() membership: MembershipView,
     // Declared so the path parameter reaches the contract; the guard has already resolved it.
     @Param() _params: WorkspacePathParamsDto,
   ): Promise<void> {
     await this.switchWorkspaceUseCase.execute({
       accountId: actor.accountId,
+      credential: cookie ?? '',
       membership,
     });
   }
