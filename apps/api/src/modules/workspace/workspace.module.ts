@@ -4,14 +4,18 @@ import { EmailModule } from '@app/infrastructure/email/email.module';
 import { IdentityModule } from '@app/modules/identity';
 import { Module } from '@nestjs/common';
 import { WorkspaceMembershipAdapter } from './application/adapter/workspace-membership.adapter';
+import { InvitationSettling } from './application/port/invitation-settling.port';
 import { MemberDeactivating } from './application/port/member-deactivating.port';
 import { MemberReactivating } from './application/port/member-reactivating.port';
+import { MemberRejoining } from './application/port/member-rejoining.port';
 import { MemberRoleChanging } from './application/port/member-role-changing.port';
 import { WorkspaceFounding } from './application/port/workspace-founding.port';
 import { WorkspaceInviting } from './application/port/workspace-inviting.port';
+import { WorkspaceSwitching } from './application/port/workspace-switching.port';
 import { InvitationQuery } from './application/query-port/invitation.query-port';
 import { MembershipQuery } from './application/query-port/membership.query-port';
 import { InvitationDelivery } from './application/service/invitation-delivery.service';
+import { ReturningMembers } from './application/service/returning-members.service';
 import { AcceptInvitationUseCase } from './application/use-cases/accept-invitation.use-case';
 import { ChangeMemberRoleUseCase } from './application/use-cases/change-member-role.use-case';
 import { CreateWorkspaceUseCase } from './application/use-cases/create-workspace.use-case';
@@ -26,12 +30,16 @@ import { ResendInvitationUseCase } from './application/use-cases/resend-invitati
 import { ResolveMembershipUseCase } from './application/use-cases/resolve-membership.use-case';
 import { RevokeInvitationUseCase } from './application/use-cases/revoke-invitation.use-case';
 import { SendInvitationsUseCase } from './application/use-cases/send-invitations.use-case';
+import { SwitchWorkspaceUseCase } from './application/use-cases/switch-workspace.use-case';
 import { WorkspaceMembershipPort } from './domain/port/workspace-membership.port';
 import { BetterAuthMemberRoleChangingAdapter } from './infrastructure/adapter/better-auth-member-role-changing.adapter';
 import { BetterAuthWorkspaceFoundingAdapter } from './infrastructure/adapter/better-auth-workspace-founding.adapter';
 import { BetterAuthWorkspaceInvitingAdapter } from './infrastructure/adapter/better-auth-workspace-inviting.adapter';
+import { PrismaInvitationSettlingAdapter } from './infrastructure/adapter/prisma-invitation-settling.adapter';
 import { PrismaMemberDeactivatingAdapter } from './infrastructure/adapter/prisma-member-deactivating.adapter';
 import { PrismaMemberReactivatingAdapter } from './infrastructure/adapter/prisma-member-reactivating.adapter';
+import { PrismaMemberRejoiningAdapter } from './infrastructure/adapter/prisma-member-rejoining.adapter';
+import { PrismaWorkspaceSwitchingAdapter } from './infrastructure/adapter/prisma-workspace-switching.adapter';
 import { PrismaInvitationQuery } from './infrastructure/query/prisma-invitation.query';
 import { PrismaMembershipQuery } from './infrastructure/query/prisma-membership.query';
 import { InvitationController } from './presentation/invitation.controller';
@@ -80,10 +88,23 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
       provide: MemberReactivating,
       useClass: PrismaMemberReactivatingAdapter,
     },
+    {
+      provide: MemberRejoining,
+      useClass: PrismaMemberRejoiningAdapter,
+    },
+    {
+      provide: InvitationSettling,
+      useClass: PrismaInvitationSettlingAdapter,
+    },
+    {
+      provide: WorkspaceSwitching,
+      useClass: PrismaWorkspaceSwitchingAdapter,
+    },
     { provide: MembershipQuery, useClass: PrismaMembershipQuery },
     { provide: WorkspaceMembershipPort, useClass: WorkspaceMembershipAdapter },
     { provide: InvitationQuery, useClass: PrismaInvitationQuery },
     CreateWorkspaceUseCase,
+    SwitchWorkspaceUseCase,
     ListMyMembershipsUseCase,
     ListMyInvitationsUseCase,
     ResolveMembershipUseCase,
@@ -98,6 +119,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     RevokeInvitationUseCase,
     ResendInvitationUseCase,
     InvitationDelivery,
+    ReturningMembers,
     WorkspaceMemberGuard,
   ],
   // Published so a module acting inside a Workspace can ask whether an Account is a Member

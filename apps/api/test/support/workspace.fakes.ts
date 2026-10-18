@@ -1,9 +1,12 @@
 import {
+  type AccountByEmail,
+  AccountByEmailPort,
   type AccountSummary,
   AccountSummaryPort,
   HasProfilePort,
   ProfileNamePort,
 } from '@app/modules/identity';
+import { InvitationSettling } from '@app/modules/workspace/application/port/invitation-settling.port';
 import {
   MemberDeactivating,
   type MemberDeactivation,
@@ -12,6 +15,10 @@ import {
   MemberReactivating,
   type MemberReactivation,
 } from '@app/modules/workspace/application/port/member-reactivating.port';
+import {
+  type MemberRejoin,
+  MemberRejoining,
+} from '@app/modules/workspace/application/port/member-rejoining.port';
 import {
   type MemberRoleChange,
   MemberRoleChanging,
@@ -29,6 +36,10 @@ import {
   type InvitationStored,
   WorkspaceInviting,
 } from '@app/modules/workspace/application/port/workspace-inviting.port';
+import {
+  type WorkspaceSwitch,
+  WorkspaceSwitching,
+} from '@app/modules/workspace/application/port/workspace-switching.port';
 import { InvitationQuery } from '@app/modules/workspace/application/query-port/invitation.query-port';
 import { MembershipQuery } from '@app/modules/workspace/application/query-port/membership.query-port';
 import type {
@@ -45,18 +56,12 @@ import type {
   PageRequest,
   WorkspaceMemberPage,
 } from '@app/modules/workspace/application/types/membership.types';
-import { AlreadyInAWorkspaceError } from '@app/modules/workspace/application/workspace.errors';
 import type { InvitationRecipient } from '@app/modules/workspace/domain/value-object/invitation-recipient.vo';
 import { InvitationStatus } from '@app/modules/workspace/domain/value-object/invitation-status.vo';
 
-/**
- * Remembers each Workspace it was asked to found, and answers the ids it was given. Like the
- * real store, it refuses a credential whose founder already has one.
- */
+/** Remembers each Workspace it was asked to found, and answers the ids it was given. */
 export class FakeWorkspaceFounding extends WorkspaceFounding {
   readonly founded: WorkspaceFoundingInput[] = [];
-  /** Credentials whose founder is already a Member of a Workspace. */
-  readonly alreadyMembers = new Set<string>();
   private readonly ids: string[];
 
   constructor(...ids: string[]) {
@@ -65,9 +70,6 @@ export class FakeWorkspaceFounding extends WorkspaceFounding {
   }
 
   async found(input: WorkspaceFoundingInput): Promise<FoundedWorkspace> {
-    if (this.alreadyMembers.has(input.credential)) {
-      throw new AlreadyInAWorkspaceError();
-    }
     const workspaceId = this.ids.shift();
     if (workspaceId === undefined) {
       throw new Error('FakeWorkspaceFounding ran out of ids.');
@@ -120,6 +122,22 @@ export class FakeWorkspaceInviting extends WorkspaceInviting {
     if (this.members.has(request.email)) {
       return { outcome: 'already_member' };
     }
+    if ([...this.pending.values()].includes(request.email)) {
+      return { outcome: 'already_invited' };
+    }
+    const invitationId = this.ids.shift();
+    if (invitationId === undefined) {
+      throw new Error('FakeWorkspaceInviting ran out of ids.');
+    }
+    this.pending.set(invitationId, request.email);
+    return { outcome: 'invited', invitationId, expiresAt: this.expiresAt };
+  }
+
+  /** Addresses invited back, as someone Deactivated in the Workspace would be. */
+  readonly invitedBack: InvitationRequest[] = [];
+
+  async inviteBack(request: InvitationRequest): Promise<InvitationStored> {
+    this.invitedBack.push(request);
     if ([...this.pending.values()].includes(request.email)) {
       return { outcome: 'already_invited' };
     }
@@ -184,6 +202,35 @@ export class FakeWorkspaceInviting extends WorkspaceInviting {
     return { outcome: 'reissued', invitationId, expiresAt: this.expiresAt };
   }
 
+  /** Every resend asked for someone Deactivated in the Workspace, in order. */
+  readonly reissuesBack: InvitationRequest[] = [];
+
+  async reissueBack(request: InvitationRequest): Promise<InvitationReissued> {
+    this.reissuesBack.push(request);
+    const pendingId = [...this.pending].find(
+      ([id, email]) => email === request.email && !this.expired.has(id),
+    )?.[0];
+    return pendingId !== undefined
+      ? {
+          outcome: 'reissued',
+          invitationId: pendingId,
+          expiresAt: this.expiresAt,
+        }
+      : {
+          outcome: 'reissued',
+          invitationId: this.nextId(),
+          expiresAt: this.expiresAt,
+        };
+  }
+
+  private nextId(): string {
+    const invitationId = this.ids.shift();
+    if (invitationId === undefined) {
+      throw new Error('FakeWorkspaceInviting ran out of ids.');
+    }
+    return invitationId;
+  }
+
   /** When each Invitation's email was recorded as sent, by id. */
   readonly sentAt = new Map<string, Date>();
 
@@ -193,25 +240,37 @@ export class FakeWorkspaceInviting extends WorkspaceInviting {
 }
 
 /**
- * Memberships held in memory, keyed by Account and Workspace. One with a `deactivatedAt` is kept
- * but, like the real store, answered only where Deactivated Members are asked for.
+ * Memberships held in memory, keyed by Account and Workspace, in the order they were joined. One
+ * with a `deactivatedAt` is kept but, like the real store, answered only where Deactivated
+ * Members are asked for.
  */
 export class FakeMembershipQuery extends MembershipQuery {
   readonly memberships: (MembershipView & {
     readonly accountId: string;
     readonly deactivatedAt?: Date;
+    readonly lastUsedAt?: Date;
   })[] = [];
 
   private get active() {
     return this.memberships.filter((m) => m.deactivatedAt === undefined);
   }
 
+  /** Like the store: the one used last first, then those never used, newest joined first. */
   async membershipsOfAccount(
     accountId: string,
     page: PageRequest,
+    status: MemberStatus,
   ): Promise<MembershipPage> {
-    const items = this.active
-      .filter((m) => m.accountId === accountId)
+    const usedAt = (m: { readonly lastUsedAt?: Date }) =>
+      m.lastUsedAt?.getTime() ?? Number.NEGATIVE_INFINITY;
+    const items = this.memberships
+      .filter(
+        (m) =>
+          m.accountId === accountId &&
+          (m.deactivatedAt === undefined) === (status === 'ACTIVE'),
+      )
+      .reverse()
+      .sort((a, b) => usedAt(b) - usedAt(a))
       .map((m) => ({ workspace: m.workspace, role: m.role }));
     const start = (page.page - 1) * page.pageSize;
     return {
@@ -342,6 +401,58 @@ export class FakeMemberReactivating extends MemberReactivating {
   }
 }
 
+/** Brings back, with a new Role, memberships a `FakeMembershipQuery` holds, and records each. */
+export class FakeMemberRejoining extends MemberRejoining {
+  readonly rejoins: MemberRejoin[] = [];
+
+  constructor(private readonly membershipQuery: FakeMembershipQuery) {
+    super();
+  }
+
+  async rejoin(rejoin: MemberRejoin): Promise<void> {
+    this.rejoins.push(rejoin);
+    const index = this.membershipQuery.memberships.findIndex(
+      (m) =>
+        m.accountId === rejoin.accountId &&
+        m.workspace.id === rejoin.workspaceId,
+    );
+    const found = this.membershipQuery.memberships[index];
+    if (found) {
+      const { deactivatedAt: _, ...active } = found;
+      this.membershipQuery.memberships[index] = {
+        ...active,
+        role: rejoin.role,
+      };
+    }
+  }
+}
+
+/** Stamps when memberships a `FakeMembershipQuery` holds were last used, and records each. */
+export class FakeWorkspaceSwitching extends WorkspaceSwitching {
+  readonly switches: WorkspaceSwitch[] = [];
+
+  constructor(private readonly membershipQuery: FakeMembershipQuery) {
+    super();
+  }
+
+  async switchTo(workspaceSwitch: WorkspaceSwitch): Promise<void> {
+    this.switches.push(workspaceSwitch);
+    const index = this.membershipQuery.memberships.findIndex(
+      (m) =>
+        m.accountId === workspaceSwitch.accountId &&
+        m.workspace.id === workspaceSwitch.workspaceId &&
+        m.deactivatedAt === undefined,
+    );
+    const found = this.membershipQuery.memberships[index];
+    if (found) {
+      this.membershipQuery.memberships[index] = {
+        ...found,
+        lastUsedAt: workspaceSwitch.switchedAt,
+      };
+    }
+  }
+}
+
 /** Changes Roles in the memberships a `FakeMembershipQuery` holds, and records each change. */
 export class FakeMemberRoleChanging extends MemberRoleChanging {
   readonly changes: MemberRoleChange[] = [];
@@ -361,6 +472,29 @@ export class FakeMemberRoleChanging extends MemberRoleChanging {
     if (found) {
       this.membershipQuery.memberships[index] = { ...found, role: change.role };
     }
+  }
+}
+
+/** Records each Invitation settled without anyone being added. */
+export class FakeInvitationSettling extends InvitationSettling {
+  readonly settled: string[] = [];
+
+  async settleAccepted(invitationId: string): Promise<void> {
+    this.settled.push(invitationId);
+  }
+}
+
+/** Answers which addresses have an Account, from those the test has described, as Identity would. */
+export class FakeAccountByEmailPort extends AccountByEmailPort {
+  readonly accounts: AccountByEmail[] = [];
+
+  async accountsWithEmails(
+    emails: readonly string[],
+  ): Promise<AccountByEmail[]> {
+    const wanted = emails.map((email) => email.toLowerCase());
+    return this.accounts.filter((account) =>
+      wanted.includes(account.email.toLowerCase()),
+    );
   }
 }
 
@@ -415,13 +549,19 @@ export class FakeInvitationQuery extends InvitationQuery {
   /** Invitations as their recipients read them, keyed by the stored address. */
   readonly sentTo = new Map<string, PendingInvitationView[]>();
 
+  /** The Workspaces each Account is active in, whose Invitations are left out for it. */
+  readonly activeIn = new Map<string, string[]>();
+
   async pendingInvitationsTo(
     recipient: InvitationRecipient,
+    accountId: string,
     now: Date,
     page: PageRequest,
   ): Promise<PendingInvitationPage> {
+    const theirs = this.activeIn.get(accountId) ?? [];
     const items = (this.sentTo.get(recipient.toString()) ?? []).filter(
-      (invitation) => invitation.expiresAt > now,
+      (invitation) =>
+        invitation.expiresAt > now && !theirs.includes(invitation.workspace.id),
     );
     const start = (page.page - 1) * page.pageSize;
     return {

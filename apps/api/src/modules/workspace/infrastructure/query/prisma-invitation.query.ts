@@ -76,6 +76,7 @@ export class PrismaInvitationQuery extends InvitationQuery {
 
   async pendingInvitationsTo(
     recipient: InvitationRecipient,
+    accountId: string,
     now: Date,
     page: PageRequest,
   ): Promise<PendingInvitationPage> {
@@ -85,6 +86,9 @@ export class PrismaInvitationQuery extends InvitationQuery {
       email: recipient.toString(),
       status: 'pending',
       expiresAt: { gt: now },
+      workspace: {
+        members: { none: { userId: accountId, deactivatedAt: null } },
+      },
     };
     const [invitations, total] = await Promise.all([
       this.prismaTransactionContext.client.invitation.findMany({

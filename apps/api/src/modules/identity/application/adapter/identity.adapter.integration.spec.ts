@@ -3,12 +3,14 @@ import { loadConfiguration } from '@app/config/configuration';
 import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { aProfileSnapshot } from '@test/support/identity.fakes';
 import { v7 as uuidv7 } from 'uuid';
+import type { AccountByEmailPort } from '../../domain/port/account-by-email.port';
 import type { AccountSummaryPort } from '../../domain/port/account-summary.port';
 import type { HasProfilePort } from '../../domain/port/has-profile.port';
 import type { ProfileNamePort } from '../../domain/port/profile-name.port';
 import { PrismaAccountQuery } from '../../infrastructure/query/prisma-account.query';
 import { PrismaProfileQuery } from '../../infrastructure/query/prisma-profile.query';
 import { FindAccountSummariesUseCase } from '../use-cases/find-account-summaries.use-case';
+import { FindAccountsByEmailUseCase } from '../use-cases/find-accounts-by-email.use-case';
 import { FindProfileOfAccountUseCase } from '../use-cases/find-profile-of-account.use-case';
 import { IdentityAdapter } from './identity.adapter';
 
@@ -16,10 +18,12 @@ const prismaService = new PrismaService(loadConfiguration().database);
 const identityAdapter = new IdentityAdapter(
   new FindProfileOfAccountUseCase(new PrismaProfileQuery(prismaService)),
   new FindAccountSummariesUseCase(new PrismaAccountQuery(prismaService)),
+  new FindAccountsByEmailUseCase(new PrismaAccountQuery(prismaService)),
 );
 const hasProfilePort: HasProfilePort = identityAdapter;
 const profileNamePort: ProfileNamePort = identityAdapter;
 const accountSummaryPort: AccountSummaryPort = identityAdapter;
+const accountByEmailPort: AccountByEmailPort = identityAdapter;
 
 const createdAccountIds: string[] = [];
 
@@ -127,5 +131,22 @@ describe('who several Accounts are, as Workspace asks it', () => {
 
   it('answers an empty batch with nobody, without asking the database', async () => {
     expect(await accountSummaryPort.summariesOf([])).toEqual([]);
+  });
+});
+
+describe('finding Accounts by the address they sign in with', () => {
+  it('answers the Accounts among the addresses, whatever their case, leaving out the rest', async () => {
+    const ann = await anAccount();
+
+    expect(
+      await accountByEmailPort.accountsWithEmails([
+        ann.email.toUpperCase(),
+        'nobody@acme.test',
+      ]),
+    ).toEqual([{ accountId: ann.id, email: ann.email }]);
+  });
+
+  it('answers an empty batch with nobody, without asking the database', async () => {
+    expect(await accountByEmailPort.accountsWithEmails([])).toEqual([]);
   });
 });

@@ -11,19 +11,6 @@ export class ProfileRequiredError extends ApplicationError {
 }
 
 /**
- * One Workspace per person in this release (ADR-0020). Held here rather than in the
- * schema, so letting a person belong to several later is deleting this check.
- */
-export class AlreadyInAWorkspaceError extends ApplicationError {
-  readonly code = 'ALREADY_IN_A_WORKSPACE';
-  readonly category = 'conflict' as const;
-
-  constructor() {
-    super('This Account is already a Member of a Workspace.');
-  }
-}
-
-/**
  * The Workspace does not exist, or the caller is not a Member of it. The two are one answer,
  * so nobody outside a Workspace can learn that its id is real.
  */
@@ -133,19 +120,5 @@ export class NotAllowedToReactivateError extends ApplicationError {
 
   constructor() {
     super('Only Admins can Reactivate people in this Workspace.');
-  }
-}
-
-/**
- * The Account was Deactivated in the Workspace it is invited to. Its membership is kept, so it
- * cannot be added again; until accepting brings that membership back (#209), only an Admin's
- * Reactivate does.
- */
-export class DeactivatedInWorkspaceError extends ApplicationError {
-  readonly code = 'DEACTIVATED_IN_WORKSPACE';
-  readonly category = 'conflict' as const;
-
-  constructor() {
-    super('This Account was Deactivated in this Workspace.');
   }
 }

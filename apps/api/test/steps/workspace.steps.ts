@@ -51,10 +51,32 @@ Then(
   },
 );
 
+When(
+  '{person} switches to {string}',
+  async function (this: ThriveWorld, name: string, workspaceName: string) {
+    const memberships = await myMemberships(this, name);
+    const chosen = memberships.find((m) => m.workspace.name === workspaceName);
+    assert.ok(chosen, `${name} is not in ${workspaceName}.`);
+    await this.as(name, 'POST', `/v1/workspaces/${chosen.workspace.id}/switch`);
+  },
+);
+
+When(
+  "{person} switches to {person}'s Workspace",
+  async function (this: ThriveWorld, name: string, owner: string) {
+    await this.as(
+      name,
+      'POST',
+      `/v1/workspaces/${this.workspaceOf(owner)}/switch`,
+    );
+  },
+);
+
 Then(
-  '{person} is told they already belong to a Workspace',
-  function (this: ThriveWorld, _name: string) {
-    this.refusedWith('ALREADY_IN_A_WORKSPACE');
+  '{person} is in {string}',
+  async function (this: ThriveWorld, name: string, workspaceName: string) {
+    const [current] = await myMemberships(this, name);
+    assert.equal(current?.workspace.name, workspaceName);
   },
 );
 

@@ -4,7 +4,9 @@ import { FakeClock } from '@test/support/clock.fake';
 import { FakeEmailSender } from '@test/support/email-sender.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
+  FakeAccountByEmailPort,
   FakeInvitationQuery,
+  FakeMembershipQuery,
   FakeProfileNamePort,
   FakeWorkspaceInviting,
 } from '@test/support/workspace.fakes';
@@ -15,6 +17,7 @@ import {
   InvitationResentTooSoonError,
 } from '../../domain/workspace.errors';
 import { InvitationDelivery } from '../service/invitation-delivery.service';
+import { ReturningMembers } from '../service/returning-members.service';
 import {
   AlreadyAMemberError,
   InvitationNotFoundError,
@@ -64,6 +67,8 @@ function setUp(
   const profileNamePort = new FakeProfileNamePort();
   profileNamePort.displayNames.set('account-ann', 'Ann');
   const clock = new FakeClock(NOW);
+  const accountByEmailPort = new FakeAccountByEmailPort();
+  const membershipQuery = new FakeMembershipQuery();
   const useCase = new ResendInvitationUseCase(
     workspaceInviting,
     invitationQuery,
@@ -73,10 +78,17 @@ function setUp(
       clock,
       new WebConfig('https://thrive.test'),
     ),
+    new ReturningMembers(accountByEmailPort, membershipQuery),
     new FakeUnitOfWork(),
     clock,
   );
-  return { workspaceInviting, emailSender, useCase };
+  return {
+    workspaceInviting,
+    accountByEmailPort,
+    membershipQuery,
+    emailSender,
+    useCase,
+  };
 }
 
 function resend(role: MemberRoleValue = 'ADMIN') {
@@ -237,5 +249,27 @@ describe('refusing to resend an Invitation', () => {
       InvitationResentTooSoonError,
     );
     expect(emailSender.sent).toEqual([]);
+  });
+
+  it('resends for someone Deactivated in the Workspace as an Invitation back', async () => {
+    const { workspaceInviting, accountByEmailPort, membershipQuery, useCase } =
+      setUp();
+    accountByEmailPort.accounts.push({
+      accountId: 'account-somchai',
+      email: SOMCHAI,
+    });
+    membershipQuery.memberships.push({
+      accountId: 'account-somchai',
+      workspace: ACME,
+      role: 'MEMBER',
+      deactivatedAt: NOW,
+    });
+
+    await useCase.execute(resend());
+
+    expect(workspaceInviting.reissuesBack.map((r) => r.email)).toEqual([
+      SOMCHAI,
+    ]);
+    expect(workspaceInviting.reissues).toEqual([]);
   });
 });

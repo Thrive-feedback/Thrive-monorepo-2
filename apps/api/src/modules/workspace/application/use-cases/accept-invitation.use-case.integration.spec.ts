@@ -11,9 +11,11 @@ import {
   WorkspaceFixtures,
 } from '@test/support/workspace.integration-fixtures';
 import { BetterAuthWorkspaceInvitingAdapter } from '../../infrastructure/adapter/better-auth-workspace-inviting.adapter';
+import { PrismaInvitationSettlingAdapter } from '../../infrastructure/adapter/prisma-invitation-settling.adapter';
+import { PrismaMemberRejoiningAdapter } from '../../infrastructure/adapter/prisma-member-rejoining.adapter';
+import { PrismaWorkspaceSwitchingAdapter } from '../../infrastructure/adapter/prisma-workspace-switching.adapter';
 import { PrismaInvitationQuery } from '../../infrastructure/query/prisma-invitation.query';
 import { PrismaMembershipQuery } from '../../infrastructure/query/prisma-membership.query';
-import { AlreadyInAWorkspaceError } from '../workspace.errors';
 import { AcceptInvitationUseCase } from './accept-invitation.use-case';
 
 const configuration = loadConfiguration();
@@ -24,13 +26,17 @@ const auth = createAuth(
   configuration.auth,
   new UuidIdGenerator(),
 );
-const workspaceInviting = new BetterAuthWorkspaceInvitingAdapter(auth);
+const clock = new FakeClock(new Date());
+const workspaceInviting = new BetterAuthWorkspaceInvitingAdapter(auth, clock);
 const acceptInvitationUseCase = new AcceptInvitationUseCase(
   workspaceInviting,
+  new PrismaMemberRejoiningAdapter(prismaTransactionContext),
+  new PrismaInvitationSettlingAdapter(prismaTransactionContext),
+  new PrismaWorkspaceSwitchingAdapter(prismaTransactionContext),
   new PrismaInvitationQuery(prismaTransactionContext),
   new PrismaMembershipQuery(prismaTransactionContext),
   new PrismaUnitOfWork(prismaService, prismaTransactionContext),
-  new FakeClock(new Date()),
+  clock,
 );
 const fixtures = new WorkspaceFixtures(prismaService, auth, configuration);
 
@@ -39,12 +45,20 @@ afterAll(async () => {
   await prismaService.$disconnect();
 });
 
-/** A fresh Workspace whose Admin has invited `invitee`; answers the Invitation's id. */
-async function anInvitationFor(invitee: SignedInAccount): Promise<string> {
-  const admin = await fixtures.aSignedInAccount('accept-admin');
-  const workspaceId = await fixtures.aWorkspace(admin);
+interface Invited {
+  readonly workspaceId: string;
+  readonly invitationId: string;
+}
+
+/** An Invitation for `invitee` into `workspaceId`, sent by its Admin. */
+async function anInvitationInto(
+  workspaceId: string,
+  admin: SignedInAccount,
+  invitee: SignedInAccount,
+): Promise<string> {
   const stored = await workspaceInviting.invite({
     credential: admin.credential,
+    inviterAccountId: admin.accountId,
     workspaceId,
     email: invitee.email,
     role: 'MEMBER',
@@ -53,6 +67,16 @@ async function anInvitationFor(invitee: SignedInAccount): Promise<string> {
     throw new Error(`Expected an Invitation, got ${stored.outcome}.`);
   }
   return stored.invitationId;
+}
+
+/** A fresh Workspace whose Admin has invited `invitee`. */
+async function anInvitationFor(invitee: SignedInAccount): Promise<Invited> {
+  const admin = await fixtures.aSignedInAccount('accept-admin');
+  const workspaceId = await fixtures.aWorkspace(admin);
+  return {
+    workspaceId,
+    invitationId: await anInvitationInto(workspaceId, admin, invitee),
+  };
 }
 
 function acceptanceBy(invitee: SignedInAccount, invitationId: string) {
@@ -67,7 +91,7 @@ function acceptanceBy(invitee: SignedInAccount, invitationId: string) {
 describe('accepting an Invitation in Postgres', () => {
   it('changes nothing when the same person accepts again, from a reload or a second click', async () => {
     const invitee = await fixtures.aSignedInAccount('accept-twice');
-    const invitationId = await anInvitationFor(invitee);
+    const { invitationId } = await anInvitationFor(invitee);
     await acceptInvitationUseCase.execute(acceptanceBy(invitee, invitationId));
 
     await acceptInvitationUseCase.execute(acceptanceBy(invitee, invitationId));
@@ -79,25 +103,81 @@ describe('accepting an Invitation in Postgres', () => {
     ).toBe(1);
   });
 
-  it('lets one of two Invitations accepted at once in, and refuses the other', async () => {
-    const invitee = await fixtures.aSignedInAccount('accept-race');
+  it('lets one person into two Workspaces whose Invitations they accept at once', async () => {
+    const invitee = await fixtures.aSignedInAccount('accept-two');
     const first = await anInvitationFor(invitee);
     const second = await anInvitationFor(invitee);
 
-    const results = await Promise.allSettled([
-      acceptInvitationUseCase.execute(acceptanceBy(invitee, first)),
-      acceptInvitationUseCase.execute(acceptanceBy(invitee, second)),
+    await Promise.all([
+      acceptInvitationUseCase.execute(
+        acceptanceBy(invitee, first.invitationId),
+      ),
+      acceptInvitationUseCase.execute(
+        acceptanceBy(invitee, second.invitationId),
+      ),
     ]);
 
-    expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
-    const refused = results.find((r) => r.status === 'rejected');
-    expect(refused?.status === 'rejected' && refused.reason).toBeInstanceOf(
-      AlreadyInAWorkspaceError,
-    );
     expect(
       await prismaService.member.count({
-        where: { userId: invitee.accountId },
+        where: { userId: invitee.accountId, deactivatedAt: null },
       }),
-    ).toBe(1);
+    ).toBe(2);
+  });
+
+  it('makes the Workspace joined the one the person is in', async () => {
+    const invitee = await fixtures.aSignedInAccount('accept-current');
+    const home = await fixtures.aWorkspace(invitee, 'Home');
+    const { workspaceId, invitationId } = await anInvitationFor(invitee);
+
+    await acceptInvitationUseCase.execute(acceptanceBy(invitee, invitationId));
+
+    const current = await new PrismaMembershipQuery(
+      prismaTransactionContext,
+    ).membershipsOfAccount(
+      invitee.accountId,
+      { page: 1, pageSize: 2 },
+      'ACTIVE',
+    );
+    expect(current.items.map((m) => m.workspace.id)).toEqual([
+      workspaceId,
+      home,
+    ]);
+  });
+
+  it('brings back someone Deactivated there, once, with the Role the Invitation names', async () => {
+    const admin = await fixtures.aSignedInAccount('rejoin-admin');
+    const invitee = await fixtures.aSignedInAccount('rejoin-invitee');
+    const workspaceId = await fixtures.aWorkspace(admin);
+    await fixtures.addMember(workspaceId, invitee, 'member');
+    await prismaService.member.updateMany({
+      where: { workspaceId, userId: invitee.accountId },
+      data: { deactivatedAt: new Date() },
+    });
+    const stored = await workspaceInviting.inviteBack({
+      credential: admin.credential,
+      inviterAccountId: admin.accountId,
+      workspaceId,
+      email: invitee.email,
+      role: 'ADMIN',
+    });
+    if (stored.outcome !== 'invited') {
+      throw new Error(`Expected an Invitation, got ${stored.outcome}.`);
+    }
+    const { invitationId } = stored;
+
+    await acceptInvitationUseCase.execute(acceptanceBy(invitee, invitationId));
+
+    expect(
+      await prismaService.member.findMany({
+        where: { workspaceId, userId: invitee.accountId },
+        select: { role: true, deactivatedAt: true },
+      }),
+    ).toEqual([{ role: 'admin', deactivatedAt: null }]);
+    expect(
+      await prismaService.invitation.findUniqueOrThrow({
+        where: { id: invitationId },
+        select: { status: true },
+      }),
+    ).toEqual({ status: 'accepted' });
   });
 });

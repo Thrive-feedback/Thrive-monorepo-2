@@ -1,4 +1,8 @@
 export {
+  type AccountByEmail,
+  AccountByEmailPort,
+} from './domain/port/account-by-email.port';
+export {
   type AccountSummary,
   AccountSummaryPort,
 } from './domain/port/account-summary.port';

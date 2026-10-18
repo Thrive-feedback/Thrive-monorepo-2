@@ -1,4 +1,9 @@
-import { AUTH, type Auth } from '@app/infrastructure/auth/auth';
+import {
+  AUTH,
+  type Auth,
+  INVITATION_LIFETIME_SECONDS,
+} from '@app/infrastructure/auth/auth';
+import { Clock } from '@app/shared/application/clock.port';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { APIError } from 'better-auth';
 import {
@@ -9,13 +14,13 @@ import {
   type InvitationStored,
   WorkspaceInviting,
 } from '../../application/port/workspace-inviting.port';
-import type { MemberRoleValue } from '../../domain/value-object/member-role.vo';
+import { toStoredRole } from '../mapper/membership.mapper';
 
-/** The plugin stores a Role by its own lowercase name. */
-const PLUGIN_ROLES = {
-  ADMIN: 'admin',
-  MEMBER: 'member',
-} as const satisfies Record<MemberRoleValue, string>;
+/** What this adapter reads of a stored Invitation, by the plugin's own field names. */
+interface StoredInvitation {
+  readonly id: string;
+  readonly expiresAt: Date;
+}
 
 function requestHeaders(credential: string): Headers {
   return new Headers(credential ? { cookie: credential } : {});
@@ -25,13 +30,21 @@ function requestHeaders(credential: string): Headers {
  * Stores Invitations through Better Auth's organization plugin, on the inviter's own session,
  * so the plugin checks they may invite and that the address is not already in or invited. Its
  * own invitation email is never configured: the use case sends ours. Accepting runs on the
- * invited person's session, so the plugin also makes the Workspace their active one.
+ * invited person's session.
+ *
+ * Someone Deactivated in the Workspace keeps their `member` row (ADR 0047), which the plugin
+ * counts as a Member, so it refuses to invite them. For them alone the Invitation is stored
+ * through the plugin's adapter, which still owns the table, after the check for a Pending one
+ * its route would have made (ADR 0050).
  */
 @Injectable()
 export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
   private readonly logger = new Logger(BetterAuthWorkspaceInvitingAdapter.name);
 
-  constructor(@Inject(AUTH) private readonly auth: Auth) {
+  constructor(
+    @Inject(AUTH) private readonly auth: Auth,
+    private readonly clock: Clock,
+  ) {
     super();
   }
 
@@ -41,7 +54,7 @@ export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
         body: {
           email: request.email,
           // The plugin only lets an `admin` invite someone as one.
-          role: PLUGIN_ROLES[request.role],
+          role: toStoredRole(request.role),
           organizationId: request.workspaceId,
         },
         headers: requestHeaders(request.credential),
@@ -103,7 +116,7 @@ export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
       const invitation = await this.auth.api.createInvitation({
         body: {
           email: request.email,
-          role: PLUGIN_ROLES[request.role],
+          role: toStoredRole(request.role),
           organizationId: request.workspaceId,
           resend: true,
         },
@@ -136,6 +149,79 @@ export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
       where: [{ field: 'id', value: invitationId }],
       update: { lastSentAt: sentAt },
     });
+  }
+
+  async inviteBack(request: InvitationRequest): Promise<InvitationStored> {
+    if (await this.pendingInvitationFor(request)) {
+      return { outcome: 'already_invited' };
+    }
+    const invitation = await this.storeInvitation(request);
+    return {
+      outcome: 'invited',
+      invitationId: invitation.id,
+      expiresAt: invitation.expiresAt,
+    };
+  }
+
+  /** As the plugin's resend does: a Pending one is extended in place, otherwise one is stored. */
+  async reissueBack(request: InvitationRequest): Promise<InvitationReissued> {
+    const pending = await this.pendingInvitationFor(request);
+    if (!pending) {
+      const invitation = await this.storeInvitation(request);
+      return {
+        outcome: 'reissued',
+        invitationId: invitation.id,
+        expiresAt: invitation.expiresAt,
+      };
+    }
+    const expiresAt = this.expiryFromNow();
+    const { adapter } = await this.auth.$context;
+    await adapter.update({
+      model: 'invitation',
+      where: [{ field: 'id', value: pending.id }],
+      update: { expiresAt },
+    });
+    return { outcome: 'reissued', invitationId: pending.id, expiresAt };
+  }
+
+  private async pendingInvitationFor(
+    request: InvitationRequest,
+  ): Promise<StoredInvitation | null> {
+    const { adapter } = await this.auth.$context;
+    const pending = await adapter.findMany<StoredInvitation>({
+      model: 'invitation',
+      where: [
+        { field: 'organizationId', value: request.workspaceId },
+        { field: 'email', value: request.email },
+        { field: 'status', value: 'pending' },
+      ],
+    });
+    const now = this.clock.now();
+    return pending.find((invitation) => invitation.expiresAt > now) ?? null;
+  }
+
+  private async storeInvitation(
+    request: InvitationRequest,
+  ): Promise<StoredInvitation> {
+    const { adapter } = await this.auth.$context;
+    return adapter.create<Record<string, unknown>, StoredInvitation>({
+      model: 'invitation',
+      data: {
+        organizationId: request.workspaceId,
+        email: request.email,
+        role: toStoredRole(request.role),
+        status: 'pending',
+        inviterId: request.inviterAccountId,
+        createdAt: this.clock.now(),
+        expiresAt: this.expiryFromNow(),
+      },
+    });
+  }
+
+  private expiryFromNow(): Date {
+    return new Date(
+      this.clock.now().getTime() + INVITATION_LIFETIME_SECONDS * 1000,
+    );
   }
 
   private isRefusedWith(

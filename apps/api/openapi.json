@@ -228,10 +228,51 @@
             "description": "NOT_SIGNED_IN"
           },
           "409": {
-            "description": "PROFILE_REQUIRED or ALREADY_IN_A_WORKSPACE"
+            "description": "PROFILE_REQUIRED"
           }
         },
-        "summary": "Create a Workspace, with the caller as its first Admin",
+        "summary": "Create a Workspace, with the caller as its first Admin, and make it the one they are in",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/switch": {
+      "post": {
+        "operationId": "WorkspaceController_switchWorkspace",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Switched"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "Make this Workspace the one the caller is in, on every device, until they switch again",
         "tags": [
           "workspace"
         ]
@@ -264,6 +305,19 @@
             }
           },
           {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ACTIVE",
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "DEACTIVATED"
+              ]
+            }
+          },
+          {
             "name": "cookie",
             "in": "header",
             "description": "The browser's cookie header, forwarded by the web server.",
@@ -288,7 +342,7 @@
             "description": "NOT_SIGNED_IN"
           }
         },
-        "summary": "List the Workspaces the caller is a Member of, and their Role",
+        "summary": "List the Workspaces the caller is a Member of, the one they are in first, or those they were Deactivated in",
         "tags": [
           "workspace"
         ]
@@ -951,7 +1005,7 @@
             "description": "INVITATION_NOT_FOUND"
           },
           "409": {
-            "description": "INVITATION_EXPIRED, INVITATION_REVOKED, INVITATION_ALREADY_ACCEPTED, ALREADY_IN_A_WORKSPACE or DEACTIVATED_IN_WORKSPACE"
+            "description": "INVITATION_EXPIRED, INVITATION_REVOKED or INVITATION_ALREADY_ACCEPTED"
           }
         },
         "summary": "Accept an Invitation, joining its Workspace; repeating it once in changes nothing",

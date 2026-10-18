@@ -1,13 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { MembershipQuery } from '../query-port/membership.query-port';
-import type { MembershipPage, PageRequest } from '../types/membership.types';
+import type {
+  MemberStatus,
+  MembershipPage,
+  PageRequest,
+} from '../types/membership.types';
 
 export interface ListMyMembershipsInput {
   readonly accountId: string;
   readonly page: PageRequest;
+  readonly status: MemberStatus;
 }
 
-/** A query: the Workspaces the caller belongs to, and their Role in each. */
+/**
+ * A query: the Workspaces the caller is active in, the one they are in first, or those they were
+ * Deactivated in; and their Role in each.
+ */
 @Injectable()
 export class ListMyMembershipsUseCase {
   constructor(private readonly membershipQuery: MembershipQuery) {}
@@ -16,6 +24,7 @@ export class ListMyMembershipsUseCase {
     return this.membershipQuery.membershipsOfAccount(
       input.accountId,
       input.page,
+      input.status,
     );
   }
 }

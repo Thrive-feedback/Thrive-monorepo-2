@@ -17,7 +17,7 @@ const SESSION_IDLE_LIMIT_SECONDS = 7 * 24 * 60 * 60;
 const SESSION_REFRESH_INTERVAL_SECONDS = 24 * 60 * 60;
 
 /** An Invitation can be accepted for this long after it is sent (glossary: Invitation). */
-const INVITATION_LIFETIME_SECONDS = 7 * 24 * 60 * 60;
+export const INVITATION_LIFETIME_SECONDS = 7 * 24 * 60 * 60;
 
 /** Drops the ID token before an account row is written; nothing reads it afterwards. */
 function withoutIdToken<T extends { idToken?: string | null }>(account: T): T {
@@ -111,8 +111,6 @@ function authOptions(
       // on the caller's session; its HTTP routes are never mounted (see `AuthModule`), so
       // `/v1/workspaces` is the only way in.
       organization({
-        // One Workspace per person in this release (ADR-0020).
-        organizationLimit: 1,
         // There is no Owner: the founder is the first Admin (brain ADR-0033, ADR 0045). The
         // plugin gives its creator Role extra standing — only it may grant that Role, and its
         // last holder may not give it up — which is exactly what an Admin is.
@@ -135,6 +133,9 @@ function authOptions(
               // When the Member was Deactivated; `null` while they are active. The plugin can
               // only delete a Member, so the Workspace module writes this itself (ADR 0047).
               deactivatedAt: { type: 'date', required: false, input: false },
+              // When the Account last switched to this Workspace; the newest active one is the
+              // Workspace they are in (ADR 0049). The Workspace module writes it itself.
+              lastUsedAt: { type: 'date', required: false, input: false },
             },
           },
           invitation: {

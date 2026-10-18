@@ -9,3 +9,9 @@ export interface AccountSummaryView {
   /** Their photo from Google; `null` when Google has none. */
   readonly photoUrl: string | null;
 }
+
+/** An Account as found by the address it signs in with. */
+export interface AccountByEmailView {
+  readonly accountId: string;
+  readonly email: string;
+}

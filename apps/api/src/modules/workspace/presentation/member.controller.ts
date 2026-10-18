@@ -14,11 +14,7 @@ import {
   ListMyMembershipsResponseDto,
 } from './dto/list-my-memberships.dto';
 
-/**
- * `mine` is the caller's own memberships, as `sessions/current` is their own session. A
- * list, though today it holds at most one: one Workspace per person is a rule of this
- * release, not of the contract.
- */
+/** `mine` is the caller's own memberships, as `sessions/current` is their own session. */
 @ApiTags('workspace')
 @Controller({ path: 'v1/members' })
 export class MemberController {
@@ -28,7 +24,8 @@ export class MemberController {
 
   @Get('mine')
   @ApiOperation({
-    summary: 'List the Workspaces the caller is a Member of, and their Role',
+    summary:
+      'List the Workspaces the caller is a Member of, the one they are in first, or those they were Deactivated in',
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.OK, type: ListMyMembershipsResponseDto })
@@ -41,6 +38,7 @@ export class MemberController {
     const memberships = await this.listMyMembershipsUseCase.execute({
       accountId: actor.accountId,
       page,
+      status: query.status,
     });
     return {
       items: memberships.items.map((membership) => ({

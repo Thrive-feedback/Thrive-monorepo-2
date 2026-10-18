@@ -2,7 +2,10 @@ import type {
   MembershipView,
   WorkspaceMemberView,
 } from '../../application/types/membership.types';
-import { MemberRole } from '../../domain/value-object/member-role.vo';
+import {
+  MemberRole,
+  type MemberRoleValue,
+} from '../../domain/value-object/member-role.vo';
 
 /**
  * The only place that knows both a stored `member` row and a Membership. The organization
@@ -27,4 +30,17 @@ export function toWorkspaceMemberView(record: {
     accountId: record.userId,
     role: MemberRole.of(record.role.toUpperCase()).toString(),
   };
+}
+
+/** The plugin stores a Role by its own lowercase name. */
+const STORED_ROLES = {
+  ADMIN: 'admin',
+  MEMBER: 'member',
+} as const satisfies Record<MemberRoleValue, string>;
+
+/** A Role as the plugin stores it, on a `member` row or an Invitation. */
+export function toStoredRole(
+  role: MemberRoleValue,
+): (typeof STORED_ROLES)[MemberRoleValue] {
+  return STORED_ROLES[role];
 }

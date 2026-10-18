@@ -3,6 +3,8 @@ import type { MemberRoleValue } from '../../domain/value-object/member-role.vo';
 export interface InvitationRequest {
   /** The inviter's `cookie` header, opaque to everyone but the adapter. */
   readonly credential: string;
+  /** The Account sending it, recorded on the Invitation as who invited. */
+  readonly inviterAccountId: string;
   readonly workspaceId: string;
   /** Already trimmed and lowercased. */
   readonly email: string;
@@ -48,8 +50,17 @@ export interface InvitationAcceptance {
  * there. Sends nothing: delivering the Invitation is the caller's.
  */
 export abstract class WorkspaceInviting {
-  /** A Pending Invitation for the address, unless it is already a Member or already invited. */
+  /**
+   * A Pending Invitation for the address, unless it is already a Member — a Deactivated one
+   * included, whose membership is kept — or already invited.
+   */
   abstract invite(request: InvitationRequest): Promise<InvitationStored>;
+
+  /**
+   * A Pending Invitation for someone Deactivated in the Workspace, who `invite` would call a
+   * Member, unless they are already invited. The caller has checked they are Deactivated there.
+   */
+  abstract inviteBack(request: InvitationRequest): Promise<InvitationStored>;
 
   /**
    * Makes the signed-in person a Member of the Invitation's Workspace with the Role it names,
@@ -66,6 +77,9 @@ export abstract class WorkspaceInviting {
    * one that has expired is left alone, and a new one stored beside it.
    */
   abstract reissue(request: InvitationRequest): Promise<InvitationReissued>;
+
+  /** `reissue`, for someone Deactivated in the Workspace, as `inviteBack` is to `invite`. */
+  abstract reissueBack(request: InvitationRequest): Promise<InvitationReissued>;
 
   /** Records when the Invitation's email last went out. */
   abstract markSent(invitationId: string, sentAt: Date): Promise<void>;

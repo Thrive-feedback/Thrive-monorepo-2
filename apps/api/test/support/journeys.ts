@@ -244,7 +244,7 @@ export async function askForFeedback(
 export async function myMemberships(
   world: ThriveWorld,
   name: string,
-): Promise<{ workspace: { name: string }; role: string }[]> {
+): Promise<{ workspace: { id: string; name: string }; role: string }[]> {
   const response = world.succeeded(
     await world.as(name, 'GET', '/v1/members/mine'),
     `Listing ${name}'s memberships`,

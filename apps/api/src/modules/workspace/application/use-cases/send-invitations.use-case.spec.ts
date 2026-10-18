@@ -4,12 +4,15 @@ import { FakeClock } from '@test/support/clock.fake';
 import { FakeEmailSender } from '@test/support/email-sender.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
+  FakeAccountByEmailPort,
+  FakeMembershipQuery,
   FakeProfileNamePort,
   FakeWorkspaceInviting,
 } from '@test/support/workspace.fakes';
 import type { MemberRoleValue } from '../../domain/value-object/member-role.vo';
 import { TooManyInvitationsError } from '../../domain/workspace.errors';
 import { InvitationDelivery } from '../service/invitation-delivery.service';
+import { ReturningMembers } from '../service/returning-members.service';
 import { NotAllowedToInviteError } from '../workspace.errors';
 import { SendInvitationsUseCase } from './send-invitations.use-case';
 
@@ -54,6 +57,8 @@ function setUp() {
   const profileNamePort = new FakeProfileNamePort();
   profileNamePort.displayNames.set('account-ann', 'Ann');
   const unitOfWork = new FakeUnitOfWork();
+  const accountByEmailPort = new FakeAccountByEmailPort();
+  const membershipQuery = new FakeMembershipQuery();
   const useCase = new SendInvitationsUseCase(
     workspaceInviting,
     new InvitationDelivery(
@@ -62,10 +67,13 @@ function setUp() {
       new FakeClock(NOW),
       new WebConfig('https://thrive.test'),
     ),
+    new ReturningMembers(accountByEmailPort, membershipQuery),
     unitOfWork,
   );
   return {
     workspaceInviting,
+    accountByEmailPort,
+    membershipQuery,
     emailSender,
     profileNamePort,
     unitOfWork,
@@ -181,6 +189,7 @@ describe('sending Invitations to a Workspace', () => {
     expect(workspaceInviting.requests).toEqual([
       {
         credential: ANN_COOKIE,
+        inviterAccountId: 'account-ann',
         workspaceId: WORKSPACE_ID,
         email: 'ben@acme.co',
         role: 'MEMBER',
@@ -231,5 +240,28 @@ describe('sending Invitations to a Workspace', () => {
     expect(emailSender.sent[0]?.text).toContain(
       'ann@acme.co has reserved a spot for you on the Acme workspace.',
     );
+  });
+
+  it('invites back someone Deactivated in the Workspace, rather than calling them a Member', async () => {
+    const { workspaceInviting, accountByEmailPort, membershipQuery, useCase } =
+      setUp();
+    accountByEmailPort.accounts.push({
+      accountId: 'account-ben',
+      email: 'ben@acme.co',
+    });
+    membershipQuery.memberships.push({
+      accountId: 'account-ben',
+      workspace: { id: WORKSPACE_ID, name: 'Acme' },
+      role: 'ADMIN',
+      deactivatedAt: NOW,
+    });
+
+    const outcomes = await useCase.execute(request());
+
+    expect(workspaceInviting.invitedBack.map((r) => r.email)).toEqual([
+      'ben@acme.co',
+    ]);
+    expect(workspaceInviting.requests).toEqual([]);
+    expect(outcomes.map((o) => o.outcome)).toEqual(['invited']);
   });
 });

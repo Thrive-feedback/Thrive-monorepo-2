@@ -3,8 +3,11 @@ import { FakeClock } from '@test/support/clock.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   FakeInvitationQuery,
+  FakeInvitationSettling,
+  FakeMemberRejoining,
   FakeMembershipQuery,
   FakeWorkspaceInviting,
+  FakeWorkspaceSwitching,
 } from '@test/support/workspace.fakes';
 import type { InvitationStatusValue } from '../../domain/value-object/invitation-status.vo';
 import {
@@ -13,11 +16,7 @@ import {
   InvitationNotForYouError,
   InvitationRevokedError,
 } from '../../domain/workspace.errors';
-import {
-  AlreadyInAWorkspaceError,
-  DeactivatedInWorkspaceError,
-  InvitationNotFoundError,
-} from '../workspace.errors';
+import { InvitationNotFoundError } from '../workspace.errors';
 import { AcceptInvitationUseCase } from './accept-invitation.use-case';
 
 const INVITATION_ID = '0199a0f0-0000-7000-8000-000000000001';
@@ -39,15 +38,29 @@ function setUp(status: InvitationStatusValue = 'PENDING') {
     lastSentAt: NOW,
   });
   const membershipQuery = new FakeMembershipQuery();
+  const memberRejoining = new FakeMemberRejoining(membershipQuery);
+  const workspaceSwitching = new FakeWorkspaceSwitching(membershipQuery);
+  const invitationSettling = new FakeInvitationSettling();
   const unitOfWork = new FakeUnitOfWork();
   const useCase = new AcceptInvitationUseCase(
     workspaceInviting,
+    memberRejoining,
+    invitationSettling,
+    workspaceSwitching,
     invitationQuery,
     membershipQuery,
     unitOfWork,
     new FakeClock(NOW),
   );
-  return { workspaceInviting, membershipQuery, unitOfWork, useCase };
+  return {
+    workspaceInviting,
+    memberRejoining,
+    invitationSettling,
+    workspaceSwitching,
+    membershipQuery,
+    unitOfWork,
+    useCase,
+  };
 }
 
 function acceptance(overrides: Partial<{ accountEmail: string }> = {}) {
@@ -78,14 +91,39 @@ describe('accepting an Invitation', () => {
     expect(workspaceInviting.accepted).toHaveLength(1);
   });
 
-  it('runs on the same per-Account key as creating a Workspace', async () => {
+  it('makes the Workspace joined the one the person is in', async () => {
+    const { workspaceSwitching, useCase } = setUp();
+
+    await useCase.execute(acceptance());
+
+    expect(workspaceSwitching.switches).toEqual([
+      { workspaceId: ACME.id, accountId: 'account-somchai', switchedAt: NOW },
+    ]);
+  });
+
+  it("runs on the Workspace's key, so it never interleaves with Deactivating, Reactivating or a Role change there", async () => {
     const { unitOfWork, useCase } = setUp();
 
     await useCase.execute(acceptance());
 
     expect(unitOfWork.opened).toEqual([
-      { serializeOn: 'account-workspace:account-somchai' },
+      { serializeOn: `workspace-roles:${ACME.id}` },
     ]);
+  });
+
+  it('settles a Pending Invitation for someone already back in that Workspace another way', async () => {
+    const { invitationSettling, workspaceInviting, membershipQuery, useCase } =
+      setUp();
+    membershipQuery.memberships.push({
+      accountId: 'account-somchai',
+      workspace: ACME,
+      role: 'MEMBER',
+    });
+
+    await useCase.execute(acceptance());
+
+    expect(invitationSettling.settled).toEqual([INVITATION_ID]);
+    expect(workspaceInviting.accepted).toEqual([]);
   });
 
   it('refuses someone signed in with a different address', async () => {
@@ -145,7 +183,7 @@ describe('accepting an Invitation', () => {
     expect(workspaceInviting.accepted).toEqual([]);
   });
 
-  it('refuses someone already a Member of another Workspace, one Workspace per person', async () => {
+  it('lets someone already in another Workspace join, and leaves that one as it was', async () => {
     const { workspaceInviting, membershipQuery, useCase } = setUp();
     membershipQuery.memberships.push({
       accountId: 'account-somchai',
@@ -153,14 +191,56 @@ describe('accepting an Invitation', () => {
       role: 'ADMIN',
     });
 
-    await expect(useCase.execute(acceptance())).rejects.toThrow(
-      AlreadyInAWorkspaceError,
-    );
-    expect(workspaceInviting.accepted).toEqual([]);
+    await useCase.execute(acceptance());
+
+    expect(workspaceInviting.accepted).toHaveLength(1);
+    expect(
+      await membershipQuery.membershipInWorkspace('account-somchai', OTHER.id),
+    ).toEqual({ workspace: OTHER, role: 'ADMIN' });
   });
 
-  it('refuses someone who was Deactivated in that Workspace', async () => {
+  it("lets another Workspace's only Admin join, still its Admin", async () => {
     const { workspaceInviting, membershipQuery, useCase } = setUp();
+    membershipQuery.memberships.push({
+      accountId: 'account-somchai',
+      workspace: OTHER,
+      role: 'ADMIN',
+    });
+
+    await useCase.execute(acceptance());
+
+    expect(workspaceInviting.accepted).toHaveLength(1);
+    expect(await membershipQuery.adminCountOf(OTHER.id)).toBe(1);
+  });
+
+  it('brings back someone Deactivated in that Workspace, with the Role the Invitation names', async () => {
+    const { workspaceInviting, memberRejoining, membershipQuery, useCase } =
+      setUp();
+    membershipQuery.memberships.push({
+      accountId: 'account-somchai',
+      workspace: ACME,
+      role: 'ADMIN',
+      deactivatedAt: NOW,
+    });
+
+    await useCase.execute(acceptance());
+
+    expect(memberRejoining.rejoins).toEqual([
+      {
+        invitationId: INVITATION_ID,
+        workspaceId: ACME.id,
+        accountId: 'account-somchai',
+        role: 'MEMBER',
+      },
+    ]);
+    expect(workspaceInviting.accepted).toEqual([]);
+    expect(
+      await membershipQuery.membershipInWorkspace('account-somchai', ACME.id),
+    ).toEqual({ workspace: ACME, role: 'MEMBER' });
+  });
+
+  it('makes the Workspace someone came back to the one they are in', async () => {
+    const { workspaceSwitching, membershipQuery, useCase } = setUp();
     membershipQuery.memberships.push({
       accountId: 'account-somchai',
       workspace: ACME,
@@ -168,14 +248,29 @@ describe('accepting an Invitation', () => {
       deactivatedAt: NOW,
     });
 
-    await expect(useCase.execute(acceptance())).rejects.toThrow(
-      DeactivatedInWorkspaceError,
-    );
-    expect(workspaceInviting.accepted).toEqual([]);
+    await useCase.execute(acceptance());
+
+    expect(workspaceSwitching.switches).toEqual([
+      { workspaceId: ACME.id, accountId: 'account-somchai', switchedAt: NOW },
+    ]);
   });
 
-  it('lets someone Deactivated elsewhere join, since they are no longer in a Workspace', async () => {
-    const { workspaceInviting, membershipQuery, useCase } = setUp();
+  it('switches to nothing when the person was already in that Workspace', async () => {
+    const { workspaceSwitching, membershipQuery, useCase } = setUp('ACCEPTED');
+    membershipQuery.memberships.push({
+      accountId: 'account-somchai',
+      workspace: ACME,
+      role: 'MEMBER',
+    });
+
+    await useCase.execute(acceptance());
+
+    expect(workspaceSwitching.switches).toEqual([]);
+  });
+
+  it('lets someone Deactivated elsewhere join as usual', async () => {
+    const { workspaceInviting, memberRejoining, membershipQuery, useCase } =
+      setUp();
     membershipQuery.memberships.push({
       accountId: 'account-somchai',
       workspace: OTHER,
@@ -186,5 +281,6 @@ describe('accepting an Invitation', () => {
     await useCase.execute(acceptance());
 
     expect(workspaceInviting.accepted).toHaveLength(1);
+    expect(memberRejoining.rejoins).toEqual([]);
   });
 });

@@ -1,9 +1,11 @@
 import { HasProfilePort } from '@app/modules/identity';
+import { Clock } from '@app/shared/application/clock.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable } from '@nestjs/common';
 import { TeamSize } from '../../domain/value-object/team-size.vo';
 import { WorkspaceName } from '../../domain/value-object/workspace-name.vo';
 import { WorkspaceFounding } from '../port/workspace-founding.port';
+import { WorkspaceSwitching } from '../port/workspace-switching.port';
 import { ProfileRequiredError } from '../workspace.errors';
 
 export interface CreateWorkspaceInput {
@@ -18,13 +20,19 @@ export interface CreateWorkspaceResult {
   readonly id: string;
 }
 
-/** The founder creates their company's Workspace and becomes its first Admin. */
+/**
+ * The founder creates a Workspace and becomes its first Admin. Anyone may, as often as they like,
+ * whatever Workspaces they are in already (brain `ADR-0034` decision 3); the new one becomes the
+ * one they are in.
+ */
 @Injectable()
 export class CreateWorkspaceUseCase {
   constructor(
     private readonly workspaceFounding: WorkspaceFounding,
+    private readonly workspaceSwitching: WorkspaceSwitching,
     private readonly hasProfilePort: HasProfilePort,
     private readonly unitOfWork: UnitOfWork,
+    private readonly clock: Clock,
   ) {}
 
   async execute(input: CreateWorkspaceInput): Promise<CreateWorkspaceResult> {
@@ -36,20 +44,20 @@ export class CreateWorkspaceUseCase {
       throw new ProfileRequiredError();
     }
 
-    // Serialized per Account: the store checks the one-Workspace limit before it writes, so
-    // two tabs creating at once would both pass it. The second waits here until the first
-    // has stored its Workspace, and is then refused by that limit. Accepting an Invitation
-    // takes the same key, because it joins a Workspace under the same limit.
-    return this.unitOfWork.run(
-      async () => {
-        const founded = await this.workspaceFounding.found({
-          credential: input.credential,
-          name: name.toString(),
-          teamSize: teamSize?.toString() ?? null,
-        });
-        return { id: founded.workspaceId };
-      },
-      { serializeOn: `account-workspace:${input.accountId}` },
-    );
+    // Every click makes its own Workspace, so two tabs creating at once make two; nothing
+    // needs serializing.
+    return this.unitOfWork.run(async () => {
+      const founded = await this.workspaceFounding.found({
+        credential: input.credential,
+        name: name.toString(),
+        teamSize: teamSize?.toString() ?? null,
+      });
+      await this.workspaceSwitching.switchTo({
+        workspaceId: founded.workspaceId,
+        accountId: input.accountId,
+        switchedAt: this.clock.now(),
+      });
+      return { id: founded.workspaceId };
+    });
   }
 }

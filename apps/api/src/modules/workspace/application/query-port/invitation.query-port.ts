@@ -28,11 +28,13 @@ export abstract class InvitationQuery {
 
   /**
    * The Invitations sent to `recipient`, across every Workspace, that are Pending at `now` —
-   * neither accepted, revoked nor expired, as `InvitationStatus.openAt` draws the line. Newest
-   * first.
+   * neither accepted, revoked nor expired, as `InvitationStatus.openAt` draws the line — leaving
+   * out any to a Workspace `accountId` is already active in, since there is nothing left to
+   * join. Newest first.
    */
   abstract pendingInvitationsTo(
     recipient: InvitationRecipient,
+    accountId: string,
     now: Date,
     page: PageRequest,
   ): Promise<PendingInvitationPage>;

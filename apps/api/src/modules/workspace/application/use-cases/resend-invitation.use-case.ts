@@ -7,6 +7,7 @@ import { ResendCooldown } from '../../domain/value-object/resend-cooldown.vo';
 import { WorkspaceInviting } from '../port/workspace-inviting.port';
 import { InvitationQuery } from '../query-port/invitation.query-port';
 import { InvitationDelivery } from '../service/invitation-delivery.service';
+import { ReturningMembers } from '../service/returning-members.service';
 import type { MembershipView } from '../types/membership.types';
 import {
   AlreadyAMemberError,
@@ -41,6 +42,7 @@ export class ResendInvitationUseCase {
     private readonly workspaceInviting: WorkspaceInviting,
     private readonly invitationQuery: InvitationQuery,
     private readonly invitationDelivery: InvitationDelivery,
+    private readonly returningMembers: ReturningMembers,
     private readonly unitOfWork: UnitOfWork,
     private readonly clock: Clock,
   ) {}
@@ -68,14 +70,22 @@ export class ResendInvitationUseCase {
         InvitationStatus.of(invitation.status).ensureResendable();
         ResendCooldown.since(invitation.lastSentAt).ensureOverAt(now);
 
-        const reissued = await this.workspaceInviting.reissue({
+        const request = {
           credential: input.credential,
+          inviterAccountId: input.accountId,
           workspaceId,
           email: invitation.email,
           // Sent again with the Role it was first sent with; choosing another is revoking it
           // and inviting afresh.
           role: invitation.role,
-        });
+        };
+        const returning = await this.returningMembers.addressesAmong(
+          workspaceId,
+          [invitation.email],
+        );
+        const reissued = returning.has(invitation.email.toLowerCase())
+          ? await this.workspaceInviting.reissueBack(request)
+          : await this.workspaceInviting.reissue(request);
         if (reissued.outcome === 'already_member') {
           throw new AlreadyAMemberError();
         }

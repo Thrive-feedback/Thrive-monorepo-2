@@ -29,6 +29,7 @@ describe('listing the Invitations sent to me', () => {
     );
 
     const page = await listMyInvitations.execute({
+      accountId: 'account-ann',
       accountEmail: 'Ann@Acme.co',
       page: { page: 1, pageSize: 20 },
     });

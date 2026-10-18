@@ -2,6 +2,7 @@ import { afterAll, describe, expect, it } from 'bun:test';
 import { loadConfiguration } from '@app/config/configuration';
 import { createAuth } from '@app/infrastructure/auth/auth';
 import { PrismaService } from '@app/infrastructure/database/prisma.service';
+import { SystemClock } from '@app/infrastructure/system-clock.adapter';
 import { UuidIdGenerator } from '@app/infrastructure/uuid-id-generator.adapter';
 import { WorkspaceFixtures } from '@test/support/workspace.integration-fixtures';
 import type {
@@ -19,7 +20,10 @@ const auth = createAuth(
   configuration.auth,
   new UuidIdGenerator(),
 );
-const workspaceInviting = new BetterAuthWorkspaceInvitingAdapter(auth);
+const workspaceInviting = new BetterAuthWorkspaceInvitingAdapter(
+  auth,
+  new SystemClock(),
+);
 const fixtures = new WorkspaceFixtures(prismaService, auth, configuration);
 
 afterAll(async () => {
@@ -56,6 +60,7 @@ describe('storing Invitations through the organization plugin', () => {
     const stored = invited(
       await workspaceInviting.invite({
         credential: admin.credential,
+        inviterAccountId: admin.accountId,
         workspaceId,
         email: 'ben@acme.test',
         role: 'MEMBER' as const,
@@ -84,6 +89,7 @@ describe('storing Invitations through the organization plugin', () => {
     const { admin, workspaceId } = await anAdminWithAWorkspace();
     const request = {
       credential: admin.credential,
+      inviterAccountId: admin.accountId,
       workspaceId,
       email: 'ben@acme.test',
       role: 'MEMBER' as const,
@@ -103,6 +109,7 @@ describe('storing Invitations through the organization plugin', () => {
     expect(
       await workspaceInviting.invite({
         credential: admin.credential,
+        inviterAccountId: admin.accountId,
         workspaceId,
         email: member.email,
         role: 'MEMBER' as const,
@@ -114,6 +121,7 @@ describe('storing Invitations through the organization plugin', () => {
     const { admin, workspaceId } = await anAdminWithAWorkspace();
     const request = {
       credential: admin.credential,
+      inviterAccountId: admin.accountId,
       workspaceId,
       email: 'ben@acme.test',
       role: 'MEMBER' as const,
@@ -134,6 +142,79 @@ describe('storing Invitations through the organization plugin', () => {
   });
 });
 
+describe('inviting back someone Deactivated in the Workspace', () => {
+  async function aDeactivatedMember() {
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
+    const member = await fixtures.aSignedInAccount('inviting-deactivated');
+    await fixtures.addMember(workspaceId, member, 'member');
+    await prismaService.member.updateMany({
+      where: { workspaceId, userId: member.accountId },
+      data: { deactivatedAt: new Date() },
+    });
+    const request = {
+      credential: admin.credential,
+      inviterAccountId: admin.accountId,
+      workspaceId,
+      email: member.email,
+      role: 'ADMIN' as const,
+    };
+    return { admin, workspaceId, request };
+  }
+
+  it('answers already a Member through the plugin, which counts their kept row', async () => {
+    const { request } = await aDeactivatedMember();
+
+    expect(await workspaceInviting.invite(request)).toEqual({
+      outcome: 'already_member',
+    });
+  });
+
+  it('stores a Pending Invitation with the Role chosen, expiring in 7 days', async () => {
+    const { admin, workspaceId, request } = await aDeactivatedMember();
+    const before = Date.now();
+
+    const stored = invited(await workspaceInviting.inviteBack(request));
+
+    expect(
+      await prismaService.invitation.findUniqueOrThrow({
+        where: { id: stored.invitationId },
+      }),
+    ).toMatchObject({
+      workspaceId,
+      email: request.email,
+      role: 'admin',
+      status: 'pending',
+      inviterId: admin.accountId,
+    });
+    expect(stored.expiresAt.getTime() - before).toBeGreaterThanOrEqual(
+      SEVEN_DAYS_MS - 1000,
+    );
+  });
+
+  it('answers already invited while that Invitation is Pending', async () => {
+    const { request } = await aDeactivatedMember();
+    await workspaceInviting.inviteBack(request);
+
+    expect(await workspaceInviting.inviteBack(request)).toEqual({
+      outcome: 'already_invited',
+    });
+  });
+
+  it('extends the Pending one on a resend, keeping its id', async () => {
+    const { request } = await aDeactivatedMember();
+    const first = invited(await workspaceInviting.inviteBack(request));
+
+    const reissued = reissuedOf(await workspaceInviting.reissueBack(request));
+
+    expect(reissued.invitationId).toBe(first.invitationId);
+    expect(
+      await prismaService.invitation.count({
+        where: { workspaceId: request.workspaceId, email: request.email },
+      }),
+    ).toBe(1);
+  });
+});
+
 describe('accepting an Invitation through the organization plugin', () => {
   async function anInvitationFor(
     email: string,
@@ -143,6 +224,7 @@ describe('accepting an Invitation through the organization plugin', () => {
     const stored = invited(
       await workspaceInviting.invite({
         credential: admin.credential,
+        inviterAccountId: admin.accountId,
         workspaceId,
         email,
         role,
@@ -195,21 +277,6 @@ describe('accepting an Invitation through the organization plugin', () => {
     ).toMatchObject({ role: 'admin' });
   });
 
-  it("makes the Workspace the invited person's active one", async () => {
-    const invitee = await fixtures.aSignedInAccount('accepting-active');
-    const { workspaceId, invitationId } = await anInvitationFor(invitee.email);
-
-    await workspaceInviting.accept({
-      credential: invitee.credential,
-      invitationId,
-    });
-
-    const sessions = await prismaService.session.findMany({
-      where: { userId: invitee.accountId },
-    });
-    expect(sessions.map((s) => s.activeOrganizationId)).toEqual([workspaceId]);
-  });
-
   it('lets an Invitation be used once', async () => {
     const invitee = await fixtures.aSignedInAccount('accepting-once');
     const { invitationId } = await anInvitationFor(invitee.email);
@@ -234,6 +301,7 @@ describe('reissuing an Invitation through the organization plugin', () => {
     const reissued = reissuedOf(
       await workspaceInviting.reissue({
         credential: admin.credential,
+        inviterAccountId: admin.accountId,
         workspaceId,
         email: 'ben@acme.test',
         role: 'MEMBER' as const,
@@ -256,6 +324,7 @@ describe('reissuing an Invitation through the organization plugin', () => {
     const reissued = reissuedOf(
       await workspaceInviting.reissue({
         credential: admin.credential,
+        inviterAccountId: admin.accountId,
         workspaceId,
         email: 'ben@acme.test',
         role: 'MEMBER' as const,
@@ -277,6 +346,7 @@ describe('reissuing an Invitation through the organization plugin', () => {
     expect(
       await workspaceInviting.reissue({
         credential: admin.credential,
+        inviterAccountId: admin.accountId,
         workspaceId,
         email: ben.email,
         role: 'MEMBER' as const,
