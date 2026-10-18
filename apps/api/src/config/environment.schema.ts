@@ -67,6 +67,14 @@ export const environmentSchema = z.object({
   // always sends real email.
   RESEND_API_KEY: z.string().min(1),
   RESEND_FROM_ADDRESS: z.email(),
+
+  // Thrive's one Discord application, shared by every Workspace that connects a server
+  // (brain ADR-0035). The client id is public — the web app puts it in the authorise URL the
+  // Admin is sent to — while the secret signs the install `state` and exchanges the code, and
+  // the bot token authorises every call Thrive makes to Discord.
+  DISCORD_CLIENT_ID: z.string().min(1),
+  DISCORD_CLIENT_SECRET: z.string().min(1),
+  DISCORD_BOT_TOKEN: z.string().min(1),
 });
 
 export type Environment = z.infer<typeof environmentSchema>;

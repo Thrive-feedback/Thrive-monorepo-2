@@ -37,6 +37,22 @@ export class EmailConfig {
   ) {}
 }
 
+/**
+ * Thrive's own credentials for one chat tool. One application serves every Workspace, so these
+ * are application-wide values and never per-Workspace: what a Workspace stores is identifiers
+ * (design 0020 D3).
+ */
+export class ChatConfig {
+  constructor(
+    /** Discord's application id. Public: it appears in the authorise URL an Admin is sent to. */
+    readonly discordClientId: string,
+    /** Exchanges the authorisation code, and signs the install `state` (design 0020 D5). */
+    readonly discordClientSecret: string,
+    /** Authorises every call to Discord's API as Thrive's bot. */
+    readonly discordBotToken: string,
+  ) {}
+}
+
 export class WebConfig {
   constructor(
     /** Where a link sent to a person points: the web app they open, not this API. */
@@ -49,6 +65,7 @@ export interface Configuration {
   readonly database: DatabaseConfig;
   readonly auth: AuthConfig;
   readonly email: EmailConfig;
+  readonly chat: ChatConfig;
   readonly web: WebConfig;
 }
 
@@ -91,6 +108,11 @@ export function loadConfiguration(
     email: new EmailConfig(
       parsed.data.RESEND_API_KEY,
       parsed.data.RESEND_FROM_ADDRESS,
+    ),
+    chat: new ChatConfig(
+      parsed.data.DISCORD_CLIENT_ID,
+      parsed.data.DISCORD_CLIENT_SECRET,
+      parsed.data.DISCORD_BOT_TOKEN,
     ),
     // The auth URL is already the web origin (ADR 0027), so a second variable would only be
     // one that could disagree with it.

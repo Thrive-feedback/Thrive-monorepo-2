@@ -15,6 +15,9 @@ function parseOrigins(value: string): readonly string[] | undefined {
     GOOGLE_CLIENT_SECRET: 'client-secret',
     RESEND_API_KEY: 're_test_key',
     RESEND_FROM_ADDRESS: 'no-reply@send.thrive.example',
+    DISCORD_CLIENT_ID: 'discord-client-id',
+    DISCORD_CLIENT_SECRET: 'discord-client-secret',
+    DISCORD_BOT_TOKEN: 'discord-bot-token',
   });
 
   return parsed.success ? parsed.data.CORS_ALLOWED_ORIGINS : undefined;
