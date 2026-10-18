@@ -2,37 +2,21 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import Workspace from './page';
 
-function sessionAs(role: 'ADMIN' | 'MEMBER') {
-  return {
-    email: 'ann@acme.test',
-    name: 'Ann Lee',
-    profile: { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' },
-    membership: { workspace: { id: 'w-1', name: 'Acme Corp' }, role },
-  };
-}
+const ANN = {
+  email: 'ann@acme.test',
+  name: 'Ann Lee',
+  profile: { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' },
+  membership: { workspace: { id: 'w-1', name: 'Acme Corp' }, role: 'MEMBER' },
+};
 
 const requireMember = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
   requireMember: () => requireMember(),
 }));
-vi.mock('./_components/member-list', () => ({
-  MemberList: ({ ownEmail }: { ownEmail: string }) => (
-    <output>{`members, with ${ownEmail} marked`}</output>
-  ),
-}));
-vi.mock('./_components/deactivated-member-list', () => ({
-  DeactivatedMemberList: () => <output>deactivated people</output>,
-}));
 vi.mock('./_components/leave-workspace-row', () => ({
   LeaveWorkspaceRow: ({ ownEmail }: { ownEmail: string }) => (
     <output>{`leave, as ${ownEmail}`}</output>
   ),
-}));
-vi.mock('./_components/invitation-list', () => ({
-  InvitationList: () => <output>open invitations</output>,
-}));
-vi.mock('./_components/invite-members-form', () => ({
-  InviteMembersForm: () => <output>invite form</output>,
 }));
 vi.mock('./_components/workspace-switcher-loader', () => ({
   WorkspaceSwitcherLoader: () => <output>workspace switcher</output>,
@@ -45,63 +29,32 @@ describe('Workspace', () => {
     await expect(Workspace()).rejects.toThrow('redirect:/signin');
   });
 
-  it('shows an Admin who is in the Workspace and the Invitations still open', async () => {
-    requireMember.mockResolvedValue(sessionAs('ADMIN'));
+  it("shows the Workspace's name", async () => {
+    requireMember.mockResolvedValue(ANN);
 
     render(await Workspace());
 
-    expect(screen.getByText('Workspace')).toBeInTheDocument();
-    expect(screen.getByText('Acme Corp')).toBeInTheDocument();
-    expect(screen.getByText('workspace switcher')).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 3, name: 'Members' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('members, with ann@acme.test marked'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 3, name: 'Open invitations' }),
-    ).toBeInTheDocument();
-    expect(screen.getByText('open invitations')).toBeInTheDocument();
+      screen.getByText('Workspace name', { selector: 'dt' }).nextElementSibling,
+    ).toHaveTextContent('Acme Corp');
   });
 
-  it('lets an Admin invite teammates, above the open Invitations', async () => {
-    requireMember.mockResolvedValue(sessionAs('ADMIN'));
+  it('offers Switch Workspace, then the way to leave, in that order', async () => {
+    requireMember.mockResolvedValue(ANN);
 
-    render(await Workspace());
+    const { container } = render(await Workspace());
 
-    const headings = screen
-      .getAllByRole('heading', { level: 3 })
-      .map((heading) => heading.textContent);
-    expect(headings).toEqual([
-      'Members',
-      'Deactivated',
-      'Invite teammates',
-      'Open invitations',
-    ]);
-    expect(screen.getByText('invite form')).toBeInTheDocument();
+    expect(screen.getByText('Switch Workspace')).toBeInTheDocument();
+    expect(container).toHaveTextContent(
+      /Workspace name.*Switch Workspace.*workspace switcher.*leave, as ann@acme\.test/,
+    );
   });
 
-  it('shows a Member the Workspace and who is in it, and no Invitations', async () => {
-    requireMember.mockResolvedValue(sessionAs('MEMBER'));
+  it('leaves who is in the Workspace to Settings → Members', async () => {
+    requireMember.mockResolvedValue(ANN);
 
     render(await Workspace());
 
-    expect(
-      screen.getByText('members, with ann@acme.test marked'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 3, name: 'Deactivated' }),
-    ).toBeInTheDocument();
-    expect(screen.getByText('deactivated people')).toBeInTheDocument();
-    expect(screen.getByText('leave, as ann@acme.test')).toBeInTheDocument();
-    expect(
-      screen.queryByRole('heading', { name: 'Open invitations' }),
-    ).toBeNull();
-    expect(screen.queryByText('open invitations')).toBeNull();
-    expect(
-      screen.queryByRole('heading', { name: 'Invite teammates' }),
-    ).toBeNull();
-    expect(screen.queryByText('invite form')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Members' })).toBeNull();
   });
 });

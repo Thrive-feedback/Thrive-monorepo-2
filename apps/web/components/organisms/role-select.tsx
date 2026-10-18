@@ -31,7 +31,7 @@ export function RoleSelect({
       disabled={disabled}
       onValueChange={(next) => onChange(next === 'ADMIN' ? 'ADMIN' : 'MEMBER')}
     >
-      <SelectTrigger aria-label={label} className="w-auto shrink-0">
+      <SelectTrigger aria-label={label} className="w-32 shrink-0">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

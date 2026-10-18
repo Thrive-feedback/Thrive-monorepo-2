@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { InviteMembersState } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invite-members-state.type';
+import type { InviteMembersState } from '@/app/(signed-in)/(member)/settings/members/_lib/invite-members-state.type';
 import type { Invitee } from '@/lib/invitations/invite-emails.util';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
@@ -14,12 +14,20 @@ const inviteMembers =
     ) => Promise<InviteMembersState>
   >();
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service',
+  '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service',
   () => ({
     inviteMembers: (workspaceId: string, invitations: readonly Invitee[]) =>
       inviteMembers(workspaceId, invitations),
   }),
 );
+
+const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
+vi.mock('sonner', () => ({ toast }));
+
+beforeEach(() => {
+  toast.success.mockReset();
+  toast.error.mockReset();
+});
 
 const { InviteMembersForm } = await import('./invite-members-form');
 
@@ -82,9 +90,7 @@ describe('inviting one by one', () => {
       { email: 'ben@acme.test', role: 'MEMBER' },
       { email: 'cara@acme.test', role: 'ADMIN' },
     ]);
-    expect(
-      screen.getByRole('list', { name: 'What happened' }),
-    ).toHaveTextContent('ben@acme.testInvitation sent');
+    expect(toast.success).toHaveBeenCalledWith('2 Invitations sent');
   });
 
   it('flags a field that is not an address, and sends nothing', async () => {
@@ -117,6 +123,7 @@ describe('inviting one by one', () => {
     expect(
       screen.getByRole('combobox', { name: 'Role for email address 1' }),
     ).toHaveTextContent('Admin');
+    expect(toast.error).toHaveBeenCalledWith("1 couldn't be sent");
   });
 });
 
@@ -177,7 +184,7 @@ describe('inviting from a pasted list', () => {
     expect(inviteMembers).not.toHaveBeenCalled();
   });
 
-  it('sends each address once as a Member, and says what happened to each', async () => {
+  it('sends each address once as a Member, and says in one toast how it went', async () => {
     const user = userEvent.setup();
     inviteMembers.mockResolvedValue({
       results: [
@@ -193,11 +200,12 @@ describe('inviting from a pasted list', () => {
       { email: 'ben@acme.test', role: 'MEMBER' },
       { email: 'cara@acme.test', role: 'MEMBER' },
     ]);
-    const list = screen.getByRole('list', { name: 'What happened' });
-    expect(list).toHaveTextContent('ben@acme.testInvitation sent');
-    expect(list).toHaveTextContent(
-      'cara@acme.testalready has a pending Invitation',
+    expect(toast.success).toHaveBeenCalledWith(
+      '1 Invitation sent · 1 already invited',
     );
+    expect(
+      screen.queryByRole('list', { name: 'What happened' }),
+    ).not.toBeInTheDocument();
     expect(box()).toHaveValue('');
   });
 

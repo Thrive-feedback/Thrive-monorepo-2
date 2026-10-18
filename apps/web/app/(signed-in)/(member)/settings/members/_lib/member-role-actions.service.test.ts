@@ -64,7 +64,7 @@ describe('changing a Role from Members', () => {
         body: { role: 'ADMIN' },
       },
     ]);
-    expect(revalidatePath).toHaveBeenCalledWith('/settings/workspace');
+    expect(revalidatePath).toHaveBeenCalledWith('/settings/members');
   });
 
   it('says to make someone else an Admin first when it would leave none', async () => {

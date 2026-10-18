@@ -41,11 +41,10 @@ export const ROUTES = {
     index: '/settings',
     /** The signed-in person's own Profile, read from the session, and Sign out. */
     account: '/settings/account',
-    /**
-     * The Workspace's name and the way to switch to another, who is in it, and the Invitations
-     * still open.
-     */
+    /** The Workspace's name, the way to switch to another, and the way to leave it. */
     workspace: '/settings/workspace',
+    /** Who is in the Workspace, and, for Admins, inviting more and the Invitations still open. */
+    members: '/settings/members',
     /** The colour mode. */
     appearance: '/settings/appearance',
   },

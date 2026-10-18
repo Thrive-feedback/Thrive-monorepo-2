@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { InvitationActionResult } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service';
+import type { InvitationActionResult } from '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service';
 import { ResendInvitationButton } from './resend-invitation-button';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
@@ -14,7 +14,7 @@ const resendInvitation =
     ) => Promise<InvitationActionResult>
   >();
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service',
+  '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service',
   () => ({
     resendInvitation: (workspaceId: string, invitationId: string) =>
       resendInvitation(workspaceId, invitationId),

@@ -51,6 +51,7 @@ describe('SettingsPanes', () => {
     ).toEqual([
       '/settings/account',
       '/settings/workspace',
+      '/settings/members',
       '/settings/appearance',
     ]);
   });

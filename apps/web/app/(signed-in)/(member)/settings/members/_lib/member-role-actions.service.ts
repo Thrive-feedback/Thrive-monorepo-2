@@ -69,6 +69,6 @@ export async function changeMemberRole(
       message: ROLE_CHANGE_ERRORS[error.code] ?? COULD_NOT_CHANGE_ROLE,
     };
   } finally {
-    revalidatePath(ROUTES.settings.workspace);
+    revalidatePath(ROUTES.settings.members);
   }
 }

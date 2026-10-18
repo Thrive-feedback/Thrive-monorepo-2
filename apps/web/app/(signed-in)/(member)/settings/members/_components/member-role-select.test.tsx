@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { MemberRoleActionResult } from '@/app/(signed-in)/(member)/settings/workspace/_lib/member-role-actions.service';
+import type { MemberRoleActionResult } from '@/app/(signed-in)/(member)/settings/members/_lib/member-role-actions.service';
 import type { MemberRole } from '@/lib/session/current-account.type';
 import { MemberRoleSelect } from './member-role-select';
 
@@ -16,7 +16,7 @@ const changeMemberRole =
     ) => Promise<MemberRoleActionResult>
   >();
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/member-role-actions.service',
+  '@/app/(signed-in)/(member)/settings/members/_lib/member-role-actions.service',
   () => ({
     changeMemberRole: (
       workspaceId: string,

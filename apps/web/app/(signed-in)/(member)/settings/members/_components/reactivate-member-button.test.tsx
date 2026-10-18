@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { MemberDeactivationResult } from '../_lib/member-deactivation-actions.service';
+import type { MemberDeactivationResult } from '@/app/(signed-in)/(member)/settings/_lib/member-deactivation-actions.service';
 import { ReactivateMemberButton } from './reactivate-member-button';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
@@ -14,7 +14,7 @@ const reactivateMember =
     ) => Promise<MemberDeactivationResult>
   >();
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/member-deactivation-actions.service',
+  '@/app/(signed-in)/(member)/settings/_lib/member-deactivation-actions.service',
   () => ({
     reactivateMember: (workspaceId: string, accountId: string) =>
       reactivateMember(workspaceId, accountId),

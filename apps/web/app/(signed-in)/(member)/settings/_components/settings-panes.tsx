@@ -5,6 +5,7 @@ import {
   ChevronLeftIcon,
   CircleUserRoundIcon,
   PaletteIcon,
+  UsersIcon,
 } from 'lucide-react';
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -33,6 +34,7 @@ const ACCOUNT: SideNavItem = {
 const SECTIONS: readonly SideNavItem[] = [
   ACCOUNT,
   { href: ROUTES.settings.workspace, label: 'Workspace', Icon: Building2Icon },
+  { href: ROUTES.settings.members, label: 'Members', Icon: UsersIcon },
   { href: ROUTES.settings.appearance, label: 'Appearance', Icon: PaletteIcon },
 ];
 

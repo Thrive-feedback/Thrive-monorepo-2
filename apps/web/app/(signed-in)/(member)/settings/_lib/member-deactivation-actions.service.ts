@@ -33,7 +33,7 @@ export type MemberDeactivationResult =
 /**
  * Deactivates someone in `workspaceId`, the Workspace the page was drawn for, which must still be
  * the one the person is in; the API checks they may. Members is drawn again either way, the
- * Deactivated person among the Deactivated.
+ * Deactivated person at the end of the list, named as inactive.
  */
 export async function deactivateMember(
   workspaceId: string,
@@ -93,7 +93,7 @@ export async function reactivateMember(
       message: REACTIVATION_ERRORS[error.code] ?? COULD_NOT_DEACTIVATE,
     };
   } finally {
-    revalidatePath(ROUTES.settings.workspace);
+    revalidatePath(ROUTES.settings.members);
   }
 }
 
@@ -127,6 +127,6 @@ async function deactivate(
       message: DEACTIVATION_ERRORS[error.code] ?? COULD_NOT_DEACTIVATE,
     };
   } finally {
-    revalidatePath(ROUTES.settings.workspace);
+    revalidatePath(ROUTES.settings.members);
   }
 }

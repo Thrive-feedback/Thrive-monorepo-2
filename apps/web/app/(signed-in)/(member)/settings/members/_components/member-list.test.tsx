@@ -3,19 +3,20 @@ import { describe, expect, it, vi } from 'vitest';
 import { MemberList } from './member-list';
 
 const readMembers = vi.fn();
+vi.mock('@/app/(signed-in)/(member)/settings/_lib/members.service', () => ({
+  readMembers: (...args: unknown[]) => readMembers(...args),
+}));
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/members.service',
-  () => ({
-    readMembers: (...args: unknown[]) => readMembers(...args),
-  }),
-);
-vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/member-role-actions.service',
+  '@/app/(signed-in)/(member)/settings/members/_lib/member-role-actions.service',
   () => ({ changeMemberRole: vi.fn() }),
 );
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/member-deactivation-actions.service',
-  () => ({ deactivateMember: vi.fn(), leaveWorkspace: vi.fn() }),
+  '@/app/(signed-in)/(member)/settings/_lib/member-deactivation-actions.service',
+  () => ({
+    deactivateMember: vi.fn(),
+    leaveWorkspace: vi.fn(),
+    reactivateMember: vi.fn(),
+  }),
 );
 
 const WORKSPACE = { id: 'w-1', name: 'Acme Corp' };
@@ -35,22 +36,30 @@ const BEN = {
   role: 'MEMBER',
 };
 
+/** Who is active in the Workspace, and who left or was Deactivated there. */
+function membersAre(active: unknown[], deactivated: unknown[] = []) {
+  readMembers.mockImplementation(async (_membership, status) =>
+    status === 'DEACTIVATED' ? deactivated : active,
+  );
+}
+
 describe('MemberList', () => {
-  it('shows a Member each person as initials, name, email and Role, with a dash and the first letter of the email for no name, and marks the person', async () => {
-    readMembers.mockResolvedValue([ANN, BEN]);
+  it('lists the person first, then everyone else, each as initials, name, email and Role, with a dash and the first letter of the email for no name', async () => {
+    membersAre([ANN, BEN]);
     const membership = { workspace: WORKSPACE, role: 'MEMBER' } as const;
 
     render(await MemberList({ membership, ownEmail: 'ben@acme.test' }));
 
     expect(
       screen.getAllByRole('listitem').map((item) => item.textContent),
-    ).toEqual(['AAnnann@acme.testAdmin', 'B—ben@acme.testMember (you)']);
+    ).toEqual(['B— (you)ben@acme.testMember', 'AAnnann@acme.testAdmin']);
     expect(screen.queryByRole('combobox')).toBeNull();
     expect(readMembers).toHaveBeenCalledWith(membership);
+    expect(readMembers).toHaveBeenCalledWith(membership, 'DEACTIVATED');
   });
 
   it("gives an Admin a control over everyone's Role, their own included", async () => {
-    readMembers.mockResolvedValue([ANN, { ...BEN, role: 'ADMIN' }]);
+    membersAre([ANN, { ...BEN, role: 'ADMIN' }]);
     const membership = { workspace: WORKSPACE, role: 'ADMIN' } as const;
 
     render(await MemberList({ membership, ownEmail: 'ann@acme.test' }));
@@ -62,7 +71,7 @@ describe('MemberList', () => {
   });
 
   it("does not let an Admin change the only Admin's Role", async () => {
-    readMembers.mockResolvedValue([ANN, BEN]);
+    membersAre([ANN, BEN]);
     const membership = { workspace: WORKSPACE, role: 'ADMIN' } as const;
 
     render(await MemberList({ membership, ownEmail: 'ann@acme.test' }));
@@ -77,7 +86,7 @@ describe('MemberList', () => {
   });
 
   it('lets a Member Deactivate nobody', async () => {
-    readMembers.mockResolvedValue([ANN, BEN]);
+    membersAre([ANN, BEN]);
     const membership = { workspace: WORKSPACE, role: 'MEMBER' } as const;
 
     render(await MemberList({ membership, ownEmail: 'ben@acme.test' }));
@@ -86,7 +95,7 @@ describe('MemberList', () => {
   });
 
   it('lets an Admin Deactivate everyone else, other Admins included, and not themselves', async () => {
-    readMembers.mockResolvedValue([
+    membersAre([
       ANN,
       { ...BEN, role: 'ADMIN' },
       { ...BEN, accountId: 'a-3', email: 'cat@acme.test', name: 'Cat' },
@@ -105,5 +114,28 @@ describe('MemberList', () => {
     expect(
       screen.queryByRole('button', { name: 'Leave Workspace' }),
     ).toBeNull();
+  });
+
+  it('lists those who left or were Deactivated last, their names inactive', async () => {
+    membersAre([ANN], [{ ...BEN, name: 'Ben' }]);
+    const membership = { workspace: WORKSPACE, role: 'MEMBER' } as const;
+
+    render(await MemberList({ membership, ownEmail: 'ann@acme.test' }));
+
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(items[1]).toHaveTextContent('Ben (inactive)');
+    expect(screen.queryByRole('button', { name: 'Reactivate Ben' })).toBeNull();
+  });
+
+  it('lets an Admin Reactivate anyone inactive', async () => {
+    membersAre([ANN], [{ ...BEN, name: 'Ben' }]);
+    const membership = { workspace: WORKSPACE, role: 'ADMIN' } as const;
+
+    render(await MemberList({ membership, ownEmail: 'ann@acme.test' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Reactivate Ben' }),
+    ).toBeInTheDocument();
   });
 });

@@ -21,7 +21,7 @@ const leaveWorkspace =
     ) => Promise<MemberDeactivationResult>
   >();
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/member-deactivation-actions.service',
+  '@/app/(signed-in)/(member)/settings/_lib/member-deactivation-actions.service',
   () => ({
     deactivateMember: (workspaceId: string, accountId: string) =>
       deactivateMember(workspaceId, accountId),

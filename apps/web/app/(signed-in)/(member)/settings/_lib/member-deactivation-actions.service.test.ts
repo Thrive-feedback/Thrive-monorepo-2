@@ -67,7 +67,7 @@ describe('Deactivating someone from Members', () => {
     expect(seen[0]?.headers.get('cookie')).toContain(
       'thrive.session_token=abc',
     );
-    expect(revalidatePath).toHaveBeenCalledWith('/settings/workspace');
+    expect(revalidatePath).toHaveBeenCalledWith('/settings/members');
   });
 
   it('says only Admins may when the person is not one', async () => {
