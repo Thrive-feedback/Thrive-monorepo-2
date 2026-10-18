@@ -33,12 +33,14 @@ const {
   requireAccountToCreateWorkspace,
   requireAccountToIntroduce,
   requireInvitationsToJoin,
+  requireAccountToChooseWorkspace,
   requireMember,
   requireMemberOf,
 } = await import('./session.service');
 
 const CURRENT_SESSION = `${TEST_API_BASE_URL}/v1/sessions/current`;
 const MY_MEMBERSHIPS = `${TEST_API_BASE_URL}/v1/members/mine`;
+const MY_CURRENT = `${TEST_API_BASE_URL}/v1/members/mine/current`;
 const MY_INVITATIONS = `${TEST_API_BASE_URL}/v1/invitations/mine`;
 const ANN_PROFILE = { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' };
 const ACME = {
@@ -83,7 +85,7 @@ function answerSignedOut() {
     http.get(CURRENT_SESSION, () =>
       HttpResponse.json({ account: null, needsRefresh: false }),
     ),
-    http.get(MY_MEMBERSHIPS, () =>
+    http.get(MY_CURRENT, () =>
       HttpResponse.json(
         {
           error: {
@@ -98,12 +100,20 @@ function answerSignedOut() {
   );
 }
 
-function answerMemberOf(membership: typeof ACME | null) {
+/**
+ * The Workspace the session is in, and how many the person can open: one by default for a
+ * Member, none for someone in no Workspace.
+ */
+function answerMemberOf(
+  membership: typeof ACME | null,
+  workspaceCount = membership ? 1 : 0,
+) {
   server.use(
+    http.get(MY_CURRENT, () => HttpResponse.json({ membership })),
     http.get(MY_MEMBERSHIPS, () =>
       HttpResponse.json({
         items: membership ? [membership] : [],
-        total: membership ? 1 : 0,
+        total: workspaceCount,
         page: 1,
         pageSize: 1,
       }),
@@ -214,20 +224,22 @@ describe('readSession', () => {
 
 describe('landingFor', () => {
   it('sends someone who has not introduced themselves to Introduce yourself', () => {
-    expect(landingFor({ ...ANN, profile: null }, null, []).page).toBe(
+    expect(landingFor({ ...ANN, profile: null }, null, 0, []).page).toBe(
       'introduceYourself',
     );
   });
 
   it('sends someone introduced, in no Workspace and invited nowhere to Create a Workspace', () => {
-    expect(landingFor({ ...ANN, profile: ANN_PROFILE }, null, []).page).toBe(
+    expect(landingFor({ ...ANN, profile: ANN_PROFILE }, null, 0, []).page).toBe(
       'createWorkspace',
     );
   });
 
   it('sends someone introduced, in no Workspace and invited to one to choose whether to join', () => {
     expect(
-      landingFor({ ...ANN, profile: ANN_PROFILE }, null, [GLOBEX_INVITATION]),
+      landingFor({ ...ANN, profile: ANN_PROFILE }, null, 0, [
+        GLOBEX_INVITATION,
+      ]),
     ).toEqual({
       page: 'joinWorkspace',
       account: { ...ANN, profile: ANN_PROFILE },
@@ -235,9 +247,22 @@ describe('landingFor', () => {
     });
   });
 
+  it('sends someone in several Workspaces, whose session is in none, to choose one', () => {
+    expect(
+      landingFor({ ...ANN, profile: ANN_PROFILE }, null, 2, [
+        GLOBEX_INVITATION,
+      ]),
+    ).toEqual({
+      page: 'chooseWorkspace',
+      account: { ...ANN, profile: ANN_PROFILE },
+    });
+  });
+
   it('sends a Member of a Workspace Home, whatever they are invited to', () => {
     expect(
-      landingFor({ ...ANN, profile: ANN_PROFILE }, ACME, [GLOBEX_INVITATION]),
+      landingFor({ ...ANN, profile: ANN_PROFILE }, ACME, 1, [
+        GLOBEX_INVITATION,
+      ]),
     ).toEqual({
       page: 'home',
       account: { ...ANN, profile: ANN_PROFILE, membership: ACME },
@@ -255,14 +280,9 @@ describe('requireMember', () => {
     answerSignedInAs(ANN_PROFILE);
     const seen: Request[] = [];
     server.use(
-      http.get(MY_MEMBERSHIPS, ({ request }) => {
+      http.get(MY_CURRENT, ({ request }) => {
         seen.push(request);
-        return HttpResponse.json({
-          items: [ACME],
-          total: 1,
-          page: 1,
-          pageSize: 1,
-        });
+        return HttpResponse.json({ membership: ACME });
       }),
     );
 
@@ -330,7 +350,7 @@ describe('requireMember', () => {
   it("fails with the API's error code when reading the Workspace fails", async () => {
     answerSignedInAs(ANN_PROFILE);
     server.use(
-      http.get(MY_MEMBERSHIPS, () =>
+      http.get(MY_CURRENT, () =>
         HttpResponse.json(
           {
             error: {
@@ -348,6 +368,36 @@ describe('requireMember', () => {
       constructor: ApiError,
       code: 'INTERNAL_ERROR',
     });
+  });
+});
+
+describe('choosing a Workspace', () => {
+  it('sends someone in several Workspaces, just signed in, to choose one, keeping "just signed in"', async () => {
+    answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(null, 2);
+
+    await expect(requireMember('1')).rejects.toThrow(
+      'redirect:/choose-workspace?signedIn=1',
+    );
+  });
+
+  it('answers them on Choose a Workspace', async () => {
+    answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(null, 2);
+
+    expect(await requireAccountToChooseWorkspace()).toEqual({
+      ...ANN,
+      profile: ANN_PROFILE,
+    });
+  });
+
+  it('sends a Member whose session is in a Workspace on from Choose a Workspace to Home', async () => {
+    answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(ACME, 2);
+
+    await expect(requireAccountToChooseWorkspace()).rejects.toThrow(
+      'redirect:/home',
+    );
   });
 });
 

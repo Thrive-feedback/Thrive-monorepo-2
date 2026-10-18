@@ -5,8 +5,8 @@ import type { PendingInvitation } from './pending-invitation.type';
 type CurrentSessionWire =
   components['schemas']['GetCurrentSessionResponseDto_Output'];
 
-type MyMembershipsWire =
-  components['schemas']['ListMyMembershipsResponseDto_Output'];
+type CurrentMembershipWire =
+  components['schemas']['GetCurrentMembershipResponseDto_Output'];
 
 type PendingInvitationsWire =
   components['schemas']['ListMyInvitationsResponseDto_Output'];
@@ -39,19 +39,19 @@ export function toNeedsRefresh(wire: CurrentSessionWire): boolean {
 }
 
 /**
- * The Workspace the person is in: the API lists the one they used last first, so it is the
- * first of their active ones (ADR 0049). `null` while they belong to none.
+ * The Workspace this browser's session is in. `null` while it is in none: the person is to choose
+ * one, or join or create one if they have none.
  */
 export function toCurrentMembership(
-  wire: MyMembershipsWire,
+  wire: CurrentMembershipWire,
 ): CurrentMembership | null {
-  const first = wire.items[0];
-  if (!first) {
+  const { membership } = wire;
+  if (!membership) {
     return null;
   }
   return {
-    workspace: { id: first.workspace.id, name: first.workspace.name },
-    role: first.role,
+    workspace: { id: membership.workspace.id, name: membership.workspace.name },
+    role: membership.role,
   };
 }
 

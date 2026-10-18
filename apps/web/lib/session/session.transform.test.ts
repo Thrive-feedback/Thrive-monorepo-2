@@ -74,25 +74,16 @@ describe('toNeedsRefresh', () => {
 });
 
 describe('toCurrentMembership', () => {
-  it("maps the person's Workspace and Role", () => {
+  it("maps the session's Workspace and the person's Role there", () => {
     const membership = {
       workspace: { id: 'w-1', name: 'Acme Corp' },
       role: 'ADMIN' as const,
     };
 
-    expect(
-      toCurrentMembership({
-        items: [membership],
-        total: 1,
-        page: 1,
-        pageSize: 1,
-      }),
-    ).toEqual(membership);
+    expect(toCurrentMembership({ membership })).toEqual(membership);
   });
 
-  it('maps belonging to no Workspace to null', () => {
-    expect(
-      toCurrentMembership({ items: [], total: 0, page: 1, pageSize: 1 }),
-    ).toBeNull();
+  it('maps a session in no Workspace to null', () => {
+    expect(toCurrentMembership({ membership: null })).toBeNull();
   });
 });

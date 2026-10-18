@@ -43,7 +43,7 @@ function named(workspaceName: string): FormData {
 }
 
 describe('switching Workspace', () => {
-  it("switches with the browser's cookie, then stays on Settings → Workspace, drawn for the new one", async () => {
+  it("switches with the browser's cookie, then opens its Home, every page drawn afresh, to say so", async () => {
     const seen: Request[] = [];
     server.use(
       http.post(SWITCH, ({ request }) => {
@@ -53,7 +53,7 @@ describe('switching Workspace', () => {
     );
 
     await expect(switchWorkspace(GLOBEX_ID)).rejects.toThrow(
-      'redirect:/settings/workspace',
+      'redirect:/home?opened=1',
     );
     expect(seen[0]?.headers.get('cookie')).toBe('thrive.session_token=abc');
     expect(revalidatePath).toHaveBeenCalledWith('/', 'layout');
@@ -77,7 +77,7 @@ describe('switching Workspace', () => {
 });
 
 describe('creating another Workspace from the switcher', () => {
-  it('creates it, then stays on Settings → Workspace, drawn for the new one', async () => {
+  it('creates it, then opens its Home, every page drawn afresh', async () => {
     server.use(
       http.post(WORKSPACES, () =>
         HttpResponse.json({ id: GLOBEX_ID }, { status: 201 }),
@@ -85,7 +85,7 @@ describe('creating another Workspace from the switcher', () => {
     );
 
     await expect(createAnotherWorkspace({}, named('Globex'))).rejects.toThrow(
-      'redirect:/settings/workspace',
+      'redirect:/home',
     );
   });
 

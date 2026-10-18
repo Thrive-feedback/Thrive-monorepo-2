@@ -38,18 +38,15 @@ const readCurrentSession = cache(async () => {
 });
 
 /**
- * The Workspace this request's person is in, if any: of those they are active in, the one they
- * used last, which the API lists first. Asked alongside the session rather than after it, so a
- * page waits for one round trip, not two.
+ * The Workspace this request's session is in, if any: the one chosen in this browser, or the only
+ * one for someone in just one. Asked alongside the session rather than after it, so a page waits
+ * for one round trip, not two.
  */
 const readCurrentMembership = cache(
   async (): Promise<CurrentMembership | null> => {
     try {
-      const result = await apiClient().GET('/v1/members/mine', {
-        params: {
-          header: { cookie: await forwardedCookie() },
-          query: { page: 1, pageSize: 1 },
-        },
+      const result = await apiClient().GET('/v1/members/mine/current', {
+        params: { header: { cookie: await forwardedCookie() } },
         cache: 'no-store',
       });
       return toCurrentMembership(unwrap(result));
@@ -62,6 +59,29 @@ const readCurrentMembership = cache(
     }
   },
 );
+
+/**
+ * How many Workspaces the person can open. Asked only when their session is in none, to tell
+ * someone who is to choose from someone who has none to choose.
+ */
+const readActiveWorkspaceCount = cache(async (): Promise<number> => {
+  try {
+    const result = await apiClient().GET('/v1/members/mine', {
+      params: {
+        header: { cookie: await forwardedCookie() },
+        query: { page: 1, pageSize: 1, status: 'ACTIVE' },
+      },
+      cache: 'no-store',
+    });
+    return unwrap(result).total;
+  } catch (error) {
+    // Signed out since the session was read: the next step's own call finds that out.
+    if (error instanceof ApiError && error.code === 'NOT_SIGNED_IN') {
+      return 0;
+    }
+    throw error;
+  }
+});
 
 /**
  * Who this request is signed in as, asked of the API every time. The proxy only saw that a
@@ -130,23 +150,28 @@ export type Landing =
       readonly invitations: PendingInvitations;
     }
   | { readonly page: 'createWorkspace'; readonly account: IntroducedAccount }
+  | { readonly page: 'chooseWorkspace'; readonly account: IntroducedAccount }
   | { readonly page: 'home'; readonly account: MemberAccount };
 
 const LANDING_ROUTES: Readonly<Record<Landing['page'], string>> = {
   introduceYourself: ROUTES.register.introduceYourself,
   joinWorkspace: ROUTES.register.joinWorkspace,
   createWorkspace: ROUTES.register.createWorkspace,
+  chooseWorkspace: ROUTES.chooseWorkspace,
   home: ROUTES.home,
 };
 
 /**
- * The one rule for where a signed-in person belongs: introduce yourself, then join a Workspace
- * you were invited to or create one, then Home. Every signed-in page asks this rather than
- * deciding for itself. `invitations` are the ones the person could accept now.
+ * The one rule for where a signed-in person belongs: introduce yourself; then, while this session
+ * is in no Workspace, choose one of yours, or join one you were invited to or create one if you
+ * have none; then Home. Every signed-in page asks this rather than deciding for itself.
+ * `workspaceCount` is how many Workspaces they can open, and `invitations` the ones they could
+ * accept now; both are only read while the session is in none.
  */
 export function landingFor(
   account: CurrentAccount,
   membership: CurrentMembership | null,
+  workspaceCount: number,
   invitations: readonly PendingInvitation[],
 ): Landing {
   const { profile } = account;
@@ -155,6 +180,9 @@ export function landingFor(
   }
   if (!membership) {
     const introduced = { ...account, profile };
+    if (workspaceCount > 0) {
+      return { page: 'chooseWorkspace', account: introduced };
+    }
     const [first, ...rest] = invitations;
     return first
       ? {
@@ -184,9 +212,13 @@ async function readLanding(): Promise<Landing> {
   if (!account) {
     redirect(ROUTES.signIn);
   }
+  const workspaceCount =
+    account.profile && !membership ? await readActiveWorkspaceCount() : 0;
   const invitations =
-    account.profile && !membership ? await readMyInvitations() : [];
-  return landingFor(account, membership, invitations);
+    account.profile && !membership && workspaceCount === 0
+      ? await readMyInvitations()
+      : [];
+  return landingFor(account, membership, workspaceCount, invitations);
 }
 
 function sendTo(landing: Landing, signedIn: '1' | undefined): never {
@@ -233,13 +265,31 @@ export async function requireAccountToIntroduce(
 }
 
 /**
- * The signed-in Account, for Create a Workspace: only for someone in none yet. Someone with
- * Invitations waiting may still choose to create one instead.
+ * The signed-in Account, for Create a Workspace: for someone whose session is in none — with none
+ * yet, with Invitations waiting, or choosing among theirs — who may create one instead.
  */
 export async function requireAccountToCreateWorkspace(): Promise<IntroducedAccount> {
   const landing = await readLanding();
-  if (landing.page !== 'createWorkspace' && landing.page !== 'joinWorkspace') {
+  if (
+    landing.page !== 'createWorkspace' &&
+    landing.page !== 'joinWorkspace' &&
+    landing.page !== 'chooseWorkspace'
+  ) {
     sendTo(landing, undefined);
+  }
+  return landing.account;
+}
+
+/**
+ * The signed-in Account, for Choose a Workspace: for someone able to open more than one whose
+ * session is in none — just signed in, or Deactivated in the one it was in.
+ */
+export async function requireAccountToChooseWorkspace(
+  signedIn?: '1',
+): Promise<IntroducedAccount> {
+  const landing = await readLanding();
+  if (landing.page !== 'chooseWorkspace') {
+    sendTo(landing, signedIn);
   }
   return landing.account;
 }

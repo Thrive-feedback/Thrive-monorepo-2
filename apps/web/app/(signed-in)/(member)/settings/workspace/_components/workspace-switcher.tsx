@@ -2,49 +2,71 @@
 
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import type { MyWorkspaces } from '@/app/(signed-in)/(member)/settings/workspace/_lib/my-workspace.type';
-import {
-  createAnotherWorkspace,
-  switchWorkspace,
-} from '@/app/(signed-in)/(member)/settings/workspace/_lib/workspace-switch-actions.service';
 import { Button } from '@/components/atoms/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/atoms/dialog';
-import { Text } from '@/components/atoms/text';
 import { CreateWorkspaceForm } from '@/components/organisms/create-workspace-form';
+import { WorkspaceList } from '@/components/organisms/workspace-list';
+import type {
+  MyWorkspace,
+  MyWorkspaces,
+} from '@/lib/workspace/my-workspace.type';
+import {
+  createAnotherWorkspace,
+  switchWorkspace,
+} from '@/lib/workspace/workspace-switch-actions.service';
 
 export type WorkspaceSwitcherProps = {
-  /** The Workspace the person is in now, marked in the list. */
+  /** The Workspace this browser's session is in, marked in the list. */
   currentWorkspaceId: string;
   workspaces: MyWorkspaces;
 };
 
+/** What the dialog shows: the person's Workspaces, the question before switching, or the form. */
+type View =
+  | { readonly step: 'list' }
+  | { readonly step: 'confirm'; readonly workspace: MyWorkspace }
+  | { readonly step: 'create' };
+
+const LIST: View = { step: 'list' };
+
 /**
- * Switch Workspace, and the dialog it opens: the Workspaces the person is in, by name, the current
- * one marked; those they were Deactivated in, greyed out and not to be opened; and Create a
- * Workspace, which turns the dialog into its form (brain `ADR-0035`). Nothing in it says what Role
- * they have anywhere, and it holds no Invitations: those are joined from their own page.
+ * Switch Workspace, and the dialog it opens: the person's Workspaces (`WorkspaceList`), and Create
+ * a Workspace, which turns the dialog into its form. It holds no Invitations: those are joined
+ * from their own page.
  *
- * Choosing one, or creating one, keeps the person on Settings → Workspace, drawn again for the
- * Workspace they are now in; the page keys this on that Workspace, so the dialog starts closed.
- * The choices are disabled while a switch is on its way, so one click cannot become two.
+ * Choosing a Workspace asks first, since this device then closes the one it is in: every page is
+ * drawn afresh on the chosen one's Home, which says once that it switched. The question says
+ * "close" rather than "leave", which means Deactivating yourself here. Creating one lands on its
+ * Home the same way, and its button says so.
  */
 export function WorkspaceSwitcher({
   currentWorkspaceId,
   workspaces,
 }: WorkspaceSwitcherProps) {
-  const [isCreating, setIsCreating] = useState(false);
+  const [view, setView] = useState<View>(LIST);
   const [isSwitching, startSwitching] = useTransition();
+  const current = workspaces.active.find(
+    (workspace) => workspace.id === currentWorkspaceId,
+  );
 
   function handleOpenChange(isOpen: boolean) {
     if (!isOpen) {
-      setIsCreating(false);
+      setView(LIST);
+    }
+  }
+
+  function handleChoose(workspaceId: string) {
+    const workspace = workspaces.active.find(({ id }) => id === workspaceId);
+    if (workspace) {
+      setView({ step: 'confirm', workspace });
     }
   }
 
@@ -63,7 +85,7 @@ export function WorkspaceSwitcher({
         </Button>
       </DialogTrigger>
       <DialogContent>
-        {isCreating ? (
+        {view.step === 'create' && (
           <>
             <DialogHeader>
               <DialogTitle>Create a Workspace</DialogTitle>
@@ -72,65 +94,58 @@ export function WorkspaceSwitcher({
                 in.
               </DialogDescription>
             </DialogHeader>
-            <CreateWorkspaceForm action={createAnotherWorkspace} />
-            <Button variant="ghost" onClick={() => setIsCreating(false)}>
+            <CreateWorkspaceForm
+              action={createAnotherWorkspace}
+              submitLabelFor={(name) =>
+                `Create and jump to the “${name}” Workspace`
+              }
+            />
+            <Button variant="ghost" onClick={() => setView(LIST)}>
               Back to your Workspaces
             </Button>
           </>
-        ) : (
+        )}
+        {view.step === 'confirm' && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="break-all">
+                Switch to “{view.workspace.name}”?
+              </DialogTitle>
+              <DialogDescription>
+                {`You'll close “${current?.name ?? 'this Workspace'}” on this device and open “${view.workspace.name}”.`}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button disabled={isSwitching} onClick={() => setView(LIST)}>
+                Not now
+              </Button>
+              <Button
+                variant="primary"
+                loading={isSwitching}
+                onClick={() => handleSwitch(view.workspace.id)}
+              >
+                Open “{view.workspace.name}”
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+        {view.step === 'list' && (
           <>
             <DialogHeader>
               <DialogTitle>Switch Workspace</DialogTitle>
               <DialogDescription>
-                Every page, on every device, opens the Workspace you choose.
+                This device opens the Workspace you choose. Your other devices
+                stay where they are.
               </DialogDescription>
             </DialogHeader>
-            <ul aria-label="Your Workspaces" className="flex flex-col gap-2">
-              {workspaces.active.map((workspace) =>
-                workspace.id === currentWorkspaceId ? (
-                  <li
-                    key={workspace.id}
-                    aria-current="true"
-                    className="flex items-center justify-between gap-2 rounded-element border border-border-default px-4 py-3"
-                  >
-                    <Text variant="body-2" className="break-all">
-                      {workspace.name}
-                    </Text>
-                    <Text variant="body-3" tone="brand">
-                      Current
-                    </Text>
-                  </li>
-                ) : (
-                  <li key={workspace.id}>
-                    <Button
-                      variant="secondary"
-                      className="w-full justify-start break-all"
-                      disabled={isSwitching}
-                      onClick={() => handleSwitch(workspace.id)}
-                    >
-                      {workspace.name}
-                    </Button>
-                  </li>
-                ),
-              )}
-              {workspaces.inactive.map((workspace) => (
-                <li
-                  key={workspace.id}
-                  className="flex items-center justify-between gap-2 rounded-element border border-border-subtle px-4 py-3"
-                >
-                  <Text variant="body-2" tone="muted" className="break-all">
-                    {workspace.name}
-                  </Text>
-                  <Text variant="body-3" tone="muted">
-                    Inactive
-                  </Text>
-                </li>
-              ))}
-            </ul>
+            <WorkspaceList
+              workspaces={workspaces}
+              currentWorkspaceId={currentWorkspaceId}
+              onChoose={handleChoose}
+            />
             <Button
               variant="outlined"
-              disabled={isSwitching}
-              onClick={() => setIsCreating(true)}
+              onClick={() => setView({ step: 'create' })}
             >
               Create a Workspace
             </Button>

@@ -38,13 +38,14 @@ describe('Account', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows their names, email and Role', async () => {
+  it('shows their names, Profile slug, email and Role', async () => {
     requireMember.mockResolvedValue(ANN);
 
     render(await Account());
 
     expect(definitionOf('Full name')).toHaveTextContent('Ann Marie Lee');
     expect(definitionOf('Display name')).toHaveTextContent('Ann Lee');
+    expect(definitionOf('Profile slug')).toHaveTextContent('ann');
     expect(definitionOf('Email')).toHaveTextContent('ann@acme.test');
     expect(definitionOf('Role')).toHaveTextContent('Admin');
   });

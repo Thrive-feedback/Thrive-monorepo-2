@@ -1,5 +1,5 @@
-import { readMyWorkspaces } from '@/app/(signed-in)/(member)/settings/workspace/_lib/my-workspaces.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { readMyWorkspaces } from '@/lib/workspace/my-workspaces.service';
 import { WorkspaceSwitcher } from './workspace-switcher';
 
 export type WorkspaceSwitcherLoaderProps = {

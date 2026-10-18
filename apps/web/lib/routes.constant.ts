@@ -29,6 +29,8 @@ export const ROUTES = {
    * a Workspace they are no longer in: they switched in another tab, or were Deactivated there.
    */
   homeSwitched: '/home?switched=1',
+  /** Home, saying once that the person has just switched to the Workspace it shows. */
+  homeOpened: '/home?opened=1',
   /** A Feedback Request the person sent, open in a dialog over My requests. */
   homeRequest: (requestId: string) =>
     `/home?tab=my-requests&request=${requestId}`,
@@ -48,6 +50,8 @@ export const ROUTES = {
     appearance: '/settings/appearance',
   },
   invitation: (invitationId: string) => `/invitations/${invitationId}`,
+  /** Which of their Workspaces to open, for someone in several whose session is in none. */
+  chooseWorkspace: '/choose-workspace',
   register: {
     introduceYourself: '/register/introduce-yourself',
     joinWorkspace: '/register/join-workspace',

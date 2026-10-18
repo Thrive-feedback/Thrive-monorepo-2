@@ -14,6 +14,11 @@ import type { TeamSize } from '@/lib/workspace/team-size.constant';
 export type CreateWorkspaceFormProps = {
   /** Creates it; Create a Workspace and the switcher each move on to their own next page. */
   action: CreateWorkspaceAction;
+  /**
+   * The submit button's words for the name typed so far, trimmed, where they should say what
+   * happens next. Until a name is typed the button reads Create Workspace either way.
+   */
+  submitLabelFor?: (workspaceName: string) => string;
 };
 
 /**
@@ -25,7 +30,10 @@ export type CreateWorkspaceFormProps = {
  * form is submitted by hand rather than through `action`, because React resets a form after
  * its action, which would clear the picked team size from the page but not from state.
  */
-export function CreateWorkspaceForm({ action }: CreateWorkspaceFormProps) {
+export function CreateWorkspaceForm({
+  action,
+  submitLabelFor,
+}: CreateWorkspaceFormProps) {
   const [workspaceName, setWorkspaceName] = useState('');
   const [teamSize, setTeamSize] = useState<TeamSize | null>(null);
   const [state, formAction, isCreating] = useActionState<
@@ -73,7 +81,9 @@ export function CreateWorkspaceForm({ action }: CreateWorkspaceFormProps) {
         disabled={!canCreate}
         className="mt-2 w-full"
       >
-        Create Workspace
+        {submitLabelFor && workspaceName.trim() !== ''
+          ? submitLabelFor(workspaceName.trim())
+          : 'Create Workspace'}
       </Button>
     </form>
   );
