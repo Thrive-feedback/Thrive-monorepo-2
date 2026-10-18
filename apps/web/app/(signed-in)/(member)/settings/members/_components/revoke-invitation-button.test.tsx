@@ -51,13 +51,21 @@ describe('RevokeInvitationButton', () => {
   it('asks before revoking, naming who the Invitation was sent to', async () => {
     await openDialog();
 
-    const dialog = screen.getByRole('alertdialog', {
+    const dialog = screen.getByRole('dialog', {
       name: 'Revoke this Invitation?',
     });
     expect(dialog).toHaveAccessibleDescription(
       "cat@acme.test won't be able to join with it. You can invite them again later.",
     );
     expect(revokeInvitation).not.toHaveBeenCalled();
+  });
+
+  it('dims the page behind the question, as every dialog does', async () => {
+    await openDialog();
+
+    expect(
+      document.querySelector('[data-slot="dialog-overlay"]'),
+    ).toBeInTheDocument();
   });
 
   it('revokes once confirmed, and says so', async () => {
@@ -70,7 +78,7 @@ describe('RevokeInvitationButton', () => {
     expect(toast.success).toHaveBeenCalledWith(
       'Invitation to cat@acme.test revoked',
     );
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('says why when the revoke is refused', async () => {

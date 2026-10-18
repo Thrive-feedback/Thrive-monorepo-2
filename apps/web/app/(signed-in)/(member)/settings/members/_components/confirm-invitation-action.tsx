@@ -1,9 +1,17 @@
-import { AlertDialog } from 'radix-ui';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import type { InvitationActionResult } from '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service';
 import { Button, type ButtonProps } from '@/components/atoms/button';
-import { Text } from '@/components/atoms/text';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/atoms/dialog';
 
 export type ConfirmInvitationActionProps = {
   /** The button's visible word, which also confirms in the dialog. */
@@ -23,9 +31,9 @@ export type ConfirmInvitationActionProps = {
 
 /**
  * Asks before acting on an Invitation, because each action reaches the person it was sent to.
+ * It is the shared `Dialog`, so the page dims behind it as it does behind every other question.
  * The dialog stays open while the action is in flight, so it cannot be sent twice, and closes
- * once it has answered; the answer is a toast. Radix keeps focus inside the dialog and hands it
- * back to the button.
+ * once it has answered; the answer is a toast. Focus stays inside it and goes back to the button.
  */
 export function ConfirmInvitationAction({
   label,
@@ -54,39 +62,32 @@ export function ConfirmInvitationAction({
   }
 
   return (
-    <AlertDialog.Root open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialog.Trigger asChild>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
         <Button variant={triggerVariant} size="sm" aria-label={accessibleName}>
           {label}
         </Button>
-      </AlertDialog.Trigger>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0" />
-        <AlertDialog.Content className="fixed inset-x-4 top-1/2 mx-auto flex max-w-2xl -translate-y-1/2 flex-col gap-4 rounded-page border border-border-default bg-surface-overlay p-6 shadow-high">
-          <AlertDialog.Title asChild>
-            <Text as="h2" variant="subtitle-2">
-              {question}
-            </Text>
-          </AlertDialog.Title>
-          <AlertDialog.Description asChild>
-            <Text variant="body-2" tone="muted" className="break-all">
-              {explanation}
-            </Text>
-          </AlertDialog.Description>
-          <div className="flex justify-end gap-2">
-            <AlertDialog.Cancel asChild>
-              <Button disabled={isActing}>{cancelLabel}</Button>
-            </AlertDialog.Cancel>
-            <Button
-              variant={confirmVariant}
-              loading={isActing}
-              onClick={handleConfirm}
-            >
-              {label}
-            </Button>
-          </div>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog.Root>
+      </DialogTrigger>
+      <DialogContent hasCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle>{question}</DialogTitle>
+          <DialogDescription className="break-all">
+            {explanation}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button disabled={isActing}>{cancelLabel}</Button>
+          </DialogClose>
+          <Button
+            variant={confirmVariant}
+            loading={isActing}
+            onClick={handleConfirm}
+          >
+            {label}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
