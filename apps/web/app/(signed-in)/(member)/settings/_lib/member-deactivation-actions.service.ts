@@ -14,13 +14,13 @@ const AccountId = z.uuid();
 /** What to say when the API refused a Deactivation, by the API's error code. */
 const DEACTIVATION_ERRORS: Readonly<Record<string, string>> = {
   LAST_ADMIN: 'Make someone else an Admin first.',
-  NOT_ALLOWED_TO_DEACTIVATE: 'Only Admins can Deactivate other people.',
+  NOT_ALLOWED_TO_DEACTIVATE: 'Only Admins can deactivate other people.',
   MEMBER_NOT_FOUND: 'They are no longer in this Workspace.',
 };
 
 /** What to say when the API refused a Reactivation, by the API's error code. */
 const REACTIVATION_ERRORS: Readonly<Record<string, string>> = {
-  NOT_ALLOWED_TO_REACTIVATE: 'Only Admins can Reactivate people.',
+  NOT_ALLOWED_TO_REACTIVATE: 'Only Admins can reactivate people.',
   MEMBER_NOT_FOUND: 'They were never in this Workspace.',
 };
 
@@ -45,7 +45,8 @@ export async function deactivateMember(
 /**
  * Leaves the person's own Workspace, by Deactivating their own Account there; `accountId` is
  * theirs, as their row in Members names it. Once out they can no longer open it, so they go on
- * to wherever they belong now: the Workspace they used before, if they are in another.
+ * to wherever they belong now: the Workspace they used before, if they are in another, whose
+ * Home says once that they left.
  */
 export async function leaveWorkspace(
   workspaceId: string,
@@ -53,7 +54,7 @@ export async function leaveWorkspace(
 ): Promise<MemberDeactivationResult> {
   const result = await deactivate(workspaceId, accountId);
   if (result.ok) {
-    redirect(ROUTES.home);
+    redirect(ROUTES.homeLeft);
   }
   return result;
 }

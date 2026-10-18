@@ -1,14 +1,19 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
-import { Skeleton } from '@/components/atoms/skeleton';
+import { AnswerAskViewSkeleton } from '@/components/organisms/answer-ask-view';
+import { FeedbackComposerSkeleton } from '@/components/organisms/feedback-composer';
+import { FeedbackFeedSkeleton } from '@/components/organisms/feedback-feed';
 import { HomeDialog } from '@/components/organisms/home-dialog';
 import { HomeView } from '@/components/templates/home-view';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 import { AnswerAskDetail } from './_components/answer-ask-detail';
 import { FeedbackComposerCard } from './_components/feedback-composer-card';
-import { FeedbackRequestDetail } from './_components/feedback-request-detail';
+import {
+  FeedbackRequestDetail,
+  FeedbackRequestDetailSkeleton,
+} from './_components/feedback-request-detail';
 import styles from './_components/home-split.module.css';
 import { HomeTabPanel } from './_components/home-tab-panel';
 import { InvitationNotices } from './_components/invitation-notices';
@@ -26,7 +31,8 @@ type HomeProps = {
    * `signedIn` is set when Google sent a returning person back here, `sent` when they have just
    * sent a Feedback Request, `given` when they have just given Feedback without being asked,
    * `switched` when what they sent was dropped because its page was for a Workspace they are no
-   * longer in, `opened` when they have just switched to this Workspace, `tab` is the feed tab that
+   * longer in, `opened` when they have just switched to this Workspace, `left` when they have just
+   * left the one before, `tab` is the feed tab that
    * is open, and `request` or `ask` is the one open in a
    * dialog over it.
    */
@@ -36,6 +42,7 @@ type HomeProps = {
     given?: string | string[];
     switched?: string | string[];
     opened?: string | string[];
+    left?: string | string[];
     tab?: string | string[];
     request?: string | string[];
     ask?: string | string[];
@@ -54,7 +61,7 @@ type HomeProps = {
  * the address, so a reload or a shared link opens it again; a request wins if both are named.
  */
 export default async function Home({ searchParams }: HomeProps) {
-  const { signedIn, sent, given, switched, opened, tab, request, ask } =
+  const { signedIn, sent, given, switched, opened, left, tab, request, ask } =
     HomeSearchParams.parse(await searchParams);
   const session = await requireMember(signedIn);
 
@@ -84,7 +91,14 @@ export default async function Home({ searchParams }: HomeProps) {
       {opened !== undefined && (
         <OneTimeToast
           type="success"
-          message={`Switched to “${session.membership.workspace.name}”`}
+          message={`Switched to ${session.membership.workspace.name}`}
+          then={ROUTES.homeTab(tab)}
+        />
+      )}
+      {left !== undefined && (
+        <OneTimeToast
+          type="success"
+          message={`You left that Workspace. You're in ${session.membership.workspace.name} now.`}
           then={ROUTES.homeTab(tab)}
         />
       )}
@@ -104,7 +118,7 @@ export default async function Home({ searchParams }: HomeProps) {
           </Suspense>
         }
         composer={
-          <Suspense fallback={<Skeleton shape="card" className="h-80" />}>
+          <Suspense fallback={<FeedbackComposerSkeleton />}>
             <FeedbackComposerCard
               membership={session.membership}
               ownEmail={session.email}
@@ -112,7 +126,7 @@ export default async function Home({ searchParams }: HomeProps) {
           </Suspense>
         }
         workspaceFeed={
-          <Suspense fallback={<Skeleton shape="card" className="h-80" />}>
+          <Suspense fallback={<FeedbackFeedSkeleton />}>
             <WorkspaceFeed membership={session.membership} />
           </Suspense>
         }
@@ -129,7 +143,7 @@ export default async function Home({ searchParams }: HomeProps) {
           title="Your feedback request"
           close={{ href: ROUTES.homeTab(tab) }}
         >
-          <Suspense fallback={<Skeleton shape="card" className="h-40" />}>
+          <Suspense fallback={<FeedbackRequestDetailSkeleton />}>
             <FeedbackRequestDetail
               membership={session.membership}
               requestId={request}
@@ -143,7 +157,7 @@ export default async function Home({ searchParams }: HomeProps) {
             title="Give your feedback"
             close={{ href: ROUTES.homeTab(tab) }}
           >
-            <Suspense fallback={<Skeleton shape="card" className="h-40" />}>
+            <Suspense fallback={<AnswerAskViewSkeleton />}>
               <AnswerAskDetail membership={session.membership} askId={ask} />
             </Suspense>
           </HomeDialog>

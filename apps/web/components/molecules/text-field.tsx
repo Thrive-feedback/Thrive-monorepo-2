@@ -2,6 +2,7 @@ import { cva } from 'class-variance-authority';
 import { useId } from 'react';
 import { Input, type InputProps } from '@/components/atoms/input';
 import { Label } from '@/components/atoms/label';
+import { Skeleton } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
 
 const labelLine = cva('mb-1 block', {
@@ -85,6 +86,17 @@ export function TextField({
           {message}
         </p>
       )}
+    </div>
+  );
+}
+
+/** A `TextField` still loading: its label, the field, and a line of help under it. */
+export function TextFieldSkeleton() {
+  return (
+    <div className="flex flex-col">
+      <Skeleton className={cn(labelLine(), 'w-1/3')} />
+      <Skeleton shape="control" className="h-11 rounded-input" />
+      <Skeleton className={cn(messageLine(), 'w-2/3')} />
     </div>
   );
 }

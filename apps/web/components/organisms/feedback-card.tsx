@@ -1,7 +1,8 @@
 import { Avatar, AvatarFallback } from '@/components/atoms/avatar';
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
-import type { FeedItem } from '@/lib/feedback/feed-item.type';
+import { type FeedItem, REACTIONS } from '@/lib/feedback/feed-item.type';
 import { initials } from '@/lib/initials.util';
 import { PersonName } from './person-name';
 import { ReactionBar } from './reaction-bar';
@@ -57,5 +58,30 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
       </Text>
       <ReactionBar reactions={item.reactions} />
     </article>
+  );
+}
+
+/** A `FeedbackCard` still loading, line for line: who to whom, origin and day, Topic, body, Reactions. */
+export function FeedbackCardSkeleton() {
+  return (
+    <div className="flex flex-col gap-3 rounded-page bg-surface-raised p-4">
+      <div className="flex items-center gap-3">
+        <Skeleton shape="circle" className="size-8" />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Skeleton className="w-1/2 text-subtitle-4" />
+          <Skeleton className="w-1/3 text-body-3" />
+        </div>
+      </div>
+      <Skeleton className="w-2/3 text-subtitle-3" />
+      <div className="flex flex-col">
+        <Skeleton />
+        <Skeleton className="w-4/5" />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {REACTIONS.map(({ emoji }) => (
+          <Skeleton key={emoji} shape="circle" className="h-7 w-12" />
+        ))}
+      </div>
+    </div>
   );
 }

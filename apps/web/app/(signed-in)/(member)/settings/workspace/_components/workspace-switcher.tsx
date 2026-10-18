@@ -46,7 +46,8 @@ const LIST: View = { step: 'list' };
  * Choosing a Workspace asks first, since this device then closes the one it is in: every page is
  * drawn afresh on the chosen one's Home, which says once that it switched. The question says
  * "close" rather than "leave", which means Deactivating yourself here. Creating one lands on its
- * Home the same way, and its button says so.
+ * Home the same way, and its button says so. Going back from the question returns to the list
+ * rather than closing, so its button says Back.
  */
 export function WorkspaceSwitcher({
   currentWorkspaceId,
@@ -97,7 +98,7 @@ export function WorkspaceSwitcher({
             </DialogHeader>
             <CreateWorkspaceForm
               action={createAnotherWorkspace}
-              submitLabel="Create and jump to it"
+              submitLabel="Create and open"
             />
             <Button variant="ghost" onClick={() => setView(LIST)}>
               Back to your Workspaces
@@ -108,22 +109,22 @@ export function WorkspaceSwitcher({
           <>
             <DialogHeader>
               <DialogTitle className="break-all">
-                Switch to “{view.workspace.name}”?
+                Switch to {view.workspace.name}?
               </DialogTitle>
               <DialogDescription>
-                {`You'll close “${current?.name ?? 'this Workspace'}” on this device and open “${view.workspace.name}”.`}
+                {`You'll close ${current?.name ?? 'this Workspace'} on this device and open ${view.workspace.name}.`}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button disabled={isSwitching} onClick={() => setView(LIST)}>
-                Not now
+                Back
               </Button>
               <Button
                 variant="primary"
                 loading={isSwitching}
                 onClick={() => handleSwitch(view.workspace.id)}
               >
-                Open “{view.workspace.name}”
+                Open {view.workspace.name}
               </Button>
             </DialogFooter>
           </>
@@ -132,17 +133,15 @@ export function WorkspaceSwitcher({
           <>
             <DialogHeader>
               <DialogTitle>Switch Workspace</DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-col gap-2">
-              <DialogDescription className="text-body-3">
-                Switch to
+              <DialogDescription>
+                Pick a Workspace to open on this device.
               </DialogDescription>
-              <WorkspaceList
-                workspaces={workspaces}
-                currentWorkspaceId={currentWorkspaceId}
-                onChoose={handleChoose}
-              />
-            </div>
+            </DialogHeader>
+            <WorkspaceList
+              workspaces={workspaces}
+              currentWorkspaceId={currentWorkspaceId}
+              onChoose={handleChoose}
+            />
             <hr className="border-border-subtle" />
             <Button
               variant="outlined"

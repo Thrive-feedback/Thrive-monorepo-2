@@ -66,8 +66,8 @@ function roleSentTo(
  *
  * After a send, one toast says how it went — sent, already in, already invited, or not sent.
  * Addresses whose email could not go out stay, with their Role, so sending again retries only
- * those; the rest clear. The new Invitations appear under Open invitations, which the action
- * draws again.
+ * those; the rest clear. The new Invitations appear under Invitations, which the action draws
+ * again.
  */
 export type InviteMembersFormProps = {
   /** The Workspace the page was drawn for; sending is refused once the person is no longer in it. */
@@ -191,7 +191,7 @@ function OneByOne({ isSending, onSend }: ModeProps) {
         disabled={!inviteRows.hasAnyEmail}
         className="w-fit"
       >
-        Send invites
+        Send Invitations
       </Button>
     </form>
   );
@@ -249,7 +249,7 @@ function PasteAList({ isSending, onSend }: ModeProps) {
         loading={isSending}
         className="w-fit"
       >
-        Send invites
+        Send Invitations
       </Button>
     </form>
   );

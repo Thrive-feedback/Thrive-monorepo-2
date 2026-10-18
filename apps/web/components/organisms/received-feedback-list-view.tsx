@@ -1,7 +1,11 @@
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { ReceivedFeedback } from '@/lib/feedback/received-feedback.type';
 import { PersonName } from './person-name';
+
+/** Enough rows to fill the first screen, without promising how many will come. */
+const PLACEHOLDERS = ['first', 'second', 'third'] as const;
 
 export type ReceivedFeedbackListViewProps = {
   items: readonly ReceivedFeedback[];
@@ -57,5 +61,26 @@ export function ReceivedFeedbackListView({
         </li>
       ))}
     </ul>
+  );
+}
+
+/** A `ReceivedFeedbackListView` still loading: a few rows of Topic, from whom and when, and the body. */
+export function ReceivedFeedbackListViewSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      {PLACEHOLDERS.map((placeholder) => (
+        <div
+          key={placeholder}
+          className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
+        >
+          <Skeleton className="w-1/2 text-subtitle-4" />
+          <Skeleton className="w-1/3 text-body-3" />
+          <div className="flex flex-col">
+            <Skeleton />
+            <Skeleton className="w-4/5" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

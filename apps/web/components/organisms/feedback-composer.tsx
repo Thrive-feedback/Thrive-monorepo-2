@@ -4,11 +4,15 @@ import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { ButtonGroup } from '@/components/atoms/button-group';
+import { Skeleton } from '@/components/atoms/skeleton';
 import type { GiveFeedbackAction } from '@/lib/feedback/give-feedback-state.type';
 import type { RequestFeedbackAction } from '@/lib/feedback/request-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { GiveFeedbackForm } from './give-feedback-form';
-import { RequestFeedbackForm } from './request-feedback-form';
+import {
+  RequestFeedbackForm,
+  RequestFeedbackFormSkeleton,
+} from './request-feedback-form';
 
 type ComposerMode = 'request' | 'give';
 
@@ -91,5 +95,21 @@ export function FeedbackComposer({
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * A `FeedbackComposer` still loading, as it first opens: the two mode buttons, the fold, and the
+ * request form expanded.
+ */
+export function FeedbackComposerSkeleton() {
+  return (
+    <div className="flex w-full flex-col gap-4 rounded-page bg-surface-raised p-6">
+      <div className="flex items-start justify-between gap-4">
+        <Skeleton shape="control" className="h-9.5 w-64 rounded-button" />
+        <Skeleton shape="circle" className="size-9" />
+      </div>
+      <RequestFeedbackFormSkeleton />
+    </div>
   );
 }

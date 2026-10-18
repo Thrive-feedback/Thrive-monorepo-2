@@ -29,7 +29,7 @@ export type MemberRoleSelectProps = {
   isLastAdmin?: boolean;
 };
 
-const LAST_ADMIN_HINT = 'Make someone else an Admin first';
+const LAST_ADMIN_HINT = 'Make someone else an Admin first.';
 
 /**
  * An Admin's control over one person's Role. Picking a Role saves it at once and shows it while

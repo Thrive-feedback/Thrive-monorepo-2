@@ -20,11 +20,11 @@ export function ResendInvitationButton({
   return (
     <ConfirmInvitationAction
       label="Resend"
-      accessibleName={`Resend invitation to ${email}`}
-      question="Send this invitation again?"
-      explanation={`${email} will get a new email, and the invitation will be good for another 7 days.`}
-      cancelLabel="Not now"
-      doneMessage={`Invitation sent again to ${email}`}
+      accessibleName={`Resend Invitation to ${email}`}
+      question="Resend this Invitation?"
+      explanation={`${email} will get a new email, and the Invitation will be good for another 7 days.`}
+      cancelLabel="Cancel"
+      doneMessage={`Invitation resent to ${email}`}
       triggerVariant="ghost"
       confirmVariant="primary"
       onConfirm={() => resendInvitation(workspaceId, invitationId)}

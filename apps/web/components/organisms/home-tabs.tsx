@@ -1,5 +1,4 @@
 import NextLink from 'next/link';
-import { Suspense } from 'react';
 import { Button } from '@/components/atoms/button';
 import { ButtonGroup } from '@/components/atoms/button-group';
 import { Skeleton } from '@/components/atoms/skeleton';
@@ -31,8 +30,8 @@ export type HomeTabsProps = {
  * in the URL, so it survives a reload, a shared link and the way back from an Ask; the open one
  * is the current page. Given callbacks instead, each tab is a button and the open one is pressed.
  *
- * The Suspense boundary is keyed by tab, so a tab that reads the API shows its skeleton while
- * it loads rather than the tab that was open before.
+ * What the open tab holds is drawn as given; a tab that reads the API brings its own Suspense
+ * boundary and skeleton.
  */
 export function HomeTabs({
   tab,
@@ -75,9 +74,20 @@ export function HomeTabs({
           })}
         </ButtonGroup>
       </nav>
-      <Suspense key={tab} fallback={<Skeleton shape="card" className="h-40" />}>
-        {children}
-      </Suspense>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * `HomeTabs` still loading, for a page that does not yet know which tab is open: the row of
+ * tabs as one bar, and the panel it is given.
+ */
+export function HomeTabsSkeleton({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Skeleton shape="control" className="h-9.5 rounded-button" />
+      {children}
     </div>
   );
 }

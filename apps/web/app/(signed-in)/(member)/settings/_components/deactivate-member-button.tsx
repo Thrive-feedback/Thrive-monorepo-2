@@ -50,7 +50,7 @@ export function DeactivateMemberButton({
         : await deactivateMember(workspaceId, accountId);
       setIsOpen(false);
       if (result.ok) {
-        toast.success(`${name} was Deactivated`);
+        toast.success(`${name} was deactivated`);
       } else {
         toast.error(result.message);
       }
@@ -58,6 +58,7 @@ export function DeactivateMemberButton({
   }
 
   const label = isSelf ? 'Leave Workspace' : 'Deactivate';
+  const confirmLabel = isSelf ? `Leave ${workspaceName}` : 'Deactivate';
 
   return (
     <AlertDialog.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -84,17 +85,17 @@ export function DeactivateMemberButton({
             <Text variant="body-2" tone="muted">
               {isSelf
                 ? `You won't be able to open ${workspaceName} again. The Feedback you gave and received stays, with “(inactive)” after your name.`
-                : `They won't be able to open ${workspaceName} any more. The Feedback they gave and received stays, with “(inactive)” after their name, until an Admin Reactivates them.`}
+                : `They won't be able to open ${workspaceName} any more. The Feedback they gave and received stays, with “(inactive)” after their name, until an Admin reactivates them.`}
             </Text>
           </AlertDialog.Description>
           <div className="flex flex-wrap justify-end gap-2">
             <AlertDialog.Cancel asChild>
               <Button disabled={isActing}>
-                {isSelf ? `Stay in ${workspaceName}` : 'Keep them'}
+                {isSelf ? `Stay in ${workspaceName}` : `Keep ${name}`}
               </Button>
             </AlertDialog.Cancel>
             <Button variant="danger" loading={isActing} onClick={handleConfirm}>
-              {label}
+              {confirmLabel}
             </Button>
           </div>
         </AlertDialog.Content>

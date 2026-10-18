@@ -78,7 +78,7 @@ describe('MemberList', () => {
 
     expect(screen.getByRole('combobox', { name: 'Your Role' })).toBeDisabled();
     expect(
-      screen.getByText('Make someone else an Admin first'),
+      screen.getByText('Make someone else an Admin first.'),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('combobox', { name: "ben@acme.test's Role" }),

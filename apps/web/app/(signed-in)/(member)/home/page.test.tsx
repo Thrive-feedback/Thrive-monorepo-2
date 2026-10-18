@@ -51,6 +51,7 @@ vi.mock('./_components/feedback-request-detail', () => ({
   FeedbackRequestDetail: ({ requestId }: { requestId: string }) => (
     <output>{`request ${requestId}`}</output>
   ),
+  FeedbackRequestDetailSkeleton: () => null,
 }));
 vi.mock('./_components/answer-ask-detail', () => ({
   AnswerAskDetail: ({ askId }: { askId: string }) => (
@@ -203,7 +204,19 @@ describe('Home', () => {
     render(await open({ opened: '1' }));
 
     expect(
-      screen.getByText('success toast: Switched to “Acme Corp” then /home'),
+      screen.getByText('success toast: Switched to Acme Corp then /home'),
+    ).toBeInTheDocument();
+  });
+
+  it('says once that the person has just left a Workspace, naming the one they are in now', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open({ left: '1' }));
+
+    expect(
+      screen.getByText(
+        "success toast: You left that Workspace. You're in Acme Corp now. then /home",
+      ),
     ).toBeInTheDocument();
   });
 

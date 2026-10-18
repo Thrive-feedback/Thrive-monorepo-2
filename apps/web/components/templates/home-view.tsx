@@ -3,8 +3,11 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/atoms/resizable';
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import { HomeTabs } from '@/components/organisms/home-tabs';
+import { FeedbackComposerSkeleton } from '@/components/organisms/feedback-composer';
+import { FeedbackFeedSkeleton } from '@/components/organisms/feedback-feed';
+import { HomeTabs, HomeTabsSkeleton } from '@/components/organisms/home-tabs';
 import { cn } from '@/lib/cn.util';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
 import type { HomeTab } from '@/lib/routes.constant';
@@ -56,20 +59,127 @@ export function HomeView({
   splitClassName,
 }: HomeViewProps) {
   const Title = headingLevel === 1 ? 'h1' : 'h2';
-  const Section = headingLevel === 1 ? 'h2' : 'h3';
   const personalTab = tab === 'workspace' ? 'shared' : tab;
 
   return (
-    <>
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 lg:hidden">
+    <HomeLayout
+      sectionHeadingLevel={headingLevel === 1 ? 'h2' : 'h3'}
+      title={
         <Text variant="display-5" as={Title}>
           {workspaceName}
         </Text>
-        {notices}
-        {composer}
+      }
+      welcome={
+        <Title className="flex flex-col">
+          <WelcomeTo />{' '}
+          <Text as="span" variant="display-3">
+            {workspaceName}
+          </Text>
+        </Title>
+      }
+      notices={notices}
+      composer={composer}
+      workspaceFeed={workspaceFeed}
+      activity={
         <HomeTabs tab={tab} targetFor={targetFor}>
           {panelFor(tab)}
         </HomeTabs>
+      }
+      personalActivity={
+        <HomeTabs tab={personalTab} tabs={PERSONAL_TABS} targetFor={targetFor}>
+          {panelFor(personalTab)}
+        </HomeTabs>
+      }
+      splitClassName={splitClassName}
+    />
+  );
+}
+
+/**
+ * `HomeView` while the page is still being built, in both layouts: the Workspace's name, the
+ * composer, the feed and the tabs in grey, with the words that never change already in place.
+ * Which tab is open is not known yet, so each column shows the feed its tabs open on.
+ */
+export function HomeViewSkeleton({
+  splitClassName,
+}: {
+  /** Gives the split its height, as it does `HomeView`'s. */
+  splitClassName?: string;
+}) {
+  return (
+    <HomeLayout
+      sectionHeadingLevel="h2"
+      title={<Skeleton className="w-1/2 text-display-5" />}
+      welcome={
+        <div className="flex flex-col">
+          <WelcomeTo />
+          <Skeleton className="w-1/2 text-display-3" />
+        </div>
+      }
+      composer={<FeedbackComposerSkeleton />}
+      workspaceFeed={<FeedbackFeedSkeleton />}
+      activity={
+        <HomeTabsSkeleton>
+          <FeedbackFeedSkeleton />
+        </HomeTabsSkeleton>
+      }
+      personalActivity={
+        <HomeTabsSkeleton>
+          <FeedbackFeedSkeleton />
+        </HomeTabsSkeleton>
+      }
+      splitClassName={splitClassName}
+    />
+  );
+}
+
+function WelcomeTo() {
+  return (
+    <Text
+      as="span"
+      variant="subtitle-handwrite-1"
+      className="text-action-secondary"
+    >
+      Welcome to
+    </Text>
+  );
+}
+
+type HomeLayoutProps = {
+  sectionHeadingLevel: 'h2' | 'h3';
+  /** The Workspace's name atop the narrow column. */
+  title: React.ReactNode;
+  /** The welcome that stays atop the split's feed column. */
+  welcome: React.ReactNode;
+  notices?: React.ReactNode;
+  composer: React.ReactNode;
+  workspaceFeed: React.ReactNode;
+  /** Every tab, under the composer in the narrow column. */
+  activity: React.ReactNode;
+  /** The person's own tabs, in the split's right column. */
+  personalActivity: React.ReactNode;
+  splitClassName?: string;
+};
+
+/** Where each part of Home sits in each layout, shared by Home and its skeleton. */
+function HomeLayout({
+  sectionHeadingLevel,
+  title,
+  welcome,
+  notices,
+  composer,
+  workspaceFeed,
+  activity,
+  personalActivity,
+  splitClassName,
+}: HomeLayoutProps) {
+  return (
+    <>
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 lg:hidden">
+        {title}
+        {notices}
+        {composer}
+        {activity}
       </div>
       <div className={cn('hidden lg:block', splitClassName)}>
         <ResizablePanelGroup orientation="horizontal">
@@ -79,23 +189,11 @@ export function HomeView({
             className={styles.column}
           >
             <div className="flex flex-col gap-6">
-              <Title
-                className={cn(
-                  'sticky top-0 z-10 flex flex-col pr-6 pb-4',
-                  styles.welcome,
-                )}
+              <div
+                className={cn('sticky top-0 z-10 pr-6 pb-4', styles.welcome)}
               >
-                <Text
-                  as="span"
-                  variant="subtitle-handwrite-1"
-                  className="text-action-secondary"
-                >
-                  Welcome to
-                </Text>{' '}
-                <Text as="span" variant="display-3">
-                  {workspaceName}
-                </Text>
-              </Title>
+                {welcome}
+              </div>
               <div className="pr-6">{workspaceFeed}</div>
             </div>
           </ResizablePanel>
@@ -108,7 +206,7 @@ export function HomeView({
             <div className="flex flex-col gap-6 pl-6">
               {notices}
               <Text
-                as={Section}
+                as={sectionHeadingLevel}
                 variant="subtitle-handwrite-1"
                 className="text-action-secondary-fg"
               >
@@ -117,19 +215,13 @@ export function HomeView({
               {composer}
               <hr className="border-border-subtle" />
               <Text
-                as={Section}
+                as={sectionHeadingLevel}
                 variant="subtitle-handwrite-1"
                 className="text-action-secondary-fg"
               >
                 My Activity
               </Text>
-              <HomeTabs
-                tab={personalTab}
-                tabs={PERSONAL_TABS}
-                targetFor={targetFor}
-              >
-                {panelFor(personalTab)}
-              </HomeTabs>
+              {personalActivity}
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

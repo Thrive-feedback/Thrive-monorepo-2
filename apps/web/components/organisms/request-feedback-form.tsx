@@ -2,12 +2,20 @@
 
 import { startTransition, useActionState, useRef, useState } from 'react';
 import { Button } from '@/components/atoms/button';
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import { TextField } from '@/components/molecules/text-field';
-import { MemberPicker } from '@/components/organisms/member-picker';
+import {
+  TextField,
+  TextFieldSkeleton,
+} from '@/components/molecules/text-field';
+import {
+  MemberPicker,
+  MemberPickerSkeleton,
+} from '@/components/organisms/member-picker';
 import {
   SELECTED_PEOPLE,
   VisibilityPicker,
+  VisibilityPickerSkeleton,
 } from '@/components/organisms/visibility-picker';
 import type {
   RequestFeedbackAction,
@@ -194,5 +202,17 @@ export function RequestFeedbackForm({
         Send request
       </Button>
     </form>
+  );
+}
+
+/** A `RequestFeedbackForm` still loading: who to ask, the Topic, who else reads it, and Send. */
+export function RequestFeedbackFormSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <MemberPickerSkeleton />
+      <TextFieldSkeleton />
+      <VisibilityPickerSkeleton options={VISIBILITIES} />
+      <Skeleton shape="control" className="mt-2 rounded-button" />
+    </div>
   );
 }

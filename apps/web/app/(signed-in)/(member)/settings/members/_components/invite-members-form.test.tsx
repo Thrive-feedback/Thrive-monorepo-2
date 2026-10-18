@@ -34,7 +34,7 @@ const { InviteMembersForm } = await import('./invite-members-form');
 type User = ReturnType<typeof userEvent.setup>;
 
 function sendButton() {
-  return screen.getByRole('button', { name: 'Send invites' });
+  return screen.getByRole('button', { name: 'Send Invitations' });
 }
 
 async function pick(user: User, select: string, option: string) {
@@ -241,14 +241,14 @@ describe('inviting from a pasted list', () => {
   it('shows why the whole send was refused, and keeps what was typed', async () => {
     const user = userEvent.setup();
     inviteMembers.mockResolvedValue({
-      formError: 'Only Admins can invite teammates.',
+      formError: 'Only Admins can send Invitations.',
     });
     await openList(user);
 
     await send(user, 'ben@acme.test');
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Only Admins can invite teammates.',
+      'Only Admins can send Invitations.',
     );
     expect(box()).toHaveValue('ben@acme.test');
   });

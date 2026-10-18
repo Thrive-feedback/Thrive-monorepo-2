@@ -1,7 +1,8 @@
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import type { AnswerAskAction } from '@/lib/feedback/answer-ask-state.type';
 import type { WaitingAsk } from '@/lib/feedback/waiting-ask.type';
-import { AnswerAskForm } from './answer-ask-form';
+import { AnswerAskForm, AnswerAskFormSkeleton } from './answer-ask-form';
 import { PersonName } from './person-name';
 
 export type AnswerAskViewProps = {
@@ -52,6 +53,19 @@ export function AnswerAskView({ ask, action }: AnswerAskViewProps) {
           stands.
         </Text>
       )}
+    </div>
+  );
+}
+
+/** An `AnswerAskView` still loading: who asked about what, who reads it, and the form. */
+export function AnswerAskViewSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-1">
+        <Skeleton className="w-2/3 text-subtitle-3" />
+        <Skeleton className="w-3/4 text-body-3" />
+      </div>
+      <AnswerAskFormSkeleton />
     </div>
   );
 }
