@@ -353,3 +353,33 @@ will not boot.
 **What this does not do:** nothing is posted except one test message. #201 is where Feedback reaches the
 channel, restricted to Feedback already set to *Everyone in the Workspace*; #211–#215 are where a person
 is messaged directly, which is Epic #13's and needs its own design.
+
+## 11. What carries to Slack, and what does not
+
+`ADR-0035` says Slack is next, so this is written now rather than discovered then.
+
+**Carries unchanged:** the `modules/integrations/` module and its bounded context (D1); the
+app-level client location (D2) — Slack becomes a second client behind the same port, not a second
+module; `provider` plus `@@unique([workspaceId, provider])` (D7), which is why Slack arriving is not a
+migration of this table's shape; the signed `state` token (D5) and the `(signed-in)` web callback (D4),
+because Slack redirects a browser exactly as Discord does; `isAdminOf` (D8); no `UnitOfWork` (D10); and
+the client's timeout, attempt cap and backoff (§4.6) — Slack also answers `429` with a retry hint.
+
+**Does not carry, and each needs a decision:**
+
+| | Discord | Slack |
+| --- | --- | --- |
+| **The credential** | **one bot token for every customer**, in config (§6) | **one bot token per connected workspace**, returned by the install and belonging to that customer |
+| **D3 "no cipher, no encrypted column"** | correct — a guild id and a channel id are not secrets | **wrong.** Slack's per-workspace token is a credential at rest, so `SecretCipher` and an encrypted column come back — the pair this design deleted from its own superseded draft |
+| **Getting listed** | invite a bot, no review | an app directory submission, which takes weeks and gates the first customer |
+| **Rate limits** | per-route buckets | per-method tiers, with `chat.postMessage` far tighter than Discord's channel posting |
+
+**What this design should do about it now, and deliberately does not:** add the encrypted column. It
+would be a column with no consumer, which `PROJECT.md` §2 and `AGENTS.md` both refuse. Slack's install
+is a migration either way, because it adds a credential this one does not have.
+
+**What it should do and does:** stay honest in the column names. `guildId` and `guildName` are Discord's
+words for a Slack `team`, so if the names stay Discord's, Slack brings a rename on top of the column it
+really needs. Worth settling in review: generic (`externalWorkspaceId`, `externalChannelId`) reads
+almost as clearly today and costs nothing, or keep Discord's words and accept the rename. This design
+proposes **generic**, with the Discord meaning in the doc comment.

@@ -57,6 +57,7 @@ all of it off for a whole Workspace. #200's last acceptance criterion exists for
 | D8 | **`discordUserId` is globally unique**, and so is `accountId` | unique per Workspace; no constraint | #211 AC 6. One Discord account is one person; letting two Thrive Accounts claim it means one human's notifications arrive for somebody else's work |
 | D9 | **`identify` is the only scope asked for**, and the user access token is used once and discarded | storing the user's access token; asking for `guilds` or `email` | All Thrive needs is which Discord account this is. A stored user token is a credential with no consumer — the bot token does the messaging. Asking for `guilds` would let Thrive read every server they are in, for no reason |
 | D10 | The callback lands on a **`(signed-in)` web route**, as in `0020` D4 | a `@Public()` API route | Same reason: the API has no public domain (ADR 0027), and the session cookie is `sameSite: 'lax'`. No ADR 0029 exception |
+| D12 | **Every message names its Workspace**, carried as an argument on each `PersonNotifierPort` method | leaving it to the link; naming it only when somebody is in more than one | Brain `ADR-0034` made one Account a Member of any number of Workspaces, and a `LinkedAccount` belongs to the Account (§6) — so one Discord conversation carries messages from every Workspace somebody is in. "Nut asked you for feedback" is ambiguous the moment they belong to two, and a link only resolves the ambiguity *after* it is clicked. Naming it conditionally would mean two copies of every message and a count to decide between them |
 | D11 | **Four pull requests**, one per card, API and web together per card | one PR per layer | Each card here is small and independently checkable in the browser, which is `workflow.md` §8's test. `GEN_08` R8's contract-first rule is satisfied within each PR because each adds its own routes |
 
 **Not approved yet — this document is the review.**
@@ -69,7 +70,7 @@ modules/notifications/
     value-object/discord-user-id.vo.ts        a snowflake; shares 0020's rule
     notifications.errors.ts
   application/
-    port/person-notifier.port.ts              D2 — published
+    port/person-notifier.port.ts              D2 — published; every method takes the Workspace (D12)
     port/discord-identity.port.ts             exchangeCode() → { discordUserId, username }
     use-cases/begin-discord-link.use-case.ts
     use-cases/complete-discord-link.use-case.ts
@@ -141,12 +142,19 @@ All after commit, none awaited (D5). #215 fires on `origin === 'OFFERED'` only; 
 #214's message, and the `CHECK` constraint on `Feedback` (`schema.prisma:244`) is what makes those two
 cases exhaustive rather than overlapping — #215 AC 5.
 
-**Every message must name its Workspace.** Brain `ADR-0034` (2026-10-17) made one Account a Member of
-any number of Workspaces, and a `LinkedAccount` belongs to the **Account**, not to a Workspace (§6) —
-which is right, and means one person is messaged about every Workspace they are in, through the same
-Discord conversation. "Nut asked you for feedback" is ambiguous the moment somebody belongs to two.
-Every message therefore names the Workspace, and the link already carries it. This arrived after the
-design was drafted and is the first thing to check in review.
+**Naming the Workspace** (D12). Each port method takes `workspaceName` beside `workspaceId`, and
+`notification-copy.service.ts` puts it in every message:
+
+```
+Nut asked you for feedback in Thrive Team
+On: how our standups are going                     ← #213
+Ploy answered your request in Thrive Team          ← #214
+Nut wrote feedback to you in Thrive Team           ← #215
+```
+
+The caller already holds the name — every one of these fires inside a use case running under
+`/v1/workspaces/:workspaceId`, where the guard has resolved a `MembershipView` carrying
+`workspace.name`. So this costs an argument, not a read.
 
 **Fan-out.** A request asking five people is five calls, each costing one Discord call after the first
 message ever sent to that person (D4). One failing must not stop the others, so they go out with
@@ -246,3 +254,25 @@ Code ADR numbers: **0048** is claimed by `0020`'s `isAdminOf`, so this programme
 | **#200 silently disables all of this** | disconnecting the server stops every DM in that Workspace, because of the shared-server rule. #200's last AC puts that on screen; nothing enforces it in code |
 | **One person, many Workspaces** | brain `ADR-0034`. A Linked Account is per Account, so one Discord conversation carries messages from every Workspace somebody belongs to. §4.2 names the Workspace in each; nothing stops two Workspaces' messages interleaving, and nobody has decided whether a Member may link Discord for one Workspace but not another |
 | **Fan-out** | `Promise.allSettled` per request, uncapped. A request may ask at most as many people as #30/#31 allow, so it is bounded today — revisit if that cap rises |
+
+## 11. What carries to Slack, and what does not
+
+**Carries unchanged — most of this design.** `PersonNotifierPort` with domain-named methods (D2) is the
+piece that pays off: `askReceived`, `askAnswered` and `feedbackWritten` say nothing about Discord, so
+Feedback's three call sites never change when a second provider arrives. Likewise D5 (after the commit,
+never awaited), D6 (skipped quietly), D7 (never message a Deactivated Member), D12 (name the Workspace),
+the `(signed-in)` callback (D10), and `conversations.open` → post being the same two-step shape as
+Discord's `openDirectChannel` → `postDirect` (D3, D4).
+
+**Does not carry:**
+
+| | Discord | Slack |
+| --- | --- | --- |
+| **D8's uniqueness** | a Discord user id is **global**, so `@@unique([provider, discordUserId])` is right | a Slack user id is only unique **within one Slack workspace**. The identifier is the pair `(team, user)`, so that constraint is wrong and the row needs the team beside the user |
+| **Who can be messaged** | anybody sharing a server with the bot | anybody in the Slack workspace where the app is installed — same idea, different precondition, so §4.2 step 2 stays but its reason changes |
+| **The column names** | `discordUserId`, `discordUsername`, `dmChannelId` | `team`/`user`/`im`. Same proposal as `0020` §11: generic names now, Discord's meaning in the comment |
+
+**The consequence worth seeing early:** a person could link **both** Discord and Slack, and
+`@@unique([accountId, provider])` already allows exactly one of each. Nothing in `ADR-0035` says which
+one a message should go to, or whether both should fire. That is a product question, not a schema one,
+and it is not answered anywhere yet.
