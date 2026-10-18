@@ -4,6 +4,7 @@ import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   FakeHasProfilePort,
   FakeMembershipQuery,
+  FakeSessionWorkspace,
   FakeWorkspaceFounding,
   FakeWorkspaceSwitching,
 } from '@test/support/workspace.fakes';
@@ -36,12 +37,14 @@ function setUp() {
   const workspaceSwitching = new FakeWorkspaceSwitching(
     new FakeMembershipQuery(),
   );
+  const sessionWorkspace = new FakeSessionWorkspace();
   const hasProfilePort = new FakeHasProfilePort();
   hasProfilePort.introduced.add('account-ann');
   const unitOfWork = new FakeUnitOfWork();
   const useCase = new CreateWorkspaceUseCase(
     workspaceFounding,
     workspaceSwitching,
+    sessionWorkspace,
     hasProfilePort,
     unitOfWork,
     new FakeClock(NOW),
@@ -49,6 +52,7 @@ function setUp() {
   return {
     workspaceFounding,
     workspaceSwitching,
+    sessionWorkspace,
     hasProfilePort,
     unitOfWork,
     useCase,
@@ -79,7 +83,15 @@ describe('creating a Workspace', () => {
     expect(workspaceFounding.founded[0]?.teamSize).toBeNull();
   });
 
-  it('makes the new Workspace the one the founder is in', async () => {
+  it("puts the founder's session in the new Workspace", async () => {
+    const { sessionWorkspace, useCase } = setUp();
+
+    await useCase.execute(request());
+
+    expect(await sessionWorkspace.selectedIn(ANN_COOKIE)).toBe(WORKSPACE_ID);
+  });
+
+  it('lists the new Workspace first, as the one used last', async () => {
     const { workspaceSwitching, useCase } = setUp();
 
     await useCase.execute(request());

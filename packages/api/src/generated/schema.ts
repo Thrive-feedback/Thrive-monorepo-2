@@ -99,7 +99,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create a Workspace, with the caller as its first Admin, and make it the one they are in */
+        /** Create a Workspace, with the caller as its first Admin, and put the caller's session in it */
         post: operations["WorkspaceController_createWorkspace"];
         delete?: never;
         options?: never;
@@ -116,8 +116,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Make this Workspace the one the caller is in, on every device, until they switch again */
+        /** Put the caller's session in this Workspace, so every page there acts on it */
         post: operations["WorkspaceController_switchWorkspace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/members/mine/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The Workspace the caller's session is in, or none while they are to choose one */
+        get: operations["MemberController_getCurrentMembership"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -131,7 +148,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the Workspaces the caller is a Member of, the one they are in first, or those they were Deactivated in */
+        /** List the Workspaces the caller is a Member of, the one used last first, or those they were Deactivated in */
         get: operations["MemberController_listMyMemberships"];
         put?: never;
         post?: never;
@@ -514,6 +531,17 @@ export interface components {
         CreateWorkspaceResponseDto_Output: {
             /** Format: uuid */
             id: string;
+        };
+        GetCurrentMembershipResponseDto_Output: {
+            membership: {
+                workspace: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                };
+                /** @enum {string} */
+                role: "ADMIN" | "MEMBER";
+            } | null;
         };
         ListMyMembershipsResponseDto_Output: {
             items: {
@@ -1117,6 +1145,35 @@ export interface operations {
             };
             /** @description WORKSPACE_NOT_FOUND */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MemberController_getCurrentMembership: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetCurrentMembershipResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

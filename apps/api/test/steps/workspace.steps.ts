@@ -3,6 +3,7 @@ import { type DataTable, Given, Then, When } from '@cucumber/cucumber';
 import {
   createWorkspace,
   introduce,
+  myCurrentMembership,
   myMemberships,
   ownAWorkspace,
 } from '../support/journeys';
@@ -72,11 +73,25 @@ When(
   },
 );
 
+When(
+  '{person} signs in again',
+  async function (this: ThriveWorld, name: string) {
+    await this.signInAgain(name);
+  },
+);
+
 Then(
   '{person} is in {string}',
   async function (this: ThriveWorld, name: string, workspaceName: string) {
-    const [current] = await myMemberships(this, name);
+    const current = await myCurrentMembership(this, name);
     assert.equal(current?.workspace.name, workspaceName);
+  },
+);
+
+Then(
+  '{person} is asked to choose a Workspace',
+  async function (this: ThriveWorld, name: string) {
+    assert.equal(await myCurrentMembership(this, name), null);
   },
 );
 

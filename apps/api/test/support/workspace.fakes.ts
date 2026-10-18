@@ -23,6 +23,7 @@ import {
   type MemberRoleChange,
   MemberRoleChanging,
 } from '@app/modules/workspace/application/port/member-role-changing.port';
+import { SessionWorkspace } from '@app/modules/workspace/application/port/session-workspace.port';
 import {
   type FoundedWorkspace,
   WorkspaceFounding,
@@ -450,6 +451,19 @@ export class FakeWorkspaceSwitching extends WorkspaceSwitching {
         lastUsedAt: workspaceSwitch.switchedAt,
       };
     }
+  }
+}
+
+/** The Workspace each session is in, keyed by its credential, as the plugin keeps it. */
+export class FakeSessionWorkspace extends SessionWorkspace {
+  readonly selected = new Map<string, string>();
+
+  async selectedIn(credential: string): Promise<string | null> {
+    return this.selected.get(credential) ?? null;
+  }
+
+  async select(credential: string, workspaceId: string): Promise<void> {
+    this.selected.set(credential, workspaceId);
   }
 }
 

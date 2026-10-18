@@ -13,8 +13,8 @@ import type {
  */
 export abstract class MembershipQuery {
   /**
-   * The Account's memberships in one status, the one used last first, so the first active one is
-   * the Workspace they are in. One never used comes after those that were, newest joined first.
+   * The Account's memberships in one status, the one used last first. One never used comes after
+   * those that were, newest joined first.
    * Empty while it belongs to no Workspace.
    */
   abstract membershipsOfAccount(

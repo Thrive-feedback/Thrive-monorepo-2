@@ -51,6 +51,20 @@ export class WorkspaceFixtures {
     };
   }
 
+  /** A second session for `account`, as signing in on another device would make. */
+  async anotherSessionOf(account: SignedInAccount): Promise<SignedInAccount> {
+    const { internalAdapter } = await this.auth.$context;
+    const session = await internalAdapter.createSession(account.accountId);
+    const signature = await makeSignature(
+      session.token,
+      this.configuration.auth.secret,
+    );
+    return {
+      ...account,
+      credential: `thrive.session_token=${encodeURIComponent(`${session.token}.${signature}`)}`,
+    };
+  }
+
   /**
    * Gives `account` the photo Google sends at sign-in, where Better Auth keeps it. Google cannot
    * be driven from a test, so the link is written the way the sign-in would write it.

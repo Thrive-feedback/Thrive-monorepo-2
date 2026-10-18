@@ -5,6 +5,7 @@ import { InvitationRecipient } from '../../domain/value-object/invitation-recipi
 import { InvitationStatus } from '../../domain/value-object/invitation-status.vo';
 import { InvitationSettling } from '../port/invitation-settling.port';
 import { MemberRejoining } from '../port/member-rejoining.port';
+import { SessionWorkspace } from '../port/session-workspace.port';
 import { WorkspaceInviting } from '../port/workspace-inviting.port';
 import { WorkspaceSwitching } from '../port/workspace-switching.port';
 import { InvitationQuery } from '../query-port/invitation.query-port';
@@ -24,7 +25,7 @@ export interface AcceptInvitationInput {
 /**
  * The invited person accepts, and joins the Workspace with the Role the Invitation names; their
  * other Workspaces stay as they were (brain `ADR-0034` decision 1). Someone Deactivated there
- * comes back as themselves instead (decision 8). Either way it becomes the Workspace they are in.
+ * comes back as themselves instead (decision 8). Either way their session goes into it.
  * Accepting again once they are in changes nothing, so a second click or a reload is harmless.
  */
 @Injectable()
@@ -34,6 +35,7 @@ export class AcceptInvitationUseCase {
     private readonly memberRejoining: MemberRejoining,
     private readonly invitationSettling: InvitationSettling,
     private readonly workspaceSwitching: WorkspaceSwitching,
+    private readonly sessionWorkspace: SessionWorkspace,
     private readonly invitationQuery: InvitationQuery,
     private readonly membershipQuery: MembershipQuery,
     private readonly unitOfWork: UnitOfWork,
@@ -46,7 +48,7 @@ export class AcceptInvitationUseCase {
     // changing a Role do, so it takes their key and never interleaves with them. Two tabs
     // accepting the same Invitation meet on the same key too.
     const workspaceId = (await this.invitationFor(input)).workspace.id;
-    await this.unitOfWork.run(
+    const joined = await this.unitOfWork.run(
       async () => {
         const invitation = await this.invitationFor(input);
         InvitationRecipient.of(invitation.email).ensureIs(input.accountEmail);
@@ -59,7 +61,7 @@ export class AcceptInvitationUseCase {
           // Back by another way, such as an Admin's Reactivate: the Invitation has nothing left
           // to do, so it stops waiting.
           await this.invitationSettling.settleAccepted(input.invitationId);
-          return;
+          return false;
         }
         InvitationStatus.of(invitation.status).ensureAcceptable();
 
@@ -86,9 +88,14 @@ export class AcceptInvitationUseCase {
           accountId: input.accountId,
           switchedAt: this.clock.now(),
         });
+        return true;
       },
       { serializeOn: `workspace-roles:${workspaceId}` },
     );
+    // After the write, so a refused or rolled-back accept leaves the session where it was.
+    if (joined) {
+      await this.sessionWorkspace.select(input.credential, workspaceId);
+    }
   }
 
   private async invitationFor(
