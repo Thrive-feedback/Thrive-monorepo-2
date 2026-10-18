@@ -75,7 +75,7 @@ describe('Deactivating someone from Members', () => {
 
     expect(await deactivateMember(WORKSPACE_ID, BEN_ID)).toEqual({
       ok: false,
-      message: 'Only Admins can Deactivate other people.',
+      message: 'Only Admins can deactivate other people.',
     });
   });
 
@@ -97,11 +97,11 @@ describe('Deactivating someone from Members', () => {
 });
 
 describe('leaving from Members', () => {
-  it('sends the person on to wherever they belong once they are out', async () => {
+  it('sends the person on to wherever they belong once they are out, to say they left', async () => {
     apiDeactivates();
 
     await expect(leaveWorkspace(WORKSPACE_ID, BEN_ID)).rejects.toThrow(
-      'redirect:/home',
+      'redirect:/home?left=1',
     );
   });
 

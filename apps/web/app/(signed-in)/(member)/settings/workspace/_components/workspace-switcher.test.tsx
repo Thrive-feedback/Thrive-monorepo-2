@@ -39,7 +39,9 @@ describe('WorkspaceSwitcher', () => {
   it('lists the Workspaces the person is in, marking the current one, with no Role', async () => {
     await openSwitcher();
 
-    expect(screen.getByRole('dialog')).toHaveAccessibleDescription('Switch to');
+    expect(screen.getByRole('dialog')).toHaveAccessibleDescription(
+      'Pick a Workspace to open on this device.',
+    );
     const list = screen.getByRole('list', { name: 'Your Workspaces' });
     const current = within(list).getByText('Acme').closest('li');
     expect(current).toHaveAttribute('aria-current', 'true');
@@ -68,10 +70,10 @@ describe('WorkspaceSwitcher', () => {
     await user.click(screen.getByRole('button', { name: 'Globex' }));
 
     expect(
-      screen.getByRole('heading', { name: 'Switch to “Globex”?' }),
+      screen.getByRole('heading', { name: 'Switch to Globex?' }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("You'll close “Acme” on this device and open “Globex”."),
+      screen.getByText("You'll close Acme on this device and open Globex."),
     ).toBeInTheDocument();
     expect(switchWorkspace).not.toHaveBeenCalled();
   });
@@ -82,16 +84,16 @@ describe('WorkspaceSwitcher', () => {
     const user = await openSwitcher();
 
     await user.click(screen.getByRole('button', { name: 'Globex' }));
-    await user.click(screen.getByRole('button', { name: 'Open “Globex”' }));
+    await user.click(screen.getByRole('button', { name: 'Open Globex' }));
 
     expect(switchWorkspace).toHaveBeenCalledWith(GLOBEX.id);
   });
 
-  it('goes back to the list without switching on Not now', async () => {
+  it('goes back to the list without switching on Back', async () => {
     const user = await openSwitcher();
 
     await user.click(screen.getByRole('button', { name: 'Globex' }));
-    await user.click(screen.getByRole('button', { name: 'Not now' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
 
     expect(
       screen.getByRole('list', { name: 'Your Workspaces' }),
@@ -107,7 +109,7 @@ describe('WorkspaceSwitcher', () => {
     const user = await openSwitcher();
 
     await user.click(screen.getByRole('button', { name: 'Globex' }));
-    await user.click(screen.getByRole('button', { name: 'Open “Globex”' }));
+    await user.click(screen.getByRole('button', { name: 'Open Globex' }));
 
     expect(toast.error).toHaveBeenCalledWith(
       "You're no longer in that Workspace.",
@@ -122,7 +124,7 @@ describe('WorkspaceSwitcher', () => {
     );
 
     expect(
-      screen.getByRole('button', { name: 'Create and jump to it' }),
+      screen.getByRole('button', { name: 'Create and open' }),
     ).toBeInTheDocument();
   });
 

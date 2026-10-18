@@ -1,5 +1,6 @@
 import { readInvitations } from '@/app/(signed-in)/(member)/settings/members/_lib/invitations.service';
 import type { OpenInvitation } from '@/app/(signed-in)/(member)/settings/members/_lib/open-invitation.type';
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
@@ -32,23 +33,26 @@ const EXPIRY_WORDS: Readonly<Record<OpenInvitation['status'], string>> = {
   EXPIRED: 'expired',
 };
 
+/** Enough rows to fill the first screen, without promising how many will come. */
+const PLACEHOLDERS = ['first', 'second'] as const;
+
 /**
- * Everyone invited and not yet in, newest first: the address, the Role they will join with, who
- * sent it and when, when it
- * expires and where it stands, with Resend and Revoke beside each. Only for Admins.
- * It reads its own data, so the page renders around it while the read is in flight.
+ * Everyone invited and not yet in, newest first: the address, then where it stands, the Role they
+ * will join with, who sent it and when, and when it expires, with Resend and Revoke beside each.
+ * Only for Admins. It reads its own data, so the page renders around it while the read is in
+ * flight.
  */
 export async function InvitationList({ membership }: InvitationListProps) {
   const invitations = await readInvitations(membership);
   if (invitations.length === 0) {
     return (
       <Text variant="body-2" tone="muted">
-        No invitations waiting.
+        No Invitations waiting.
       </Text>
     );
   }
   return (
-    <ul aria-label="Open invitations" className="flex flex-col">
+    <ul aria-label="Invitations" className="flex flex-col">
       {invitations.map((invitation) => (
         <li
           key={invitation.invitationId}
@@ -59,8 +63,11 @@ export async function InvitationList({ membership }: InvitationListProps) {
               {invitation.email}
             </Text>
             <Text as="span" variant="body-3" tone="muted">
-              as {ROLE_NAMES[invitation.role]} · by {invitation.invitedBy} ·
-              sent{' '}
+              <span className={STATUS_COLOURS[invitation.status]}>
+                {STATUS_NAMES[invitation.status]}
+              </span>{' '}
+              · as {ROLE_NAMES[invitation.role]} · sent by{' '}
+              {invitation.invitedBy} on{' '}
               <time dateTime={invitation.invitedAt}>
                 {calendarDay(invitation.invitedAt)}
               </time>{' '}
@@ -68,13 +75,6 @@ export async function InvitationList({ membership }: InvitationListProps) {
               <time dateTime={invitation.expiresAt}>
                 {calendarDay(invitation.expiresAt)}
               </time>
-            </Text>
-            <Text
-              as="span"
-              variant="body-3"
-              className={STATUS_COLOURS[invitation.status]}
-            >
-              {STATUS_NAMES[invitation.status]}
             </Text>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-2">
@@ -92,5 +92,28 @@ export async function InvitationList({ membership }: InvitationListProps) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/** An `InvitationList` still loading: a few rows of address and details, with their two actions. */
+export function InvitationListSkeleton() {
+  return (
+    <div className="flex flex-col">
+      {PLACEHOLDERS.map((placeholder) => (
+        <div
+          key={placeholder}
+          className="flex flex-wrap items-center gap-x-3 gap-y-2 border-border-subtle border-b py-3 last:border-b-0"
+        >
+          <div className="flex min-w-0 flex-1 basis-48 flex-col gap-1">
+            <Skeleton className="w-48 text-subtitle-4" />
+            <Skeleton className="w-3/4 text-body-3" />
+          </div>
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <Skeleton shape="control" className="h-9 w-16 rounded-button" />
+            <Skeleton shape="control" className="h-9 w-16 rounded-button" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

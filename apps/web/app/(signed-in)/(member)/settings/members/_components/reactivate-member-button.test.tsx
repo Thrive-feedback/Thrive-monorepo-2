@@ -71,7 +71,7 @@ describe('ReactivateMemberButton', () => {
     );
 
     expect(reactivateMember).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2');
-    expect(toast.success).toHaveBeenCalledWith('Ben was Reactivated');
+    expect(toast.success).toHaveBeenCalledWith('Ben was reactivated');
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
@@ -88,7 +88,7 @@ describe('ReactivateMemberButton', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Reactivate Ben' }));
-    await user.click(screen.getByRole('button', { name: 'Not now' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(reactivateMember).not.toHaveBeenCalled();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
@@ -97,7 +97,7 @@ describe('ReactivateMemberButton', () => {
   it('says why when the API refuses', async () => {
     reactivateMember.mockResolvedValue({
       ok: false,
-      message: 'Only Admins can Reactivate people.',
+      message: 'Only Admins can reactivate people.',
     });
     const user = userEvent.setup();
     render(
@@ -116,7 +116,7 @@ describe('ReactivateMemberButton', () => {
     );
 
     expect(toast.error).toHaveBeenCalledWith(
-      'Only Admins can Reactivate people.',
+      'Only Admins can reactivate people.',
     );
   });
 });

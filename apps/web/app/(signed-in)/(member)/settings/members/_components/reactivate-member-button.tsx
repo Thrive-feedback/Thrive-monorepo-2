@@ -40,7 +40,7 @@ export function ReactivateMemberButton({
       const result = await reactivateMember(workspaceId, accountId);
       setIsOpen(false);
       if (result.ok) {
-        toast.success(`${name} was Reactivated`);
+        toast.success(`${name} was reactivated`);
       } else {
         toast.error(result.message);
       }
@@ -71,7 +71,7 @@ export function ReactivateMemberButton({
           </AlertDialog.Description>
           <div className="flex flex-wrap justify-end gap-2">
             <AlertDialog.Cancel asChild>
-              <Button disabled={isActing}>Not now</Button>
+              <Button disabled={isActing}>Cancel</Button>
             </AlertDialog.Cancel>
             <Button
               variant="primary"

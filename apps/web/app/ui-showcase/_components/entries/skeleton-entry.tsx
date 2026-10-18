@@ -12,21 +12,23 @@ export function SkeletonEntry() {
       origin="shadcn"
       source="components/atoms/skeleton.tsx"
       summary="A grey placeholder in the shape of content that is still loading."
-      useFor="A loading.tsx or Suspense fallback that keeps the layout from jumping."
+      useFor="A loading.tsx or Suspense fallback that keeps the layout from jumping. Export it beside the component it imitates; wrap a loading.tsx in SkeletonRegion."
       avoidFor="An action in progress. Use Button loading or a Spinner."
-      usage={`import { Skeleton } from '@/components/atoms/skeleton';
+      usage={`import { Skeleton, SkeletonRegion } from '@/components/atoms/skeleton';
 
-<div aria-busy="true" aria-label="Loading profile" className="flex items-center gap-3">
-  <Skeleton shape="circle" />
-  <Skeleton className="w-40" />
-</div>`}
+<SkeletonRegion>
+  <div className="flex items-center gap-3">
+    <Skeleton shape="circle" />
+    <Skeleton className="w-40 text-subtitle-4" />
+  </div>
+</SkeletonRegion>`}
       props={[
         {
           name: 'shape',
           type: "'text' | 'circle' | 'control' | 'card'",
           defaultValue: "'text'",
           description:
-            'What it stands in for — lines of text, an avatar, a button or field, a card — so its corners match what replaces it. Size it with className.',
+            "What it stands in for — a line of text, an avatar, a button or field, a card — so its corners match what replaces it. Size it with className. A text line takes the type role of the line it replaces (text-subtitle-4), which makes it that line's height on every device.",
         },
         {
           name: '...rest',
@@ -36,7 +38,7 @@ export function SkeletonEntry() {
         },
       ]}
       accessibility={[
-        'Hidden from screen readers. Put aria-busy on the loading region instead.',
+        'Hidden from screen readers. Put aria-busy on the loading region instead: SkeletonRegion does, says Loading once, and makes everything inside it inert.',
         'The pulse stops for people who ask for reduced motion.',
       ]}
     >

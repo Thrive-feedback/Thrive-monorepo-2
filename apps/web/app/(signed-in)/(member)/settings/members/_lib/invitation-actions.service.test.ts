@@ -89,14 +89,14 @@ describe('revoking an Invitation from Members', () => {
 
     expect(await revokeInvitation(WORKSPACE_ID, INVITATION_ID)).toEqual({
       ok: false,
-      message: "We couldn't revoke that invitation. Please try again.",
+      message: "We couldn't revoke that Invitation. Please try again.",
     });
   });
 
   it('never calls the API with something that is not an Invitation id', async () => {
     expect(await revokeInvitation(WORKSPACE_ID, '../members')).toEqual({
       ok: false,
-      message: "We couldn't revoke that invitation. Please try again.",
+      message: "We couldn't revoke that Invitation. Please try again.",
     });
   });
 });
@@ -137,7 +137,7 @@ describe('resending an Invitation from Members', () => {
 
     expect(await resendInvitation(WORKSPACE_ID, INVITATION_ID)).toEqual({
       ok: false,
-      message: "We couldn't send that invitation again. Please try again.",
+      message: "We couldn't resend that Invitation. Please try again.",
     });
   });
 });
@@ -209,7 +209,7 @@ describe('inviting teammates from Members', () => {
     expect(
       await inviteMembers(WORKSPACE_ID, [asMember('ben@acme.test')]),
     ).toEqual({
-      formError: 'Only Admins can invite teammates.',
+      formError: 'Only Admins can send Invitations.',
     });
   });
 
@@ -219,7 +219,7 @@ describe('inviting teammates from Members', () => {
     expect(
       await inviteMembers(WORKSPACE_ID, [asMember('ben@acme.test')]),
     ).toEqual({
-      formError: "We couldn't send your invitations. Please try again.",
+      formError: "We couldn't send your Invitations. Please try again.",
     });
   });
 

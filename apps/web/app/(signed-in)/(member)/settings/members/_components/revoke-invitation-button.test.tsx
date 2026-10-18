@@ -42,7 +42,7 @@ async function openDialog() {
     />,
   );
   await user.click(
-    screen.getByRole('button', { name: 'Revoke invitation to cat@acme.test' }),
+    screen.getByRole('button', { name: 'Revoke Invitation to cat@acme.test' }),
   );
   return user;
 }
@@ -52,7 +52,7 @@ describe('RevokeInvitationButton', () => {
     await openDialog();
 
     const dialog = screen.getByRole('alertdialog', {
-      name: 'Revoke this invitation?',
+      name: 'Revoke this Invitation?',
     });
     expect(dialog).toHaveAccessibleDescription(
       "cat@acme.test won't be able to join with it. You can invite them again later.",
@@ -88,12 +88,12 @@ describe('RevokeInvitationButton', () => {
   it('keeps the Invitation when the person changes their mind, and gives focus back', async () => {
     const user = await openDialog();
 
-    await user.click(screen.getByRole('button', { name: 'Keep it' }));
+    await user.click(screen.getByRole('button', { name: 'Keep Invitation' }));
 
     expect(revokeInvitation).not.toHaveBeenCalled();
     expect(
       screen.getByRole('button', {
-        name: 'Revoke invitation to cat@acme.test',
+        name: 'Revoke Invitation to cat@acme.test',
       }),
     ).toHaveFocus();
   });

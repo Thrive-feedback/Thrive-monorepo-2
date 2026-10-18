@@ -17,6 +17,7 @@ vi.mock('./_components/leave-workspace-row', () => ({
   LeaveWorkspaceRow: ({ ownEmail }: { ownEmail: string }) => (
     <output>{`leave, as ${ownEmail}`}</output>
   ),
+  LeaveWorkspaceRowSkeleton: () => null,
 }));
 vi.mock('./_components/workspace-switcher-loader', () => ({
   WorkspaceSwitcherLoader: () => <output>workspace switcher</output>,
@@ -39,6 +40,16 @@ describe('Workspace', () => {
     ).toHaveTextContent('Acme Corp');
   });
 
+  it('shows their Role in this Workspace', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await Workspace());
+
+    expect(
+      screen.getByText('Your Role', { selector: 'dt' }).nextElementSibling,
+    ).toHaveTextContent('Member');
+  });
+
   it('offers Switch Workspace, then the way to leave, in that order', async () => {
     requireMember.mockResolvedValue(ANN);
 
@@ -46,7 +57,7 @@ describe('Workspace', () => {
 
     expect(screen.getByText('Switch Workspace')).toBeInTheDocument();
     expect(container).toHaveTextContent(
-      /Workspace name.*Switch Workspace.*workspace switcher.*leave, as ann@acme\.test/,
+      /Workspace name.*Your Role.*Switch Workspace.*workspace switcher.*leave, as ann@acme\.test/,
     );
   });
 

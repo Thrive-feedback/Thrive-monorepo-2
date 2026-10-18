@@ -6,6 +6,7 @@ import {
   mayDeactivateOthers,
   mayReactivate,
 } from '@/app/(signed-in)/(member)/settings/members/_lib/member-role-access.util';
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { PersonName } from '@/components/organisms/person-name';
@@ -13,6 +14,9 @@ import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { ROLE_NAMES } from '@/lib/session/role-names.constant';
 import { MemberRoleSelect } from './member-role-select';
 import { ReactivateMemberButton } from './reactivate-member-button';
+
+/** Enough rows to fill the first screen, without promising how many will come. */
+const PLACEHOLDERS = ['first', 'second', 'third'] as const;
 
 export type MemberListProps = {
   membership: CurrentMembership;
@@ -43,7 +47,7 @@ export async function MemberList({ membership, ownEmail }: MemberListProps) {
   ];
 
   return (
-    <ul aria-label="Members" className="flex flex-col">
+    <ul aria-label="Members" className="flex flex-col py-2">
       {ordered.map((member) => {
         const isSelf = member.email === ownEmail;
         return (
@@ -135,5 +139,29 @@ function MemberRow({
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-2">{children}</div>
     </li>
+  );
+}
+
+/** A `MemberList` still loading: a few rows of photo, name over email, and Role. */
+export function MemberListSkeleton() {
+  return (
+    <div className="flex flex-col py-2">
+      {PLACEHOLDERS.map((placeholder) => (
+        <div
+          key={placeholder}
+          className="flex flex-wrap items-center gap-x-3 gap-y-2 border-border-subtle border-b py-3 last:border-b-0"
+        >
+          <Skeleton shape="circle" className="size-6" />
+          <div className="flex min-w-0 flex-1 basis-48 flex-col">
+            <Skeleton className="w-32 text-subtitle-4" />
+            <Skeleton className="w-48 text-body-3" />
+          </div>
+          <Skeleton
+            shape="control"
+            className="ml-auto h-9.5 w-24 rounded-input"
+          />
+        </div>
+      ))}
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import {
   readFeedbackRequest,
   type SentFeedbackRequest,
 } from '@/app/(signed-in)/(member)/home/_lib/feedback-request.service';
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { PersonName } from '@/components/organisms/person-name';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
@@ -119,6 +120,23 @@ export async function FeedbackRequestDetail({
           {whoReadsTheAnswers(request.visibility)}
         </Text>
       )}
+    </div>
+  );
+}
+
+/** A `FeedbackRequestDetail` still loading: two Asks, each who and where it stands, and who reads them. */
+export function FeedbackRequestDetailSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
+        {['first', 'second'].map((ask) => (
+          <div key={ask} className="flex flex-col gap-1">
+            <Skeleton className="w-3/4 text-subtitle-3" />
+            <Skeleton className="w-1/3 text-body-3" />
+          </div>
+        ))}
+      </div>
+      <Skeleton className="w-2/3 text-body-3" />
     </div>
   );
 }

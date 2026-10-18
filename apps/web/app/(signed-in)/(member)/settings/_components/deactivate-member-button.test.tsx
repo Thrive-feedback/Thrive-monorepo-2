@@ -56,7 +56,7 @@ describe('DeactivateMemberButton', () => {
 
     const dialog = screen.getByRole('alertdialog', { name: 'Deactivate Ben?' });
     expect(dialog).toHaveTextContent(
-      "They won't be able to open Acme any more. The Feedback they gave and received stays, with “(inactive)” after their name, until an Admin Reactivates them.",
+      "They won't be able to open Acme any more. The Feedback they gave and received stays, with “(inactive)” after their name, until an Admin reactivates them.",
     );
     expect(deactivateMember).not.toHaveBeenCalled();
   });
@@ -77,7 +77,7 @@ describe('DeactivateMemberButton', () => {
     await user.click(screen.getByRole('button', { name: 'Deactivate' }));
 
     expect(deactivateMember).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2');
-    expect(toast.success).toHaveBeenCalledWith('Ben was Deactivated');
+    expect(toast.success).toHaveBeenCalledWith('Ben was deactivated');
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
@@ -93,7 +93,7 @@ describe('DeactivateMemberButton', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Deactivate Ben' }));
-    await user.click(screen.getByRole('button', { name: 'Keep them' }));
+    await user.click(screen.getByRole('button', { name: 'Keep Ben' }));
 
     expect(deactivateMember).not.toHaveBeenCalled();
   });
@@ -140,11 +140,10 @@ describe('DeactivateMemberButton', () => {
     ).toHaveTextContent(
       "You won't be able to open Acme again. The Feedback you gave and received stays, with “(inactive)” after your name.",
     );
-    await user.click(
-      screen
-        .getAllByRole('button', { name: 'Leave Workspace' })
-        .at(-1) as HTMLElement,
-    );
+    expect(
+      screen.getByRole('button', { name: 'Stay in Acme' }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Leave Acme' }));
 
     expect(leaveWorkspace).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2');
     expect(deactivateMember).not.toHaveBeenCalled();

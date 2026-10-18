@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority';
 import { useId } from 'react';
 import { Label } from '@/components/atoms/label';
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Textarea, type TextareaProps } from '@/components/atoms/textarea';
 import { cn } from '@/lib/cn.util';
 
@@ -62,6 +63,17 @@ export function TextAreaField({
           {message}
         </p>
       )}
+    </div>
+  );
+}
+
+/** A `TextAreaField` still loading: its label, the empty box at its least height, and a line of help. */
+export function TextAreaFieldSkeleton() {
+  return (
+    <div className="flex flex-col">
+      <Skeleton className="mb-1 w-1/2 text-subtitle-4" />
+      <Skeleton shape="control" className="h-20 rounded-input" />
+      <Skeleton className={cn(messageLine(), 'w-3/4')} />
     </div>
   );
 }

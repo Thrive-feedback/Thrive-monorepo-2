@@ -1,6 +1,9 @@
 import { Text } from '@/components/atoms/text';
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
-import { FeedbackCard } from './feedback-card';
+import { FeedbackCard, FeedbackCardSkeleton } from './feedback-card';
+
+/** Enough cards to fill the first screen, without promising how many will come. */
+const PLACEHOLDERS = ['first', 'second', 'third'] as const;
 
 export type FeedbackFeedProps = {
   items: readonly FeedItem[];
@@ -25,6 +28,17 @@ export function FeedbackFeed({ items, emptyMessage }: FeedbackFeedProps) {
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+/** A `FeedbackFeed` still loading: a few cards, spaced as the feed spaces them. */
+export function FeedbackFeedSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      {PLACEHOLDERS.map((placeholder) => (
+        <FeedbackCardSkeleton key={placeholder} />
+      ))}
     </div>
   );
 }

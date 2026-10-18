@@ -28,26 +28,33 @@ describe('Account', () => {
     await expect(Account()).rejects.toThrow('redirect:/signin');
   });
 
-  it('is headed with the name the person goes by', async () => {
+  it('is headed with their full name', async () => {
     requireMember.mockResolvedValue(ANN);
 
     render(await Account());
 
     expect(
-      screen.getByRole('heading', { level: 3, name: 'Ann Lee' }),
+      screen.getByRole('heading', { level: 3, name: 'Ann Marie Lee' }),
     ).toBeInTheDocument();
   });
 
-  it('shows their names, Profile slug, email and Role', async () => {
+  it('shows the name others call them by and the address they sign in with', async () => {
     requireMember.mockResolvedValue(ANN);
 
     render(await Account());
 
-    expect(definitionOf('Full name')).toHaveTextContent('Ann Marie Lee');
     expect(definitionOf('Display name')).toHaveTextContent('Ann Lee');
-    expect(definitionOf('Profile slug')).toHaveTextContent('ann');
     expect(definitionOf('Email')).toHaveTextContent('ann@acme.test');
-    expect(definitionOf('Role')).toHaveTextContent('Admin');
+  });
+
+  it('leaves out the Profile slug, and the Role, which belongs to one Workspace', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await Account());
+
+    expect(screen.queryByText('Profile slug')).toBeNull();
+    expect(screen.queryByText('Role', { selector: 'dt' })).toBeNull();
+    expect(screen.queryByText('Full name', { selector: 'dt' })).toBeNull();
   });
 
   it('offers Sign out', async () => {

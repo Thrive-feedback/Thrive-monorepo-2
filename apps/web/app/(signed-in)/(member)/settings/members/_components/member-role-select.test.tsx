@@ -208,7 +208,7 @@ describe('MemberRoleSelect', () => {
     const select = screen.getByRole('combobox', { name: 'Your Role' });
     expect(select).toBeDisabled();
     expect(select).toHaveAccessibleDescription(
-      'Make someone else an Admin first',
+      'Make someone else an Admin first.',
     );
   });
 });

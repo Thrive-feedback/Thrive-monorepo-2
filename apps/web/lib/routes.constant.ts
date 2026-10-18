@@ -31,6 +31,8 @@ export const ROUTES = {
   homeSwitched: '/home?switched=1',
   /** Home, saying once that the person has just switched to the Workspace it shows. */
   homeOpened: '/home?opened=1',
+  /** Home of the Workspace the person is in now, saying once that they left the one before. */
+  homeLeft: '/home?left=1',
   /** A Feedback Request the person sent, open in a dialog over My requests. */
   homeRequest: (requestId: string) =>
     `/home?tab=my-requests&request=${requestId}`,

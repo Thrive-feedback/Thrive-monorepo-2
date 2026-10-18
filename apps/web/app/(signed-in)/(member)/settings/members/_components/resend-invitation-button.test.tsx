@@ -42,7 +42,7 @@ async function openDialog() {
     />,
   );
   await user.click(
-    screen.getByRole('button', { name: 'Resend invitation to cat@acme.test' }),
+    screen.getByRole('button', { name: 'Resend Invitation to cat@acme.test' }),
   );
   return user;
 }
@@ -52,10 +52,10 @@ describe('ResendInvitationButton', () => {
     await openDialog();
 
     const dialog = screen.getByRole('alertdialog', {
-      name: 'Send this invitation again?',
+      name: 'Resend this Invitation?',
     });
     expect(dialog).toHaveAccessibleDescription(
-      'cat@acme.test will get a new email, and the invitation will be good for another 7 days.',
+      'cat@acme.test will get a new email, and the Invitation will be good for another 7 days.',
     );
     expect(resendInvitation).not.toHaveBeenCalled();
   });
@@ -68,7 +68,7 @@ describe('ResendInvitationButton', () => {
 
     expect(resendInvitation).toHaveBeenCalledWith(WORKSPACE_ID, INVITATION_ID);
     expect(toast.success).toHaveBeenCalledWith(
-      'Invitation sent again to cat@acme.test',
+      'Invitation resent to cat@acme.test',
     );
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
@@ -90,12 +90,12 @@ describe('ResendInvitationButton', () => {
   it('sends nothing when the person changes their mind, and gives focus back', async () => {
     const user = await openDialog();
 
-    await user.click(screen.getByRole('button', { name: 'Not now' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(resendInvitation).not.toHaveBeenCalled();
     expect(
       screen.getByRole('button', {
-        name: 'Resend invitation to cat@acme.test',
+        name: 'Resend Invitation to cat@acme.test',
       }),
     ).toHaveFocus();
   });

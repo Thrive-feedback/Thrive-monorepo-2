@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/atoms/select';
+import { Skeleton } from '@/components/atoms/skeleton';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 
 export type MemberPickerProps = {
@@ -81,6 +82,16 @@ export function MemberPicker({
           {errorMessage}
         </p>
       )}
+    </div>
+  );
+}
+
+/** A `MemberPicker` still loading: its label and the closed picker. */
+export function MemberPickerSkeleton() {
+  return (
+    <div className="flex flex-col">
+      <Skeleton className="mb-1 w-1/3 text-subtitle-4" />
+      <Skeleton shape="control" className="h-11.5 rounded-input" />
     </div>
   );
 }

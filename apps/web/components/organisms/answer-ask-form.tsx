@@ -2,8 +2,12 @@
 
 import { startTransition, useActionState, useRef, useState } from 'react';
 import { Button } from '@/components/atoms/button';
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import { TextAreaField } from '@/components/molecules/text-area-field';
+import {
+  TextAreaField,
+  TextAreaFieldSkeleton,
+} from '@/components/molecules/text-area-field';
 import type {
   AnswerAskAction,
   AnswerAskState,
@@ -95,5 +99,15 @@ export function AnswerAskForm({
         {isSending ? 'Sending…' : 'Send answer'}
       </Button>
     </form>
+  );
+}
+
+/** An `AnswerAskForm` still loading: the answer box and Send. */
+export function AnswerAskFormSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <TextAreaFieldSkeleton />
+      <Skeleton shape="control" className="mt-2 rounded-button" />
+    </div>
   );
 }

@@ -16,26 +16,26 @@ const InvitationId = z.uuid();
 
 /** What to say when the API refused a revoke, by the API's error code. */
 const REVOKE_ERRORS: Readonly<Record<string, string>> = {
-  NOT_ALLOWED_TO_REVOKE_INVITATIONS: 'Only Admins can revoke invitations.',
+  NOT_ALLOWED_TO_REVOKE_INVITATIONS: 'Only Admins can revoke Invitations.',
   INVITATION_ALREADY_ACCEPTED: 'They have already joined.',
-  INVITATION_REVOKED: 'That invitation was already revoked.',
+  INVITATION_REVOKED: 'That Invitation was already revoked.',
 };
 
 const COULD_NOT_REVOKE =
-  "We couldn't revoke that invitation. Please try again.";
+  "We couldn't revoke that Invitation. Please try again.";
 
 /** What to say when the API refused a resend, by the API's error code. */
 const RESEND_ERRORS: Readonly<Record<string, string>> = {
-  NOT_ALLOWED_TO_RESEND_INVITATIONS: 'Only Admins can resend invitations.',
+  NOT_ALLOWED_TO_RESEND_INVITATIONS: 'Only Admins can resend Invitations.',
   INVITATION_ALREADY_ACCEPTED: 'They have already joined.',
-  INVITATION_REVOKED: 'That invitation was revoked.',
+  INVITATION_REVOKED: 'That Invitation was revoked.',
   INVITATION_RESENT_TOO_SOON:
     'You sent this a moment ago. Try again in a few minutes.',
   ALREADY_A_MEMBER: 'They have already joined.',
 };
 
 const COULD_NOT_RESEND =
-  "We couldn't send that invitation again. Please try again.";
+  "We couldn't resend that Invitation. Please try again.";
 
 /** Revoke and resend name an Invitation the same way. */
 type InvitationParams =
@@ -117,11 +117,11 @@ export async function resendInvitation(
 
 /** What to say when the API refused the whole send, by its error code. */
 const INVITE_ERRORS: Readonly<Record<string, string>> = {
-  NOT_ALLOWED_TO_INVITE: 'Only Admins can invite teammates.',
+  NOT_ALLOWED_TO_INVITE: 'Only Admins can send Invitations.',
   TOO_MANY_INVITATIONS: 'You can invite up to 10 people at a time.',
 };
 
-const COULD_NOT_INVITE = "We couldn't send your invitations. Please try again.";
+const COULD_NOT_INVITE = "We couldn't send your Invitations. Please try again.";
 
 const InviteInvitations = z
   .array(z.object({ email: z.string(), role: z.enum(['ADMIN', 'MEMBER']) }))

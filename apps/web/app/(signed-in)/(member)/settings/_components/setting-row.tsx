@@ -1,3 +1,4 @@
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 
 export type SettingRowProps = {
@@ -60,5 +61,44 @@ export function SettingValues({ rows }: SettingValuesProps) {
         </div>
       ))}
     </dl>
+  );
+}
+
+/**
+ * A `SettingRow` whose description and control wait on data: its label as it will read, and the
+ * rest in grey.
+ */
+export function SettingRowSkeleton({ label }: { label: string }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-4 border-border-subtle border-b py-5">
+      <div className="flex flex-1 flex-col gap-1">
+        <Text as="p" variant="subtitle-4">
+          {label}
+        </Text>
+        <Skeleton className="w-3/4 text-body-3" />
+      </div>
+      <Skeleton shape="control" className="h-9 w-32 rounded-button" />
+    </div>
+  );
+}
+
+/** `SettingValues` still loading: each label as it will read, beside its value in grey. */
+export function SettingValuesSkeleton({
+  labels,
+}: {
+  labels: readonly string[];
+}) {
+  return (
+    <div className="flex flex-col">
+      {labels.map((label) => (
+        <div
+          key={label}
+          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-border-subtle border-b py-5"
+        >
+          <span className="text-subtitle-4">{label}</span>
+          <Skeleton className="w-40 text-body-2" />
+        </div>
+      ))}
+    </div>
   );
 }

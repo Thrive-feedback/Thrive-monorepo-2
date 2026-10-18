@@ -1,7 +1,7 @@
 import { DeactivateMemberButton } from '@/app/(signed-in)/(member)/settings/_components/deactivate-member-button';
 import { readMembers } from '@/app/(signed-in)/(member)/settings/_lib/members.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import { SettingRow } from '../../_components/setting-row';
+import { SettingRow, SettingRowSkeleton } from '../../_components/setting-row';
 
 export type LeaveWorkspaceRowProps = {
   membership: CurrentMembership;
@@ -9,6 +9,7 @@ export type LeaveWorkspaceRowProps = {
   ownEmail: string;
 };
 
+const LABEL = 'Leave Workspace';
 const DESCRIPTION_ID = 'leave-workspace-description';
 
 /**
@@ -31,11 +32,11 @@ export async function LeaveWorkspaceRow({
 
   return (
     <SettingRow
-      label="Leave Workspace"
+      label={LABEL}
       description={
         isLastAdmin
           ? `You're the only Admin of ${workspaceName}. Make someone else an Admin first to leave.`
-          : `You won't be able to open ${workspaceName} again. Your Feedback stays, with “(inactive)” after your name.`
+          : `You won't be able to open ${workspaceName} again. The Feedback you gave and received stays, with “(inactive)” after your name.`
       }
       descriptionId={DESCRIPTION_ID}
     >
@@ -50,4 +51,9 @@ export async function LeaveWorkspaceRow({
       />
     </SettingRow>
   );
+}
+
+/** `LeaveWorkspaceRow` while the Members are read: its label, and what it will say in grey. */
+export function LeaveWorkspaceRowSkeleton() {
+  return <SettingRowSkeleton label={LABEL} />;
 }

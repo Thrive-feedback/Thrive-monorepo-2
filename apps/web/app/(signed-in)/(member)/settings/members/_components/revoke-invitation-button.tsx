@@ -20,10 +20,10 @@ export function RevokeInvitationButton({
   return (
     <ConfirmInvitationAction
       label="Revoke"
-      accessibleName={`Revoke invitation to ${email}`}
-      question="Revoke this invitation?"
+      accessibleName={`Revoke Invitation to ${email}`}
+      question="Revoke this Invitation?"
       explanation={`${email} won't be able to join with it. You can invite them again later.`}
-      cancelLabel="Keep it"
+      cancelLabel="Keep Invitation"
       doneMessage={`Invitation to ${email} revoked`}
       triggerVariant="ghost-danger"
       confirmVariant="danger"

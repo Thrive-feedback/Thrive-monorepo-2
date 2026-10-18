@@ -44,17 +44,17 @@ async function renderList() {
 }
 
 describe('InvitationList', () => {
-  it('shows the Role each joins with, who sent it, when, and when it expires or expired', async () => {
+  it('shows where each stands, the Role it joins with, who sent it, when, and when it expires or expired', async () => {
     readInvitations.mockResolvedValue([CAT, DAN]);
 
     await renderList();
 
     const [cat, dan] = screen.getAllByRole('listitem');
     expect(cat).toHaveTextContent(
-      'as Member · by Ann · sent 6 Oct 2026 · expires 13 Oct 2026',
+      'Pending · as Member · sent by Ann on 6 Oct 2026 · expires 13 Oct 2026',
     );
     expect(dan).toHaveTextContent(
-      'as Admin · by ben@acme.test · sent 1 Oct 2026 · expired 8 Oct 2026',
+      'Expired · as Admin · sent by ben@acme.test on 1 Oct 2026 · expired 8 Oct 2026',
     );
   });
 
@@ -75,10 +75,10 @@ describe('InvitationList', () => {
     expect(
       screen.getAllByRole('button').map((b) => b.getAttribute('aria-label')),
     ).toEqual([
-      'Resend invitation to cat@acme.test',
-      'Revoke invitation to cat@acme.test',
-      'Resend invitation to dan@acme.test',
-      'Revoke invitation to dan@acme.test',
+      'Resend Invitation to cat@acme.test',
+      'Revoke Invitation to cat@acme.test',
+      'Resend Invitation to dan@acme.test',
+      'Revoke Invitation to dan@acme.test',
     ]);
   });
 
@@ -87,6 +87,6 @@ describe('InvitationList', () => {
 
     await renderList();
 
-    expect(screen.getByText('No invitations waiting.')).toBeInTheDocument();
+    expect(screen.getByText('No Invitations waiting.')).toBeInTheDocument();
   });
 });

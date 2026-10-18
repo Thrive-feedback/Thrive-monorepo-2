@@ -19,9 +19,11 @@ vi.mock('./_components/member-list', () => ({
   MemberList: ({ ownEmail }: { ownEmail: string }) => (
     <output>{`members, with ${ownEmail} marked`}</output>
   ),
+  MemberListSkeleton: () => null,
 }));
 vi.mock('./_components/invitation-list', () => ({
   InvitationList: () => <output>open invitations</output>,
+  InvitationListSkeleton: () => null,
 }));
 vi.mock('./_components/invite-members-form', () => ({
   InviteMembersForm: () => <output>invite form</output>,
@@ -43,7 +45,7 @@ describe('Members', () => {
       screen
         .getAllByRole('heading', { level: 3 })
         .map((heading) => heading.textContent),
-    ).toEqual(['Members', 'Invite teammates', 'Open invitations']);
+    ).toEqual(['Invite people', 'Invitations']);
     expect(
       screen.getByText('members, with ann@acme.test marked'),
     ).toBeInTheDocument();
@@ -59,11 +61,7 @@ describe('Members', () => {
     expect(
       screen.getByText('members, with ann@acme.test marked'),
     ).toBeInTheDocument();
-    expect(
-      screen.queryByRole('heading', { name: 'Invite teammates' }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole('heading', { name: 'Open invitations' }),
-    ).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Invite people' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Invitations' })).toBeNull();
   });
 });

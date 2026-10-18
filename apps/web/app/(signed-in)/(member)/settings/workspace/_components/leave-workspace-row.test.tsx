@@ -37,7 +37,7 @@ describe('LeaveWorkspaceRow', () => {
     const leave = screen.getByRole('button', { name: 'Leave Workspace' });
     expect(leave).toBeEnabled();
     expect(leave).toHaveAccessibleDescription(
-      "You won't be able to open Acme Corp again. Your Feedback stays, with “(inactive)” after your name.",
+      "You won't be able to open Acme Corp again. The Feedback you gave and received stays, with “(inactive)” after your name.",
     );
   });
 
