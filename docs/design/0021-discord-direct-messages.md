@@ -154,11 +154,11 @@ The copy is composed **once**, above the registry, because it is the same words 
 them. Only rendering differs — a Discord embed, a Slack block — and that belongs in the provider
 adapter, which is why `postDirect` takes a message the adapter shapes rather than a string.
 
-Step 2 needs something Workspace does not publish today. `isMemberOf` answers membership, not *active*
-membership, and since #210 a Deactivated person is still a `member` row with a `deactivatedAt`. **So
-this needs `isActiveMemberOf`, or `isMemberOf` has to start excluding Deactivated Members** — a decision
-for Workspace, in its own code ADR, and the second published-port amendment this programme has needed
-after `0020`'s `isAdminOf`. Worth deciding both at once.
+Step 2 needs nothing new, **corrected 2026-10-18**: `isMemberOf` already answers *active* membership —
+`MembershipQuery.membershipInWorkspace` filters `deactivatedAt: null` (ADR 0047), so a Deactivated
+person is not a Member to it. This design read the port's comment, which did not say so; the comment
+was fixed alongside `isAdminOf`, which Workspace Goals published first (ADR 0052). There is no
+`isActiveMemberOf` to add.
 
 ### 4.3 Where Feedback calls it
 
@@ -292,7 +292,7 @@ Code ADR numbers: **0048** is claimed by `0020`'s `isAdminOf`, so this programme
 | **`state` on the link flow** | the sharpest thing here. Without it somebody links an attacker's chat account and every notification meant for them goes elsewhere, silently and indefinitely |
 | **D3 is an abstraction with one implementation** | taken at the author's instruction against `PROJECT.md` §2. The honest mitigation is §7's fake second provider; the honest risk is that Slack turns out not to fit the interface and it is rewritten anyway, having cost something in the meantime |
 | **D12 is not in the ADR** | "every linked account is messaged" is a product decision made in a design document. `ADR-0035` §6 implies it but does not say it. Settle it there before #213 merges |
-| **Two published-port amendments** | `0020` needs `isAdminOf`, this needs `isActiveMemberOf`. `BE_16` is `todo` and being interpreted twice in one programme. Decide both in one ADR, or write `BE_16` first (#202's sibling) |
+| ~~**Two published-port amendments**~~ | **Resolved 2026-10-18 while building #199.** There is only one: `isMemberOf` already excludes Deactivated Members (`membershipInWorkspace` filters `deactivatedAt: null`, ADR 0047), so §4.2's step 2 needs no `isActiveMemberOf` — the port's comment was imprecise and now says so. `0020`'s `isAdminOf` was overtaken entirely: Workspace Goals published it first, under **ADR 0052**, so this programme writes neither. `BE_16` is still `todo` and was interpreted once, not twice |
 | **A DM is the only channel** | somebody who never links is told nothing at all. `ADR-0035` accepted this as a two-speed product; the real answer is #13's in-app and email Notifications, unbuilt |
 | **Chat tools treat bulk DMs as spam** | it is Thrive's whole application that gets rate-limited or disabled, not one customer's Connection. D9's narrow scope, §4.1's self-service linking and `ADR-0035` §7's three events are the mitigation |
 | **#200 silently disables all of this** | disconnecting stops every DM in that Workspace, because of the shared-space rule. #200's last AC puts that on screen; nothing enforces it in code |
