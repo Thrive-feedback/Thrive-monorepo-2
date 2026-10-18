@@ -1,7 +1,7 @@
 import { AlertDialog } from 'radix-ui';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import type { InvitationActionResult } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service';
+import type { InvitationActionResult } from '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service';
 import { Button, type ButtonProps } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 

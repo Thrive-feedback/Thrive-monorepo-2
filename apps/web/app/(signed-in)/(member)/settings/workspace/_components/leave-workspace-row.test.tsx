@@ -3,14 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { LeaveWorkspaceRow } from './leave-workspace-row';
 
 const readMembers = vi.fn();
+vi.mock('@/app/(signed-in)/(member)/settings/_lib/members.service', () => ({
+  readMembers: (...args: unknown[]) => readMembers(...args),
+}));
 vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/members.service',
-  () => ({
-    readMembers: (...args: unknown[]) => readMembers(...args),
-  }),
-);
-vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/member-deactivation-actions.service',
+  '@/app/(signed-in)/(member)/settings/_lib/member-deactivation-actions.service',
   () => ({ deactivateMember: vi.fn(), leaveWorkspace: vi.fn() }),
 );
 

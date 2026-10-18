@@ -1,5 +1,9 @@
+import { cva, type VariantProps } from 'class-variance-authority';
+import { CheckIcon, ChevronRightIcon } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/atoms/avatar';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
+import { initials } from '@/lib/initials.util';
 import type { MyWorkspaces } from '@/lib/workspace/my-workspace.type';
 
 export type WorkspaceListProps = {
@@ -12,9 +16,10 @@ export type WorkspaceListProps = {
 };
 
 /**
- * The person's Workspaces by name, the one used last first: each they can open is a choice, the
- * current one is marked instead, and those they were Deactivated in are greyed out, labelled
- * Inactive, and offered no way in. Nothing says what Role they have anywhere (brain `ADR-0035`).
+ * The person's Workspaces by name, the one used last first, each beside a tile of its initials:
+ * each they can open is a choice that lifts on hover, the current one is highlighted and marked
+ * instead, and those they were Deactivated in are greyed out, labelled Inactive, and offered no
+ * way in. Nothing says what Role they have anywhere (brain `ADR-0035`).
  */
 export function WorkspaceList({
   workspaces,
@@ -29,24 +34,33 @@ export function WorkspaceList({
           <li
             key={workspace.id}
             aria-current="true"
-            className="flex items-center justify-between gap-2 rounded-element border border-border-default px-4 py-3"
+            className="flex items-center gap-3 rounded-element border border-action-primary-border bg-action-primary-surface px-3 py-2.5"
           >
-            <Text variant="body-2" className="break-all">
+            <WorkspaceTile name={workspace.name} tone="current" />
+            <Text variant="subtitle-4" className="min-w-0 flex-1 break-all">
               {workspace.name}
             </Text>
-            <Text variant="body-3" tone="brand">
+            <Pill tone="current">
+              <CheckIcon aria-hidden="true" className="size-3.5" />
               Current
-            </Text>
+            </Pill>
           </li>
         ) : (
           <li key={workspace.id}>
             <Button
               variant="secondary"
-              className="w-full justify-start break-all"
               disabled={disabled}
               onClick={() => onChoose(workspace.id)}
+              className="group h-auto w-full justify-start gap-3 px-3 py-2.5 text-start"
             >
-              {workspace.name}
+              <WorkspaceTile name={workspace.name} tone="choice" />
+              <span className="min-w-0 flex-1 break-all text-subtitle-4">
+                {workspace.name}
+              </span>
+              <ChevronRightIcon
+                aria-hidden="true"
+                className="size-4 shrink-0 text-fg-secondary transition-transform group-hover:translate-x-0.5 group-hover:text-action-primary"
+              />
             </Button>
           </li>
         ),
@@ -54,16 +68,62 @@ export function WorkspaceList({
       {workspaces.inactive.map((workspace) => (
         <li
           key={workspace.id}
-          className="flex items-center justify-between gap-2 rounded-element border border-border-subtle px-4 py-3"
+          className="flex items-center gap-3 rounded-element border border-border-subtle border-dashed px-3 py-2.5"
         >
-          <Text variant="body-2" tone="muted" className="break-all">
+          <WorkspaceTile name={workspace.name} tone="inactive" />
+          <Text
+            variant="subtitle-4"
+            tone="muted"
+            className="min-w-0 flex-1 break-all"
+          >
             {workspace.name}
           </Text>
-          <Text variant="body-3" tone="muted">
-            Inactive
-          </Text>
+          <Pill tone="inactive">Inactive</Pill>
         </li>
       ))}
     </ul>
   );
+}
+
+const workspaceTile = cva('', {
+  variants: {
+    tone: {
+      current: 'bg-action-primary text-fg-on-action',
+      choice: 'bg-action-primary-surface text-action-primary',
+      inactive: 'bg-surface-subtle text-fg-secondary',
+    },
+  },
+});
+
+/** The Workspace's initials, as a rounded tile; the name beside it is what is read out. */
+function WorkspaceTile({
+  name,
+  tone,
+}: { name: string } & Required<VariantProps<typeof workspaceTile>>) {
+  return (
+    <Avatar size="md" shape="rounded" aria-hidden="true" className="shrink-0">
+      <AvatarFallback className={workspaceTile({ tone })}>
+        {initials(name)}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
+const pill = cva(
+  'flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-body-3',
+  {
+    variants: {
+      tone: {
+        current: 'bg-action-primary text-fg-on-action',
+        inactive: 'bg-surface-subtle text-fg-secondary',
+      },
+    },
+  },
+);
+
+function Pill({
+  tone,
+  children,
+}: Required<VariantProps<typeof pill>> & { children: React.ReactNode }) {
+  return <span className={pill({ tone })}>{children}</span>;
 }

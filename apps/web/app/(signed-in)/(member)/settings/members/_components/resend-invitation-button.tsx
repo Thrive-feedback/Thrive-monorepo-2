@@ -1,6 +1,6 @@
 'use client';
 
-import { resendInvitation } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service';
+import { resendInvitation } from '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service';
 import { ConfirmInvitationAction } from './confirm-invitation-action';
 
 export type ResendInvitationButtonProps = {

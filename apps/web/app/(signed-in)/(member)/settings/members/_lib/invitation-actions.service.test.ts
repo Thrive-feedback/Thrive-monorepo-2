@@ -72,7 +72,7 @@ describe('revoking an Invitation from Members', () => {
     expect(seen[0]?.headers.get('cookie')).toContain(
       'thrive.session_token=abc',
     );
-    expect(revalidatePath).toHaveBeenCalledWith('/settings/workspace');
+    expect(revalidatePath).toHaveBeenCalledWith('/settings/members');
   });
 
   it('says why when it was already accepted', async () => {
@@ -120,7 +120,7 @@ describe('resending an Invitation from Members', () => {
     expect(seen[0]?.headers.get('cookie')).toContain(
       'thrive.session_token=abc',
     );
-    expect(revalidatePath).toHaveBeenCalledWith('/settings/workspace');
+    expect(revalidatePath).toHaveBeenCalledWith('/settings/members');
   });
 
   it('asks the person to wait when it was sent a moment ago', async () => {
@@ -182,7 +182,7 @@ describe('inviting teammates from Members', () => {
     expect(seen[0]?.headers.get('cookie')).toContain(
       'thrive.session_token=abc',
     );
-    expect(revalidatePath).toHaveBeenCalledWith('/settings/workspace');
+    expect(revalidatePath).toHaveBeenCalledWith('/settings/members');
   });
 
   it('checks the list again without calling the API', async () => {

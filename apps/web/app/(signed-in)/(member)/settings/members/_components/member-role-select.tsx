@@ -3,7 +3,7 @@
 import { AlertDialog } from 'radix-ui';
 import { useId, useOptimistic, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { changeMemberRole } from '@/app/(signed-in)/(member)/settings/workspace/_lib/member-role-actions.service';
+import { changeMemberRole } from '@/app/(signed-in)/(member)/settings/members/_lib/member-role-actions.service';
 import { Button } from '@/components/atoms/button';
 import {
   Select,

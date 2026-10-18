@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import {
   deactivateMember,
   leaveWorkspace,
-} from '@/app/(signed-in)/(member)/settings/workspace/_lib/member-deactivation-actions.service';
+} from '@/app/(signed-in)/(member)/settings/_lib/member-deactivation-actions.service';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 

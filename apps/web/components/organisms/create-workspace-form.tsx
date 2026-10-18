@@ -14,11 +14,8 @@ import type { TeamSize } from '@/lib/workspace/team-size.constant';
 export type CreateWorkspaceFormProps = {
   /** Creates it; Create a Workspace and the switcher each move on to their own next page. */
   action: CreateWorkspaceAction;
-  /**
-   * The submit button's words for the name typed so far, trimmed, where they should say what
-   * happens next. Until a name is typed the button reads Create Workspace either way.
-   */
-  submitLabelFor?: (workspaceName: string) => string;
+  /** The submit button's words, where they should say what happens next. */
+  submitLabel?: string;
 };
 
 /**
@@ -32,7 +29,7 @@ export type CreateWorkspaceFormProps = {
  */
 export function CreateWorkspaceForm({
   action,
-  submitLabelFor,
+  submitLabel = 'Create Workspace',
 }: CreateWorkspaceFormProps) {
   const [workspaceName, setWorkspaceName] = useState('');
   const [teamSize, setTeamSize] = useState<TeamSize | null>(null);
@@ -81,9 +78,7 @@ export function CreateWorkspaceForm({
         disabled={!canCreate}
         className="mt-2 w-full"
       >
-        {submitLabelFor && workspaceName.trim() !== ''
-          ? submitLabelFor(workspaceName.trim())
-          : 'Create Workspace'}
+        {submitLabel}
       </Button>
     </form>
   );

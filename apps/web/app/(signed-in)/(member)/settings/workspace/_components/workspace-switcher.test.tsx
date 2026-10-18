@@ -39,6 +39,7 @@ describe('WorkspaceSwitcher', () => {
   it('lists the Workspaces the person is in, marking the current one, with no Role', async () => {
     await openSwitcher();
 
+    expect(screen.getByRole('dialog')).toHaveAccessibleDescription('Switch to');
     const list = screen.getByRole('list', { name: 'Your Workspaces' });
     const current = within(list).getByText('Acme').closest('li');
     expect(current).toHaveAttribute('aria-current', 'true');
@@ -113,21 +114,15 @@ describe('WorkspaceSwitcher', () => {
     );
   });
 
-  it('says on its button that creating jumps to the Workspace named', async () => {
+  it('says on its button that creating jumps to the new Workspace', async () => {
     const user = await openSwitcher();
+
     await user.click(
       screen.getByRole('button', { name: 'Create a Workspace' }),
     );
 
-    await user.type(
-      screen.getByRole('textbox', { name: 'Workspace name' }),
-      'Initrode',
-    );
-
     expect(
-      screen.getByRole('button', {
-        name: 'Create and jump to the “Initrode” Workspace',
-      }),
+      screen.getByRole('button', { name: 'Create and jump to it' }),
     ).toBeInTheDocument();
   });
 

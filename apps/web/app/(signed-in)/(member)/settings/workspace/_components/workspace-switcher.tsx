@@ -1,5 +1,6 @@
 'use client';
 
+import { PlusIcon } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/atoms/button';
@@ -96,9 +97,7 @@ export function WorkspaceSwitcher({
             </DialogHeader>
             <CreateWorkspaceForm
               action={createAnotherWorkspace}
-              submitLabelFor={(name) =>
-                `Create and jump to the “${name}” Workspace`
-              }
+              submitLabel="Create and jump to it"
             />
             <Button variant="ghost" onClick={() => setView(LIST)}>
               Back to your Workspaces
@@ -133,20 +132,24 @@ export function WorkspaceSwitcher({
           <>
             <DialogHeader>
               <DialogTitle>Switch Workspace</DialogTitle>
-              <DialogDescription>
-                This device opens the Workspace you choose. Your other devices
-                stay where they are.
-              </DialogDescription>
             </DialogHeader>
-            <WorkspaceList
-              workspaces={workspaces}
-              currentWorkspaceId={currentWorkspaceId}
-              onChoose={handleChoose}
-            />
+            <div className="flex flex-col gap-2">
+              <DialogDescription className="text-body-3">
+                Switch to
+              </DialogDescription>
+              <WorkspaceList
+                workspaces={workspaces}
+                currentWorkspaceId={currentWorkspaceId}
+                onChoose={handleChoose}
+              />
+            </div>
+            <hr className="border-border-subtle" />
             <Button
               variant="outlined"
+              className="w-full"
               onClick={() => setView({ step: 'create' })}
             >
+              <PlusIcon aria-hidden="true" className="size-4" />
               Create a Workspace
             </Button>
           </>

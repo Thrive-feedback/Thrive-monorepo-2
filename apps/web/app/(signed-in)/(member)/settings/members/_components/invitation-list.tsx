@@ -1,5 +1,5 @@
-import { readInvitations } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invitations.service';
-import type { OpenInvitation } from '@/app/(signed-in)/(member)/settings/workspace/_lib/open-invitation.type';
+import { readInvitations } from '@/app/(signed-in)/(member)/settings/members/_lib/invitations.service';
+import type { OpenInvitation } from '@/app/(signed-in)/(member)/settings/members/_lib/open-invitation.type';
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
@@ -48,13 +48,13 @@ export async function InvitationList({ membership }: InvitationListProps) {
     );
   }
   return (
-    <ul className="flex flex-col gap-4">
+    <ul aria-label="Open invitations" className="flex flex-col">
       {invitations.map((invitation) => (
         <li
           key={invitation.invitationId}
-          className="flex flex-wrap items-center justify-between gap-2"
+          className="flex flex-wrap items-center gap-x-3 gap-y-2 border-border-subtle border-b py-3 last:border-b-0"
         >
-          <div className="flex min-w-0 flex-col gap-1">
+          <div className="flex min-w-0 flex-1 basis-48 flex-col gap-1">
             <Text as="span" variant="subtitle-4" className="break-all">
               {invitation.email}
             </Text>
@@ -77,7 +77,7 @@ export async function InvitationList({ membership }: InvitationListProps) {
               {STATUS_NAMES[invitation.status]}
             </Text>
           </div>
-          <div className="flex gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             <ResendInvitationButton
               workspaceId={membership.workspace.id}
               invitationId={invitation.invitationId}

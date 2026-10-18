@@ -2,16 +2,17 @@
 
 import { PlusIcon } from 'lucide-react';
 import { useRef, useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import {
   checkEmailList,
   MAX_INVITES_PER_SEND,
   parseEmailList,
-} from '@/app/(signed-in)/(member)/settings/workspace/_lib/email-list.util';
-import { inviteMembers } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service';
+} from '@/app/(signed-in)/(member)/settings/members/_lib/email-list.util';
+import { inviteMembers } from '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service';
 import type {
   InviteMemberResult,
   InviteMembersState,
-} from '@/app/(signed-in)/(member)/settings/workspace/_lib/invite-members-state.type';
+} from '@/app/(signed-in)/(member)/settings/members/_lib/invite-members-state.type';
 import { Button } from '@/components/atoms/button';
 import {
   Tabs,
@@ -27,25 +28,22 @@ import type { Invitee } from '@/lib/invitations/invite-emails.util';
 import { useInviteRows } from '@/lib/invitations/use-invite-rows';
 import type { MemberRole } from '@/lib/session/current-account.type';
 
-/** How each outcome reads beside its address. */
-const OUTCOME_TEXT: Readonly<Record<InviteMemberResult['outcome'], string>> = {
-  invited: 'Invitation sent',
-  already_member: 'is already in this Workspace',
-  already_invited: 'already has a pending Invitation',
-  failed: "Couldn't send",
-};
-
-/**
- * Each outcome in its status colour. The words carry the same meaning, so nothing depends on
- * seeing the colour.
- */
-const OUTCOME_COLOUR: Readonly<Record<InviteMemberResult['outcome'], string>> =
-  {
-    invited: 'text-status-success',
-    already_member: 'text-status-info',
-    already_invited: 'text-status-warning',
-    failed: 'text-status-error',
-  };
+/** How many addresses came to each outcome, in the words of one toast. */
+function summaryOf(results: readonly InviteMemberResult[]): string {
+  const count = (outcome: InviteMemberResult['outcome']) =>
+    results.filter((result) => result.outcome === outcome).length;
+  const sent = count('invited');
+  return [
+    sent > 0 && `${sent} ${sent === 1 ? 'Invitation' : 'Invitations'} sent`,
+    count('already_member') > 0 &&
+      `${count('already_member')} already in this Workspace`,
+    count('already_invited') > 0 &&
+      `${count('already_invited')} already invited`,
+    count('failed') > 0 && `${count('failed')} couldn't be sent`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
 
 const COULD_NOT_SEND_TO_ROW = "Couldn't send. Try again.";
 
@@ -66,10 +64,10 @@ function roleSentTo(
  * a list is addresses typed into one box, all with the one Role beside it. Either is checked
  * before it goes, so nothing is sent while part of it is wrong.
  *
- * After a send, addresses whose email could not go out stay, with their Role, so sending again
- * retries only those; the rest clear. What happened to each address is listed underneath and
- * announced politely; the new Invitations appear under Open invitations, which the action draws
- * again.
+ * After a send, one toast says how it went — sent, already in, already invited, or not sent.
+ * Addresses whose email could not go out stay, with their Role, so sending again retries only
+ * those; the rest clear. The new Invitations appear under Open invitations, which the action
+ * draws again.
  */
 export type InviteMembersFormProps = {
   /** The Workspace the page was drawn for; sending is refused once the person is no longer in it. */
@@ -77,7 +75,6 @@ export type InviteMembersFormProps = {
 };
 
 export function InviteMembersForm({ workspaceId }: InviteMembersFormProps) {
-  const [results, setResults] = useState<readonly InviteMemberResult[]>([]);
   const [formError, setFormError] = useState<string>();
   const [isSending, startSending] = useTransition();
 
@@ -96,8 +93,13 @@ export function InviteMembersForm({ workspaceId }: InviteMembersFormProps) {
         setFormError(sent.formError);
         return;
       }
-      setResults(sent.results);
-      onFailed(sent.results.filter((result) => result.outcome === 'failed'));
+      const failed = sent.results.filter(
+        (result) => result.outcome === 'failed',
+      );
+      (failed.length > 0 ? toast.error : toast.success)(
+        summaryOf(sent.results),
+      );
+      onFailed(failed);
     });
   }
 
@@ -120,26 +122,6 @@ export function InviteMembersForm({ workspaceId }: InviteMembersFormProps) {
           {formError}
         </Text>
       )}
-      <div aria-live="polite">
-        {results.length > 0 && (
-          <ul aria-label="What happened" className="flex flex-col gap-2">
-            {results.map((result) => (
-              <li key={result.email} className="flex flex-col">
-                <Text as="span" variant="body-2" className="break-all">
-                  {result.email}
-                </Text>
-                <Text
-                  as="span"
-                  variant="body-3"
-                  className={OUTCOME_COLOUR[result.outcome]}
-                >
-                  {OUTCOME_TEXT[result.outcome]}
-                </Text>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { AlertDialog } from 'radix-ui';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { reactivateMember } from '@/app/(signed-in)/(member)/settings/workspace/_lib/member-deactivation-actions.service';
+import { reactivateMember } from '@/app/(signed-in)/(member)/settings/_lib/member-deactivation-actions.service';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import type { MemberRole } from '@/lib/session/current-account.type';
