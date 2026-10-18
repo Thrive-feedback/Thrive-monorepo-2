@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import { ROUTES } from '@/lib/routes.constant';
-import { requireMember } from '@/lib/session/session.service';
+import { requireMemberOf } from '@/lib/session/session.service';
 
 const AccountId = z.uuid();
 
@@ -31,25 +31,27 @@ export type MemberDeactivationResult =
   | { readonly ok: false; readonly message: string };
 
 /**
- * Deactivates someone in the person's own Workspace. The Workspace is the one the session
- * belongs to, never one the browser names, and the API checks they may. Members is drawn again
- * either way, the Deactivated person among the Deactivated.
+ * Deactivates someone in `workspaceId`, the Workspace the page was drawn for, which must still be
+ * the one the person is in; the API checks they may. Members is drawn again either way, the
+ * Deactivated person among the Deactivated.
  */
 export async function deactivateMember(
+  workspaceId: string,
   accountId: string,
 ): Promise<MemberDeactivationResult> {
-  return deactivate(accountId);
+  return deactivate(workspaceId, accountId);
 }
 
 /**
  * Leaves the person's own Workspace, by Deactivating their own Account there; `accountId` is
  * theirs, as their row in Members names it. Once out they can no longer open it, so they go on
- * to wherever they belong now.
+ * to wherever they belong now: the Workspace they used before, if they are in another.
  */
 export async function leaveWorkspace(
+  workspaceId: string,
   accountId: string,
 ): Promise<MemberDeactivationResult> {
-  const result = await deactivate(accountId);
+  const result = await deactivate(workspaceId, accountId);
   if (result.ok) {
     redirect(ROUTES.home);
   }
@@ -57,18 +59,19 @@ export async function leaveWorkspace(
 }
 
 /**
- * Reactivates someone Deactivated in the person's own Workspace, with the Role they had. As with
- * Deactivating, the Workspace is the session's and the API checks they may. Members is drawn
- * again either way, the person back among the active.
+ * Reactivates someone Deactivated in `workspaceId`, with the Role they had. As with
+ * Deactivating, it must still be the Workspace the person is in, and the API checks they may.
+ * Members is drawn again either way, the person back among the active.
  */
 export async function reactivateMember(
+  workspaceId: string,
   accountId: string,
 ): Promise<MemberDeactivationResult> {
   const id = AccountId.safeParse(accountId);
   if (!id.success) {
     return { ok: false, message: COULD_NOT_DEACTIVATE };
   }
-  const { membership } = await requireMember();
+  const { membership } = await requireMemberOf(workspaceId);
   const cookie = (await headers()).get('cookie') ?? undefined;
   try {
     await apiClient().POST(
@@ -95,13 +98,14 @@ export async function reactivateMember(
 }
 
 async function deactivate(
+  workspaceId: string,
   accountId: string,
 ): Promise<MemberDeactivationResult> {
   const id = AccountId.safeParse(accountId);
   if (!id.success) {
     return { ok: false, message: COULD_NOT_DEACTIVATE };
   }
-  const { membership } = await requireMember();
+  const { membership } = await requireMemberOf(workspaceId);
   const cookie = (await headers()).get('cookie') ?? undefined;
   try {
     await apiClient().POST(

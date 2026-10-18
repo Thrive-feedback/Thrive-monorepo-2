@@ -13,8 +13,6 @@ const JoinWorkspaceForm = z.object({ invitationId: z.uuid() });
 
 /** Where to go instead when the API says joining is not the person's to do here. */
 const ELSEWHERE: Readonly<Record<string, string>> = {
-  // Joined already, from another tab or a second click.
-  ALREADY_IN_A_WORKSPACE: ROUTES.home,
   NOT_SIGNED_IN: ROUTES.signIn,
 };
 

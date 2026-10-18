@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import { ROUTES } from '@/lib/routes.constant';
 import type { MemberRole } from '@/lib/session/current-account.type';
-import { requireMember } from '@/lib/session/session.service';
+import { requireMemberOf } from '@/lib/session/session.service';
 
 const RoleChange = z.object({
   accountId: z.uuid(),
@@ -29,12 +29,13 @@ export type MemberRoleActionResult =
   | { readonly ok: false; readonly message: string };
 
 /**
- * Makes someone in the person's own Workspace an Admin or a Member. The Workspace is the one the
- * session belongs to, never one the browser names, and the API checks they may. Members is drawn
+ * Makes someone in `workspaceId`, the Workspace the page was drawn for, an Admin or a Member; it
+ * must still be the one the person is in, and the API checks they may. Members is drawn
  * again either way, so every Role shows where it now stands — including the person's own, which
  * takes their controls away if they made themselves a Member.
  */
 export async function changeMemberRole(
+  workspaceId: string,
   accountId: string,
   role: MemberRole,
 ): Promise<MemberRoleActionResult> {
@@ -42,7 +43,7 @@ export async function changeMemberRole(
   if (!input.success) {
     return { ok: false, message: COULD_NOT_CHANGE_ROLE };
   }
-  const { membership } = await requireMember();
+  const { membership } = await requireMemberOf(workspaceId);
   const cookie = (await headers()).get('cookie') ?? undefined;
   try {
     await apiClient().PATCH(

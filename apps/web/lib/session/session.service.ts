@@ -38,8 +38,9 @@ const readCurrentSession = cache(async () => {
 });
 
 /**
- * The Workspace this request's person belongs to, if any. Asked alongside the session
- * rather than after it, so a page waits for one round trip, not two.
+ * The Workspace this request's person is in, if any: of those they are active in, the one they
+ * used last, which the API lists first. Asked alongside the session rather than after it, so a
+ * page waits for one round trip, not two.
  */
 const readCurrentMembership = cache(
   async (): Promise<CurrentMembership | null> => {
@@ -71,9 +72,10 @@ export async function readSession(): Promise<CurrentAccount | null> {
 }
 
 /**
- * The Invitations sent to this request's person that they could accept now. Asked only of
- * someone in no Workspace, so a Member's pages never wait on it. One page holds them all: the
- * API's largest, far more than anyone is invited to at once.
+ * The Invitations sent to this request's person that they could accept now. Asked of someone in
+ * no Workspace while deciding where they land, and of a Member only by Home's notice, which
+ * streams in, so no page waits on it. One page holds them all: the API's largest, far more than
+ * anyone is invited to at once.
  */
 const readMyInvitations = cache(async (): Promise<PendingInvitation[]> => {
   try {
@@ -95,6 +97,11 @@ const readMyInvitations = cache(async (): Promise<PendingInvitation[]> => {
     throw error;
   }
 });
+
+/** The Invitations waiting for this request's person, for the notice on Home. */
+export function readInvitationsWaiting(): Promise<PendingInvitation[]> {
+  return readMyInvitations();
+}
 
 /**
  * Whether the session should be pushed forward now. A server component cannot set the new
@@ -196,6 +203,22 @@ export async function requireMember(signedIn?: '1'): Promise<MemberAccount> {
     sendTo(landing, signedIn);
   }
   return landing.account;
+}
+
+/**
+ * The signed-in Member, for an action sent from a page drawn for `workspaceId`. If that is no
+ * longer the Workspace they are in — they switched in another tab, or were Deactivated there —
+ * nothing is done: they are taken to Home, which says so, rather than acting on a Workspace the
+ * page never showed (ADR 0051).
+ */
+export async function requireMemberOf(
+  workspaceId: string,
+): Promise<MemberAccount> {
+  const member = await requireMember();
+  if (member.membership.workspace.id !== workspaceId) {
+    redirect(ROUTES.homeSwitched);
+  }
+  return member;
 }
 
 /** The signed-in Account, for Introduce yourself: the step only appears until it is done. */

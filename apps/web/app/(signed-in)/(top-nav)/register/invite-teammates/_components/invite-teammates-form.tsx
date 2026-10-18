@@ -29,7 +29,12 @@ const COULD_NOT_SEND_TO_ROW = "Couldn't send. Try again.";
  * its Role, flagged, and the rest leave the form, so sending again retries only those. Once none
  * is left, the form gives way to what happened to every address.
  */
-export function InviteTeammatesForm() {
+export type InviteTeammatesFormProps = {
+  /** The Workspace just created; sending is refused once the person is no longer in it. */
+  workspaceId: string;
+};
+
+export function InviteTeammatesForm({ workspaceId }: InviteTeammatesFormProps) {
   const router = useRouter();
   const inviteRows = useInviteRows();
   const { rows } = inviteRows;
@@ -46,7 +51,7 @@ export function InviteTeammatesForm() {
     }
     setFormError(undefined);
     startSending(async () => {
-      const sent = await sendInvitations(invitations);
+      const sent = await sendInvitations(workspaceId, invitations);
       if ('formError' in sent) {
         setFormError(sent.formError);
         return;

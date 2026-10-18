@@ -11,6 +11,7 @@ import { FeedbackComposerCard } from './_components/feedback-composer-card';
 import { FeedbackRequestDetail } from './_components/feedback-request-detail';
 import styles from './_components/home-split.module.css';
 import { HomeTabPanel } from './_components/home-tab-panel';
+import { InvitationNotices } from './_components/invitation-notices';
 import { WorkspaceFeed } from './_components/workspace-feed';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
 
@@ -24,13 +25,15 @@ type HomeProps = {
   /**
    * `signedIn` is set when Google sent a returning person back here, `sent` when they have just
    * sent a Feedback Request, `given` when they have just given Feedback without being asked,
-   * `tab` is the feed tab that is open, and `request` or `ask` is the one open in a dialog over
-   * it.
+   * `switched` when what they sent was dropped because its page was for a Workspace they are no
+   * longer in, `tab` is the feed tab that is open, and `request` or `ask` is the one open in a
+   * dialog over it.
    */
   searchParams: Promise<{
     signedIn?: string | string[];
     sent?: string | string[];
     given?: string | string[];
+    switched?: string | string[];
     tab?: string | string[];
     request?: string | string[];
     ask?: string | string[];
@@ -49,9 +52,8 @@ type HomeProps = {
  * the address, so a reload or a shared link opens it again; a request wins if both are named.
  */
 export default async function Home({ searchParams }: HomeProps) {
-  const { signedIn, sent, given, tab, request, ask } = HomeSearchParams.parse(
-    await searchParams,
-  );
+  const { signedIn, sent, given, switched, tab, request, ask } =
+    HomeSearchParams.parse(await searchParams);
   const session = await requireMember(signedIn);
 
   return (
@@ -77,8 +79,21 @@ export default async function Home({ searchParams }: HomeProps) {
           then={ROUTES.homeTab(tab)}
         />
       )}
+      {switched !== undefined && (
+        <OneTimeToast
+          type="error"
+          message={`Nothing was changed: that page was for another Workspace. You're in ${session.membership.workspace.name} now.`}
+          then={ROUTES.homeTab(tab)}
+        />
+      )}
       <HomeView
         workspaceName={session.membership.workspace.name}
+        notices={
+          // Most people have no Invitation waiting, so no space is held for one while it is read.
+          <Suspense fallback={null}>
+            <InvitationNotices />
+          </Suspense>
+        }
         composer={
           <Suspense fallback={<Skeleton shape="card" className="h-80" />}>
             <FeedbackComposerCard

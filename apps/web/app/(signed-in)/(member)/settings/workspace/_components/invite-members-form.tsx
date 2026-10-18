@@ -71,7 +71,12 @@ function roleSentTo(
  * announced politely; the new Invitations appear under Open invitations, which the action draws
  * again.
  */
-export function InviteMembersForm() {
+export type InviteMembersFormProps = {
+  /** The Workspace the page was drawn for; sending is refused once the person is no longer in it. */
+  workspaceId: string;
+};
+
+export function InviteMembersForm({ workspaceId }: InviteMembersFormProps) {
   const [results, setResults] = useState<readonly InviteMemberResult[]>([]);
   const [formError, setFormError] = useState<string>();
   const [isSending, startSending] = useTransition();
@@ -83,7 +88,10 @@ export function InviteMembersForm() {
   ) {
     setFormError(undefined);
     startSending(async () => {
-      const sent: InviteMembersState = await inviteMembers(invitations);
+      const sent: InviteMembersState = await inviteMembers(
+        workspaceId,
+        invitations,
+      );
       if ('formError' in sent) {
         setFormError(sent.formError);
         return;

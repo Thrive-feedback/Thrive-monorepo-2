@@ -4,12 +4,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { InvitationActionResult } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service';
 import { RevokeInvitationButton } from './revoke-invitation-button';
 
+const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
+
 const revokeInvitation =
-  vi.fn<(invitationId: string) => Promise<InvitationActionResult>>();
+  vi.fn<
+    (
+      workspaceId: string,
+      invitationId: string,
+    ) => Promise<InvitationActionResult>
+  >();
 vi.mock(
   '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service',
   () => ({
-    revokeInvitation: (invitationId: string) => revokeInvitation(invitationId),
+    revokeInvitation: (workspaceId: string, invitationId: string) =>
+      revokeInvitation(workspaceId, invitationId),
   }),
 );
 
@@ -28,6 +36,7 @@ async function openDialog() {
   const user = userEvent.setup();
   render(
     <RevokeInvitationButton
+      workspaceId={WORKSPACE_ID}
       invitationId={INVITATION_ID}
       email="cat@acme.test"
     />,
@@ -57,7 +66,7 @@ describe('RevokeInvitationButton', () => {
 
     await user.click(screen.getByRole('button', { name: 'Revoke' }));
 
-    expect(revokeInvitation).toHaveBeenCalledWith(INVITATION_ID);
+    expect(revokeInvitation).toHaveBeenCalledWith(WORKSPACE_ID, INVITATION_ID);
     expect(toast.success).toHaveBeenCalledWith(
       'Invitation to cat@acme.test revoked',
     );

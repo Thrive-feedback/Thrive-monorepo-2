@@ -20,7 +20,7 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 vi.mock('@/lib/session/session.service', () => ({
-  requireMember: async () => ({
+  requireMemberOf: async () => ({
     membership: {
       workspace: { id: WORKSPACE_ID, name: 'Acme' },
       role: 'ADMIN',
@@ -70,7 +70,7 @@ describe('sending the Invitations', () => {
       }),
     );
 
-    const sent = await sendInvitations([
+    const sent = await sendInvitations(WORKSPACE_ID, [
       { email: 'ben@acme.co', role: 'MEMBER' },
       { email: 'cat@acme.co', role: 'ADMIN' },
     ]);
@@ -93,7 +93,7 @@ describe('sending the Invitations', () => {
   it('says only Admins can invite when the API refuses the role', async () => {
     apiRefusesWith('NOT_ALLOWED_TO_INVITE', 403);
 
-    expect(await sendInvitations([BEN])).toEqual({
+    expect(await sendInvitations(WORKSPACE_ID, [BEN])).toEqual({
       formError: 'Only Admins can invite teammates.',
     });
   });
@@ -101,25 +101,29 @@ describe('sending the Invitations', () => {
   it('sends someone whose session ended to sign in', async () => {
     apiRefusesWith('NOT_SIGNED_IN', 401);
 
-    await expect(sendInvitations([BEN])).rejects.toThrow('redirect:/signin');
+    await expect(sendInvitations(WORKSPACE_ID, [BEN])).rejects.toThrow(
+      'redirect:/signin',
+    );
   });
 
   it('sends someone no longer in the Workspace Home', async () => {
     apiRefusesWith('WORKSPACE_NOT_FOUND', 404);
 
-    await expect(sendInvitations([BEN])).rejects.toThrow('redirect:/home');
+    await expect(sendInvitations(WORKSPACE_ID, [BEN])).rejects.toThrow(
+      'redirect:/home',
+    );
   });
 
   it('asks to try again on any other failure', async () => {
     apiRefusesWith('INTERNAL_ERROR', 500);
 
-    expect(await sendInvitations([BEN])).toEqual({
+    expect(await sendInvitations(WORKSPACE_ID, [BEN])).toEqual({
       formError: "We couldn't send your invitations. Please try again.",
     });
   });
 
   it('sends nothing for an empty list', async () => {
-    expect(await sendInvitations([])).toEqual({
+    expect(await sendInvitations(WORKSPACE_ID, [])).toEqual({
       formError: "We couldn't send your invitations. Please try again.",
     });
   });

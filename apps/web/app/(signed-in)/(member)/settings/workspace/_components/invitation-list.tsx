@@ -79,10 +79,12 @@ export async function InvitationList({ membership }: InvitationListProps) {
           </div>
           <div className="flex gap-2">
             <ResendInvitationButton
+              workspaceId={membership.workspace.id}
               invitationId={invitation.invitationId}
               email={invitation.email}
             />
             <RevokeInvitationButton
+              workspaceId={membership.workspace.id}
               invitationId={invitation.invitationId}
               email={invitation.email}
             />

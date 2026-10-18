@@ -21,7 +21,7 @@ vi.mock('next/headers', () => ({
   headers: async () => new Headers({ cookie: 'thrive.session_token=abc' }),
 }));
 vi.mock('@/lib/session/session.service', () => ({
-  requireMember: async () => ({
+  requireMemberOf: async () => ({
     membership: {
       workspace: { id: WORKSPACE_ID, name: 'Acme' },
       role: 'ADMIN',
@@ -55,7 +55,9 @@ describe('changing a Role from Members', () => {
       }),
     );
 
-    expect(await changeMemberRole(BEN_ID, 'ADMIN')).toEqual({ ok: true });
+    expect(await changeMemberRole(WORKSPACE_ID, BEN_ID, 'ADMIN')).toEqual({
+      ok: true,
+    });
     expect(seen).toEqual([
       {
         cookie: expect.stringContaining('thrive.session_token=abc'),
@@ -68,7 +70,7 @@ describe('changing a Role from Members', () => {
   it('says to make someone else an Admin first when it would leave none', async () => {
     apiRefusesWith('LAST_ADMIN', 409);
 
-    expect(await changeMemberRole(BEN_ID, 'MEMBER')).toEqual({
+    expect(await changeMemberRole(WORKSPACE_ID, BEN_ID, 'MEMBER')).toEqual({
       ok: false,
       message: 'Make someone else an Admin first.',
     });
@@ -77,7 +79,7 @@ describe('changing a Role from Members', () => {
   it('says only Admins can change Roles when the person is no longer one', async () => {
     apiRefusesWith('NOT_ALLOWED_TO_CHANGE_ROLES', 403);
 
-    expect(await changeMemberRole(BEN_ID, 'ADMIN')).toEqual({
+    expect(await changeMemberRole(WORKSPACE_ID, BEN_ID, 'ADMIN')).toEqual({
       ok: false,
       message: 'Only Admins can change Roles.',
     });
@@ -86,14 +88,16 @@ describe('changing a Role from Members', () => {
   it('answers a generic failure for a code it does not explain', async () => {
     apiRefusesWith('SOMETHING_ELSE', 500);
 
-    expect(await changeMemberRole(BEN_ID, 'ADMIN')).toEqual({
+    expect(await changeMemberRole(WORKSPACE_ID, BEN_ID, 'ADMIN')).toEqual({
       ok: false,
       message: "We couldn't change their Role. Please try again.",
     });
   });
 
   it('never calls the API with something that is not an Account id', async () => {
-    expect(await changeMemberRole('../invitations', 'ADMIN')).toEqual({
+    expect(
+      await changeMemberRole(WORKSPACE_ID, '../invitations', 'ADMIN'),
+    ).toEqual({
       ok: false,
       message: "We couldn't change their Role. Please try again.",
     });

@@ -19,6 +19,8 @@ export type HomeViewProps = {
   headingLevel?: 1 | 2;
   /** Asking for Feedback or giving it. Drawn in both layouts, of which CSS shows one. */
   composer: React.ReactNode;
+  /** Anything waiting for the person, above asking or giving; drawn in both layouts too. */
+  notices?: React.ReactNode;
   /** The Workspace feed, for the split's own column. */
   workspaceFeed: React.ReactNode;
   tab: HomeTab;
@@ -46,6 +48,7 @@ export function HomeView({
   workspaceName,
   headingLevel = 1,
   composer,
+  notices,
   workspaceFeed,
   tab,
   targetFor,
@@ -62,6 +65,7 @@ export function HomeView({
         <Text variant="display-5" as={Title}>
           {workspaceName}
         </Text>
+        {notices}
         {composer}
         <HomeTabs tab={tab} targetFor={targetFor}>
           {panelFor(tab)}
@@ -102,6 +106,7 @@ export function HomeView({
             className={styles.column}
           >
             <div className="flex flex-col gap-6 pl-6">
+              {notices}
               <Text
                 as={Section}
                 variant="subtitle-handwrite-1"

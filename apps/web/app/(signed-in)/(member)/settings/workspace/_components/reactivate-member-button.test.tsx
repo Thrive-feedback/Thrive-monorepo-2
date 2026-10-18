@@ -4,12 +4,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MemberDeactivationResult } from '../_lib/member-deactivation-actions.service';
 import { ReactivateMemberButton } from './reactivate-member-button';
 
+const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
+
 const reactivateMember =
-  vi.fn<(accountId: string) => Promise<MemberDeactivationResult>>();
+  vi.fn<
+    (
+      workspaceId: string,
+      accountId: string,
+    ) => Promise<MemberDeactivationResult>
+  >();
 vi.mock(
   '@/app/(signed-in)/(member)/settings/workspace/_lib/member-deactivation-actions.service',
   () => ({
-    reactivateMember: (accountId: string) => reactivateMember(accountId),
+    reactivateMember: (workspaceId: string, accountId: string) =>
+      reactivateMember(workspaceId, accountId),
   }),
 );
 
@@ -27,6 +35,7 @@ describe('ReactivateMemberButton', () => {
     const user = userEvent.setup();
     render(
       <ReactivateMemberButton
+        workspaceId={WORKSPACE_ID}
         accountId="a-2"
         name="Ben"
         memberRole="ADMIN"
@@ -48,6 +57,7 @@ describe('ReactivateMemberButton', () => {
     const user = userEvent.setup();
     render(
       <ReactivateMemberButton
+        workspaceId={WORKSPACE_ID}
         accountId="a-2"
         name="Ben"
         memberRole="MEMBER"
@@ -60,7 +70,7 @@ describe('ReactivateMemberButton', () => {
       screen.getByRole('button', { name: 'Reactivate as Member' }),
     );
 
-    expect(reactivateMember).toHaveBeenCalledWith('a-2');
+    expect(reactivateMember).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2');
     expect(toast.success).toHaveBeenCalledWith('Ben was Reactivated');
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
@@ -69,6 +79,7 @@ describe('ReactivateMemberButton', () => {
     const user = userEvent.setup();
     render(
       <ReactivateMemberButton
+        workspaceId={WORKSPACE_ID}
         accountId="a-2"
         name="Ben"
         memberRole="MEMBER"
@@ -91,6 +102,7 @@ describe('ReactivateMemberButton', () => {
     const user = userEvent.setup();
     render(
       <ReactivateMemberButton
+        workspaceId={WORKSPACE_ID}
         accountId="a-2"
         name="Ben"
         memberRole="MEMBER"

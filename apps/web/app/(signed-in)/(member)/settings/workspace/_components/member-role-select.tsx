@@ -17,6 +17,8 @@ import type { MemberRole } from '@/lib/session/current-account.type';
 import { ROLE_NAMES } from '@/lib/session/role-names.constant';
 
 export type MemberRoleSelectProps = {
+  /** The Workspace the page was drawn for; acting is refused once the person is no longer in it. */
+  workspaceId: string;
   accountId: string;
   /** Who the Role belongs to, which names the select for a screen reader. */
   name: string;
@@ -35,6 +37,7 @@ const LAST_ADMIN_HINT = 'Make someone else an Admin first';
  * controls away from you. The last Admin's Role cannot be changed, and says why.
  */
 export function MemberRoleSelect({
+  workspaceId,
   accountId,
   name,
   memberRole,
@@ -49,7 +52,7 @@ export function MemberRoleSelect({
   function change(next: MemberRole) {
     startChanging(async () => {
       showRole(next);
-      const result = await changeMemberRole(accountId, next);
+      const result = await changeMemberRole(workspaceId, accountId, next);
       setIsConfirming(false);
       if (result.ok) {
         toast.success(

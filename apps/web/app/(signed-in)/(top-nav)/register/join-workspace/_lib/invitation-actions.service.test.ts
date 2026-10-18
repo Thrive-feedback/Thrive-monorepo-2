@@ -89,14 +89,6 @@ describe('joining the chosen Workspace', () => {
     },
   );
 
-  it('goes Home when the person joined a Workspace already, from another tab', async () => {
-    apiRefusesWith('ALREADY_IN_A_WORKSPACE', 409);
-
-    await expect(acceptInvitation({}, chose(INVITATION_ID))).rejects.toThrow(
-      'redirect:/home',
-    );
-  });
-
   it('sends someone whose session ended to sign-in', async () => {
     apiRefusesWith('NOT_SIGNED_IN', 401);
 

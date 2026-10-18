@@ -4,6 +4,8 @@ import { resendInvitation } from '@/app/(signed-in)/(member)/settings/workspace/
 import { ConfirmInvitationAction } from './confirm-invitation-action';
 
 export type ResendInvitationButtonProps = {
+  /** The Workspace the page was drawn for; acting is refused once the person is no longer in it. */
+  workspaceId: string;
   invitationId: string;
   /** The address it was sent to, which names it in the question and the toast. */
   email: string;
@@ -11,6 +13,7 @@ export type ResendInvitationButtonProps = {
 
 /** Sends an Invitation's email again once asked, good for another 7 days. */
 export function ResendInvitationButton({
+  workspaceId,
   invitationId,
   email,
 }: ResendInvitationButtonProps) {
@@ -24,7 +27,7 @@ export function ResendInvitationButton({
       doneMessage={`Invitation sent again to ${email}`}
       triggerVariant="ghost"
       confirmVariant="primary"
-      onConfirm={() => resendInvitation(invitationId)}
+      onConfirm={() => resendInvitation(workspaceId, invitationId)}
     />
   );
 }

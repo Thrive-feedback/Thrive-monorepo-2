@@ -4,12 +4,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { InvitationActionResult } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service';
 import { ResendInvitationButton } from './resend-invitation-button';
 
+const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
+
 const resendInvitation =
-  vi.fn<(invitationId: string) => Promise<InvitationActionResult>>();
+  vi.fn<
+    (
+      workspaceId: string,
+      invitationId: string,
+    ) => Promise<InvitationActionResult>
+  >();
 vi.mock(
   '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service',
   () => ({
-    resendInvitation: (invitationId: string) => resendInvitation(invitationId),
+    resendInvitation: (workspaceId: string, invitationId: string) =>
+      resendInvitation(workspaceId, invitationId),
   }),
 );
 
@@ -28,6 +36,7 @@ async function openDialog() {
   const user = userEvent.setup();
   render(
     <ResendInvitationButton
+      workspaceId={WORKSPACE_ID}
       invitationId={INVITATION_ID}
       email="cat@acme.test"
     />,
@@ -57,7 +66,7 @@ describe('ResendInvitationButton', () => {
 
     await user.click(screen.getByRole('button', { name: 'Resend' }));
 
-    expect(resendInvitation).toHaveBeenCalledWith(INVITATION_ID);
+    expect(resendInvitation).toHaveBeenCalledWith(WORKSPACE_ID, INVITATION_ID);
     expect(toast.success).toHaveBeenCalledWith(
       'Invitation sent again to cat@acme.test',
     );

@@ -4,13 +4,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { InviteMembersState } from '@/app/(signed-in)/(member)/settings/workspace/_lib/invite-members-state.type';
 import type { Invitee } from '@/lib/invitations/invite-emails.util';
 
+const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
+
 const inviteMembers =
-  vi.fn<(invitations: readonly Invitee[]) => Promise<InviteMembersState>>();
+  vi.fn<
+    (
+      workspaceId: string,
+      invitations: readonly Invitee[],
+    ) => Promise<InviteMembersState>
+  >();
 vi.mock(
   '@/app/(signed-in)/(member)/settings/workspace/_lib/invitation-actions.service',
   () => ({
-    inviteMembers: (invitations: readonly Invitee[]) =>
-      inviteMembers(invitations),
+    inviteMembers: (workspaceId: string, invitations: readonly Invitee[]) =>
+      inviteMembers(workspaceId, invitations),
   }),
 );
 
@@ -33,7 +40,7 @@ describe('InviteMembersForm', () => {
   });
 
   it('opens on One by one, with Paste a list beside it', () => {
-    render(<InviteMembersForm />);
+    render(<InviteMembersForm workspaceId={WORKSPACE_ID} />);
 
     expect(screen.getByRole('tab', { name: 'One by one' })).toHaveAttribute(
       'aria-selected',
@@ -63,7 +70,7 @@ describe('inviting one by one', () => {
         { email: 'cara@acme.test', outcome: 'invited' },
       ],
     });
-    render(<InviteMembersForm />);
+    render(<InviteMembersForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'ben@acme.test');
     await user.click(screen.getByRole('button', { name: 'Add another' }));
     await user.type(emailField(2), 'cara@acme.test');
@@ -71,7 +78,7 @@ describe('inviting one by one', () => {
 
     await user.click(sendButton());
 
-    expect(inviteMembers).toHaveBeenCalledWith([
+    expect(inviteMembers).toHaveBeenCalledWith(WORKSPACE_ID, [
       { email: 'ben@acme.test', role: 'MEMBER' },
       { email: 'cara@acme.test', role: 'ADMIN' },
     ]);
@@ -82,7 +89,7 @@ describe('inviting one by one', () => {
 
   it('flags a field that is not an address, and sends nothing', async () => {
     const user = userEvent.setup();
-    render(<InviteMembersForm />);
+    render(<InviteMembersForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'cara');
 
     await user.click(sendButton());
@@ -98,7 +105,7 @@ describe('inviting one by one', () => {
     inviteMembers.mockResolvedValue({
       results: [{ email: 'cara@acme.test', outcome: 'failed' }],
     });
-    render(<InviteMembersForm />);
+    render(<InviteMembersForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'cara@acme.test');
     await pick(user, 'Role for email address 1', 'Admin');
 
@@ -119,7 +126,7 @@ describe('inviting from a pasted list', () => {
   });
 
   async function openList(user: User) {
-    render(<InviteMembersForm />);
+    render(<InviteMembersForm workspaceId={WORKSPACE_ID} />);
     await user.click(screen.getByRole('tab', { name: 'Paste a list' }));
   }
 
@@ -182,7 +189,7 @@ describe('inviting from a pasted list', () => {
 
     await send(user, 'ben@acme.test,cara@acme.test,ben@acme.test');
 
-    expect(inviteMembers).toHaveBeenCalledWith([
+    expect(inviteMembers).toHaveBeenCalledWith(WORKSPACE_ID, [
       { email: 'ben@acme.test', role: 'MEMBER' },
       { email: 'cara@acme.test', role: 'MEMBER' },
     ]);
@@ -202,7 +209,7 @@ describe('inviting from a pasted list', () => {
 
     await send(user, 'ben@acme.test, cara@acme.test');
 
-    expect(inviteMembers).toHaveBeenCalledWith([
+    expect(inviteMembers).toHaveBeenCalledWith(WORKSPACE_ID, [
       { email: 'ben@acme.test', role: 'ADMIN' },
       { email: 'cara@acme.test', role: 'ADMIN' },
     ]);

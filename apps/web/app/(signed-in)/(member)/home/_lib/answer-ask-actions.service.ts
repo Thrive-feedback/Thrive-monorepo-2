@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import type { AnswerAskState } from '@/lib/feedback/answer-ask-state.type';
 import { ROUTES } from '@/lib/routes.constant';
-import { requireMember } from '@/lib/session/session.service';
+import { requireMemberOf } from '@/lib/session/session.service';
 
 /** What the API's own schema accepts, so the browser is never the first to check it. */
 const MAX_ANSWER_LENGTH = 4000;
@@ -38,13 +38,16 @@ const ELSEWHERE: Readonly<Record<string, string>> = {
  * thing the browser decides is what was written.
  *
  * Treated as a public endpoint, because it is one: the session is read again here and the
- * answer is validated again, whatever the form already checked.
+ * answer is validated again, whatever the form already checked. `workspaceId` is the Workspace
+ * the page was drawn for, bound where the form is drawn; it must still be the one the person is
+ * in, or nothing is sent.
  *
  * On success it goes back to the same Ask's dialog on Home, which then says it was answered
  * instead of offering the box — a confirmation that survives a refresh. An Ask that was already
  * answered, or is not theirs, lands in the same place, where the dialog says so.
  */
 export async function answerAsk(
+  workspaceId: string,
   _previous: AnswerAskState,
   formData: FormData,
 ): Promise<AnswerAskState> {
@@ -68,7 +71,7 @@ export async function answerAsk(
     };
   }
 
-  const { membership } = await requireMember();
+  const { membership } = await requireMemberOf(workspaceId);
   const cookie = (await headers()).get('cookie') ?? undefined;
   let next: string;
   try {
