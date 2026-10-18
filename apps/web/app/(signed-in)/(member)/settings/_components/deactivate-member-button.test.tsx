@@ -54,11 +54,29 @@ describe('DeactivateMemberButton', () => {
 
     await user.click(screen.getByRole('button', { name: 'Deactivate Ben' }));
 
-    const dialog = screen.getByRole('alertdialog', { name: 'Deactivate Ben?' });
+    const dialog = screen.getByRole('dialog', { name: 'Deactivate Ben?' });
     expect(dialog).toHaveTextContent(
       "They won't be able to open Acme any more. The Feedback they gave and received stays, with “(inactive)” after their name, until an Admin reactivates them.",
     );
     expect(deactivateMember).not.toHaveBeenCalled();
+  });
+
+  it('dims the page behind the question, as every dialog does', async () => {
+    const user = userEvent.setup();
+    render(
+      <DeactivateMemberButton
+        workspaceId={WORKSPACE_ID}
+        accountId="a-2"
+        name="Ben"
+        workspaceName="Acme"
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Deactivate Ben' }));
+
+    expect(
+      document.querySelector('[data-slot="dialog-overlay"]'),
+    ).toBeInTheDocument();
   });
 
   it('Deactivates them once confirmed, and says so', async () => {
@@ -78,7 +96,7 @@ describe('DeactivateMemberButton', () => {
 
     expect(deactivateMember).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2');
     expect(toast.success).toHaveBeenCalledWith('Ben was deactivated');
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('keeps them when the Admin changes their mind', async () => {
@@ -136,7 +154,7 @@ describe('DeactivateMemberButton', () => {
 
     await user.click(screen.getByRole('button', { name: 'Leave Workspace' }));
     expect(
-      screen.getByRole('alertdialog', { name: 'Leave Acme?' }),
+      screen.getByRole('dialog', { name: 'Leave Acme?' }),
     ).toHaveTextContent(
       "You won't be able to open Acme again. The Feedback you gave and received stays, with “(inactive)” after your name.",
     );

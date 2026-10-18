@@ -1,6 +1,5 @@
 'use client';
 
-import { AlertDialog } from 'radix-ui';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import {
@@ -8,7 +7,16 @@ import {
   leaveWorkspace,
 } from '@/app/(signed-in)/(member)/settings/_lib/member-deactivation-actions.service';
 import { Button } from '@/components/atoms/button';
-import { Text } from '@/components/atoms/text';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/atoms/dialog';
 
 export type DeactivateMemberButtonProps = {
   /** The Workspace the page was drawn for; acting is refused once the person is no longer in it. */
@@ -28,7 +36,8 @@ export type DeactivateMemberButtonProps = {
 /**
  * Ends someone's access to the Workspace, or the person's own, which is leaving. Asked first,
  * because only an Admin can take it back, and the question says what stays: the Feedback they
- * gave and received, with "(inactive)" after their name. The dialog stays open while the
+ * gave and received, with "(inactive)" after their name. It is the shared `Dialog`, so the page
+ * dims behind it as it does behind every other question. The dialog stays open while the
  * request is in flight, so it cannot be sent twice.
  */
 export function DeactivateMemberButton({
@@ -61,8 +70,8 @@ export function DeactivateMemberButton({
   const confirmLabel = isSelf ? `Leave ${workspaceName}` : 'Deactivate';
 
   return (
-    <AlertDialog.Root open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialog.Trigger asChild>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
         <Button
           variant={isSelf ? 'danger' : 'ghost-danger'}
           size="sm"
@@ -72,34 +81,29 @@ export function DeactivateMemberButton({
         >
           {label}
         </Button>
-      </AlertDialog.Trigger>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0" />
-        <AlertDialog.Content className="fixed inset-x-4 top-1/2 mx-auto flex max-w-2xl -translate-y-1/2 flex-col gap-4 rounded-page border border-border-default bg-surface-overlay p-6 shadow-high">
-          <AlertDialog.Title asChild>
-            <Text as="h2" variant="subtitle-2" className="break-all">
-              {isSelf ? `Leave ${workspaceName}?` : `Deactivate ${name}?`}
-            </Text>
-          </AlertDialog.Title>
-          <AlertDialog.Description asChild>
-            <Text variant="body-2" tone="muted">
-              {isSelf
-                ? `You won't be able to open ${workspaceName} again. The Feedback you gave and received stays, with “(inactive)” after your name.`
-                : `They won't be able to open ${workspaceName} any more. The Feedback they gave and received stays, with “(inactive)” after their name, until an Admin reactivates them.`}
-            </Text>
-          </AlertDialog.Description>
-          <div className="flex flex-wrap justify-end gap-2">
-            <AlertDialog.Cancel asChild>
-              <Button disabled={isActing}>
-                {isSelf ? `Stay in ${workspaceName}` : `Keep ${name}`}
-              </Button>
-            </AlertDialog.Cancel>
-            <Button variant="danger" loading={isActing} onClick={handleConfirm}>
-              {confirmLabel}
+      </DialogTrigger>
+      <DialogContent hasCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle className="break-all">
+            {isSelf ? `Leave ${workspaceName}?` : `Deactivate ${name}?`}
+          </DialogTitle>
+          <DialogDescription>
+            {isSelf
+              ? `You won't be able to open ${workspaceName} again. The Feedback you gave and received stays, with “(inactive)” after your name.`
+              : `They won't be able to open ${workspaceName} any more. The Feedback they gave and received stays, with “(inactive)” after their name, until an Admin reactivates them.`}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button disabled={isActing}>
+              {isSelf ? `Stay in ${workspaceName}` : `Keep ${name}`}
             </Button>
-          </div>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog.Root>
+          </DialogClose>
+          <Button variant="danger" loading={isActing} onClick={handleConfirm}>
+            {confirmLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,10 +1,18 @@
 'use client';
 
-import { AlertDialog } from 'radix-ui';
 import { useId, useOptimistic, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { changeMemberRole } from '@/app/(signed-in)/(member)/settings/members/_lib/member-role-actions.service';
 import { Button } from '@/components/atoms/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/atoms/dialog';
 import {
   Select,
   SelectContent,
@@ -102,36 +110,29 @@ export function MemberRoleSelect({
           {LAST_ADMIN_HINT}
         </Text>
       )}
-      <AlertDialog.Root open={isConfirming} onOpenChange={setIsConfirming}>
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0" />
-          <AlertDialog.Content className="fixed inset-x-4 top-1/2 mx-auto flex max-w-2xl -translate-y-1/2 flex-col gap-4 rounded-page border border-border-default bg-surface-overlay p-6 shadow-high">
-            <AlertDialog.Title asChild>
-              <Text as="h2" variant="subtitle-2">
-                Make yourself a Member?
-              </Text>
-            </AlertDialog.Title>
-            <AlertDialog.Description asChild>
-              <Text variant="body-2" tone="muted">
-                You won't be able to invite people or change anyone's Role.
-                Another Admin can make you an Admin again.
-              </Text>
-            </AlertDialog.Description>
-            <div className="flex justify-end gap-2">
-              <AlertDialog.Cancel asChild>
-                <Button disabled={isChanging}>Stay an Admin</Button>
-              </AlertDialog.Cancel>
-              <Button
-                variant="danger"
-                loading={isChanging}
-                onClick={() => change('MEMBER')}
-              >
-                Make me a Member
-              </Button>
-            </div>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
+      <Dialog open={isConfirming} onOpenChange={setIsConfirming}>
+        <DialogContent hasCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Make yourself a Member?</DialogTitle>
+            <DialogDescription>
+              You won't be able to invite people or change anyone's Role.
+              Another Admin can make you an Admin again.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button disabled={isChanging}>Stay an Admin</Button>
+            </DialogClose>
+            <Button
+              variant="danger"
+              loading={isChanging}
+              onClick={() => change('MEMBER')}
+            >
+              Make me a Member
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </span>
   );
 }

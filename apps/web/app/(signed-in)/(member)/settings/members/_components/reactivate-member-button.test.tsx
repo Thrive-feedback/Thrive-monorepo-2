@@ -45,7 +45,7 @@ describe('ReactivateMemberButton', () => {
 
     await user.click(screen.getByRole('button', { name: 'Reactivate Ben' }));
 
-    const dialog = screen.getByRole('alertdialog', { name: 'Reactivate Ben?' });
+    const dialog = screen.getByRole('dialog', { name: 'Reactivate Ben?' });
     expect(dialog).toHaveTextContent(
       "They'll be able to open Acme again, as an Admin, and read the Feedback they gave and received there.",
     );
@@ -72,7 +72,7 @@ describe('ReactivateMemberButton', () => {
 
     expect(reactivateMember).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2');
     expect(toast.success).toHaveBeenCalledWith('Ben was reactivated');
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('leaves them inactive when the Admin changes their mind', async () => {
@@ -91,7 +91,7 @@ describe('ReactivateMemberButton', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(reactivateMember).not.toHaveBeenCalled();
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('says why when the API refuses', async () => {
