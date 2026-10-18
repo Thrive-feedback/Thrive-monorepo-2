@@ -10,6 +10,9 @@ const validEnvironment = {
   GOOGLE_CLIENT_SECRET: 'client-secret',
   RESEND_API_KEY: 're_test_key',
   RESEND_FROM_ADDRESS: 'no-reply@send.thrive.example',
+  DISCORD_CLIENT_ID: 'discord-client-id',
+  DISCORD_CLIENT_SECRET: 'discord-client-secret',
+  DISCORD_BOT_TOKEN: 'discord-bot-token',
 };
 
 function failedPaths(env: Record<string, string | undefined>): string[] {
@@ -44,6 +47,15 @@ describe('environmentSchema', () => {
 
   it.each(['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'])(
     'refuses a missing %s',
+    (name) => {
+      expect(failedPaths({ ...validEnvironment, [name]: undefined })).toEqual([
+        name,
+      ]);
+    },
+  );
+
+  it.each(['DISCORD_CLIENT_ID', 'DISCORD_CLIENT_SECRET', 'DISCORD_BOT_TOKEN'])(
+    'refuses a missing %s, since one application serves every Workspace',
     (name) => {
       expect(failedPaths({ ...validEnvironment, [name]: undefined })).toEqual([
         name,

@@ -27,6 +27,10 @@ async function emit(): Promise<void> {
   // Never used: no email is sent, and the transport makes no request until one is.
   process.env.RESEND_API_KEY = 'unused';
   process.env.RESEND_FROM_ADDRESS = 'unused@unused.invalid';
+  // Likewise never used: nothing is sent to a chat tool while the document is built.
+  process.env.DISCORD_CLIENT_ID = 'unused';
+  process.env.DISCORD_CLIENT_SECRET = 'unused';
+  process.env.DISCORD_BOT_TOKEN = 'unused';
   const app = await NestFactory.create(AppModule, { logger: false });
   const target = resolve(__dirname, '..', 'openapi.json');
 

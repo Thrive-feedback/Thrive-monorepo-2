@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 
 import {
   AuthConfig,
+  ChatConfig,
   CONFIGURATION,
   type Configuration,
   DatabaseConfig,
@@ -41,11 +42,23 @@ import {
       inject: [CONFIGURATION],
     },
     {
+      provide: ChatConfig,
+      useFactory: (config: Configuration) => config.chat,
+      inject: [CONFIGURATION],
+    },
+    {
       provide: WebConfig,
       useFactory: (config: Configuration) => config.web,
       inject: [CONFIGURATION],
     },
   ],
-  exports: [HttpConfig, DatabaseConfig, AuthConfig, EmailConfig, WebConfig],
+  exports: [
+    HttpConfig,
+    DatabaseConfig,
+    AuthConfig,
+    EmailConfig,
+    ChatConfig,
+    WebConfig,
+  ],
 })
 export class ConfigModule {}
