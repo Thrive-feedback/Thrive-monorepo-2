@@ -9,8 +9,6 @@ export function JoinWorkspaceHero() {
       </Text>
       <Text variant="body-1" tone="muted">
         Choose the Workspace you want to join.
-        <br />
-        You can belong to one Workspace for now.
       </Text>
     </div>
   );

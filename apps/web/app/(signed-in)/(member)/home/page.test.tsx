@@ -197,6 +197,16 @@ describe('Home', () => {
     ).toBeInTheDocument();
   });
 
+  it('says once that the person has just switched to this Workspace', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open({ opened: '1' }));
+
+    expect(
+      screen.getByText('success toast: Switched to “Acme Corp” then /home'),
+    ).toBeInTheDocument();
+  });
+
   it('shows the Invitations waiting for the person, in either layout', async () => {
     requireMember.mockResolvedValue(ANN);
 

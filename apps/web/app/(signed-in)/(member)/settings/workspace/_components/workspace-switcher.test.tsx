@@ -1,18 +1,15 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SwitchWorkspaceResult } from '../_lib/workspace-switch-actions.service';
+import type { SwitchWorkspaceResult } from '@/lib/workspace/workspace-switch-actions.service';
 import { WorkspaceSwitcher } from './workspace-switcher';
 
 const switchWorkspace =
   vi.fn<(workspaceId: string) => Promise<SwitchWorkspaceResult>>();
-vi.mock(
-  '@/app/(signed-in)/(member)/settings/workspace/_lib/workspace-switch-actions.service',
-  () => ({
-    switchWorkspace: (workspaceId: string) => switchWorkspace(workspaceId),
-    createAnotherWorkspace: vi.fn(),
-  }),
-);
+vi.mock('@/lib/workspace/workspace-switch-actions.service', () => ({
+  switchWorkspace: (workspaceId: string) => switchWorkspace(workspaceId),
+  createAnotherWorkspace: vi.fn(),
+}));
 
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('sonner', () => ({ toast }));
@@ -64,14 +61,41 @@ describe('WorkspaceSwitcher', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('switches to the Workspace chosen', async () => {
+  it('asks before switching, naming the Workspace closed and the one opened', async () => {
+    const user = await openSwitcher();
+
+    await user.click(screen.getByRole('button', { name: 'Globex' }));
+
+    expect(
+      screen.getByRole('heading', { name: 'Switch to “Globex”?' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("You'll close “Acme” on this device and open “Globex”."),
+    ).toBeInTheDocument();
+    expect(switchWorkspace).not.toHaveBeenCalled();
+  });
+
+  it('switches once the person confirms', async () => {
     // Switching navigates away, so the action never answers.
     switchWorkspace.mockReturnValue(new Promise(() => {}));
     const user = await openSwitcher();
 
     await user.click(screen.getByRole('button', { name: 'Globex' }));
+    await user.click(screen.getByRole('button', { name: 'Open “Globex”' }));
 
     expect(switchWorkspace).toHaveBeenCalledWith(GLOBEX.id);
+  });
+
+  it('goes back to the list without switching on Not now', async () => {
+    const user = await openSwitcher();
+
+    await user.click(screen.getByRole('button', { name: 'Globex' }));
+    await user.click(screen.getByRole('button', { name: 'Not now' }));
+
+    expect(
+      screen.getByRole('list', { name: 'Your Workspaces' }),
+    ).toBeInTheDocument();
+    expect(switchWorkspace).not.toHaveBeenCalled();
   });
 
   it('says why when it could not switch', async () => {
@@ -82,10 +106,29 @@ describe('WorkspaceSwitcher', () => {
     const user = await openSwitcher();
 
     await user.click(screen.getByRole('button', { name: 'Globex' }));
+    await user.click(screen.getByRole('button', { name: 'Open “Globex”' }));
 
     expect(toast.error).toHaveBeenCalledWith(
       "You're no longer in that Workspace.",
     );
+  });
+
+  it('says on its button that creating jumps to the Workspace named', async () => {
+    const user = await openSwitcher();
+    await user.click(
+      screen.getByRole('button', { name: 'Create a Workspace' }),
+    );
+
+    await user.type(
+      screen.getByRole('textbox', { name: 'Workspace name' }),
+      'Initrode',
+    );
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Create and jump to the “Initrode” Workspace',
+      }),
+    ).toBeInTheDocument();
   });
 
   it('turns into the form for creating a Workspace, and back', async () => {

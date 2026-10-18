@@ -38,9 +38,9 @@ function drawEverythingAgain() {
 }
 
 /**
- * Moves the person into another of their Workspaces, which every page and every device then
- * opens, and stays on Settings → Workspace, now that Workspace's (brain `ADR-0035` decision 4).
- * The API checks they are in it. Answers only when it could not switch.
+ * Puts this browser's session in one of the person's Workspaces — chosen after sign-in, or
+ * switched to from Settings — and opens its Home, every page drawn afresh, saying once that it
+ * switched. Other devices stay where they are. The API checks they are in it. Answers only when it could not switch.
  */
 export async function switchWorkspace(
   workspaceId: string,
@@ -68,12 +68,12 @@ export async function switchWorkspace(
   }
   drawEverythingAgain();
   // Outside the `try`: `redirect` works by throwing, and the catch above would swallow it.
-  redirect(ROUTES.settings.workspace);
+  redirect(ROUTES.homeOpened);
 }
 
 /**
- * Creates another Workspace from the switcher, with the person as its first Admin; it becomes the
- * one they are in, and they stay on Settings → Workspace, now the new Workspace's.
+ * Creates another Workspace from the switcher, with the person as its first Admin; their session
+ * goes into it, and they land on its Home.
  */
 export async function createAnotherWorkspace(
   _previous: CreateWorkspaceState,
@@ -87,5 +87,5 @@ export async function createAnotherWorkspace(
     redirect(creation.path);
   }
   drawEverythingAgain();
-  redirect(ROUTES.settings.workspace);
+  redirect(ROUTES.home);
 }

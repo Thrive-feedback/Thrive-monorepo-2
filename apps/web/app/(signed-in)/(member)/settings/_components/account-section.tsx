@@ -7,8 +7,8 @@ import { SettingRow, SettingValues } from './setting-row';
 
 /**
  * The person's own Profile, as the session already knows it — their photo, the names they
- * introduced themselves with, the address they sign in with, and their Role — and Sign out. Read only: the
- * API can create a Profile but not yet change one.
+ * introduced themselves with, their Profile slug, the address they sign in with, and their Role —
+ * and Sign out. Read only: the API can create a Profile but not yet change one.
  */
 export function AccountSection({ session }: { session: MemberAccount }) {
   const { profile, membership } = session;
@@ -25,6 +25,7 @@ export function AccountSection({ session }: { session: MemberAccount }) {
         rows={[
           { label: 'Full name', value: profile.fullName },
           { label: 'Display name', value: profile.displayName },
+          { label: 'Profile slug', value: profile.slug },
           { label: 'Email', value: session.email },
           { label: 'Role', value: ROLE_NAMES[membership.role] },
         ]}

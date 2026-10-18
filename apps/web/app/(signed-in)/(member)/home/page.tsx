@@ -26,7 +26,8 @@ type HomeProps = {
    * `signedIn` is set when Google sent a returning person back here, `sent` when they have just
    * sent a Feedback Request, `given` when they have just given Feedback without being asked,
    * `switched` when what they sent was dropped because its page was for a Workspace they are no
-   * longer in, `tab` is the feed tab that is open, and `request` or `ask` is the one open in a
+   * longer in, `opened` when they have just switched to this Workspace, `tab` is the feed tab that
+   * is open, and `request` or `ask` is the one open in a
    * dialog over it.
    */
   searchParams: Promise<{
@@ -34,6 +35,7 @@ type HomeProps = {
     sent?: string | string[];
     given?: string | string[];
     switched?: string | string[];
+    opened?: string | string[];
     tab?: string | string[];
     request?: string | string[];
     ask?: string | string[];
@@ -52,7 +54,7 @@ type HomeProps = {
  * the address, so a reload or a shared link opens it again; a request wins if both are named.
  */
 export default async function Home({ searchParams }: HomeProps) {
-  const { signedIn, sent, given, switched, tab, request, ask } =
+  const { signedIn, sent, given, switched, opened, tab, request, ask } =
     HomeSearchParams.parse(await searchParams);
   const session = await requireMember(signedIn);
 
@@ -76,6 +78,13 @@ export default async function Home({ searchParams }: HomeProps) {
         <OneTimeToast
           type="success"
           message="Feedback sent"
+          then={ROUTES.homeTab(tab)}
+        />
+      )}
+      {opened !== undefined && (
+        <OneTimeToast
+          type="success"
+          message={`Switched to “${session.membership.workspace.name}”`}
           then={ROUTES.homeTab(tab)}
         />
       )}
