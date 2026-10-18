@@ -9,3 +9,22 @@
 -- The unique index carries the provider so that a second tool is not a migration; one Connection
 -- per Workspace is the application's check (design 0020 D7).
 -- Rollback: DROP TABLE "integration_connection";
+
+-- CreateTable
+CREATE TABLE "integration_connection" (
+    "id" TEXT NOT NULL,
+    "workspaceId" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "externalWorkspaceId" TEXT NOT NULL,
+    "externalWorkspaceName" TEXT NOT NULL,
+    "externalChannelId" TEXT NOT NULL,
+    "externalChannelName" TEXT NOT NULL,
+    "connectedByAccountId" TEXT NOT NULL,
+    "connectedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "integration_connection_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "integration_connection_workspaceId_provider_key" ON "integration_connection"("workspaceId", "provider");
