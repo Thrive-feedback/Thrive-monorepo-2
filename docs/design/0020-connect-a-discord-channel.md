@@ -1,4 +1,4 @@
-# Technical design · IT-1 Install the Thrive bot in our Discord server and choose a channel
+# Technical design · IT-1 Connect a chat tool and choose a channel (Discord first)
 
 **Ticket:** [#199](https://github.com/Thrive-feedback/Thrive-monorepo-2/issues/199) IT-0001 · Epic
 [#12](https://github.com/Thrive-feedback/Thrive-monorepo-2/issues/12)
@@ -47,16 +47,17 @@ nothing (ADR 0009).
 | # | Decision | Rejected | Why |
 | --- | --- | --- | --- |
 | D1 | **A new module, `modules/integrations/`**, owning one table | a section of Workspace | `domain-map.md` makes Integrations its own bounded context with its own nouns. `BE_03` R7. Workspace owning it would make "which chat tool a team uses" a fact about Workspaces |
-| D2 | **The Discord client is app-level infrastructure** — a port in `shared/application/`, its adapter in `infrastructure/discord/`, bound by a `DiscordModule` | a client inside `modules/integrations/infrastructure/` | Exactly `EmailSender`'s shape, and for the same stated reason: it belongs to no capability. Epic #13's direct messages are **not** Integrations' code, and if the client lives inside this module, #13 either reaches into it (breaking `BE_03` R4) or builds a second one |
-| D3 | **No cipher, no encrypted column.** A Workspace stores a guild id and a channel id | the previous draft's `SecretCipher` | Neither is a credential: a guild id is visible to everyone in the server, and holding a channel id grants nothing. Thrive's bot token is one config value (§6), never a row. Encrypting a public identifier is theatre that costs a key to manage |
+| D2 | **The chat client is app-level infrastructure** — a port in `shared/application/`, one adapter per provider under `infrastructure/chat/<provider>/`, bound by a `ChatModule` | a client inside `modules/integrations/infrastructure/` | Exactly `EmailSender`'s shape, and for the same stated reason: it belongs to no capability. Epic #13's direct messages are **not** Integrations' code, and if the client lives inside this module, #13 either reaches into it (breaking `BE_03` R4) or builds a second one |
+| D3 | **No credential is stored per Workspace, because Discord does not issue one.** A Workspace stores identifiers only | the previous draft's `SecretCipher`; adding a nullable `secret` column now, for Slack | For Discord neither value is secret: a server id is known to everyone in it, and a channel id grants nothing. Thrive's bot credential is one config value (§6). **This is the one decision that does not generalise** — Slack issues a bot token per installed workspace, so the first such provider brings a column *and* the cipher *and* the key management, together, when they have a consumer. Adding the empty column now would be a knob with no reader (`AGENTS.md`), and a migration on a pre-launch table with no users costs nothing |
 | D4 | **The OAuth redirect lands on a `(signed-in)` web route**, which forwards to an ordinary authenticated API route | a `@Public()` API callback | **Discord cannot reach the API** — it has no public domain, and the browser only ever reaches the web origin (ADR 0027, `PROJECT.md`). The session cookie is `sameSite: 'lax'`, so it travels on Discord's top-level GET redirect. **So ADR 0029 needs no exception** — a correction to the earlier draft, which had this as Thrive's first public route |
 | D5 | **`state` is a stateless signed token** — HMAC over `{accountId, workspaceId, nonce, exp}`, 5-minute life | a `oauth_state` table; Redis | There is no Redis (`BE_19` is `todo`) and a table for a value that lives five minutes is a migration plus a sweeper. Being signed and short-lived is what a `state` needs. Replayable within its window — accepted, because connecting twice replaces rather than accumulates (D7) |
 | D6 | **The returned `guild_id` is never trusted.** The `code` is exchanged with Discord, and the guild is read from Discord's answer | reading `?guild_id=` from the redirect | That parameter arrives through the person's browser and anyone can craft it. Trusting it lets somebody connect *their* server to *your* Workspace by handing you a link. The code exchange is the only authenticated proof of which server was authorised |
 | D7 | One Connection per Workspace, enforced in the **application layer**; the unique index is `(workspaceId, provider)` | a unique index on `workspaceId` alone | The precedent of `AlreadyInAWorkspaceError`, whose comment reads *"Held here rather than in the schema, so letting a person belong to several later is deleting this check."* Slack arriving must not be a migration |
 | D8 | Workspace's published port gains **`isAdminOf`** — a fact, not a capability | `mayManageIntegrations` on the port; publishing the Role value | §4.4. Amends ADR 0037's published surface, so it carries its own code ADR |
-| D9 | **The channel list is offered from Discord, and confirmed by posting** | computing each channel's effective permissions before offering it | Channel overwrites, role order and category inheritance are Discord's permission algebra; reimplementing it client-side is a large amount of code that is wrong at the edges. Offer the text channels, let the test post be the proof (#199 AC 4) |
+| D9 | **The channel list is offered from the provider, and confirmed by posting** | computing each channel's effective permissions before offering it | Channel overwrites, role order and category inheritance are Discord's permission algebra; reimplementing it client-side is a large amount of code that is wrong at the edges. Offer the text channels, let the test post be the proof (#199 AC 4) |
 | D10 | **No `UnitOfWork`** | a transaction around exchange → list → post → write | One row, one statement. A transaction held open across three Discord calls holds a Postgres connection for tens of seconds. ADR 0031 is for use cases that write more than once |
 | D11 | Two pull requests: API, then web | one PR | `GEN_08` R8 — the contract ships before what consumes it |
+| D12 | **Installs go through a registry**, one `ChatInstaller` per provider, chosen by the `provider` value — the same seam `0021` D3 uses for messaging | a Discord-only module, generalised when Slack arrives | Taken 2026-10-18 at the author's instruction, against `PROJECT.md` §2, and with the same stated cost: today it is a map with one entry and an interface designed against one example. `0021` §7's fake second provider is what keeps it honest |
 
 **D-void** — from the superseded draft: the `DiscordWebhookAddress` value object and its host allowlist,
 the `SecretCipher` port and encrypted `secret` column, reading the channel name off the webhook, and the
@@ -81,16 +82,20 @@ the `SecretCipher` port and encrypted `secret` column, reading the channel name 
 modules/integrations/
   domain/
     value-object/integration-provider.vo.ts
-    value-object/discord-snowflake.vo.ts         a Discord id: digits, 17–20 of them
+    value-object/external-id.vo.ts               an opaque provider id; each adapter checks its own shape
     integrations.errors.ts
   application/
-    port/discord-install.port.ts                 exchangeCode(), guildChannels(), leaveGuild()
-    use-cases/begin-discord-install.use-case.ts   builds the authorise URL + state
-    use-cases/complete-discord-install.use-case.ts
+    port/chat-installer.port.ts                  D12 — ONE interface, implemented per provider:
+                                                 authorizeUrl(state) · exchangeCode(code)
+                                                 listChannels() · leave()
+    service/chat-installer.registry.ts           D12 — provider → ChatInstaller
+    use-cases/begin-install.use-case.ts          builds the authorise URL + state
+    use-cases/complete-install.use-case.ts
     use-cases/choose-channel.use-case.ts
     use-cases/read-connection.use-case.ts
     query-port/connection.query-port.ts
   infrastructure/
+    provider/discord-chat-installer.adapter.ts   the only implementation today
     repository/prisma-connection.repository.ts
     mapper/connection.mapper.ts
   presentation/
@@ -119,16 +124,16 @@ leaving a guild) are Integrations' own port, because nothing else will ever want
 
 ```
 Admin presses Connect Discord
-  web   → POST /v1/workspaces/{id}/integrations/discord/install   (signed in, Admin)
+  web   → POST /v1/workspaces/{id}/integrations/{provider}/install  (signed in, Admin)
         ← 200 { authorizeUrl }                                     state signed into it (D5)
   browser → discord.com/oauth2/authorize?client_id&scope=bot&permissions=3072&state&redirect_uri
   Admin authorises, picks their server
-  Discord → GET https://thriveteam.app/settings/workspace/integrations/discord/callback?code&state&guild_id
+  Discord → GET https://thriveteam.app/settings/workspace/integrations/{provider}/callback?code&state&guild_id
         ↑ a (signed-in) WEB route — the API has no public domain (D4). Cookie rides along, sameSite=lax
-  web   → POST /v1/workspaces/{id}/integrations/discord/complete   { code, state }
+  web   → POST /v1/workspaces/{id}/integrations/{provider}/complete { code, state }
         ← 200 { guildName, channels: [{ id, name }] }               guild from the code exchange, not the query (D6)
   Admin picks a channel
-  web   → PUT  /v1/workspaces/{id}/integrations/discord/channel     { channelId }
+  web   → PUT  /v1/workspaces/{id}/integrations/{provider}/channel  { channelId }
         ← 204                                                        posts the test message, then writes
   web   → GET  /v1/workspaces/{id}/integrations                     for the screen
 ```
@@ -205,7 +210,7 @@ The superseded draft's sharpest risk disappeared with the pasted URL. What remai
   trust — otherwise an Admin of Workspace A could name a channel in Workspace B's server.
 - **The bot token in logs.** The client logs the route and the status, never a header.
 
-### 4.6 The Discord client
+### 4.6 The chat client
 
 In `infrastructure/discord/`, bearing `Authorization: Bot <token>`, and the one place that knows Discord
 exists. Mirrors `infrastructure/email/resend-email-sender.adapter.ts`, which is `BE_23`'s other worked
@@ -253,21 +258,23 @@ are ids with **no foreign key** into Workspace's or Identity's tables, the rule 
 Feedback.
 
 ```prisma
-/// One Workspace's authorised link to one external tool. Nothing here is secret: a guild id is
-/// known to everyone in that server, and a channel id grants nothing on its own. Thrive's bot
-/// credential is configuration, never a row.
+/// One Workspace's authorised link to one external tool. Nothing here is secret for Discord: a
+/// server id is known to everyone in it, and a channel id grants nothing on its own. A provider
+/// that issues a per-Workspace credential (Slack does) adds the column, the cipher and the key
+/// handling together, when they have a reader — D3.
 model IntegrationConnection {
-  id                   String   @id
-  workspaceId          String
-  provider             String
-  /// Discord's ids, as snowflakes. Names are cached for the screen and refreshed when read.
-  guildId              String
-  guildName            String
-  channelId            String
-  channelName          String
-  connectedByAccountId String
-  connectedAt          DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                    String   @id
+  workspaceId           String
+  provider              String
+  /// The provider's own space: a Discord server, a Slack team. Names are cached for the screen
+  /// and refreshed when read; the ids are opaque strings, because providers do not agree on a shape.
+  externalWorkspaceId   String
+  externalWorkspaceName String
+  externalChannelId     String
+  externalChannelName   String
+  connectedByAccountId  String
+  connectedAt           DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   @@unique([workspaceId, provider])
   @@map("integration_connection")
@@ -297,8 +304,8 @@ open.
 | Level | What | Where |
 | --- | --- | --- |
 | Unit | `state`: round-trips; refused when expired, re-signed, or carrying another Account or Workspace | `infrastructure/discord/oauth-state.spec.ts` |
-| Unit | `DiscordSnowflake` — accepts 17–20 digits, refuses everything else | `domain/value-object/discord-snowflake.vo.spec.ts` |
-| Unit | `CompleteDiscordInstall` reads the guild from the **exchange**, and ignores `guild_id` entirely (D6) | `…complete-discord-install.use-case.spec.ts` |
+| Unit | the Discord adapter refuses an id that is not a snowflake; an unknown `{provider}` is `PROVIDER_NOT_SUPPORTED`, not a 404 | `infrastructure/provider/discord-chat-installer.adapter.spec.ts` |
+| Unit | `CompleteInstall` reads the provider's space from the **exchange**, and ignores `guild_id` entirely (D6) | `…complete-install.use-case.spec.ts` |
 | Unit | `ChooseChannel` refuses a channel outside the guild; stores nothing when the test post fails (§4.3) | `…choose-channel.use-case.spec.ts` |
 | Unit | Both use cases refuse a non-Admin **before** calling Discord at all | both spec files |
 | Unit | Client: 10s timeout, 3 attempts on `503`, **one** on `403`, honours `retry_after`, logs no token | `infrastructure/discord/discord-bot.client.spec.ts` |
@@ -354,32 +361,30 @@ will not boot.
 channel, restricted to Feedback already set to *Everyone in the Workspace*; #211–#215 are where a person
 is messaged directly, which is Epic #13's and needs its own design.
 
-## 11. What carries to Slack, and what does not
+## 11. Adding a provider — the checklist
 
-`ADR-0035` says Slack is next, so this is written now rather than discovered then.
+`ADR-0035` names Slack as next, and on 2026-10-18 the author chose to shape both designs for several
+providers rather than generalise later (D12, and `0021` D3). This is what that bought, stated as the
+work a second provider actually costs:
 
-**Carries unchanged:** the `modules/integrations/` module and its bounded context (D1); the
-app-level client location (D2) — Slack becomes a second client behind the same port, not a second
-module; `provider` plus `@@unique([workspaceId, provider])` (D7), which is why Slack arriving is not a
-migration of this table's shape; the signed `state` token (D5) and the `(signed-in)` web callback (D4),
-because Slack redirects a browser exactly as Discord does; `isAdminOf` (D8); no `UnitOfWork` (D10); and
-the client's timeout, attempt cap and backoff (§4.6) — Slack also answers `429` with a retry hint.
+| | |
+| --- | --- |
+| **Write** | one `infrastructure/provider/<name>-chat-installer.adapter.ts` — authorize URL, code exchange, channel list, leave — and register it |
+| **Add** | its client id and secret to configuration |
+| **Add** | a row to the Integrations screen, which already lists providers rather than naming one |
+| **Change** | nothing in the use cases, the routes, the error codes, the `state` token, the guard, or the table's shape |
 
-**Does not carry, and each needs a decision:**
+**And one thing that is not free, named rather than hidden (D3).** Slack issues a **bot token per
+installed workspace**; Discord issues none. So the first such provider brings a migration adding an
+encrypted column, plus the `SecretCipher` port and adapter this design deleted from its own superseded
+draft, plus somewhere to keep the key. That is deliberate: an empty column and an unused cipher today
+would be a knob with no reader, and the table has no users to migrate around.
 
-| | Discord | Slack |
-| --- | --- | --- |
-| **The credential** | **one bot token for every customer**, in config (§6) | **one bot token per connected workspace**, returned by the install and belonging to that customer |
-| **D3 "no cipher, no encrypted column"** | correct — a guild id and a channel id are not secrets | **wrong.** Slack's per-workspace token is a credential at rest, so `SecretCipher` and an encrypted column come back — the pair this design deleted from its own superseded draft |
-| **Getting listed** | invite a bot, no review | an app directory submission, which takes weeks and gates the first customer |
-| **Rate limits** | per-route buckets | per-method tiers, with `chat.postMessage` far tighter than Discord's channel posting |
+**What else differs per provider**, handled inside the adapter rather than above it: permission scopes
+(Discord's `permissions=3072` bitfield has no Slack equivalent — Slack asks for named scopes),
+rate limits (Discord's per-route buckets against Slack's per-method tiers), and getting listed at all
+(Slack requires an app-directory submission that takes weeks; Discord does not).
 
-**What this design should do about it now, and deliberately does not:** add the encrypted column. It
-would be a column with no consumer, which `PROJECT.md` §2 and `AGENTS.md` both refuse. Slack's install
-is a migration either way, because it adds a credential this one does not have.
-
-**What it should do and does:** stay honest in the column names. `guildId` and `guildName` are Discord's
-words for a Slack `team`, so if the names stay Discord's, Slack brings a rename on top of the column it
-really needs. Worth settling in review: generic (`externalWorkspaceId`, `externalChannelId`) reads
-almost as clearly today and costs nothing, or keep Discord's words and accept the rename. This design
-proposes **generic**, with the Discord meaning in the doc comment.
+**Naming.** This file keeps its `0020-connect-a-discord-channel.md` filename although it now describes
+a provider-shaped design, because the number is what `STATE.md`, `handoff.md`, `0021` and five cards
+cite. The title line is the thing that was corrected.
