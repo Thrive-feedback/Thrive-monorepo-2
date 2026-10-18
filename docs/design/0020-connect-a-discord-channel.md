@@ -388,3 +388,38 @@ rate limits (Discord's per-route buckets against Slack's per-method tiers), and 
 **Naming.** This file keeps its `0020-connect-a-discord-channel.md` filename although it now describes
 a provider-shaped design, because the number is what `STATE.md`, `handoff.md`, `0021` and five cards
 cite. The title line is the thing that was corrected.
+
+---
+
+## 12. Corrections made while building #199 (2026-10-18)
+
+The API half was built against this document on 2026-10-18. Five things in it were wrong or
+incomplete, corrected in the code rather than left to a reviewer:
+
+| | What this document said | What the repository required |
+| --- | --- | --- |
+| **ADR number**, and then the whole amendment | *"**0048** is the next free number"*, and §4.4 proposes `isAdminOf` with an ADR of its own | **Both overtaken.** 0048 went to #193/#194 on 2026-10-17, and by the time this was rebased on 2026-10-23 `isAdminOf` **already existed on `main`**: Workspace Goals needed the same fact and published it the same way, under **ADR 0052**. §4.4's reasoning stands and was reached twice independently — the code and the ADR this design called for are simply not ours to write. Integrations consumes what is there |
+| **Where the port lives** | §4.4 amends "Workspace's published port" | `WorkspaceMembershipPort` is in `workspace/domain/port/`, not `application/port/`, and is implemented in `application/adapter/workspace-membership.adapter.ts` over `MembershipQuery.membershipInWorkspace`, which already answers the Role. The amendment is six lines |
+| **What `isMemberOf` means** | `0021` §4.2 expects to need a second amendment, `isActiveMemberOf`, because *"`isMemberOf` answers membership, not active membership"* | **It already excludes Deactivated Members** — `membershipInWorkspace` filters `deactivatedAt: null` (ADR 0047). Only the port's comment was imprecise, and it now says so. `0021` needs no second amendment, and that risk comes off its list |
+| **The gap between `/complete` and `/channel`** | §4.1 has `PUT …/channel` take `{ channelId }`, while §4.3 verifies that channel "is in that guild" — with nothing stored yet, and the guild read from the exchange one request earlier | A third thing had to exist: `/complete` answers an **`installation`** — the authorised space, signed exactly as `state` is (D5) — and `PUT …/channel` carries it back. The alternative, taking `externalWorkspaceId` from the request body, is the trust D6 refuses one request later. `InstallHandoff` is the port, `SignedHandoff` the HMAC helper both tokens share, with 5 minutes for `state` and 15 for the installation, because a person is reading a list of channels in between |
+| **Two names** | `CHANNEL_NOT_IN_GUILD`, `DISCORD_INSTALL_REFUSED`; `service/chat-installer.registry.ts` | The codes are **`CHANNEL_NOT_OFFERED`** and **`INSTALL_REFUSED`**: D12 made the module provider-shaped, "guild" is Discord's word, and `0021` had already settled that these codes are not provider-named. The registry is **`chat-installer-registry.service.ts`** — `.registry.ts` is not one of `BE_01` R6's role suffixes, and `check-arch` refuses the filename this document proposed |
+
+Also built differently, deliberately: the guard is `presentation/workspace-member.guard.ts` rather
+than a `workspace-admin.guard.ts`. It refuses a non-Member with `WORKSPACE_NOT_FOUND` and resolves
+whether they are an Admin; the Admin refusal is each **use case's**, as it is on Workspace's own
+routes, which is also what §7's test ("both use cases refuse a non-Admin before calling Discord")
+asks for. One guard then serves both the Admin-only routes and the read every Member may make.
+
+One thing was added that this document did not call for, after a review pass: each signed token
+carries **which of the two it is**. Without that the 15-minute installation token also reads as a
+`state`, because it holds every claim a `state` needs. Nothing exploitable followed from it — a code
+exchange still needs a code only the tool issues — but the longer-lived value was usable where the
+shorter-lived one is meant, and stamping it costs one claim.
+
+The chat client sits in `infrastructure/chat/discord/`, which is what D2's own text says
+(`infrastructure/chat/<provider>/`); the tree in §3 said `infrastructure/discord/`, written before
+D12.
+
+**Still unbuilt at the end of PR 1:** the web (PR 2) and the Discord application itself, which
+`ADR-0035` and `STATE.md` Open decision #3 keep shut until its owner is settled. So AC 2–5 cannot
+be walked in a browser yet; the code and its tests stand on faked providers, as `EmailSender` is.
