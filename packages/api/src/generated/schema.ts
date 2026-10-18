@@ -536,6 +536,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/integrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List this Workspace’s connected chat tools, with the channel each posts in */
+        get: operations["IntegrationController_listConnections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/integrations/{provider}/install": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Begin connecting a chat tool: answer where to send the Admin to authorise Thrive */
+        post: operations["IntegrationController_beginInstall"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/integrations/{provider}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finish authorising: read back what the tool says was authorised, and offer its channels */
+        post: operations["IntegrationController_completeInstall"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/integrations/{provider}/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Choose the channel this Workspace posts in, which is stored once a message has arrived in it */
+        put: operations["IntegrationController_chooseChannel"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1066,6 +1134,41 @@ export interface components {
         CreateWorkspaceGoalResponseDto_Output: {
             /** Format: uuid */
             id: string;
+        };
+        ListConnectionsResponseDto_Output: {
+            items: {
+                /** @enum {string} */
+                provider: "DISCORD";
+                externalWorkspaceName: string;
+                externalChannelName: string;
+                /** Format: uuid */
+                connectedByAccountId: string;
+                /** Format: date-time */
+                connectedAt: string;
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        BeginInstallResponseDto_Output: {
+            /** Format: uri */
+            authorizeUrl: string;
+        };
+        CompleteInstallRequestDto: {
+            code: string;
+            state: string;
+        };
+        CompleteInstallResponseDto_Output: {
+            externalWorkspaceName: string;
+            channels: {
+                id: string;
+                name: string;
+            }[];
+            installation: string;
+        };
+        ChooseChannelRequestDto: {
+            installation: string;
+            channelId: string;
         };
     };
     responses: never;
@@ -2650,6 +2753,234 @@ export interface operations {
                 content?: never;
             };
             /** @description WORKSPACE_GOAL_ALREADY_ACTIVE */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IntegrationController_listConnections: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListConnectionsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IntegrationController_beginInstall: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BeginInstallResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID or PROVIDER_NOT_SUPPORTED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_ALLOWED_TO_MANAGE_INTEGRATIONS */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IntegrationController_completeInstall: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompleteInstallRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompleteInstallResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, PROVIDER_NOT_SUPPORTED or INSTALL_STATE_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_ALLOWED_TO_MANAGE_INTEGRATIONS */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description INSTALL_REFUSED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IntegrationController_chooseChannel: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChooseChannelRequestDto"];
+            };
+        };
+        responses: {
+            /** @description The channel is connected and has been posted in */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID, PROVIDER_NOT_SUPPORTED, INSTALL_STATE_INVALID or CHANNEL_NOT_OFFERED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_ALLOWED_TO_MANAGE_INTEGRATIONS */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description INSTALL_REFUSED or CHANNEL_UNREACHABLE */
             409: {
                 headers: {
                     [name: string]: unknown;
