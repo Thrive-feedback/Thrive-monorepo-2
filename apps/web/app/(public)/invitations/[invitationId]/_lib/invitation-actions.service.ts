@@ -24,7 +24,6 @@ const InvitationId = z.uuid();
 /** Refusals the page explains in place, by the API's error code. */
 const REFUSALS: Readonly<Record<string, AcceptInvitationRefusal>> = {
   INVITATION_NOT_FOR_YOU: 'notForYou',
-  ALREADY_IN_A_WORKSPACE: 'alreadyInAWorkspace',
 };
 
 /**
@@ -74,10 +73,11 @@ export async function useAnotherGoogleAccount(
 }
 
 /**
- * Accepts the Invitation as the signed-in person; the API checks it was sent to them. Joined,
- * or already in that Workspace, they go where they belong now: Introduce yourself if they
- * have not yet, otherwise Home. Any intent to join is spent first, whatever the answer, so the
- * page never tries again by itself.
+ * Accepts the Invitation as the signed-in person; the API checks it was sent to them, and makes
+ * the Workspace the one they are in, keeping any others. Joined, or already in that Workspace,
+ * they go where they belong now: Introduce yourself if they have not yet, otherwise its Home.
+ * Any intent to join is spent first, whatever the answer, so the page never tries again by
+ * itself.
  */
 export async function acceptInvitation(
   invitationId: string,

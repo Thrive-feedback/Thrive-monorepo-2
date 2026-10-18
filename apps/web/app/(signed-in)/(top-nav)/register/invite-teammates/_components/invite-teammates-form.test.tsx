@@ -8,22 +8,29 @@ import type {
 import type { Invitee } from '@/lib/invitations/invite-emails.util';
 import { InviteTeammatesForm } from './invite-teammates-form';
 
+const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
+
 const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 const sendInvitations =
-  vi.fn<(invitations: readonly Invitee[]) => Promise<SendInvitationsState>>();
+  vi.fn<
+    (
+      workspaceId: string,
+      invitations: readonly Invitee[],
+    ) => Promise<SendInvitationsState>
+  >();
 vi.mock(
   '@/app/(signed-in)/(top-nav)/register/invite-teammates/_lib/invitation-actions.service',
   () => ({
-    sendInvitations: (invitations: readonly Invitee[]) =>
-      sendInvitations(invitations),
+    sendInvitations: (workspaceId: string, invitations: readonly Invitee[]) =>
+      sendInvitations(workspaceId, invitations),
   }),
 );
 
 /** The API answers each address with the outcome the test names, `invited` by default. */
 function apiAnswers(outcomes: Record<string, InviteResult['outcome']> = {}) {
-  sendInvitations.mockImplementation(async (invitations) => ({
+  sendInvitations.mockImplementation(async (_workspaceId, invitations) => ({
     results: invitations.map(({ email }) => ({
       email: email.toLowerCase(),
       outcome: outcomes[email.toLowerCase()] ?? 'invited',
@@ -64,7 +71,7 @@ describe('InviteTeammatesForm', () => {
   });
 
   it('opens with one empty Email address field', () => {
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
 
     expect(emailFields()).toHaveLength(1);
     expect(emailField(1)).toHaveValue('');
@@ -72,7 +79,7 @@ describe('InviteTeammatesForm', () => {
 
   it('adds one more field with Add another, and focuses it', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
 
     await user.click(button('Add another'));
 
@@ -82,7 +89,7 @@ describe('InviteTeammatesForm', () => {
 
   it('removes any field, moving focus to the one that takes its place', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'pepper@stark.com');
     await user.click(button('Add another'));
     await user.type(emailField(2), 'happy@stark.com');
@@ -95,7 +102,7 @@ describe('InviteTeammatesForm', () => {
   });
 
   it('keeps the last field', () => {
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
 
     expect(
       screen.queryByRole('button', { name: /^Remove/ }),
@@ -104,7 +111,7 @@ describe('InviteTeammatesForm', () => {
 
   it('flags a malformed address under its field, sends nothing and focuses it', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'pepper@stark.com');
     await user.click(button('Add another'));
     await user.type(emailField(2), 'happy');
@@ -122,7 +129,7 @@ describe('InviteTeammatesForm', () => {
 
   it('checks the format as soon as the field is left', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'happy');
 
     expect(emailField(1)).not.toHaveAttribute('aria-invalid');
@@ -137,7 +144,7 @@ describe('InviteTeammatesForm', () => {
 
   it('does not flag an empty field when it is left', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
 
     await user.click(emailField(1));
     await user.tab();
@@ -147,7 +154,7 @@ describe('InviteTeammatesForm', () => {
 
   it('clears a field’s flag once it is edited', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'happy');
     await user.click(button('Send invites & Done'));
 
@@ -158,7 +165,7 @@ describe('InviteTeammatesForm', () => {
 
   it('disables Send invites & Done until a field holds an address', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
 
     expect(button('Send invites & Done')).toBeDisabled();
 
@@ -175,7 +182,7 @@ describe('InviteTeammatesForm', () => {
   it('sends each address once, ignoring empty fields, then lists what happened to each', async () => {
     const user = userEvent.setup();
     apiAnswers({ 'happy@stark.com': 'already_member' });
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'pepper@stark.com');
     await user.click(button('Add another'));
     await user.click(button('Add another'));
@@ -185,7 +192,7 @@ describe('InviteTeammatesForm', () => {
 
     await user.click(button('Send invites & Done'));
 
-    expect(sendInvitations).toHaveBeenCalledWith([
+    expect(sendInvitations).toHaveBeenCalledWith(WORKSPACE_ID, [
       { email: 'pepper@stark.com', role: 'MEMBER' },
       { email: 'happy@stark.com', role: 'MEMBER' },
     ]);
@@ -202,7 +209,7 @@ describe('InviteTeammatesForm', () => {
 
   it('offers each field a Role, Member until another is picked', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
     await user.click(button('Add another'));
 
     expect(
@@ -215,7 +222,7 @@ describe('InviteTeammatesForm', () => {
 
   it('sends each address with the Role picked beside it', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'pepper@stark.com');
     await user.click(button('Add another'));
     await user.type(emailField(2), 'happy@stark.com');
@@ -223,7 +230,7 @@ describe('InviteTeammatesForm', () => {
 
     await user.click(button('Send invites & Done'));
 
-    expect(sendInvitations).toHaveBeenCalledWith([
+    expect(sendInvitations).toHaveBeenCalledWith(WORKSPACE_ID, [
       { email: 'pepper@stark.com', role: 'MEMBER' },
       { email: 'happy@stark.com', role: 'ADMIN' },
     ]);
@@ -231,7 +238,7 @@ describe('InviteTeammatesForm', () => {
 
   it('goes Home on Continue once the Invitations are sent', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'pepper@stark.com');
     await user.click(button('Send invites & Done'));
 
@@ -243,7 +250,7 @@ describe('InviteTeammatesForm', () => {
   it('keeps only the addresses that could not be sent, flagged, so sending again retries just those', async () => {
     const user = userEvent.setup();
     apiAnswers({ 'happy@stark.com': 'failed' });
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'pepper@stark.com');
     await user.click(button('Add another'));
     await user.type(emailField(2), 'happy@stark.com');
@@ -268,7 +275,7 @@ describe('InviteTeammatesForm', () => {
     apiAnswers();
     await user.click(button('Send invites & Done'));
 
-    expect(sendInvitations).toHaveBeenLastCalledWith([
+    expect(sendInvitations).toHaveBeenLastCalledWith(WORKSPACE_ID, [
       { email: 'happy@stark.com', role: 'ADMIN' },
     ]);
     expect(
@@ -282,7 +289,7 @@ describe('InviteTeammatesForm', () => {
     sendInvitations.mockResolvedValue({
       formError: 'Only Admins can invite teammates.',
     });
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
     await user.type(emailField(1), 'pepper@stark.com');
 
     await user.click(button('Send invites & Done'));
@@ -295,7 +302,7 @@ describe('InviteTeammatesForm', () => {
 
   it('stops offering another field at ten, and says more can be invited from Settings', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
 
     for (let added = 1; added < 10; added++) {
       await user.click(button('Add another'));
@@ -312,7 +319,7 @@ describe('InviteTeammatesForm', () => {
 
   it('goes Home on Skip & Done', async () => {
     const user = userEvent.setup();
-    render(<InviteTeammatesForm />);
+    render(<InviteTeammatesForm workspaceId={WORKSPACE_ID} />);
 
     await user.click(button('Skip & Done'));
 

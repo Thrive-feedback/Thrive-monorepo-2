@@ -40,6 +40,7 @@ export async function LeaveWorkspaceRow({
       descriptionId={DESCRIPTION_ID}
     >
       <DeactivateMemberButton
+        workspaceId={membership.workspace.id}
         accountId={self.accountId}
         name={self.name ?? self.email}
         workspaceName={workspaceName}

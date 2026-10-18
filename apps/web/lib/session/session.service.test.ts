@@ -27,12 +27,14 @@ vi.mock('next/navigation', () => ({
 
 const {
   landingFor,
+  readInvitationsWaiting,
   readSession,
   readSessionNeedsRefresh,
   requireAccountToCreateWorkspace,
   requireAccountToIntroduce,
   requireInvitationsToJoin,
   requireMember,
+  requireMemberOf,
 } = await import('./session.service');
 
 const CURRENT_SESSION = `${TEST_API_BASE_URL}/v1/sessions/current`;
@@ -346,6 +348,34 @@ describe('requireMember', () => {
       constructor: ApiError,
       code: 'INTERNAL_ERROR',
     });
+  });
+});
+
+describe('requireMemberOf', () => {
+  it('answers the Member while the page was drawn for the Workspace they are in', async () => {
+    answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(ACME);
+
+    expect(await requireMemberOf(ACME.workspace.id)).toMatchObject({
+      membership: ACME,
+    });
+  });
+
+  it('sends them Home, saying so, once they switched Workspace in another tab', async () => {
+    answerSignedInAs(ANN_PROFILE);
+    answerMemberOf(ACME);
+
+    await expect(
+      requireMemberOf('0199a0f0-0000-7000-8000-0000000000w2'),
+    ).rejects.toThrow('redirect:/home?switched=1');
+  });
+});
+
+describe('readInvitationsWaiting', () => {
+  it('answers the Invitations waiting for a Member, for the notice on Home', async () => {
+    answerInvitedTo([TO_GLOBEX]);
+
+    expect(await readInvitationsWaiting()).toEqual([GLOBEX_INVITATION]);
   });
 });
 

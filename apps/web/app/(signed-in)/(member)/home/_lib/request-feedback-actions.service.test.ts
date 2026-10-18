@@ -18,12 +18,12 @@ const REQUEST_ID = '0199a0f0-0000-7000-8000-0000000000f1';
 const BEN = '0199a0f0-0000-7000-8000-00000000000b';
 const CARA = '0199a0f0-0000-7000-8000-00000000000c';
 
-const requireMember = vi.fn(async () => ({
+const requireMember = vi.fn(async (_workspaceId: string) => ({
   email: 'ann@acme.test',
   membership: { workspace: { id: WORKSPACE_ID, name: 'Acme' }, role: 'ADMIN' },
 }));
 vi.mock('@/lib/session/session.service', () => ({
-  requireMember: () => requireMember(),
+  requireMemberOf: (workspaceId: string) => requireMember(workspaceId),
 }));
 
 /** `redirect` works by throwing, so the fake does too, carrying where it went. */
@@ -88,7 +88,10 @@ function form(
 /** The action either answers a state or redirects by throwing; this tells the two apart. */
 async function send(formData: FormData) {
   try {
-    return { state: await requestFeedback({}, formData), to: undefined };
+    return {
+      state: await requestFeedback(WORKSPACE_ID, {}, formData),
+      to: undefined,
+    };
   } catch (error) {
     if (error instanceof Redirected) {
       return { state: undefined, to: error.to };
@@ -108,7 +111,7 @@ describe('asking a teammate for Feedback', () => {
     const { to } = await send(form());
 
     expect(to).toBe('/home?tab=my-requests&sent=1');
-    expect(requireMember).toHaveBeenCalledOnce();
+    expect(requireMember).toHaveBeenCalledWith(WORKSPACE_ID);
   });
 
   it('refuses a blank Topic without calling the API', async () => {

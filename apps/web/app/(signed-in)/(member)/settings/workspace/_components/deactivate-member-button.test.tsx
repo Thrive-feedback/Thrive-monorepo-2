@@ -4,15 +4,29 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MemberDeactivationResult } from '../_lib/member-deactivation-actions.service';
 import { DeactivateMemberButton } from './deactivate-member-button';
 
+const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
+
 const deactivateMember =
-  vi.fn<(accountId: string) => Promise<MemberDeactivationResult>>();
+  vi.fn<
+    (
+      workspaceId: string,
+      accountId: string,
+    ) => Promise<MemberDeactivationResult>
+  >();
 const leaveWorkspace =
-  vi.fn<(accountId: string) => Promise<MemberDeactivationResult>>();
+  vi.fn<
+    (
+      workspaceId: string,
+      accountId: string,
+    ) => Promise<MemberDeactivationResult>
+  >();
 vi.mock(
   '@/app/(signed-in)/(member)/settings/workspace/_lib/member-deactivation-actions.service',
   () => ({
-    deactivateMember: (accountId: string) => deactivateMember(accountId),
-    leaveWorkspace: (accountId: string) => leaveWorkspace(accountId),
+    deactivateMember: (workspaceId: string, accountId: string) =>
+      deactivateMember(workspaceId, accountId),
+    leaveWorkspace: (workspaceId: string, accountId: string) =>
+      leaveWorkspace(workspaceId, accountId),
   }),
 );
 
@@ -31,6 +45,7 @@ describe('DeactivateMemberButton', () => {
     const user = userEvent.setup();
     render(
       <DeactivateMemberButton
+        workspaceId={WORKSPACE_ID}
         accountId="a-2"
         name="Ben"
         workspaceName="Acme"
@@ -51,6 +66,7 @@ describe('DeactivateMemberButton', () => {
     const user = userEvent.setup();
     render(
       <DeactivateMemberButton
+        workspaceId={WORKSPACE_ID}
         accountId="a-2"
         name="Ben"
         workspaceName="Acme"
@@ -60,7 +76,7 @@ describe('DeactivateMemberButton', () => {
     await user.click(screen.getByRole('button', { name: 'Deactivate Ben' }));
     await user.click(screen.getByRole('button', { name: 'Deactivate' }));
 
-    expect(deactivateMember).toHaveBeenCalledWith('a-2');
+    expect(deactivateMember).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2');
     expect(toast.success).toHaveBeenCalledWith('Ben was Deactivated');
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
@@ -69,6 +85,7 @@ describe('DeactivateMemberButton', () => {
     const user = userEvent.setup();
     render(
       <DeactivateMemberButton
+        workspaceId={WORKSPACE_ID}
         accountId="a-2"
         name="Ben"
         workspaceName="Acme"
@@ -89,6 +106,7 @@ describe('DeactivateMemberButton', () => {
     const user = userEvent.setup();
     render(
       <DeactivateMemberButton
+        workspaceId={WORKSPACE_ID}
         accountId="a-2"
         name="Ben"
         workspaceName="Acme"
@@ -108,6 +126,7 @@ describe('DeactivateMemberButton', () => {
     const user = userEvent.setup();
     render(
       <DeactivateMemberButton
+        workspaceId={WORKSPACE_ID}
         accountId="a-2"
         name="Ben"
         workspaceName="Acme"
@@ -127,7 +146,7 @@ describe('DeactivateMemberButton', () => {
         .at(-1) as HTMLElement,
     );
 
-    expect(leaveWorkspace).toHaveBeenCalledWith('a-2');
+    expect(leaveWorkspace).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2');
     expect(deactivateMember).not.toHaveBeenCalled();
   });
 });

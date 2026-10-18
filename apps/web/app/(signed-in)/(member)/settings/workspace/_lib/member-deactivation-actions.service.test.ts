@@ -26,7 +26,7 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 vi.mock('@/lib/session/session.service', () => ({
-  requireMember: async () => ({
+  requireMemberOf: async () => ({
     membership: {
       workspace: { id: WORKSPACE_ID, name: 'Acme' },
       role: 'ADMIN',
@@ -63,7 +63,7 @@ describe('Deactivating someone from Members', () => {
     const seen: Request[] = [];
     apiDeactivates(seen);
 
-    expect(await deactivateMember(BEN_ID)).toEqual({ ok: true });
+    expect(await deactivateMember(WORKSPACE_ID, BEN_ID)).toEqual({ ok: true });
     expect(seen[0]?.headers.get('cookie')).toContain(
       'thrive.session_token=abc',
     );
@@ -73,7 +73,7 @@ describe('Deactivating someone from Members', () => {
   it('says only Admins may when the person is not one', async () => {
     apiRefusesWith('NOT_ALLOWED_TO_DEACTIVATE', 403);
 
-    expect(await deactivateMember(BEN_ID)).toEqual({
+    expect(await deactivateMember(WORKSPACE_ID, BEN_ID)).toEqual({
       ok: false,
       message: 'Only Admins can Deactivate other people.',
     });
@@ -82,14 +82,14 @@ describe('Deactivating someone from Members', () => {
   it('says they are gone when they already left', async () => {
     apiRefusesWith('MEMBER_NOT_FOUND', 404);
 
-    expect(await deactivateMember(BEN_ID)).toEqual({
+    expect(await deactivateMember(WORKSPACE_ID, BEN_ID)).toEqual({
       ok: false,
       message: 'They are no longer in this Workspace.',
     });
   });
 
   it('never calls the API with something that is not an Account id', async () => {
-    expect(await deactivateMember('../sessions')).toEqual({
+    expect(await deactivateMember(WORKSPACE_ID, '../sessions')).toEqual({
       ok: false,
       message: "We couldn't do that. Please try again.",
     });
@@ -100,13 +100,15 @@ describe('leaving from Members', () => {
   it('sends the person on to wherever they belong once they are out', async () => {
     apiDeactivates();
 
-    await expect(leaveWorkspace(BEN_ID)).rejects.toThrow('redirect:/home');
+    await expect(leaveWorkspace(WORKSPACE_ID, BEN_ID)).rejects.toThrow(
+      'redirect:/home',
+    );
   });
 
   it('says to make someone else an Admin first, and stays, for the only Admin', async () => {
     apiRefusesWith('LAST_ADMIN', 409);
 
-    expect(await leaveWorkspace(BEN_ID)).toEqual({
+    expect(await leaveWorkspace(WORKSPACE_ID, BEN_ID)).toEqual({
       ok: false,
       message: 'Make someone else an Admin first.',
     });

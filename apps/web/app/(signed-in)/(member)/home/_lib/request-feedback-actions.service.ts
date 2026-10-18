@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import type { RequestFeedbackState } from '@/lib/feedback/request-feedback-state.type';
 import { ROUTES } from '@/lib/routes.constant';
-import { requireMember } from '@/lib/session/session.service';
+import { requireMemberOf } from '@/lib/session/session.service';
 
 type Visibility =
   components['schemas']['SendFeedbackRequestRequestDto']['visibility'];
@@ -56,13 +56,15 @@ const COULD_NOT_SEND = "We couldn't send your request. Please try again.";
 
 /**
  * Asks one teammate for Feedback on a Topic, shared with whoever the Requester chose, then goes
- * back to Home's My requests tab. The Workspace is the one the session belongs to, never one the
- * browser names, and the API decides who is asking from the session cookie.
+ * back to Home's My requests tab. `workspaceId` is the Workspace the page was drawn for, bound
+ * where the form is drawn; it must still be the one the person is in, or nothing is sent. The
+ * API decides who is asking from the session cookie.
  *
  * Treated as a public endpoint, because it is one: the session is read again here and the
  * input is validated again, whatever the form already checked.
  */
 export async function requestFeedback(
+  workspaceId: string,
   _previous: RequestFeedbackState,
   formData: FormData,
 ): Promise<RequestFeedbackState> {
@@ -87,7 +89,7 @@ export async function requestFeedback(
     };
   }
 
-  const { membership } = await requireMember();
+  const { membership } = await requireMemberOf(workspaceId);
   const cookie = (await headers()).get('cookie') ?? undefined;
   let next: string;
   try {

@@ -1,23 +1,13 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CreateWorkspaceState } from '@/app/(signed-in)/(top-nav)/register/create-workspace/_lib/create-workspace-state.type';
+import type {
+  CreateWorkspaceAction,
+  CreateWorkspaceState,
+} from '@/lib/workspace/create-workspace-state.type';
 import { CreateWorkspaceForm } from './create-workspace-form';
 
-const createWorkspace =
-  vi.fn<
-    (
-      previous: CreateWorkspaceState,
-      formData: FormData,
-    ) => Promise<CreateWorkspaceState>
-  >();
-vi.mock(
-  '@/app/(signed-in)/(top-nav)/register/create-workspace/_lib/workspace-actions.service',
-  () => ({
-    createWorkspace: (previous: CreateWorkspaceState, formData: FormData) =>
-      createWorkspace(previous, formData),
-  }),
-);
+const createWorkspace = vi.fn<CreateWorkspaceAction>();
 
 beforeEach(() => {
   createWorkspace.mockReset();
@@ -33,14 +23,14 @@ function fields() {
 
 describe('CreateWorkspaceForm', () => {
   it('requires a Workspace name', () => {
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
 
     expect(fields().workspaceName).toBeRequired();
   });
 
   it('keeps Create disabled until the Workspace has a name', async () => {
     const user = userEvent.setup();
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
     const { workspaceName, createButton } = fields();
 
     expect(createButton).toBeDisabled();
@@ -54,7 +44,7 @@ describe('CreateWorkspaceForm', () => {
 
   it('treats a name of only spaces as no name', async () => {
     const user = userEvent.setup();
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
     const { workspaceName, createButton } = fields();
 
     await user.type(workspaceName, '   ');
@@ -64,7 +54,7 @@ describe('CreateWorkspaceForm', () => {
 
   it('does not submit on Enter while there is no name', async () => {
     const user = userEvent.setup();
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
 
     await user.type(fields().workspaceName, '   {Enter}');
 
@@ -74,7 +64,7 @@ describe('CreateWorkspaceForm', () => {
   it('creates the Workspace with the name and the picked team size', async () => {
     createWorkspace.mockResolvedValue({});
     const user = userEvent.setup();
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
     const { workspaceName, createButton } = fields();
 
     await user.type(workspaceName, 'Stark Industries');
@@ -89,7 +79,7 @@ describe('CreateWorkspaceForm', () => {
   it('sends no team size when none was picked', async () => {
     createWorkspace.mockResolvedValue({});
     const user = userEvent.setup();
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
     const { workspaceName, createButton } = fields();
 
     await user.type(workspaceName, 'Stark Industries');
@@ -106,7 +96,7 @@ describe('CreateWorkspaceForm', () => {
       }),
     );
     const user = userEvent.setup();
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
     const { workspaceName, createButton } = fields();
 
     await user.type(workspaceName, 'Stark Industries');
@@ -122,7 +112,7 @@ describe('CreateWorkspaceForm', () => {
       fieldErrors: { workspaceName: 'Use 100 characters or fewer.' },
     });
     const user = userEvent.setup();
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
     const { workspaceName, createButton } = fields();
 
     await user.type(workspaceName, 'Stark Industries');
@@ -142,7 +132,7 @@ describe('CreateWorkspaceForm', () => {
       formError: "We couldn't create your Workspace. Please try again.",
     });
     const user = userEvent.setup();
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
     const { workspaceName, createButton } = fields();
 
     await user.type(workspaceName, 'Stark Industries');
@@ -155,7 +145,7 @@ describe('CreateWorkspaceForm', () => {
   });
 
   it('offers four optional Team sizes with none chosen', () => {
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
     const radios = screen.getAllByRole('radio');
 
     expect(radios.map((radio) => radio.getAttribute('value'))).toEqual([
@@ -176,7 +166,7 @@ describe('CreateWorkspaceForm', () => {
 
   it('chooses one Team size at a time', async () => {
     const user = userEvent.setup();
-    render(<CreateWorkspaceForm />);
+    render(<CreateWorkspaceForm action={createWorkspace} />);
 
     await user.click(screen.getByRole('radio', { name: '2–10' }));
     await user.click(screen.getByRole('radio', { name: '50+' }));

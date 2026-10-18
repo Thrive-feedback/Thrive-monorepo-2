@@ -22,8 +22,8 @@ export async function FeedbackComposerCard({
   return (
     <FeedbackComposer
       teammates={teammates}
-      requestAction={requestFeedback}
-      giveAction={giveFeedback}
+      requestAction={requestFeedback.bind(null, membership.workspace.id)}
+      giveAction={giveFeedback.bind(null, membership.workspace.id)}
     />
   );
 }

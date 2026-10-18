@@ -33,8 +33,6 @@ function refusalMessage(
   switch (refusal) {
     case 'notForYou':
       return `You're signed in as ${email}, but this invitation was sent to ${invitation.invitedEmailMasked}. Use the Google account it was sent to.`;
-    case 'alreadyInAWorkspace':
-      return "You're already in a Workspace on Thrive, and for now each person can be in only one.";
     case 'failed':
       return `We couldn't add you to ${invitation.workspaceName}. Please try again.`;
   }
@@ -85,7 +83,7 @@ export function InvitationJoinForm({
           {refusalMessage(state.refusal, invitation, email)}
         </Text>
       )}
-      {!isNotForYou && state.refusal !== 'alreadyInAWorkspace' && (
+      {!isNotForYou && (
         <form action={join} className="w-full">
           <Button
             type="submit"

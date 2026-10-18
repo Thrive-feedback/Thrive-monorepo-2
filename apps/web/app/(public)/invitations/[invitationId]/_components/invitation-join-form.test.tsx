@@ -76,17 +76,6 @@ describe('InvitationJoinForm', () => {
     );
   });
 
-  it('tells someone already in a Workspace that one is the limit for now', async () => {
-    acceptInvitation.mockResolvedValue({ refusal: 'alreadyInAWorkspace' });
-    const user = renderForm();
-
-    await user.click(screen.getByRole('button', { name: 'Join “Acme”' }));
-
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      "You're already in a Workspace on Thrive, and for now each person can be in only one.",
-    );
-  });
-
   it('lets the person try again after a failure', async () => {
     acceptInvitation.mockResolvedValue({ refusal: 'failed' });
     const user = renderForm();

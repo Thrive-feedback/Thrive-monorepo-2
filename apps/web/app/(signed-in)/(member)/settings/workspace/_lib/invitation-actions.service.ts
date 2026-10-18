@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import type { Invitee } from '@/lib/invitations/invite-emails.util';
 import { ROUTES } from '@/lib/routes.constant';
-import { requireMember } from '@/lib/session/session.service';
+import { requireMemberOf } from '@/lib/session/session.service';
 import { checkEmailList, parseEmailList } from './email-list.util';
 import type { InviteMembersState } from './invite-members-state.type';
 
@@ -46,11 +46,12 @@ export type InvitationActionResult =
   | { readonly ok: false; readonly message: string };
 
 /**
- * Acts on an Invitation to the person's own Workspace. The Workspace is the one the session
- * belongs to, never one the browser names, and the API checks they may act. Members is drawn
- * again either way, so the list shows where the Invitation now stands.
+ * Acts on an Invitation to `workspaceId`, the Workspace the page was drawn for, which must still
+ * be the one the person is in; the API checks they may act. Members is drawn again either way,
+ * so the list shows where the Invitation now stands.
  */
 async function actOnInvitation(
+  workspaceId: string,
   invitationId: string,
   errors: Readonly<Record<string, string>>,
   fallback: string,
@@ -60,7 +61,7 @@ async function actOnInvitation(
   if (!id.success) {
     return { ok: false, message: fallback };
   }
-  const { membership } = await requireMember();
+  const { membership } = await requireMemberOf(workspaceId);
   const cookie = (await headers()).get('cookie') ?? undefined;
   try {
     await call({
@@ -80,9 +81,11 @@ async function actOnInvitation(
 
 /** Revokes an Invitation, so its link stops working. */
 export async function revokeInvitation(
+  workspaceId: string,
   invitationId: string,
 ): Promise<InvitationActionResult> {
   return actOnInvitation(
+    workspaceId,
     invitationId,
     REVOKE_ERRORS,
     COULD_NOT_REVOKE,
@@ -96,9 +99,11 @@ export async function revokeInvitation(
 
 /** Sends an Invitation's email again, good for another 7 days. */
 export async function resendInvitation(
+  workspaceId: string,
   invitationId: string,
 ): Promise<InvitationActionResult> {
   return actOnInvitation(
+    workspaceId,
     invitationId,
     RESEND_ERRORS,
     COULD_NOT_RESEND,
@@ -123,13 +128,13 @@ const InviteInvitations = z
   .min(1);
 
 /**
- * Invites each person to the person's own Workspace with the Role chosen for them, answering
- * what happened to each. The
- * Workspace is the one the session belongs to, never one the browser names. The list is checked
- * again here, whatever the form already checked, and Members is drawn again so Open invitations
- * shows the new ones.
+ * Invites each person to `workspaceId`, the Workspace the page was drawn for, which must still be
+ * the one the person is in, with the Role chosen for them, answering what happened to each. The
+ * list is checked again here, whatever the form already checked, and Members is drawn again so
+ * Open invitations shows the new ones.
  */
 export async function inviteMembers(
+  workspaceId: string,
   invitations: readonly Invitee[],
 ): Promise<InviteMembersState> {
   const input = InviteInvitations.safeParse(invitations);
@@ -148,7 +153,7 @@ export async function inviteMembers(
     }
   }
 
-  const { membership } = await requireMember();
+  const { membership } = await requireMemberOf(workspaceId);
   const cookie = (await headers()).get('cookie') ?? undefined;
   try {
     const { results } = unwrap(

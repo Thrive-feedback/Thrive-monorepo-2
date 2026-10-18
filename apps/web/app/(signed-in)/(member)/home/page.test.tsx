@@ -21,6 +21,9 @@ vi.mock('./_components/feedback-composer-card', () => ({
     <output>{`feedback composer as ${ownEmail}`}</output>
   ),
 }));
+vi.mock('./_components/invitation-notices', () => ({
+  InvitationNotices: () => <output>invitation notices</output>,
+}));
 vi.mock('./_components/workspace-feed', () => ({
   WorkspaceFeed: () => <output>workspace feed</output>,
 }));
@@ -180,6 +183,26 @@ describe('Home', () => {
         'success toast: Request sent then /home?tab=my-requests',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('says once that nothing was changed when the page was for a Workspace the person is no longer in', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open({ switched: '1' }));
+
+    expect(
+      screen.getByText(
+        "error toast: Nothing was changed: that page was for another Workspace. You're in Acme Corp now. then /home",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('shows the Invitations waiting for the person, in either layout', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open());
+
+    expect(screen.getAllByText('invitation notices')).toHaveLength(2);
   });
 
   it('raises no toast on an ordinary visit', async () => {

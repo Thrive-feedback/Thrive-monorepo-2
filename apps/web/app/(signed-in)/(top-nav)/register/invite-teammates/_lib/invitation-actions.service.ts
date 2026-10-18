@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import type { Invitee } from '@/lib/invitations/invite-emails.util';
 import { ROUTES } from '@/lib/routes.constant';
-import { requireMember } from '@/lib/session/session.service';
+import { requireMemberOf } from '@/lib/session/session.service';
 import type { SendInvitationsState } from './invite-teammates-state.type';
 
 const SendInvitationsInput = z
@@ -30,11 +30,12 @@ const ELSEWHERE: Readonly<Record<string, string>> = {
 const COULD_NOT_SEND = "We couldn't send your invitations. Please try again.";
 
 /**
- * Invites each person to the person's own Workspace with the Role chosen for them. The Workspace is the one the session
- * belongs to, never one the browser names, and the API decides who is inviting from the
+ * Invites each person to `workspaceId`, the Workspace just created, with the Role chosen for them.
+ * It must still be the one the person is in, and the API decides who is inviting from the
  * browser's own session cookie.
  */
 export async function sendInvitations(
+  workspaceId: string,
   invitations: readonly Invitee[],
 ): Promise<SendInvitationsState> {
   const input = SendInvitationsInput.safeParse(invitations);
@@ -42,7 +43,7 @@ export async function sendInvitations(
     return { formError: COULD_NOT_SEND };
   }
 
-  const { membership } = await requireMember();
+  const { membership } = await requireMemberOf(workspaceId);
   const cookie = (await headers()).get('cookie') ?? undefined;
   let next: string;
   try {

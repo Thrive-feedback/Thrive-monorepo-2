@@ -95,14 +95,6 @@ describe('accepting an Invitation', () => {
     expect(cookieStore.delete).toHaveBeenCalledWith('thrive.join_intent');
   });
 
-  it('stays to explain when the person is already in a Workspace', async () => {
-    apiRefusesWith('ALREADY_IN_A_WORKSPACE', 409);
-
-    expect(await acceptInvitation(INVITATION_ID)).toEqual({
-      refusal: 'alreadyInAWorkspace',
-    });
-  });
-
   it('opens the Invitation again when it has expired meanwhile, so the page says so', async () => {
     apiRefusesWith('INVITATION_EXPIRED', 409);
 

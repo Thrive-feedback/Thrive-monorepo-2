@@ -11,6 +11,8 @@ import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 
 export type DeactivateMemberButtonProps = {
+  /** The Workspace the page was drawn for; acting is refused once the person is no longer in it. */
+  workspaceId: string;
   accountId: string;
   /** Who is Deactivated, as Members names them. */
   name: string;
@@ -30,6 +32,7 @@ export type DeactivateMemberButtonProps = {
  * request is in flight, so it cannot be sent twice.
  */
 export function DeactivateMemberButton({
+  workspaceId,
   accountId,
   name,
   workspaceName,
@@ -43,8 +46,8 @@ export function DeactivateMemberButton({
   function handleConfirm() {
     startActing(async () => {
       const result = isSelf
-        ? await leaveWorkspace(accountId)
-        : await deactivateMember(accountId);
+        ? await leaveWorkspace(workspaceId, accountId)
+        : await deactivateMember(workspaceId, accountId);
       setIsOpen(false);
       if (result.ok) {
         toast.success(`${name} was Deactivated`);

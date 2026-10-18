@@ -24,6 +24,11 @@ export const ROUTES = {
     tab === HOME_TABS[0] ? '/home' : `/home?tab=${tab}`,
   /** Home, saying once that the Feedback the person just gave was sent. */
   homeGiven: '/home?given=1',
+  /**
+   * Home, saying once that what the person just sent was dropped, because the page was drawn for
+   * a Workspace they are no longer in: they switched in another tab, or were Deactivated there.
+   */
+  homeSwitched: '/home?switched=1',
   /** A Feedback Request the person sent, open in a dialog over My requests. */
   homeRequest: (requestId: string) =>
     `/home?tab=my-requests&request=${requestId}`,
@@ -34,7 +39,10 @@ export const ROUTES = {
     index: '/settings',
     /** The signed-in person's own Profile, read from the session, and Sign out. */
     account: '/settings/account',
-    /** The Workspace's name, who is in it, and the Invitations still open. */
+    /**
+     * The Workspace's name and the way to switch to another, who is in it, and the Invitations
+     * still open.
+     */
     workspace: '/settings/workspace',
     /** The colour mode. */
     appearance: '/settings/appearance',

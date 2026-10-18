@@ -10,6 +10,8 @@ import type { MemberRole } from '@/lib/session/current-account.type';
 import { ROLE_NAMES } from '@/lib/session/role-names.constant';
 
 export type ReactivateMemberButtonProps = {
+  /** The Workspace the page was drawn for; acting is refused once the person is no longer in it. */
+  workspaceId: string;
   accountId: string;
   /** Who is Reactivated, as Members names them. */
   name: string;
@@ -24,6 +26,7 @@ export type ReactivateMemberButtonProps = {
  * dialog stays open while the request is in flight, so it cannot be sent twice.
  */
 export function ReactivateMemberButton({
+  workspaceId,
   accountId,
   name,
   memberRole,
@@ -34,7 +37,7 @@ export function ReactivateMemberButton({
 
   function handleConfirm() {
     startActing(async () => {
-      const result = await reactivateMember(accountId);
+      const result = await reactivateMember(workspaceId, accountId);
       setIsOpen(false);
       if (result.ok) {
         toast.success(`${name} was Reactivated`);

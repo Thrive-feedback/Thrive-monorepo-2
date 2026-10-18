@@ -8,3 +8,9 @@ export type CreateWorkspaceState = {
   };
   readonly formError?: string;
 };
+
+/** Creates the Workspace from its form; where it goes once created is the action's to decide. */
+export type CreateWorkspaceAction = (
+  previous: CreateWorkspaceState,
+  formData: FormData,
+) => Promise<CreateWorkspaceState>;

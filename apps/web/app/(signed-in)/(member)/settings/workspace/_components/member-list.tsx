@@ -53,6 +53,7 @@ export async function MemberList({ membership, ownEmail }: MemberListProps) {
             {canChangeRoles ? (
               <>
                 <MemberRoleSelect
+                  workspaceId={membership.workspace.id}
                   accountId={member.accountId}
                   name={member.name ?? member.email}
                   memberRole={member.role}
@@ -73,6 +74,7 @@ export async function MemberList({ membership, ownEmail }: MemberListProps) {
             )}
             {!isSelf && canDeactivateOthers && (
               <DeactivateMemberButton
+                workspaceId={membership.workspace.id}
                 accountId={member.accountId}
                 name={member.name ?? member.email}
                 workspaceName={membership.workspace.name}

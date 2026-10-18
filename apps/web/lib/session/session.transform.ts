@@ -39,8 +39,8 @@ export function toNeedsRefresh(wire: CurrentSessionWire): boolean {
 }
 
 /**
- * The Workspace the person works in. One per person for now (ADR-0020), so it is the first
- * and only one; `null` while they belong to none.
+ * The Workspace the person is in: the API lists the one they used last first, so it is the
+ * first of their active ones (ADR 0049). `null` while they belong to none.
  */
 export function toCurrentMembership(
   wire: MyMembershipsWire,

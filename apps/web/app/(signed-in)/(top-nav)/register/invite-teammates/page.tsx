@@ -14,12 +14,12 @@ export const metadata: Metadata = {
  * navigates between the pages under it.
  */
 export default async function InviteTeammatesPage() {
-  await requireMember();
+  const { membership } = await requireMember();
 
   return (
     <div className="m-auto grid w-full max-w-5xl items-center gap-10 md:grid-cols-2 md:gap-12">
       <InviteTeammatesHero />
-      <InviteTeammatesCard />
+      <InviteTeammatesCard workspaceId={membership.workspace.id} />
     </div>
   );
 }

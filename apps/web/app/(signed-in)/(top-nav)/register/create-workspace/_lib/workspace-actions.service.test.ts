@@ -96,14 +96,6 @@ describe('creating the Workspace', () => {
     });
   });
 
-  it('goes home when the Workspace was already created, from another tab or a second click', async () => {
-    apiRefusesWith('ALREADY_IN_A_WORKSPACE', 409);
-
-    await expect(createWorkspace({}, filledIn('Acme Corp'))).rejects.toThrow(
-      'redirect:/home',
-    );
-  });
-
   it('sends someone who has not introduced themselves to Introduce yourself', async () => {
     apiRefusesWith('PROFILE_REQUIRED', 409);
 

@@ -4,6 +4,8 @@ import { revokeInvitation } from '@/app/(signed-in)/(member)/settings/workspace/
 import { ConfirmInvitationAction } from './confirm-invitation-action';
 
 export type RevokeInvitationButtonProps = {
+  /** The Workspace the page was drawn for; acting is refused once the person is no longer in it. */
+  workspaceId: string;
   invitationId: string;
   /** The address it was sent to, which names it in the question and the toast. */
   email: string;
@@ -11,6 +13,7 @@ export type RevokeInvitationButtonProps = {
 
 /** Revokes an Invitation once asked, because a revoked one cannot be brought back — only a new one sent. */
 export function RevokeInvitationButton({
+  workspaceId,
   invitationId,
   email,
 }: RevokeInvitationButtonProps) {
@@ -24,7 +27,7 @@ export function RevokeInvitationButton({
       doneMessage={`Invitation to ${email} revoked`}
       triggerVariant="ghost-danger"
       confirmVariant="danger"
-      onConfirm={() => revokeInvitation(invitationId)}
+      onConfirm={() => revokeInvitation(workspaceId, invitationId)}
     />
   );
 }

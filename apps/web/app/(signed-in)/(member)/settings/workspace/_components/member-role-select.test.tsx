@@ -5,15 +5,24 @@ import type { MemberRoleActionResult } from '@/app/(signed-in)/(member)/settings
 import type { MemberRole } from '@/lib/session/current-account.type';
 import { MemberRoleSelect } from './member-role-select';
 
+const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
+
 const changeMemberRole =
   vi.fn<
-    (accountId: string, role: MemberRole) => Promise<MemberRoleActionResult>
+    (
+      workspaceId: string,
+      accountId: string,
+      role: MemberRole,
+    ) => Promise<MemberRoleActionResult>
   >();
 vi.mock(
   '@/app/(signed-in)/(member)/settings/workspace/_lib/member-role-actions.service',
   () => ({
-    changeMemberRole: (accountId: string, role: MemberRole) =>
-      changeMemberRole(accountId, role),
+    changeMemberRole: (
+      workspaceId: string,
+      accountId: string,
+      role: MemberRole,
+    ) => changeMemberRole(workspaceId, accountId, role),
   }),
 );
 
@@ -37,7 +46,14 @@ async function pick(
 
 describe('MemberRoleSelect', () => {
   it("shows the person's Role, named for them", () => {
-    render(<MemberRoleSelect accountId="a-2" name="Ben" memberRole="MEMBER" />);
+    render(
+      <MemberRoleSelect
+        workspaceId={WORKSPACE_ID}
+        accountId="a-2"
+        name="Ben"
+        memberRole="MEMBER"
+      />,
+    );
 
     expect(
       screen.getByRole('combobox', { name: "Ben's Role" }),
@@ -47,11 +63,18 @@ describe('MemberRoleSelect', () => {
   it('makes someone an Admin at once, and says so', async () => {
     changeMemberRole.mockResolvedValue({ ok: true });
     const user = userEvent.setup();
-    render(<MemberRoleSelect accountId="a-2" name="Ben" memberRole="MEMBER" />);
+    render(
+      <MemberRoleSelect
+        workspaceId={WORKSPACE_ID}
+        accountId="a-2"
+        name="Ben"
+        memberRole="MEMBER"
+      />,
+    );
 
     await pick(user, "Ben's Role", 'Admin');
 
-    expect(changeMemberRole).toHaveBeenCalledWith('a-2', 'ADMIN');
+    expect(changeMemberRole).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2', 'ADMIN');
     expect(toast.success).toHaveBeenCalledWith('Ben is now an Admin');
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
@@ -59,11 +82,22 @@ describe('MemberRoleSelect', () => {
   it('makes another Admin a Member without asking', async () => {
     changeMemberRole.mockResolvedValue({ ok: true });
     const user = userEvent.setup();
-    render(<MemberRoleSelect accountId="a-2" name="Ben" memberRole="ADMIN" />);
+    render(
+      <MemberRoleSelect
+        workspaceId={WORKSPACE_ID}
+        accountId="a-2"
+        name="Ben"
+        memberRole="ADMIN"
+      />,
+    );
 
     await pick(user, "Ben's Role", 'Member');
 
-    expect(changeMemberRole).toHaveBeenCalledWith('a-2', 'MEMBER');
+    expect(changeMemberRole).toHaveBeenCalledWith(
+      WORKSPACE_ID,
+      'a-2',
+      'MEMBER',
+    );
   });
 
   it('says why when the change is refused, and shows the Role it still has', async () => {
@@ -72,7 +106,14 @@ describe('MemberRoleSelect', () => {
       message: 'Make someone else an Admin first.',
     });
     const user = userEvent.setup();
-    render(<MemberRoleSelect accountId="a-2" name="Ben" memberRole="ADMIN" />);
+    render(
+      <MemberRoleSelect
+        workspaceId={WORKSPACE_ID}
+        accountId="a-2"
+        name="Ben"
+        memberRole="ADMIN"
+      />,
+    );
 
     await pick(user, "Ben's Role", 'Member');
 
@@ -87,7 +128,13 @@ describe('MemberRoleSelect', () => {
   it('asks before an Admin makes themselves a Member', async () => {
     const user = userEvent.setup();
     render(
-      <MemberRoleSelect accountId="a-1" name="Ann" memberRole="ADMIN" isSelf />,
+      <MemberRoleSelect
+        workspaceId={WORKSPACE_ID}
+        accountId="a-1"
+        name="Ann"
+        memberRole="ADMIN"
+        isSelf
+      />,
     );
 
     await pick(user, 'Your Role', 'Member');
@@ -104,20 +151,36 @@ describe('MemberRoleSelect', () => {
     changeMemberRole.mockResolvedValue({ ok: true });
     const user = userEvent.setup();
     render(
-      <MemberRoleSelect accountId="a-1" name="Ann" memberRole="ADMIN" isSelf />,
+      <MemberRoleSelect
+        workspaceId={WORKSPACE_ID}
+        accountId="a-1"
+        name="Ann"
+        memberRole="ADMIN"
+        isSelf
+      />,
     );
 
     await pick(user, 'Your Role', 'Member');
     await user.click(screen.getByRole('button', { name: 'Make me a Member' }));
 
-    expect(changeMemberRole).toHaveBeenCalledWith('a-1', 'MEMBER');
+    expect(changeMemberRole).toHaveBeenCalledWith(
+      WORKSPACE_ID,
+      'a-1',
+      'MEMBER',
+    );
     expect(toast.success).toHaveBeenCalledWith('You are now a Member');
   });
 
   it('keeps them an Admin when they think better of it', async () => {
     const user = userEvent.setup();
     render(
-      <MemberRoleSelect accountId="a-1" name="Ann" memberRole="ADMIN" isSelf />,
+      <MemberRoleSelect
+        workspaceId={WORKSPACE_ID}
+        accountId="a-1"
+        name="Ann"
+        memberRole="ADMIN"
+        isSelf
+      />,
     );
 
     await pick(user, 'Your Role', 'Member');
@@ -133,6 +196,7 @@ describe('MemberRoleSelect', () => {
   it("cannot change the only Admin's Role, and says why", () => {
     render(
       <MemberRoleSelect
+        workspaceId={WORKSPACE_ID}
         accountId="a-1"
         name="Ann"
         memberRole="ADMIN"

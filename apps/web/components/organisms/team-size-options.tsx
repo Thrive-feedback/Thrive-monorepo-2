@@ -1,8 +1,5 @@
-import {
-  TEAM_SIZES,
-  type TeamSize,
-} from '@/app/(signed-in)/(top-nav)/register/create-workspace/_lib/team-size.constant';
 import { Text } from '@/components/atoms/text';
+import { TEAM_SIZES, type TeamSize } from '@/lib/workspace/team-size.constant';
 
 export type TeamSizeOptionsProps = {
   name: string;

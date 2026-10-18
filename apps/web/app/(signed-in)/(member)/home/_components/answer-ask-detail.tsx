@@ -17,5 +17,10 @@ export async function AnswerAskDetail({
   askId,
 }: AnswerAskDetailProps) {
   const ask = await readFeedbackAsk(membership, askId);
-  return <AnswerAskView ask={ask} action={answerAsk} />;
+  return (
+    <AnswerAskView
+      ask={ask}
+      action={answerAsk.bind(null, membership.workspace.id)}
+    />
+  );
 }

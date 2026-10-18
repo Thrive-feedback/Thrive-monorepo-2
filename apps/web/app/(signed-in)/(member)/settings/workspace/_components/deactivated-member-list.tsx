@@ -47,6 +47,7 @@ export async function DeactivatedMemberList({
           </Text>
           {canReactivate && (
             <ReactivateMemberButton
+              workspaceId={membership.workspace.id}
               accountId={member.accountId}
               name={member.name ?? member.email}
               memberRole={member.role}

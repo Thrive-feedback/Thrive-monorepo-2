@@ -34,6 +34,9 @@ vi.mock('./_components/invitation-list', () => ({
 vi.mock('./_components/invite-members-form', () => ({
   InviteMembersForm: () => <output>invite form</output>,
 }));
+vi.mock('./_components/workspace-switcher-loader', () => ({
+  WorkspaceSwitcherLoader: () => <output>workspace switcher</output>,
+}));
 
 describe('Workspace', () => {
   it('lets the gate turn away anyone who may not be here', async () => {
@@ -47,9 +50,9 @@ describe('Workspace', () => {
 
     render(await Workspace());
 
-    expect(
-      screen.getByText('Name', { selector: 'dt' }).nextElementSibling,
-    ).toHaveTextContent('Acme Corp');
+    expect(screen.getByText('Workspace')).toBeInTheDocument();
+    expect(screen.getByText('Acme Corp')).toBeInTheDocument();
+    expect(screen.getByText('workspace switcher')).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 3, name: 'Members' }),
     ).toBeInTheDocument();
