@@ -99,8 +99,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create a Workspace, with the caller as its first Admin */
+        /** Create a Workspace, with the caller as its first Admin, and make it the one they are in */
         post: operations["WorkspaceController_createWorkspace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/switch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make this Workspace the one the caller is in, on every device, until they switch again */
+        post: operations["WorkspaceController_switchWorkspace"];
         delete?: never;
         options?: never;
         head?: never;
@@ -114,7 +131,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the Workspaces the caller is a Member of, and their Role */
+        /** List the Workspaces the caller is a Member of, the one they are in first, or those they were Deactivated in */
         get: operations["MemberController_listMyMemberships"];
         put?: never;
         post?: never;
@@ -1061,8 +1078,45 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description PROFILE_REQUIRED or ALREADY_IN_A_WORKSPACE */
+            /** @description PROFILE_REQUIRED */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceController_switchWorkspace: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Switched */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1075,6 +1129,7 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
+                status?: "ACTIVE" | "DEACTIVATED";
             };
             header?: {
                 /** @description The browser's cookie header, forwarded by the web server. */
@@ -1629,7 +1684,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description INVITATION_EXPIRED, INVITATION_REVOKED, INVITATION_ALREADY_ACCEPTED, ALREADY_IN_A_WORKSPACE or DEACTIVATED_IN_WORKSPACE */
+            /** @description INVITATION_EXPIRED, INVITATION_REVOKED or INVITATION_ALREADY_ACCEPTED */
             409: {
                 headers: {
                     [name: string]: unknown;

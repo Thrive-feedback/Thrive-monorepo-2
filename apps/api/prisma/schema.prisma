@@ -125,8 +125,8 @@ model Workspace {
   @@map("workspace")
 }
 
-// No unique index on `userId` alone: one Workspace per person is a rule of this release
-// (ADR-0020), held by the plugin's `organizationLimit`, so lifting it needs no migration.
+// No unique index on `userId` alone: one Account can be a Member of many Workspaces
+// (brain ADR-0034).
 model Member {
   id            String    @id
   workspaceId   String
@@ -140,6 +140,9 @@ model Member {
   /// When the Member was Deactivated (glossary: Deactivate); `null` while they are active.
   /// Written by the Workspace module, since the plugin can only delete a Member (ADR 0047).
   deactivatedAt DateTime?
+  /// When the Account last switched to this Workspace, by choosing it, creating it or accepting an
+  /// Invitation to it; `null` until then. Its newest active row is the current Workspace (ADR 0049).
+  lastUsedAt    DateTime?
 
   @@unique([workspaceId, userId])
   @@index([workspaceId])

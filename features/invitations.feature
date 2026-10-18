@@ -21,6 +21,20 @@ Feature: Invitations
     Then Ben is a Member of "Acme"
 
   @api
+  Scenario: The only Admin of one Workspace joins another and keeps the first
+    Given Dan owns a Workspace called "Globex"
+    And Ann has invited Dan
+    When Dan accepts the Invitation
+    Then Dan belongs to "Acme" and "Globex"
+
+  @api
+  Scenario: A teammate is in the Workspace they just joined
+    Given Dan owns a Workspace called "Globex"
+    And Ann has invited Dan
+    When Dan accepts the Invitation
+    Then Dan is in "Acme"
+
+  @api
   Scenario: An Admin invites a teammate as an Admin, who joins as one
     Given Ben is signed in
     And Ann has invited Ben as an Admin
@@ -190,13 +204,6 @@ Feature: Invitations
     And Ann's Invitation to Ben has expired
     When Ben accepts the Invitation
     Then Ben is told the Invitation has expired
-
-  @api
-  Scenario: Someone already in a Workspace cannot join another
-    Given Dan owns a Workspace called "Globex"
-    And Dan has invited Ann
-    When Ann accepts the Invitation
-    Then Ann is told they already belong to a Workspace
 
   @api
   Scenario: Accepting an Invitation again changes nothing

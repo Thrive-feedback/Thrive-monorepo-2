@@ -7,6 +7,7 @@ import {
   WorkspaceInviting,
 } from '../port/workspace-inviting.port';
 import { InvitationDelivery } from '../service/invitation-delivery.service';
+import { ReturningMembers } from '../service/returning-members.service';
 import type { MembershipView } from '../types/membership.types';
 import { NotAllowedToInviteError } from '../workspace.errors';
 
@@ -55,6 +56,7 @@ export class SendInvitationsUseCase {
   constructor(
     private readonly workspaceInviting: WorkspaceInviting,
     private readonly invitationDelivery: InvitationDelivery,
+    private readonly returningMembers: ReturningMembers,
     private readonly unitOfWork: UnitOfWork,
   ) {}
 
@@ -72,16 +74,25 @@ export class SendInvitationsUseCase {
     // Only the writes are inside; email waits on the network and must not hold the lock.
     const stored = await this.unitOfWork.run(
       async () => {
+        const returning = await this.returningMembers.addressesAmong(
+          workspaceId,
+          addresses.toArray().map(({ email }) => email),
+        );
         const results: Stored[] = [];
         for (const { email, role } of addresses.toArray()) {
+          const request = {
+            credential: input.credential,
+            inviterAccountId: input.accountId,
+            workspaceId,
+            email,
+            role: role.toString(),
+          };
           results.push({
             email,
-            stored: await this.workspaceInviting.invite({
-              credential: input.credential,
-              workspaceId,
-              email,
-              role: role.toString(),
-            }),
+            // Someone who left is invited back, as themselves (brain `ADR-0034` decision 8).
+            stored: returning.has(email)
+              ? await this.workspaceInviting.inviteBack(request)
+              : await this.workspaceInviting.invite(request),
           });
         }
         return results;

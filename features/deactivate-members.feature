@@ -3,7 +3,8 @@ Feature: Deactivating Members, leaving, and Reactivating
   gave and received there, with their name shown as inactive. Anyone can
   Deactivate themselves, which is how they leave; an Admin can also Deactivate
   anyone else, other Admins included. A Workspace always keeps an active Admin.
-  An Admin can Reactivate someone, who comes back with the Role they had.
+  An Admin can Reactivate someone, who comes back with the Role they had; or
+  the Workspace invites them again, and accepting brings them back as themselves.
 
   Background:
     Given Ann owns a Workspace called "Acme"
@@ -96,3 +97,27 @@ Feature: Deactivating Members, leaving, and Reactivating
     And Ben is a Member of Dan's Workspace
     When Ann Reactivates Ben
     Then Ben belongs to "Acme" and "Globex"
+
+  @api
+  Scenario: Someone Deactivated comes back by accepting a new Invitation, with its Role
+    Given Ann has Deactivated Ben
+    And Ann has invited Ben as an Admin
+    When Ben accepts the Invitation
+    Then Ben is an Admin of "Acme"
+
+  @api
+  Scenario: Someone who comes back by Invitation reads the Feedback they were given before
+    Given Ann has given Ben Feedback on "The customer demo": "You kept the room with you.", shared with everyone in the Workspace
+    And Ann has Deactivated Ben
+    And Ann has invited Ben
+    When Ben accepts the Invitation
+    And Ben looks at the Workspace feed
+    Then Ben reads "You kept the room with you." from Ann to Ben about "The customer demo" on the feed
+
+  @api
+  Scenario: An Invitation is no longer offered once its Workspace has taken the person back
+    Given Ann has Deactivated Ben
+    And Ann has invited Ben
+    When Ann Reactivates Ben
+    And Ben looks for Invitations waiting for them
+    Then Ben is offered no Workspaces

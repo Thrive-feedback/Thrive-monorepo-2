@@ -7,15 +7,20 @@ import type {
 } from '../types/membership.types';
 
 /**
- * Every answer but `membersOfWorkspace` with `DEACTIVATED`, `deactivatedAmong` and `isDeactivatedIn`, is about active
- * Members only: a Deactivated person is no longer in the Workspace for anything they or others
- * do there.
+ * Every answer but those asked for with `DEACTIVATED`, `deactivatedAmong` and `isDeactivatedIn`
+ * is about active Members only: a Deactivated person is no longer in the Workspace for anything
+ * they or others do there.
  */
 export abstract class MembershipQuery {
-  /** The Account's memberships, oldest first. Empty while it belongs to no Workspace. */
+  /**
+   * The Account's memberships in one status, the one used last first, so the first active one is
+   * the Workspace they are in. One never used comes after those that were, newest joined first.
+   * Empty while it belongs to no Workspace.
+   */
   abstract membershipsOfAccount(
     accountId: string,
     page: PageRequest,
+    status: MemberStatus,
   ): Promise<MembershipPage>;
 
   /** The Account's membership of one Workspace, or `null` when it is not a Member there. */

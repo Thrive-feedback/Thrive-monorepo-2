@@ -13,11 +13,9 @@ export interface FoundedWorkspace {
 }
 
 /**
- * Stores a new Workspace with the signed-in founder as its only Member, as Admin, and makes it
- * the session's active Workspace. The store mints the Workspace's id, so it is answered here
- * rather than chosen by the caller.
+ * Stores a new Workspace with the signed-in founder as its only Member, as Admin. The store mints
+ * the Workspace's id, so it is answered here rather than chosen by the caller.
  */
 export abstract class WorkspaceFounding {
-  /** Throws `AlreadyInAWorkspaceError` when the founder already has one (ADR-0020). */
   abstract found(input: WorkspaceFoundingInput): Promise<FoundedWorkspace>;
 }

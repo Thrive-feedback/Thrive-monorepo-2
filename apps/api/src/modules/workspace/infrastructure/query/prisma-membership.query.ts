@@ -25,12 +25,20 @@ export class PrismaMembershipQuery extends MembershipQuery {
   async membershipsOfAccount(
     accountId: string,
     page: PageRequest,
+    status: MemberStatus,
   ): Promise<MembershipPage> {
-    const where = { userId: accountId, deactivatedAt: null };
+    const where = {
+      userId: accountId,
+      deactivatedAt: status === 'ACTIVE' ? null : { not: null },
+    };
     const [members, total] = await Promise.all([
       this.prismaTransactionContext.client.member.findMany({
         where,
-        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        orderBy: [
+          { lastUsedAt: { sort: 'desc', nulls: 'last' } },
+          { createdAt: 'desc' },
+          { id: 'desc' },
+        ],
         skip: (page.page - 1) * page.pageSize,
         take: page.pageSize,
         select: {

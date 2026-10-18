@@ -4,12 +4,14 @@ import { createAuth } from '@app/infrastructure/auth/auth';
 import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { PrismaUnitOfWork } from '@app/infrastructure/database/prisma-unit-of-work.adapter';
+import { SystemClock } from '@app/infrastructure/system-clock.adapter';
 import { UuidIdGenerator } from '@app/infrastructure/uuid-id-generator.adapter';
 import { FakeHasProfilePort } from '@test/support/workspace.fakes';
 import { makeSignature } from 'better-auth/crypto';
 import { v7 as uuidv7 } from 'uuid';
 import { BetterAuthWorkspaceFoundingAdapter } from '../../infrastructure/adapter/better-auth-workspace-founding.adapter';
-import { AlreadyInAWorkspaceError } from '../workspace.errors';
+import { PrismaWorkspaceSwitchingAdapter } from '../../infrastructure/adapter/prisma-workspace-switching.adapter';
+import { PrismaMembershipQuery } from '../../infrastructure/query/prisma-membership.query';
 import { CreateWorkspaceUseCase } from './create-workspace.use-case';
 
 const configuration = loadConfiguration();
@@ -20,8 +22,10 @@ const hasProfilePort = new FakeHasProfilePort();
 const auth = createAuth(prismaService, configuration.auth, idGenerator);
 const createWorkspaceUseCase = new CreateWorkspaceUseCase(
   new BetterAuthWorkspaceFoundingAdapter(auth, idGenerator),
+  new PrismaWorkspaceSwitchingAdapter(prismaTransactionContext),
   hasProfilePort,
   new PrismaUnitOfWork(prismaService, prismaTransactionContext),
+  new SystemClock(),
 );
 
 const founders: string[] = [];
@@ -57,8 +61,8 @@ afterAll(async () => {
   await prismaService.$disconnect();
 });
 
-describe('creating a Workspace from two tabs at once', () => {
-  it('creates one Workspace and refuses the other', async () => {
+describe('creating Workspaces in Postgres', () => {
+  it('makes one Workspace for each of two tabs creating at once', async () => {
     const { accountId, credential } = await aFounder();
     const request = {
       accountId,
@@ -67,18 +71,31 @@ describe('creating a Workspace from two tabs at once', () => {
       teamSize: null,
     };
 
-    const results = await Promise.allSettled([
+    await Promise.all([
       createWorkspaceUseCase.execute(request),
       createWorkspaceUseCase.execute(request),
     ]);
 
-    expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
-    const refused = results.find((r) => r.status === 'rejected');
-    expect(refused?.status === 'rejected' && refused.reason).toBeInstanceOf(
-      AlreadyInAWorkspaceError,
-    );
     expect(
-      await prismaService.member.count({ where: { userId: accountId } }),
-    ).toBe(1);
+      await prismaService.member.count({
+        where: { userId: accountId, role: 'admin' },
+      }),
+    ).toBe(2);
+  });
+
+  it('makes the new Workspace the one its founder is in', async () => {
+    const { accountId, credential } = await aFounder();
+    const request = { accountId, credential, teamSize: null };
+    await createWorkspaceUseCase.execute({ ...request, name: 'First' });
+
+    const second = await createWorkspaceUseCase.execute({
+      ...request,
+      name: 'Second',
+    });
+
+    const current = await new PrismaMembershipQuery(
+      prismaTransactionContext,
+    ).membershipsOfAccount(accountId, { page: 1, pageSize: 1 }, 'ACTIVE');
+    expect(current.items.map((m) => m.workspace.id)).toEqual([second.id]);
   });
 });

@@ -39,6 +39,7 @@ export class MyInvitationController {
   ) {
     const page = { page: query.page, pageSize: query.pageSize };
     const invitations = await this.listMyInvitationsUseCase.execute({
+      accountId: actor.accountId,
       accountEmail: actor.email,
       page,
     });

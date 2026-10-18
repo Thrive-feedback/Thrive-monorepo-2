@@ -7,7 +7,10 @@ import { PrismaUnitOfWork } from '@app/infrastructure/database/prisma-unit-of-wo
 import { SystemClock } from '@app/infrastructure/system-clock.adapter';
 import { UuidIdGenerator } from '@app/infrastructure/uuid-id-generator.adapter';
 import { FakeEmailSender } from '@test/support/email-sender.fake';
-import { FakeProfileNamePort } from '@test/support/workspace.fakes';
+import {
+  FakeAccountByEmailPort,
+  FakeProfileNamePort,
+} from '@test/support/workspace.fakes';
 import {
   type SignedInAccount,
   WorkspaceFixtures,
@@ -15,6 +18,7 @@ import {
 import { BetterAuthWorkspaceInvitingAdapter } from '../../infrastructure/adapter/better-auth-workspace-inviting.adapter';
 import { PrismaMembershipQuery } from '../../infrastructure/query/prisma-membership.query';
 import { InvitationDelivery } from '../service/invitation-delivery.service';
+import { ReturningMembers } from '../service/returning-members.service';
 import {
   NotAllowedToInviteError,
   WorkspaceNotFoundError,
@@ -32,12 +36,17 @@ const auth = createAuth(
 );
 const emailSender = new FakeEmailSender();
 const sendInvitationsUseCase = new SendInvitationsUseCase(
-  new BetterAuthWorkspaceInvitingAdapter(auth),
+  new BetterAuthWorkspaceInvitingAdapter(auth, new SystemClock()),
   new InvitationDelivery(
     emailSender,
     new FakeProfileNamePort(),
     new SystemClock(),
     configuration.web,
+  ),
+  // Nobody here is invited back, so no address needs to be an Account.
+  new ReturningMembers(
+    new FakeAccountByEmailPort(),
+    new PrismaMembershipQuery(prismaTransactionContext),
   ),
   new PrismaUnitOfWork(prismaService, prismaTransactionContext),
 );

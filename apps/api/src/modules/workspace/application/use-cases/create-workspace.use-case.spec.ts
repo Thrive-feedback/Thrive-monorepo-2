@@ -1,17 +1,19 @@
 import { describe, expect, it } from 'bun:test';
+import { FakeClock } from '@test/support/clock.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   FakeHasProfilePort,
+  FakeMembershipQuery,
   FakeWorkspaceFounding,
+  FakeWorkspaceSwitching,
 } from '@test/support/workspace.fakes';
 import { WorkspaceNameEmptyError } from '../../domain/workspace.errors';
-import {
-  AlreadyInAWorkspaceError,
-  ProfileRequiredError,
-} from '../workspace.errors';
+import { ProfileRequiredError } from '../workspace.errors';
 import { CreateWorkspaceUseCase } from './create-workspace.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
+const SECOND_WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000bb';
+const NOW = new Date('2026-10-18T03:00:00Z');
 const ANN_COOKIE = 'thrive.session_token=ann';
 
 function request(
@@ -27,17 +29,26 @@ function request(
 }
 
 function setUp() {
-  const workspaceFounding = new FakeWorkspaceFounding(WORKSPACE_ID);
+  const workspaceFounding = new FakeWorkspaceFounding(
+    WORKSPACE_ID,
+    SECOND_WORKSPACE_ID,
+  );
+  const workspaceSwitching = new FakeWorkspaceSwitching(
+    new FakeMembershipQuery(),
+  );
   const hasProfilePort = new FakeHasProfilePort();
   hasProfilePort.introduced.add('account-ann');
   const unitOfWork = new FakeUnitOfWork();
   const useCase = new CreateWorkspaceUseCase(
     workspaceFounding,
+    workspaceSwitching,
     hasProfilePort,
     unitOfWork,
+    new FakeClock(NOW),
   );
   return {
     workspaceFounding,
+    workspaceSwitching,
     hasProfilePort,
     unitOfWork,
     useCase,
@@ -68,14 +79,24 @@ describe('creating a Workspace', () => {
     expect(workspaceFounding.founded[0]?.teamSize).toBeNull();
   });
 
-  it('serializes the founder, so two tabs cannot both create one', async () => {
-    const { unitOfWork, useCase } = setUp();
+  it('makes the new Workspace the one the founder is in', async () => {
+    const { workspaceSwitching, useCase } = setUp();
 
     await useCase.execute(request());
 
-    expect(unitOfWork.opened).toEqual([
-      { serializeOn: 'account-workspace:account-ann' },
+    expect(workspaceSwitching.switches).toEqual([
+      { workspaceId: WORKSPACE_ID, accountId: 'account-ann', switchedAt: NOW },
     ]);
+  });
+
+  it('founds one Workspace for each request, however many the founder has', async () => {
+    const { workspaceFounding, useCase } = setUp();
+
+    const first = await useCase.execute(request());
+    const second = await useCase.execute(request({ name: 'Beta' }));
+
+    expect([first.id, second.id]).toEqual([WORKSPACE_ID, SECOND_WORKSPACE_ID]);
+    expect(workspaceFounding.founded).toHaveLength(2);
   });
 
   it('is refused to someone who has not introduced themselves', async () => {
@@ -84,16 +105,6 @@ describe('creating a Workspace', () => {
 
     await expect(useCase.execute(request())).rejects.toThrow(
       ProfileRequiredError,
-    );
-    expect(workspaceFounding.founded).toEqual([]);
-  });
-
-  it('is refused to someone who is already a Member of a Workspace', async () => {
-    const { workspaceFounding, useCase } = setUp();
-    workspaceFounding.alreadyMembers.add(ANN_COOKIE);
-
-    await expect(useCase.execute(request())).rejects.toThrow(
-      AlreadyInAWorkspaceError,
     );
     expect(workspaceFounding.founded).toEqual([]);
   });

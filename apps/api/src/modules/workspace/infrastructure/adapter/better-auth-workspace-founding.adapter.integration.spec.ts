@@ -6,7 +6,6 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { UuidIdGenerator } from '@app/infrastructure/uuid-id-generator.adapter';
 import { makeSignature } from 'better-auth/crypto';
 import { v7 as uuidv7 } from 'uuid';
-import { AlreadyInAWorkspaceError } from '../../application/workspace.errors';
 import { PrismaMembershipQuery } from '../query/prisma-membership.query';
 import { BetterAuthWorkspaceFoundingAdapter } from './better-auth-workspace-founding.adapter';
 
@@ -86,23 +85,6 @@ describe('founding a Workspace through the organization plugin', () => {
     ).toEqual([{ userId: accountId, role: 'admin' }]);
   });
 
-  it("makes it the founder's active Workspace", async () => {
-    const { sessionId, credential } = await aSignedInAccount();
-
-    const { workspaceId } = await workspaceFounding.found({
-      credential,
-      name: 'Acme Corp',
-      teamSize: null,
-    });
-
-    expect(
-      await prismaService.session.findUnique({
-        where: { id: sessionId },
-        select: { activeOrganizationId: true },
-      }),
-    ).toEqual({ activeOrganizationId: workspaceId });
-  });
-
   it('is read back as an ADMIN membership', async () => {
     const { accountId, credential } = await aSignedInAccount();
     const { workspaceId } = await workspaceFounding.found({
@@ -112,10 +94,11 @@ describe('founding a Workspace through the organization plugin', () => {
     });
 
     expect(
-      await membershipQuery.membershipsOfAccount(accountId, {
-        page: 1,
-        pageSize: 20,
-      }),
+      await membershipQuery.membershipsOfAccount(
+        accountId,
+        { page: 1, pageSize: 20 },
+        'ACTIVE',
+      ),
     ).toEqual({
       items: [
         { workspace: { id: workspaceId, name: 'Acme Corp' }, role: 'ADMIN' },
@@ -124,7 +107,7 @@ describe('founding a Workspace through the organization plugin', () => {
     });
   });
 
-  it('refuses a second Workspace to the same founder', async () => {
+  it('stores a second Workspace for the same founder', async () => {
     const { accountId, credential } = await aSignedInAccount();
     await workspaceFounding.found({
       credential,
@@ -132,12 +115,17 @@ describe('founding a Workspace through the organization plugin', () => {
       teamSize: null,
     });
 
-    await expect(
-      workspaceFounding.found({ credential, name: 'Beta Ltd', teamSize: null }),
-    ).rejects.toThrow(AlreadyInAWorkspaceError);
+    await workspaceFounding.found({
+      credential,
+      name: 'Beta Ltd',
+      teamSize: null,
+    });
+
     expect(
-      await prismaService.member.count({ where: { userId: accountId } }),
-    ).toBe(1);
+      await prismaService.member.count({
+        where: { userId: accountId, role: 'admin' },
+      }),
+    ).toBe(2);
   });
 
   it('refuses a caller with no session', async () => {

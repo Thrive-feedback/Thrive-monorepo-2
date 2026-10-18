@@ -171,6 +171,7 @@ describe('reading the Invitations Pending for one address', () => {
 
     const page = await invitationQuery.pendingInvitationsTo(
       InvitationRecipient.of(invitee),
+      uuidv7(),
       now,
       { page: 1, pageSize: 20 },
     );
@@ -216,6 +217,28 @@ describe('reading the Invitations Pending for one address', () => {
 
     const page = await invitationQuery.pendingInvitationsTo(
       InvitationRecipient.of(invitee),
+      uuidv7(),
+      now,
+      { page: 1, pageSize: 20 },
+    );
+
+    expect(page).toEqual({ items: [], total: 0 });
+  });
+
+  it('leaves out one to a Workspace the person is already active in', async () => {
+    const admin = await fixtures.aSignedInAccount('invitations-already-in');
+    const ben = await fixtures.aSignedInAccount('invitations-ben');
+    const workspaceId = await fixtures.aWorkspace(admin, 'Acme');
+    await fixtures.addMember(workspaceId, ben, 'member');
+    const now = new Date();
+    await fixtures.anInvitation(workspaceId, admin, {
+      email: ben.email,
+      expiresAt: new Date(now.getTime() + DAY_MS),
+    });
+
+    const page = await invitationQuery.pendingInvitationsTo(
+      InvitationRecipient.of(ben.email),
+      ben.accountId,
       now,
       { page: 1, pageSize: 20 },
     );

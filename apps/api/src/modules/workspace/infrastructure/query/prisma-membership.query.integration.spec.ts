@@ -56,8 +56,20 @@ describe('reading memberships once some have been Deactivated', () => {
       await membershipQuery.membershipInWorkspace(cat.accountId, workspaceId),
     ).toBe(null);
     expect(
-      await membershipQuery.membershipsOfAccount(cat.accountId, PAGE),
+      await membershipQuery.membershipsOfAccount(cat.accountId, PAGE, 'ACTIVE'),
     ).toEqual({ items: [], total: 0 });
+  });
+
+  it("lists a Deactivated person's Workspace among those they were Deactivated in", async () => {
+    const { workspaceId, cat } = await aWorkspaceWithDeactivatedPeople();
+
+    const deactivated = await membershipQuery.membershipsOfAccount(
+      cat.accountId,
+      PAGE,
+      'DEACTIVATED',
+    );
+
+    expect(deactivated.items.map((m) => m.workspace.id)).toEqual([workspaceId]);
   });
 
   it('leaves Deactivated people out of those who can be named in a request', async () => {
@@ -132,5 +144,50 @@ describe('reading memberships once some have been Deactivated', () => {
     expect(
       await membershipQuery.isDeactivatedIn(stranger.accountId, workspaceId),
     ).toBe(false);
+  });
+});
+
+describe('reading which Workspace someone is in', () => {
+  async function usedAt(
+    account: SignedInAccount,
+    workspaceId: string,
+    lastUsedAt: Date,
+  ) {
+    await prismaService.member.update({
+      where: { workspaceId_userId: { workspaceId, userId: account.accountId } },
+      data: { lastUsedAt },
+    });
+  }
+
+  async function workspacesOf(account: SignedInAccount) {
+    const page = await membershipQuery.membershipsOfAccount(
+      account.accountId,
+      PAGE,
+      'ACTIVE',
+    );
+    return page.items.map((m) => m.workspace.name);
+  }
+
+  it('answers the one used last first, then those never used, newest joined first', async () => {
+    const ann = await fixtures.aSignedInAccount('current-ann');
+    const first = await fixtures.aWorkspace(ann, 'First');
+    await fixtures.aWorkspace(ann, 'Second');
+    const third = await fixtures.aWorkspace(ann, 'Third');
+    await usedAt(ann, first, new Date('2026-10-01T00:00:00Z'));
+    await usedAt(ann, third, new Date('2026-10-02T00:00:00Z'));
+
+    expect(await workspacesOf(ann)).toEqual(['Third', 'First', 'Second']);
+  });
+
+  it('falls back to the active one used most recently once the last used is Deactivated', async () => {
+    const ann = await fixtures.aSignedInAccount('fallback-ann');
+    const older = await fixtures.aWorkspace(ann, 'Older');
+    const newer = await fixtures.aWorkspace(ann, 'Newer');
+    await usedAt(ann, older, new Date('2026-10-01T00:00:00Z'));
+    await usedAt(ann, newer, new Date('2026-10-02T00:00:00Z'));
+
+    await deactivate(ann, newer);
+
+    expect(await workspacesOf(ann)).toEqual(['Older']);
   });
 });
