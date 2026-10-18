@@ -9,6 +9,7 @@ import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { FeedbackModule } from './modules/feedback';
 import { IdentityModule } from './modules/identity';
+import { IntegrationsModule } from './modules/integrations';
 import { WorkspaceModule } from './modules/workspace';
 import { WorkspaceGoalModule } from './modules/workspace-goal';
 import { CodedErrorFilter } from './shared/presentation/coded-error.filter';
@@ -25,6 +26,7 @@ import { SharedModule } from './shared/shared.module';
     WorkspaceModule,
     FeedbackModule,
     WorkspaceGoalModule,
+    IntegrationsModule,
   ],
   controllers: [HealthController],
   providers: [

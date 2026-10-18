@@ -172,6 +172,10 @@ export class WorkspaceFixtures {
     await this.prismaService.workspaceGoal.deleteMany({
       where: { workspaceId: { in: workspaceIds } },
     });
+    // And a Connection, which names its Workspace by id and nothing else.
+    await this.prismaService.integrationConnection.deleteMany({
+      where: { workspaceId: { in: workspaceIds } },
+    });
     await this.prismaService.workspace.deleteMany({ where: workspaces });
     // Deleting the Better Auth user cascades to its sessions.
     await this.prismaService.user.deleteMany({

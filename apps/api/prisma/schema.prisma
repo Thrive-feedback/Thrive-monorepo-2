@@ -387,3 +387,30 @@ model WorkspaceGoal {
   @@unique([workspaceId, nameKey])
   @@map("workspace_goal")
 }
+
+/// One Workspace's authorised link to one external tool (glossary: Connection). Nothing here is
+/// secret for Discord: a server id is known to everyone in it, and a channel id grants nothing on
+/// its own. A provider that issues a per-Workspace credential (Slack does) adds the column, the
+/// cipher and the key handling together, when they have a reader — design 0020 D3.
+model IntegrationConnection {
+  id                    String   @id
+  /// Workspace's id, held without a foreign key (BE_03 R7), as on FeedbackRequest.
+  workspaceId           String
+  /// Which external tool, as the provider value the installer registry is keyed by.
+  provider              String
+  /// The provider's own space: a Discord server, a Slack team. The ids are opaque strings,
+  /// because providers do not agree on a shape; the names are held for the screen.
+  externalWorkspaceId   String
+  externalWorkspaceName String
+  externalChannelId     String
+  externalChannelName   String
+  /// The Account of the Admin who connected it. No foreign key: Accounts are Identity's.
+  connectedByAccountId  String
+  connectedAt           DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  /// One Connection per Workspace per tool. Carrying the provider means a second tool is not a
+  /// migration; the one-per-Workspace rule itself stays in the application layer (design 0020 D7).
+  @@unique([workspaceId, provider])
+  @@map("integration_connection")
+}
