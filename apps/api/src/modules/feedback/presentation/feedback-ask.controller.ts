@@ -28,6 +28,7 @@ import {
   AnswerFeedbackAskRequestDto,
   AnswerFeedbackAskResponseDto,
 } from './dto/answer-feedback-ask.dto';
+import { toTagsResponse } from './dto/feedback-response.mapper';
 import { GetFeedbackAskResponseDto } from './dto/get-feedback-ask.dto';
 import {
   ListMyFeedbackAsksQueryDto,
@@ -45,6 +46,7 @@ function toResponse(ask: MyAskView) {
     askId: ask.askId,
     feedbackRequestId: ask.feedbackRequestId,
     topic: ask.topic,
+    topicTags: toTagsResponse(ask.topicTags),
     requester: {
       accountId: ask.requesterAccountId,
       name: ask.requesterName,

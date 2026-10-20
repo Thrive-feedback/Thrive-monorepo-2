@@ -6,8 +6,17 @@ export interface AccountSummaryView {
   readonly fullName: string | null;
   /** The name others see and call them by; `null` while the Account has not introduced itself. */
   readonly displayName: string | null;
+  /** The slug others mention them by; `null` while the Account has not introduced itself. */
+  readonly slug: string | null;
   /** Their photo from Google; `null` when Google has none. */
   readonly photoUrl: string | null;
+}
+
+/** An Account as found by the slug its Profile holds. */
+export interface AccountBySlugView {
+  readonly accountId: string;
+  readonly slug: string;
+  readonly displayName: string;
 }
 
 /** An Account as found by the address it signs in with. */

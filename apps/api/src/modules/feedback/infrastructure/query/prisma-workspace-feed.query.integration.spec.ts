@@ -4,6 +4,7 @@ import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { v7 as uuidv7 } from 'uuid';
 import { Feedback } from '../../domain/entity/feedback.entity';
+import { BoundTags } from '../../domain/value-object/bound-tags.vo';
 import { FeedbackBody } from '../../domain/value-object/feedback-body.vo';
 import { Topic } from '../../domain/value-object/topic.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
@@ -41,6 +42,7 @@ async function given(
   written.push(id);
   await repository.save(
     Feedback.offer({
+      tags: BoundTags.none(),
       id,
       workspaceId,
       giverAccountId: BEN,
@@ -87,9 +89,11 @@ describe('reading the Workspace feed', () => {
       origin: 'OFFERED',
       feedbackRequestId: null,
       topic: 'the customer demo',
+      topicTags: { workspaceGoals: [], mentions: [] },
       giverAccountId: BEN,
       receiverAccountId: CARA,
       body: 'You kept the room with you.',
+      tags: { workspaceGoals: [], mentions: [] },
       createdAt: expect.any(Date),
     });
   });

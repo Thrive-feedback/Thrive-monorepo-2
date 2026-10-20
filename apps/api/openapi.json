@@ -2387,6 +2387,12 @@
                     "null"
                   ]
                 },
+                "slug": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "photoUrl": {
                   "type": "string",
                   "format": "uri",
@@ -2405,6 +2411,7 @@
                 "email",
                 "fullName",
                 "displayName",
+                "slug",
                 "photoUrl",
                 "role"
               ],
@@ -2848,6 +2855,50 @@
                 "topic": {
                   "type": "string"
                 },
+                "topicTags": {
+                  "type": "object",
+                  "properties": {
+                    "workspaceGoals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "mentions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slug": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "displayName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "workspaceGoals",
+                    "mentions"
+                  ],
+                  "additionalProperties": false
+                },
                 "visibility": {
                   "type": "object",
                   "properties": {
@@ -2941,6 +2992,50 @@
                           "body": {
                             "type": "string"
                           },
+                          "tags": {
+                            "type": "object",
+                            "properties": {
+                              "workspaceGoals": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "name"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "mentions": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "slug": {
+                                      "type": "string"
+                                    },
+                                    "displayName": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "slug",
+                                    "displayName"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "workspaceGoals",
+                              "mentions"
+                            ],
+                            "additionalProperties": false
+                          },
                           "answeredAt": {
                             "type": "string",
                             "format": "date-time",
@@ -2949,6 +3044,7 @@
                         },
                         "required": [
                           "body",
+                          "tags",
                           "answeredAt"
                         ],
                         "additionalProperties": false,
@@ -2975,6 +3071,7 @@
               "required": [
                 "id",
                 "topic",
+                "topicTags",
                 "visibility",
                 "asks",
                 "createdAt"
@@ -3016,6 +3113,50 @@
           },
           "topic": {
             "type": "string"
+          },
+          "topicTags": {
+            "type": "object",
+            "properties": {
+              "workspaceGoals": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "mentions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "slug": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "slug",
+                    "displayName"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "workspaceGoals",
+              "mentions"
+            ],
+            "additionalProperties": false
           },
           "visibility": {
             "type": "object",
@@ -3110,6 +3251,50 @@
                     "body": {
                       "type": "string"
                     },
+                    "tags": {
+                      "type": "object",
+                      "properties": {
+                        "workspaceGoals": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "mentions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "slug": {
+                                "type": "string"
+                              },
+                              "displayName": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "slug",
+                              "displayName"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "workspaceGoals",
+                        "mentions"
+                      ],
+                      "additionalProperties": false
+                    },
                     "answeredAt": {
                       "type": "string",
                       "format": "date-time",
@@ -3118,6 +3303,7 @@
                   },
                   "required": [
                     "body",
+                    "tags",
                     "answeredAt"
                   ],
                   "additionalProperties": false,
@@ -3144,6 +3330,7 @@
         "required": [
           "id",
           "topic",
+          "topicTags",
           "visibility",
           "asks",
           "createdAt"
@@ -3170,6 +3357,50 @@
                 },
                 "topic": {
                   "type": "string"
+                },
+                "topicTags": {
+                  "type": "object",
+                  "properties": {
+                    "workspaceGoals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "mentions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slug": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "displayName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "workspaceGoals",
+                    "mentions"
+                  ],
+                  "additionalProperties": false
                 },
                 "requester": {
                   "type": "object",
@@ -3218,6 +3449,7 @@
                 "askId",
                 "feedbackRequestId",
                 "topic",
+                "topicTags",
                 "requester",
                 "status",
                 "createdAt"
@@ -3264,6 +3496,50 @@
           },
           "topic": {
             "type": "string"
+          },
+          "topicTags": {
+            "type": "object",
+            "properties": {
+              "workspaceGoals": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "mentions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "slug": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "slug",
+                    "displayName"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "workspaceGoals",
+              "mentions"
+            ],
+            "additionalProperties": false
           },
           "requester": {
             "type": "object",
@@ -3312,6 +3588,7 @@
           "askId",
           "feedbackRequestId",
           "topic",
+          "topicTags",
           "requester",
           "status",
           "createdAt"
@@ -3427,6 +3704,50 @@
                 "topic": {
                   "type": "string"
                 },
+                "topicTags": {
+                  "type": "object",
+                  "properties": {
+                    "workspaceGoals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "mentions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slug": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "displayName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "workspaceGoals",
+                    "mentions"
+                  ],
+                  "additionalProperties": false
+                },
                 "giverAccountId": {
                   "type": "string",
                   "format": "uuid",
@@ -3448,6 +3769,50 @@
                 "body": {
                   "type": "string"
                 },
+                "tags": {
+                  "type": "object",
+                  "properties": {
+                    "workspaceGoals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "mentions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slug": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "displayName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "workspaceGoals",
+                    "mentions"
+                  ],
+                  "additionalProperties": false
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time",
@@ -3459,10 +3824,12 @@
                 "origin",
                 "feedbackRequestId",
                 "topic",
+                "topicTags",
                 "giverAccountId",
                 "giverName",
                 "giverStatus",
                 "body",
+                "tags",
                 "createdAt"
               ],
               "additionalProperties": false
@@ -3515,6 +3882,50 @@
           },
           "topic": {
             "type": "string"
+          },
+          "topicTags": {
+            "type": "object",
+            "properties": {
+              "workspaceGoals": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "mentions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "slug": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "slug",
+                    "displayName"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "workspaceGoals",
+              "mentions"
+            ],
+            "additionalProperties": false
           },
           "giver": {
             "type": "object",
@@ -3577,6 +3988,50 @@
           "body": {
             "type": "string"
           },
+          "tags": {
+            "type": "object",
+            "properties": {
+              "workspaceGoals": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "mentions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "slug": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "slug",
+                    "displayName"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "workspaceGoals",
+              "mentions"
+            ],
+            "additionalProperties": false
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -3588,9 +4043,11 @@
           "origin",
           "feedbackRequestId",
           "topic",
+          "topicTags",
           "giver",
           "receiver",
           "body",
+          "tags",
           "createdAt"
         ],
         "additionalProperties": false
@@ -3623,6 +4080,50 @@
                 },
                 "topic": {
                   "type": "string"
+                },
+                "topicTags": {
+                  "type": "object",
+                  "properties": {
+                    "workspaceGoals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "mentions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slug": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "displayName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "workspaceGoals",
+                    "mentions"
+                  ],
+                  "additionalProperties": false
                 },
                 "giver": {
                   "type": "object",
@@ -3685,6 +4186,50 @@
                 "body": {
                   "type": "string"
                 },
+                "tags": {
+                  "type": "object",
+                  "properties": {
+                    "workspaceGoals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "mentions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slug": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "displayName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "workspaceGoals",
+                    "mentions"
+                  ],
+                  "additionalProperties": false
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time",
@@ -3696,9 +4241,11 @@
                 "origin",
                 "feedbackRequestId",
                 "topic",
+                "topicTags",
                 "giver",
                 "receiver",
                 "body",
+                "tags",
                 "createdAt"
               ],
               "additionalProperties": false
@@ -3757,6 +4304,50 @@
                 "topic": {
                   "type": "string"
                 },
+                "topicTags": {
+                  "type": "object",
+                  "properties": {
+                    "workspaceGoals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "mentions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slug": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "displayName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "workspaceGoals",
+                    "mentions"
+                  ],
+                  "additionalProperties": false
+                },
                 "giver": {
                   "type": "object",
                   "properties": {
@@ -3818,6 +4409,50 @@
                 "body": {
                   "type": "string"
                 },
+                "tags": {
+                  "type": "object",
+                  "properties": {
+                    "workspaceGoals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "mentions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slug": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "displayName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "workspaceGoals",
+                    "mentions"
+                  ],
+                  "additionalProperties": false
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time",
@@ -3829,9 +4464,11 @@
                 "origin",
                 "feedbackRequestId",
                 "topic",
+                "topicTags",
                 "giver",
                 "receiver",
                 "body",
+                "tags",
                 "createdAt"
               ],
               "additionalProperties": false

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+  aTagsService,
   FakeFeedbackRepository,
   FakeWorkspaceMembershipPort,
 } from '@test/support/feedback.fakes';
@@ -47,6 +48,7 @@ function setUp() {
   const useCase = new OfferFeedbackUseCase(
     feedbackRepository,
     new FakeWorkspaceMembershipPort().with(WORKSPACE_ID, ANN, BEN, CARA),
+    aTagsService(WORKSPACE_ID),
     new FakeIdGenerator(FEEDBACK_ID),
     unitOfWork,
   );
@@ -73,8 +75,25 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         body: 'You kept the room with you.\n\nKeep the recap.',
+        workspaceGoals: [],
+        mentions: [],
       },
     ]);
+  });
+
+  it('binds what its Topic and its text name together', async () => {
+    const { feedbackRepository, useCase } = setUp();
+
+    await useCase.execute(
+      offering({ topic: 'The launch #Ownership', body: 'Thanks to @cara.' }),
+    );
+
+    expect(feedbackRepository.saved[0]).toMatchObject({
+      workspaceGoals: [
+        { workspaceGoalId: 'goal-ownership', name: 'ownership' },
+      ],
+      mentions: [{ accountId: CARA, slug: 'cara', displayName: 'Cara' }],
+    });
   });
 
   it('keeps who the Giver chose to share it with', async () => {

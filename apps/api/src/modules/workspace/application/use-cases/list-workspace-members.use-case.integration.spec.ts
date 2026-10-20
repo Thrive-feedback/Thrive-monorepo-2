@@ -44,6 +44,7 @@ describe('listing the Members of a Workspace', () => {
         email: admin.email,
         fullName: 'Ann Lee',
         displayName: 'Ann',
+        slug: null,
         photoUrl: null,
       },
       {
@@ -51,6 +52,7 @@ describe('listing the Members of a Workspace', () => {
         email: member.email,
         fullName: null,
         displayName: null,
+        slug: null,
         photoUrl: null,
       },
       {
@@ -58,6 +60,7 @@ describe('listing the Members of a Workspace', () => {
         email: outsider.email,
         fullName: 'Cat',
         displayName: 'Cat',
+        slug: null,
         photoUrl: null,
       },
     );
@@ -78,6 +81,7 @@ describe('listing the Members of a Workspace', () => {
           email: admin.email,
           fullName: 'Ann Lee',
           displayName: 'Ann',
+          slug: null,
           photoUrl: null,
           role: 'ADMIN',
         },
@@ -86,6 +90,7 @@ describe('listing the Members of a Workspace', () => {
           email: member.email,
           fullName: null,
           displayName: null,
+          slug: null,
           photoUrl: null,
           role: 'MEMBER',
         },

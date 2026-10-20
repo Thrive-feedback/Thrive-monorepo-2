@@ -23,7 +23,10 @@ import type { ReceivedFeedbackView } from '../application/types/feedback-request
 import { GetFeedbackUseCase } from '../application/use-cases/get-feedback.use-case';
 import { ListReceivedFeedbackUseCase } from '../application/use-cases/list-received-feedback.use-case';
 import { OfferFeedbackUseCase } from '../application/use-cases/offer-feedback.use-case';
-import { toFeedbackResponse } from './dto/feedback-response.mapper';
+import {
+  toFeedbackResponse,
+  toTagsResponse,
+} from './dto/feedback-response.mapper';
 import { GetFeedbackResponseDto } from './dto/get-feedback.dto';
 import {
   ListReceivedFeedbackQueryDto,
@@ -46,10 +49,12 @@ function toResponse(feedback: ReceivedFeedbackView) {
     origin: feedback.origin,
     feedbackRequestId: feedback.feedbackRequestId,
     topic: feedback.topic,
+    topicTags: toTagsResponse(feedback.topicTags),
     giverAccountId: feedback.giverAccountId,
     giverName: feedback.giverName,
     giverStatus: feedback.giverStatus,
     body: feedback.body,
+    tags: toTagsResponse(feedback.tags),
     createdAt: feedback.createdAt.toISOString(),
   };
 }

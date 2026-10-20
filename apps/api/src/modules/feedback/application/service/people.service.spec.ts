@@ -15,6 +15,7 @@ function setUp() {
     email: 'ben@acme.test',
     fullName: 'Ben Carter',
     displayName: 'Ben',
+    slug: null,
     photoUrl: null,
   });
   const workspaceMembershipPort = new FakeWorkspaceMembershipPort();

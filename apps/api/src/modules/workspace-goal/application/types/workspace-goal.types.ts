@@ -8,6 +8,12 @@ export interface WorkspaceGoalView {
   readonly status: WorkspaceGoalStatusValue;
 }
 
+/** An active Workspace Goal, as text written with its hashtag is bound to it. */
+export interface ActiveWorkspaceGoalView {
+  readonly id: string;
+  readonly name: string;
+}
+
 export interface PageRequest {
   /** 1-based. */
   readonly page: number;

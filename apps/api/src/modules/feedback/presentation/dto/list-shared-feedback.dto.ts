@@ -6,6 +6,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
+import { tagsSchema } from './tags.dto';
 
 export const listSharedFeedbackQuerySchema = z.strictObject(pageQueryShape);
 export class ListSharedFeedbackQueryDto extends createZodDto(
@@ -33,9 +34,13 @@ const sharedFeedbackSchema = z.object({
   /** The request it answers, or `null` for Feedback given without being asked. */
   feedbackRequestId: z.uuid().nullable(),
   topic: z.string(),
+  /** What the Topic was bound to when it was sent; highlight these and nothing else. */
+  topicTags: tagsSchema,
   giver: personSchema,
   receiver: personSchema,
   body: z.string(),
+  /** What its Giver wrote was bound to when it was sent. */
+  tags: tagsSchema,
   createdAt: z.iso.datetime({ offset: true }),
 });
 

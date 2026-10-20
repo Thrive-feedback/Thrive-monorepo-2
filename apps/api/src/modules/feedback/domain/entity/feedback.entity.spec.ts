@@ -4,6 +4,7 @@ import {
   CannotSelectTheReceiverError,
   CannotSelectYourselfError,
 } from '../feedback-request.errors';
+import { BoundTags } from '../value-object/bound-tags.vo';
 import { FeedbackBody } from '../value-object/feedback-body.vo';
 import { Topic } from '../value-object/topic.vo';
 import { Visibility } from '../value-object/visibility.vo';
@@ -27,6 +28,7 @@ function offering(
     topic: Topic.of('the customer demo'),
     visibility: overrides.visibility ?? Visibility.onlyMe(),
     body: FeedbackBody.of('You kept the room with you.'),
+    tags: BoundTags.none(),
   };
 }
 
@@ -53,6 +55,8 @@ describe('offering Feedback without being asked', () => {
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       body: 'You kept the room with you.',
+      workspaceGoals: [],
+      mentions: [],
     });
   });
 

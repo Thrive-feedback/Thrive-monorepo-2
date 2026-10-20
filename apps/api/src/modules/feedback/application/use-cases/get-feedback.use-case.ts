@@ -59,6 +59,7 @@ export class GetFeedbackUseCase {
       origin: row.origin,
       feedbackRequestId: row.feedbackRequestId,
       topic: row.topic,
+      topicTags: row.topicTags,
       giverAccountId: row.giverAccountId,
       giverName: people.nameOf(row.giverAccountId),
       giverStatus: people.statusOf(row.giverAccountId),
@@ -66,6 +67,7 @@ export class GetFeedbackUseCase {
       receiverName: people.nameOf(row.receiverAccountId),
       receiverStatus: people.statusOf(row.receiverAccountId),
       body: row.body,
+      tags: row.tags,
       createdAt: row.createdAt,
     };
   }

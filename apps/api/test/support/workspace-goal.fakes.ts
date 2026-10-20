@@ -1,5 +1,6 @@
 import { WorkspaceGoalQuery } from '@app/modules/workspace-goal/application/query-port/workspace-goal.query-port';
 import type {
+  ActiveWorkspaceGoalView,
   PageRequest,
   WorkspaceGoalPage,
 } from '@app/modules/workspace-goal/application/types/workspace-goal.types';
@@ -51,14 +52,29 @@ export class FakeWorkspaceGoalRepository extends WorkspaceGoalRepository {
   }
 }
 
-/** Answers the page it was given, and records whether hidden ones were asked for. */
+/**
+ * Answers the page it was given, and the active Workspace Goals it was given whose key is asked
+ * for. Records what was asked, so a test can see a name was never looked up.
+ */
 export class FakeWorkspaceGoalQuery extends WorkspaceGoalQuery {
   readonly asked: { workspaceId: string; includeHidden: boolean }[] = [];
+  readonly keysAsked: { workspaceId: string; nameKeys: string[] }[] = [];
 
   constructor(
     private readonly page: WorkspaceGoalPage = { items: [], total: 0 },
+    private readonly active: readonly ActiveWorkspaceGoalView[] = [],
   ) {
     super();
+  }
+
+  async activeWithKeys(
+    workspaceId: string,
+    nameKeys: readonly string[],
+  ): Promise<ActiveWorkspaceGoalView[]> {
+    this.keysAsked.push({ workspaceId, nameKeys: [...nameKeys] });
+    return this.active.filter((workspaceGoal) =>
+      nameKeys.includes(workspaceGoal.name.toLowerCase()),
+    );
   }
 
   async listInWorkspace(

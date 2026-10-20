@@ -1,4 +1,5 @@
 import type {
+  ActiveWorkspaceGoalView,
   PageRequest,
   WorkspaceGoalPage,
 } from '../types/workspace-goal.types';
@@ -13,4 +14,10 @@ export abstract class WorkspaceGoalQuery {
     options: { readonly includeHidden: boolean },
     page: PageRequest,
   ): Promise<WorkspaceGoalPage>;
+
+  /** The active Workspace Goals of one Workspace whose `nameKey` is among `nameKeys`, by name. */
+  abstract activeWithKeys(
+    workspaceId: string,
+    nameKeys: readonly string[],
+  ): Promise<ActiveWorkspaceGoalView[]>;
 }

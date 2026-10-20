@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
   FakeFeedbackRequestQuery,
   FakeWorkspaceMembershipPort,
+  NO_TAGS,
 } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { FeedbackRequestNotFoundError } from '../feedback-request.errors';
@@ -24,6 +25,7 @@ function setUp() {
     workspaceId: WORKSPACE_ID,
     requesterAccountId: REQUESTER,
     topic: 'my presentation skills',
+    topicTags: NO_TAGS,
     visibility: 'ONLY_ME',
     selectedAccountIds: [],
     createdAt: CREATED_AT,
@@ -36,6 +38,7 @@ function setUp() {
     email: 'ben@acme.test',
     fullName: 'Ben Carter',
     displayName: 'Ben',
+    slug: null,
     photoUrl: null,
   });
   const useCase = new GetFeedbackRequestUseCase(
@@ -65,6 +68,7 @@ function benHasAnswered(setUpResult: ReturnType<typeof setUp>): void {
   feedbackRequestQuery.answers.push({
     askId: ASK_ID,
     body: 'You open strongly and lose the room at the detail.',
+    tags: NO_TAGS,
     answeredAt: ANSWERED_AT,
   });
 }
@@ -85,6 +89,7 @@ function sharedWithBystander(setUpResult: ReturnType<typeof setUp>): void {
     email: 'cara@acme.test',
     fullName: 'Cara Diaz',
     displayName: 'Cara',
+    slug: null,
     photoUrl: null,
   });
 }
@@ -102,6 +107,7 @@ describe('reading one Feedback Request', () => {
     expect(found).toEqual({
       id: REQUEST_ID,
       topic: 'my presentation skills',
+      topicTags: NO_TAGS,
       visibility: { value: 'ONLY_ME', selectedPeople: [] },
       asks: [
         {
@@ -124,6 +130,7 @@ describe('reading one Feedback Request', () => {
       email: 'ben@acme.test',
       fullName: null,
       displayName: null,
+      slug: null,
       photoUrl: null,
     });
 
@@ -237,6 +244,7 @@ describe('reading one Feedback Request', () => {
 
     expect(found.asks[0]?.answer).toEqual({
       body: 'You open strongly and lose the room at the detail.',
+      tags: NO_TAGS,
       answeredAt: ANSWERED_AT,
     });
   });
@@ -273,8 +281,18 @@ describe('reading one Feedback Request', () => {
       ],
     };
     context.feedbackRequestQuery.answers.push(
-      { askId: ASK_ID, body: 'Ben wrote this.', answeredAt: ANSWERED_AT },
-      { askId: OTHER_ASK, body: 'Cara wrote this.', answeredAt: ANSWERED_AT },
+      {
+        askId: ASK_ID,
+        body: 'Ben wrote this.',
+        tags: NO_TAGS,
+        answeredAt: ANSWERED_AT,
+      },
+      {
+        askId: OTHER_ASK,
+        body: 'Cara wrote this.',
+        tags: NO_TAGS,
+        answeredAt: ANSWERED_AT,
+      },
     );
 
     const found = await context.useCase.execute({

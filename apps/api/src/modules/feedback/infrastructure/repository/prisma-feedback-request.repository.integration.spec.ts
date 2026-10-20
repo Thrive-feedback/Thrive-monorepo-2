@@ -5,14 +5,19 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { v7 as uuidv7 } from 'uuid';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import { AskAlreadyAnsweredError } from '../../domain/feedback-request.errors';
+import { BoundTags } from '../../domain/value-object/bound-tags.vo';
 import { FeedbackBody } from '../../domain/value-object/feedback-body.vo';
 import { Topic } from '../../domain/value-object/topic.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
+import { PrismaFeedbackRequestQuery } from '../query/prisma-feedback-request.query';
 import { PrismaFeedbackRequestRepository } from './prisma-feedback-request.repository';
 
 const configuration = loadConfiguration();
 const prismaService = new PrismaService(configuration.database);
 const repository = new PrismaFeedbackRequestRepository(
+  new PrismaTransactionContext(prismaService),
+);
+const query = new PrismaFeedbackRequestQuery(
   new PrismaTransactionContext(prismaService),
 );
 
@@ -26,6 +31,7 @@ function aRequest(
   workspaceId: string,
   requesterAccountId: string,
   visibility: Visibility = Visibility.onlyMe(),
+  tags: BoundTags = BoundTags.none(),
 ) {
   const id = uuidv7();
   written.push(id);
@@ -35,6 +41,7 @@ function aRequest(
     requesterAccountId,
     topic: Topic.of('my presentation skills'),
     visibility,
+    tags,
     givers: [{ askId: uuidv7(), giverAccountId: uuidv7() }],
   });
 }
@@ -50,6 +57,29 @@ describe('storing a Feedback Request', () => {
   it('saves the request with its Asks and reads both back', async () => {
     const workspaceId = uuidv7();
     const request = aRequest(workspaceId, uuidv7());
+
+    await repository.save(request);
+
+    const found = await repository.findInWorkspace(
+      workspaceId,
+      request.snapshot().id,
+    );
+    expect(found?.snapshot()).toEqual(request.snapshot());
+  });
+
+  it('saves what its Topic names and reads it back', async () => {
+    const workspaceId = uuidv7();
+    const request = aRequest(
+      workspaceId,
+      uuidv7(),
+      Visibility.onlyMe(),
+      BoundTags.of({
+        workspaceGoals: [{ workspaceGoalId: uuidv7(), name: 'ลูกค้ามาก่อน' }],
+        mentions: [
+          { accountId: uuidv7(), slug: 'cara.lee', displayName: 'Cara' },
+        ],
+      }),
+    );
 
     await repository.save(request);
 
@@ -104,6 +134,8 @@ describe('storing a Feedback Request', () => {
       topic: 'my presentation skills',
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
+      workspaceGoals: [],
+      mentions: [],
       asks: [
         { id: uuidv7(), giverAccountId, status: 'PENDING' },
         { id: uuidv7(), giverAccountId, status: 'PENDING' },
@@ -157,6 +189,7 @@ describe('storing a Feedback Request', () => {
         throw new Error('The stored request was not found.');
       }
       const feedback = loaded.answerAsk({
+        tags: BoundTags.none(),
         askId: ask.id,
         giverAccountId: ask.giverAccountId,
         feedbackId: uuidv7(),
@@ -185,5 +218,50 @@ describe('storing a Feedback Request', () => {
       where: { feedbackAskId: ask.id },
     });
     expect(stored).toBe(1);
+  });
+});
+
+describe('what an answer is read with', () => {
+  it('reads its Topic with what the request named, and its text with only what its Giver named', async () => {
+    const workspaceId = uuidv7();
+    const requesterAccountId = uuidv7();
+    const request = aRequest(
+      workspaceId,
+      requesterAccountId,
+      Visibility.onlyMe(),
+      BoundTags.of({
+        workspaceGoals: [{ workspaceGoalId: uuidv7(), name: 'ownership' }],
+        mentions: [],
+      }),
+    );
+    await repository.save(request);
+    const [ask] = request.snapshot().asks;
+    if (!ask) {
+      throw new Error('The request holds no Ask.');
+    }
+    const feedback = request.answerAsk({
+      askId: ask.id,
+      giverAccountId: ask.giverAccountId,
+      feedbackId: uuidv7(),
+      body: FeedbackBody.of('You saw it through #ownershic'),
+      tags: BoundTags.of({
+        workspaceGoals: [{ workspaceGoalId: uuidv7(), name: 'ownershic' }],
+        mentions: [],
+      }),
+    });
+    if (!feedback) {
+      throw new Error('The request does not hold the Ask.');
+    }
+
+    await repository.saveAnswer(request, feedback);
+
+    const received = await query.receivedBy(workspaceId, requesterAccountId, {
+      page: 1,
+      pageSize: 20,
+    });
+    expect(received.items[0]).toMatchObject({
+      topicTags: { workspaceGoals: [{ name: 'ownership' }], mentions: [] },
+      tags: { workspaceGoals: [{ name: 'ownershic' }], mentions: [] },
+    });
   });
 });

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
   FakeFeedbackRequestQuery,
   FakeWorkspaceMembershipPort,
+  NO_TAGS,
 } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { PeopleService } from '../service/people.service';
@@ -24,8 +25,10 @@ function setUp() {
       origin: 'REQUESTED',
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
       topic: 'my presentation skills',
+      topicTags: NO_TAGS,
       giverAccountId: BEN,
       body: 'You lose the room at the detail near the end.',
+      tags: NO_TAGS,
       createdAt: new Date('2026-10-11T03:00:00.000Z'),
     },
     {
@@ -35,8 +38,10 @@ function setUp() {
       origin: 'OFFERED',
       feedbackRequestId: null,
       topic: 'how I run stand-up',
+      topicTags: NO_TAGS,
       giverAccountId: CARA,
       body: 'Short and clear. Keep leaving the last five minutes open.',
+      tags: NO_TAGS,
       createdAt: new Date('2026-10-12T03:00:00.000Z'),
     },
     {
@@ -46,8 +51,10 @@ function setUp() {
       origin: 'REQUESTED',
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f3',
       topic: 'how Ben writes release notes',
+      topicTags: NO_TAGS,
       giverAccountId: ANA,
       body: 'They read clearly and they land a day late.',
+      tags: NO_TAGS,
       createdAt: new Date('2026-10-12T04:00:00.000Z'),
     },
   );
@@ -59,6 +66,7 @@ function setUp() {
       email: 'ben@acme.test',
       fullName: 'Ben Carter',
       displayName: 'Ben',
+      slug: null,
       photoUrl: null,
     },
     {
@@ -66,6 +74,7 @@ function setUp() {
       email: 'cara@acme.test',
       fullName: 'Cara Diaz',
       displayName: 'Cara',
+      slug: null,
       photoUrl: null,
     },
   );

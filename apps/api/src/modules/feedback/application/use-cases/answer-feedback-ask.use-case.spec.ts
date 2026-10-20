@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import { FakeFeedbackRequestRepository } from '@test/support/feedback.fakes';
+import {
+  aTagsService,
+  FakeFeedbackRequestRepository,
+} from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
@@ -7,6 +10,7 @@ import {
   AskAlreadyAnsweredError,
   FeedbackBodyEmptyError,
 } from '../../domain/feedback-request.errors';
+import { BoundTags } from '../../domain/value-object/bound-tags.vo';
 import { Topic } from '../../domain/value-object/topic.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
@@ -32,6 +36,7 @@ async function setUp() {
       workspaceId: WORKSPACE_ID,
       requesterAccountId: ANN,
       topic: Topic.of('my presentation skills'),
+      tags: BoundTags.none(),
       visibility: Visibility.onlyMe(),
       givers: [{ askId: ASK_ID, giverAccountId: BEN }],
     }),
@@ -39,6 +44,7 @@ async function setUp() {
   const unitOfWork = new FakeUnitOfWork();
   const useCase = new AnswerFeedbackAskUseCase(
     feedbackRequestRepository,
+    aTagsService(WORKSPACE_ID),
     new FakeIdGenerator(FEEDBACK_ID, SECOND_FEEDBACK_ID),
     unitOfWork,
   );
@@ -72,8 +78,22 @@ describe('a Giver answering an Ask', () => {
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         body: WRITTEN,
+        workspaceGoals: [],
+        mentions: [],
       },
     ]);
+  });
+
+  it('binds what the Giver wrote', async () => {
+    const { feedbackRequestRepository, useCase } = await setUp();
+
+    await useCase.execute({ ...answering, body: 'You owned it #ownership' });
+
+    expect(feedbackRequestRepository.answers[0]).toMatchObject({
+      workspaceGoals: [
+        { workspaceGoalId: 'goal-ownership', name: 'ownership' },
+      ],
+    });
   });
 
   it('leaves the Ask answered, so it stops waiting on its Giver', async () => {

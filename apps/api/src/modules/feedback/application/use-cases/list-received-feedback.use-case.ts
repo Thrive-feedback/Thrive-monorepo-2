@@ -50,11 +50,13 @@ export class ListReceivedFeedbackUseCase {
         origin: feedback.origin,
         feedbackRequestId: feedback.feedbackRequestId,
         topic: feedback.topic,
+        topicTags: feedback.topicTags,
         giverAccountId: feedback.giverAccountId,
         // A Giver's Account cascades away with them, so a missing one was deleted mid-read.
         giverName: people.nameOf(feedback.giverAccountId),
         giverStatus: people.statusOf(feedback.giverAccountId),
         body: feedback.body,
+        tags: feedback.tags,
         createdAt: feedback.createdAt,
       })),
       total: received.total,

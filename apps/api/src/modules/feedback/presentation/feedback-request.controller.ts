@@ -23,6 +23,7 @@ import type { FeedbackRequestView } from '../application/types/feedback-request.
 import { GetFeedbackRequestUseCase } from '../application/use-cases/get-feedback-request.use-case';
 import { ListSentFeedbackRequestsUseCase } from '../application/use-cases/list-sent-feedback-requests.use-case';
 import { SendFeedbackRequestUseCase } from '../application/use-cases/send-feedback-request.use-case';
+import { toTagsResponse } from './dto/feedback-response.mapper';
 import { GetFeedbackRequestResponseDto } from './dto/get-feedback-request.dto';
 import {
   ListSentFeedbackRequestsQueryDto,
@@ -43,6 +44,7 @@ function toResponse(request: FeedbackRequestView) {
   return {
     id: request.id,
     topic: request.topic,
+    topicTags: toTagsResponse(request.topicTags),
     visibility: request.visibility && {
       value: request.visibility.value,
       selectedPeople: request.visibility.selectedPeople.map((person) => ({
@@ -60,6 +62,7 @@ function toResponse(request: FeedbackRequestView) {
       answer: ask.answer
         ? {
             body: ask.answer.body,
+            tags: toTagsResponse(ask.answer.tags),
             answeredAt: ask.answer.answeredAt.toISOString(),
           }
         : null,

@@ -4,6 +4,11 @@ import {
   GiverAlreadyAskedError,
   NoGiversToAskError,
 } from '../feedback-request.errors';
+import {
+  type BoundMention,
+  BoundTags,
+  type BoundWorkspaceGoal,
+} from '../value-object/bound-tags.vo';
 import type { FeedbackBody } from '../value-object/feedback-body.vo';
 import { Topic } from '../value-object/topic.vo';
 import { Visibility } from '../value-object/visibility.vo';
@@ -18,6 +23,9 @@ export interface FeedbackRequestSnapshot {
   readonly visibility: string;
   /** The Members the Requester selected; empty unless the Visibility is Selected people. */
   readonly selectedAccountIds: readonly string[];
+  /** What the Topic is bound to. Its answers carry their own, never these. */
+  readonly workspaceGoals: readonly BoundWorkspaceGoal[];
+  readonly mentions: readonly BoundMention[];
   readonly asks: readonly FeedbackAskSnapshot[];
 }
 
@@ -42,6 +50,7 @@ export class FeedbackRequest {
     private readonly requesterAccountId: string,
     private readonly topic: Topic,
     private readonly visibility: Visibility,
+    private readonly tags: BoundTags,
     private asks: readonly FeedbackAsk[],
   ) {}
 
@@ -57,6 +66,8 @@ export class FeedbackRequest {
     readonly requesterAccountId: string;
     readonly topic: Topic;
     readonly visibility: Visibility;
+    /** What the Topic names. */
+    readonly tags: BoundTags;
     readonly givers: readonly GiverToAsk[];
   }): FeedbackRequest {
     if (details.givers.length === 0) {
@@ -85,6 +96,7 @@ export class FeedbackRequest {
       details.requesterAccountId,
       details.topic,
       details.visibility,
+      details.tags,
       details.givers.map((giver) =>
         FeedbackAsk.open({
           id: giver.askId,
@@ -114,6 +126,7 @@ export class FeedbackRequest {
         value: snapshot.visibility,
         selectedAccountIds: snapshot.selectedAccountIds,
       }),
+      BoundTags.of(snapshot),
       snapshot.asks.map((ask) => FeedbackAsk.restore(ask)),
     );
   }
@@ -133,6 +146,8 @@ export class FeedbackRequest {
     readonly giverAccountId: string;
     readonly feedbackId: string;
     readonly body: FeedbackBody;
+    /** What the answer names. */
+    readonly tags: BoundTags;
   }): Feedback | null {
     const asked = this.asks.find(
       (ask) => ask.hasId(details.askId) && ask.isFor(details.giverAccountId),
@@ -153,6 +168,7 @@ export class FeedbackRequest {
       topic: this.topic,
       visibility: this.visibility,
       body: details.body,
+      tags: details.tags,
     });
   }
 
@@ -164,6 +180,8 @@ export class FeedbackRequest {
       topic: this.topic.toString(),
       visibility: this.visibility.toString(),
       selectedAccountIds: this.visibility.selectedAccountIds(),
+      workspaceGoals: this.tags.workspaceGoals(),
+      mentions: this.tags.mentions(),
       asks: this.asks.map((ask) => ask.snapshot()),
     };
   }

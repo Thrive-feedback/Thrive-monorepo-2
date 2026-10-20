@@ -6,6 +6,7 @@ import {
   GiverAlreadyAskedError,
   NoGiversToAskError,
 } from '../feedback-request.errors';
+import { BoundTags } from '../value-object/bound-tags.vo';
 import { FeedbackBody } from '../value-object/feedback-body.vo';
 import { Topic } from '../value-object/topic.vo';
 import { Visibility } from '../value-object/visibility.vo';
@@ -19,6 +20,7 @@ function sending(
     requester?: string;
     givers?: GiverToAsk[];
     visibility?: Visibility;
+    tags?: BoundTags;
   } = {},
 ) {
   return {
@@ -27,6 +29,7 @@ function sending(
     requesterAccountId: overrides.requester ?? 'account-ann',
     topic: Topic.of('my presentation skills'),
     visibility: overrides.visibility ?? Visibility.onlyMe(),
+    tags: overrides.tags ?? BoundTags.none(),
     givers: overrides.givers ?? [
       { askId: ASK_ID, giverAccountId: 'account-ben' },
     ],
@@ -105,12 +108,18 @@ describe('sending a Feedback Request', () => {
     ).toThrow(CannotSelectYourselfError);
   });
 
-  it('rebuilds a stored request with its Asks and the people it was shared with', () => {
+  it('rebuilds a stored request with its Asks, the people it was shared with and what its Topic names', () => {
     const stored = FeedbackRequest.send(
       sending({
         visibility: Visibility.of({
           value: 'SELECTED_PEOPLE',
           selectedAccountIds: ['account-cara'],
+        }),
+        tags: BoundTags.of({
+          workspaceGoals: [{ workspaceGoalId: 'goal-1', name: 'ownership' }],
+          mentions: [
+            { accountId: 'account-cara', slug: 'cara', displayName: 'Cara' },
+          ],
         }),
       }),
     ).snapshot();
@@ -125,6 +134,7 @@ describe('sending a Feedback Request', () => {
       giverAccountId: 'account-ben',
       feedbackId: FEEDBACK_ID,
       body: FeedbackBody.of('You lose the room at the detail.'),
+      tags: BoundTags.none(),
     };
 
     it('collects the Feedback for the Member who asked, not for whoever sent it', () => {
@@ -144,7 +154,32 @@ describe('sending a Feedback Request', () => {
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         body: 'You lose the room at the detail.',
+        workspaceGoals: [],
+        mentions: [],
       });
+    });
+
+    it('binds the answer to what its Giver wrote, never to what the request’s Topic names', () => {
+      const request = FeedbackRequest.send(
+        sending({
+          tags: BoundTags.of({
+            workspaceGoals: [{ workspaceGoalId: 'goal-1', name: 'ownership' }],
+            mentions: [],
+          }),
+        }),
+      );
+
+      const feedback = request.answerAsk({
+        ...answering,
+        tags: BoundTags.of({
+          workspaceGoals: [{ workspaceGoalId: 'goal-2', name: 'ownershic' }],
+          mentions: [],
+        }),
+      });
+
+      expect(feedback?.snapshot().workspaceGoals).toEqual([
+        { workspaceGoalId: 'goal-2', name: 'ownershic' },
+      ]);
     });
 
     it('carries the people the Requester selected, so the answer is read as they chose', () => {

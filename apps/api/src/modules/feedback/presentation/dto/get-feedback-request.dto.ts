@@ -3,9 +3,12 @@ import { z } from 'zod';
 import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
 import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
+import { tagsSchema } from './tags.dto';
 
 const answerSchema = z.object({
   body: z.string(),
+  /** What its Giver wrote was bound to when it was sent. */
+  tags: tagsSchema,
   answeredAt: z.iso.datetime({ offset: true }),
 });
 
@@ -47,6 +50,8 @@ const visibilitySchema = z.object({
 export const feedbackRequestSchema = z.object({
   id: z.uuid(),
   topic: z.string(),
+  /** What the Topic was bound to when it was sent; highlight these and nothing else. */
+  topicTags: tagsSchema,
   /** `null` when the caller is a Giver, who is not told who else reads their answer. */
   visibility: visibilitySchema.nullable(),
   /** One per Member asked, oldest first. */

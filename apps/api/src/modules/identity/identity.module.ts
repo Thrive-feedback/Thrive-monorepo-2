@@ -9,12 +9,14 @@ import { ProfileQuery } from './application/query-port/profile.query-port';
 import { CreateProfileUseCase } from './application/use-cases/create-profile.use-case';
 import { FindAccountSummariesUseCase } from './application/use-cases/find-account-summaries.use-case';
 import { FindAccountsByEmailUseCase } from './application/use-cases/find-accounts-by-email.use-case';
+import { FindAccountsBySlugUseCase } from './application/use-cases/find-accounts-by-slug.use-case';
 import { FindProfileOfAccountUseCase } from './application/use-cases/find-profile-of-account.use-case';
 import { GetCurrentSessionUseCase } from './application/use-cases/get-current-session.use-case';
 import { RefreshSessionUseCase } from './application/use-cases/refresh-session.use-case';
 import { SignOutUseCase } from './application/use-cases/sign-out.use-case';
 import { StartGoogleSignInUseCase } from './application/use-cases/start-google-sign-in.use-case';
 import { AccountByEmailPort } from './domain/port/account-by-email.port';
+import { AccountBySlugPort } from './domain/port/account-by-slug.port';
 import { AccountSummaryPort } from './domain/port/account-summary.port';
 import { HasProfilePort } from './domain/port/has-profile.port';
 import { ProfileNamePort } from './domain/port/profile-name.port';
@@ -31,7 +33,7 @@ import { SignedInGuard } from './presentation/signed-in.guard';
  * Identity owns Account and Profile. It signs people in and out, keeps the Profile they
  * introduce themselves with, and guards every route of the app: only Identity can tell
  * who is calling. It publishes whether an Account has a Profile, the name on it, who
- * several Accounts are and which addresses already have one, and knows nothing of the
+ * several Accounts are, which addresses already have one and whose slugs some are, and knows nothing of the
  * modules that ask. The sign-in provider is bound to its port here and nowhere else.
  */
 @Module({
@@ -51,17 +53,20 @@ import { SignedInGuard } from './presentation/signed-in.guard';
     FindProfileOfAccountUseCase,
     FindAccountSummariesUseCase,
     FindAccountsByEmailUseCase,
+    FindAccountsBySlugUseCase,
     IdentityAdapter,
     { provide: HasProfilePort, useExisting: IdentityAdapter },
     { provide: ProfileNamePort, useExisting: IdentityAdapter },
     { provide: AccountSummaryPort, useExisting: IdentityAdapter },
     { provide: AccountByEmailPort, useExisting: IdentityAdapter },
+    { provide: AccountBySlugPort, useExisting: IdentityAdapter },
   ],
   exports: [
     HasProfilePort,
     ProfileNamePort,
     AccountSummaryPort,
     AccountByEmailPort,
+    AccountBySlugPort,
   ],
 })
 export class IdentityModule {}

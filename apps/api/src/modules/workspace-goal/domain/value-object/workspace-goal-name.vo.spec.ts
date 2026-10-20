@@ -62,4 +62,12 @@ describe("a Workspace Goal's name", () => {
       WorkspaceGoalName.of('ที่'.repeat(WorkspaceGoalName.MAX_LENGTH)),
     ).not.toThrow();
   });
+
+  it('gives the key a hashtag written in any letter case stands for', () => {
+    expect(WorkspaceGoalName.keyOf('OwnerShip')).toBe('ownership');
+  });
+
+  it('gives no key for a hashtag no Workspace Goal could be named', () => {
+    expect(WorkspaceGoalName.keyOf('a'.repeat(31))).toBeNull();
+  });
 });

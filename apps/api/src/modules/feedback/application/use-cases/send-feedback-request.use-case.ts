@@ -10,6 +10,7 @@ import {
   GiverNotInWorkspaceError,
   SelectedPersonNotInWorkspaceError,
 } from '../feedback-request.errors';
+import { TagsService } from '../service/tags.service';
 
 export interface SendFeedbackRequestInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
@@ -39,6 +40,7 @@ export class SendFeedbackRequestUseCase {
   constructor(
     private readonly feedbackRequestRepository: FeedbackRequestRepository,
     private readonly workspaceMembershipPort: WorkspaceMembershipPort,
+    private readonly tagsService: TagsService,
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
   ) {}
@@ -66,6 +68,10 @@ export class SendFeedbackRequestUseCase {
     ) {
       throw new SelectedPersonNotInWorkspaceError();
     }
+    const tags = await this.tagsService.boundIn(
+      input.workspaceId,
+      topic.toString(),
+    );
 
     const request = FeedbackRequest.send({
       id: this.idGenerator.next(),
@@ -73,6 +79,7 @@ export class SendFeedbackRequestUseCase {
       requesterAccountId: input.requesterAccountId,
       topic,
       visibility,
+      tags,
       givers: input.giverAccountIds.map((giverAccountId) => ({
         askId: this.idGenerator.next(),
         giverAccountId,

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
   FakeFeedbackRequestQuery,
   FakeWorkspaceMembershipPort,
+  NO_TAGS,
 } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
@@ -24,6 +25,7 @@ function setUp() {
     workspaceId: WORKSPACE_ID,
     requesterAccountId: ANA,
     topic: 'my presentation skills',
+    topicTags: NO_TAGS,
     visibility: 'ONLY_ME',
     selectedAccountIds: [],
     createdAt: CREATED_AT,
@@ -36,6 +38,7 @@ function setUp() {
     email: 'ana@acme.test',
     fullName: 'Ana Silva',
     displayName: 'Ana',
+    slug: null,
     photoUrl: null,
   });
   const useCase = new GetFeedbackAskUseCase(
@@ -59,6 +62,7 @@ describe('reading one Ask waiting for me', () => {
       askId: ASK_FOR_BEN,
       feedbackRequestId: REQUEST_ID,
       topic: 'my presentation skills',
+      topicTags: NO_TAGS,
       requesterAccountId: ANA,
       requesterName: 'Ana Silva',
       requesterStatus: 'ACTIVE',

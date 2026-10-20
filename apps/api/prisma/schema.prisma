@@ -210,6 +210,8 @@ model FeedbackRequest {
   updatedAt          DateTime                        @updatedAt
   asks               FeedbackAsk[]
   selectedPeople     FeedbackRequestSelectedPerson[]
+  workspaceGoals     FeedbackRequestWorkspaceGoal[]
+  mentions           FeedbackRequestMention[]
 
   @@index([workspaceId, requesterAccountId])
   @@map("feedback_request")
@@ -274,6 +276,8 @@ model Feedback {
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
   selectedPeople    FeedbackSelectedPerson[]
+  workspaceGoals    FeedbackWorkspaceGoal[]
+  mentions          FeedbackMention[]
 
   /// For "the Feedback I received", newest first (#26).
   @@index([workspaceId, receiverAccountId, createdAt])
@@ -299,6 +303,61 @@ model FeedbackSelectedPerson {
   /// (feedbackId, accountId) order cannot serve.
   @@index([accountId])
   @@map("feedback_selected_person")
+}
+
+/// A Workspace Goal a request's Topic names (glossary: Workspace Goal), bound when it was sent and
+/// never changed — hiding it later leaves this row. The name is the Admin's spelling then, which
+/// cannot drift: a Workspace Goal is never renamed. No foreign key: Workspace Goals are not
+/// Feedback's (BE_03 R7).
+model FeedbackRequestWorkspaceGoal {
+  feedbackRequestId String
+  feedbackRequest   FeedbackRequest @relation(fields: [feedbackRequestId], references: [id], onDelete: Cascade)
+  workspaceGoalId   String
+  name              String
+
+  @@id([feedbackRequestId, workspaceGoalId])
+  @@map("feedback_request_workspace_goal")
+}
+
+/// A Member a request's Topic mentions (glossary: Mention), bound when it was sent. The slug and
+/// the name they went by are kept as they were then, so a read names them without asking Identity.
+/// Personal data: an Account id and a display name. No foreign key: Accounts are Identity's.
+model FeedbackRequestMention {
+  feedbackRequestId String
+  feedbackRequest   FeedbackRequest @relation(fields: [feedbackRequestId], references: [id], onDelete: Cascade)
+  accountId         String
+  slug              String
+  displayName       String
+
+  @@id([feedbackRequestId, accountId])
+  @@map("feedback_request_mention")
+}
+
+/// A Workspace Goal one piece of Feedback names, in its Topic or its text (glossary: Workspace
+/// Goal), bound when it was sent and never changed. An answer has only what its Giver wrote,
+/// never the request's. As on FeedbackRequestWorkspaceGoal, the name cannot drift and there is
+/// no foreign key.
+model FeedbackWorkspaceGoal {
+  feedbackId      String
+  feedback        Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  workspaceGoalId String
+  name            String
+
+  @@id([feedbackId, workspaceGoalId])
+  @@map("feedback_workspace_goal")
+}
+
+/// A Member one piece of Feedback mentions (glossary: Mention), bound when it was sent. Personal
+/// data: an Account id and a display name, kept as they were then. No foreign key.
+model FeedbackMention {
+  feedbackId  String
+  feedback    Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  accountId   String
+  slug        String
+  displayName String
+
+  @@id([feedbackId, accountId])
+  @@map("feedback_mention")
 }
 
 // Workspace Goal's table. The Workspace is held as an id with no foreign key into Workspace's

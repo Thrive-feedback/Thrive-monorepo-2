@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { FeedbackRequestRepository } from '../../domain/repository/feedback-request-repository.port';
 import { FeedbackBody } from '../../domain/value-object/feedback-body.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
+import { TagsService } from '../service/tags.service';
 
 export interface AnswerFeedbackAskInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
@@ -34,6 +35,7 @@ export interface AnswerFeedbackAskResult {
 export class AnswerFeedbackAskUseCase {
   constructor(
     private readonly feedbackRequestRepository: FeedbackRequestRepository,
+    private readonly tagsService: TagsService,
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
   ) {}
@@ -42,6 +44,11 @@ export class AnswerFeedbackAskUseCase {
     input: AnswerFeedbackAskInput,
   ): Promise<AnswerFeedbackAskResult> {
     const body = FeedbackBody.of(input.body);
+    // Only what the Giver wrote: the request's Topic has its own, which the answer never takes.
+    const tags = await this.tagsService.boundIn(
+      input.workspaceId,
+      body.toString(),
+    );
 
     return this.unitOfWork.run(async () => {
       const request = await this.feedbackRequestRepository.findByAskOfGiver(
@@ -57,6 +64,7 @@ export class AnswerFeedbackAskUseCase {
         giverAccountId: input.giverAccountId,
         feedbackId: this.idGenerator.next(),
         body,
+        tags,
       });
       // The load already matched the Ask to this Giver, so the aggregate not holding it means
       // it was removed between the two — the same answer as never having had it.

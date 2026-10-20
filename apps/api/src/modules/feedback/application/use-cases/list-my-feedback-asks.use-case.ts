@@ -49,6 +49,7 @@ export class ListMyFeedbackAsksUseCase {
         askId: ask.askId,
         feedbackRequestId: ask.feedbackRequestId,
         topic: ask.topic,
+        topicTags: ask.topicTags,
         requesterAccountId: ask.requesterAccountId,
         // The Requester's Account cascades away with them, as a Giver's does.
         requesterName: people.nameOf(ask.requesterAccountId),
