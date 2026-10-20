@@ -4,6 +4,8 @@ import { Label } from '@/components/atoms/label';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Textarea, type TextareaProps } from '@/components/atoms/textarea';
 import { cn } from '@/lib/cn.util';
+import { AutocompleteTextarea } from './autocomplete-textarea';
+import type { AutocompleteTrigger } from './use-tag-autocomplete';
 
 const messageLine = cva('mt-2 text-caption', {
   variants: {
@@ -16,6 +18,11 @@ export type TextAreaFieldProps = Omit<TextareaProps, 'id'> & {
   label: string;
   helperText?: string;
   errorMessage?: string;
+  /**
+   * Tags it completes as they are typed, with their suggestions shown above the box. Needs a
+   * controlled `value`, which completing a tag changes through `onChange`.
+   */
+  triggers?: readonly AutocompleteTrigger[];
 };
 
 /**
@@ -31,6 +38,7 @@ export function TextAreaField({
   helperText,
   errorMessage,
   required,
+  triggers,
   className,
   ...rest
 }: TextAreaFieldProps) {
@@ -48,13 +56,25 @@ export function TextAreaField({
         )}
         {label}
       </Label>
-      <Textarea
-        id={id}
-        required={required}
-        aria-invalid={errorMessage ? true : undefined}
-        aria-describedby={message ? messageId : undefined}
-        {...rest}
-      />
+      {triggers ? (
+        <AutocompleteTextarea
+          id={id}
+          required={required}
+          aria-invalid={errorMessage ? true : undefined}
+          aria-describedby={message ? messageId : undefined}
+          {...rest}
+          value={String(rest.value ?? '')}
+          triggers={triggers}
+        />
+      ) : (
+        <Textarea
+          id={id}
+          required={required}
+          aria-invalid={errorMessage ? true : undefined}
+          aria-describedby={message ? messageId : undefined}
+          {...rest}
+        />
+      )}
       {message && (
         <p
           id={messageId}

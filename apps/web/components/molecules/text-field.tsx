@@ -4,6 +4,8 @@ import { Input, type InputProps } from '@/components/atoms/input';
 import { Label } from '@/components/atoms/label';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
+import { AutocompleteInput } from './autocomplete-input';
+import type { AutocompleteTrigger } from './use-tag-autocomplete';
 
 const labelLine = cva('mb-1 block', {
   variants: {
@@ -28,6 +30,11 @@ export type TextFieldProps = Omit<InputProps, 'id'> & {
   label: string;
   helperText?: string;
   errorMessage?: string;
+  /**
+   * Tags it completes as they are typed, with their suggestions shown above the input. Needs a
+   * controlled `value`, which completing a tag changes through `onChange`.
+   */
+  triggers?: readonly AutocompleteTrigger[];
 };
 
 /**
@@ -48,6 +55,7 @@ export function TextField({
   size,
   required,
   disabled,
+  triggers,
   className,
   ...rest
 }: TextFieldProps) {
@@ -72,15 +80,29 @@ export function TextField({
         )}
         {label}
       </Label>
-      <Input
-        id={id}
-        size={size}
-        required={required}
-        disabled={disabled}
-        aria-invalid={invalid || undefined}
-        aria-describedby={message ? messageId : undefined}
-        {...rest}
-      />
+      {triggers ? (
+        <AutocompleteInput
+          id={id}
+          size={size}
+          required={required}
+          disabled={disabled}
+          aria-invalid={invalid || undefined}
+          aria-describedby={message ? messageId : undefined}
+          {...rest}
+          value={String(rest.value ?? '')}
+          triggers={triggers}
+        />
+      ) : (
+        <Input
+          id={id}
+          size={size}
+          required={required}
+          disabled={disabled}
+          aria-invalid={invalid || undefined}
+          aria-describedby={message ? messageId : undefined}
+          {...rest}
+        />
+      )}
       {message && (
         <p id={messageId} className={messageLine({ invalid })}>
           {message}

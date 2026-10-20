@@ -12,11 +12,17 @@ import type {
   AnswerAskAction,
   AnswerAskState,
 } from '@/lib/feedback/answer-ask-state.type';
+import type { Teammate } from '@/lib/feedback/teammate.type';
+import { feedbackTagTriggers } from './feedback-tag-triggers.util';
 
 export type AnswerAskFormProps = {
   askId: string;
   /** Named in the label, so the box says who will read this. */
   requesterName: string | null;
+  /** Offered on `@` in the answer. */
+  teammates: readonly Teammate[];
+  /** The Workspace's active Workspace Goals, by name, offered on `#` in the answer. */
+  workspaceGoals: readonly string[];
   /** Sends the answer: Home's server action, or a stand-in. */
   action: AnswerAskAction;
 };
@@ -37,6 +43,8 @@ const WRITE_SOMETHING = 'Write your answer before sending it.';
 export function AnswerAskForm({
   askId,
   requesterName,
+  teammates,
+  workspaceGoals,
   action,
 }: AnswerAskFormProps) {
   const [body, setBody] = useState('');
@@ -77,6 +85,7 @@ export function AnswerAskForm({
         rows={8}
         required
         value={body}
+        triggers={feedbackTagTriggers(workspaceGoals, teammates)}
         onChange={handleChange}
         errorMessage={errorMessage}
         helperText={

@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import type { WaitingAsk } from '@/lib/feedback/waiting-ask.type';
 import { AnswerAskDetail } from './answer-ask-detail';
 
@@ -9,6 +10,13 @@ const readFeedbackAsk = vi.fn<() => Promise<WaitingAsk | null>>();
 vi.mock('@/app/(signed-in)/(member)/home/_lib/feedback-ask.service', () => ({
   readFeedbackAsk: () => readFeedbackAsk(),
 }));
+vi.mock('@/app/(signed-in)/(member)/home/_lib/teammates.service', () => ({
+  readTeammates: async () => [],
+}));
+vi.mock(
+  '@/app/(signed-in)/(member)/home/_lib/workspace-goal-names.service',
+  () => ({ readWorkspaceGoalNames: async () => ['ownership'] }),
+);
 vi.mock(
   '@/app/(signed-in)/(member)/home/_lib/answer-ask-actions.service',
   () => ({
@@ -21,13 +29,20 @@ const MEMBERSHIP = {
 } as const;
 
 async function renderDetail() {
-  render(await AnswerAskDetail({ membership: MEMBERSHIP, askId: ASK_ID }));
+  render(
+    await AnswerAskDetail({
+      membership: MEMBERSHIP,
+      ownEmail: 'ben@acme.test',
+      askId: ASK_ID,
+    }),
+  );
 }
 
 const WAITING: WaitingAsk = {
   askId: ASK_ID,
   feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
   topic: 'Running the planning meeting',
+  topicTags: NO_TEXT_TAGS,
   requesterName: 'Ann Lee',
   requesterInactive: false,
   status: 'PENDING',

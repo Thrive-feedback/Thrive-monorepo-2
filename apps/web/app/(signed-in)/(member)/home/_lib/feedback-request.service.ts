@@ -2,12 +2,15 @@ import 'server-only';
 import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { apiClient } from '@/lib/api-client.service';
+import type { TextTags } from '@/lib/feedback/text-tags.type';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 /** One Feedback Request as its dialog on Home reads it. */
 export type SentFeedbackRequest = {
   readonly id: string;
   readonly topic: string;
+  /** What the Topic was bound to when the request was sent. */
+  readonly topicTags: TextTags;
   readonly asks: readonly {
     readonly askId: string;
     /** The Member asked, or `null` while they have not introduced themselves. */
@@ -16,7 +19,11 @@ export type SentFeedbackRequest = {
     readonly giverInactive: boolean;
     readonly status: 'PENDING' | 'ANSWERED' | 'EXPIRED';
     /** What they wrote, once they have — and only for the people allowed to read it. */
-    readonly answer: string | null;
+    readonly answer: {
+      readonly body: string;
+      /** What the answer was bound to: only what its Giver wrote. */
+      readonly tags: TextTags;
+    } | null;
   }[];
   /**
    * Who besides the Requester reads the answers, with the people selected — `null` for a Giver,
@@ -61,12 +68,13 @@ export async function readFeedbackRequest(
     return {
       id: request.id,
       topic: request.topic,
+      topicTags: request.topicTags,
       asks: request.asks.map((ask) => ({
         askId: ask.askId,
         giverName: ask.giverName,
         giverInactive: ask.giverStatus === 'DEACTIVATED',
         status: ask.status,
-        answer: ask.answer?.body ?? null,
+        answer: ask.answer && { body: ask.answer.body, tags: ask.answer.tags },
       })),
       visibility: request.visibility && {
         value: request.visibility.value,

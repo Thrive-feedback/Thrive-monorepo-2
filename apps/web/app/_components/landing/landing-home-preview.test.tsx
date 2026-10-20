@@ -101,8 +101,8 @@ describe('LandingHomePreview', () => {
     render(<LandingHomePreview />);
 
     // Driven from the keyboard rather than clicked: jsdom lays everything out at zero size, so
-    // the resize handle's hit area covers every click in the form and takes it.
-    first('textbox', /What should they talk about/).focus();
+    // the resize slug's hit area covers every click in the form and takes it.
+    first('combobox', /What should they talk about/).focus();
     await user.keyboard('My first board update');
     first('combobox', /Who do you want to ask/).focus();
     await user.keyboard('{Enter}');

@@ -34,6 +34,7 @@ export async function readFeedbackAsk(
       askId: ask.askId,
       feedbackRequestId: ask.feedbackRequestId,
       topic: ask.topic,
+      topicTags: ask.topicTags,
       requesterName: ask.requester.name,
       requesterInactive: ask.requester.status === 'DEACTIVATED',
       status: ask.status,

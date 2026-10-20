@@ -1,3 +1,5 @@
+import type { TextTags } from './text-tags.type';
+
 /** The fixed set of Reactions a Member can add to Feedback on the feed (`ADR-0022`). */
 export const REACTIONS = [
   { emoji: '👏', name: 'Clap' },
@@ -22,7 +24,11 @@ export type FeedItem = {
   /** Requested answers an Ask; Offered was given without being asked. */
   readonly origin: 'REQUESTED' | 'OFFERED';
   readonly topic: string;
+  /** What the Topic was bound to: its Giver's if Offered, the request's if it answers one. */
+  readonly topicTags: TextTags;
   readonly body: string;
+  /** What its Giver wrote was bound to. */
+  readonly bodyTags: TextTags;
   readonly givenAt: string;
   /** Who reacted, by Reaction. Names are shown: a Reaction is never anonymous. */
   readonly reactions: Readonly<

@@ -22,6 +22,8 @@ function renderForm(requesterName: string | null = 'Ann') {
   answerAsk.mockResolvedValue({});
   render(
     <AnswerAskForm
+      teammates={[]}
+      workspaceGoals={[]}
       askId={ASK_ID}
       requesterName={requesterName}
       action={answerAsk}
@@ -75,7 +77,13 @@ describe('AnswerAskForm', () => {
       fieldErrors: { body: 'Write your answer before sending it.' },
     });
     render(
-      <AnswerAskForm askId={ASK_ID} requesterName="Ann" action={answerAsk} />,
+      <AnswerAskForm
+        teammates={[]}
+        workspaceGoals={[]}
+        askId={ASK_ID}
+        requesterName="Ann"
+        action={answerAsk}
+      />,
     );
 
     await user.type(answerBox(), WRITTEN);
@@ -112,7 +120,13 @@ describe('AnswerAskForm', () => {
       formError: "We couldn't send your answer. Please try again.",
     });
     render(
-      <AnswerAskForm askId={ASK_ID} requesterName="Ann" action={answerAsk} />,
+      <AnswerAskForm
+        teammates={[]}
+        workspaceGoals={[]}
+        askId={ASK_ID}
+        requesterName="Ann"
+        action={answerAsk}
+      />,
     );
 
     await user.type(answerBox(), WRITTEN);

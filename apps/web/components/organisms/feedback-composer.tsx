@@ -23,6 +23,8 @@ const MODE_NAMES: Readonly<Record<ComposerMode, string>> = {
 
 export type FeedbackComposerProps = {
   teammates: readonly Teammate[];
+  /** The Workspace's active Workspace Goals, by name, offered on `#` as either form is written. */
+  workspaceGoals: readonly string[];
   /** Sends a Feedback Request: Home's server action, or a stand-in. */
   requestAction: RequestFeedbackAction;
   /** Gives Feedback without being asked: Home's server action, or a stand-in. */
@@ -42,6 +44,7 @@ export type FeedbackComposerProps = {
  */
 export function FeedbackComposer({
   teammates,
+  workspaceGoals,
   requestAction,
   giveAction,
 }: FeedbackComposerProps) {
@@ -88,10 +91,18 @@ export function FeedbackComposer({
       </div>
       <div id={formsId} hidden={!expanded}>
         <div hidden={mode !== 'request'}>
-          <RequestFeedbackForm teammates={teammates} action={requestAction} />
+          <RequestFeedbackForm
+            teammates={teammates}
+            workspaceGoals={workspaceGoals}
+            action={requestAction}
+          />
         </div>
         <div hidden={mode !== 'give'}>
-          <GiveFeedbackForm teammates={teammates} action={giveAction} />
+          <GiveFeedbackForm
+            teammates={teammates}
+            workspaceGoals={workspaceGoals}
+            action={giveAction}
+          />
         </div>
       </div>
     </section>

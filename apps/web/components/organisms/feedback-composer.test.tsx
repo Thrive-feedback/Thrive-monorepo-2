@@ -16,6 +16,7 @@ describe('FeedbackComposer', () => {
     render(
       <FeedbackComposer
         teammates={[]}
+        workspaceGoals={[]}
         requestAction={vi.fn()}
         giveAction={vi.fn()}
       />,
@@ -33,6 +34,7 @@ describe('FeedbackComposer', () => {
     render(
       <FeedbackComposer
         teammates={[]}
+        workspaceGoals={[]}
         requestAction={vi.fn()}
         giveAction={vi.fn()}
       />,
@@ -55,6 +57,7 @@ describe('FeedbackComposer', () => {
     render(
       <FeedbackComposer
         teammates={[]}
+        workspaceGoals={[]}
         requestAction={vi.fn()}
         giveAction={vi.fn()}
       />,
@@ -81,6 +84,7 @@ describe('FeedbackComposer', () => {
     render(
       <FeedbackComposer
         teammates={[]}
+        workspaceGoals={[]}
         requestAction={vi.fn()}
         giveAction={vi.fn()}
       />,

@@ -15,6 +15,7 @@ import type { GiveFeedbackAction } from '@/lib/feedback/give-feedback-state.type
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { RequestFeedbackAction } from '@/lib/feedback/request-feedback-state.type';
 import type { SentRequest } from '@/lib/feedback/sent-request.type';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import type { HomeTab } from '@/lib/routes.constant';
 import { LANDING_COPY } from './landing-copy.constant';
 import {
@@ -24,6 +25,7 @@ import {
   PREVIEW_TEAMMATES,
   PREVIEW_WAITING_ASKS,
   PREVIEW_WORKSPACE_FEED,
+  PREVIEW_WORKSPACE_GOALS,
   PREVIEW_WORKSPACE_NAME,
 } from './landing-home-preview.mock';
 
@@ -60,6 +62,8 @@ export function LandingHomePreview() {
     const sent: SentRequest = {
       id: `preview-request-sent-${composerKey}`,
       topic: String(formData.get('topic') ?? '').trim(),
+      // The preview binds nothing: it has no Workspace Goals and reaches no API.
+      topicTags: NO_TEXT_TAGS,
       sentAt: new Date().toISOString(),
       asks: [
         {
@@ -156,6 +160,7 @@ export function LandingHomePreview() {
               <FeedbackComposer
                 key={composerKey}
                 teammates={PREVIEW_TEAMMATES}
+                workspaceGoals={PREVIEW_WORKSPACE_GOALS}
                 requestAction={requestFeedback}
                 giveAction={giveFeedback}
               />
@@ -184,6 +189,8 @@ export function LandingHomePreview() {
         >
           <AnswerAskView
             ask={{ ...openAsk, feedbackRequestId: `${openAsk.askId}-request` }}
+            teammates={PREVIEW_TEAMMATES}
+            workspaceGoals={PREVIEW_WORKSPACE_GOALS}
             action={answerAsk}
           />
         </HomeDialog>

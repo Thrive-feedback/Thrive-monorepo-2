@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { WaitingAskList } from './waiting-ask-list';
 
 const readMyAsks = vi.fn();
@@ -30,6 +31,7 @@ describe('WaitingAskList', () => {
       {
         askId: 'ask-1',
         topic: 'my presentation skills',
+        topicTags: NO_TEXT_TAGS,
         requesterName: 'Ana Silva',
         askedAt: '2026-10-11T03:00:00.000Z',
         status: 'PENDING',
@@ -54,6 +56,7 @@ describe('WaitingAskList', () => {
       {
         askId: 'ask-1',
         topic: 'my presentation skills',
+        topicTags: NO_TEXT_TAGS,
         requesterName: null,
         askedAt: '2026-10-11T03:00:00.000Z',
         status: 'PENDING',
@@ -70,6 +73,7 @@ describe('WaitingAskList', () => {
       {
         askId: 'ask-1',
         topic: 'my presentation skills',
+        topicTags: NO_TEXT_TAGS,
         requesterName: 'Ana Silva',
         requesterInactive: true,
         askedAt: '2026-10-11T03:00:00.000Z',

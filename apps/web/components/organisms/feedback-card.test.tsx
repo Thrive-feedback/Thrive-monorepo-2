@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { FeedbackCard } from './feedback-card';
 
 const OFFERED: FeedItem = {
@@ -11,7 +12,9 @@ const OFFERED: FeedItem = {
   receiverInactive: false,
   origin: 'OFFERED',
   topic: 'The customer demo',
+  topicTags: NO_TEXT_TAGS,
   body: 'You kept the room with you.\nThe recap landed.',
+  bodyTags: NO_TEXT_TAGS,
   givenAt: '2026-10-12T03:00:00.000Z',
   reactions: { '👏': ['Ann Lee'] },
 };

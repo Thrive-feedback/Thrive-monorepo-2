@@ -5,6 +5,7 @@ import {
 } from '@/app/(signed-in)/(member)/home/_lib/feedback-request.service';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
+import { FeedbackText } from '@/components/organisms/feedback-text';
 import { PersonName } from '@/components/organisms/person-name';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
@@ -99,7 +100,8 @@ export async function FeedbackRequestDetail({
                   name={ask.giverName ?? 'a teammate'}
                   inactive={ask.giverInactive}
                 />{' '}
-                about {request.topic}
+                about{' '}
+                <FeedbackText text={request.topic} tags={request.topicTags} />
               </Text>
               <Text variant="body-3" tone="muted">
                 Now {ASK_STATUS_WORDS[ask.status]}.
@@ -109,7 +111,7 @@ export async function FeedbackRequestDetail({
               // Their words, kept as they wrote them: the line breaks they chose are part of
               // the answer, and a paragraph run together reads as a different message.
               <Text variant="body-2" className="whitespace-pre-line">
-                {ask.answer}
+                <FeedbackText text={ask.answer.body} tags={ask.answer.tags} />
               </Text>
             )}
           </li>

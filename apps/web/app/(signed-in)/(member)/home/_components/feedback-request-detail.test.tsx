@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { SentFeedbackRequest } from '@/app/(signed-in)/(member)/home/_lib/feedback-request.service';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { FeedbackRequestDetail } from './feedback-request-detail';
 
 const REQUEST_ID = '0199a0f0-0000-7000-8000-0000000000f1';
@@ -33,6 +34,7 @@ function waitingRequest(
   return {
     id: REQUEST_ID,
     topic: 'my sprint review talk',
+    topicTags: NO_TEXT_TAGS,
     asks: [
       {
         askId: 'ask-1',
@@ -51,6 +53,7 @@ describe('a sent Feedback Request, open over Home', () => {
     readFeedbackRequest.mockResolvedValue({
       id: REQUEST_ID,
       topic: 'my sprint review talk',
+      topicTags: NO_TEXT_TAGS,
       asks: [
         {
           askId: 'ask-1',
@@ -79,6 +82,7 @@ describe('a sent Feedback Request, open over Home', () => {
     readFeedbackRequest.mockResolvedValue({
       id: REQUEST_ID,
       topic: 'my sprint review talk',
+      topicTags: NO_TEXT_TAGS,
       asks: [
         {
           askId: 'ask-1',
@@ -105,13 +109,17 @@ describe('a sent Feedback Request, open over Home', () => {
     readFeedbackRequest.mockResolvedValue({
       id: REQUEST_ID,
       topic: 'my sprint review talk',
+      topicTags: NO_TEXT_TAGS,
       asks: [
         {
           askId: 'ask-1',
           giverName: 'Ben Carter',
           giverInactive: false,
           status: 'ANSWERED',
-          answer: 'You open strongly and lose the room at the detail.',
+          answer: {
+            body: 'You open strongly and lose the room at the detail.',
+            tags: NO_TEXT_TAGS,
+          },
         },
       ],
       visibility: { value: 'ONLY_ME', selectedPeople: [] },
