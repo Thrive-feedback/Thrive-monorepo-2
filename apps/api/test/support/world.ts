@@ -51,6 +51,8 @@ export class ThriveWorld extends World {
   private readonly workspaces = new Map<string, string>();
   /** Invitations written straight to the store, by who they were sent to; no email carries them. */
   private readonly storedInvitations = new Map<string, string>();
+  /** The Workspace Goals added in this scenario, by name, as the Admin's screen holds their ids. */
+  private readonly workspaceGoals = new Map<string, string>();
 
   constructor(options: IWorldOptions) {
     super(options);
@@ -115,6 +117,19 @@ export class ThriveWorld extends World {
 
   storedInvitationTo(invitee: string): string | undefined {
     return this.storedInvitations.get(invitee);
+  }
+
+  workspaceGoalAdded(name: string, workspaceGoalId: string): void {
+    this.workspaceGoals.set(name, workspaceGoalId);
+  }
+
+  workspaceGoalNamed(name: string): string {
+    const workspaceGoalId = this.workspaceGoals.get(name);
+    assert.ok(
+      workspaceGoalId,
+      `No Workspace Goal "${name}" was added in this scenario.`,
+    );
+    return workspaceGoalId;
   }
 
   /** Calls the API as `name` would from the web — their session cookie, a correlation id. */

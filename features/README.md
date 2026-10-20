@@ -14,6 +14,7 @@ Step definitions live with the stack that runs them: `@api` steps in `apps/api/t
 | `workspace-feed.feature`    | the Feedback people shared with everyone, newest first, read by every Member of the Workspace and by nobody outside it; whatever was kept narrower never appears |
 | `shared-feedback.feature`   | reading the Feedback somebody chose to show you — an answer a Requester shared, Feedback a Giver shared — and nothing else: not what nobody was selected for, not another Member's, not your own, not another Workspace's |
 | `offered-feedback.feature`  | giving Feedback without being asked, and only to a Member of the Workspace; the Receiver reads it as given without a request; it asks nobody anything; only the people the Giver chose read it, and only inside the Workspace |
+| `workspace-goals.feature`   | an Admin adding a Workspace Goal and every Member reading it; the name refused for a space, a length past 30, or a name already taken in any letter case, hidden ones included; hiding and showing again, which Members see and Admins see marked; only Admins manage them, and only in their own Workspace |
 
 Every scenario is `@api`. No `@browser` steps exist yet (`FE_15`; Playwright is planned).
 

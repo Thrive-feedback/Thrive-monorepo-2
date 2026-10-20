@@ -1796,6 +1796,264 @@
           "feedback"
         ]
       }
+    },
+    "/v1/workspaces/{workspaceId}/workspace-goals": {
+      "get": {
+        "operationId": "WorkspaceGoalController_listWorkspaceGoals",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListWorkspaceGoalsResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "List a Workspace's Workspace Goals: every one for an Admin, the active ones for anyone else",
+        "tags": [
+          "workspace-goals"
+        ]
+      },
+      "post": {
+        "operationId": "WorkspaceGoalController_createWorkspaceGoal",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceGoalRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateWorkspaceGoalResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID, WORKSPACE_GOAL_NAME_EMPTY, WORKSPACE_GOAL_NAME_TOO_LONG, WORKSPACE_GOAL_NAME_HAS_SPACES, WORKSPACE_GOAL_NAME_INVALID_CHARACTER or WORKSPACE_GOAL_DESCRIPTION_TOO_LONG"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "NOT_ALLOWED_TO_MANAGE_WORKSPACE_GOALS"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          },
+          "409": {
+            "description": "WORKSPACE_GOAL_NAME_TAKEN"
+          }
+        },
+        "summary": "Add a Workspace Goal to a Workspace, as an Admin",
+        "tags": [
+          "workspace-goals"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/workspace-goals/{workspaceGoalId}/hide": {
+      "post": {
+        "operationId": "WorkspaceGoalController_hideWorkspaceGoal",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "workspaceGoalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Hidden"
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "NOT_ALLOWED_TO_MANAGE_WORKSPACE_GOALS"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND or WORKSPACE_GOAL_NOT_FOUND"
+          },
+          "409": {
+            "description": "WORKSPACE_GOAL_ALREADY_HIDDEN"
+          }
+        },
+        "summary": "Hide a Workspace Goal, as an Admin, so Members no longer see or write it",
+        "tags": [
+          "workspace-goals"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/workspace-goals/{workspaceGoalId}/show": {
+      "post": {
+        "operationId": "WorkspaceGoalController_showWorkspaceGoal",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "workspaceGoalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Shown"
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "NOT_ALLOWED_TO_MANAGE_WORKSPACE_GOALS"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND or WORKSPACE_GOAL_NOT_FOUND"
+          },
+          "409": {
+            "description": "WORKSPACE_GOAL_ALREADY_ACTIVE"
+          }
+        },
+        "summary": "Show a hidden Workspace Goal again, as an Admin",
+        "tags": [
+          "workspace-goals"
+        ]
+      }
     }
   },
   "info": {
@@ -3600,6 +3858,98 @@
           "total",
           "page",
           "pageSize"
+        ],
+        "additionalProperties": false
+      },
+      "ListWorkspaceGoalsResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ACTIVE",
+                    "HIDDEN"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "description",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "additionalProperties": false
+      },
+      "CreateWorkspaceGoalRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "CreateWorkspaceGoalResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "id"
         ],
         "additionalProperties": false
       }

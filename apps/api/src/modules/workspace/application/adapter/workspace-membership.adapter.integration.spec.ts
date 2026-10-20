@@ -95,3 +95,33 @@ describe('telling another module who was Deactivated', () => {
     ).toEqual([]);
   });
 });
+
+describe('telling another module who is an Admin', () => {
+  it('answers yes for an active Admin, and no for a Member, a Deactivated Admin and an outsider', async () => {
+    const admin = await fixtures.aSignedInAccount('is-admin-admin');
+    const workspaceId = await fixtures.aWorkspace(admin);
+    const member = await fixtures.aSignedInAccount('is-admin-member');
+    await fixtures.addMember(workspaceId, member, 'member');
+    const leftAdmin = await fixtures.aSignedInAccount('is-admin-left');
+    await fixtures.addMember(workspaceId, leftAdmin, 'admin');
+    await prismaService.member.update({
+      where: {
+        workspaceId_userId: { workspaceId, userId: leftAdmin.accountId },
+      },
+      data: { deactivatedAt: new Date() },
+    });
+    const outsider = await fixtures.aSignedInAccount('is-admin-outsider');
+    await fixtures.aWorkspace(outsider, 'Globex');
+
+    const answers = await Promise.all(
+      [admin, member, leftAdmin, outsider].map((account) =>
+        workspaceMembershipPort.isAdminOf({
+          workspaceId,
+          accountId: account.accountId,
+        }),
+      ),
+    );
+
+    expect(answers).toEqual([true, false, false, false]);
+  });
+});

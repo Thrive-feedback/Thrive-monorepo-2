@@ -10,6 +10,7 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 import { FeedbackModule } from './modules/feedback';
 import { IdentityModule } from './modules/identity';
 import { WorkspaceModule } from './modules/workspace';
+import { WorkspaceGoalModule } from './modules/workspace-goal';
 import { CodedErrorFilter } from './shared/presentation/coded-error.filter';
 import { CorrelationIdMiddleware } from './shared/presentation/correlation-id.middleware';
 import { HealthController } from './shared/presentation/health.controller';
@@ -23,6 +24,7 @@ import { SharedModule } from './shared/shared.module';
     IdentityModule,
     WorkspaceModule,
     FeedbackModule,
+    WorkspaceGoalModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { WorkspaceMembershipPort } from '../../domain/port/workspace-membership.port';
+import { MemberRole } from '../../domain/value-object/member-role.vo';
 import { MembershipQuery } from '../query-port/membership.query-port';
 
 /**
@@ -23,6 +24,17 @@ export class WorkspaceMembershipAdapter extends WorkspaceMembershipPort {
         membership.workspaceId,
       )) !== null
     );
+  }
+
+  async isAdminOf(membership: {
+    readonly workspaceId: string;
+    readonly accountId: string;
+  }): Promise<boolean> {
+    const found = await this.membershipQuery.membershipInWorkspace(
+      membership.accountId,
+      membership.workspaceId,
+    );
+    return found !== null && found.role === MemberRole.Admin.toString();
   }
 
   async membersAmong(members: {
