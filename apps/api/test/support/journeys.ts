@@ -327,3 +327,48 @@ export async function askIdWaitingFor(
   world.opened(name, askId);
   return askId;
 }
+
+/** `admin` adds a Workspace Goal to their Workspace from Settings, remembering its id. */
+export async function addWorkspaceGoal(
+  world: ThriveWorld,
+  admin: string,
+  name: string,
+  description?: string,
+): Promise<ApiResponse> {
+  const response = await world.as(
+    admin,
+    'POST',
+    `/v1/workspaces/${world.workspaceOf(admin)}/workspace-goals`,
+    { name, ...(description === undefined ? {} : { description }) },
+  );
+  if (response.status === 201) {
+    world.workspaceGoalAdded(name, response.body.id);
+  }
+  return response;
+}
+
+/** `name` hides a Workspace Goal, or shows a hidden one again, from Settings. */
+export function changeWorkspaceGoalStatus(
+  world: ThriveWorld,
+  name: string,
+  workspaceGoal: string,
+  action: 'hide' | 'show',
+): Promise<ApiResponse> {
+  return world.as(
+    name,
+    'POST',
+    `/v1/workspaces/${world.workspaceOf(name)}/workspace-goals/${world.workspaceGoalNamed(workspaceGoal)}/${action}`,
+  );
+}
+
+/** The Workspace Goals `name` is shown in Settings, in their own Workspace. */
+export function listWorkspaceGoals(
+  world: ThriveWorld,
+  name: string,
+): Promise<ApiResponse> {
+  return world.as(
+    name,
+    'GET',
+    `/v1/workspaces/${world.workspaceOf(name)}/workspace-goals`,
+  );
+}

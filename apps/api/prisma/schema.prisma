@@ -300,3 +300,31 @@ model FeedbackSelectedPerson {
   @@index([accountId])
   @@map("feedback_selected_person")
 }
+
+// Workspace Goal's table. The Workspace is held as an id with no foreign key into Workspace's
+// tables, which this module does not own (BE_03 R7).
+
+/// Whether Members can see and write a Workspace Goal. There is no deleted state (ADR-0036).
+enum WorkspaceGoalStatus {
+  ACTIVE
+  HIDDEN
+}
+
+/// A hashtag an Admin creates for the whole Workspace (glossary: Workspace Goal). Never renamed
+/// or deleted, only hidden.
+model WorkspaceGoal {
+  id          String              @id
+  workspaceId String
+  /// As the Admin wrote it, without the `#`.
+  name        String
+  /// `name` with letter case folded away. Unique per Workspace, hidden ones included, which is
+  /// the rule that two Workspace Goals never differ only in case.
+  nameKey     String
+  description String?
+  status      WorkspaceGoalStatus @default(ACTIVE)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@unique([workspaceId, nameKey])
+  @@map("workspace_goal")
+}

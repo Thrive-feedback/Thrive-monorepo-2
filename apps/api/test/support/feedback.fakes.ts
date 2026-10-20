@@ -29,6 +29,18 @@ export class FakeWorkspaceMembershipPort extends WorkspaceMembershipPort {
   private readonly members = new Map<string, Set<string>>();
   /** Keyed `workspaceId`, holding the Accounts Deactivated there. */
   private readonly deactivated = new Map<string, Set<string>>();
+  /** Keyed `workspaceId`, holding the Members who are Admins there. */
+  private readonly admins = new Map<string, Set<string>>();
+
+  /** Makes these Accounts Members of the Workspace and Admins of it. */
+  withAdmins(workspaceId: string, ...accountIds: string[]): this {
+    const held = this.admins.get(workspaceId) ?? new Set<string>();
+    for (const accountId of accountIds) {
+      held.add(accountId);
+    }
+    this.admins.set(workspaceId, held);
+    return this.with(workspaceId, ...accountIds);
+  }
 
   withDeactivated(workspaceId: string, ...accountIds: string[]): this {
     const held = this.deactivated.get(workspaceId) ?? new Set<string>();
@@ -57,6 +69,16 @@ export class FakeWorkspaceMembershipPort extends WorkspaceMembershipPort {
   }): Promise<boolean> {
     return (
       this.members.get(membership.workspaceId)?.has(membership.accountId) ===
+      true
+    );
+  }
+
+  async isAdminOf(membership: {
+    readonly workspaceId: string;
+    readonly accountId: string;
+  }): Promise<boolean> {
+    return (
+      this.admins.get(membership.workspaceId)?.has(membership.accountId) ===
       true
     );
   }

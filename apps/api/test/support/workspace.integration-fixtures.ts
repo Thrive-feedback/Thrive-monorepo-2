@@ -159,9 +159,20 @@ export class WorkspaceFixtures {
     await this.prismaService.feedback.deleteMany({
       where: { giverAccountId: { in: this.accountIds } },
     });
-    await this.prismaService.workspace.deleteMany({
-      where: { members: { some: { userId: { in: this.accountIds } } } },
+    // So do Workspace Goals, which name their Workspace the same way.
+    const workspaces = {
+      members: { some: { userId: { in: this.accountIds } } },
+    };
+    const workspaceIds = (
+      await this.prismaService.workspace.findMany({
+        where: workspaces,
+        select: { id: true },
+      })
+    ).map((workspace) => workspace.id);
+    await this.prismaService.workspaceGoal.deleteMany({
+      where: { workspaceId: { in: workspaceIds } },
     });
+    await this.prismaService.workspace.deleteMany({ where: workspaces });
     // Deleting the Better Auth user cascades to its sessions.
     await this.prismaService.user.deleteMany({
       where: { id: { in: this.accountIds } },
