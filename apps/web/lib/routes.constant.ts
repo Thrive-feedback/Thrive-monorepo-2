@@ -45,6 +45,8 @@ export const ROUTES = {
     account: '/settings/account',
     /** The Workspace's name, the way to switch to another, and the way to leave it. */
     workspace: '/settings/workspace',
+    /** The Workspace's Workspace Goals: read by every Member, added, hidden and shown by Admins. */
+    workspaceGoals: '/settings/workspace-goals',
     /** Who is in the Workspace, and, for Admins, inviting more and the Invitations still open. */
     members: '/settings/members',
     /** The colour mode. */
