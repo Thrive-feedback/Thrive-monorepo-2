@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
   FakeFeedbackRequestQuery,
   FakeWorkspaceMembershipPort,
+  NO_TAGS,
 } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { PeopleService } from '../service/people.service';
@@ -24,6 +25,7 @@ function setUp() {
       workspaceId: WORKSPACE_ID,
       requesterAccountId: ANA,
       topic: 'my presentation skills',
+      topicTags: NO_TAGS,
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       createdAt: new Date('2026-10-11T03:00:00.000Z'),
@@ -37,6 +39,7 @@ function setUp() {
       workspaceId: WORKSPACE_ID,
       requesterAccountId: CARA,
       topic: 'how I run stand-up',
+      topicTags: NO_TAGS,
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       createdAt: new Date('2026-10-09T03:00:00.000Z'),
@@ -56,6 +59,7 @@ function setUp() {
     email: 'ana@acme.test',
     fullName: 'Ana Silva',
     displayName: 'Ana',
+    slug: null,
     photoUrl: null,
   });
   const useCase = new ListMyFeedbackAsksUseCase(
@@ -80,6 +84,7 @@ describe('listing the Asks waiting for me', () => {
     expect(waiting.items[0]).toMatchObject({
       askId: ASK_FOR_BEN,
       topic: 'my presentation skills',
+      topicTags: NO_TAGS,
       requesterAccountId: ANA,
       requesterName: 'Ana Silva',
       status: 'PENDING',

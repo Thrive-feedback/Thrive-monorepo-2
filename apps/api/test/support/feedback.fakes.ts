@@ -11,6 +11,7 @@ import type {
   FeedbackWithVisibilityRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
+import { TagsService } from '@app/modules/feedback/application/service/tags.service';
 import type { PageRequest } from '@app/modules/feedback/application/types/feedback-request.types';
 import type { Feedback } from '@app/modules/feedback/domain/entity/feedback.entity';
 import {
@@ -21,7 +22,12 @@ import { AskAlreadyAnsweredError } from '@app/modules/feedback/domain/feedback-r
 import { FeedbackRepository } from '@app/modules/feedback/domain/repository/feedback-repository.port';
 import { FeedbackRequestRepository } from '@app/modules/feedback/domain/repository/feedback-request-repository.port';
 import type { AskStatusValue } from '@app/modules/feedback/domain/value-object/ask-status.vo';
+import { type AccountBySlug, AccountBySlugPort } from '@app/modules/identity';
 import { WorkspaceMembershipPort } from '@app/modules/workspace';
+import {
+  type ActiveWorkspaceGoal,
+  ActiveWorkspaceGoalPort,
+} from '@app/modules/workspace-goal';
 
 /** Which Accounts are Members of which Workspace, and which were Deactivated, as the test sets it up. */
 export class FakeWorkspaceMembershipPort extends WorkspaceMembershipPort {
@@ -99,6 +105,68 @@ export class FakeWorkspaceMembershipPort extends WorkspaceMembershipPort {
     const held = this.deactivated.get(members.workspaceId);
     return members.accountIds.filter((accountId) => held?.has(accountId));
   }
+}
+
+/** The active Workspace Goals of each Workspace, as the test sets them up. */
+export class FakeActiveWorkspaceGoalPort extends ActiveWorkspaceGoalPort {
+  private readonly active = new Map<string, ActiveWorkspaceGoal[]>();
+  /** One entry per call, holding the names asked: how a test sees nothing was asked. */
+  readonly calls: (readonly string[])[] = [];
+
+  with(workspaceId: string, ...workspaceGoals: ActiveWorkspaceGoal[]): this {
+    this.active.set(workspaceId, [
+      ...(this.active.get(workspaceId) ?? []),
+      ...workspaceGoals,
+    ]);
+    return this;
+  }
+
+  async activeAmong(query: {
+    readonly workspaceId: string;
+    readonly names: readonly string[];
+  }): Promise<ActiveWorkspaceGoal[]> {
+    this.calls.push([...query.names]);
+    const keys = query.names.map((name) => name.toLowerCase());
+    return (this.active.get(query.workspaceId) ?? []).filter((workspaceGoal) =>
+      keys.includes(workspaceGoal.name.toLowerCase()),
+    );
+  }
+}
+
+/** The Accounts whose Profiles hold a slug, as the test sets them up. */
+export class FakeAccountBySlugPort extends AccountBySlugPort {
+  private readonly accounts: AccountBySlug[] = [];
+  /** One entry per call, holding the slugs asked. */
+  readonly calls: (readonly string[])[] = [];
+
+  with(...accounts: AccountBySlug[]): this {
+    this.accounts.push(...accounts);
+    return this;
+  }
+
+  async accountsWithSlugs(slugs: readonly string[]): Promise<AccountBySlug[]> {
+    this.calls.push([...slugs]);
+    return this.accounts.filter((account) => slugs.includes(account.slug));
+  }
+}
+
+/**
+ * Binds text as a Workspace would whose one active Workspace Goal is `#ownership` and whose
+ * Member `account-cara` goes by `@cara`.
+ */
+export function aTagsService(workspaceId: string): TagsService {
+  return new TagsService(
+    new FakeActiveWorkspaceGoalPort().with(workspaceId, {
+      id: 'goal-ownership',
+      name: 'ownership',
+    }),
+    new FakeAccountBySlugPort().with({
+      accountId: 'account-cara',
+      slug: 'cara',
+      displayName: 'Cara',
+    }),
+    new FakeWorkspaceMembershipPort().with(workspaceId, 'account-cara'),
+  );
 }
 
 /** Feedback Requests held in memory, scoped by Workspace the way the real reads are. */
@@ -326,6 +394,7 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
           giverAccountId: ask.giverAccountId,
           feedbackRequestId: row.id,
           topic: row.topic,
+          topicTags: row.topicTags,
           requesterAccountId: row.requesterAccountId,
           status: ask.status,
           createdAt: row.createdAt,
@@ -333,6 +402,9 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
       );
   }
 }
+
+/** Bound to nothing: text that named no Workspace Goal and nobody. */
+export const NO_TAGS = { workspaceGoals: [], mentions: [] } as const;
 
 /** The real list reads hand back no Visibility: they applied it (ADR 0044). */
 function withoutVisibility(
@@ -343,9 +415,11 @@ function withoutVisibility(
     origin: row.origin,
     feedbackRequestId: row.feedbackRequestId,
     topic: row.topic,
+    topicTags: row.topicTags,
     giverAccountId: row.giverAccountId,
     receiverAccountId: row.receiverAccountId,
     body: row.body,
+    tags: row.tags,
     createdAt: row.createdAt,
   };
 }

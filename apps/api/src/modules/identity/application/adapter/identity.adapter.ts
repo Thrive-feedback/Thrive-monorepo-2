@@ -4,6 +4,10 @@ import {
   AccountByEmailPort,
 } from '../../domain/port/account-by-email.port';
 import {
+  type AccountBySlug,
+  AccountBySlugPort,
+} from '../../domain/port/account-by-slug.port';
+import {
   type AccountSummary,
   AccountSummaryPort,
 } from '../../domain/port/account-summary.port';
@@ -11,6 +15,7 @@ import { HasProfilePort } from '../../domain/port/has-profile.port';
 import { ProfileNamePort } from '../../domain/port/profile-name.port';
 import { FindAccountSummariesUseCase } from '../use-cases/find-account-summaries.use-case';
 import { FindAccountsByEmailUseCase } from '../use-cases/find-accounts-by-email.use-case';
+import { FindAccountsBySlugUseCase } from '../use-cases/find-accounts-by-slug.use-case';
 import { FindProfileOfAccountUseCase } from '../use-cases/find-profile-of-account.use-case';
 
 /**
@@ -23,12 +28,14 @@ export class IdentityAdapter
     HasProfilePort,
     ProfileNamePort,
     AccountSummaryPort,
-    AccountByEmailPort
+    AccountByEmailPort,
+    AccountBySlugPort
 {
   constructor(
     private readonly findProfileOfAccountUseCase: FindProfileOfAccountUseCase,
     private readonly findAccountSummariesUseCase: FindAccountSummariesUseCase,
     private readonly findAccountsByEmailUseCase: FindAccountsByEmailUseCase,
+    private readonly findAccountsBySlugUseCase: FindAccountsBySlugUseCase,
   ) {}
 
   async hasProfile(accountId: string): Promise<boolean> {
@@ -57,5 +64,9 @@ export class IdentityAdapter
 
   accountsWithEmails(emails: readonly string[]): Promise<AccountByEmail[]> {
     return this.findAccountsByEmailUseCase.execute({ emails });
+  }
+
+  accountsWithSlugs(slugs: readonly string[]): Promise<AccountBySlug[]> {
+    return this.findAccountsBySlugUseCase.execute({ slugs });
   }
 }

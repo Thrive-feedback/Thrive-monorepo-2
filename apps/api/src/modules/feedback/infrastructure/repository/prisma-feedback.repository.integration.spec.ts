@@ -4,6 +4,7 @@ import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { v7 as uuidv7 } from 'uuid';
 import { Feedback } from '../../domain/entity/feedback.entity';
+import { BoundTags } from '../../domain/value-object/bound-tags.vo';
 import { FeedbackBody } from '../../domain/value-object/feedback-body.vo';
 import { Topic } from '../../domain/value-object/topic.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
@@ -27,10 +28,12 @@ function offered(
   workspaceId: string,
   receiverAccountId: string,
   visibility = Visibility.onlyMe(),
+  tags = BoundTags.none(),
 ) {
   const id = uuidv7();
   written.push(id);
   return Feedback.offer({
+    tags,
     id,
     workspaceId,
     giverAccountId: uuidv7(),
@@ -66,11 +69,42 @@ describe('storing Offered Feedback', () => {
         origin: 'OFFERED',
         feedbackRequestId: null,
         topic: 'the customer demo',
+        topicTags: { workspaceGoals: [], mentions: [] },
         giverAccountId: snapshot.giverAccountId,
         body: 'You kept the room with you.',
+        tags: { workspaceGoals: [], mentions: [] },
         createdAt: expect.any(Date),
       },
     ]);
+  });
+
+  it('saves what its Giver named, which its Topic and its text are both read with', async () => {
+    const workspaceId = uuidv7();
+    const receiverAccountId = uuidv7();
+    const named = {
+      workspaceGoals: [{ name: 'ownership' }],
+      mentions: [{ slug: 'cara.lee', displayName: 'Cara' }],
+    };
+    await repository.save(
+      offered(
+        workspaceId,
+        receiverAccountId,
+        Visibility.onlyMe(),
+        BoundTags.of({
+          workspaceGoals: [{ workspaceGoalId: uuidv7(), name: 'ownership' }],
+          mentions: [
+            { accountId: uuidv7(), slug: 'cara.lee', displayName: 'Cara' },
+          ],
+        }),
+      ),
+    );
+
+    const received = await query.receivedBy(
+      workspaceId,
+      receiverAccountId,
+      ONE_PAGE,
+    );
+    expect(received.items[0]).toMatchObject({ tags: named, topicTags: named });
   });
 
   it('keeps the Visibility and the people selected, for one piece to be opened by', async () => {

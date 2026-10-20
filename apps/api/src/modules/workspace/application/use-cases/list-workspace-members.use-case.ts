@@ -22,6 +22,8 @@ export interface WorkspaceMember {
   readonly fullName: string | null;
   /** The name others see and call them by; `null` while they have not introduced themselves. */
   readonly displayName: string | null;
+  /** The slug others mention them by; `null` while they have not introduced themselves. */
+  readonly slug: string | null;
   /** Their photo from Google; `null` when Google has none. */
   readonly photoUrl: string | null;
   readonly role: MemberRoleValue;
@@ -34,7 +36,7 @@ export interface WorkspaceMemberList {
 
 /**
  * A query: who is in the caller's Workspace, or who was and has been Deactivated, with the
- * email, name and photo each is known by.
+ * email, name, slug and photo each is known by.
  */
 @Injectable()
 export class ListWorkspaceMembersUseCase {
@@ -69,6 +71,7 @@ export class ListWorkspaceMembersUseCase {
                 email: summary.email,
                 fullName: summary.fullName,
                 displayName: summary.displayName,
+                slug: summary.slug,
                 photoUrl: summary.photoUrl,
                 role: member.role,
               },

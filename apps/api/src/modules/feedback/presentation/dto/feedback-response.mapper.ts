@@ -1,4 +1,20 @@
-import type { FeedbackView } from '../../application/types/feedback-request.types';
+import type {
+  FeedbackView,
+  TagsView,
+} from '../../application/types/feedback-request.types';
+
+/** What some sent text was bound to, on the wire. Shared by every route that shows sent text. */
+export function toTagsResponse(tags: TagsView) {
+  return {
+    workspaceGoals: tags.workspaceGoals.map((workspaceGoal) => ({
+      name: workspaceGoal.name,
+    })),
+    mentions: tags.mentions.map((mention) => ({
+      slug: mention.slug,
+      displayName: mention.displayName,
+    })),
+  };
+}
 
 /**
  * One piece of Feedback on the wire, the same for every reader its Visibility lets in, with its
@@ -11,6 +27,7 @@ export function toFeedbackResponse(feedback: FeedbackView) {
     origin: feedback.origin,
     feedbackRequestId: feedback.feedbackRequestId,
     topic: feedback.topic,
+    topicTags: toTagsResponse(feedback.topicTags),
     giver: {
       accountId: feedback.giverAccountId,
       name: feedback.giverName,
@@ -22,6 +39,7 @@ export function toFeedbackResponse(feedback: FeedbackView) {
       status: feedback.receiverStatus,
     },
     body: feedback.body,
+    tags: toTagsResponse(feedback.tags),
     createdAt: feedback.createdAt.toISOString(),
   };
 }

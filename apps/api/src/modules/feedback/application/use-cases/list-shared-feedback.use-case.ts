@@ -55,6 +55,7 @@ export class ListSharedFeedbackUseCase {
         origin: feedback.origin,
         feedbackRequestId: feedback.feedbackRequestId,
         topic: feedback.topic,
+        topicTags: feedback.topicTags,
         giverAccountId: feedback.giverAccountId,
         // An Account cascades away with the person, so a missing one was deleted mid-read.
         giverName: people.nameOf(feedback.giverAccountId),
@@ -63,6 +64,7 @@ export class ListSharedFeedbackUseCase {
         receiverName: people.nameOf(feedback.receiverAccountId),
         receiverStatus: people.statusOf(feedback.receiverAccountId),
         body: feedback.body,
+        tags: feedback.tags,
         createdAt: feedback.createdAt,
       })),
       total: shared.total,

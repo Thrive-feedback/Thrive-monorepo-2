@@ -1,3 +1,4 @@
+import { DomainError } from '@app/shared/errors/coded-error';
 import {
   WorkspaceGoalNameEmptyError,
   WorkspaceGoalNameHasSpacesError,
@@ -39,6 +40,21 @@ export class WorkspaceGoalName {
       throw new WorkspaceGoalNameTooLongError(WorkspaceGoalName.MAX_LENGTH);
     }
     return new WorkspaceGoalName(normalized);
+  }
+
+  /**
+   * The key a written name stands for, or `null` when no Workspace Goal could be named so —
+   * which is how a hashtag in text is matched without refusing the text it sits in.
+   */
+  static keyOf(written: string): string | null {
+    try {
+      return WorkspaceGoalName.of(written).key();
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   /** The same for every spelling that differs only in letter case — what makes a name taken. */

@@ -24,8 +24,21 @@ export interface People {
   statusOf(accountId: string): PersonStatus;
 }
 
+/** What some sent text was bound to, as a reader is shown it. */
+export interface TagsView {
+  /** In the Admin's spelling, without the `#`. */
+  readonly workspaceGoals: readonly { readonly name: string }[];
+  /** By the name each Member went by when it was sent. */
+  readonly mentions: readonly {
+    readonly slug: string;
+    readonly displayName: string;
+  }[];
+}
+
 export interface AnswerView {
   readonly body: string;
+  /** What the answer names. */
+  readonly tags: TagsView;
   readonly answeredAt: Date;
 }
 
@@ -65,6 +78,7 @@ export interface VisibilityView {
 export interface FeedbackRequestView {
   readonly id: string;
   readonly topic: string;
+  readonly topicTags: TagsView;
   /** `null` when the caller is a Giver, who is not told who else reads it (`ADR-0022`). */
   readonly visibility: VisibilityView | null;
   readonly asks: readonly AskView[];
@@ -82,6 +96,7 @@ export interface MyAskView {
   readonly askId: string;
   readonly feedbackRequestId: string;
   readonly topic: string;
+  readonly topicTags: TagsView;
   readonly requesterAccountId: string;
   /** `null` while the Requester has not introduced themselves. */
   readonly requesterName: string | null;
@@ -109,11 +124,15 @@ export interface ReceivedFeedbackView {
   /** The request it answers, or `null` for Feedback given without being asked. */
   readonly feedbackRequestId: string | null;
   readonly topic: string;
+  /** What the Topic names: its own if Offered, the request's if it answers one. */
+  readonly topicTags: TagsView;
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
   readonly giverStatus: PersonStatus;
   readonly body: string;
+  /** What its Giver wrote names: the Topic and the text if Offered, the text if Requested. */
+  readonly tags: TagsView;
   readonly createdAt: Date;
 }
 
@@ -128,6 +147,8 @@ export interface FeedbackView {
   /** The request it answers, or `null` for Feedback given without being asked. */
   readonly feedbackRequestId: string | null;
   readonly topic: string;
+  /** What the Topic names: its own if Offered, the request's if it answers one. */
+  readonly topicTags: TagsView;
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
@@ -137,6 +158,8 @@ export interface FeedbackView {
   readonly receiverName: string | null;
   readonly receiverStatus: PersonStatus;
   readonly body: string;
+  /** What its Giver wrote names: the Topic and the text if Offered, the text if Requested. */
+  readonly tags: TagsView;
   readonly createdAt: Date;
 }
 

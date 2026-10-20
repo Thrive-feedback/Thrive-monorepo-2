@@ -616,6 +616,7 @@ export interface components {
                 email: string;
                 fullName: string | null;
                 displayName: string | null;
+                slug: string | null;
                 /** Format: uri */
                 photoUrl: string | null;
                 /** @enum {string} */
@@ -721,6 +722,15 @@ export interface components {
                 /** Format: uuid */
                 id: string;
                 topic: string;
+                topicTags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
                 visibility: {
                     /** @enum {string} */
                     value: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
@@ -744,6 +754,15 @@ export interface components {
                     status: "PENDING" | "ANSWERED" | "EXPIRED";
                     answer: {
                         body: string;
+                        tags: {
+                            workspaceGoals: {
+                                name: string;
+                            }[];
+                            mentions: {
+                                slug: string;
+                                displayName: string;
+                            }[];
+                        };
                         /** Format: date-time */
                         answeredAt: string;
                     } | null;
@@ -759,6 +778,15 @@ export interface components {
             /** Format: uuid */
             id: string;
             topic: string;
+            topicTags: {
+                workspaceGoals: {
+                    name: string;
+                }[];
+                mentions: {
+                    slug: string;
+                    displayName: string;
+                }[];
+            };
             visibility: {
                 /** @enum {string} */
                 value: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
@@ -782,6 +810,15 @@ export interface components {
                 status: "PENDING" | "ANSWERED" | "EXPIRED";
                 answer: {
                     body: string;
+                    tags: {
+                        workspaceGoals: {
+                            name: string;
+                        }[];
+                        mentions: {
+                            slug: string;
+                            displayName: string;
+                        }[];
+                    };
                     /** Format: date-time */
                     answeredAt: string;
                 } | null;
@@ -796,6 +833,15 @@ export interface components {
                 /** Format: uuid */
                 feedbackRequestId: string;
                 topic: string;
+                topicTags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
                 requester: {
                     /** Format: uuid */
                     accountId: string;
@@ -818,6 +864,15 @@ export interface components {
             /** Format: uuid */
             feedbackRequestId: string;
             topic: string;
+            topicTags: {
+                workspaceGoals: {
+                    name: string;
+                }[];
+                mentions: {
+                    slug: string;
+                    displayName: string;
+                }[];
+            };
             requester: {
                 /** Format: uuid */
                 accountId: string;
@@ -859,12 +914,30 @@ export interface components {
                 /** Format: uuid */
                 feedbackRequestId: string | null;
                 topic: string;
+                topicTags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
                 /** Format: uuid */
                 giverAccountId: string;
                 giverName: string | null;
                 /** @enum {string} */
                 giverStatus: "ACTIVE" | "DEACTIVATED";
                 body: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
                 /** Format: date-time */
                 createdAt: string;
             }[];
@@ -880,6 +953,15 @@ export interface components {
             /** Format: uuid */
             feedbackRequestId: string | null;
             topic: string;
+            topicTags: {
+                workspaceGoals: {
+                    name: string;
+                }[];
+                mentions: {
+                    slug: string;
+                    displayName: string;
+                }[];
+            };
             giver: {
                 /** Format: uuid */
                 accountId: string;
@@ -895,6 +977,15 @@ export interface components {
                 status: "ACTIVE" | "DEACTIVATED";
             };
             body: string;
+            tags: {
+                workspaceGoals: {
+                    name: string;
+                }[];
+                mentions: {
+                    slug: string;
+                    displayName: string;
+                }[];
+            };
             /** Format: date-time */
             createdAt: string;
         };
@@ -907,6 +998,15 @@ export interface components {
                 /** Format: uuid */
                 feedbackRequestId: string | null;
                 topic: string;
+                topicTags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
                 giver: {
                     /** Format: uuid */
                     accountId: string;
@@ -922,6 +1022,15 @@ export interface components {
                     status: "ACTIVE" | "DEACTIVATED";
                 };
                 body: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
                 /** Format: date-time */
                 createdAt: string;
             }[];
@@ -938,6 +1047,15 @@ export interface components {
                 /** Format: uuid */
                 feedbackRequestId: string | null;
                 topic: string;
+                topicTags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
                 giver: {
                     /** Format: uuid */
                     accountId: string;
@@ -953,6 +1071,15 @@ export interface components {
                     status: "ACTIVE" | "DEACTIVATED";
                 };
                 body: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
                 /** Format: date-time */
                 createdAt: string;
             }[];

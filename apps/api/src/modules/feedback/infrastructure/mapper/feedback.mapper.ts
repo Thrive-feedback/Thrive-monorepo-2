@@ -1,6 +1,8 @@
 import type {
+  FeedbackMention as FeedbackMentionRecord,
   Feedback as FeedbackRecord,
   FeedbackSelectedPerson as FeedbackSelectedPersonRecord,
+  FeedbackWorkspaceGoal as FeedbackWorkspaceGoalRecord,
 } from '@app/infrastructure/database/generated/client';
 import type { Feedback } from '../../domain/entity/feedback.entity';
 
@@ -32,4 +34,25 @@ export function toFeedbackSelectedPersonRecords(
   return feedback
     .snapshot()
     .selectedAccountIds.map((accountId) => ({ accountId }));
+}
+
+/** One row per Workspace Goal its Giver named. */
+export function toFeedbackWorkspaceGoalRecords(
+  feedback: Feedback,
+): Omit<FeedbackWorkspaceGoalRecord, 'feedbackId'>[] {
+  return feedback.snapshot().workspaceGoals.map((workspaceGoal) => ({
+    workspaceGoalId: workspaceGoal.workspaceGoalId,
+    name: workspaceGoal.name,
+  }));
+}
+
+/** One row per Member its Giver mentioned. */
+export function toFeedbackMentionRecords(
+  feedback: Feedback,
+): Omit<FeedbackMentionRecord, 'feedbackId'>[] {
+  return feedback.snapshot().mentions.map((mention) => ({
+    accountId: mention.accountId,
+    slug: mention.slug,
+    displayName: mention.displayName,
+  }));
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
   FakeFeedbackRequestQuery,
   FakeWorkspaceMembershipPort,
+  NO_TAGS,
 } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { FeedbackNotFoundError } from '../feedback-request.errors';
@@ -30,9 +31,11 @@ function setUp(
     origin: 'REQUESTED',
     feedbackRequestId: REQUEST_ID,
     topic: 'my presentation skills',
+    topicTags: NO_TAGS,
     giverAccountId: GIVER,
     receiverAccountId: RECEIVER,
     body: 'You open strongly and lose the room at the detail.',
+    tags: NO_TAGS,
     createdAt: CREATED_AT,
     visibility,
     selectedAccountIds,
@@ -44,6 +47,7 @@ function setUp(
       email: 'ben@acme.test',
       fullName: 'Ben Carter',
       displayName: 'Ben',
+      slug: null,
       photoUrl: null,
     },
     {
@@ -51,6 +55,7 @@ function setUp(
       email: 'ana@acme.test',
       fullName: 'Ana Lee',
       displayName: 'Ana',
+      slug: null,
       photoUrl: null,
     },
   );
@@ -87,6 +92,7 @@ describe('reading one piece of Feedback', () => {
       origin: 'REQUESTED',
       feedbackRequestId: REQUEST_ID,
       topic: 'my presentation skills',
+      topicTags: NO_TAGS,
       giverAccountId: GIVER,
       giverName: 'Ben Carter',
       giverStatus: 'ACTIVE',
@@ -94,6 +100,7 @@ describe('reading one piece of Feedback', () => {
       receiverName: 'Ana Lee',
       receiverStatus: 'ACTIVE',
       body: 'You open strongly and lose the room at the detail.',
+      tags: NO_TAGS,
       createdAt: CREATED_AT,
     });
   });

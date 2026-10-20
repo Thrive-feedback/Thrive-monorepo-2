@@ -11,6 +11,7 @@ import {
   ReceiverNotInWorkspaceError,
   SelectedPersonNotInWorkspaceError,
 } from '../feedback-request.errors';
+import { TagsService } from '../service/tags.service';
 
 export interface OfferFeedbackInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
@@ -36,7 +37,8 @@ export interface OfferFeedbackResult {
  * being; the Feedback goes straight to the Receiver.
  *
  * The Receiver and every person selected are checked against the Workspace, in one read, before
- * anything is written, so a body naming somebody outside it stores nothing. Who may then open
+ * anything is written, so a body naming somebody outside it stores nothing. What the Topic and
+ * the text name is bound then too, in the same read-before-write. Who may then open
  * it is decided where one piece of Feedback is read, by the same rule as for an answer.
  */
 @Injectable()
@@ -44,6 +46,7 @@ export class OfferFeedbackUseCase {
   constructor(
     private readonly feedbackRepository: FeedbackRepository,
     private readonly workspaceMembershipPort: WorkspaceMembershipPort,
+    private readonly tagsService: TagsService,
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
   ) {}
@@ -70,6 +73,11 @@ export class OfferFeedbackUseCase {
     ) {
       throw new SelectedPersonNotInWorkspaceError();
     }
+    const tags = await this.tagsService.boundIn(
+      input.workspaceId,
+      topic.toString(),
+      body.toString(),
+    );
 
     const feedback = Feedback.offer({
       id: this.idGenerator.next(),
@@ -79,6 +87,7 @@ export class OfferFeedbackUseCase {
       topic,
       visibility,
       body,
+      tags,
     });
 
     await this.unitOfWork.run(() => this.feedbackRepository.save(feedback));

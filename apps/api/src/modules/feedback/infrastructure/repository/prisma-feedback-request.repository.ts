@@ -6,8 +6,10 @@ import type { FeedbackRequest } from '../../domain/entity/feedback-request.entit
 import { AskAlreadyAnsweredError } from '../../domain/feedback-request.errors';
 import { FeedbackRequestRepository } from '../../domain/repository/feedback-request-repository.port';
 import {
+  toFeedbackMentionRecords,
   toFeedbackRecord,
   toFeedbackSelectedPersonRecords,
+  toFeedbackWorkspaceGoalRecords,
 } from '../mapper/feedback.mapper';
 import {
   toFeedbackRequest,
@@ -46,7 +48,7 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
   }
 
   async save(request: FeedbackRequest): Promise<void> {
-    const { asks, selectedPeople, ...record } =
+    const { asks, selectedPeople, workspaceGoals, mentions, ...record } =
       toFeedbackRequestRecord(request);
     // The request, its Asks and the people it is shared with are one aggregate, so they are
     // written in one statement: a request stored without its Asks would be a request nobody
@@ -58,6 +60,10 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
         selectedPeople: {
           create: selectedPeople.map((person) => ({ ...person })),
         },
+        workspaceGoals: {
+          create: workspaceGoals.map((workspaceGoal) => ({ ...workspaceGoal })),
+        },
+        mentions: { create: mentions.map((mention) => ({ ...mention })) },
       },
     });
   }
@@ -76,6 +82,8 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
         include: {
           asks: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
           selectedPeople: { orderBy: { accountId: 'asc' } },
+          workspaceGoals: { orderBy: { workspaceGoalId: 'asc' } },
+          mentions: { orderBy: { accountId: 'asc' } },
         },
       });
     return record ? toFeedbackRequest(record) : null;
@@ -110,6 +118,8 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
         data: {
           ...answer,
           selectedPeople: { create: toFeedbackSelectedPersonRecords(feedback) },
+          workspaceGoals: { create: toFeedbackWorkspaceGoalRecords(feedback) },
+          mentions: { create: toFeedbackMentionRecords(feedback) },
         },
       });
     } catch (error) {
@@ -130,6 +140,8 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
         include: {
           asks: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
           selectedPeople: { orderBy: { accountId: 'asc' } },
+          workspaceGoals: { orderBy: { workspaceGoalId: 'asc' } },
+          mentions: { orderBy: { accountId: 'asc' } },
         },
       });
     return record ? toFeedbackRequest(record) : null;

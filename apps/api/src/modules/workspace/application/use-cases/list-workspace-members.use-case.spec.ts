@@ -29,6 +29,7 @@ function setUp() {
       email: 'ann@acme.co',
       fullName: 'Ann Lee',
       displayName: 'Ann',
+      slug: 'ann',
       photoUrl: ANN_PHOTO,
     },
     {
@@ -36,6 +37,7 @@ function setUp() {
       email: 'ben@acme.co',
       fullName: null,
       displayName: null,
+      slug: null,
       photoUrl: null,
     },
     {
@@ -43,6 +45,7 @@ function setUp() {
       email: 'cat@globex.co',
       fullName: 'Cat',
       displayName: 'Cat',
+      slug: null,
       photoUrl: null,
     },
   );
@@ -50,7 +53,7 @@ function setUp() {
 }
 
 describe('listing the Members of a Workspace', () => {
-  it('names each Member of the caller’s Workspace by email, Profile name and photo, with their Role', async () => {
+  it('names each Member of the caller’s Workspace by email, Profile name, slug and photo, with their Role', async () => {
     const members = await setUp().execute({
       membership: { workspace: { id: ACME_ID, name: 'Acme' }, role: 'MEMBER' },
       page: PAGE,
@@ -64,6 +67,7 @@ describe('listing the Members of a Workspace', () => {
           email: 'ann@acme.co',
           fullName: 'Ann Lee',
           displayName: 'Ann',
+          slug: 'ann',
           photoUrl: ANN_PHOTO,
           role: 'ADMIN',
         },
@@ -72,6 +76,7 @@ describe('listing the Members of a Workspace', () => {
           email: 'ben@acme.co',
           fullName: null,
           displayName: null,
+          slug: null,
           photoUrl: null,
           role: 'MEMBER',
         },

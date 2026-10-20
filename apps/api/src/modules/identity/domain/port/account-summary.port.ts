@@ -6,6 +6,8 @@ export interface AccountSummary {
   readonly fullName: string | null;
   /** The name others see and call them by; `null` while the Account has not introduced itself. */
   readonly displayName: string | null;
+  /** The slug others mention them by; `null` while the Account has not introduced itself. */
+  readonly slug: string | null;
   /** Their photo from Google; `null` when Google has none. */
   readonly photoUrl: string | null;
 }

@@ -210,8 +210,8 @@ export async function giveFeedback(
     `/v1/workspaces/${workspaceId}/feedback`,
     {
       receiverAccountId: world.person(receiver).accountId,
-      topic,
-      body,
+      topic: await withSlugs(world, topic),
+      body: await withSlugs(world, body),
       ...visibility,
     },
   );
@@ -233,7 +233,11 @@ export async function askForFeedback(
     requester,
     'POST',
     `/v1/workspaces/${workspaceId}/feedback-requests`,
-    { topic, giverAccountIds: [world.person(giver).accountId], ...visibility },
+    {
+      topic: await withSlugs(world, topic),
+      giverAccountIds: [world.person(giver).accountId],
+      ...visibility,
+    },
   );
   if (response.status === 201) {
     world.feedbackRequest = { id: response.body.id, workspaceId };
@@ -291,7 +295,7 @@ export async function answerTheirAsk(
     giver,
     'POST',
     `/v1/workspaces/${workspaceId}/feedback-asks/${await askIdWaitingFor(world, giver)}/answers`,
-    { body },
+    { body: await withSlugs(world, body) },
   );
   if (response.status === 201) {
     world.feedback = { id: response.body.feedbackId, workspaceId };
@@ -371,4 +375,35 @@ export function listWorkspaceGoals(
     'GET',
     `/v1/workspaces/${world.workspaceOf(name)}/workspace-goals`,
   );
+}
+
+/**
+ * The slug `name` is mentioned by: their Profile's slug, which is made from an email no
+ * scenario controls. Reading it calls the API, so read it before the response a step asserts on.
+ */
+export async function slugOf(
+  world: ThriveWorld,
+  name: string,
+): Promise<string> {
+  const response = world.succeeded(
+    await world.as(name, 'GET', '/v1/sessions/current'),
+    `Reading ${name}'s session`,
+  );
+  const slug: string | undefined = response.body.account?.profile?.slug;
+  assert.ok(slug, `${name} has not introduced themselves, so has no slug.`);
+  return slug;
+}
+
+/**
+ * A feature file mentions a person as `@Cara`; the text sent carries Cara's real slug, as
+ * picking her from the list would. Anyone not in the scenario is left as written.
+ */
+async function withSlugs(world: ThriveWorld, text: string): Promise<string> {
+  let written = text;
+  for (const [, name] of text.matchAll(/@([A-Z][a-z]+)/g)) {
+    if (name !== undefined && world.isSignedIn(name)) {
+      written = written.replace(`@${name}`, `@${await slugOf(world, name)}`);
+    }
+  }
+  return written;
 }

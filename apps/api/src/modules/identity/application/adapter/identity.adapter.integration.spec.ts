@@ -4,6 +4,7 @@ import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { aProfileSnapshot } from '@test/support/identity.fakes';
 import { v7 as uuidv7 } from 'uuid';
 import type { AccountByEmailPort } from '../../domain/port/account-by-email.port';
+import type { AccountBySlugPort } from '../../domain/port/account-by-slug.port';
 import type { AccountSummaryPort } from '../../domain/port/account-summary.port';
 import type { HasProfilePort } from '../../domain/port/has-profile.port';
 import type { ProfileNamePort } from '../../domain/port/profile-name.port';
@@ -11,6 +12,7 @@ import { PrismaAccountQuery } from '../../infrastructure/query/prisma-account.qu
 import { PrismaProfileQuery } from '../../infrastructure/query/prisma-profile.query';
 import { FindAccountSummariesUseCase } from '../use-cases/find-account-summaries.use-case';
 import { FindAccountsByEmailUseCase } from '../use-cases/find-accounts-by-email.use-case';
+import { FindAccountsBySlugUseCase } from '../use-cases/find-accounts-by-slug.use-case';
 import { FindProfileOfAccountUseCase } from '../use-cases/find-profile-of-account.use-case';
 import { IdentityAdapter } from './identity.adapter';
 
@@ -19,11 +21,13 @@ const identityAdapter = new IdentityAdapter(
   new FindProfileOfAccountUseCase(new PrismaProfileQuery(prismaService)),
   new FindAccountSummariesUseCase(new PrismaAccountQuery(prismaService)),
   new FindAccountsByEmailUseCase(new PrismaAccountQuery(prismaService)),
+  new FindAccountsBySlugUseCase(new PrismaAccountQuery(prismaService)),
 );
 const hasProfilePort: HasProfilePort = identityAdapter;
 const profileNamePort: ProfileNamePort = identityAdapter;
 const accountSummaryPort: AccountSummaryPort = identityAdapter;
 const accountByEmailPort: AccountByEmailPort = identityAdapter;
+const accountBySlugPort: AccountBySlugPort = identityAdapter;
 
 const createdAccountIds: string[] = [];
 
@@ -95,7 +99,7 @@ describe('the name an Account introduced itself with, as Workspace asks it', () 
 });
 
 describe('who several Accounts are, as Workspace asks it', () => {
-  it('answers each with its email, Profile names and Google photo, null where there is none, and leaves out unknown ids', async () => {
+  it('answers each with its email, Profile names, slug and Google photo, null where there is none, and leaves out unknown ids', async () => {
     const introduced = await anAccount();
     await introduce(introduced.id, 'Ann Lee');
     await withGooglePhoto(introduced.id, ANN_PHOTO);
@@ -116,6 +120,7 @@ describe('who several Accounts are, as Workspace asks it', () => {
           email: introduced.email,
           fullName: 'Ann Lee',
           displayName: 'Ann',
+          slug: `ann.${introduced.id}`,
           photoUrl: ANN_PHOTO,
         },
         {
@@ -123,6 +128,7 @@ describe('who several Accounts are, as Workspace asks it', () => {
           email: notIntroduced.email,
           fullName: null,
           displayName: null,
+          slug: null,
           photoUrl: null,
         },
       ].sort((a, b) => a.accountId.localeCompare(b.accountId)),
@@ -148,5 +154,25 @@ describe('finding Accounts by the address they sign in with', () => {
 
   it('answers an empty batch with nobody, without asking the database', async () => {
     expect(await accountByEmailPort.accountsWithEmails([])).toEqual([]);
+  });
+});
+
+describe('finding Accounts by the slug their Profile holds', () => {
+  it('answers the Accounts among the slugs, with the name each goes by, leaving out the rest', async () => {
+    const ann = await anAccount();
+    await introduce(ann.id, 'Ann Lee', 'Annie');
+
+    expect(
+      await accountBySlugPort.accountsWithSlugs([
+        `ann.${ann.id}`,
+        'nobody.at.all',
+      ]),
+    ).toEqual([
+      { accountId: ann.id, slug: `ann.${ann.id}`, displayName: 'Annie' },
+    ]);
+  });
+
+  it('answers an empty batch with nobody, without asking the database', async () => {
+    expect(await accountBySlugPort.accountsWithSlugs([])).toEqual([]);
   });
 });

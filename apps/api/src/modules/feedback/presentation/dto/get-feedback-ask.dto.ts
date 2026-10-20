@@ -2,6 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
+import { tagsSchema } from './tags.dto';
 
 /**
  * The Member who asked, as the Giver sees them. Their name is held beside their id rather
@@ -23,6 +24,8 @@ export const feedbackAskSchema = z.object({
   askId: z.uuid(),
   feedbackRequestId: z.uuid(),
   topic: z.string(),
+  /** What the Topic was bound to when it was sent; highlight these and nothing else. */
+  topicTags: tagsSchema,
   requester: requesterSchema,
   status: z.enum(ASK_STATUSES),
   createdAt: z.iso.datetime({ offset: true }),

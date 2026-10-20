@@ -1,9 +1,11 @@
 import { DatabaseModule } from '@app/infrastructure/database/database.module';
 import { IdentityModule } from '@app/modules/identity';
 import { WorkspaceModule } from '@app/modules/workspace';
+import { WorkspaceGoalModule } from '@app/modules/workspace-goal';
 import { Module } from '@nestjs/common';
 import { FeedbackRequestQuery } from './application/query-port/feedback-request.query-port';
 import { PeopleService } from './application/service/people.service';
+import { TagsService } from './application/service/tags.service';
 import { AnswerFeedbackAskUseCase } from './application/use-cases/answer-feedback-ask.use-case';
 import { GetFeedbackUseCase } from './application/use-cases/get-feedback.use-case';
 import { GetFeedbackAskUseCase } from './application/use-cases/get-feedback-ask.use-case';
@@ -30,11 +32,18 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
 /**
  * Feedback owns Feedback Requests, their Asks, and the Feedback written — in answer or offered.
  * It depends on Workspace, for whether an Account is a Member of the Workspace Feedback is asked
- * for or given in, and on Identity, for the name each Giver is known by. Neither depends on Feedback: a Workspace and its Members exist
- * whether or not anybody has asked for Feedback.
+ * for or given in, and on Identity, for the name each Giver is known by and whose slug a Mention
+ * names; and on Workspace Goal, for which hashtags name an active Workspace Goal. None depends on
+ * Feedback: a Workspace, its Members and its Workspace Goals exist whether or not anybody has
+ * asked for Feedback.
  */
 @Module({
-  imports: [DatabaseModule, IdentityModule, WorkspaceModule],
+  imports: [
+    DatabaseModule,
+    IdentityModule,
+    WorkspaceModule,
+    WorkspaceGoalModule,
+  ],
   controllers: [
     FeedbackRequestController,
     FeedbackAskController,
@@ -50,6 +59,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     { provide: FeedbackRepository, useClass: PrismaFeedbackRepository },
     { provide: FeedbackRequestQuery, useClass: PrismaFeedbackRequestQuery },
     PeopleService,
+    TagsService,
     SendFeedbackRequestUseCase,
     GetFeedbackRequestUseCase,
     ListSentFeedbackRequestsUseCase,

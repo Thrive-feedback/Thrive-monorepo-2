@@ -3,6 +3,11 @@ import {
   CannotSelectTheReceiverError,
   CannotSelectYourselfError,
 } from '../feedback-request.errors';
+import type {
+  BoundMention,
+  BoundTags,
+  BoundWorkspaceGoal,
+} from '../value-object/bound-tags.vo';
 import type { FeedbackBody } from '../value-object/feedback-body.vo';
 import type { Topic } from '../value-object/topic.vo';
 import type {
@@ -30,6 +35,9 @@ export interface FeedbackSnapshot {
   /** The Members selected to read it; empty unless the Visibility is Selected people. */
   readonly selectedAccountIds: readonly string[];
   readonly body: string;
+  /** What its Giver wrote is bound to: the Topic and the text if Offered, the text if Requested. */
+  readonly workspaceGoals: readonly BoundWorkspaceGoal[];
+  readonly mentions: readonly BoundMention[];
 }
 
 /** The request and Ask that Requested Feedback answers. Offered Feedback has neither. */
@@ -63,6 +71,7 @@ export class Feedback {
     private readonly topic: Topic,
     private readonly visibility: Visibility,
     private readonly body: FeedbackBody,
+    private readonly tags: BoundTags,
   ) {}
 
   /** Only the Feedback Request calls this, which is why it takes everything already decided. */
@@ -76,6 +85,8 @@ export class Feedback {
     readonly topic: Topic;
     readonly visibility: Visibility;
     readonly body: FeedbackBody;
+    /** What the Giver's answer names. Never the request's: an answer has its own. */
+    readonly tags: BoundTags;
   }): Feedback {
     return new Feedback(
       details.id,
@@ -89,6 +100,7 @@ export class Feedback {
       details.topic,
       details.visibility,
       details.body,
+      details.tags,
     );
   }
 
@@ -106,6 +118,8 @@ export class Feedback {
     readonly topic: Topic;
     readonly visibility: Visibility;
     readonly body: FeedbackBody;
+    /** What the Topic and the text name, together. */
+    readonly tags: BoundTags;
   }): Feedback {
     if (details.giverAccountId === details.receiverAccountId) {
       throw new CannotGiveYourselfFeedbackError();
@@ -126,6 +140,7 @@ export class Feedback {
       details.topic,
       details.visibility,
       details.body,
+      details.tags,
     );
   }
 
@@ -142,6 +157,8 @@ export class Feedback {
       visibility: this.visibility.toString(),
       selectedAccountIds: this.visibility.selectedAccountIds(),
       body: this.body.toString(),
+      workspaceGoals: this.tags.workspaceGoals(),
+      mentions: this.tags.mentions(),
     };
   }
 }

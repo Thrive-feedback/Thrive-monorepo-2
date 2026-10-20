@@ -1,5 +1,6 @@
 import type {
   AccountByEmailView,
+  AccountBySlugView,
   AccountSummaryView,
 } from '../types/account.types';
 
@@ -13,4 +14,9 @@ export abstract class AccountQuery {
   abstract accountsWithEmails(
     emails: readonly string[],
   ): Promise<AccountByEmailView[]>;
+
+  /** One per slug a Profile holds, in no particular order. Unknown slugs are left out. */
+  abstract accountsWithSlugs(
+    slugs: readonly string[],
+  ): Promise<AccountBySlugView[]>;
 }

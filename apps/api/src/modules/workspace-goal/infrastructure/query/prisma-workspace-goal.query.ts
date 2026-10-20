@@ -2,6 +2,7 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { Injectable } from '@nestjs/common';
 import { WorkspaceGoalQuery } from '../../application/query-port/workspace-goal.query-port';
 import type {
+  ActiveWorkspaceGoalView,
   PageRequest,
   WorkspaceGoalPage,
 } from '../../application/types/workspace-goal.types';
@@ -34,5 +35,19 @@ export class PrismaWorkspaceGoalQuery extends WorkspaceGoalQuery {
       this.prismaTransactionContext.client.workspaceGoal.count({ where }),
     ]);
     return { items: records.map(toWorkspaceGoalView), total };
+  }
+
+  async activeWithKeys(
+    workspaceId: string,
+    nameKeys: readonly string[],
+  ): Promise<ActiveWorkspaceGoalView[]> {
+    if (nameKeys.length === 0) {
+      return [];
+    }
+    return this.prismaTransactionContext.client.workspaceGoal.findMany({
+      where: { workspaceId, status: 'ACTIVE', nameKey: { in: [...nameKeys] } },
+      orderBy: [{ nameKey: 'asc' }, { id: 'asc' }],
+      select: { id: true, name: true },
+    });
   }
 }

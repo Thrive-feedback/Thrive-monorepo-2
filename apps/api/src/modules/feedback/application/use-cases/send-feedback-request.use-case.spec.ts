@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+  aTagsService,
   FakeFeedbackRequestRepository,
   FakeWorkspaceMembershipPort,
 } from '@test/support/feedback.fakes';
@@ -53,6 +54,7 @@ function setUp() {
   const useCase = new SendFeedbackRequestUseCase(
     feedbackRequestRepository,
     workspaceMembershipPort,
+    aTagsService(WORKSPACE_ID),
     new FakeIdGenerator(REQUEST_ID, ASK_ID),
     unitOfWork,
   );
@@ -79,9 +81,26 @@ describe('a Requester asking a teammate for Feedback', () => {
         topic: 'my presentation skills',
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
+        workspaceGoals: [],
+        mentions: [],
         asks: [{ id: ASK_ID, giverAccountId: BEN, status: 'PENDING' }],
       },
     ]);
+  });
+
+  it('binds what its Topic names', async () => {
+    const { feedbackRequestRepository, useCase } = setUp();
+
+    await useCase.execute(
+      request({ topic: 'The launch with @cara #OWNERSHIP' }),
+    );
+
+    expect(feedbackRequestRepository.saved[0]).toMatchObject({
+      workspaceGoals: [
+        { workspaceGoalId: 'goal-ownership', name: 'ownership' },
+      ],
+      mentions: [{ accountId: CARA, slug: 'cara', displayName: 'Cara' }],
+    });
   });
 
   it('writes inside one unit of work, so a request without its Asks cannot be stored', async () => {

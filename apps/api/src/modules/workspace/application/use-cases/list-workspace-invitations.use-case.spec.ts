@@ -39,6 +39,7 @@ function setUp() {
     email: 'ann@acme.co',
     fullName: 'Ann Lee',
     displayName: 'Ann',
+    slug: null,
     photoUrl: null,
   });
   const useCase = new ListWorkspaceInvitationsUseCase(
