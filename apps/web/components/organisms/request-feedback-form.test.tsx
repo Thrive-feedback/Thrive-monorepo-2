@@ -15,8 +15,8 @@ const requestFeedback =
 const BEN = '0199a0f0-0000-7000-8000-00000000000b';
 const CARA = '0199a0f0-0000-7000-8000-00000000000c';
 const TEAMMATES = [
-  { accountId: BEN, name: 'Ben Carter' },
-  { accountId: CARA, name: 'Cara Diaz' },
+  { accountId: BEN, name: 'Ben Carter', slug: null, displayName: null },
+  { accountId: CARA, name: 'Cara Diaz', slug: null, displayName: null },
 ];
 
 function trigger() {
@@ -24,7 +24,7 @@ function trigger() {
 }
 
 function topicField() {
-  return screen.getByRole('textbox', { name: /What should they talk about/ });
+  return screen.getByRole('combobox', { name: /What should they talk about/ });
 }
 
 function sendButton() {
@@ -59,7 +59,11 @@ describe('RequestFeedbackForm', () => {
 
   it('asks for a teammate and a Topic, and offers to send', () => {
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     expect(trigger()).toBeInTheDocument();
@@ -70,7 +74,11 @@ describe('RequestFeedbackForm', () => {
   it('sends the chosen teammate and the Topic once both are given', async () => {
     const user = userEvent.setup();
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await pickBen(user);
@@ -87,7 +95,11 @@ describe('RequestFeedbackForm', () => {
 
   it('keeps the answers for the Requester alone unless they choose otherwise, and says so', () => {
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     expect(screen.getByRole('radio', { name: 'Only me' })).toBeChecked();
@@ -99,7 +111,11 @@ describe('RequestFeedbackForm', () => {
   it('says the people picked can also read what comes back', async () => {
     const user = userEvent.setup();
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
@@ -114,7 +130,11 @@ describe('RequestFeedbackForm', () => {
   it('says everyone in the Workspace can read what comes back', async () => {
     const user = userEvent.setup();
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await user.click(
@@ -131,7 +151,11 @@ describe('RequestFeedbackForm', () => {
   it('asks who to share it with, leaving out the teammate being asked', async () => {
     const user = userEvent.setup();
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await pickBen(user);
@@ -146,7 +170,11 @@ describe('RequestFeedbackForm', () => {
   it('sends the people picked to read the answers', async () => {
     const user = userEvent.setup();
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await fillIn(user);
@@ -161,7 +189,11 @@ describe('RequestFeedbackForm', () => {
   it('needs at least one person when sharing with selected people, and puts focus there', async () => {
     const user = userEvent.setup();
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await fillIn(user);
@@ -178,7 +210,11 @@ describe('RequestFeedbackForm', () => {
   it('refuses an empty form, says what is missing on both fields, and sends nothing', async () => {
     const user = userEvent.setup();
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await user.click(sendButton());
@@ -191,7 +227,11 @@ describe('RequestFeedbackForm', () => {
   it('asks for the Topic when only the teammate is chosen', async () => {
     const user = userEvent.setup();
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await pickBen(user);
@@ -205,7 +245,11 @@ describe('RequestFeedbackForm', () => {
   it('asks who to ask when only the Topic is typed, and puts focus there', async () => {
     const user = userEvent.setup();
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await user.type(topicField(), 'my sprint review talk');
@@ -219,7 +263,11 @@ describe('RequestFeedbackForm', () => {
   it('treats a Topic of only spaces as no Topic', async () => {
     const user = userEvent.setup();
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await pickBen(user);
@@ -236,7 +284,11 @@ describe('RequestFeedbackForm', () => {
       formError: 'That teammate is no longer in your Workspace.',
     });
     render(
-      <RequestFeedbackForm teammates={TEAMMATES} action={requestFeedback} />,
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
     );
 
     await pickBen(user);
@@ -251,7 +303,13 @@ describe('RequestFeedbackForm', () => {
   });
 
   it('still shows the form when there is nobody to ask', () => {
-    render(<RequestFeedbackForm teammates={[]} action={requestFeedback} />);
+    render(
+      <RequestFeedbackForm
+        teammates={[]}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
+    );
 
     expect(trigger()).toHaveTextContent('Pick a teammate');
     expect(topicField()).toBeInTheDocument();

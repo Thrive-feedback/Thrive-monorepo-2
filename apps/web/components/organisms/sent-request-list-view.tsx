@@ -8,6 +8,7 @@ import {
 } from '@/lib/feedback/ask-status.constant';
 import type { SentRequest } from '@/lib/feedback/sent-request.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
+import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
 
 /** Enough rows to fill the first screen, without promising how many will come. */
@@ -45,10 +46,10 @@ export function SentRequestListView({
           <Text as="h2" variant="subtitle-4" className="break-words">
             {requestTarget ? (
               <TargetLink target={requestTarget(request.id)}>
-                {request.topic}
+                <FeedbackText text={request.topic} tags={request.topicTags} />
               </TargetLink>
             ) : (
-              request.topic
+              <FeedbackText text={request.topic} tags={request.topicTags} />
             )}
           </Text>
           <Text as="p" variant="body-3" tone="muted">

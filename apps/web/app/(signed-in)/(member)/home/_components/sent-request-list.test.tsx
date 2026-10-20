@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { SentRequestList } from './sent-request-list';
 
 const readSentRequests = vi.fn();
@@ -30,6 +31,7 @@ describe('SentRequestList', () => {
       {
         id: 'request-1',
         topic: 'my presentation skills',
+        topicTags: NO_TEXT_TAGS,
         sentAt: '2026-10-11T03:00:00.000Z',
         asks: [
           { askId: 'ask-1', giverName: 'Ben Carter', status: 'PENDING' },
@@ -55,6 +57,7 @@ describe('SentRequestList', () => {
       {
         id: 'request-1',
         topic: 'my presentation skills',
+        topicTags: NO_TEXT_TAGS,
         sentAt: '2026-10-11T03:00:00.000Z',
         asks: [{ askId: 'ask-1', giverName: null, status: 'PENDING' }],
       },
@@ -70,6 +73,7 @@ describe('SentRequestList', () => {
       {
         id: 'request-1',
         topic: 'my presentation skills',
+        topicTags: NO_TEXT_TAGS,
         sentAt: '2026-10-11T03:00:00.000Z',
         asks: [
           {
@@ -102,6 +106,7 @@ describe('SentRequestList', () => {
       {
         id: 'request-1',
         topic: 'my presentation skills',
+        topicTags: NO_TEXT_TAGS,
         sentAt: '2026-10-11T03:00:00.000Z',
         asks: [],
       },

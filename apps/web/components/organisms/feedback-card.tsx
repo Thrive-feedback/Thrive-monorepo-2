@@ -4,6 +4,7 @@ import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import { type FeedItem, REACTIONS } from '@/lib/feedback/feed-item.type';
 import { initials } from '@/lib/initials.util';
+import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
 import { ReactionBar } from './reaction-bar';
 
@@ -51,10 +52,10 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
         </div>
       </header>
       <Text as="h3" variant="subtitle-3" className="break-words">
-        {item.topic}
+        <FeedbackText text={item.topic} tags={item.topicTags} />
       </Text>
       <Text as="p" variant="body-2" className="whitespace-pre-line break-words">
-        {item.body}
+        <FeedbackText text={item.body} tags={item.bodyTags} />
       </Text>
       <ReactionBar reactions={item.reactions} />
     </article>

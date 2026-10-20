@@ -2,6 +2,7 @@ import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { ReceivedFeedback } from '@/lib/feedback/received-feedback.type';
+import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
 
 /** Enough rows to fill the first screen, without promising how many will come. */
@@ -37,7 +38,7 @@ export function ReceivedFeedbackListView({
           className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
         >
           <Text as="h2" variant="subtitle-4" className="break-words">
-            {feedback.topic}
+            <FeedbackText text={feedback.topic} tags={feedback.topicTags} />
           </Text>
           <Text as="p" variant="body-3" tone="muted">
             From{' '}
@@ -56,7 +57,7 @@ export function ReceivedFeedbackListView({
             variant="body-2"
             className="whitespace-pre-wrap break-words"
           >
-            {feedback.body}
+            <FeedbackText text={feedback.body} tags={feedback.bodyTags} />
           </Text>
         </li>
       ))}

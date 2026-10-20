@@ -9,8 +9,8 @@ const giveFeedback = vi.fn<GiveFeedbackAction>();
 const BEN = '0199a0f0-0000-7000-8000-00000000000b';
 const CARA = '0199a0f0-0000-7000-8000-00000000000c';
 const TEAMMATES = [
-  { accountId: BEN, name: 'Ben Carter' },
-  { accountId: CARA, name: 'Cara Diaz' },
+  { accountId: BEN, name: 'Ben Carter', slug: null, displayName: null },
+  { accountId: CARA, name: 'Cara Diaz', slug: null, displayName: null },
 ];
 
 /** What the action was sent, each field with every value it carries. */
@@ -31,7 +31,7 @@ async function pickReceiver(user: ReturnType<typeof userEvent.setup>) {
 async function fillIn(user: ReturnType<typeof userEvent.setup>) {
   await pickReceiver(user);
   await user.type(
-    screen.getByRole('textbox', { name: /What is it about\?/ }),
+    screen.getByRole('combobox', { name: /What is it about\?/ }),
     'The customer demo',
   );
   await user.type(
@@ -48,7 +48,13 @@ describe('GiveFeedbackForm', () => {
 
   it('says what is missing, and sends nothing', async () => {
     const user = userEvent.setup();
-    render(<GiveFeedbackForm teammates={TEAMMATES} action={giveFeedback} />);
+    render(
+      <GiveFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={giveFeedback}
+      />,
+    );
 
     await user.click(screen.getByRole('button', { name: 'Send feedback' }));
 
@@ -59,14 +65,26 @@ describe('GiveFeedbackForm', () => {
   });
 
   it('is shared with only the Receiver unless the Giver chooses otherwise', () => {
-    render(<GiveFeedbackForm teammates={TEAMMATES} action={giveFeedback} />);
+    render(
+      <GiveFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={giveFeedback}
+      />,
+    );
 
     expect(screen.getByRole('radio', { name: 'Only them' })).toBeChecked();
   });
 
   it('asks who to share it with, leaving out the Receiver', async () => {
     const user = userEvent.setup();
-    render(<GiveFeedbackForm teammates={TEAMMATES} action={giveFeedback} />);
+    render(
+      <GiveFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={giveFeedback}
+      />,
+    );
 
     await pickReceiver(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
@@ -79,7 +97,13 @@ describe('GiveFeedbackForm', () => {
 
   it('needs at least one person when sharing with selected people', async () => {
     const user = userEvent.setup();
-    render(<GiveFeedbackForm teammates={TEAMMATES} action={giveFeedback} />);
+    render(
+      <GiveFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={giveFeedback}
+      />,
+    );
 
     await fillIn(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
@@ -93,7 +117,13 @@ describe('GiveFeedbackForm', () => {
 
   it('sends who it is for, the Topic, the feedback and who else may read it', async () => {
     const user = userEvent.setup();
-    render(<GiveFeedbackForm teammates={TEAMMATES} action={giveFeedback} />);
+    render(
+      <GiveFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={giveFeedback}
+      />,
+    );
 
     await fillIn(user);
     await user.click(screen.getByRole('button', { name: 'Send feedback' }));
@@ -109,7 +139,13 @@ describe('GiveFeedbackForm', () => {
 
   it('sends the people picked to share it with', async () => {
     const user = userEvent.setup();
-    render(<GiveFeedbackForm teammates={TEAMMATES} action={giveFeedback} />);
+    render(
+      <GiveFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={giveFeedback}
+      />,
+    );
 
     await fillIn(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
@@ -127,7 +163,13 @@ describe('GiveFeedbackForm', () => {
     giveFeedback.mockResolvedValue({
       formError: 'That teammate is no longer in your Workspace.',
     });
-    render(<GiveFeedbackForm teammates={TEAMMATES} action={giveFeedback} />);
+    render(
+      <GiveFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={giveFeedback}
+      />,
+    );
 
     await fillIn(user);
     await user.click(screen.getByRole('button', { name: 'Send feedback' }));

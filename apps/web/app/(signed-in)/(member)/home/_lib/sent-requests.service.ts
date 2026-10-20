@@ -37,6 +37,7 @@ export const readSentRequests = cache(
     return sent.items.map((request) => ({
       id: request.id,
       topic: request.topic,
+      topicTags: request.topicTags,
       sentAt: request.createdAt,
       asks: request.asks.map((ask) => ({
         askId: ask.askId,

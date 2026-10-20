@@ -4,6 +4,7 @@ import { TargetLink } from '@/components/molecules/target-link';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
+import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
 
 /** Enough rows to fill the first screen, without promising how many will come. */
@@ -41,7 +42,9 @@ export function WaitingAskListView({
           className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
         >
           <Text as="h2" variant="subtitle-4" className="break-words">
-            <TargetLink target={askTarget(ask.askId)}>{ask.topic}</TargetLink>
+            <TargetLink target={askTarget(ask.askId)}>
+              <FeedbackText text={ask.topic} tags={ask.topicTags} />
+            </TargetLink>
           </Text>
           <Text as="p" variant="body-2">
             Asked by{' '}

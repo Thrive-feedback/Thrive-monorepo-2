@@ -1,10 +1,14 @@
 import { answerAsk } from '@/app/(signed-in)/(member)/home/_lib/answer-ask-actions.service';
 import { readFeedbackAsk } from '@/app/(signed-in)/(member)/home/_lib/feedback-ask.service';
+import { readTeammates } from '@/app/(signed-in)/(member)/home/_lib/teammates.service';
+import { readWorkspaceGoalNames } from '@/app/(signed-in)/(member)/home/_lib/workspace-goal-names.service';
 import { AnswerAskView } from '@/components/organisms/answer-ask-view';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 export type AnswerAskDetailProps = {
   membership: CurrentMembership;
+  /** Who is answering, so they are not offered to mention themselves. */
+  ownEmail: string;
   askId: string;
 };
 
@@ -14,12 +18,19 @@ export type AnswerAskDetailProps = {
  */
 export async function AnswerAskDetail({
   membership,
+  ownEmail,
   askId,
 }: AnswerAskDetailProps) {
-  const ask = await readFeedbackAsk(membership, askId);
+  const [ask, teammates, workspaceGoals] = await Promise.all([
+    readFeedbackAsk(membership, askId),
+    readTeammates(membership, ownEmail),
+    readWorkspaceGoalNames(membership),
+  ]);
   return (
     <AnswerAskView
       ask={ask}
+      teammates={teammates}
+      workspaceGoals={workspaceGoals}
       action={answerAsk.bind(null, membership.workspace.id)}
     />
   );

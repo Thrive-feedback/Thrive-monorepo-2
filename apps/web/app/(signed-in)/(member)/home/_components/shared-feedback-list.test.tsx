@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { SharedFeedbackList } from './shared-feedback-list';
 
 const readSharedFeedback = vi.fn();
@@ -18,7 +19,9 @@ const ONE_PIECE = {
   receiverName: 'Cara Diaz',
   origin: 'OFFERED' as const,
   topic: 'the customer demo',
+  topicTags: NO_TEXT_TAGS,
   body: 'You kept the room with you.',
+  bodyTags: NO_TEXT_TAGS,
   givenAt: '2026-10-12T03:00:00.000Z',
   reactions: {},
 };

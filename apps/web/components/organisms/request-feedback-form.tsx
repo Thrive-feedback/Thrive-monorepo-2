@@ -22,9 +22,12 @@ import type {
   RequestFeedbackState,
 } from '@/lib/feedback/request-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { feedbackTagTriggers } from './feedback-tag-triggers.util';
 
 export type RequestFeedbackFormProps = {
   teammates: readonly Teammate[];
+  /** The Workspace's active Workspace Goals, by name, offered on `#` in the Topic. */
+  workspaceGoals: readonly string[];
   /** Sends the request: Home's server action, or a stand-in. */
   action: RequestFeedbackAction;
 };
@@ -65,6 +68,7 @@ const PICK_SOMEONE_TO_SHARE_WITH = 'Pick at least one person to share it with.';
  */
 export function RequestFeedbackForm({
   teammates,
+  workspaceGoals,
   action,
 }: RequestFeedbackFormProps) {
   const [giverAccountId, setGiverAccountId] = useState('');
@@ -168,6 +172,7 @@ export function RequestFeedbackForm({
         placeholder="e.g., my presentation at the sprint review"
         required
         value={topic}
+        triggers={feedbackTagTriggers(workspaceGoals, teammates)}
         onChange={handleTopicChange}
         errorMessage={fieldErrors.topic}
         helperText="One Topic per request. They answer in their own words."

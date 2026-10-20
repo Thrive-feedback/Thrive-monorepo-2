@@ -1,4 +1,12 @@
 import {
+  AutocompleteInputEntry,
+  AutocompleteInputPreview,
+} from '@/app/ui-showcase/_components/entries/autocomplete-input-entry';
+import {
+  AutocompleteTextareaEntry,
+  AutocompleteTextareaPreview,
+} from '@/app/ui-showcase/_components/entries/autocomplete-textarea-entry';
+import {
   AvatarEntry,
   AvatarPreview,
 } from '@/app/ui-showcase/_components/entries/avatar-entry';
@@ -82,6 +90,10 @@ import {
   TabsEntry,
   TabsPreview,
 } from '@/app/ui-showcase/_components/entries/tabs-entry';
+import {
+  TaggedTextEntry,
+  TaggedTextPreview,
+} from '@/app/ui-showcase/_components/entries/tagged-text-entry';
 import {
   TextAreaFieldEntry,
   TextAreaFieldPreview,
@@ -324,6 +336,27 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'molecule',
     Preview: TextAreaFieldPreview,
     Entry: TextAreaFieldEntry,
+  },
+  {
+    slug: 'autocomplete-textarea',
+    name: 'AutocompleteTextarea',
+    level: 'molecule',
+    Preview: AutocompleteTextareaPreview,
+    Entry: AutocompleteTextareaEntry,
+  },
+  {
+    slug: 'autocomplete-input',
+    name: 'AutocompleteInput',
+    level: 'molecule',
+    Preview: AutocompleteInputPreview,
+    Entry: AutocompleteInputEntry,
+  },
+  {
+    slug: 'tagged-text',
+    name: 'TaggedText',
+    level: 'molecule',
+    Preview: TaggedTextPreview,
+    Entry: TaggedTextEntry,
   },
   {
     slug: 'avatar-group',

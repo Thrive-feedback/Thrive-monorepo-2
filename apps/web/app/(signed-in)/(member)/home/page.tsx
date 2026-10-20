@@ -158,7 +158,11 @@ export default async function Home({ searchParams }: HomeProps) {
             close={{ href: ROUTES.homeTab(tab) }}
           >
             <Suspense fallback={<AnswerAskViewSkeleton />}>
-              <AnswerAskDetail membership={session.membership} askId={ask} />
+              <AnswerAskDetail
+                membership={session.membership}
+                ownEmail={session.email}
+                askId={ask}
+              />
             </Suspense>
           </HomeDialog>
         )

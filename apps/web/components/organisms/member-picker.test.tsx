@@ -4,8 +4,18 @@ import { describe, expect, it, vi } from 'vitest';
 import { MemberPicker } from './member-picker';
 
 const TEAMMATES = [
-  { accountId: '0199a0f0-0000-7000-8000-00000000000b', name: 'Ben Carter' },
-  { accountId: '0199a0f0-0000-7000-8000-00000000000c', name: 'Cara Diaz' },
+  {
+    accountId: '0199a0f0-0000-7000-8000-00000000000b',
+    name: 'Ben Carter',
+    slug: null,
+    displayName: null,
+  },
+  {
+    accountId: '0199a0f0-0000-7000-8000-00000000000c',
+    name: 'Cara Diaz',
+    slug: null,
+    displayName: null,
+  },
 ];
 
 function picker(

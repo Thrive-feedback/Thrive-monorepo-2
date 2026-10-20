@@ -10,11 +10,14 @@ import type {
   GiveFeedbackState,
 } from '@/lib/feedback/give-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { feedbackTagTriggers } from './feedback-tag-triggers.util';
 import { MemberPicker } from './member-picker';
 import { SELECTED_PEOPLE, VisibilityPicker } from './visibility-picker';
 
 export type GiveFeedbackFormProps = {
   teammates: readonly Teammate[];
+  /** The Workspace's active Workspace Goals, by name, offered on `#` in the Topic and the text. */
+  workspaceGoals: readonly string[];
   /** Sends the Feedback: Home's server action, or a stand-in. */
   action: GiveFeedbackAction;
 };
@@ -44,7 +47,11 @@ const MAX_BODY_LENGTH = 4000;
  * Every field stays controlled, so what was picked and typed survives a refusal. The form is
  * submitted by hand rather than through `action`, because React resets a form after its action.
  */
-export function GiveFeedbackForm({ teammates, action }: GiveFeedbackFormProps) {
+export function GiveFeedbackForm({
+  teammates,
+  workspaceGoals,
+  action,
+}: GiveFeedbackFormProps) {
   const [receiverAccountId, setReceiverAccountId] = useState('');
   const [topic, setTopic] = useState('');
   const [body, setBody] = useState('');
@@ -63,6 +70,7 @@ export function GiveFeedbackForm({ teammates, action }: GiveFeedbackFormProps) {
   const selectedRef = useRef<HTMLFieldSetElement>(null);
 
   const errors: FieldErrors = { ...state.fieldErrors, ...clientErrors };
+  const tagTriggers = feedbackTagTriggers(workspaceGoals, teammates);
 
   // The Receiver always reads it, so they are not one of the people to select.
   const othersToShareWith = teammates.filter(
@@ -157,6 +165,7 @@ export function GiveFeedbackForm({ teammates, action }: GiveFeedbackFormProps) {
         placeholder="e.g., the customer demo on Tuesday"
         required
         value={topic}
+        triggers={tagTriggers}
         onChange={(event) => {
           setTopic(event.target.value);
           setClientErrors((current) => ({ ...current, topic: undefined }));
@@ -171,6 +180,7 @@ export function GiveFeedbackForm({ teammates, action }: GiveFeedbackFormProps) {
         placeholder="What happened, what it did, and what to keep or try next time."
         required
         value={body}
+        triggers={tagTriggers}
         onChange={(event) => {
           setBody(event.target.value);
           setClientErrors((current) => ({ ...current, body: undefined }));

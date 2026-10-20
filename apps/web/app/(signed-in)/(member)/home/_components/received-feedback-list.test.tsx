@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { ReceivedFeedbackList } from './received-feedback-list';
 
 const readReceivedFeedback = vi.fn();
@@ -18,9 +19,11 @@ const MEMBERSHIP = {
 const ONE_PIECE = {
   id: 'fb-1',
   topic: 'my presentation skills',
+  topicTags: NO_TEXT_TAGS,
   offered: false,
   giverName: 'Ben Carter',
   body: 'You open strongly and lose the room at the detail.',
+  bodyTags: NO_TEXT_TAGS,
   writtenAt: '2026-10-11T03:00:00.000Z',
 };
 
