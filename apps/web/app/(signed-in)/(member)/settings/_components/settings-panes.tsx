@@ -4,6 +4,7 @@ import {
   Building2Icon,
   ChevronLeftIcon,
   CircleUserRoundIcon,
+  HashIcon,
   PaletteIcon,
   UsersIcon,
 } from 'lucide-react';
@@ -34,6 +35,11 @@ const ACCOUNT: SideNavItem = {
 const SECTIONS: readonly SideNavItem[] = [
   ACCOUNT,
   { href: ROUTES.settings.workspace, label: 'Workspace', Icon: Building2Icon },
+  {
+    href: ROUTES.settings.workspaceGoals,
+    label: 'Workspace Goals',
+    Icon: HashIcon,
+  },
   { href: ROUTES.settings.members, label: 'Members', Icon: UsersIcon },
   { href: ROUTES.settings.appearance, label: 'Appearance', Icon: PaletteIcon },
 ];
