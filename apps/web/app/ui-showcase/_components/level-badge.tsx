@@ -1,3 +1,5 @@
+import { Badge } from '@/components/atoms/badge';
+
 export type AtomicLevel = 'atom' | 'molecule';
 
 export type LevelBadgeProps = {
@@ -6,12 +8,8 @@ export type LevelBadgeProps = {
 
 export function LevelBadge({ level }: LevelBadgeProps) {
   return level === 'atom' ? (
-    <span className="rounded-full bg-action-secondary-surface px-2.5 py-0.5 font-medium text-caption">
-      Atom
-    </span>
+    <Badge tone="highlight">Atom</Badge>
   ) : (
-    <span className="rounded-full bg-status-info-surface px-2.5 py-0.5 font-medium text-caption">
-      Molecule
-    </span>
+    <Badge tone="info">Molecule</Badge>
   );
 }
