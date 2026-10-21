@@ -245,6 +245,8 @@ What is on screen:
   Waiting for me  2 Asks from Ben to answer, and a third she has already answered
   Feedback for me 2 pieces — what Ben wrote back, and what he gave her without being asked.
                   The one she gave Ben is his, not hers
+  Feedback I've   1 piece — her answer to Ben about his release notes. Only she reads this
+  given           list; Ben finds the same piece under Feedback for me
   Shared with me  1 piece — what Ben wrote to Cara and chose to show Ann. She is neither its
                   Giver nor its Receiver, which is the whole point of the tab
   Workspace feed  1 piece — what Cara wrote to Ben and shared with everyone. Every Member of
@@ -252,6 +254,7 @@ What is on screen:
   The answer      ${WEB_BASE_URL}/home?tab=my-requests&request=${answeredRequest}
   Still waiting   ${WEB_BASE_URL}/home?tab=my-requests&request=${waitingRequest}
   Written to her  ${WEB_BASE_URL}/home?tab=received
+  Written by her  ${WEB_BASE_URL}/home?tab=given
   Shared with her ${WEB_BASE_URL}/home?tab=shared
   The feed        ${WEB_BASE_URL}/home
 

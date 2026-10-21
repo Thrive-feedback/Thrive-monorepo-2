@@ -467,6 +467,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/given-feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Feedback the caller has given in this Workspace */
+        get: operations["GivenFeedbackController_listGivenFeedback"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspaceId}/feed": {
         parameters: {
             query?: never;
@@ -990,6 +1007,55 @@ export interface components {
             createdAt: string;
         };
         ListSharedFeedbackResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                origin: "REQUESTED" | "OFFERED";
+                /** Format: uuid */
+                feedbackRequestId: string | null;
+                topic: string;
+                topicTags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                giver: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                receiver: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                body: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        ListGivenFeedbackResponseDto_Output: {
             items: {
                 /** Format: uuid */
                 id: string;
@@ -2397,6 +2463,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListSharedFeedbackResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GivenFeedbackController_listGivenFeedback: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListGivenFeedbackResponseDto_Output"];
                 };
             };
             /** @description REQUEST_INVALID */

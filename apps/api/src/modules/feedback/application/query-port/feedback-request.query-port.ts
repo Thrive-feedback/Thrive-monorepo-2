@@ -174,6 +174,18 @@ export abstract class FeedbackRequestQuery {
   ): Promise<FeedbackPageRow>;
 
   /**
+   * The Feedback one Member wrote in one Workspace — answers and Feedback given without being
+   * asked alike — newest first. The Giver is a required argument for the same reason the
+   * Workspace is: what one Member wrote is their own history, and a read scoped to nobody cannot
+   * be written. Not filtered by Visibility: the Giver may always read what they wrote.
+   */
+  abstract givenBy(
+    workspaceId: string,
+    giverAccountId: string,
+    page: PageRequest,
+  ): Promise<FeedbackWithPeoplePageRow>;
+
+  /**
    * The Feedback one Member was selected to read in one Workspace, newest first — Selected people
    * and nothing else. The reader is a required argument for the same reason the Workspace is: what
    * one Member was shown is not another's, and a read scoped to nobody cannot be written.

@@ -236,6 +236,26 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     };
   }
 
+  async givenBy(
+    workspaceId: string,
+    giverAccountId: string,
+    page: PageRequest,
+  ): Promise<FeedbackWithPeoplePageRow> {
+    const where = { workspaceId, giverAccountId };
+    const client = this.prismaTransactionContext.client;
+    const [records, total] = await Promise.all([
+      client.feedback.findMany({
+        where,
+        orderBy: NEWEST_FIRST,
+        skip: skipFor(page),
+        take: page.pageSize,
+        select: FEEDBACK_WITH_PEOPLE_FIELDS,
+      }),
+      client.feedback.count({ where }),
+    ]);
+    return { items: records.map(toFeedbackWithPeopleRow), total };
+  }
+
   async sharedWith(
     workspaceId: string,
     readerAccountId: string,
