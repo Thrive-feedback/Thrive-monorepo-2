@@ -11,7 +11,7 @@ import { mayManageWorkspaceGoals } from './_lib/workspace-goal-access.util';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
 export const metadata: Metadata = {
-  title: 'Workspace Goals',
+  title: 'Goals',
   robots: { index: false, follow: false },
 };
 

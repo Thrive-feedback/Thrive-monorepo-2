@@ -31,18 +31,25 @@ const ACCOUNT: SideNavItem = {
   Icon: CircleUserRoundIcon,
 };
 
-/** The sections, in menu order. */
+/** The sections, in menu order: what belongs to the Workspace sits under it. */
 const SECTIONS: readonly SideNavItem[] = [
   ACCOUNT,
-  { href: ROUTES.settings.workspace, label: 'Workspace', Icon: Building2Icon },
   {
-    href: ROUTES.settings.workspaceGoals,
-    label: 'Workspace Goals',
-    Icon: HashIcon,
+    href: ROUTES.settings.workspace,
+    label: 'Workspace',
+    Icon: Building2Icon,
+    children: [
+      { href: ROUTES.settings.workspaceGoals, label: 'Goals', Icon: HashIcon },
+      { href: ROUTES.settings.members, label: 'Members', Icon: UsersIcon },
+    ],
   },
-  { href: ROUTES.settings.members, label: 'Members', Icon: UsersIcon },
   { href: ROUTES.settings.appearance, label: 'Appearance', Icon: PaletteIcon },
 ];
+
+/** Every section, folders and what they hold alike, to find the one a path opens. */
+function flatten(items: readonly SideNavItem[]): readonly SideNavItem[] {
+  return items.flatMap((item) => [item, ...flatten(item.children ?? [])]);
+}
 
 /**
  * One panel: the menu down the left, and the open section on the right under a header that
@@ -58,7 +65,7 @@ export function SettingsPanes({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const atIndex = pathname === ROUTES.settings.index;
   const current =
-    SECTIONS.find((section) => section.href === pathname) ?? ACCOUNT;
+    flatten(SECTIONS).find((section) => section.href === pathname) ?? ACCOUNT;
 
   return (
     <div className="-my-8 flex flex-1 flex-col overflow-hidden rounded-page md:flex-row">
