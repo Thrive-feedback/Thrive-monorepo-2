@@ -102,6 +102,8 @@ describe('LandingHomePreview', () => {
 
     // Driven from the keyboard rather than clicked: jsdom lays everything out at zero size, so
     // the resize slug's hit area covers every click in the form and takes it.
+    first('button', 'Ask for advice…').focus();
+    await user.keyboard('{Enter}');
     first('combobox', /What should they talk about/).focus();
     await user.keyboard('My first board update');
     first('combobox', /Who do you want to ask/).focus();

@@ -11,16 +11,56 @@ vi.mock('./give-feedback-form', () => ({
 
 const { FeedbackComposer } = await import('./feedback-composer');
 
+function renderComposer() {
+  return render(
+    <FeedbackComposer
+      teammates={[]}
+      workspaceGoals={[]}
+      requestAction={vi.fn()}
+      giveAction={vi.fn()}
+    />,
+  );
+}
+
 describe('FeedbackComposer', () => {
-  it('opens on asking for Feedback', () => {
-    render(
-      <FeedbackComposer
-        teammates={[]}
-        workspaceGoals={[]}
-        requestAction={vi.fn()}
-        giveAction={vi.fn()}
-      />,
-    );
+  it('opens folded, offering to ask for advice or to give Feedback, drawing no form yet', () => {
+    renderComposer();
+
+    expect(screen.queryByText('request form')).toBeNull();
+    expect(screen.queryByText('give form')).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Ask for advice…' }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    expect(
+      screen.getByRole('button', { name: 'Give feedback' }),
+    ).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('opens on asking for Feedback from the prompt', async () => {
+    const user = userEvent.setup();
+    renderComposer();
+
+    await user.click(screen.getByRole('button', { name: 'Ask for advice…' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Request feedback' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('request form')).toBeVisible();
+    expect(screen.queryByText('give form')).toBeNull();
+  });
+
+  it('opens on giving Feedback, and switches between the two', async () => {
+    const user = userEvent.setup();
+    renderComposer();
+
+    await user.click(screen.getByRole('button', { name: 'Give feedback' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Give feedback' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('give form')).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Request feedback' }));
 
     expect(
       screen.getByRole('button', { name: 'Request feedback' }),
@@ -29,74 +69,34 @@ describe('FeedbackComposer', () => {
     expect(screen.getByText('give form')).not.toBeVisible();
   });
 
-  it('switches to giving Feedback', async () => {
+  it('folds again, and opens in the mode picked next', async () => {
     const user = userEvent.setup();
-    render(
-      <FeedbackComposer
-        teammates={[]}
-        workspaceGoals={[]}
-        requestAction={vi.fn()}
-        giveAction={vi.fn()}
-      />,
-    );
+    renderComposer();
 
-    await user.click(screen.getByRole('button', { name: 'Give feedback' }));
-
-    expect(
-      screen.getByRole('button', { name: 'Give feedback' }),
-    ).toHaveAttribute('aria-pressed', 'true');
-    expect(
-      screen.getByRole('button', { name: 'Request feedback' }),
-    ).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByText('give form')).toBeVisible();
-    expect(screen.getByText('request form')).not.toBeVisible();
-  });
-
-  it('hides the forms but keeps the buttons, and shows them again', async () => {
-    const user = userEvent.setup();
-    render(
-      <FeedbackComposer
-        teammates={[]}
-        workspaceGoals={[]}
-        requestAction={vi.fn()}
-        giveAction={vi.fn()}
-      />,
-    );
-
-    await user.click(screen.getByRole('button', { name: 'Hide form' }));
-
-    expect(screen.getByText('request form')).not.toBeVisible();
-    expect(
-      screen.getByRole('button', { name: 'Request feedback' }),
-    ).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Show form' })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
-
-    await user.click(screen.getByRole('button', { name: 'Show form' }));
-
-    expect(screen.getByText('request form')).toBeVisible();
-  });
-
-  it('opens the forms again when a mode is picked', async () => {
-    const user = userEvent.setup();
-    render(
-      <FeedbackComposer
-        teammates={[]}
-        workspaceGoals={[]}
-        requestAction={vi.fn()}
-        giveAction={vi.fn()}
-      />,
-    );
-
-    await user.click(screen.getByRole('button', { name: 'Hide form' }));
-    await user.click(screen.getByRole('button', { name: 'Give feedback' }));
-
-    expect(screen.getByText('give form')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Ask for advice…' }));
     expect(screen.getByRole('button', { name: 'Hide form' })).toHaveAttribute(
       'aria-expanded',
       'true',
     );
+
+    await user.click(screen.getByRole('button', { name: 'Hide form' }));
+
+    expect(screen.getByText('request form')).not.toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Give feedback' }));
+
+    expect(screen.getByText('give form')).toBeVisible();
+  });
+
+  it('keeps a form it has drawn while folded or switched away from', async () => {
+    const user = userEvent.setup();
+    renderComposer();
+
+    await user.click(screen.getByRole('button', { name: 'Ask for advice…' }));
+    await user.click(screen.getByRole('button', { name: 'Give feedback' }));
+    await user.click(screen.getByRole('button', { name: 'Hide form' }));
+
+    expect(screen.getByText('request form')).not.toBeVisible();
+    expect(screen.getByText('give form')).not.toBeVisible();
   });
 });

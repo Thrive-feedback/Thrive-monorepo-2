@@ -28,7 +28,7 @@ const RECEIVER_WITH_NO_NAME = 'a teammate';
  */
 export function FeedbackCard({ item }: FeedbackCardProps) {
   return (
-    <article className="flex flex-col gap-3 rounded-page bg-surface-raised p-4">
+    <article className="flex flex-col gap-3 py-5">
       <header className="flex items-center gap-3">
         <Avatar size="md" aria-hidden="true">
           <AvatarFallback>{initials(item.giverName ?? '')}</AvatarFallback>
@@ -51,7 +51,7 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
           </Text>
         </div>
       </header>
-      <Text as="h3" variant="subtitle-3" className="break-words">
+      <Text as="h3" variant="subtitle-2" className="break-words">
         <FeedbackText text={item.topic} tags={item.topicTags} />
       </Text>
       <Text as="p" variant="body-2" className="whitespace-pre-line break-words">
@@ -65,7 +65,7 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
 /** A `FeedbackCard` still loading, line for line: who to whom, origin and day, Topic, body, Reactions. */
 export function FeedbackCardSkeleton() {
   return (
-    <div className="flex flex-col gap-3 rounded-page bg-surface-raised p-4">
+    <div className="flex flex-col gap-3 py-5">
       <div className="flex items-center gap-3">
         <Skeleton shape="circle" className="size-8" />
         <div className="flex min-w-0 flex-1 flex-col">
@@ -73,7 +73,7 @@ export function FeedbackCardSkeleton() {
           <Skeleton className="w-1/3 text-body-3" />
         </div>
       </div>
-      <Skeleton className="w-2/3 text-subtitle-3" />
+      <Skeleton className="w-2/3 text-subtitle-2" />
       <div className="flex flex-col">
         <Skeleton />
         <Skeleton className="w-4/5" />

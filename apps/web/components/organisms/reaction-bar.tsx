@@ -47,7 +47,7 @@ export function ReactionBar({ reactions }: ReactionBarProps) {
                 'inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3',
                 pressed
                   ? 'border-action-primary-border bg-action-primary-surface text-action-primary'
-                  : 'border-border-subtle bg-surface-base text-fg-secondary hover:bg-action-neutral-surface',
+                  : 'border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover',
               )}
             >
               <span aria-hidden="true">{emoji}</span>
