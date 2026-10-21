@@ -1,10 +1,12 @@
 import { Suspense } from 'react';
 import { FeedbackFeedSkeleton } from '@/components/organisms/feedback-feed';
+import { GivenFeedbackListViewSkeleton } from '@/components/organisms/given-feedback-list-view';
 import { ReceivedFeedbackListViewSkeleton } from '@/components/organisms/received-feedback-list-view';
 import { SentRequestListViewSkeleton } from '@/components/organisms/sent-request-list-view';
 import { WaitingAskListViewSkeleton } from '@/components/organisms/waiting-ask-list-view';
 import type { HomeTab } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { GivenFeedbackList } from './given-feedback-list';
 import { ReceivedFeedbackList } from './received-feedback-list';
 import { SentRequestList } from './sent-request-list';
 import { SharedFeedbackList } from './shared-feedback-list';
@@ -23,6 +25,7 @@ const TAB_SKELETONS: Readonly<Record<HomeTab, React.ReactNode>> = {
   'my-requests': <SentRequestListViewSkeleton />,
   waiting: <WaitingAskListViewSkeleton />,
   received: <ReceivedFeedbackListViewSkeleton />,
+  given: <GivenFeedbackListViewSkeleton />,
 };
 
 /**
@@ -50,5 +53,7 @@ function TabContent({ tab, membership }: HomeTabPanelProps) {
       return <WaitingAskList membership={membership} />;
     case 'received':
       return <ReceivedFeedbackList membership={membership} />;
+    case 'given':
+      return <GivenFeedbackList membership={membership} />;
   }
 }

@@ -12,6 +12,7 @@ const TAB_NAMES: Readonly<Record<HomeTab, string>> = {
   'my-requests': 'My requests',
   waiting: 'Waiting for me',
   received: 'Feedback for me',
+  given: 'Feedback I’ve given',
 };
 
 /**

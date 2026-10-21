@@ -19,6 +19,9 @@ vi.mock('./received-feedback-list', () => ({
       <output>feedback for me list</output>
     ),
 }));
+vi.mock('./given-feedback-list', () => ({
+  GivenFeedbackList: () => <output>given list</output>,
+}));
 vi.mock('./shared-feedback-list', () => ({
   SharedFeedbackList: () => <output>shared with me list</output>,
 }));
@@ -62,6 +65,13 @@ describe('HomeTabPanel', () => {
     render(<HomeTabPanel tab="received" membership={MEMBERSHIP} />);
 
     expect(screen.getByText('feedback for me list')).toBeInTheDocument();
+  });
+
+  it('opens the Feedback the person has given on its own tab', () => {
+    render(<HomeTabPanel tab="given" membership={MEMBERSHIP} />);
+
+    expect(screen.getByText('given list')).toBeInTheDocument();
+    expect(screen.queryByText('feedback for me list')).toBeNull();
   });
 
   it("holds the tab's place while its list is read, and shows the list once it is", async () => {

@@ -24,6 +24,7 @@ describe('HomeTabs', () => {
       ['My requests', '/home?tab=my-requests'],
       ['Waiting for me', '/home?tab=waiting'],
       ['Feedback for me', '/home?tab=received'],
+      ['Feedback I’ve given', '/home?tab=given'],
     ]);
   });
 

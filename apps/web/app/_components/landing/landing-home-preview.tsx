@@ -5,6 +5,7 @@ import { Text } from '@/components/atoms/text';
 import { AnswerAskView } from '@/components/organisms/answer-ask-view';
 import { FeedbackComposer } from '@/components/organisms/feedback-composer';
 import { FeedbackFeed } from '@/components/organisms/feedback-feed';
+import { GivenFeedbackListView } from '@/components/organisms/given-feedback-list-view';
 import { HomeDialog } from '@/components/organisms/home-dialog';
 import { ReceivedFeedbackListView } from '@/components/organisms/received-feedback-list-view';
 import { SentRequestListView } from '@/components/organisms/sent-request-list-view';
@@ -19,6 +20,7 @@ import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import type { HomeTab } from '@/lib/routes.constant';
 import { LANDING_COPY } from './landing-copy.constant';
 import {
+  PREVIEW_GIVEN,
   PREVIEW_RECEIVED,
   PREVIEW_SENT_REQUESTS,
   PREVIEW_SHARED_WITH_ME,
@@ -148,6 +150,8 @@ export function LandingHomePreview({
         );
       case 'received':
         return <ReceivedFeedbackListView items={PREVIEW_RECEIVED} />;
+      case 'given':
+        return <GivenFeedbackListView items={PREVIEW_GIVEN} />;
     }
   }
 

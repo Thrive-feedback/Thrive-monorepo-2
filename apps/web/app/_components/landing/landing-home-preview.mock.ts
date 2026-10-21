@@ -1,4 +1,5 @@
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
+import type { GivenFeedback } from '@/lib/feedback/given-feedback.type';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { ReceivedFeedback } from '@/lib/feedback/received-feedback.type';
 import type { SentRequest } from '@/lib/feedback/sent-request.type';
@@ -156,5 +157,19 @@ export const PREVIEW_RECEIVED: readonly ReceivedFeedback[] = [
     body: 'Keep the five-minute recap at the start. Next time, share the agenda the day before so we can come prepared.',
     bodyTags: NO_TEXT_TAGS,
     writtenAt: '2026-10-13T04:15:00.000Z',
+  },
+];
+
+export const PREVIEW_GIVEN: readonly GivenFeedback[] = [
+  {
+    id: 'preview-given-1',
+    topic: 'The onboarding guide for new hires',
+    topicTags: NO_TEXT_TAGS,
+    offered: true,
+    receiverName: 'Fern Somsak',
+    receiverInactive: false,
+    body: 'The first-week checklist answered every question I had. A short glossary of our product terms would make it complete.',
+    bodyTags: NO_TEXT_TAGS,
+    writtenAt: '2026-10-12T09:30:00.000Z',
   },
 ];
