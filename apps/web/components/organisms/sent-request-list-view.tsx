@@ -1,10 +1,11 @@
+import { Badge } from '@/components/atoms/badge';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { TargetLink } from '@/components/molecules/target-link';
 import { calendarDay } from '@/lib/calendar-day.util';
 import {
-  ASK_STATUS_COLOURS,
   ASK_STATUS_NAMES,
+  ASK_STATUS_TONES,
 } from '@/lib/feedback/ask-status.constant';
 import type { SentRequest } from '@/lib/feedback/sent-request.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
@@ -37,13 +38,10 @@ export function SentRequestListView({
     );
   }
   return (
-    <ul className="flex flex-col gap-4">
+    <ul className="flex flex-col divide-y divide-border-muted">
       {requests.map((request) => (
-        <li
-          key={request.id}
-          className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
-        >
-          <Text as="h2" variant="subtitle-4" className="break-words">
+        <li key={request.id} className="flex flex-col gap-1 py-4">
+          <Text as="h2" variant="subtitle-2" className="break-words">
             {requestTarget ? (
               <TargetLink target={requestTarget(request.id)}>
                 <FeedbackText text={request.topic} tags={request.topicTags} />
@@ -58,17 +56,16 @@ export function SentRequestListView({
           </Text>
           <ul className="flex flex-col gap-1">
             {request.asks.map((ask) => (
-              <li key={ask.askId}>
+              <li key={ask.askId} className="flex items-center gap-2">
                 <Text as="span" variant="body-2" className="break-all">
                   <PersonName
                     name={ask.giverName ?? '—'}
                     inactive={ask.giverInactive}
-                  />{' '}
-                  :{' '}
-                  <span className={ASK_STATUS_COLOURS[ask.status]}>
-                    {ASK_STATUS_NAMES[ask.status]}
-                  </span>
+                  />
                 </Text>
+                <Badge tone={ASK_STATUS_TONES[ask.status]}>
+                  {ASK_STATUS_NAMES[ask.status]}
+                </Badge>
               </li>
             ))}
           </ul>
@@ -81,13 +78,10 @@ export function SentRequestListView({
 /** A `SentRequestListView` still loading: a few rows of Topic, the day sent, and one Member asked. */
 export function SentRequestListViewSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col divide-y divide-border-muted">
       {PLACEHOLDERS.map((placeholder) => (
-        <div
-          key={placeholder}
-          className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
-        >
-          <Skeleton className="w-1/2 text-subtitle-4" />
+        <div key={placeholder} className="flex flex-col gap-1 py-4">
+          <Skeleton className="w-1/2 text-subtitle-2" />
           <Skeleton className="w-1/4 text-body-3" />
           <Skeleton className="w-1/3" />
         </div>

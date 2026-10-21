@@ -1,6 +1,5 @@
+import { cva } from 'class-variance-authority';
 import NextLink from 'next/link';
-import { Button } from '@/components/atoms/button';
-import { ButtonGroup } from '@/components/atoms/button-group';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
@@ -15,6 +14,23 @@ const TAB_NAMES: Readonly<Record<HomeTab, string>> = {
   received: 'Feedback for me',
 };
 
+/**
+ * Each tab as the shared Tabs draw one: words, underlined while open. The underline sits on the
+ * row's baseline rather than over it, because the row scrolls sideways and anything reaching past
+ * its bottom edge would let it scroll up and down as well.
+ */
+const homeTab = cva(
+  'inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm',
+  {
+    variants: {
+      open: {
+        true: 'border-action-primary text-fg-primary',
+        false: 'border-transparent text-fg-secondary hover:text-fg-primary',
+      },
+    },
+  },
+);
+
 export type HomeTabsProps = {
   tab: HomeTab;
   /** The tabs to offer, in order; all of them unless a page already shows one elsewhere. */
@@ -26,7 +42,7 @@ export type HomeTabsProps = {
 };
 
 /**
- * Home's feed, one tab at a time, in a group of buttons. On Home each tab is a link and the tab is
+ * Home's feed, one tab at a time, in a row of underlined tabs. On Home each tab is a link and the tab is
  * in the URL, so it survives a reload, a shared link and the way back from an Ask; the open one
  * is the current page. Given callbacks instead, each tab is a button and the open one is pressed.
  *
@@ -43,36 +59,38 @@ export function HomeTabs({
     <div className="flex flex-col gap-4">
       <nav
         aria-label="Feedback"
-        className={cn('overflow-x-auto', styles.scroller)}
+        className={cn(
+          'overflow-x-auto overflow-y-hidden border-border-subtle border-b',
+          styles.scroller,
+        )}
       >
-        <ButtonGroup>
+        <div className="flex items-end gap-5">
           {tabs.map((value) => {
             const target = targetFor(value);
             const isOpen = value === tab;
-            const variant = isOpen ? 'primary' : 'secondary';
             return 'href' in target ? (
-              <Button key={value} variant={variant} size="sm" asChild>
-                <NextLink
-                  href={target.href}
-                  scroll={false}
-                  aria-current={isOpen ? 'page' : undefined}
-                >
-                  {TAB_NAMES[value]}
-                </NextLink>
-              </Button>
-            ) : (
-              <Button
+              <NextLink
                 key={value}
-                variant={variant}
-                size="sm"
-                aria-pressed={isOpen}
-                onClick={target.onSelect}
+                href={target.href}
+                scroll={false}
+                aria-current={isOpen ? 'page' : undefined}
+                className={homeTab({ open: isOpen })}
               >
                 {TAB_NAMES[value]}
-              </Button>
+              </NextLink>
+            ) : (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={isOpen}
+                onClick={target.onSelect}
+                className={homeTab({ open: isOpen })}
+              >
+                {TAB_NAMES[value]}
+              </button>
             );
           })}
-        </ButtonGroup>
+        </div>
       </nav>
       {children}
     </div>
@@ -81,12 +99,14 @@ export function HomeTabs({
 
 /**
  * `HomeTabs` still loading, for a page that does not yet know which tab is open: the row of
- * tabs as one bar, and the panel it is given.
+ * tabs as one line on its baseline, and the panel it is given.
  */
 export function HomeTabsSkeleton({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-4">
-      <Skeleton shape="control" className="h-9.5 rounded-button" />
+      <div className="border-border-subtle border-b pb-2.5">
+        <Skeleton className="w-3/4 text-button-sm" />
+      </div>
       {children}
     </div>
   );

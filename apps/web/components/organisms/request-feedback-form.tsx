@@ -202,7 +202,7 @@ export function RequestFeedbackForm({
         type="submit"
         variant="primary"
         disabled={isSending}
-        className="mt-2 w-full"
+        className="mt-2 self-end"
       >
         Send request
       </Button>
@@ -217,7 +217,7 @@ export function RequestFeedbackFormSkeleton() {
       <MemberPickerSkeleton />
       <TextFieldSkeleton />
       <VisibilityPickerSkeleton options={VISIBILITIES} />
-      <Skeleton shape="control" className="mt-2 rounded-button" />
+      <Skeleton shape="control" className="mt-2 w-32 self-end rounded-button" />
     </div>
   );
 }

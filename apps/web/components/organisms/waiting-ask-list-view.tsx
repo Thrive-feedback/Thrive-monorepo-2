@@ -35,13 +35,10 @@ export function WaitingAskListView({
     );
   }
   return (
-    <ul className="flex flex-col gap-4">
+    <ul className="flex flex-col divide-y divide-border-muted">
       {asks.map((ask) => (
-        <li
-          key={ask.askId}
-          className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
-        >
-          <Text as="h2" variant="subtitle-4" className="break-words">
+        <li key={ask.askId} className="flex flex-col gap-1 py-4">
+          <Text as="h2" variant="subtitle-2" className="break-words">
             <TargetLink target={askTarget(ask.askId)}>
               <FeedbackText text={ask.topic} tags={ask.topicTags} />
             </TargetLink>
@@ -65,13 +62,10 @@ export function WaitingAskListView({
 /** A `WaitingAskListView` still loading: a few rows of Topic, who asked, and when. */
 export function WaitingAskListViewSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col divide-y divide-border-muted">
       {PLACEHOLDERS.map((placeholder) => (
-        <div
-          key={placeholder}
-          className="flex flex-col gap-1 rounded-page bg-surface-raised p-4"
-        >
-          <Skeleton className="w-1/2 text-subtitle-4" />
+        <div key={placeholder} className="flex flex-col gap-1 py-4">
+          <Skeleton className="w-1/2 text-subtitle-2" />
           <Skeleton className="w-1/3" />
           <Skeleton className="w-1/4 text-body-3" />
         </div>

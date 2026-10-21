@@ -138,7 +138,7 @@ function WelcomeTo() {
     <Text
       as="span"
       variant="subtitle-handwrite-1"
-      className="text-action-secondary"
+      className="text-action-secondary-hover"
     >
       Welcome to
     </Text>
@@ -205,19 +205,15 @@ function HomeLayout({
           >
             <div className="flex flex-col gap-6 pl-6">
               {notices}
-              <Text
-                as={sectionHeadingLevel}
-                variant="subtitle-handwrite-1"
-                className="text-action-secondary-fg"
-              >
+              <Text as={sectionHeadingLevel} variant="subtitle-3" tone="muted">
                 Feedback
               </Text>
               {composer}
-              <hr className="border-border-subtle" />
               <Text
                 as={sectionHeadingLevel}
-                variant="subtitle-handwrite-1"
-                className="text-action-secondary-fg"
+                variant="subtitle-3"
+                tone="muted"
+                className="mt-6"
               >
                 My Activity
               </Text>

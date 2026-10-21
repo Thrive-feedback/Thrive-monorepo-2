@@ -214,7 +214,7 @@ export function GiveFeedbackForm({
         type="submit"
         variant="primary"
         disabled={isSending}
-        className="mt-2 w-full"
+        className="mt-2 self-end"
       >
         Send feedback
       </Button>

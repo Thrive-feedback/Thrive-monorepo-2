@@ -103,7 +103,7 @@ export function AnswerAskForm({
         type="submit"
         variant="primary"
         disabled={isSending}
-        className="mt-2 w-full"
+        className="mt-2 self-end"
       >
         {isSending ? 'Sending…' : 'Send answer'}
       </Button>
@@ -116,7 +116,7 @@ export function AnswerAskFormSkeleton() {
   return (
     <div className="flex flex-col gap-4">
       <TextAreaFieldSkeleton />
-      <Skeleton shape="control" className="mt-2 rounded-button" />
+      <Skeleton shape="control" className="mt-2 w-32 self-end rounded-button" />
     </div>
   );
 }

@@ -11,7 +11,7 @@ export type FeedbackFeedProps = {
   emptyMessage: string;
 };
 
-/** A list of Feedback cards, newest first. */
+/** A list of Feedback, newest first, one row each with a hairline between. */
 export function FeedbackFeed({ items, emptyMessage }: FeedbackFeedProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -20,7 +20,7 @@ export function FeedbackFeed({ items, emptyMessage }: FeedbackFeedProps) {
           {emptyMessage}
         </Text>
       ) : (
-        <ul className="flex flex-col gap-4">
+        <ul className="flex flex-col divide-y divide-border-muted">
           {items.map((item) => (
             <li key={item.id}>
               <FeedbackCard item={item} />
@@ -35,7 +35,7 @@ export function FeedbackFeed({ items, emptyMessage }: FeedbackFeedProps) {
 /** A `FeedbackFeed` still loading: a few cards, spaced as the feed spaces them. */
 export function FeedbackFeedSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col divide-y divide-border-muted">
       {PLACEHOLDERS.map((placeholder) => (
         <FeedbackCardSkeleton key={placeholder} />
       ))}
