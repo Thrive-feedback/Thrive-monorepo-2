@@ -9,28 +9,30 @@ export function LandingProblem() {
   return (
     <LandingSection
       id="problem"
-      eyebrow={problem.eyebrow}
       title={problem.title}
+      note={problem.note}
       lead={problem.lead}
-      surface="subtle"
-      accent="secondary"
+      align="center"
     >
-      <ul className="grid gap-gap-grid md:grid-cols-3">
+      <ul className="grid gap-8 md:grid-cols-3 md:gap-gap-grid">
         {problem.reasons.map((reason) => (
           <li
             key={reason.title}
-            className="flex flex-col gap-2 rounded-page bg-surface-raised p-inset-card"
+            className="flex flex-col gap-2 border-border-muted border-t pt-5"
           >
-            <Text as="h3" variant="subtitle-3">
+            <Text as="h3" variant="subtitle-1">
               {reason.title}
             </Text>
-            <Text variant="body-2" tone="muted">
+            <Text variant="body-1" tone="muted">
               {reason.body}
             </Text>
           </li>
         ))}
       </ul>
-      <Text variant="subtitle-display-3" className="max-w-2xl">
+      <Text
+        variant="subtitle-display-1"
+        className="mx-auto max-w-2xl text-balance text-center"
+      >
         {problem.closer}
       </Text>
     </LandingSection>

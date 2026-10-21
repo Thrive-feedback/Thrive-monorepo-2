@@ -43,7 +43,7 @@ describe('LandingPage', () => {
 
     expect(readSession).not.toHaveBeenCalled();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Your team has things to tell you. Thrive makes it easy to ask.',
+      'Honest feedback starts with a question.',
     );
   });
 
@@ -61,6 +61,17 @@ describe('LandingPage', () => {
     }
   });
 
+  it('takes a visitor from the promise to the tour of Home', async () => {
+    render(await LandingPage());
+
+    expect(
+      screen.getByRole('link', { name: 'See it in action' }),
+    ).toHaveAttribute('href', '#tour');
+    expect(
+      screen.getByRole('region', { name: 'Try it before you sign in' }),
+    ).toHaveAttribute('id', 'tour');
+  });
+
   it('shows a preview of Home under the promise, keeping the page to one h1', async () => {
     render(await LandingPage());
 
@@ -74,10 +85,11 @@ describe('LandingPage', () => {
     render(await LandingPage());
 
     for (const name of [
+      'Try it before you sign in',
       'Silence isn’t agreement.',
-      'From one question to a better next time',
-      'Built for founders without an HR team',
-      'One place for how your people grow',
+      'Every choice in Thrive comes from research',
+      'Everything you need to start. Nothing you don’t.',
+      'Made for founders without an HR team',
       'Start the conversation your team is waiting for.',
     ]) {
       expect(screen.getByRole('region', { name })).toBeInTheDocument();

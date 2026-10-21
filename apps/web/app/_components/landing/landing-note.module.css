@@ -1,0 +1,27 @@
+/*
+ * Handwriting writes itself on as it scrolls into view: a mask opens from the left in step with
+ * the scroll, so a note is written while it is read and unwritten when scrolled back. Tied to the
+ * scroll rather than a clock, it takes no duration. Without scroll timelines, or with reduced
+ * motion, the note is simply there. A scroll timeline and a clip mask have no utility.
+ */
+@keyframes write-on {
+  from {
+    clip-path: inset(-0.5em 100% -0.5em -0.5em);
+  }
+
+  to {
+    clip-path: inset(-0.5em -0.5em -0.5em -0.5em);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .writeOn {
+      animation-name: write-on;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 20%;
+    }
+  }
+}
