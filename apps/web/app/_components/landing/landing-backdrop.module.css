@@ -1,11 +1,35 @@
 /*
+ * Each orb is a soft circle of one colour: a radial gradient from the colour at its middle to
+ * nothing at its edge, which reads as a blurred disc without a filter. A blur filter this wide
+ * repaints a large area whenever the orb moves; a gradient is painted once.
+ *
  * Each depth drifts up as the page scrolls, the nearest fastest, so the orbs pass behind the
  * page at three speeds. The drift follows the page's scroll position rather than a clock, so it
  * takes no duration, and its distances are steps of the spacing scale. Without scroll timelines,
- * or with reduced motion, the orbs stay where they are. Each is blurred to soft light from the
- * glass blur, the far ones softest. Neither scroll-linked motion nor a token-backed blur has a
- * utility.
+ * or with reduced motion, the orbs stay where they are. Neither a gradient from a token nor
+ * scroll-linked motion has a utility.
  */
+.orb {
+  background-image: radial-gradient(
+    circle closest-side,
+    var(--orb-colour) 45%,
+    transparent 100%
+  );
+}
+
+.primary {
+  --orb-colour: var(--action-primary);
+}
+
+.secondary {
+  --orb-colour: var(--action-secondary);
+}
+
+/* The page's own ink: a light grey haze on the light theme, a soft white on the dark. */
+.neutral {
+  --orb-colour: var(--fg-primary);
+}
+
 @keyframes drift {
   to {
     translate: 0 var(--drift);
@@ -13,17 +37,14 @@
 }
 
 .far {
-  filter: blur(calc(var(--glass-blur) * 5));
   --drift: calc(var(--spacing) * -40);
 }
 
 .mid {
-  filter: blur(calc(var(--glass-blur) * 4));
   --drift: calc(var(--spacing) * -120);
 }
 
 .near {
-  filter: blur(calc(var(--glass-blur) * 3));
   --drift: calc(var(--spacing) * -240);
 }
 

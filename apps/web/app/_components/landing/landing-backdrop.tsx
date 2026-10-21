@@ -2,18 +2,17 @@ import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/cn.util';
 import styles from './landing-backdrop.module.css';
 
-const orb = cva('absolute rounded-full', {
+const orb = cva(cn('absolute', styles.orb), {
   variants: {
     depth: {
-      far: cn(styles.far, 'size-80 md:size-160'),
-      mid: cn(styles.mid, 'size-64 md:size-120'),
-      near: cn(styles.near, 'size-48 md:size-80'),
+      far: cn(styles.far, 'size-130 md:size-210'),
+      mid: cn(styles.mid, 'size-104 md:size-160'),
+      near: cn(styles.near, 'size-78 md:size-110'),
     },
     tint: {
-      primary: 'bg-action-primary opacity-25',
-      secondary: 'bg-action-secondary opacity-25',
-      // The page's own ink, faint: a light grey haze on the light theme, a soft white on the dark.
-      neutral: 'bg-fg-primary opacity-10',
+      primary: cn(styles.primary, 'opacity-25'),
+      secondary: cn(styles.secondary, 'opacity-25'),
+      neutral: cn(styles.neutral, 'opacity-10'),
     },
   },
 });
@@ -35,7 +34,7 @@ const ORBS = [
 
 /**
  * The landing page's ground: soft circles of light in the brand's purple and orange and in the
- * page's own ink, blurred and drifting behind the page at three depths as it scrolls. Pure
+ * page's own ink, drifting behind the page at three depths as it scrolls. Pure
  * decoration, fixed behind everything, never in the way of a pointer or a screen reader.
  */
 export function LandingBackdrop() {
