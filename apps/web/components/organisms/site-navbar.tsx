@@ -1,12 +1,10 @@
 import { Text } from '@/components/atoms/text';
-import { NavbarLogo } from '@/components/molecules/navbar-logo';
 import { ThemeToggle } from '@/components/molecules/theme-toggle';
-import { cn } from '@/lib/cn.util';
 import {
   readSession,
   readSessionNeedsRefresh,
 } from '@/lib/session/session.service';
-import styles from './glass.module.css';
+import { NavbarFrame } from './navbar-frame';
 import { SessionRefresher } from './session-refresher';
 import { SignOutForm } from './sign-out-form';
 
@@ -24,15 +22,7 @@ export async function SiteNavbar() {
   ]);
 
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-40 flex h-18 shrink-0 items-center justify-between px-inset-container',
-        styles.glass,
-        styles.neutral,
-        styles.curvesDown,
-      )}
-    >
-      <NavbarLogo />
+    <NavbarFrame>
       {needsRefresh && <SessionRefresher />}
       <div className="flex min-w-0 items-center gap-gap-nav">
         <ThemeToggle />
@@ -45,6 +35,6 @@ export async function SiteNavbar() {
           </>
         )}
       </div>
-    </header>
+    </NavbarFrame>
   );
 }
