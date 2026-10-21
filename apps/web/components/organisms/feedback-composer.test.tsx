@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./request-feedback-form', () => ({
   RequestFeedbackForm: () => <output>request form</output>,
@@ -9,7 +9,13 @@ vi.mock('./give-feedback-form', () => ({
   GiveFeedbackForm: () => <output>give form</output>,
 }));
 
-const { FeedbackComposer } = await import('./feedback-composer');
+const { FeedbackComposer, preloadComposerForms } = await import(
+  './feedback-composer'
+);
+
+// The forms load apart from the composer. Fetched first, as the composer fetches them when idle,
+// they draw at once, as they do for anyone who has been on the page a moment.
+beforeAll(() => preloadComposerForms());
 
 function renderComposer() {
   return render(

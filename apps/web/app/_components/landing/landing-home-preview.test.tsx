@@ -1,11 +1,19 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
-import { LandingHomePreview } from './landing-home-preview';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { preloadComposerForms } from '@/components/organisms/feedback-composer';
+import {
+  LandingHomePreview,
+  preloadAnswerDialog,
+} from './landing-home-preview';
 
 // The dialog asks for the router, which only matters when it closes to an address; the preview
 // closes it in place, so the router is never used.
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: vi.fn() }) }));
+
+// The forms and the answer dialog load apart from the page. Fetched first, as the page fetches
+// them when idle, they draw at once, as they do for anyone who has been on the page a moment.
+beforeAll(() => Promise.all([preloadComposerForms(), preloadAnswerDialog()]));
 
 /*
  * Home draws a narrow layout and a wide one and CSS shows one, so jsdom sees both: every control
