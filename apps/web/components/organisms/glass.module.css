@@ -19,6 +19,29 @@
 }
 
 /*
+ * `.clearAtTop` leaves a bar clear while the page sits at its top, so the page's own background
+ * runs up behind it, and frosts it over across the first few rems of scroll. The fade is tied to
+ * the scroll rather than a clock, so it takes no duration. Without scroll timelines the bar is
+ * simply glass throughout.
+ */
+@keyframes frost-over {
+  from {
+    background-color: transparent;
+    backdrop-filter: none;
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .clearAtTop {
+    animation-name: frost-over;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll(root);
+    animation-range: 0 calc(var(--space-unit) * 16);
+  }
+}
+
+/*
  * Where a bar meets the page, the glass curves into it at both ends, so the page reads as a sheet
  * with rounded corners tucked under the bar: `.curvesDown` under a bar across the top,
  * `.curvesUp` over one along the bottom. Each curve is a page-corner-sized square of glass with a
