@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Text } from '@/components/atoms/text';
 import { AnswerAskView } from '@/components/organisms/answer-ask-view';
 import { FeedbackComposer } from '@/components/organisms/feedback-composer';
@@ -28,6 +28,7 @@ import {
   PREVIEW_WORKSPACE_GOALS,
   PREVIEW_WORKSPACE_NAME,
 } from './landing-home-preview.mock';
+import { scrollTabsIntoColumn } from './landing-preview-scroll.util';
 
 const { preview } = LANDING_COPY;
 
@@ -39,10 +40,32 @@ const { preview } = LANDING_COPY;
  * All of it lives in this component's state, and a reload starts it over.
  *
  * Home keeps its tab and its open Ask in the address. Here they are state, so clicking around
- * never changes the landing page's own URL.
+ * never changes the landing page's own URL. The tab is the preview's own unless `tab` is passed,
+ * which lets the tour beside it open a tab and follow the ones the visitor opens.
  */
-export function LandingHomePreview() {
-  const [tab, setTab] = useState<HomeTab>('workspace');
+export function LandingHomePreview({
+  tab: controlledTab,
+  onTabChange,
+}: {
+  tab?: HomeTab;
+  onTabChange?: (tab: HomeTab) => void;
+}) {
+  const [ownTab, setOwnTab] = useState<HomeTab>('workspace');
+  const tab = controlledTab ?? ownTab;
+  const windowRef = useRef<HTMLDivElement>(null);
+
+  // Narrow, the window itself scrolls and Home's tabs sit under the composer, below its fold.
+  // Opening with the tabs in view shows the open tab as soon as the window does.
+  useEffect(() => {
+    const body = windowRef.current;
+    if (body?.parentElement && getComputedStyle(body).overflowY === 'auto') {
+      scrollTabsIntoColumn(body.parentElement, 'auto');
+    }
+  }, []);
+  function setTab(next: HomeTab) {
+    setOwnTab(next);
+    onTabChange?.(next);
+  }
   const [sentRequests, setSentRequests] = useState<readonly SentRequest[]>(
     PREVIEW_SENT_REQUESTS,
   );
@@ -129,30 +152,12 @@ export function LandingHomePreview() {
   }
 
   return (
-    <section
-      aria-label={preview.label}
-      className="mx-auto flex w-full max-w-5xl flex-col gap-3"
-    >
-      <div className="overflow-hidden rounded-page border border-border-subtle bg-surface-base shadow-high">
+    <section aria-label={preview.label} className="flex w-full flex-col gap-3">
+      <div className="overflow-hidden rounded-control border border-border-subtle bg-surface-base shadow-high">
         <div
-          aria-hidden="true"
-          className="flex items-center gap-3 border-border-subtle border-b bg-surface-subtle px-4 py-3"
+          ref={windowRef}
+          className="h-160 overflow-y-auto px-inset-container py-6 lg:h-180 lg:overflow-hidden"
         >
-          <span className="flex gap-1.5">
-            <span className="size-3 rounded-full bg-border-default" />
-            <span className="size-3 rounded-full bg-border-default" />
-            <span className="size-3 rounded-full bg-border-default" />
-          </span>
-          <Text
-            as="span"
-            variant="caption"
-            tone="muted"
-            className="mx-auto rounded-chip bg-surface-base px-3 py-1"
-          >
-            {preview.address}
-          </Text>
-        </div>
-        <div className="h-160 overflow-y-auto px-inset-container py-6 lg:h-180 lg:overflow-hidden">
           <HomeView
             workspaceName={PREVIEW_WORKSPACE_NAME}
             headingLevel={2}
@@ -178,7 +183,7 @@ export function LandingHomePreview() {
           />
         </div>
       </div>
-      <Text variant="body-3" tone="muted" className="text-center">
+      <Text variant="body-2" className="text-center text-fg-secondary">
         {preview.caption}
       </Text>
       {openAsk && (

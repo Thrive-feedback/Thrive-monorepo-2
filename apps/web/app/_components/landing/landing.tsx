@@ -1,32 +1,39 @@
+import { LandingBackdrop } from './landing-backdrop';
 import { LandingFinalCta } from './landing-final-cta';
 import { LandingFooter } from './landing-footer';
 import { LandingForFounders } from './landing-for-founders';
 import { LandingHero } from './landing-hero';
-import { LandingHomePreview } from './landing-home-preview';
-import { LandingHowItWorks } from './landing-how-it-works';
 import { LandingNavbar } from './landing-navbar';
-import { LandingPlatform } from './landing-platform';
 import { LandingProblem } from './landing-problem';
+import { LandingResearch } from './landing-research';
+import { LandingToday } from './landing-today';
+import { LandingTour } from './landing-tour';
 
 /**
- * The landing page, top to bottom: the promise and a preview of Home to click through, the
- * problem it answers, how Thrive works, why it suits a founder, the platform it grows into, and
- * the way in again at the end.
+ * The landing page, top to bottom: the promise, a tour of Home to click through, the problem it
+ * answers, the research behind how Thrive works, what a team can do today, why it suits a founder,
+ * and the way in again at the end. The problem sits on a full-width grey band and the way in on one
+ * in the primary tint; behind it all, handwritten marks drift at three depths as the page scrolls.
  */
 export function Landing() {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="relative isolate flex min-h-dvh flex-col bg-surface-base">
+      <LandingBackdrop />
       <LandingNavbar />
-      <main className="flex flex-1 flex-col gap-gap-section px-inset-container py-12">
-        <div className="flex flex-col gap-12">
+      <main className="flex flex-1 flex-col gap-gap-section px-inset-container pt-12 pb-16 md:gap-32 md:pb-24">
+        <div className="flex flex-col gap-16 md:gap-24">
           <LandingHero />
-          <LandingHomePreview />
+          <LandingTour />
         </div>
-        <LandingProblem />
-        <LandingHowItWorks />
+        <div className="-mx-inset-container bg-surface-subtle px-inset-container py-16 md:py-24">
+          <LandingProblem />
+        </div>
+        <LandingResearch />
+        <LandingToday />
         <LandingForFounders />
-        <LandingPlatform />
-        <LandingFinalCta />
+        <div className="-mx-inset-container -mb-16 bg-action-primary-surface-hover px-inset-container py-8 md:-mb-24">
+          <LandingFinalCta />
+        </div>
       </main>
       <LandingFooter />
     </div>
