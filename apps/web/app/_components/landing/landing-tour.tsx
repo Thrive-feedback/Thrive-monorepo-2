@@ -8,10 +8,12 @@ import {
   TabsTrigger,
 } from '@/components/atoms/tabs';
 import { Text } from '@/components/atoms/text';
+import glass from '@/components/organisms/glass.module.css';
+import { cn } from '@/lib/cn.util';
 import type { HomeTab } from '@/lib/routes.constant';
 import { LANDING_COPY } from './landing-copy.constant';
 import { LandingHomePreview } from './landing-home-preview';
-import { LandingNote } from './landing-note';
+import { NotedText } from './landing-note';
 import {
   preferredScrollBehavior,
   scrollTabsIntoColumn,
@@ -21,9 +23,10 @@ const { tour } = LANDING_COPY;
 
 /**
  * Four chapters of the feedback loop as tabs over a live preview of Home, set together on one
- * tinted stage; the preview is the one panel, labelled by whichever chapter is open. Choosing a
- * chapter opens the Home tab that shows it, and opening a tab inside the preview selects the
- * chapter it belongs to, so the two never disagree. The Workspace tab is open first, as on Home.
+ * stage of frosted glass; the preview is the one panel, labelled by whichever chapter is open.
+ * Choosing a chapter opens the Home tab that shows it, and opening a tab inside the preview
+ * selects the chapter it belongs to, so the two never disagree. The Workspace tab is open first,
+ * as on Home.
  */
 export function LandingTour() {
   const [tab, setTab] = useState<HomeTab>('workspace');
@@ -51,22 +54,21 @@ export function LandingTour() {
       aria-labelledby="tour-title"
       className="mx-auto flex w-full max-w-300 scroll-mt-24 flex-col gap-8"
     >
-      <div className="relative">
-        <Text
-          as="h2"
-          id="tour-title"
-          variant="display-2"
-          className="text-balance text-center"
-        >
-          {tour.title}
-        </Text>
-        <LandingNote className="absolute right-0 bottom-0 hidden lg:block">
-          {tour.aside}
-        </LandingNote>
-      </div>
+      <Text
+        as="h2"
+        id="tour-title"
+        variant="display-2"
+        className="text-balance text-center"
+      >
+        <NotedText text={tour.title} note={tour.aside} />
+      </Text>
       <div
         ref={stageRef}
-        className="scroll-mt-24 rounded-page bg-action-primary-surface-hover p-2 sm:p-4 md:p-8"
+        className={cn(
+          'scroll-mt-24 rounded-page p-2 sm:p-4 md:p-8',
+          glass.glass,
+          glass.neutral,
+        )}
       >
         <Tabs
           value={tab}

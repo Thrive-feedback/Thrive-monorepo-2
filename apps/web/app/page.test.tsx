@@ -42,8 +42,9 @@ describe('LandingPage', () => {
     render(await LandingPage());
 
     expect(readSession).not.toHaveBeenCalled();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Honest feedback starts with a question.',
+    // By name, which leaves out the handwritten note hanging off the heading.
+    expect(screen.getByRole('heading', { level: 1 })).toHaveAccessibleName(
+      'Feedback while it still matters.',
     );
   });
 
@@ -68,7 +69,7 @@ describe('LandingPage', () => {
       screen.getByRole('link', { name: 'See it in action' }),
     ).toHaveAttribute('href', '#tour');
     expect(
-      screen.getByRole('region', { name: 'Try it before you sign in' }),
+      screen.getByRole('region', { name: 'Try it, then sign in' }),
     ).toHaveAttribute('id', 'tour');
   });
 
@@ -85,15 +86,24 @@ describe('LandingPage', () => {
     render(await LandingPage());
 
     for (const name of [
-      'Try it before you sign in',
-      'Silence isn’t agreement.',
-      'Every choice in Thrive comes from research',
+      'Try it, then sign in',
+      'Four moments that shouldn’t wait',
+      'Honest feedback starts with a question.',
       'Everything you need to start. Nothing you don’t.',
-      'Made for founders without an HR team',
+      'Made for whoever leads the team',
       'Start the conversation your team is waiting for.',
     ]) {
       expect(screen.getByRole('region', { name })).toBeInTheDocument();
     }
+  });
+
+  it('offers Thai as coming, without pretending it can be chosen', async () => {
+    render(await LandingPage());
+
+    const thai = screen.getByRole('button', { name: 'TH' });
+    expect(thai).toBeDisabled();
+    expect(thai).toHaveAccessibleDescription('Thai is coming soon');
+    expect(screen.getByText('EN')).toHaveAttribute('aria-current', 'true');
   });
 
   it('no longer points visitors at the component showcase or the API reference', async () => {

@@ -39,7 +39,9 @@ describe('LandingHomePreview', () => {
     const user = userEvent.setup();
     render(<LandingHomePreview />);
 
-    expect(screen.queryByText('The pricing page draft')).toBeNull();
+    // Fern's question is also on Shared with me, which the wide layout opens beside the feed, so
+    // the Ask is told apart by who asked it.
+    expect(screen.queryByText(/Asked by/)).toBeNull();
 
     await user.click(first('button', 'Waiting for me'));
 
@@ -47,9 +49,7 @@ describe('LandingHomePreview', () => {
       'aria-pressed',
       'true',
     );
-    expect(
-      screen.getAllByText('The pricing page draft').length,
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Asked by/).length).toBeGreaterThan(0);
     expect(screen.queryByRole('link', { name: 'Waiting for me' })).toBeNull();
   });
 
@@ -79,11 +79,13 @@ describe('LandingHomePreview', () => {
     render(<LandingHomePreview />);
 
     await user.click(first('button', 'Waiting for me'));
-    await user.click(first('button', 'The pricing page draft'));
+    await user.click(
+      first('button', 'In our run-through just now, where did you get lost?'),
+    );
     const dialog = screen.getByRole('dialog', { name: 'Give your feedback' });
     await user.type(
       within(dialog).getByRole('textbox', {
-        name: /What would you tell Nok Chaiyo/,
+        name: /What would you tell Fern Somsak/,
       }),
       'Lead with the price for small teams.',
     );
