@@ -5,12 +5,11 @@ import {
 import { Link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
 import { ROUTES } from '@/lib/routes.constant';
-import { LevelBadge } from './level-badge';
+import { ComponentSearch } from './component-search';
 
 /**
- * Each card is one link: its name stretches an invisible `::after` over the whole card, so
- * the card is clickable without wrapping live controls in an `<a>`, which HTML forbids and a
- * screen reader would read as one long link. The preview is `inert` — seen, never focused.
+ * The showcase's front page: what it is and how to add to it, then every component, searchable.
+ * Each preview is rendered here, on the server, and handed to the search as an element.
  */
 export function ComponentIndex() {
   return (
@@ -35,51 +34,15 @@ export function ComponentIndex() {
         </Text>
       </header>
 
-      {ATOMIC_LEVELS.map(({ level, title, folder, description }) => (
-        <section
-          key={level}
-          aria-labelledby={`${level}-heading`}
-          className="flex flex-col gap-4"
-        >
-          <div className="flex flex-col gap-1">
-            <h2 id={`${level}-heading`} className="text-subtitle-1">
-              {title}{' '}
-              <code className="font-normal text-body-2 text-fg-accent">
-                {folder}
-              </code>
-            </h2>
-            <Text variant="body-2" tone="muted">
-              {description}
-            </Text>
-          </div>
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {COMPONENT_CATALOG.filter((entry) => entry.level === level).map(
-              ({ slug, name, level: entryLevel, Preview }) => (
-                <li
-                  key={slug}
-                  className="relative flex flex-col overflow-hidden rounded-surface border border-border-default hover:border-border-strong hover:bg-surface-raised"
-                >
-                  <div
-                    inert
-                    className="flex min-h-32 flex-1 flex-wrap items-center justify-center gap-3 p-6"
-                  >
-                    <Preview />
-                  </div>
-                  <div className="flex items-center justify-between gap-2 border-border-default border-t bg-surface-raised px-4 py-3">
-                    <Link
-                      href={ROUTES.uiShowcase.component(slug)}
-                      className="font-semibold text-fg-primary after:absolute after:inset-0"
-                    >
-                      {name}
-                    </Link>
-                    <LevelBadge level={entryLevel} />
-                  </div>
-                </li>
-              ),
-            )}
-          </ul>
-        </section>
-      ))}
+      <ComponentSearch
+        levels={ATOMIC_LEVELS}
+        cards={COMPONENT_CATALOG.map(({ slug, name, level, Preview }) => ({
+          slug,
+          name,
+          level,
+          preview: <Preview />,
+        }))}
+      />
     </main>
   );
 }
