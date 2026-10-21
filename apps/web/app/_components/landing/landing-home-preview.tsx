@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, use, useEffect, useRef, useState } from 'react';
 import { Text } from '@/components/atoms/text';
-import { AnswerAskView } from '@/components/organisms/answer-ask-view';
+import type { AnswerAskViewProps } from '@/components/organisms/answer-ask-view';
 import { FeedbackComposer } from '@/components/organisms/feedback-composer';
 import { FeedbackFeed } from '@/components/organisms/feedback-feed';
-import { HomeDialog } from '@/components/organisms/home-dialog';
+import type { HomeDialogProps } from '@/components/organisms/home-dialog';
 import { ReceivedFeedbackListView } from '@/components/organisms/received-feedback-list-view';
 import { SentRequestListView } from '@/components/organisms/sent-request-list-view';
 import { WaitingAskListView } from '@/components/organisms/waiting-ask-list-view';
@@ -16,7 +16,9 @@ import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { RequestFeedbackAction } from '@/lib/feedback/request-feedback-state.type';
 import type { SentRequest } from '@/lib/feedback/sent-request.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
+import { preloadable } from '@/lib/preloadable.util';
 import type { HomeTab } from '@/lib/routes.constant';
+import { whenIdle } from '@/lib/when-idle.util';
 import { LANDING_COPY } from './landing-copy.constant';
 import {
   PREVIEW_RECEIVED,
@@ -31,6 +33,32 @@ import {
 import { scrollTabsIntoColumn } from './landing-preview-scroll.util';
 
 const { preview } = LANDING_COPY;
+
+/*
+ * The dialog that answers an Ask, and the form inside it, show only once a visitor opens one, so
+ * their code loads apart from the page, fetched once the browser is idle.
+ */
+/** Fetches the dialog ahead of need, as the preview does once the browser is idle. */
+export const preloadAnswerDialog = preloadable(() =>
+  Promise.all([
+    import('@/components/organisms/home-dialog'),
+    import('@/components/organisms/answer-ask-view'),
+  ]),
+);
+
+/** `HomeDialog` around `AnswerAskView`, as Home opens an Ask, once their code has arrived. */
+function AnswerDialog({
+  title,
+  close,
+  ...view
+}: Pick<HomeDialogProps, 'title' | 'close'> & AnswerAskViewProps) {
+  const [{ HomeDialog }, { AnswerAskView }] = use(preloadAnswerDialog());
+  return (
+    <HomeDialog title={title} close={close}>
+      <AnswerAskView {...view} />
+    </HomeDialog>
+  );
+}
 
 /**
  * Home, drawn by Home's own template and components, on made-up data, inside a window a visitor
@@ -62,6 +90,13 @@ export function LandingHomePreview({
       scrollTabsIntoColumn(body.parentElement, 'auto');
     }
   }, []);
+  useEffect(
+    () =>
+      whenIdle(() => {
+        void preloadAnswerDialog();
+      }),
+    [],
+  );
   function setTab(next: HomeTab) {
     setOwnTab(next);
     onTabChange?.(next);
@@ -187,18 +222,20 @@ export function LandingHomePreview({
         {preview.caption}
       </Text>
       {openAsk && (
-        <HomeDialog
-          key={openAsk.askId}
-          title="Give your feedback"
-          close={{ onSelect: () => setOpenAskId(null) }}
-        >
-          <AnswerAskView
-            ask={{ ...openAsk, feedbackRequestId: `${openAsk.askId}-request` }}
+        <Suspense fallback={null}>
+          <AnswerDialog
+            key={openAsk.askId}
+            title="Give your feedback"
+            close={{ onSelect: () => setOpenAskId(null) }}
+            ask={{
+              ...openAsk,
+              feedbackRequestId: `${openAsk.askId}-request`,
+            }}
             teammates={PREVIEW_TEAMMATES}
             workspaceGoals={PREVIEW_WORKSPACE_GOALS}
             action={answerAsk}
           />
-        </HomeDialog>
+        </Suspense>
       )}
     </section>
   );

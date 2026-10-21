@@ -2,14 +2,38 @@
 
 import { cva } from 'class-variance-authority';
 import { ChevronUpIcon, PenLineIcon } from 'lucide-react';
-import { useId, useState } from 'react';
+import { Suspense, use, useEffect, useId, useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { Skeleton } from '@/components/atoms/skeleton';
 import type { GiveFeedbackAction } from '@/lib/feedback/give-feedback-state.type';
 import type { RequestFeedbackAction } from '@/lib/feedback/request-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
-import { GiveFeedbackForm } from './give-feedback-form';
-import { RequestFeedbackForm } from './request-feedback-form';
+import { preloadable } from '@/lib/preloadable.util';
+import { whenIdle } from '@/lib/when-idle.util';
+import type { GiveFeedbackFormProps } from './give-feedback-form';
+import type { RequestFeedbackFormProps } from './request-feedback-form';
+
+/*
+ * The two forms carry the autocomplete and most of the composer's code, and a page needs neither
+ * until someone opens a form, so they load apart from the page, fetched once the browser is idle.
+ */
+const loadRequestForm = preloadable(() => import('./request-feedback-form'));
+const loadGiveForm = preloadable(() => import('./give-feedback-form'));
+
+/** Fetches both forms ahead of need, as the composer does once the browser is idle. */
+export function preloadComposerForms() {
+  return Promise.all([loadRequestForm(), loadGiveForm()]);
+}
+
+function RequestFeedbackForm(props: RequestFeedbackFormProps) {
+  const { RequestFeedbackForm: Form } = use(loadRequestForm());
+  return <Form {...props} />;
+}
+
+function GiveFeedbackForm(props: GiveFeedbackFormProps) {
+  const { GiveFeedbackForm: Form } = use(loadGiveForm());
+  return <Form {...props} />;
+}
 
 type ComposerMode = 'request' | 'give';
 
@@ -64,6 +88,14 @@ export function FeedbackComposer({
   const [expanded, setExpanded] = useState(false);
   const [drawn, setDrawn] = useState<ReadonlySet<ComposerMode>>(new Set());
   const formsId = useId();
+
+  useEffect(
+    () =>
+      whenIdle(() => {
+        void preloadComposerForms();
+      }),
+    [],
+  );
 
   function choose(next: ComposerMode) {
     setMode(next);
@@ -138,24 +170,41 @@ export function FeedbackComposer({
       <div id={formsId} hidden={!expanded} className="p-5">
         {drawn.has('request') && (
           <div hidden={mode !== 'request'}>
-            <RequestFeedbackForm
-              teammates={teammates}
-              workspaceGoals={workspaceGoals}
-              action={requestAction}
-            />
+            <Suspense fallback={<FormSkeleton />}>
+              <RequestFeedbackForm
+                teammates={teammates}
+                workspaceGoals={workspaceGoals}
+                action={requestAction}
+              />
+            </Suspense>
           </div>
         )}
         {drawn.has('give') && (
           <div hidden={mode !== 'give'}>
-            <GiveFeedbackForm
-              teammates={teammates}
-              workspaceGoals={workspaceGoals}
-              action={giveAction}
-            />
+            <Suspense fallback={<FormSkeleton />}>
+              <GiveFeedbackForm
+                teammates={teammates}
+                workspaceGoals={workspaceGoals}
+                action={giveAction}
+              />
+            </Suspense>
           </div>
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * A form still loading: opened before the browser was idle long enough to fetch it. Each form
+ * waits behind its own, so opening the second never hides the first.
+ */
+function FormSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <Skeleton shape="control" className="h-11 w-full rounded-input" />
+      <Skeleton shape="control" className="h-24 w-full rounded-input" />
+    </div>
   );
 }
 
