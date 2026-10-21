@@ -4,7 +4,7 @@ import { link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
 import { ROUTES } from '@/lib/routes.constant';
 import { LANDING_COPY } from './landing-copy.constant';
-import { LandingNote } from './landing-note';
+import { NotedText } from './landing-note';
 
 const { hero, tour } = LANDING_COPY;
 
@@ -19,17 +19,15 @@ export function LandingHero() {
       aria-labelledby="hero-title"
       className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 pt-8 text-center md:pt-16"
     >
-      <div className="relative flex flex-col items-center gap-5">
-        <LandingNote className="absolute -top-8 right-0 hidden md:block lg:-right-24">
-          {hero.note}
-        </LandingNote>
+      <div className="flex flex-col items-center gap-5">
         <Text
           as="h1"
           id="hero-title"
           variant="display-1"
           className="text-balance"
         >
-          {hero.headlineStart}
+          <NotedText text={hero.headlineStart} note={hero.note} />
+          {hero.headlineJoin}
           <span className="relative inline-block whitespace-nowrap">
             {hero.headlineMark}
             <HandUnderline />

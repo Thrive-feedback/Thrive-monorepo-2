@@ -5,8 +5,9 @@ import { LandingSection } from './landing-section';
 const { today } = LANDING_COPY;
 
 /**
- * What a Member can do the day they sign in, then what is planned, kept apart and quieter so
- * nothing on the way reads as something already there.
+ * What a team can do in Thrive, six things in `ADR-0038`'s order. Kudos, Discord and Insights are
+ * listed although they are not built yet, chosen knowingly there; each is described only by what it
+ * is for, never by where it sits or how fast it is.
  */
 export function LandingToday() {
   return (
@@ -26,23 +27,6 @@ export function LandingToday() {
           </li>
         ))}
       </ul>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-        <Text as="h3" variant="subtitle-3" tone="muted" className="shrink-0">
-          {today.onTheWayTitle}
-        </Text>
-        <ul className="flex flex-wrap gap-2">
-          {today.onTheWay.map((item) => (
-            <li
-              key={item}
-              className="rounded-chip border border-border-default px-3 py-1"
-            >
-              <Text as="span" variant="body-2" tone="muted">
-                {item}
-              </Text>
-            </li>
-          ))}
-        </ul>
-      </div>
     </LandingSection>
   );
 }

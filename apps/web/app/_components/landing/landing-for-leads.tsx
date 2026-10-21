@@ -2,20 +2,20 @@ import { Text } from '@/components/atoms/text';
 import { LANDING_COPY } from './landing-copy.constant';
 import { LandingSection } from './landing-section';
 
-const { founders } = LANDING_COPY;
+const { leads } = LANDING_COPY;
 
-/** What a founder without an HR team gets, and why going first matters. */
-export function LandingForFounders() {
+/** What whoever leads the team gets, and why going first matters. */
+export function LandingForLeads() {
   return (
     <LandingSection
-      id="for-founders"
-      title={founders.title}
-      note={founders.note}
-      lead={founders.lead}
+      id="for-leads"
+      title={leads.title}
+      note={leads.note}
+      lead={leads.lead}
       layout="split"
     >
       <ul className="flex flex-col">
-        {founders.points.map((point) => (
+        {leads.points.map((point) => (
           <li
             key={point.title}
             className="flex flex-col gap-2 border-border-muted border-t py-5"

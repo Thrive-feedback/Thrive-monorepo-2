@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
-import { LandingNote } from './landing-note';
+import { LandingNote, NotedText } from './landing-note';
 
 const section = cva('mx-auto grid w-full max-w-5xl gap-10', {
   variants: {
@@ -23,11 +23,14 @@ const header = cva('relative flex max-w-2xl flex-col gap-4', {
   defaultVariants: { align: 'start' },
 });
 
-/** Beside the heading in the margin from `lg` up, unless a column sits there; under it otherwise. */
+/**
+ * Under the heading, until `lg` moves it to the heading's corner; a split section keeps it under
+ * the heading, since its own column sits where the corner would be.
+ */
 const notePlacement = cva('', {
   variants: {
     layout: {
-      stacked: 'lg:absolute lg:top-0 lg:left-full lg:ml-8 lg:whitespace-nowrap',
+      stacked: 'lg:hidden',
       split: '',
     },
   },
@@ -77,7 +80,11 @@ export function LandingSection({
           variant="display-2"
           className="text-balance"
         >
-          {title}
+          {note && layout !== 'split' ? (
+            <NotedText text={title} note={note} />
+          ) : (
+            title
+          )}
         </Text>
         {lead && (
           <Text variant="subtitle-1" tone="muted">

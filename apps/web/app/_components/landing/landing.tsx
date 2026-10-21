@@ -1,19 +1,20 @@
 import { LandingBackdrop } from './landing-backdrop';
 import { LandingFinalCta } from './landing-final-cta';
 import { LandingFooter } from './landing-footer';
-import { LandingForFounders } from './landing-for-founders';
+import { LandingForLeads } from './landing-for-leads';
 import { LandingHero } from './landing-hero';
+import { LandingMoments } from './landing-moments';
 import { LandingNavbar } from './landing-navbar';
-import { LandingProblem } from './landing-problem';
-import { LandingResearch } from './landing-research';
 import { LandingToday } from './landing-today';
 import { LandingTour } from './landing-tour';
+import { LandingWhy } from './landing-why';
 
 /**
- * The landing page, top to bottom: the promise, a tour of Home to click through, the problem it
- * answers, the research behind how Thrive works, what a team can do today, why it suits a founder,
- * and the way in again at the end. The problem sits on a full-width grey band and the way in on one
- * in the primary tint; behind it all, handwritten marks drift at three depths as the page scrolls.
+ * The landing page, top to bottom, as `ADR-0038` orders it: the promise, a tour of Home to click
+ * through, four moments that shouldn't wait, why it works, what a team can do, who it is for, and
+ * the way in again. Why it works sits on a full-width band in the light secondary tint, and the
+ * way in on one in the light primary tint; behind it all, soft circles drift at three depths as the
+ * page scrolls.
  */
 export function Landing() {
   return (
@@ -25,12 +26,12 @@ export function Landing() {
           <LandingHero />
           <LandingTour />
         </div>
-        <div className="-mx-inset-container bg-surface-subtle px-inset-container py-16 md:py-24">
-          <LandingProblem />
+        <LandingMoments />
+        <div className="-mx-inset-container bg-action-secondary-surface-hover px-inset-container py-16 md:py-24">
+          <LandingWhy />
         </div>
-        <LandingResearch />
         <LandingToday />
-        <LandingForFounders />
+        <LandingForLeads />
         <div className="-mx-inset-container -mb-16 bg-action-primary-surface-hover px-inset-container py-8 md:-mb-24">
           <LandingFinalCta />
         </div>

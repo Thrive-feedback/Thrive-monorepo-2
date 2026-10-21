@@ -12,23 +12,25 @@ web
 
 ## Users
 
-- **Buyer:** the founder of a 20–50 person startup, usually with no HR team (brain `vision.md`,
-  decided 2026-09-15, untested: zero customer interviews).
-- **Users:** everyone in that startup, the founder most of all, because the founder's openness decides
+- **Who the public pages speak to:** anyone who leads a team, anywhere — a founder, a team lead,
+  someone in HR, the head of a student project (brain `ADR-0038`, 2026-10-21). No country, culture or
+  price is named. Who pays is open again; the earlier buyer, a founder of a 20–50 person startup, is
+  history (`vision.md`). Zero customer interviews.
+- **Users:** everyone on that team, the lead most of all, because the lead going first decides
   whether anyone else speaks up.
 
 ## Product Purpose
 
 Thrive is an HRD platform, built by Thai people. Phase 1 is feedback culture: helping people inside a
-company ask for, give and act on feedback, starting with Thai teams whose habits of *kreng jai* and
-saving face keep honest feedback unsaid. Success for the landing page (O-11) is that a founder who
-visits understands what Thrive does for their team and signs in.
+team ask for, give and act on feedback, for any team where it does not happen yet. Success for the
+landing page (O-11) is that whoever leads a team understands what Thrive does for them and signs in.
 
 ## Positioning
 
-Thrive starts from **being asked**. A Member asks teammates for *advice* on a Topic, and the person
-who asks chooses who else may read the answers. A direct, private question gives people permission
-to be honest where open criticism would cost face.
+**Feedback while it still matters** (`ADR-0038`): ask how it went, give feedback unasked, or say
+thanks right after it happens, instead of waiting for the review, the retro or the final grade.
+Asking keeps its place as *why it works*: a direct question gives people permission to be honest,
+and whoever writes the Feedback chooses who reads it.
 
 ## Capabilities and Constraints
 
@@ -41,30 +43,32 @@ What works today, per the brain's `STATE.md`:
 - The Workspace feed.
 - Workspace Goals as `#hashtags` and `@Mentions` in Feedback text.
 
-Planned but not built: the Discord integration, Insights for Admins, Notifications and Reminders, and
-personal Goals. These may be shown as "on the way", never as available.
+Planned but not built: **Kudos** (not designed), the **Discord** integration (`ADR-0035`), **Insights**
+for Admins, Notifications and Reminders, and personal Goals. The landing page lists Kudos, Discord
+and Insights as features with no "on the way", chosen knowingly in `ADR-0038`; it describes Kudos
+only by what it is for. Nothing may promise how fast an answer arrives: nothing notifies anybody.
 
 Use the brain's `glossary.md` names exactly: Member, Workspace, Feedback Request, Ask, Topic.
 Never say "user".
 
 ## Brand Commitments
 
-- English-only copy on public pages for now. There is no i18n yet.
+- English by default and Thai as well, across the web app (`ADR-0038`); Thai is not built yet (#48,
+  #233–#235), so the landing page shows an inert EN / TH switch. Thai is written natively, feature
+  names stay English.
+- The landing page's words are `ADR-0038`'s *The words, as agreed*; change them there first.
 - Use the design system in `packages/tokens`, generated from the Blueprint export. Never hand-add
   tokens.
 
 ## Evidence on Hand
 
-The research figures cleared for public copy, each shown with its source:
-
-- HBS 2019: 34% more areas and 56% more ways to improve when people are asked for advice.
-- Gallup: about 80% of people who got meaningful feedback in the past week are fully engaged.
-- Google Project Aristotle: psychological safety was the strongest predictor of team effectiveness.
+The landing page cites no research (`ADR-0038`, decision 12). Its proof is the clickable Home
+preview and four worked Moments, which are illustrations, not customers.
 
 There are no customers, testimonials, usage counts or prices. Never invent them.
 
 ## Product Principles
 
-- Ask first: an invitation to speak beats an obligation to review.
-- Privacy is chosen by the person who asks, not imposed on them.
-- Claim only what a visitor can do after signing in today.
+- Timing first: feedback is worth most right after the moment it is about.
+- An invitation to speak beats an obligation to review.
+- Whoever writes the Feedback chooses who reads it; it is never imposed.
