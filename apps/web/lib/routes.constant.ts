@@ -64,6 +64,8 @@ export const ROUTES = {
   uiShowcase: {
     index: '/ui-showcase',
     tokens: '/ui-showcase/tokens',
+    /** A first look at Feedback written as a letter. */
+    letter: '/ui-showcase/letter',
     component: (slug: string) => `/ui-showcase/${slug}`,
   },
 } as const;

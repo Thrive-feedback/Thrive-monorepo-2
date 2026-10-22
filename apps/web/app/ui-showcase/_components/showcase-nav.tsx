@@ -12,6 +12,7 @@ export function ShowcaseNav() {
         <span className="font-semibold">Thrive UI</span>
         <Link href={ROUTES.uiShowcase.index}>Components</Link>
         <Link href={ROUTES.uiShowcase.tokens}>Tokens</Link>
+        <Link href={ROUTES.uiShowcase.letter}>Letter</Link>
         <div className="ms-auto">
           <ThemeToggle />
         </div>
