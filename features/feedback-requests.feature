@@ -1,6 +1,7 @@
 Feature: Feedback requests
-  A Member asks a teammate for Feedback with a Request message. The request is read by the
-  person who sent it and the people it asks, and by nobody else. The Feedback it
+  A Member asks one or more teammates for Feedback with a Request message. The request is read
+  by the person who sent it and the people it asks, and by nobody else; each person asked sees
+  only their own Ask, never who else was asked. The Feedback it
   collects is also read by whoever the Requester chose to share it with.
 
   Background:
@@ -91,6 +92,39 @@ Feature: Feedback requests
     And Ann has asked Ben for Feedback: "Running the planning meeting"
     When Cara answers the Ask waiting for Ben
     Then Cara is told the Ask cannot be found
+
+  @api
+  Scenario: A Member asks several teammates at once
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting"
+    When Ann looks at the requests they have sent
+    Then Ann sees a request saying "Running the planning meeting" asking Ben and Cara
+
+  @api
+  Scenario Outline: Each teammate asked sees their own Ask waiting
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting"
+    When <giver> looks at what they have been asked
+    Then <giver> sees an Ask from Ann saying "Running the planning meeting" waiting for an answer
+
+    Examples:
+      | giver |
+      | Ben   |
+      | Cara  |
+
+  @api
+  Scenario: A teammate asked does not learn who else was asked
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting"
+    When Ben opens Ann's Feedback request
+    Then Ben sees only their own Ask on the request
+
+  @api
+  Scenario: One teammate outside the Workspace stops the whole request
+    Given Dan owns a Workspace called "Globex"
+    When Ann asks Ben and Dan for Feedback: "Running the planning meeting"
+    Then Ann is told Dan is not in their Workspace
+    And Ben has not been asked anything
 
   @api
   Scenario: A Member cannot ask someone outside their Workspace

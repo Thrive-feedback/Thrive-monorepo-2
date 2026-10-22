@@ -19,6 +19,16 @@ defineParameterType({
     /nobody else|everyone in the Workspace|[A-Z][a-z]+(?: and [A-Z][a-z]+)*/,
 });
 
+/**
+ * Two or more people named in one breath — "Ben and Cara" — as a Requester asks them. One name
+ * alone is a `{person}`, so the two never match the same words.
+ */
+defineParameterType({
+  name: 'people',
+  regexp: /[A-Z][a-z]+(?: and [A-Z][a-z]+)+/,
+  transformer: (names: string) => names.split(' and '),
+});
+
 /** The answer the `When` step just got, which must have been a success. */
 function lastSucceeded(world: ThriveWorld, what: string) {
   assert.ok(world.lastResponse, 'Nothing was asked of the API.');
@@ -489,5 +499,83 @@ Then(
       `${name} opening the Feedback request`,
     );
     assert.equal(response.body.visibility, null);
+  },
+);
+
+Given(
+  '{person} has asked {people} for Feedback: {string}',
+  async function (
+    this: ThriveWorld,
+    requester: string,
+    givers: string[],
+    message: string,
+  ) {
+    this.succeeded(
+      await askForFeedback(this, requester, givers, message),
+      `${requester} asking ${givers.join(' and ')} for Feedback`,
+    );
+  },
+);
+
+When(
+  '{person} asks {people} for Feedback: {string}',
+  async function (
+    this: ThriveWorld,
+    requester: string,
+    givers: string[],
+    message: string,
+  ) {
+    await askForFeedback(this, requester, givers, message);
+  },
+);
+
+Then(
+  '{person} sees a request saying {string} asking {people}',
+  function (
+    this: ThriveWorld,
+    _name: string,
+    message: string,
+    givers: string[],
+  ) {
+    const items: { message: string; asks: { giverAccountId: string }[] }[] =
+      this.lastResponse?.body.items;
+    assert.deepEqual(
+      items.map((request) => [
+        request.message,
+        request.asks.map((ask) => ask.giverAccountId).sort(),
+      ]),
+      [[message, givers.map((giver) => this.person(giver).accountId).sort()]],
+    );
+  },
+);
+
+Then(
+  '{person} sees only their own Ask on the request',
+  function (this: ThriveWorld, name: string) {
+    const response = lastSucceeded(
+      this,
+      `${name} opening the Feedback request`,
+    );
+    assert.deepEqual(
+      response.body.asks.map(
+        (ask: { giverAccountId: string }) => ask.giverAccountId,
+      ),
+      [this.person(name).accountId],
+    );
+  },
+);
+
+Then(
+  '{person} has not been asked anything',
+  async function (this: ThriveWorld, name: string) {
+    const listed = this.succeeded(
+      await this.as(
+        name,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(name)}/feedback-asks`,
+      ),
+      `${name} listing what they have been asked`,
+    );
+    assert.deepEqual(listed.body.items, []);
   },
 );

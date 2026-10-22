@@ -22,7 +22,7 @@ const VISIBILITIES = [
 /** The shape the API's own schema accepts, so the browser is never the first to check it. */
 const RequestFeedbackInput = z
   .object({
-    giverAccountId: z.uuid(),
+    giverAccountIds: z.array(z.uuid()).min(1),
     message: z.string().trim().min(1),
     visibility: z.enum(VISIBILITIES),
     selectedAccountIds: z.array(z.uuid()),
@@ -36,9 +36,10 @@ const RequestFeedbackInput = z
 
 /** What to say when the API refused the send, by its error code. */
 const SEND_ERRORS: Readonly<Record<string, string>> = {
-  GIVER_NOT_IN_WORKSPACE: 'That teammate is no longer in your Workspace.',
+  GIVER_NOT_IN_WORKSPACE:
+    'Someone you picked to ask is no longer in your Workspace.',
   CANNOT_ASK_YOURSELF: "You can't ask yourself for Feedback.",
-  GIVER_ALREADY_ASKED: 'You have already asked this teammate about this.',
+  GIVER_ALREADY_ASKED: 'You picked the same teammate twice.',
   REQUEST_MESSAGE_TOO_LONG:
     'That request is too long. Try saying it more briefly.',
   NO_PEOPLE_SELECTED: 'Pick at least one person to share it with.',
@@ -56,7 +57,7 @@ const ELSEWHERE: Readonly<Record<string, string>> = {
 const COULD_NOT_SEND = "We couldn't send your request. Please try again.";
 
 /**
- * Asks one teammate for Feedback with a Request message, shared with whoever the Requester chose, then goes
+ * Asks one or more teammates for Feedback with a Request message, shared with whoever the Requester chose, then goes
  * back to Home's My requests tab. `workspaceId` is the Workspace the page was drawn for, bound
  * where the form is drawn; it must still be the one the person is in, or nothing is sent. The
  * API decides who is asking from the session cookie.
@@ -70,7 +71,7 @@ export async function requestFeedback(
   formData: FormData,
 ): Promise<RequestFeedbackState> {
   const input = RequestFeedbackInput.safeParse({
-    giverAccountId: formData.get('giverAccountId'),
+    giverAccountIds: formData.getAll('giverAccountIds'),
     message: formData.get('message'),
     visibility: formData.get('visibility'),
     selectedAccountIds: formData.getAll('selectedAccountIds'),
@@ -79,8 +80,8 @@ export async function requestFeedback(
     const { fieldErrors } = z.flattenError(input.error);
     return {
       fieldErrors: {
-        giverAccountId: fieldErrors.giverAccountId
-          ? 'Pick who to ask.'
+        giverAccountIds: fieldErrors.giverAccountIds
+          ? 'Pick at least one person to ask.'
           : undefined,
         message: fieldErrors.message
           ? 'Write what you would like feedback on.'
@@ -104,7 +105,7 @@ export async function requestFeedback(
         },
         body: {
           message: input.data.message,
-          giverAccountIds: [input.data.giverAccountId],
+          giverAccountIds: input.data.giverAccountIds,
           visibility: input.data.visibility,
           // Sent only with Selected people: the API refuses people picked for anything else.
           ...(input.data.visibility === 'SELECTED_PEOPLE' && {

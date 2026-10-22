@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -59,5 +60,31 @@ describe('DropdownMenu', () => {
       'aria-disabled',
       'true',
     );
+  });
+});
+
+describe('DropdownMenuCheckboxItem', () => {
+  it('reports being ticked and stays open for the next pick', async () => {
+    const user = userEvent.setup();
+    const onCheckedChange = vi.fn();
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="Columns">Columns</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem
+            checked={false}
+            onCheckedChange={onCheckedChange}
+          >
+            Name
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Columns' }));
+    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Name' }));
+
+    expect(onCheckedChange).toHaveBeenCalledWith(true);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
   });
 });

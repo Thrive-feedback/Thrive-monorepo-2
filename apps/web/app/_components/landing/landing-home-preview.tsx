@@ -114,8 +114,9 @@ export function LandingHomePreview({
     _previous,
     formData,
   ) => {
-    const giver = PREVIEW_TEAMMATES.find(
-      (teammate) => teammate.accountId === formData.get('giverAccountId'),
+    const asked = formData.getAll('giverAccountIds');
+    const givers = PREVIEW_TEAMMATES.filter((teammate) =>
+      asked.includes(teammate.accountId),
     );
     const sent: SentRequest = {
       id: `preview-request-sent-${composerKey}`,
@@ -123,14 +124,12 @@ export function LandingHomePreview({
       // The preview binds nothing: it has no Workspace Goals and reaches no API.
       messageTags: NO_TEXT_TAGS,
       sentAt: new Date().toISOString(),
-      asks: [
-        {
-          askId: `preview-sent-ask-${composerKey}`,
-          giverName: giver?.name ?? null,
-          giverInactive: false,
-          status: 'PENDING',
-        },
-      ],
+      asks: givers.map((giver) => ({
+        askId: `preview-sent-ask-${composerKey}-${giver.accountId}`,
+        giverName: giver.name,
+        giverInactive: false,
+        status: 'PENDING',
+      })),
     };
     setSentRequests((current) => [sent, ...current]);
     setTab('my-requests');

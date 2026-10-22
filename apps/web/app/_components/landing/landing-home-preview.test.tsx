@@ -106,7 +106,7 @@ describe('LandingHomePreview', () => {
     ).toBeInTheDocument();
   });
 
-  it('lists a sent request under My requests', async () => {
+  it('lists a request sent to several teammates under My requests', async () => {
     const user = userEvent.setup();
     render(<LandingHomePreview />);
 
@@ -116,9 +116,15 @@ describe('LandingHomePreview', () => {
     await user.keyboard('{Enter}');
     first('combobox', /What would you like feedback on/).focus();
     await user.keyboard('My first board update');
-    first('combobox', /Who do you want to ask/).focus();
+    first('button', /Who do you want to ask/).focus();
     await user.keyboard('{Enter}');
-    await user.click(screen.getByRole('option', { name: 'Arm Wattana' }));
+    await user.click(
+      screen.getByRole('menuitemcheckbox', { name: 'Arm Wattana' }),
+    );
+    await user.click(
+      screen.getByRole('menuitemcheckbox', { name: 'Nok Chaiyo' }),
+    );
+    await user.keyboard('{Escape}');
     first('button', 'Send request').focus();
     await user.keyboard('{Enter}');
 

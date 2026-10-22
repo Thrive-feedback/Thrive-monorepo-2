@@ -264,9 +264,8 @@ describe('reading one Feedback Request', () => {
     );
   });
 
-  it("never gives a Giver another Giver's answer", async () => {
-    // Two Asks on one request is #31's shape; the store can already hold it, and who may read
-    // which answer is decided here rather than when the cap is raised.
+  /** Ben and Cara were both asked, and both have answered. */
+  function askedBenAndCara() {
     const context = setUp();
     const row = context.feedbackRequestQuery.rows[0];
     if (!row) {
@@ -295,15 +294,38 @@ describe('reading one Feedback Request', () => {
       },
     );
 
+    return context;
+  }
+
+  it('shows a Giver only their own Ask, never who else was asked', async () => {
+    const context = askedBenAndCara();
+
     const found = await context.useCase.execute({
       workspaceId: WORKSPACE_ID,
       callerAccountId: GIVER,
       requestId: REQUEST_ID,
     });
 
+    expect(
+      found.asks.map((ask) => [
+        ask.giverAccountId,
+        ask.answer?.message ?? null,
+      ]),
+    ).toEqual([[GIVER, 'Ben wrote this.']]);
+  });
+
+  it('shows the Requester every Ask, with every answer', async () => {
+    const context = askedBenAndCara();
+
+    const found = await context.useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      callerAccountId: REQUESTER,
+      requestId: REQUEST_ID,
+    });
+
     expect(found.asks.map((ask) => ask.answer?.message ?? null)).toEqual([
       'Ben wrote this.',
-      null,
+      'Cara wrote this.',
     ]);
   });
 

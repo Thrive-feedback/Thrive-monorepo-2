@@ -88,6 +88,25 @@ describe('a Requester asking a teammate for Feedback', () => {
     ]);
   });
 
+  it('opens one Ask for every Member asked, in one request', async () => {
+    const SECOND_ASK_ID = '0199a0f0-0000-7000-8000-0000000000a2';
+    const feedbackRequestRepository = new FakeFeedbackRequestRepository();
+    const useCase = new SendFeedbackRequestUseCase(
+      feedbackRequestRepository,
+      new FakeWorkspaceMembershipPort().with(WORKSPACE_ID, ANN, BEN, CARA),
+      aTagsService(WORKSPACE_ID),
+      new FakeIdGenerator(REQUEST_ID, ASK_ID, SECOND_ASK_ID),
+      new FakeUnitOfWork(),
+    );
+
+    await useCase.execute(request({ giverAccountIds: [BEN, CARA] }));
+
+    expect(feedbackRequestRepository.saved[0]?.asks).toEqual([
+      { id: ASK_ID, giverAccountId: BEN, status: 'PENDING' },
+      { id: SECOND_ASK_ID, giverAccountId: CARA, status: 'PENDING' },
+    ]);
+  });
+
   it('binds what its Request message names', async () => {
     const { feedbackRequestRepository, useCase } = setUp();
 

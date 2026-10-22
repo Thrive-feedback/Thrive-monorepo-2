@@ -67,6 +67,30 @@ describe('storing a Feedback Request', () => {
     expect(found?.snapshot()).toEqual(request.snapshot());
   });
 
+  it('saves one Ask for every Member asked and reads them all back', async () => {
+    const workspaceId = uuidv7();
+    const id = uuidv7();
+    written.push(id);
+    const request = FeedbackRequest.send({
+      id,
+      workspaceId,
+      requesterAccountId: uuidv7(),
+      message: RequestMessage.of('my presentation skills'),
+      visibility: Visibility.onlyMe(),
+      tags: BoundTags.none(),
+      givers: [uuidv7(), uuidv7(), uuidv7()].map((giverAccountId) => ({
+        askId: uuidv7(),
+        giverAccountId,
+      })),
+    });
+
+    await repository.save(request);
+
+    const found = await repository.findInWorkspace(workspaceId, id);
+    expect(found?.snapshot().asks).toHaveLength(3);
+    expect(found?.snapshot()).toEqual(request.snapshot());
+  });
+
   it('saves what its Request message names and reads it back', async () => {
     const workspaceId = uuidv7();
     const request = aRequest(
