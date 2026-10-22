@@ -23,8 +23,10 @@ function trigger() {
   return screen.getByRole('combobox', { name: /Who do you want to ask/ });
 }
 
-function topicField() {
-  return screen.getByRole('combobox', { name: /What should they talk about/ });
+function messageField() {
+  return screen.getByRole('combobox', {
+    name: /What would you like feedback on/,
+  });
 }
 
 function sendButton() {
@@ -43,7 +45,7 @@ function sentSelectedPeople() {
 
 async function fillIn(user: ReturnType<typeof userEvent.setup>) {
   await pickBen(user);
-  await user.type(topicField(), 'my sprint review talk');
+  await user.type(messageField(), 'my sprint review talk');
 }
 
 async function pickBen(user: ReturnType<typeof userEvent.setup>) {
@@ -57,7 +59,7 @@ describe('RequestFeedbackForm', () => {
     requestFeedback.mockResolvedValue({});
   });
 
-  it('asks for a teammate and a Topic, and offers to send', () => {
+  it('asks for a teammate and a Request message, and offers to send', () => {
     render(
       <RequestFeedbackForm
         teammates={TEAMMATES}
@@ -67,11 +69,11 @@ describe('RequestFeedbackForm', () => {
     );
 
     expect(trigger()).toBeInTheDocument();
-    expect(topicField()).toBeInTheDocument();
+    expect(messageField()).toBeInTheDocument();
     expect(sendButton()).toHaveAttribute('type', 'submit');
   });
 
-  it('sends the chosen teammate and the Topic once both are given', async () => {
+  it('sends the chosen teammate and the Request message once both are given', async () => {
     const user = userEvent.setup();
     render(
       <RequestFeedbackForm
@@ -82,13 +84,13 @@ describe('RequestFeedbackForm', () => {
     );
 
     await pickBen(user);
-    await user.type(topicField(), 'my sprint review talk');
+    await user.type(messageField(), 'my sprint review talk');
     await user.click(sendButton());
 
     expect(requestFeedback).toHaveBeenCalledOnce();
     expect(sentFormData()).toEqual({
       giverAccountId: BEN,
-      topic: 'my sprint review talk',
+      message: 'my sprint review talk',
       visibility: 'ONLY_ME',
     });
   });
@@ -220,11 +222,13 @@ describe('RequestFeedbackForm', () => {
     await user.click(sendButton());
 
     expect(screen.getByText('Pick who to ask.')).toBeInTheDocument();
-    expect(screen.getByText('Add a Topic.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Write what you would like feedback on.'),
+    ).toBeInTheDocument();
     expect(requestFeedback).not.toHaveBeenCalled();
   });
 
-  it('asks for the Topic when only the teammate is chosen', async () => {
+  it('asks for the Request message when only the teammate is chosen', async () => {
     const user = userEvent.setup();
     render(
       <RequestFeedbackForm
@@ -237,12 +241,14 @@ describe('RequestFeedbackForm', () => {
     await pickBen(user);
     await user.click(sendButton());
 
-    expect(screen.getByText('Add a Topic.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Write what you would like feedback on.'),
+    ).toBeInTheDocument();
     expect(screen.queryByText('Pick who to ask.')).toBeNull();
     expect(requestFeedback).not.toHaveBeenCalled();
   });
 
-  it('asks who to ask when only the Topic is typed, and puts focus there', async () => {
+  it('asks who to ask when only the Request message is typed, and puts focus there', async () => {
     const user = userEvent.setup();
     render(
       <RequestFeedbackForm
@@ -252,7 +258,7 @@ describe('RequestFeedbackForm', () => {
       />,
     );
 
-    await user.type(topicField(), 'my sprint review talk');
+    await user.type(messageField(), 'my sprint review talk');
     await user.click(sendButton());
 
     expect(screen.getByText('Pick who to ask.')).toBeInTheDocument();
@@ -260,7 +266,7 @@ describe('RequestFeedbackForm', () => {
     expect(requestFeedback).not.toHaveBeenCalled();
   });
 
-  it('treats a Topic of only spaces as no Topic', async () => {
+  it('treats a Request message of only spaces as none', async () => {
     const user = userEvent.setup();
     render(
       <RequestFeedbackForm
@@ -271,10 +277,12 @@ describe('RequestFeedbackForm', () => {
     );
 
     await pickBen(user);
-    await user.type(topicField(), '   ');
+    await user.type(messageField(), '   ');
     await user.click(sendButton());
 
-    expect(screen.getByText('Add a Topic.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Write what you would like feedback on.'),
+    ).toBeInTheDocument();
     expect(requestFeedback).not.toHaveBeenCalled();
   });
 
@@ -292,14 +300,14 @@ describe('RequestFeedbackForm', () => {
     );
 
     await pickBen(user);
-    await user.type(topicField(), 'my sprint review talk');
+    await user.type(messageField(), 'my sprint review talk');
     await user.click(sendButton());
 
     expect(
       await screen.findByText('That teammate is no longer in your Workspace.'),
     ).toHaveAttribute('role', 'alert');
     expect(trigger()).toHaveTextContent('Ben Carter');
-    expect(topicField()).toHaveValue('my sprint review talk');
+    expect(messageField()).toHaveValue('my sprint review talk');
   });
 
   it('still shows the form when there is nobody to ask', () => {
@@ -312,7 +320,7 @@ describe('RequestFeedbackForm', () => {
     );
 
     expect(trigger()).toHaveTextContent('Pick a teammate');
-    expect(topicField()).toBeInTheDocument();
+    expect(messageField()).toBeInTheDocument();
     expect(sendButton()).toBeInTheDocument();
     expect(screen.queryByRole('link')).toBeNull();
   });

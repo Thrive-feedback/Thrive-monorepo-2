@@ -33,12 +33,10 @@ const feedItemSchema = z.object({
   origin: z.enum(FEEDBACK_ORIGINS),
   /** The request it answers, or `null` for Feedback given without being asked. */
   feedbackRequestId: z.uuid().nullable(),
-  topic: z.string(),
-  /** What the Topic was bound to when it was sent; highlight these and nothing else. */
-  topicTags: tagsSchema,
   giver: personSchema,
   receiver: personSchema,
-  body: z.string(),
+  /** The Feedback message. */
+  message: z.string(),
   /** What its Giver wrote was bound to when it was sent. */
   tags: tagsSchema,
   createdAt: z.iso.datetime({ offset: true }),

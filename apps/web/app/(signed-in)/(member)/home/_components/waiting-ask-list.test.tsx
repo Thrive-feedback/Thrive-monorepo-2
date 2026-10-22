@@ -30,8 +30,8 @@ describe('WaitingAskList', () => {
     readMyAsks.mockResolvedValue([
       {
         askId: 'ask-1',
-        topic: 'my presentation skills',
-        topicTags: NO_TEXT_TAGS,
+        message: 'my presentation skills',
+        messageTags: NO_TEXT_TAGS,
         requesterName: 'Ana Silva',
         askedAt: '2026-10-11T03:00:00.000Z',
         status: 'PENDING',
@@ -55,8 +55,8 @@ describe('WaitingAskList', () => {
     readMyAsks.mockResolvedValue([
       {
         askId: 'ask-1',
-        topic: 'my presentation skills',
-        topicTags: NO_TEXT_TAGS,
+        message: 'my presentation skills',
+        messageTags: NO_TEXT_TAGS,
         requesterName: null,
         askedAt: '2026-10-11T03:00:00.000Z',
         status: 'PENDING',
@@ -72,8 +72,8 @@ describe('WaitingAskList', () => {
     readMyAsks.mockResolvedValue([
       {
         askId: 'ask-1',
-        topic: 'my presentation skills',
-        topicTags: NO_TEXT_TAGS,
+        message: 'my presentation skills',
+        messageTags: NO_TEXT_TAGS,
         requesterName: 'Ana Silva',
         requesterInactive: true,
         askedAt: '2026-10-11T03:00:00.000Z',

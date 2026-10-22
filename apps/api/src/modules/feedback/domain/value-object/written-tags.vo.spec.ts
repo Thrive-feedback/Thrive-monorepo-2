@@ -33,7 +33,7 @@ describe('the hashtags and slugs written in some text', () => {
     expect([written.hashtags(), written.slugs()]).toEqual([hashtags, slugs]);
   });
 
-  it('finds them across a Topic and its text, each once whatever its letter case', () => {
+  it('finds them across more than one text, each once whatever its letter case', () => {
     const written = WrittenTags.in(
       'The launch #OWNERSHIP with @cara',
       'Again #ownership and @Cara',

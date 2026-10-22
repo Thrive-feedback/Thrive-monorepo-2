@@ -1,12 +1,12 @@
 import {
-  FeedbackBodyEmptyError,
-  FeedbackBodyTooLongError,
+  FeedbackMessageEmptyError,
+  FeedbackMessageTooLongError,
 } from '../feedback-request.errors';
 
 const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 
 /**
- * What a Giver wrote, in answer to an Ask or without being asked: one free-text answer, no
+ * What a Giver wrote, in answer to an Ask or without being asked (glossary: Feedback message): no
  * Questions and no ratings (`ADR-0022`). Surrounding whitespace goes; the whitespace inside does
  * not, because where somebody put their paragraphs is part of what they wrote.
  *
@@ -14,21 +14,21 @@ const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
  * screens of writing — accepted as an engineering reading on 2026-10-12 and still the product's
  * to overturn. The column is `text`, so raising it costs no migration.
  */
-export class FeedbackBody {
+export class FeedbackMessage {
   static readonly MAX_LENGTH = 4000;
 
   private constructor(private readonly value: string) {}
 
-  static of(raw: string): FeedbackBody {
+  static of(raw: string): FeedbackMessage {
     const trimmed = raw.trim();
     const length = [...graphemes.segment(trimmed)].length;
     if (length === 0) {
-      throw new FeedbackBodyEmptyError();
+      throw new FeedbackMessageEmptyError();
     }
-    if (length > FeedbackBody.MAX_LENGTH) {
-      throw new FeedbackBodyTooLongError(FeedbackBody.MAX_LENGTH);
+    if (length > FeedbackMessage.MAX_LENGTH) {
+      throw new FeedbackMessageTooLongError(FeedbackMessage.MAX_LENGTH);
     }
-    return new FeedbackBody(trimmed);
+    return new FeedbackMessage(trimmed);
   }
 
   toString(): string {

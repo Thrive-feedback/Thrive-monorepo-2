@@ -37,15 +37,6 @@ const TAGS_FIELDS = {
   },
 } as const;
 
-/**
- * Feedback's own tags, and — when it answers an Ask — the request's, which its Topic is read
- * with: the Topic is the request's, so what it names is too.
- */
-const FEEDBACK_TAGS_FIELDS = {
-  ...TAGS_FIELDS,
-  feedbackAsk: { select: { feedbackRequest: { select: TAGS_FIELDS } } },
-} as const;
-
 const ASK_FIELDS = {
   id: true,
   giverAccountId: true,
@@ -61,7 +52,7 @@ const SELECTED_PEOPLE_IN_ORDER = {
 const REQUEST_FIELDS = {
   id: true,
   requesterAccountId: true,
-  topic: true,
+  message: true,
   visibility: true,
   createdAt: true,
   asks: { orderBy: ASKS_IN_ORDER_ASKED, select: ASK_FIELDS },
@@ -70,19 +61,18 @@ const REQUEST_FIELDS = {
 } as const;
 
 const REQUEST_OF_ASK = {
-  select: { id: true, topic: true, requesterAccountId: true, ...TAGS_FIELDS },
+  select: { id: true, message: true, requesterAccountId: true, ...TAGS_FIELDS },
 } as const;
 
 const FEEDBACK_WITH_PEOPLE_FIELDS = {
   id: true,
   origin: true,
   feedbackRequestId: true,
-  topic: true,
   giverAccountId: true,
   receiverAccountId: true,
-  body: true,
+  message: true,
   createdAt: true,
-  ...FEEDBACK_TAGS_FIELDS,
+  ...TAGS_FIELDS,
 } as const;
 
 function skipFor(page: PageRequest): number {
@@ -120,7 +110,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
         select: {
           feedbackAskId: true,
-          body: true,
+          message: true,
           createdAt: true,
           ...TAGS_FIELDS,
         },
@@ -133,7 +123,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         : [
             {
               askId: record.feedbackAskId,
-              body: record.body,
+              message: record.message,
               tags: tagsOf(record),
               answeredAt: record.createdAt,
             },
@@ -211,11 +201,10 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
           id: true,
           origin: true,
           feedbackRequestId: true,
-          topic: true,
           giverAccountId: true,
-          body: true,
+          message: true,
           createdAt: true,
-          ...FEEDBACK_TAGS_FIELDS,
+          ...TAGS_FIELDS,
         },
       }),
       client.feedback.count({ where }),
@@ -225,10 +214,8 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         id: record.id,
         origin: record.origin,
         feedbackRequestId: record.feedbackRequestId,
-        topic: record.topic,
-        topicTags: topicTagsOf(record),
         giverAccountId: record.giverAccountId,
-        body: record.body,
+        message: record.message,
         tags: tagsOf(record),
         createdAt: record.createdAt,
       })),
@@ -289,20 +276,19 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     const record =
       await this.prismaTransactionContext.client.feedback.findFirst({
         where: { id: feedbackId, workspaceId },
-        // Every piece holds its own Topic and Visibility, so Offered Feedback — which has no
-        // request to read them from — is opened the same way as an answer.
+        // Every piece holds its own Visibility, so Offered Feedback — which has no request to
+        // read it from — is opened the same way as an answer.
         select: {
           id: true,
           origin: true,
           feedbackRequestId: true,
-          topic: true,
           giverAccountId: true,
           receiverAccountId: true,
-          body: true,
+          message: true,
           createdAt: true,
           visibility: true,
           selectedPeople: SELECTED_PEOPLE_IN_ORDER,
-          ...FEEDBACK_TAGS_FIELDS,
+          ...TAGS_FIELDS,
         },
       });
     if (!record) {
@@ -312,11 +298,9 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       id: record.id,
       origin: record.origin,
       feedbackRequestId: record.feedbackRequestId,
-      topic: record.topic,
-      topicTags: topicTagsOf(record),
       giverAccountId: record.giverAccountId,
       receiverAccountId: record.receiverAccountId,
-      body: record.body,
+      message: record.message,
       tags: tagsOf(record),
       createdAt: record.createdAt,
       visibility: record.visibility,
@@ -355,15 +339,15 @@ function toFeedbackAskRow(record: {
   readonly createdAt: Date;
   readonly feedbackRequest: StoredTags & {
     readonly id: string;
-    readonly topic: string;
+    readonly message: string;
     readonly requesterAccountId: string;
   };
 }): FeedbackAskRow {
   return {
     askId: record.id,
     feedbackRequestId: record.feedbackRequest.id,
-    topic: record.feedbackRequest.topic,
-    topicTags: tagsOf(record.feedbackRequest),
+    message: record.feedbackRequest.message,
+    tags: tagsOf(record.feedbackRequest),
     requesterAccountId: record.feedbackRequest.requesterAccountId,
     status: record.status,
     createdAt: record.createdAt,
@@ -374,7 +358,7 @@ function toFeedbackRequestRow(
   record: StoredTags & {
     readonly id: string;
     readonly requesterAccountId: string;
-    readonly topic: string;
+    readonly message: string;
     readonly visibility: string;
     readonly createdAt: Date;
     readonly asks: readonly {
@@ -388,8 +372,8 @@ function toFeedbackRequestRow(
   return {
     id: record.id,
     requesterAccountId: record.requesterAccountId,
-    topic: record.topic,
-    topicTags: tagsOf(record),
+    message: record.message,
+    tags: tagsOf(record),
     visibility: record.visibility,
     selectedAccountIds: record.selectedPeople.map((person) => person.accountId),
     createdAt: record.createdAt,
@@ -410,11 +394,6 @@ interface StoredTags {
   }[];
 }
 
-/** A piece of Feedback's own tags, with its request's when it answers an Ask. */
-interface StoredFeedbackTags extends StoredTags {
-  readonly feedbackAsk: { readonly feedbackRequest: StoredTags } | null;
-}
-
 function tagsOf(record: StoredTags): TagsView {
   return {
     workspaceGoals: record.workspaceGoals.map((workspaceGoal) => ({
@@ -427,20 +406,14 @@ function tagsOf(record: StoredTags): TagsView {
   };
 }
 
-/** Offered Feedback's Topic is its Giver's, and an answer's is the request's. */
-function topicTagsOf(record: StoredFeedbackTags): TagsView {
-  return tagsOf(record.feedbackAsk?.feedbackRequest ?? record);
-}
-
 function toFeedbackWithPeopleRow(
-  record: StoredFeedbackTags & {
+  record: StoredTags & {
     readonly id: string;
     readonly origin: FeedbackWithPeopleRow['origin'];
     readonly feedbackRequestId: string | null;
-    readonly topic: string;
     readonly giverAccountId: string;
     readonly receiverAccountId: string;
-    readonly body: string;
+    readonly message: string;
     readonly createdAt: Date;
   },
 ): FeedbackWithPeopleRow {
@@ -448,11 +421,9 @@ function toFeedbackWithPeopleRow(
     id: record.id,
     origin: record.origin,
     feedbackRequestId: record.feedbackRequestId,
-    topic: record.topic,
-    topicTags: topicTagsOf(record),
     giverAccountId: record.giverAccountId,
     receiverAccountId: record.receiverAccountId,
-    body: record.body,
+    message: record.message,
     tags: tagsOf(record),
     createdAt: record.createdAt,
   };

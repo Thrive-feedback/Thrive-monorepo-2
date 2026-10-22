@@ -360,7 +360,7 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
 
   /**
    * The Feedback rows the test has written, as the `feedback` table holds them: addressed to
-   * one Member of one Workspace, with the Topic of the request they answer.
+   * one Member of one Workspace.
    */
   readonly feedback: (FeedbackRow & {
     readonly workspaceId: string;
@@ -393,8 +393,8 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
           askId: ask.askId,
           giverAccountId: ask.giverAccountId,
           feedbackRequestId: row.id,
-          topic: row.topic,
-          topicTags: row.topicTags,
+          message: row.message,
+          tags: row.tags,
           requesterAccountId: row.requesterAccountId,
           status: ask.status,
           createdAt: row.createdAt,
@@ -414,11 +414,9 @@ function withoutVisibility(
     id: row.id,
     origin: row.origin,
     feedbackRequestId: row.feedbackRequestId,
-    topic: row.topic,
-    topicTags: row.topicTags,
     giverAccountId: row.giverAccountId,
     receiverAccountId: row.receiverAccountId,
-    body: row.body,
+    message: row.message,
     tags: row.tags,
     createdAt: row.createdAt,
   };

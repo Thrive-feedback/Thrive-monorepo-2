@@ -7,8 +7,8 @@ import {
   NoGiversToAskError,
 } from '../feedback-request.errors';
 import { BoundTags } from '../value-object/bound-tags.vo';
-import { FeedbackBody } from '../value-object/feedback-body.vo';
-import { Topic } from '../value-object/topic.vo';
+import { FeedbackMessage } from '../value-object/feedback-message.vo';
+import { RequestMessage } from '../value-object/request-message.vo';
 import { Visibility } from '../value-object/visibility.vo';
 import { FeedbackRequest, type GiverToAsk } from './feedback-request.entity';
 
@@ -27,7 +27,7 @@ function sending(
     id: REQUEST_ID,
     workspaceId: '0199a0f0-0000-7000-8000-0000000000w1',
     requesterAccountId: overrides.requester ?? 'account-ann',
-    topic: Topic.of('my presentation skills'),
+    message: RequestMessage.of('my presentation skills'),
     visibility: overrides.visibility ?? Visibility.onlyMe(),
     tags: overrides.tags ?? BoundTags.none(),
     givers: overrides.givers ?? [
@@ -43,7 +43,7 @@ describe('sending a Feedback Request', () => {
     expect(request.snapshot()).toMatchObject({
       id: REQUEST_ID,
       requesterAccountId: 'account-ann',
-      topic: 'my presentation skills',
+      message: 'my presentation skills',
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       asks: [{ id: ASK_ID, giverAccountId: 'account-ben', status: 'PENDING' }],
@@ -108,7 +108,7 @@ describe('sending a Feedback Request', () => {
     ).toThrow(CannotSelectYourselfError);
   });
 
-  it('rebuilds a stored request with its Asks, the people it was shared with and what its Topic names', () => {
+  it('rebuilds a stored request with its Asks, the people it was shared with and what its Request message names', () => {
     const stored = FeedbackRequest.send(
       sending({
         visibility: Visibility.of({
@@ -133,7 +133,7 @@ describe('sending a Feedback Request', () => {
       askId: ASK_ID,
       giverAccountId: 'account-ben',
       feedbackId: FEEDBACK_ID,
-      body: FeedbackBody.of('You lose the room at the detail.'),
+      message: FeedbackMessage.of('You lose the room at the detail.'),
       tags: BoundTags.none(),
     };
 
@@ -150,16 +150,15 @@ describe('sending a Feedback Request', () => {
         feedbackAskId: ASK_ID,
         giverAccountId: 'account-ben',
         receiverAccountId: 'account-ann',
-        topic: 'my presentation skills',
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
-        body: 'You lose the room at the detail.',
+        message: 'You lose the room at the detail.',
         workspaceGoals: [],
         mentions: [],
       });
     });
 
-    it('binds the answer to what its Giver wrote, never to what the request’s Topic names', () => {
+    it('binds the answer to what its Giver wrote, never to what the Request message names', () => {
       const request = FeedbackRequest.send(
         sending({
           tags: BoundTags.of({

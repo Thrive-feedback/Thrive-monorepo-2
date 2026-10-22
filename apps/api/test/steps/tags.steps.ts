@@ -49,16 +49,16 @@ Then(
 Then(
   '{person} sees the request tagged with {string}',
   function (this: ThriveWorld, _name: string, written: string) {
-    const request = onlyItem<{ topicTags: Tags }>(this);
-    assert.deepEqual(namesOf(request.topicTags), workspaceGoalNames(written));
+    const request = onlyItem<{ tags: Tags }>(this);
+    assert.deepEqual(namesOf(request.tags), workspaceGoalNames(written));
   },
 );
 
 Then(
   '{person} sees the Ask tagged with {string}',
   function (this: ThriveWorld, _name: string, written: string) {
-    const ask = onlyItem<{ topicTags: Tags }>(this);
-    assert.deepEqual(namesOf(ask.topicTags), workspaceGoalNames(written));
+    const ask = onlyItem<{ tags: Tags }>(this);
+    assert.deepEqual(namesOf(ask.tags), workspaceGoalNames(written));
   },
 );
 
@@ -83,8 +83,8 @@ Then(
 Then(
   '{person} sees the request mentioning {person}',
   async function (this: ThriveWorld, _name: string, mentioned: string) {
-    const request = onlyItem<{ topicTags: Tags }>(this);
-    assert.deepEqual(request.topicTags.mentions, [
+    const request = onlyItem<{ tags: Tags }>(this);
+    assert.deepEqual(request.tags.mentions, [
       { slug: await slugOf(this, mentioned), displayName: mentioned },
     ]);
   },

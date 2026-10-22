@@ -29,7 +29,7 @@ function apiHolds(requesterName: string | null, status = 'PENDING') {
       HttpResponse.json({
         askId: ASK_ID,
         feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
-        topic: 'Running the planning meeting',
+        message: 'Running the planning meeting',
         requester: {
           accountId: '0199a0f0-0000-7000-8000-00000000000a',
           name: requesterName,
@@ -60,7 +60,7 @@ describe('reading the Ask to answer', () => {
     expect(await readFeedbackAsk(MEMBERSHIP, ASK_ID)).toEqual({
       askId: ASK_ID,
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
-      topic: 'Running the planning meeting',
+      message: 'Running the planning meeting',
       requesterName: 'Ann Lee',
       requesterInactive: false,
       status: 'PENDING',

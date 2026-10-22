@@ -134,7 +134,7 @@ async function main(): Promise<void> {
   async function ask(
     requester: Person,
     giver: Person,
-    topic: string,
+    message: string,
   ): Promise<string> {
     const request = await call(
       requester,
@@ -142,7 +142,7 @@ async function main(): Promise<void> {
       `/v1/workspaces/${workspaceId}/feedback-requests`,
       // Required since #84 gave the Requester the choice; the narrowest one keeps these
       // requests out of Shared with me and the feed, which have their own seeded pieces.
-      { topic, giverAccountIds: [giver.accountId], visibility: 'ONLY_ME' },
+      { message, giverAccountIds: [giver.accountId], visibility: 'ONLY_ME' },
     );
     return request.id as string;
   }
@@ -150,7 +150,7 @@ async function main(): Promise<void> {
   async function answer(
     giver: Person,
     requestId: string,
-    body: string,
+    message: string,
   ): Promise<void> {
     const waiting = await call(
       giver,
@@ -169,7 +169,7 @@ async function main(): Promise<void> {
       giver,
       'POST',
       `/v1/workspaces/${workspaceId}/feedback-asks/${theirs.askId}/answers`,
-      { body },
+      { message },
     );
   }
 
@@ -204,22 +204,22 @@ async function main(): Promise<void> {
 
   await call(teammate, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
     receiverAccountId: admin.accountId,
-    topic: 'The customer demo on Tuesday',
-    body: 'You kept the room with you when the demo broke, and the recap at the end landed. Keep doing that.',
+    message:
+      'You kept the room with you when the demo broke, and the recap at the end landed. Keep doing that.',
     visibility: 'ONLY_ME',
   });
 
   await call(third, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
     receiverAccountId: teammate.accountId,
-    topic: 'The pricing page rewrite',
-    body: 'The second paragraph does the work now, and the rest got out of its way. Worth saying what it costs a bit earlier.',
+    message:
+      'The second paragraph does the work now, and the rest got out of its way. Worth saying what it costs a bit earlier.',
     visibility: 'EVERYONE',
   });
 
   await call(teammate, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
     receiverAccountId: third.accountId,
-    topic: 'Onboarding the new designers',
-    body: 'Your onboarding notes answered every question I had in my first week. Writing them down instead of only explaining them is what made the difference.',
+    message:
+      'Your onboarding notes answered every question I had in my first week. Writing them down instead of only explaining them is what made the difference.',
     visibility: 'SELECTED_PEOPLE',
     selectedAccountIds: [admin.accountId],
   });

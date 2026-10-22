@@ -21,7 +21,7 @@ export function toFeedbackRequest(record: StoredRequest): FeedbackRequest {
     id: record.id,
     workspaceId: record.workspaceId,
     requesterAccountId: record.requesterAccountId,
-    topic: record.topic,
+    message: record.message,
     visibility: record.visibility,
     selectedAccountIds: record.selectedPeople.map((person) => person.accountId),
     workspaceGoals: record.workspaceGoals.map((workspaceGoal) => ({
@@ -68,7 +68,7 @@ export function toFeedbackRequestRecord(request: FeedbackRequest): Omit<
     id: snapshot.id,
     workspaceId: snapshot.workspaceId,
     requesterAccountId: snapshot.requesterAccountId,
-    topic: snapshot.topic,
+    message: snapshot.message,
     visibility: snapshot.visibility as FeedbackRequestRecord['visibility'],
     asks: snapshot.asks.map((ask) => ({
       id: ask.id,

@@ -12,7 +12,7 @@ const PLACEHOLDERS = ['first', 'second', 'third'] as const;
 
 export type WaitingAskListViewProps = {
   asks: readonly MyAsk[];
-  /** Where an Ask's Topic leads: to the place it is answered. */
+  /** Where an Ask's Request message leads: to the place it is answered. */
   askTarget: (askId: string) => NavTarget;
 };
 
@@ -20,7 +20,7 @@ export type WaitingAskListViewProps = {
  * Every Ask waiting on the person: who asked, about what, and when. With Notifications at Low
  * priority (`ADR-0006`), this list is the only way a Giver finds out they were asked at all.
  *
- * The Topic is the link rather than a repeated "Answer this", so each row announces itself by
+ * The Request message is the link rather than a repeated "Answer this", so each row announces itself by
  * what it is about.
  */
 export function WaitingAskListView({
@@ -40,7 +40,7 @@ export function WaitingAskListView({
         <li key={ask.askId} className="flex flex-col gap-1 py-4">
           <Text as="h2" variant="subtitle-2" className="break-words">
             <TargetLink target={askTarget(ask.askId)}>
-              <FeedbackText text={ask.topic} tags={ask.topicTags} />
+              <FeedbackText text={ask.message} tags={ask.messageTags} />
             </TargetLink>
           </Text>
           <Text as="p" variant="body-2">
@@ -59,7 +59,7 @@ export function WaitingAskListView({
   );
 }
 
-/** A `WaitingAskListView` still loading: a few rows of Topic, who asked, and when. */
+/** A `WaitingAskListView` still loading: a few rows of Request message, who asked, and when. */
 export function WaitingAskListViewSkeleton() {
   return (
     <div className="flex flex-col divide-y divide-border-muted">

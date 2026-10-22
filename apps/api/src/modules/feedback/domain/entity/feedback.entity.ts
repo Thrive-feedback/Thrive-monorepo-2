@@ -8,8 +8,7 @@ import type {
   BoundTags,
   BoundWorkspaceGoal,
 } from '../value-object/bound-tags.vo';
-import type { FeedbackBody } from '../value-object/feedback-body.vo';
-import type { Topic } from '../value-object/topic.vo';
+import type { FeedbackMessage } from '../value-object/feedback-message.vo';
 import type {
   Visibility,
   VisibilityValue,
@@ -30,12 +29,11 @@ export interface FeedbackSnapshot {
   readonly feedbackAskId: string | null;
   readonly giverAccountId: string;
   readonly receiverAccountId: string;
-  readonly topic: string;
   readonly visibility: VisibilityValue;
   /** The Members selected to read it; empty unless the Visibility is Selected people. */
   readonly selectedAccountIds: readonly string[];
-  readonly body: string;
-  /** What its Giver wrote is bound to: the Topic and the text if Offered, the text if Requested. */
+  readonly message: string;
+  /** What its Giver's Feedback message is bound to. */
   readonly workspaceGoals: readonly BoundWorkspaceGoal[];
   readonly mentions: readonly BoundMention[];
 }
@@ -57,9 +55,10 @@ interface AnsweredAsk {
  *   aggregate root: the Giver names the Receiver, and the rules about who else may read it are
  *   checked here before it exists.
  *
- * The Topic and the Visibility — with the people it selects — are held on every piece, the
- * request's copied onto its answers: neither ever changes after sending, so the copy cannot
- * drift, and one piece can be opened without reading the request behind it.
+ * The Visibility — with the people it selects — is held on every piece, the request's copied
+ * onto its answers: it never changes after sending, so the copy cannot drift, and one piece can
+ * be opened without reading the request behind it. The Request message stays on the request: a
+ * piece of Feedback carries only its own Feedback message (`ADR-0039`).
  */
 export class Feedback {
   private constructor(
@@ -68,9 +67,8 @@ export class Feedback {
     private readonly answered: AnsweredAsk | null,
     private readonly giverAccountId: string,
     private readonly receiverAccountId: string,
-    private readonly topic: Topic,
     private readonly visibility: Visibility,
-    private readonly body: FeedbackBody,
+    private readonly message: FeedbackMessage,
     private readonly tags: BoundTags,
   ) {}
 
@@ -82,9 +80,8 @@ export class Feedback {
     readonly feedbackAskId: string;
     readonly giverAccountId: string;
     readonly receiverAccountId: string;
-    readonly topic: Topic;
     readonly visibility: Visibility;
-    readonly body: FeedbackBody;
+    readonly message: FeedbackMessage;
     /** What the Giver's answer names. Never the request's: an answer has its own. */
     readonly tags: BoundTags;
   }): Feedback {
@@ -97,9 +94,8 @@ export class Feedback {
       },
       details.giverAccountId,
       details.receiverAccountId,
-      details.topic,
       details.visibility,
-      details.body,
+      details.message,
       details.tags,
     );
   }
@@ -115,10 +111,9 @@ export class Feedback {
     readonly workspaceId: string;
     readonly giverAccountId: string;
     readonly receiverAccountId: string;
-    readonly topic: Topic;
     readonly visibility: Visibility;
-    readonly body: FeedbackBody;
-    /** What the Topic and the text name, together. */
+    readonly message: FeedbackMessage;
+    /** What the Feedback message names. */
     readonly tags: BoundTags;
   }): Feedback {
     if (details.giverAccountId === details.receiverAccountId) {
@@ -137,9 +132,8 @@ export class Feedback {
       null,
       details.giverAccountId,
       details.receiverAccountId,
-      details.topic,
       details.visibility,
-      details.body,
+      details.message,
       details.tags,
     );
   }
@@ -153,10 +147,9 @@ export class Feedback {
       feedbackAskId: this.answered?.feedbackAskId ?? null,
       giverAccountId: this.giverAccountId,
       receiverAccountId: this.receiverAccountId,
-      topic: this.topic.toString(),
       visibility: this.visibility.toString(),
       selectedAccountIds: this.visibility.selectedAccountIds(),
-      body: this.body.toString(),
+      message: this.message.toString(),
       workspaceGoals: this.tags.workspaceGoals(),
       mentions: this.tags.mentions(),
     };

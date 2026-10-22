@@ -6,8 +6,8 @@ import { v7 as uuidv7 } from 'uuid';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import { AskAlreadyAnsweredError } from '../../domain/feedback-request.errors';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
-import { FeedbackBody } from '../../domain/value-object/feedback-body.vo';
-import { Topic } from '../../domain/value-object/topic.vo';
+import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
+import { RequestMessage } from '../../domain/value-object/request-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { PrismaFeedbackRequestQuery } from '../query/prisma-feedback-request.query';
 import { PrismaFeedbackRequestRepository } from './prisma-feedback-request.repository';
@@ -39,7 +39,7 @@ function aRequest(
     id,
     workspaceId,
     requesterAccountId,
-    topic: Topic.of('my presentation skills'),
+    message: RequestMessage.of('my presentation skills'),
     visibility,
     tags,
     givers: [{ askId: uuidv7(), giverAccountId: uuidv7() }],
@@ -67,7 +67,7 @@ describe('storing a Feedback Request', () => {
     expect(found?.snapshot()).toEqual(request.snapshot());
   });
 
-  it('saves what its Topic names and reads it back', async () => {
+  it('saves what its Request message names and reads it back', async () => {
     const workspaceId = uuidv7();
     const request = aRequest(
       workspaceId,
@@ -131,7 +131,7 @@ describe('storing a Feedback Request', () => {
       id,
       workspaceId,
       requesterAccountId: uuidv7(),
-      topic: 'my presentation skills',
+      message: 'my presentation skills',
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       workspaceGoals: [],
@@ -193,7 +193,7 @@ describe('storing a Feedback Request', () => {
         askId: ask.id,
         giverAccountId: ask.giverAccountId,
         feedbackId: uuidv7(),
-        body: FeedbackBody.of(`answer ${attempt}`),
+        message: FeedbackMessage.of(`answer ${attempt}`),
       });
       if (!feedback) {
         throw new Error('The loaded request does not hold the Ask.');
@@ -222,7 +222,7 @@ describe('storing a Feedback Request', () => {
 });
 
 describe('what an answer is read with', () => {
-  it('reads its Topic with what the request named, and its text with only what its Giver named', async () => {
+  it('reads it with only what its Giver named, never what the request named', async () => {
     const workspaceId = uuidv7();
     const requesterAccountId = uuidv7();
     const request = aRequest(
@@ -243,7 +243,7 @@ describe('what an answer is read with', () => {
       askId: ask.id,
       giverAccountId: ask.giverAccountId,
       feedbackId: uuidv7(),
-      body: FeedbackBody.of('You saw it through #ownershic'),
+      message: FeedbackMessage.of('You saw it through #ownershic'),
       tags: BoundTags.of({
         workspaceGoals: [{ workspaceGoalId: uuidv7(), name: 'ownershic' }],
         mentions: [],
@@ -260,7 +260,6 @@ describe('what an answer is read with', () => {
       pageSize: 20,
     });
     expect(received.items[0]).toMatchObject({
-      topicTags: { workspaceGoals: [{ name: 'ownership' }], mentions: [] },
       tags: { workspaceGoals: [{ name: 'ownershic' }], mentions: [] },
     });
   });

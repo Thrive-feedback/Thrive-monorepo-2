@@ -22,8 +22,8 @@ function setUp() {
       id: '0199a0f0-0000-7000-8000-0000000000f1',
       workspaceId: WORKSPACE_ID,
       requesterAccountId: ANA,
-      topic: 'my presentation skills',
-      topicTags: NO_TAGS,
+      message: 'my presentation skills',
+      tags: NO_TAGS,
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       createdAt: new Date('2026-10-11T03:00:00.000Z'),
@@ -39,8 +39,8 @@ function setUp() {
       id: '0199a0f0-0000-7000-8000-0000000000f2',
       workspaceId: WORKSPACE_ID,
       requesterAccountId: ANA,
-      topic: 'how I run stand-up',
-      topicTags: NO_TAGS,
+      message: 'how I run stand-up',
+      tags: NO_TAGS,
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       createdAt: new Date('2026-10-12T03:00:00.000Z'),
@@ -56,8 +56,8 @@ function setUp() {
       id: '0199a0f0-0000-7000-8000-0000000000f3',
       workspaceId: WORKSPACE_ID,
       requesterAccountId: BEN,
-      topic: "Ben's own request",
-      topicTags: NO_TAGS,
+      message: "Ben's own request",
+      tags: NO_TAGS,
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       createdAt: new Date('2026-10-12T04:00:00.000Z'),
@@ -108,7 +108,7 @@ describe('listing the Feedback Requests I sent', () => {
     });
 
     expect(sent.total).toBe(2);
-    expect(sent.items.map((request) => request.topic)).toEqual([
+    expect(sent.items.map((request) => request.message)).toEqual([
       'how I run stand-up',
       'my presentation skills',
     ]);
@@ -141,7 +141,7 @@ describe('listing the Feedback Requests I sent', () => {
     });
 
     expect(
-      sent.items.some((request) => request.topic === "Ben's own request"),
+      sent.items.some((request) => request.message === "Ben's own request"),
     ).toBe(false);
   });
 

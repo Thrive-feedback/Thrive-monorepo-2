@@ -199,8 +199,7 @@ export async function giveFeedback(
   world: ThriveWorld,
   giver: string,
   receiver: string,
-  topic: string,
-  body: string,
+  message: string,
   visibility: VisibilityChosen = { visibility: 'ONLY_ME' },
 ): Promise<ApiResponse> {
   const workspaceId = world.workspaceOf(giver);
@@ -210,8 +209,7 @@ export async function giveFeedback(
     `/v1/workspaces/${workspaceId}/feedback`,
     {
       receiverAccountId: world.person(receiver).accountId,
-      topic: await withSlugs(world, topic),
-      body: await withSlugs(world, body),
+      message: await withSlugs(world, message),
       ...visibility,
     },
   );
@@ -225,7 +223,7 @@ export async function askForFeedback(
   world: ThriveWorld,
   requester: string,
   giver: string,
-  topic: string,
+  message: string,
   visibility: VisibilityChosen = { visibility: 'ONLY_ME' },
 ): Promise<ApiResponse> {
   const workspaceId = world.workspaceOf(requester);
@@ -234,7 +232,7 @@ export async function askForFeedback(
     'POST',
     `/v1/workspaces/${workspaceId}/feedback-requests`,
     {
-      topic: await withSlugs(world, topic),
+      message: await withSlugs(world, message),
       giverAccountIds: [world.person(giver).accountId],
       ...visibility,
     },
@@ -288,14 +286,14 @@ export async function myInvitations(
 export async function answerTheirAsk(
   world: ThriveWorld,
   giver: string,
-  body: string,
+  message: string,
 ): Promise<ApiResponse> {
   const workspaceId = world.workspaceOf(giver);
   const response = await world.as(
     giver,
     'POST',
     `/v1/workspaces/${workspaceId}/feedback-asks/${await askIdWaitingFor(world, giver)}/answers`,
-    { body: await withSlugs(world, body) },
+    { message: await withSlugs(world, message) },
   );
   if (response.status === 201) {
     world.feedback = { id: response.body.feedbackId, workspaceId };

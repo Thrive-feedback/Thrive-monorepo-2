@@ -48,7 +48,7 @@ for Admins, Notifications and Reminders, and personal Goals. The landing page li
 and Insights as features with no "on the way", chosen knowingly in `ADR-0038`; it describes Kudos
 only by what it is for. Nothing may promise how fast an answer arrives: nothing notifies anybody.
 
-Use the brain's `glossary.md` names exactly: Member, Workspace, Feedback Request, Ask, Topic.
+Use the brain's `glossary.md` names exactly: Member, Workspace, Feedback Request, Ask, Request message, Feedback message.
 Never say "user".
 
 ## Brand Commitments

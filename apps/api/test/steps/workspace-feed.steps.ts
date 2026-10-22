@@ -3,8 +3,7 @@ import { defineParameterType, Then, When } from '@cucumber/cucumber';
 import type { ThriveWorld } from '../support/world';
 
 interface FeedItem {
-  readonly body: string;
-  readonly topic: string;
+  readonly message: string;
   readonly giver: { readonly accountId: string; readonly status: string };
   readonly receiver: { readonly accountId: string; readonly status: string };
 }
@@ -52,28 +51,25 @@ When(
 );
 
 Then(
-  '{person} reads {string} from {person} to {person} about {string} on the feed',
+  '{person} reads {string} from {person} to {person} on the feed',
   function (
     this: ThriveWorld,
     _name: string,
-    body: string,
+    message: string,
     giver: string,
     receiver: string,
-    topic: string,
   ) {
     assert.deepEqual(
       feedItems(this).map((feedback) => [
-        feedback.body,
+        feedback.message,
         feedback.giver.accountId,
         feedback.receiver.accountId,
-        feedback.topic,
       ]),
       [
         [
-          body,
+          message,
           this.person(giver).accountId,
           this.person(receiver).accountId,
-          topic,
         ],
       ],
     );
@@ -96,10 +92,10 @@ Then(
 );
 
 Then(
-  '{person} reads about {string} before {string} on the feed',
+  '{person} reads {string} before {string} on the feed',
   function (this: ThriveWorld, _name: string, first: string, second: string) {
     assert.deepEqual(
-      feedItems(this).map((feedback) => feedback.topic),
+      feedItems(this).map((feedback) => feedback.message),
       [first, second],
     );
   },

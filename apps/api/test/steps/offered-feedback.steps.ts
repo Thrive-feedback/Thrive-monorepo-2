@@ -4,29 +4,27 @@ import { giveFeedback, visibilityOf } from '../support/journeys';
 import type { ApiResponse, ThriveWorld } from '../support/world';
 
 Given(
-  '{person} has given {person} Feedback on {string}: {string}',
+  '{person} has given {person} Feedback: {string}',
   async function (
     this: ThriveWorld,
     giver: string,
     receiver: string,
-    topic: string,
-    body: string,
+    message: string,
   ) {
     this.succeeded(
-      await giveFeedback(this, giver, receiver, topic, body),
+      await giveFeedback(this, giver, receiver, message),
       `${giver} giving ${receiver} Feedback`,
     );
   },
 );
 
 Given(
-  '{person} has given {person} Feedback on {string}: {string}, shared with {sharedWith}',
+  '{person} has given {person} Feedback: {string}, shared with {sharedWith}',
   async function (
     this: ThriveWorld,
     giver: string,
     receiver: string,
-    topic: string,
-    body: string,
+    message: string,
     sharedWith: string,
   ) {
     this.succeeded(
@@ -34,8 +32,7 @@ Given(
         this,
         giver,
         receiver,
-        topic,
-        body,
+        message,
         visibilityOf(this, sharedWith),
       ),
       `${giver} giving ${receiver} Feedback, shared with ${sharedWith}`,
@@ -44,64 +41,53 @@ Given(
 );
 
 When(
-  '{person} gives {person} Feedback on {string}: {string}',
+  '{person} gives {person} Feedback: {string}',
   async function (
     this: ThriveWorld,
     giver: string,
     receiver: string,
-    topic: string,
-    body: string,
+    message: string,
   ) {
-    await giveFeedback(this, giver, receiver, topic, body);
+    await giveFeedback(this, giver, receiver, message);
   },
 );
 
 When(
-  '{person} gives {person} Feedback on {string}: {string}, shared with {sharedWith}',
+  '{person} gives {person} Feedback: {string}, shared with {sharedWith}',
   async function (
     this: ThriveWorld,
     giver: string,
     receiver: string,
-    topic: string,
-    body: string,
+    message: string,
     sharedWith: string,
   ) {
     await giveFeedback(
       this,
       giver,
       receiver,
-      topic,
-      body,
+      message,
       visibilityOf(this, sharedWith),
     );
   },
 );
 
 Then(
-  '{person} reads {string} from {person} about {string}, given without being asked',
-  function (
-    this: ThriveWorld,
-    _name: string,
-    body: string,
-    giver: string,
-    topic: string,
-  ) {
+  '{person} reads {string} from {person}, given without being asked',
+  function (this: ThriveWorld, _name: string, message: string, giver: string) {
     const items: {
-      body: string;
+      message: string;
       giverAccountId: string;
-      topic: string;
       origin: string;
       feedbackRequestId: string | null;
     }[] = this.lastResponse?.body.items;
     assert.deepEqual(
       items.map((feedback) => [
-        feedback.body,
+        feedback.message,
         feedback.giverAccountId,
-        feedback.topic,
         feedback.origin,
         feedback.feedbackRequestId,
       ]),
-      [[body, this.person(giver).accountId, topic, 'OFFERED', null]],
+      [[message, this.person(giver).accountId, 'OFFERED', null]],
     );
   },
 );

@@ -6,17 +6,15 @@ import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
 const MAX_SELECTED_PEOPLE = 50;
 
 /**
- * Only the shape is checked here. Trimming, lengths and "not blank" belong to the Topic and the
- * body; "not yourself" and who may be selected to the Feedback; and which Visibility takes
+ * Only the shape is checked here. Trimming, the length limit and "not blank" belong to the
+ * Feedback message; "not yourself" and who may be selected to the Feedback; and which Visibility takes
  * selected people to the Visibility — each with its own code.
  */
 export const offerFeedbackRequestSchema = z.strictObject({
   /** The Account of the Member it is for. Must be a Member of this Workspace. */
   receiverAccountId: z.uuid(),
-  /** What it is about. Up to 200 characters once spaces are collapsed. */
-  topic: z.string(),
-  /** What the Giver wrote. Up to 4,000 characters once trimmed. */
-  body: z.string(),
+  /** The Feedback message: what the Giver wrote. Up to 4,000 characters once trimmed. */
+  message: z.string(),
   /**
    * Who besides the Giver and the Receiver may read it. Fixed once sent. `ONLY_ME` is the
    * audience the Giver is shown as "Only them": nobody besides the two of them.

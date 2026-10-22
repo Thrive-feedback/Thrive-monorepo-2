@@ -45,29 +45,29 @@ function openFeedbackRequest(world: ThriveWorld, name: string) {
 }
 
 Given(
-  '{person} has asked {person} for Feedback on {string}',
+  '{person} has asked {person} for Feedback: {string}',
   async function (
     this: ThriveWorld,
     requester: string,
     giver: string,
-    topic: string,
+    message: string,
   ) {
     this.succeeded(
-      await askForFeedback(this, requester, giver, topic),
+      await askForFeedback(this, requester, giver, message),
       `${requester} asking ${giver} for Feedback`,
     );
   },
 );
 
 When(
-  '{person} asks {person} for Feedback on {string}',
+  '{person} asks {person} for Feedback: {string}',
   async function (
     this: ThriveWorld,
     requester: string,
     giver: string,
-    topic: string,
+    message: string,
   ) {
-    await askForFeedback(this, requester, giver, topic);
+    await askForFeedback(this, requester, giver, message);
   },
 );
 
@@ -79,13 +79,13 @@ When(
 );
 
 Then(
-  '{person} can open the request about {string}',
-  async function (this: ThriveWorld, name: string, topic: string) {
+  '{person} can open the request saying {string}',
+  async function (this: ThriveWorld, name: string, message: string) {
     const response = this.succeeded(
       await openFeedbackRequest(this, name),
       `${name} opening the Feedback request`,
     );
-    assert.equal(response.body.topic, topic);
+    assert.equal(response.body.message, message);
   },
 );
 
@@ -119,16 +119,16 @@ When(
 );
 
 Then(
-  '{person} sees a request about {string} asking {person}',
-  function (this: ThriveWorld, _name: string, topic: string, giver: string) {
-    const items: { topic: string; asks: { giverAccountId: string }[] }[] =
+  '{person} sees a request saying {string} asking {person}',
+  function (this: ThriveWorld, _name: string, message: string, giver: string) {
+    const items: { message: string; asks: { giverAccountId: string }[] }[] =
       this.lastResponse?.body.items;
     assert.deepEqual(
       items.map((request) => [
-        request.topic,
+        request.message,
         request.asks.map((ask) => ask.giverAccountId),
       ]),
-      [[topic, [this.person(giver).accountId]]],
+      [[message, [this.person(giver).accountId]]],
     );
   },
 );
@@ -148,28 +148,28 @@ When(
 );
 
 Then(
-  '{person} sees an Ask from {person} about {string} waiting for an answer',
+  '{person} sees an Ask from {person} saying {string} waiting for an answer',
   function (
     this: ThriveWorld,
     _name: string,
     requester: string,
-    topic: string,
+    message: string,
   ) {
     const items: {
-      topic: string;
+      message: string;
       requester: { accountId: string };
       status: string;
     }[] = this.lastResponse?.body.items;
     assert.deepEqual(
-      items.map((ask) => [ask.topic, ask.requester.accountId, ask.status]),
-      [[topic, this.person(requester).accountId, 'PENDING']],
+      items.map((ask) => [ask.message, ask.requester.accountId, ask.status]),
+      [[message, this.person(requester).accountId, 'PENDING']],
     );
   },
 );
 
 Then(
-  '{person} can open the Ask about {string}',
-  async function (this: ThriveWorld, name: string, topic: string) {
+  '{person} can open the Ask saying {string}',
+  async function (this: ThriveWorld, name: string, message: string) {
     const workspaceId = this.workspaceOf(name);
     const listed = this.succeeded(
       await this.as(name, 'GET', `/v1/workspaces/${workspaceId}/feedback-asks`),
@@ -185,7 +185,7 @@ Then(
       ),
       `${name} opening the Ask`,
     );
-    assert.equal(opened.body.topic, topic);
+    assert.equal(opened.body.message, message);
   },
 );
 
@@ -244,28 +244,28 @@ When(
       opener,
       'POST',
       `/v1/workspaces/${this.workspaceOf(opener)}/feedback-asks/${askId}/answers`,
-      { body: 'Something I was never asked for.' },
+      { message: 'Something I was never asked for.' },
     );
   },
 );
 
 Then(
-  '{person} reads {string} on the request about {string}',
+  '{person} reads {string} on the request saying {string}',
   async function (
     this: ThriveWorld,
     name: string,
     body: string,
-    topic: string,
+    message: string,
   ) {
     const response = this.succeeded(
       await openFeedbackRequest(this, name),
       `${name} opening the Feedback request`,
     );
-    assert.equal(response.body.topic, topic);
+    assert.equal(response.body.message, message);
     assert.deepEqual(
       response.body.asks.map(
-        (ask: { answer: { body: string } | null; status: string }) => [
-          ask.answer?.body ?? null,
+        (ask: { answer: { message: string } | null; status: string }) => [
+          ask.answer?.message ?? null,
           ask.status,
         ],
       ),
@@ -304,21 +304,21 @@ When(
 );
 
 Then(
-  '{person} sees an Ask from {person} about {string} that they have answered',
+  '{person} sees an Ask from {person} saying {string} that they have answered',
   function (
     this: ThriveWorld,
     _name: string,
     requester: string,
-    topic: string,
+    message: string,
   ) {
     const items: {
-      topic: string;
+      message: string;
       requester: { accountId: string };
       status: string;
     }[] = this.lastResponse?.body.items;
     assert.deepEqual(
-      items.map((ask) => [ask.topic, ask.requester.accountId, ask.status]),
-      [[topic, this.person(requester).accountId, 'ANSWERED']],
+      items.map((ask) => [ask.message, ask.requester.accountId, ask.status]),
+      [[message, this.person(requester).accountId, 'ANSWERED']],
     );
   },
 );
@@ -338,26 +338,15 @@ When(
 );
 
 Then(
-  '{person} reads {string} from {person} about {string}',
-  function (
-    this: ThriveWorld,
-    _name: string,
-    body: string,
-    giver: string,
-    topic: string,
-  ) {
+  '{person} reads {string} from {person}',
+  function (this: ThriveWorld, _name: string, message: string, giver: string) {
     const items: {
-      body: string;
+      message: string;
       giverAccountId: string;
-      topic: string;
     }[] = this.lastResponse?.body.items;
     assert.deepEqual(
-      items.map((feedback) => [
-        feedback.body,
-        feedback.giverAccountId,
-        feedback.topic,
-      ]),
-      [[body, this.person(giver).accountId, topic]],
+      items.map((feedback) => [feedback.message, feedback.giverAccountId]),
+      [[message, this.person(giver).accountId]],
     );
   },
 );
@@ -371,12 +360,12 @@ Then(
 );
 
 Given(
-  '{person} has asked {person} for Feedback on {string}, shared with {sharedWith}',
+  '{person} has asked {person} for Feedback: {string}, shared with {sharedWith}',
   async function (
     this: ThriveWorld,
     requester: string,
     giver: string,
-    topic: string,
+    message: string,
     sharedWith: string,
   ) {
     this.succeeded(
@@ -384,7 +373,7 @@ Given(
         this,
         requester,
         giver,
-        topic,
+        message,
         visibilityOf(this, sharedWith),
       ),
       `${requester} asking ${giver} for Feedback, shared with ${sharedWith}`,
@@ -393,33 +382,33 @@ Given(
 );
 
 When(
-  '{person} asks {person} for Feedback on {string}, shared with {sharedWith}',
+  '{person} asks {person} for Feedback: {string}, shared with {sharedWith}',
   async function (
     this: ThriveWorld,
     requester: string,
     giver: string,
-    topic: string,
+    message: string,
     sharedWith: string,
   ) {
     await askForFeedback(
       this,
       requester,
       giver,
-      topic,
+      message,
       visibilityOf(this, sharedWith),
     );
   },
 );
 
 When(
-  '{person} asks {person} for Feedback on {string}, shared with selected people but picks nobody',
+  '{person} asks {person} for Feedback: {string}, shared with selected people but picks nobody',
   async function (
     this: ThriveWorld,
     requester: string,
     giver: string,
-    topic: string,
+    message: string,
   ) {
-    await askForFeedback(this, requester, giver, topic, {
+    await askForFeedback(this, requester, giver, message, {
       visibility: 'SELECTED_PEOPLE',
       selectedAccountIds: [],
     });
@@ -454,7 +443,7 @@ Then(
   function (this: ThriveWorld, name: string, body: string, giver: string) {
     const response = lastSucceeded(this, `${name} opening the Feedback`);
     assert.deepEqual(
-      [response.body.body, response.body.giver.accountId],
+      [response.body.message, response.body.giver.accountId],
       [body, this.person(giver).accountId],
     );
   },

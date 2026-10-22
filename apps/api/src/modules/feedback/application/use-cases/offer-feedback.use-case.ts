@@ -4,8 +4,7 @@ import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable } from '@nestjs/common';
 import { Feedback } from '../../domain/entity/feedback.entity';
 import { FeedbackRepository } from '../../domain/repository/feedback-repository.port';
-import { FeedbackBody } from '../../domain/value-object/feedback-body.vo';
-import { Topic } from '../../domain/value-object/topic.vo';
+import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import {
   ReceiverNotInWorkspaceError,
@@ -19,8 +18,7 @@ export interface OfferFeedbackInput {
   /** The signed-in caller, always. Never read from the body. */
   readonly giverAccountId: string;
   readonly receiverAccountId: string;
-  readonly topic: string;
-  readonly body: string;
+  readonly message: string;
   /** Who besides the Giver and the Receiver may read it. */
   readonly visibility: string;
   /** The Members picked when the Visibility is Selected people. */
@@ -37,8 +35,8 @@ export interface OfferFeedbackResult {
  * being; the Feedback goes straight to the Receiver.
  *
  * The Receiver and every person selected are checked against the Workspace, in one read, before
- * anything is written, so a body naming somebody outside it stores nothing. What the Topic and
- * the text name is bound then too, in the same read-before-write. Who may then open
+ * anything is written, so a body naming somebody outside it stores nothing. What the Feedback
+ * message names is bound then too, in the same read-before-write. Who may then open
  * it is decided where one piece of Feedback is read, by the same rule as for an answer.
  */
 @Injectable()
@@ -52,8 +50,7 @@ export class OfferFeedbackUseCase {
   ) {}
 
   async execute(input: OfferFeedbackInput): Promise<OfferFeedbackResult> {
-    const topic = Topic.of(input.topic);
-    const body = FeedbackBody.of(input.body);
+    const message = FeedbackMessage.of(input.message);
     const visibility = Visibility.of({
       value: input.visibility,
       selectedAccountIds: input.selectedAccountIds,
@@ -75,8 +72,7 @@ export class OfferFeedbackUseCase {
     }
     const tags = await this.tagsService.boundIn(
       input.workspaceId,
-      topic.toString(),
-      body.toString(),
+      message.toString(),
     );
 
     const feedback = Feedback.offer({
@@ -84,9 +80,8 @@ export class OfferFeedbackUseCase {
       workspaceId: input.workspaceId,
       giverAccountId: input.giverAccountId,
       receiverAccountId: input.receiverAccountId,
-      topic,
       visibility,
-      body,
+      message,
       tags,
     });
 

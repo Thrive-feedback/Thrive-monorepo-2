@@ -13,7 +13,7 @@ import { requireMemberOf } from '@/lib/session/session.service';
 const MAX_ANSWER_LENGTH = 4000;
 const AnswerAskInput = z.object({
   askId: z.uuid(),
-  body: z.string().trim().min(1).max(MAX_ANSWER_LENGTH),
+  message: z.string().trim().min(1).max(MAX_ANSWER_LENGTH),
 });
 
 const WRITE_SOMETHING = 'Write your answer before sending it.';
@@ -22,8 +22,8 @@ const COULD_NOT_SEND = "We couldn't send your answer. Please try again.";
 
 /** What to say when the API refused the answer, by its error code. */
 const ANSWER_ERRORS: Readonly<Record<string, string>> = {
-  FEEDBACK_BODY_EMPTY: WRITE_SOMETHING,
-  FEEDBACK_BODY_TOO_LONG: TOO_LONG,
+  FEEDBACK_MESSAGE_EMPTY: WRITE_SOMETHING,
+  FEEDBACK_MESSAGE_TOO_LONG: TOO_LONG,
 };
 
 /** Where to go instead when the API says this step is not the person's to take. */
@@ -53,14 +53,14 @@ export async function answerAsk(
 ): Promise<AnswerAskState> {
   const input = AnswerAskInput.safeParse({
     askId: formData.get('askId'),
-    body: formData.get('body'),
+    message: formData.get('message'),
   });
   if (!input.success) {
     const { fieldErrors } = z.flattenError(input.error);
-    const tooLong = (formData.get('body') as string | null) ?? '';
+    const tooLong = (formData.get('message') as string | null) ?? '';
     return {
       fieldErrors: {
-        body: fieldErrors.body
+        message: fieldErrors.message
           ? tooLong.trim().length > MAX_ANSWER_LENGTH
             ? TOO_LONG
             : WRITE_SOMETHING
@@ -86,7 +86,7 @@ export async function answerAsk(
             },
             header: { cookie },
           },
-          body: { body: input.data.body },
+          body: { message: input.data.message },
         },
       ),
     );
@@ -97,7 +97,7 @@ export async function answerAsk(
     }
     const answerError = ANSWER_ERRORS[error.code];
     if (answerError) {
-      return { fieldErrors: { body: answerError } };
+      return { fieldErrors: { message: answerError } };
     }
     if (
       error.code === 'ASK_ALREADY_ANSWERED' ||

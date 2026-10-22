@@ -23,11 +23,9 @@ function setUp() {
       workspaceId: WORKSPACE_ID,
       origin: 'REQUESTED',
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
-      topic: 'how Ben runs the planning meeting',
-      topicTags: NO_TAGS,
       giverAccountId: CARA,
       receiverAccountId: BEN,
-      body: 'You start with the three goals on one slide.',
+      message: 'You start with the three goals on one slide.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-11T03:00:00.000Z'),
       visibility: 'EVERYONE',
@@ -38,11 +36,9 @@ function setUp() {
       workspaceId: WORKSPACE_ID,
       origin: 'OFFERED',
       feedbackRequestId: null,
-      topic: 'the customer demo on Tuesday',
-      topicTags: NO_TAGS,
       giverAccountId: BEN,
       receiverAccountId: CARA,
-      body: 'You kept the room with you when the demo broke.',
+      message: 'You kept the room with you when the demo broke.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-12T03:00:00.000Z'),
       visibility: 'EVERYONE',
@@ -53,11 +49,9 @@ function setUp() {
       workspaceId: WORKSPACE_ID,
       origin: 'OFFERED',
       feedbackRequestId: null,
-      topic: 'onboarding the new designers',
-      topicTags: NO_TAGS,
       giverAccountId: BEN,
       receiverAccountId: CARA,
-      body: 'Your notes answered every question I had.',
+      message: 'Your notes answered every question I had.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-13T03:00:00.000Z'),
       visibility: 'SELECTED_PEOPLE',
@@ -68,11 +62,9 @@ function setUp() {
       workspaceId: WORKSPACE_ID,
       origin: 'OFFERED',
       feedbackRequestId: null,
-      topic: 'the release notes',
-      topicTags: NO_TAGS,
       giverAccountId: BEN,
       receiverAccountId: CARA,
-      body: 'They read clearly and they land a day late.',
+      message: 'They read clearly and they land a day late.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-14T03:00:00.000Z'),
       visibility: 'ONLY_ME',
@@ -83,11 +75,9 @@ function setUp() {
       workspaceId: OTHER_WORKSPACE_ID,
       origin: 'OFFERED',
       feedbackRequestId: null,
-      topic: 'another Workspace entirely',
-      topicTags: NO_TAGS,
       giverAccountId: BEN,
       receiverAccountId: CARA,
-      body: 'Nobody here should read this.',
+      message: 'Nobody here should read this.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-15T03:00:00.000Z'),
       visibility: 'EVERYONE',
@@ -131,9 +121,9 @@ describe('reading the Workspace feed', () => {
     });
 
     expect(feed.total).toBe(2);
-    expect(feed.items.map((feedback) => feedback.topic)).toEqual([
-      'the customer demo on Tuesday',
-      'how Ben runs the planning meeting',
+    expect(feed.items.map((feedback) => feedback.message)).toEqual([
+      'You kept the room with you when the demo broke.',
+      'You start with the three goals on one slide.',
     ]);
     expect(feed.items[0]?.giverName).toBe('Ben Carter');
     expect(feed.items[0]?.receiverName).toBe('Cara Diaz');
@@ -187,9 +177,11 @@ describe('reading the Workspace feed', () => {
       page: ONE_PAGE,
     });
 
-    const topics = feed.items.map((feedback) => feedback.topic);
-    expect(topics).not.toContain('onboarding the new designers');
-    expect(topics).not.toContain('the release notes');
+    const messages = feed.items.map((feedback) => feedback.message);
+    expect(messages).not.toContain('Your notes answered every question I had.');
+    expect(messages).not.toContain(
+      'They read clearly and they land a day late.',
+    );
   });
 
   it('leaves out another Workspace’s feed, however public it is there', async () => {
@@ -200,8 +192,8 @@ describe('reading the Workspace feed', () => {
       page: ONE_PAGE,
     });
 
-    expect(feed.items.map((feedback) => feedback.topic)).not.toContain(
-      'another Workspace entirely',
+    expect(feed.items.map((feedback) => feedback.message)).not.toContain(
+      'Nobody here should read this.',
     );
   });
 

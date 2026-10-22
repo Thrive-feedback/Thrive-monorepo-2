@@ -13,12 +13,12 @@ const MAX_SELECTED_PEOPLE = 50;
 
 /**
  * Only the shape is checked here. Trimming, the length limit and "not blank" belong to the
- * Topic; "not yourself" and "not twice" to the Feedback Request; and which Visibility takes
+ * Request message; "not yourself" and "not twice" to the Feedback Request; and which Visibility takes
  * selected people, and how many, to the Visibility — each with its own code.
  */
 export const sendFeedbackRequestRequestSchema = z.strictObject({
-  /** What the Feedback is about. Up to 200 characters once spaces are collapsed. */
-  topic: z.string(),
+  /** The Request message the people asked read. Up to 200 characters once spaces are collapsed. */
+  message: z.string(),
   /** The Accounts of the Members being asked. Each must be a Member of this Workspace. */
   giverAccountIds: z.array(z.uuid()).min(1).max(MAX_GIVERS),
   /** Who besides the Requester and the Members asked may read the answers. Fixed once sent. */

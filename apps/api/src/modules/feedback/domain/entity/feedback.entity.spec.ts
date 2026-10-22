@@ -5,8 +5,7 @@ import {
   CannotSelectYourselfError,
 } from '../feedback-request.errors';
 import { BoundTags } from '../value-object/bound-tags.vo';
-import { FeedbackBody } from '../value-object/feedback-body.vo';
-import { Topic } from '../value-object/topic.vo';
+import { FeedbackMessage } from '../value-object/feedback-message.vo';
 import { Visibility } from '../value-object/visibility.vo';
 import { Feedback } from './feedback.entity';
 
@@ -25,9 +24,8 @@ function offering(
     workspaceId: WORKSPACE_ID,
     giverAccountId: overrides.giver ?? 'account-ann',
     receiverAccountId: overrides.receiver ?? 'account-ben',
-    topic: Topic.of('the customer demo'),
     visibility: overrides.visibility ?? Visibility.onlyMe(),
-    body: FeedbackBody.of('You kept the room with you.'),
+    message: FeedbackMessage.of('You kept the room with you.'),
     tags: BoundTags.none(),
   };
 }
@@ -51,10 +49,9 @@ describe('offering Feedback without being asked', () => {
       feedbackAskId: null,
       giverAccountId: 'account-ann',
       receiverAccountId: 'account-ben',
-      topic: 'the customer demo',
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
-      body: 'You kept the room with you.',
+      message: 'You kept the room with you.',
       workspaceGoals: [],
       mentions: [],
     });

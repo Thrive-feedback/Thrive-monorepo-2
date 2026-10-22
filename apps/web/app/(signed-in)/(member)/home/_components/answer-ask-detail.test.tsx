@@ -41,22 +41,22 @@ async function renderDetail() {
 const WAITING: WaitingAsk = {
   askId: ASK_ID,
   feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
-  topic: 'Running the planning meeting',
-  topicTags: NO_TEXT_TAGS,
+  message: 'Running the planning meeting',
+  messageTags: NO_TEXT_TAGS,
   requesterName: 'Ann Lee',
   requesterInactive: false,
   status: 'PENDING',
 };
 
 describe('an Ask, open over Home to be answered', () => {
-  it('says who asked and about what, and offers the box', async () => {
+  it('says who asked and what they asked, and offers the box', async () => {
     readFeedbackAsk.mockResolvedValue(WAITING);
 
     await renderDetail();
 
     expect(
       screen.getByRole('heading', {
-        name: 'Ann Lee asked about Running the planning meeting',
+        name: 'Ann Lee asked: Running the planning meeting',
       }),
     ).toBeInTheDocument();
     expect(
@@ -84,7 +84,7 @@ describe('an Ask, open over Home to be answered', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'A teammate asked about Running the planning meeting',
+        name: 'A teammate asked: Running the planning meeting',
       }),
     ).toBeInTheDocument();
   });

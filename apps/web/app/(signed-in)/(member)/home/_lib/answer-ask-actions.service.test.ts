@@ -42,10 +42,10 @@ const { answerAsk } = await import('./answer-ask-actions.service');
 
 const ENDPOINT = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/feedback-asks/${ASK_ID}/answers`;
 
-function answering(body: string, askId = ASK_ID) {
+function answering(message: string, askId = ASK_ID) {
   const formData = new FormData();
   formData.set('askId', askId);
-  formData.set('body', body);
+  formData.set('message', message);
   return formData;
 }
 
@@ -79,7 +79,7 @@ describe('answering an Ask', () => {
     await expect(
       answerAsk(WORKSPACE_ID, {}, answering(WRITTEN)),
     ).rejects.toThrow(new Redirected(`/home?tab=waiting&ask=${ASK_ID}`));
-    expect(sentBody).toEqual({ body: WRITTEN });
+    expect(sentBody).toEqual({ message: WRITTEN });
   });
 
   it('refuses an empty answer without asking the API', async () => {
@@ -87,7 +87,7 @@ describe('answering an Ask', () => {
 
     const state = await answerAsk(WORKSPACE_ID, {}, answering('   '));
 
-    expect(state.fieldErrors?.body).toBe(
+    expect(state.fieldErrors?.message).toBe(
       'Write your answer before sending it.',
     );
     expect(sentBody).toBeUndefined();
@@ -102,7 +102,7 @@ describe('answering an Ask', () => {
       answering('a'.repeat(4001)),
     );
 
-    expect(state.fieldErrors?.body).toContain('4,000');
+    expect(state.fieldErrors?.message).toContain('4,000');
     expect(sentBody).toBeUndefined();
   });
 

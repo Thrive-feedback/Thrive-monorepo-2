@@ -33,8 +33,8 @@ function waitingRequest(
 ): SentFeedbackRequest {
   return {
     id: REQUEST_ID,
-    topic: 'my sprint review talk',
-    topicTags: NO_TEXT_TAGS,
+    message: 'my sprint review talk',
+    messageTags: NO_TEXT_TAGS,
     asks: [
       {
         askId: 'ask-1',
@@ -49,11 +49,11 @@ function waitingRequest(
 }
 
 describe('a sent Feedback Request, open over Home', () => {
-  it('names who was asked, the Topic, and that it is waiting', async () => {
+  it('names who was asked, the Request message, and that it is waiting', async () => {
     readFeedbackRequest.mockResolvedValue({
       id: REQUEST_ID,
-      topic: 'my sprint review talk',
-      topicTags: NO_TEXT_TAGS,
+      message: 'my sprint review talk',
+      messageTags: NO_TEXT_TAGS,
       asks: [
         {
           askId: 'ask-1',
@@ -70,7 +70,7 @@ describe('a sent Feedback Request, open over Home', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'You asked Ben Carter about my sprint review talk',
+        name: 'You asked Ben Carter: my sprint review talk',
       }),
     ).toBeInTheDocument();
     expect(
@@ -81,8 +81,8 @@ describe('a sent Feedback Request, open over Home', () => {
   it('calls an unintroduced Giver a teammate rather than nobody', async () => {
     readFeedbackRequest.mockResolvedValue({
       id: REQUEST_ID,
-      topic: 'my sprint review talk',
-      topicTags: NO_TEXT_TAGS,
+      message: 'my sprint review talk',
+      messageTags: NO_TEXT_TAGS,
       asks: [
         {
           askId: 'ask-1',
@@ -99,7 +99,7 @@ describe('a sent Feedback Request, open over Home', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'You asked a teammate about my sprint review talk',
+        name: 'You asked a teammate: my sprint review talk',
       }),
     ).toBeInTheDocument();
     expect(screen.getByText('Now answered.')).toBeInTheDocument();
@@ -108,8 +108,8 @@ describe('a sent Feedback Request, open over Home', () => {
   it('shows what the Giver wrote, once they have written it', async () => {
     readFeedbackRequest.mockResolvedValue({
       id: REQUEST_ID,
-      topic: 'my sprint review talk',
-      topicTags: NO_TEXT_TAGS,
+      message: 'my sprint review talk',
+      messageTags: NO_TEXT_TAGS,
       asks: [
         {
           askId: 'ask-1',
@@ -117,7 +117,7 @@ describe('a sent Feedback Request, open over Home', () => {
           giverInactive: false,
           status: 'ANSWERED',
           answer: {
-            body: 'You open strongly and lose the room at the detail.',
+            message: 'You open strongly and lose the room at the detail.',
             tags: NO_TEXT_TAGS,
           },
         },

@@ -119,9 +119,9 @@ export function LandingHomePreview({
     );
     const sent: SentRequest = {
       id: `preview-request-sent-${composerKey}`,
-      topic: String(formData.get('topic') ?? '').trim(),
+      message: String(formData.get('message') ?? '').trim(),
       // The preview binds nothing: it has no Workspace Goals and reaches no API.
-      topicTags: NO_TEXT_TAGS,
+      messageTags: NO_TEXT_TAGS,
       sentAt: new Date().toISOString(),
       asks: [
         {

@@ -5,8 +5,7 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { v7 as uuidv7 } from 'uuid';
 import { Feedback } from '../../domain/entity/feedback.entity';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
-import { FeedbackBody } from '../../domain/value-object/feedback-body.vo';
-import { Topic } from '../../domain/value-object/topic.vo';
+import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { PrismaFeedbackRequestQuery } from '../query/prisma-feedback-request.query';
 import { PrismaFeedbackRepository } from './prisma-feedback.repository';
@@ -38,9 +37,8 @@ function offered(
     workspaceId,
     giverAccountId: uuidv7(),
     receiverAccountId,
-    topic: Topic.of('the customer demo'),
     visibility,
-    body: FeedbackBody.of('You kept the room with you.'),
+    message: FeedbackMessage.of('You kept the room with you.'),
   });
 }
 
@@ -68,17 +66,15 @@ describe('storing Offered Feedback', () => {
         id: snapshot.id,
         origin: 'OFFERED',
         feedbackRequestId: null,
-        topic: 'the customer demo',
-        topicTags: { workspaceGoals: [], mentions: [] },
         giverAccountId: snapshot.giverAccountId,
-        body: 'You kept the room with you.',
+        message: 'You kept the room with you.',
         tags: { workspaceGoals: [], mentions: [] },
         createdAt: expect.any(Date),
       },
     ]);
   });
 
-  it('saves what its Giver named, which its Topic and its text are both read with', async () => {
+  it('saves what its Giver named, which its Feedback message is read with', async () => {
     const workspaceId = uuidv7();
     const receiverAccountId = uuidv7();
     const named = {
@@ -104,7 +100,7 @@ describe('storing Offered Feedback', () => {
       receiverAccountId,
       ONE_PAGE,
     );
-    expect(received.items[0]).toMatchObject({ tags: named, topicTags: named });
+    expect(received.items[0]).toMatchObject({ tags: named });
   });
 
   it('keeps the Visibility and the people selected, for one piece to be opened by', async () => {
@@ -125,7 +121,7 @@ describe('storing Offered Feedback', () => {
     expect(opened).toMatchObject({
       origin: 'OFFERED',
       feedbackRequestId: null,
-      topic: 'the customer demo',
+      message: 'You kept the room with you.',
       visibility: 'SELECTED_PEOPLE',
       selectedAccountIds: selected,
     });

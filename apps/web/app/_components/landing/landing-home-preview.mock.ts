@@ -56,10 +56,9 @@ export const PREVIEW_WORKSPACE_FEED: readonly FeedItem[] = [
     receiverName: 'Nok Chaiyo',
     receiverInactive: false,
     origin: 'OFFERED',
-    topic: 'A new hire’s first week',
-    topicTags: NO_TEXT_TAGS,
-    body: 'Your onboarding notes answered every question our new designer had. She shipped her first screen on day three. Thank you!',
-    bodyTags: NO_TEXT_TAGS,
+    message:
+      'Your onboarding notes answered every question our new designer had. She shipped her first screen on day three. Thank you!',
+    messageTags: NO_TEXT_TAGS,
     givenAt: '2026-10-20T09:30:00.000Z',
     reactions: { '👏': ['Ploy Srisuk', 'Fern Somsak'], '❤️': ['Arm Wattana'] },
   },
@@ -70,11 +69,9 @@ export const PREVIEW_WORKSPACE_FEED: readonly FeedItem[] = [
     receiverName: 'Ploy Srisuk',
     receiverInactive: false,
     origin: 'REQUESTED',
-    topic:
-      'I’m working on shorter meetings. Where did we lose time this morning?',
-    topicTags: NO_TEXT_TAGS,
-    body: 'We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.',
-    bodyTags: NO_TEXT_TAGS,
+    message:
+      'We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.',
+    messageTags: NO_TEXT_TAGS,
     givenAt: '2026-10-19T04:15:00.000Z',
     reactions: { '💡': ['Arm Wattana'], '🙏': ['Ploy Srisuk'] },
   },
@@ -88,10 +85,9 @@ export const PREVIEW_SHARED_WITH_ME: readonly FeedItem[] = [
     receiverName: 'Fern Somsak',
     receiverInactive: false,
     origin: 'REQUESTED',
-    topic: 'In our run-through just now, where did you get lost?',
-    topicTags: NO_TEXT_TAGS,
-    body: 'The demo started before you explained the problem, so I didn’t know what I was looking at. Swap them.',
-    bodyTags: NO_TEXT_TAGS,
+    message:
+      'The demo started before you explained the problem, so I didn’t know what I was looking at. Swap them.',
+    messageTags: NO_TEXT_TAGS,
     givenAt: '2026-10-20T07:45:00.000Z',
     reactions: {},
   },
@@ -100,9 +96,9 @@ export const PREVIEW_SHARED_WITH_ME: readonly FeedItem[] = [
 export const PREVIEW_SENT_REQUESTS: readonly SentRequest[] = [
   {
     id: 'preview-request-1',
-    topic:
+    message:
       'In today’s pitch, what’s one thing I should change before the next one?',
-    topicTags: NO_TEXT_TAGS,
+    messageTags: NO_TEXT_TAGS,
     sentAt: '2026-10-20T03:10:00.000Z',
     asks: [
       {
@@ -115,9 +111,9 @@ export const PREVIEW_SENT_REQUESTS: readonly SentRequest[] = [
   },
   {
     id: 'preview-request-2',
-    topic:
+    message:
       'I’m working on shorter meetings. Where did we lose time this morning?',
-    topicTags: NO_TEXT_TAGS,
+    messageTags: NO_TEXT_TAGS,
     sentAt: '2026-10-19T02:00:00.000Z',
     asks: [
       {
@@ -139,8 +135,8 @@ export const PREVIEW_SENT_REQUESTS: readonly SentRequest[] = [
 export const PREVIEW_WAITING_ASKS: readonly MyAsk[] = [
   {
     askId: 'preview-ask-1',
-    topic: 'In our run-through just now, where did you get lost?',
-    topicTags: NO_TEXT_TAGS,
+    message: 'In our run-through just now, where did you get lost?',
+    messageTags: NO_TEXT_TAGS,
     requesterName: 'Fern Somsak',
     requesterInactive: false,
     askedAt: '2026-10-20T06:20:00.000Z',
@@ -151,26 +147,22 @@ export const PREVIEW_WAITING_ASKS: readonly MyAsk[] = [
 export const PREVIEW_RECEIVED: readonly ReceivedFeedback[] = [
   {
     id: 'preview-received-1',
-    topic:
-      'In today’s pitch, what’s one thing I should change before the next one?',
-    topicTags: NO_TEXT_TAGS,
     offered: false,
     giverName: 'Arm Wattana',
     giverInactive: false,
-    body: 'When you opened with market size, the room went quiet. When you told Mai’s story, they leaned in. Next time, open with the story.',
-    bodyTags: NO_TEXT_TAGS,
+    message:
+      'When you opened with market size, the room went quiet. When you told Mai’s story, they leaned in. Next time, open with the story.',
+    messageTags: NO_TEXT_TAGS,
     writtenAt: '2026-10-20T03:40:00.000Z',
   },
   {
     id: 'preview-received-2',
-    topic:
-      'I’m working on shorter meetings. Where did we lose time this morning?',
-    topicTags: NO_TEXT_TAGS,
     offered: false,
     giverName: 'Nok Chaiyo',
     giverInactive: false,
-    body: 'We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.',
-    bodyTags: NO_TEXT_TAGS,
+    message:
+      'We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.',
+    messageTags: NO_TEXT_TAGS,
     writtenAt: '2026-10-19T04:15:00.000Z',
   },
 ];

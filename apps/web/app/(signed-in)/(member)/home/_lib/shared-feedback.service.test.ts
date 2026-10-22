@@ -26,10 +26,9 @@ const ONE_PIECE = {
   id: 'fb-1',
   origin: 'OFFERED',
   feedbackRequestId: null,
-  topic: 'the customer demo',
   giver: { accountId: 'account-ben', name: 'Ben Carter', status: 'ACTIVE' },
   receiver: { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
-  body: 'You kept the room with you.',
+  message: 'You kept the room with you.',
   createdAt: '2026-10-12T03:00:00.000Z',
 };
 
@@ -53,7 +52,7 @@ function apiHolds(items: unknown[]) {
 }
 
 describe('reading the Feedback shared with me', () => {
-  it('reads who wrote it, who it is about, the Topic, the text and the day', async () => {
+  it('reads who wrote it, who it is about, the Feedback message and the day', async () => {
     apiHolds([ONE_PIECE]);
 
     expect(await readSharedFeedback(MEMBERSHIP)).toEqual([
@@ -64,8 +63,7 @@ describe('reading the Feedback shared with me', () => {
         receiverName: 'Cara Diaz',
         receiverInactive: false,
         origin: 'OFFERED',
-        topic: 'the customer demo',
-        body: 'You kept the room with you.',
+        message: 'You kept the room with you.',
         givenAt: '2026-10-12T03:00:00.000Z',
         reactions: {},
       },
@@ -74,15 +72,15 @@ describe('reading the Feedback shared with me', () => {
 
   it('keeps the order the API answered in, which is newest first', async () => {
     apiHolds([
-      { ...ONE_PIECE, id: 'fb-2', topic: 'the release notes' },
+      { ...ONE_PIECE, id: 'fb-2', message: 'the release notes' },
       ONE_PIECE,
     ]);
 
     const shared = await readSharedFeedback(MEMBERSHIP);
 
-    expect(shared.map((feedback) => feedback.topic)).toEqual([
+    expect(shared.map((feedback) => feedback.message)).toEqual([
       'the release notes',
-      'the customer demo',
+      'You kept the room with you.',
     ]);
   });
 

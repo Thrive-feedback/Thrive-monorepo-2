@@ -7,7 +7,7 @@ const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
  * Optional: blank is no description at all. Surrounding and repeated whitespace is collapsed.
  *
  * `ADR-0036` asks for one sentence without naming a length; 200 is this release's reading of
- * it, matching a Topic, and the column is `text`, so raising it costs no migration.
+ * it, matching a Request message, and the column is `text`, so raising it costs no migration.
  */
 export class WorkspaceGoalDescription {
   static readonly MAX_LENGTH = 200;

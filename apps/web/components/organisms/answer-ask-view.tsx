@@ -44,8 +44,8 @@ export function AnswerAskView({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <Text variant="subtitle-3" as="h3">
-          <PersonName name={asker} inactive={ask.requesterInactive} /> asked
-          about <FeedbackText text={ask.topic} tags={ask.topicTags} />
+          <PersonName name={asker} inactive={ask.requesterInactive} /> asked:{' '}
+          <FeedbackText text={ask.message} tags={ask.messageTags} />
         </Text>
         <Text variant="body-3" tone="muted">
           Only <PersonName name={asker} inactive={ask.requesterInactive} /> can

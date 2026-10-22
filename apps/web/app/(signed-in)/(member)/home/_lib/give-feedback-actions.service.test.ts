@@ -70,16 +70,14 @@ function apiRefuses(code: string, status: number) {
 function form(
   fields: Partial<{
     receiverAccountId: string;
-    topic: string;
-    body: string;
+    message: string;
     visibility: string;
     selectedAccountIds: string[];
   }> = {},
 ): FormData {
   const formData = new FormData();
   formData.set('receiverAccountId', fields.receiverAccountId ?? BEN);
-  formData.set('topic', fields.topic ?? 'The customer demo');
-  formData.set('body', fields.body ?? 'You kept the room with you.');
+  formData.set('message', fields.message ?? 'You kept the room with you.');
   formData.set('visibility', fields.visibility ?? 'ONLY_ME');
   for (const accountId of fields.selectedAccountIds ?? []) {
     formData.append('selectedAccountIds', accountId);
@@ -116,8 +114,7 @@ describe('giving a teammate Feedback without being asked', () => {
     expect(requireMember).toHaveBeenCalledWith(WORKSPACE_ID);
     expect(received.body).toEqual({
       receiverAccountId: BEN,
-      topic: 'The customer demo',
-      body: 'You kept the room with you.',
+      message: 'You kept the room with you.',
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
     });
@@ -137,15 +134,15 @@ describe('giving a teammate Feedback without being asked', () => {
   });
 
   it('refuses blank feedback without calling the API', async () => {
-    const { state } = await send(form({ body: '   ' }));
+    const { state } = await send(form({ message: '   ' }));
 
-    expect(state?.fieldErrors?.body).toBe('Write your feedback.');
+    expect(state?.fieldErrors?.message).toBe('Write your feedback.');
   });
 
   it('says an over-long feedback is too long, rather than missing', async () => {
-    const { state } = await send(form({ body: 'a'.repeat(4001) }));
+    const { state } = await send(form({ message: 'a'.repeat(4001) }));
 
-    expect(state?.fieldErrors?.body).toBe(
+    expect(state?.fieldErrors?.message).toBe(
       'Your feedback is too long. Keep it under 4000 characters.',
     );
   });

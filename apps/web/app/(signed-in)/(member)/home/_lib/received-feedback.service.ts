@@ -32,13 +32,11 @@ export const readReceivedFeedback = cache(
     );
     return received.items.map((feedback) => ({
       id: feedback.id,
-      topic: feedback.topic,
-      topicTags: feedback.topicTags,
       offered: feedback.origin === 'OFFERED',
       giverName: feedback.giverName,
       giverInactive: feedback.giverStatus === 'DEACTIVATED',
-      body: feedback.body,
-      bodyTags: feedback.tags,
+      message: feedback.message,
+      messageTags: feedback.tags,
       writtenAt: feedback.createdAt,
     }));
   },

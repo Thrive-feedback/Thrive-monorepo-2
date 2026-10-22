@@ -48,8 +48,8 @@ export class ListMyFeedbackAsksUseCase {
       items: asks.items.map((ask) => ({
         askId: ask.askId,
         feedbackRequestId: ask.feedbackRequestId,
-        topic: ask.topic,
-        topicTags: ask.topicTags,
+        message: ask.message,
+        tags: ask.tags,
         requesterAccountId: ask.requesterAccountId,
         // The Requester's Account cascades away with them, as a Giver's does.
         requesterName: people.nameOf(ask.requesterAccountId),

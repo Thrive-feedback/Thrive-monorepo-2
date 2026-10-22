@@ -114,7 +114,7 @@ describe('LandingHomePreview', () => {
     // the resize slug's hit area covers every click in the form and takes it.
     first('button', 'Ask for advice…').focus();
     await user.keyboard('{Enter}');
-    first('combobox', /What should they talk about/).focus();
+    first('combobox', /What would you like feedback on/).focus();
     await user.keyboard('My first board update');
     first('combobox', /Who do you want to ask/).focus();
     await user.keyboard('{Enter}');

@@ -14,9 +14,10 @@ export type SentAsk = {
 /** One Feedback Request the signed-in person sent, as My requests lists it. */
 export type SentRequest = {
   readonly id: string;
-  readonly topic: string;
-  /** What the Topic was bound to when the request was sent. */
-  readonly topicTags: TextTags;
+  /** The Request message. */
+  readonly message: string;
+  /** What the Request message was bound to when the request was sent. */
+  readonly messageTags: TextTags;
   /** ISO 8601, formatted where it is shown. */
   readonly sentAt: string;
   readonly asks: readonly SentAsk[];

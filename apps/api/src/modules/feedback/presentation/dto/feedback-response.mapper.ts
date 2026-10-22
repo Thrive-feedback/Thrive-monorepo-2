@@ -26,8 +26,6 @@ export function toFeedbackResponse(feedback: FeedbackView) {
     id: feedback.id,
     origin: feedback.origin,
     feedbackRequestId: feedback.feedbackRequestId,
-    topic: feedback.topic,
-    topicTags: toTagsResponse(feedback.topicTags),
     giver: {
       accountId: feedback.giverAccountId,
       name: feedback.giverName,
@@ -38,7 +36,7 @@ export function toFeedbackResponse(feedback: FeedbackView) {
       name: feedback.receiverName,
       status: feedback.receiverStatus,
     },
-    body: feedback.body,
+    message: feedback.message,
     tags: toTagsResponse(feedback.tags),
     createdAt: feedback.createdAt.toISOString(),
   };

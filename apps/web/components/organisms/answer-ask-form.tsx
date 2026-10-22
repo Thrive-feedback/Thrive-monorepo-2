@@ -47,27 +47,27 @@ export function AnswerAskForm({
   workspaceGoals,
   action,
 }: AnswerAskFormProps) {
-  const [body, setBody] = useState('');
+  const [message, setMessage] = useState('');
   const [clientError, setClientError] = useState<string | undefined>();
   const [state, formAction, isSending] = useActionState<
     AnswerAskState,
     FormData
   >(action, {});
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
 
-  const errorMessage = clientError ?? state.fieldErrors?.body;
-  const remaining = MAX_ANSWER_LENGTH - body.length;
+  const errorMessage = clientError ?? state.fieldErrors?.message;
+  const remaining = MAX_ANSWER_LENGTH - message.length;
 
   function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    setBody(event.target.value);
+    setMessage(event.target.value);
     setClientError(undefined);
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (body.trim() === '') {
+    if (message.trim() === '') {
       setClientError(WRITE_SOMETHING);
-      bodyRef.current?.focus();
+      messageRef.current?.focus();
       return;
     }
     setClientError(undefined);
@@ -79,17 +79,17 @@ export function AnswerAskForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <input type="hidden" name="askId" value={askId} />
       <TextAreaField
-        ref={bodyRef}
+        ref={messageRef}
         label={`What would you tell ${requesterName ?? 'them'}?`}
-        name="body"
+        name="message"
         rows={8}
         required
-        value={body}
+        value={message}
         triggers={feedbackTagTriggers(workspaceGoals, teammates)}
         onChange={handleChange}
         errorMessage={errorMessage}
         helperText={
-          body.length > COUNT_FROM
+          message.length > COUNT_FROM
             ? `${remaining.toLocaleString('en-GB')} characters left.`
             : 'They see your name with your answer. Say what you would say in person.'
         }

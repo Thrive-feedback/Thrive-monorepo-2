@@ -45,8 +45,8 @@ function toResponse(ask: MyAskView) {
   return {
     askId: ask.askId,
     feedbackRequestId: ask.feedbackRequestId,
-    topic: ask.topic,
-    topicTags: toTagsResponse(ask.topicTags),
+    message: ask.message,
+    tags: toTagsResponse(ask.tags),
     requester: {
       accountId: ask.requesterAccountId,
       name: ask.requesterName,
@@ -150,7 +150,7 @@ export class FeedbackAskController {
       workspaceId: params.workspaceId,
       giverAccountId: actor.accountId,
       askId: params.askId,
-      body: body.body,
+      message: body.message,
     });
     return { feedbackId: answered.feedbackId };
   }

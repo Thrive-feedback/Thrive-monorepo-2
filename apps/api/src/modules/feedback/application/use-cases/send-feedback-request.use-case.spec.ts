@@ -8,7 +8,7 @@ import { FakeIdGenerator } from '@test/support/id-generator.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   CannotAskYourselfError,
-  TopicEmptyError,
+  RequestMessageEmptyError,
 } from '../../domain/feedback-request.errors';
 import {
   GiverNotInWorkspaceError,
@@ -25,7 +25,7 @@ const CARA = 'account-cara';
 
 function request(
   overrides: Partial<{
-    topic: string;
+    message: string;
     giverAccountIds: string[];
     visibility: string;
     selectedAccountIds: string[];
@@ -34,7 +34,7 @@ function request(
   return {
     workspaceId: WORKSPACE_ID,
     requesterAccountId: ANN,
-    topic: '  my presentation   skills ',
+    message: '  my presentation   skills ',
     giverAccountIds: [BEN],
     visibility: 'ONLY_ME',
     selectedAccountIds: [],
@@ -67,7 +67,7 @@ function setUp() {
 }
 
 describe('a Requester asking a teammate for Feedback', () => {
-  it('stores the request with a tidied Topic and one Ask for the Member asked', async () => {
+  it('stores the request with a tidied Request message and one Ask for the Member asked', async () => {
     const { feedbackRequestRepository, useCase } = setUp();
 
     const sent = await useCase.execute(request());
@@ -78,7 +78,7 @@ describe('a Requester asking a teammate for Feedback', () => {
         id: REQUEST_ID,
         workspaceId: WORKSPACE_ID,
         requesterAccountId: ANN,
-        topic: 'my presentation skills',
+        message: 'my presentation skills',
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         workspaceGoals: [],
@@ -88,11 +88,11 @@ describe('a Requester asking a teammate for Feedback', () => {
     ]);
   });
 
-  it('binds what its Topic names', async () => {
+  it('binds what its Request message names', async () => {
     const { feedbackRequestRepository, useCase } = setUp();
 
     await useCase.execute(
-      request({ topic: 'The launch with @cara #OWNERSHIP' }),
+      request({ message: 'The launch with @cara #OWNERSHIP' }),
     );
 
     expect(feedbackRequestRepository.saved[0]).toMatchObject({
@@ -156,11 +156,11 @@ describe('a Requester asking a teammate for Feedback', () => {
     expect(feedbackRequestRepository.saved).toEqual([]);
   });
 
-  it('refuses a blank Topic before it asks the Workspace anything', async () => {
+  it('refuses a blank Request message before it asks the Workspace anything', async () => {
     const { feedbackRequestRepository, useCase } = setUp();
 
-    await expect(useCase.execute(request({ topic: '   ' }))).rejects.toThrow(
-      TopicEmptyError,
+    await expect(useCase.execute(request({ message: '   ' }))).rejects.toThrow(
+      RequestMessageEmptyError,
     );
     expect(feedbackRequestRepository.saved).toEqual([]);
   });

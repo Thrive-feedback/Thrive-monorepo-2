@@ -6,6 +6,10 @@
 **Status:** draft, 2026-10-13 · **Author:** naroebordin (with Claude) · **Follows:**
 `docs/design/0016-see-and-answer-feedback.md`
 
+> **Since 2026-10-22:** Topic is retired (brain `ADR-0039`, ADR 0054). Read *Topic* below as the
+> request's **Request message**, and *body* as the **Feedback message**. Feedback no longer holds
+> or returns a Topic of its own. This record is left as it was decided.
+
 ---
 
 ## 1. Context

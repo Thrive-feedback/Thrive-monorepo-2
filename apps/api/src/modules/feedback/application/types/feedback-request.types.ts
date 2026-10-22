@@ -36,7 +36,7 @@ export interface TagsView {
 }
 
 export interface AnswerView {
-  readonly body: string;
+  readonly message: string;
   /** What the answer names. */
   readonly tags: TagsView;
   readonly answeredAt: Date;
@@ -77,8 +77,8 @@ export interface VisibilityView {
 /** One Feedback Request as a screen reads it. */
 export interface FeedbackRequestView {
   readonly id: string;
-  readonly topic: string;
-  readonly topicTags: TagsView;
+  readonly message: string;
+  readonly tags: TagsView;
   /** `null` when the caller is a Giver, who is not told who else reads it (`ADR-0022`). */
   readonly visibility: VisibilityView | null;
   readonly asks: readonly AskView[];
@@ -95,8 +95,8 @@ export interface FeedbackRequestListView {
 export interface MyAskView {
   readonly askId: string;
   readonly feedbackRequestId: string;
-  readonly topic: string;
-  readonly topicTags: TagsView;
+  readonly message: string;
+  readonly tags: TagsView;
   readonly requesterAccountId: string;
   /** `null` while the Requester has not introduced themselves. */
   readonly requesterName: string | null;
@@ -112,8 +112,8 @@ export interface MyAskListView {
 }
 
 /**
- * One piece of Feedback as its Receiver reads it: who wrote it, what it was about, whether they
- * were asked, and what they wrote. There is no `visibility` here — Visibility governs who
+ * One piece of Feedback as its Receiver reads it: who wrote it, whether they were asked, and
+ * what they wrote. There is no `visibility` here — Visibility governs who
  * *besides* the Giver and the Receiver may read, and the Receiver is never the person it
  * excludes.
  */
@@ -123,15 +123,12 @@ export interface ReceivedFeedbackView {
   readonly origin: FeedbackOrigin;
   /** The request it answers, or `null` for Feedback given without being asked. */
   readonly feedbackRequestId: string | null;
-  readonly topic: string;
-  /** What the Topic names: its own if Offered, the request's if it answers one. */
-  readonly topicTags: TagsView;
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
   readonly giverStatus: PersonStatus;
-  readonly body: string;
-  /** What its Giver wrote names: the Topic and the text if Offered, the text if Requested. */
+  readonly message: string;
+  /** What its Giver's Feedback message names. */
   readonly tags: TagsView;
   readonly createdAt: Date;
 }
@@ -146,9 +143,6 @@ export interface FeedbackView {
   readonly origin: FeedbackOrigin;
   /** The request it answers, or `null` for Feedback given without being asked. */
   readonly feedbackRequestId: string | null;
-  readonly topic: string;
-  /** What the Topic names: its own if Offered, the request's if it answers one. */
-  readonly topicTags: TagsView;
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
@@ -157,8 +151,8 @@ export interface FeedbackView {
   /** `null` while the Receiver has not introduced themselves. */
   readonly receiverName: string | null;
   readonly receiverStatus: PersonStatus;
-  readonly body: string;
-  /** What its Giver wrote names: the Topic and the text if Offered, the text if Requested. */
+  readonly message: string;
+  /** What its Giver's Feedback message names. */
   readonly tags: TagsView;
   readonly createdAt: Date;
 }

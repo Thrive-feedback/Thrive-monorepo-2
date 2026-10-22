@@ -3,8 +3,7 @@ import { Then, When } from '@cucumber/cucumber';
 import type { ThriveWorld } from '../support/world';
 
 interface SharedFeedbackItem {
-  readonly body: string;
-  readonly topic: string;
+  readonly message: string;
   readonly giver: { readonly accountId: string };
   readonly receiver: { readonly accountId: string };
 }
@@ -31,28 +30,25 @@ When(
 );
 
 Then(
-  '{person} reads {string} from {person} to {person} about {string}',
+  '{person} reads {string} from {person} to {person}',
   function (
     this: ThriveWorld,
     _name: string,
-    body: string,
+    message: string,
     giver: string,
     receiver: string,
-    topic: string,
   ) {
     assert.deepEqual(
       sharedItems(this).map((feedback) => [
-        feedback.body,
+        feedback.message,
         feedback.giver.accountId,
         feedback.receiver.accountId,
-        feedback.topic,
       ]),
       [
         [
-          body,
+          message,
           this.person(giver).accountId,
           this.person(receiver).accountId,
-          topic,
         ],
       ],
     );
@@ -68,10 +64,10 @@ Then(
 );
 
 Then(
-  '{person} reads about {string} before {string}',
+  '{person} reads {string} before {string}',
   function (this: ThriveWorld, _name: string, first: string, second: string) {
     assert.deepEqual(
-      sharedItems(this).map((feedback) => feedback.topic),
+      sharedItems(this).map((feedback) => feedback.message),
       [first, second],
     );
   },

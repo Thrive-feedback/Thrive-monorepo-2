@@ -4,7 +4,6 @@ import { startTransition, useActionState, useRef, useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { TextAreaField } from '@/components/molecules/text-area-field';
-import { TextField } from '@/components/molecules/text-field';
 import type {
   GiveFeedbackAction,
   GiveFeedbackState,
@@ -16,7 +15,7 @@ import { SELECTED_PEOPLE, VisibilityPicker } from './visibility-picker';
 
 export type GiveFeedbackFormProps = {
   teammates: readonly Teammate[];
-  /** The Workspace's active Workspace Goals, by name, offered on `#` in the Topic and the text. */
+  /** The Workspace's active Workspace Goals, by name, offered on `#` in the Feedback message. */
   workspaceGoals: readonly string[];
   /** Sends the Feedback: Home's server action, or a stand-in. */
   action: GiveFeedbackAction;
@@ -36,12 +35,12 @@ type Visibility = (typeof VISIBILITIES)[number]['value'];
 
 type FieldErrors = NonNullable<GiveFeedbackState['fieldErrors']>;
 
-/** As long as the API lets Feedback be. */
-const MAX_BODY_LENGTH = 4000;
+/** As long as the API lets a Feedback message be. */
+const MAX_MESSAGE_LENGTH = 4000;
 
 /**
- * Giving Feedback without being asked — Offered Feedback. The Giver picks the Receiver, a Topic,
- * writes one answer, and chooses who else may read it, which never changes afterwards. Sending
+ * Giving Feedback without being asked — Offered Feedback. The Giver picks the Receiver, writes
+ * one Feedback message, and chooses who else may read it, which never changes afterwards. Sending
  * goes back to Home, which says once that it went.
  *
  * Every field stays controlled, so what was picked and typed survives a refusal. The form is
@@ -53,8 +52,7 @@ export function GiveFeedbackForm({
   action,
 }: GiveFeedbackFormProps) {
   const [receiverAccountId, setReceiverAccountId] = useState('');
-  const [topic, setTopic] = useState('');
-  const [body, setBody] = useState('');
+  const [message, setMessage] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('ONLY_ME');
   const [selectedAccountIds, setSelectedAccountIds] = useState<
     ReadonlySet<string>
@@ -65,8 +63,7 @@ export function GiveFeedbackForm({
     FormData
   >(action, {});
   const pickerRef = useRef<HTMLButtonElement>(null);
-  const topicRef = useRef<HTMLInputElement>(null);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
   const selectedRef = useRef<HTMLFieldSetElement>(null);
 
   const errors: FieldErrors = { ...state.fieldErrors, ...clientErrors };
@@ -101,37 +98,29 @@ export function GiveFeedbackForm({
     const found: FieldErrors = {
       receiverAccountId:
         receiverAccountId === '' ? 'Pick who it is for.' : undefined,
-      topic: topic.trim() === '' ? 'Add a Topic.' : undefined,
-      body:
-        body.trim() === ''
+      message:
+        message.trim() === ''
           ? 'Write your feedback.'
-          : body.trim().length > MAX_BODY_LENGTH
-            ? `Keep it under ${MAX_BODY_LENGTH} characters.`
+          : message.trim().length > MAX_MESSAGE_LENGTH
+            ? `Keep it under ${MAX_MESSAGE_LENGTH} characters.`
             : undefined,
       selectedAccountIds:
         visibility === SELECTED_PEOPLE && selectedOthers.length === 0
           ? 'Pick at least one person to share it with.'
           : undefined,
     };
-    if (
-      found.receiverAccountId ||
-      found.topic ||
-      found.body ||
-      found.selectedAccountIds
-    ) {
+    if (found.receiverAccountId || found.message || found.selectedAccountIds) {
       setClientErrors(found);
       // Focus the first field in error, in the order the page reads.
       if (found.receiverAccountId) pickerRef.current?.focus();
-      else if (found.topic) topicRef.current?.focus();
-      else if (found.body) bodyRef.current?.focus();
+      else if (found.message) messageRef.current?.focus();
       else selectedRef.current?.querySelector('button')?.focus();
       return;
     }
     setClientErrors({});
     const formData = new FormData();
     formData.set('receiverAccountId', receiverAccountId);
-    formData.set('topic', topic);
-    formData.set('body', body);
+    formData.set('message', message);
     formData.set('visibility', visibility);
     if (visibility === SELECTED_PEOPLE) {
       for (const teammate of selectedOthers) {
@@ -158,34 +147,20 @@ export function GiveFeedbackForm({
           }));
         }}
       />
-      <TextField
-        ref={topicRef}
-        label="What is it about?"
-        name="topic"
-        placeholder="e.g., the customer demo on Tuesday"
-        required
-        value={topic}
-        triggers={tagTriggers}
-        onChange={(event) => {
-          setTopic(event.target.value);
-          setClientErrors((current) => ({ ...current, topic: undefined }));
-        }}
-        errorMessage={errors.topic}
-      />
       <TextAreaField
-        ref={bodyRef}
+        ref={messageRef}
         label="Your feedback"
-        name="body"
+        name="message"
         rows={5}
         placeholder="What happened, what it did, and what to keep or try next time."
         required
-        value={body}
+        value={message}
         triggers={tagTriggers}
         onChange={(event) => {
-          setBody(event.target.value);
-          setClientErrors((current) => ({ ...current, body: undefined }));
+          setMessage(event.target.value);
+          setClientErrors((current) => ({ ...current, message: undefined }));
         }}
-        errorMessage={errors.body}
+        errorMessage={errors.message}
         helperText="Your name is shown with it."
       />
       <VisibilityPicker

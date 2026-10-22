@@ -501,14 +501,8 @@ exports[`Landing > renders the same page 1`] = `
                                       </p>
                                     </div>
                                   </header>
-                                  <h3
-                                    class="text-subtitle-2 break-words"
-                                    data-slot="text"
-                                  >
-                                    A new hire’s first week
-                                  </h3>
                                   <p
-                                    class="text-body-2 whitespace-pre-line break-words"
+                                    class="text-body-1 whitespace-pre-line break-words"
                                     data-slot="text"
                                   >
                                     Your onboarding notes answered every question our new designer had. She shipped her first screen on day three. Thank you!
@@ -647,14 +641,8 @@ exports[`Landing > renders the same page 1`] = `
                                       </p>
                                     </div>
                                   </header>
-                                  <h3
-                                    class="text-subtitle-2 break-words"
-                                    data-slot="text"
-                                  >
-                                    I’m working on shorter meetings. Where did we lose time this morning?
-                                  </h3>
                                   <p
-                                    class="text-body-2 whitespace-pre-line break-words"
+                                    class="text-body-1 whitespace-pre-line break-words"
                                     data-slot="text"
                                   >
                                     We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.
@@ -849,14 +837,8 @@ exports[`Landing > renders the same page 1`] = `
                                               </p>
                                             </div>
                                           </header>
-                                          <h3
-                                            class="text-subtitle-2 break-words"
-                                            data-slot="text"
-                                          >
-                                            A new hire’s first week
-                                          </h3>
                                           <p
-                                            class="text-body-2 whitespace-pre-line break-words"
+                                            class="text-body-1 whitespace-pre-line break-words"
                                             data-slot="text"
                                           >
                                             Your onboarding notes answered every question our new designer had. She shipped her first screen on day three. Thank you!
@@ -995,14 +977,8 @@ exports[`Landing > renders the same page 1`] = `
                                               </p>
                                             </div>
                                           </header>
-                                          <h3
-                                            class="text-subtitle-2 break-words"
-                                            data-slot="text"
-                                          >
-                                            I’m working on shorter meetings. Where did we lose time this morning?
-                                          </h3>
                                           <p
-                                            class="text-body-2 whitespace-pre-line break-words"
+                                            class="text-body-1 whitespace-pre-line break-words"
                                             data-slot="text"
                                           >
                                             We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.
@@ -1337,14 +1313,8 @@ exports[`Landing > renders the same page 1`] = `
                                               </p>
                                             </div>
                                           </header>
-                                          <h3
-                                            class="text-subtitle-2 break-words"
-                                            data-slot="text"
-                                          >
-                                            In our run-through just now, where did you get lost?
-                                          </h3>
                                           <p
-                                            class="text-body-2 whitespace-pre-line break-words"
+                                            class="text-body-1 whitespace-pre-line break-words"
                                             data-slot="text"
                                           >
                                             The demo started before you explained the problem, so I didn’t know what I was looking at. Swap them.

@@ -9,7 +9,7 @@ export type SentRequestListProps = {
 
 /**
  * The person's sent Feedback Requests, read here so the page renders around the read while it is
- * in flight. Each Topic opens its request in a dialog over My requests, named in the address.
+ * in flight. Each Request message opens its request in a dialog over My requests, named in the address.
  */
 export async function SentRequestList({ membership }: SentRequestListProps) {
   const requests = await readSentRequests(membership);

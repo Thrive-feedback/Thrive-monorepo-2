@@ -3,20 +3,16 @@ import type { TextTags } from './text-tags.type';
 /** One piece of Feedback written to the signed-in person, as Feedback for me shows it. */
 export type ReceivedFeedback = {
   readonly id: string;
-  /** What it is about: the Topic they were asked about, or the Giver's own. */
-  readonly topic: string;
-  /** What the Topic was bound to: its Giver's if Offered, the request's if it answers one. */
-  readonly topicTags: TextTags;
   /** Given without being asked, rather than in answer to one of this person's requests. */
   readonly offered: boolean;
   /** The Giver, by the name on their Profile, or `null` while they have none. */
   readonly giverName: string | null;
   /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
   readonly giverInactive: boolean;
-  /** What they wrote, as they wrote it — line breaks and all. */
-  readonly body: string;
-  /** What its Giver wrote was bound to. */
-  readonly bodyTags: TextTags;
+  /** The Feedback message, as they wrote it — line breaks and all. */
+  readonly message: string;
+  /** What the Feedback message was bound to. */
+  readonly messageTags: TextTags;
   /** ISO 8601, formatted where it is shown. */
   readonly writtenAt: string;
 };

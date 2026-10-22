@@ -68,7 +68,7 @@ export function AutocompleteInputDemo({ initial = '' }: { initial?: string }) {
   const [value, setValue] = useState(initial);
   return (
     <AutocompleteInput
-      aria-label="Topic"
+      aria-label="Request message"
       placeholder="Type # or @"
       value={value}
       triggers={DEMO_TRIGGERS}

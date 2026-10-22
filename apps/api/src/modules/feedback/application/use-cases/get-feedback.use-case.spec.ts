@@ -30,11 +30,9 @@ function setUp(
     workspaceId: WORKSPACE_ID,
     origin: 'REQUESTED',
     feedbackRequestId: REQUEST_ID,
-    topic: 'my presentation skills',
-    topicTags: NO_TAGS,
     giverAccountId: GIVER,
     receiverAccountId: RECEIVER,
-    body: 'You open strongly and lose the room at the detail.',
+    message: 'You open strongly and lose the room at the detail.',
     tags: NO_TAGS,
     createdAt: CREATED_AT,
     visibility,
@@ -91,15 +89,13 @@ describe('reading one piece of Feedback', () => {
       id: FEEDBACK_ID,
       origin: 'REQUESTED',
       feedbackRequestId: REQUEST_ID,
-      topic: 'my presentation skills',
-      topicTags: NO_TAGS,
       giverAccountId: GIVER,
       giverName: 'Ben Carter',
       giverStatus: 'ACTIVE',
       receiverAccountId: RECEIVER,
       receiverName: 'Ana Lee',
       receiverStatus: 'ACTIVE',
-      body: 'You open strongly and lose the room at the detail.',
+      message: 'You open strongly and lose the room at the detail.',
       tags: NO_TAGS,
       createdAt: CREATED_AT,
     });
@@ -114,7 +110,7 @@ describe('reading one piece of Feedback', () => {
       'DEACTIVATED',
       'ACTIVE',
     ]);
-    expect(feedback.body).toBe(
+    expect(feedback.message).toBe(
       'You open strongly and lose the room at the detail.',
     );
   });

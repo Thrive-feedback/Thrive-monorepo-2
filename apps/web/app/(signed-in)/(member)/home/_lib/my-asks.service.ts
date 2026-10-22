@@ -32,8 +32,8 @@ export const readMyAsks = cache(
     );
     return waiting.items.map((ask) => ({
       askId: ask.askId,
-      topic: ask.topic,
-      topicTags: ask.topicTags,
+      message: ask.message,
+      messageTags: ask.tags,
       requesterName: ask.requester.name,
       requesterInactive: ask.requester.status === 'DEACTIVATED',
       askedAt: ask.createdAt,
