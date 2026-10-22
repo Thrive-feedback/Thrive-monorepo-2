@@ -1,5 +1,6 @@
 'use client';
 
+import { CheckIcon } from 'lucide-react';
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
 
@@ -103,6 +104,43 @@ export function DropdownMenuItem({
       )}
       {...rest}
     />
+  );
+}
+
+export type DropdownMenuCheckboxItemProps = React.ComponentPropsWithRef<
+  typeof DropdownMenuPrimitive.CheckboxItem
+>;
+
+/**
+ * An item that is on or off, for a menu that picks several things. It keeps the menu open when
+ * chosen unless the caller says otherwise, because picking one of several is rarely the last pick.
+ */
+export function DropdownMenuCheckboxItem({
+  className,
+  children,
+  onSelect,
+  ...rest
+}: DropdownMenuCheckboxItemProps) {
+  return (
+    <DropdownMenuPrimitive.CheckboxItem
+      data-slot="dropdown-menu-checkbox-item"
+      className={cn(
+        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element py-2 pr-9 pl-2 text-body-2 outline-hidden data-disabled:pointer-events-none data-highlighted:bg-action-primary-surface data-[state=checked]:text-action-primary data-disabled:text-fg-secondary',
+        className,
+      )}
+      onSelect={(event) => {
+        event.preventDefault();
+        onSelect?.(event);
+      }}
+      {...rest}
+    >
+      <span className="absolute right-2 flex size-4 items-center justify-center">
+        <DropdownMenuPrimitive.ItemIndicator>
+          <CheckIcon className="size-4 text-fg-accent" />
+        </DropdownMenuPrimitive.ItemIndicator>
+      </span>
+      {children}
+    </DropdownMenuPrimitive.CheckboxItem>
   );
 }
 

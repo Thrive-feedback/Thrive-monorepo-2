@@ -222,18 +222,19 @@ export async function giveFeedback(
 export async function askForFeedback(
   world: ThriveWorld,
   requester: string,
-  giver: string,
+  givers: string | readonly string[],
   message: string,
   visibility: VisibilityChosen = { visibility: 'ONLY_ME' },
 ): Promise<ApiResponse> {
   const workspaceId = world.workspaceOf(requester);
+  const asked = typeof givers === 'string' ? [givers] : givers;
   const response = await world.as(
     requester,
     'POST',
     `/v1/workspaces/${workspaceId}/feedback-requests`,
     {
       message: await withSlugs(world, message),
-      giverAccountIds: [world.person(giver).accountId],
+      giverAccountIds: asked.map((giver) => world.person(giver).accountId),
       ...visibility,
     },
   );

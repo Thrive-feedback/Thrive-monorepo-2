@@ -25,8 +25,8 @@ export interface GetFeedbackRequestInput {
  * Two people may read a Feedback Request: the Requester, whose request it is, and a Giver, who
  * cannot answer what they may not read. Being a Member of the Workspace is not enough, and
  * neither is being one of the people it is shared with: Visibility decides who reads the
- * Feedback a request collects, not the request itself — who else was asked, and who has not
- * answered yet. A Member who is neither gets the same answer as for a request that does not
+ * Feedback a request collects, not the request itself. A Giver reads only their own Ask on it,
+ * never who else was asked (#30). A Member who is neither gets the same answer as for a request that does not
  * exist (ADR 0039, ADR 0042).
  */
 function mayRead(row: FeedbackRequestRow, callerAccountId: string): boolean {
@@ -87,13 +87,19 @@ export class GetFeedbackRequestUseCase {
     }
 
     const isRequester = row.requesterAccountId === input.callerAccountId;
+    // The Requester sees everybody they asked. A Giver sees only their own Ask: who else was
+    // asked is the Requester's to know, so an answer is written without leaning on anyone
+    // else's (#30).
+    const asks = isRequester
+      ? row.asks
+      : row.asks.filter((ask) => ask.giverAccountId === input.callerAccountId);
     const visibility = Visibility.of({
       value: row.visibility,
       selectedAccountIds: row.selectedAccountIds,
     });
     const [people, answerRows] = await Promise.all([
       this.peopleService.peopleIn(input.workspaceId, [
-        ...row.asks.map((ask) => ask.giverAccountId),
+        ...asks.map((ask) => ask.giverAccountId),
         ...(isRequester ? visibility.selectedAccountIds() : []),
       ]),
       this.feedbackRequestQuery.answersInRequest(
@@ -119,7 +125,7 @@ export class GetFeedbackRequestUseCase {
               })),
           }
         : null,
-      asks: row.asks.map((ask) => ({
+      asks: asks.map((ask) => ({
         askId: ask.askId,
         giverAccountId: ask.giverAccountId,
         // A Giver's Account cascades away with them, so a missing one was deleted mid-read.

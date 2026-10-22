@@ -69,14 +69,16 @@ function apiRefuses(code: string, status: number) {
 
 function form(
   fields: Partial<{
-    giverAccountId: string;
+    giverAccountIds: string[];
     message: string;
     visibility: string;
     selectedAccountIds: string[];
   }> = {},
 ): FormData {
   const formData = new FormData();
-  formData.set('giverAccountId', fields.giverAccountId ?? BEN);
+  for (const accountId of fields.giverAccountIds ?? [BEN]) {
+    formData.append('giverAccountIds', accountId);
+  }
   formData.set('message', fields.message ?? 'my sprint review talk');
   formData.set('visibility', fields.visibility ?? 'ONLY_ME');
   for (const accountId of fields.selectedAccountIds ?? []) {
@@ -119,7 +121,7 @@ describe('asking a teammate for Feedback', () => {
 
     expect(state).toEqual({
       fieldErrors: {
-        giverAccountId: undefined,
+        giverAccountIds: undefined,
         message: 'Write what you would like feedback on.',
         selectedAccountIds: undefined,
       },
@@ -175,18 +177,36 @@ describe('asking a teammate for Feedback', () => {
   });
 
   it('refuses a teammate that is not an Account id', async () => {
-    const { state } = await send(form({ giverAccountId: 'not-an-id' }));
+    const { state } = await send(form({ giverAccountIds: ['not-an-id'] }));
 
-    expect(state?.fieldErrors?.giverAccountId).toBe('Pick who to ask.');
+    expect(state?.fieldErrors?.giverAccountIds).toBe(
+      'Pick at least one person to ask.',
+    );
   });
 
-  it('says it plainly when the teammate has left the Workspace', async () => {
+  it('refuses a request that asks nobody', async () => {
+    const { state } = await send(form({ giverAccountIds: [] }));
+
+    expect(state?.fieldErrors?.giverAccountIds).toBe(
+      'Pick at least one person to ask.',
+    );
+  });
+
+  it('sends everyone picked in one request', async () => {
+    const received = apiAccepts();
+
+    await send(form({ giverAccountIds: [BEN, CARA] }));
+
+    expect(received.body).toMatchObject({ giverAccountIds: [BEN, CARA] });
+  });
+
+  it('says it plainly when someone picked has left the Workspace', async () => {
     apiRefuses('GIVER_NOT_IN_WORKSPACE', 400);
 
     const { state } = await send(form());
 
     expect(state).toEqual({
-      formError: 'That teammate is no longer in your Workspace.',
+      formError: 'Someone you picked to ask is no longer in your Workspace.',
     });
   });
 

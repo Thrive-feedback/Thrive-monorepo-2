@@ -20,7 +20,7 @@ const TEAMMATES = [
 ];
 
 function trigger() {
-  return screen.getByRole('combobox', { name: /Who do you want to ask/ });
+  return screen.getByRole('button', { name: /Who do you want to ask/ });
 }
 
 function messageField() {
@@ -48,9 +48,19 @@ async function fillIn(user: ReturnType<typeof userEvent.setup>) {
   await user.type(messageField(), 'my sprint review talk');
 }
 
-async function pickBen(user: ReturnType<typeof userEvent.setup>) {
+async function pick(
+  user: ReturnType<typeof userEvent.setup>,
+  ...names: string[]
+) {
   await user.click(trigger());
-  await user.click(screen.getByRole('option', { name: 'Ben Carter' }));
+  for (const name of names) {
+    await user.click(screen.getByRole('menuitemcheckbox', { name }));
+  }
+  await user.keyboard('{Escape}');
+}
+
+async function pickBen(user: ReturnType<typeof userEvent.setup>) {
+  await pick(user, 'Ben Carter');
 }
 
 describe('RequestFeedbackForm', () => {
@@ -89,7 +99,7 @@ describe('RequestFeedbackForm', () => {
 
     expect(requestFeedback).toHaveBeenCalledOnce();
     expect(sentFormData()).toEqual({
-      giverAccountId: BEN,
+      giverAccountIds: BEN,
       message: 'my sprint review talk',
       visibility: 'ONLY_ME',
     });
@@ -150,7 +160,7 @@ describe('RequestFeedbackForm', () => {
     ).toBeInTheDocument();
   });
 
-  it('asks who to share it with, leaving out the teammate being asked', async () => {
+  it('asks who to share it with, the teammates being asked included', async () => {
     const user = userEvent.setup();
     render(
       <RequestFeedbackForm
@@ -166,7 +176,48 @@ describe('RequestFeedbackForm', () => {
     expect(
       screen.getByRole('checkbox', { name: 'Cara Diaz' }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: 'Ben Carter' })).toBeNull();
+    expect(
+      screen.getByRole('checkbox', { name: 'Ben Carter' }),
+    ).toBeInTheDocument();
+  });
+
+  it('asks everyone picked, as one request', async () => {
+    const user = userEvent.setup();
+    render(
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
+    );
+
+    await pick(user, 'Ben Carter', 'Cara Diaz');
+    await user.type(messageField(), 'my sprint review talk');
+    await user.click(sendButton());
+
+    expect(
+      requestFeedback.mock.calls[0]?.[1].getAll('giverAccountIds'),
+    ).toEqual([BEN, CARA]);
+  });
+
+  it('lets a picked teammate be taken off again before sending', async () => {
+    const user = userEvent.setup();
+    render(
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
+    );
+
+    await pick(user, 'Ben Carter', 'Cara Diaz');
+    await user.click(screen.getByRole('button', { name: 'Remove Ben Carter' }));
+    await user.type(messageField(), 'my sprint review talk');
+    await user.click(sendButton());
+
+    expect(
+      requestFeedback.mock.calls[0]?.[1].getAll('giverAccountIds'),
+    ).toEqual([CARA]);
   });
 
   it('sends the people picked to read the answers', async () => {
@@ -205,7 +256,7 @@ describe('RequestFeedbackForm', () => {
     expect(
       screen.getByText('Pick at least one person to share it with.'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Cara Diaz' })).toHaveFocus();
+    expect(screen.getByRole('checkbox', { name: 'Ben Carter' })).toHaveFocus();
     expect(requestFeedback).not.toHaveBeenCalled();
   });
 
@@ -221,7 +272,9 @@ describe('RequestFeedbackForm', () => {
 
     await user.click(sendButton());
 
-    expect(screen.getByText('Pick who to ask.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Pick at least one person to ask.'),
+    ).toBeInTheDocument();
     expect(
       screen.getByText('Write what you would like feedback on.'),
     ).toBeInTheDocument();
@@ -244,7 +297,7 @@ describe('RequestFeedbackForm', () => {
     expect(
       screen.getByText('Write what you would like feedback on.'),
     ).toBeInTheDocument();
-    expect(screen.queryByText('Pick who to ask.')).toBeNull();
+    expect(screen.queryByText('Pick at least one person to ask.')).toBeNull();
     expect(requestFeedback).not.toHaveBeenCalled();
   });
 
@@ -261,7 +314,9 @@ describe('RequestFeedbackForm', () => {
     await user.type(messageField(), 'my sprint review talk');
     await user.click(sendButton());
 
-    expect(screen.getByText('Pick who to ask.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Pick at least one person to ask.'),
+    ).toBeInTheDocument();
     expect(trigger()).toHaveFocus();
     expect(requestFeedback).not.toHaveBeenCalled();
   });
@@ -306,7 +361,9 @@ describe('RequestFeedbackForm', () => {
     expect(
       await screen.findByText('That teammate is no longer in your Workspace.'),
     ).toHaveAttribute('role', 'alert');
-    expect(trigger()).toHaveTextContent('Ben Carter');
+    expect(screen.getByRole('list', { name: 'Picked' })).toHaveTextContent(
+      'Ben Carter',
+    );
     expect(messageField()).toHaveValue('my sprint review talk');
   });
 
@@ -319,7 +376,7 @@ describe('RequestFeedbackForm', () => {
       />,
     );
 
-    expect(trigger()).toHaveTextContent('Pick a teammate');
+    expect(trigger()).toHaveTextContent('Pick teammates');
     expect(messageField()).toBeInTheDocument();
     expect(sendButton()).toBeInTheDocument();
     expect(screen.queryByRole('link')).toBeNull();

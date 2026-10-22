@@ -2,9 +2,6 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
 
-/** One Member may be asked per request in this release; #30 raises the limit. */
-const MAX_GIVERS = 1;
-
 /**
  * More than a Workspace Thrive is sold to holds (20–50 people), so a real choice always fits
  * and a body cannot ask for thousands of membership checks. Everyone is the choice for more.
@@ -19,8 +16,12 @@ const MAX_SELECTED_PEOPLE = 50;
 export const sendFeedbackRequestRequestSchema = z.strictObject({
   /** The Request message the people asked read. Up to 200 characters once spaces are collapsed. */
   message: z.string(),
-  /** The Accounts of the Members being asked. Each must be a Member of this Workspace. */
-  giverAccountIds: z.array(z.uuid()).min(1).max(MAX_GIVERS),
+  /**
+   * The Accounts of the Members being asked, one Ask each. Each must be a Member of this
+   * Workspace. There is deliberately no upper bound: a Requester may ask as many teammates as
+   * they choose (#30).
+   */
+  giverAccountIds: z.array(z.uuid()).min(1),
   /** Who besides the Requester and the Members asked may read the answers. Fixed once sent. */
   visibility: z.enum(VISIBILITIES),
   /** The Members who may read the answers. Only with `SELECTED_PEOPLE`, and then at least one. */

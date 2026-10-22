@@ -9,9 +9,9 @@ import {
   TextFieldSkeleton,
 } from '@/components/molecules/text-field';
 import {
-  MemberPicker,
-  MemberPickerSkeleton,
-} from '@/components/organisms/member-picker';
+  MemberMultiPicker,
+  MemberMultiPickerSkeleton,
+} from '@/components/organisms/member-multi-picker';
 import {
   SELECTED_PEOPLE,
   VisibilityPicker,
@@ -34,7 +34,7 @@ export type RequestFeedbackFormProps = {
 
 type FieldErrors = NonNullable<RequestFeedbackState['fieldErrors']>;
 
-/** Who besides the Requester and the Giver may read the answers (`ADR-0022`). */
+/** Who besides the Requester and the Givers may read the answers (`ADR-0022`). */
 const VISIBILITIES = [
   { value: 'ONLY_ME', label: 'Only me' },
   { value: SELECTED_PEOPLE, label: 'Selected people' },
@@ -50,13 +50,13 @@ const VISIBILITY_MEANS: Readonly<Record<Visibility, string>> = {
   EVERYONE: 'Everyone in your Workspace can read what they send back.',
 };
 
-const PICK_SOMEONE = 'Pick who to ask.';
+const PICK_SOMEONE = 'Pick at least one person to ask.';
 const WRITE_A_MESSAGE = 'Write what you would like feedback on.';
 const PICK_SOMEONE_TO_SHARE_WITH = 'Pick at least one person to share it with.';
 
 /**
- * Asking a teammate for Feedback with a Request message, and choosing who besides the Requester reads what comes
- * back — fixed once sent.
+ * Asking one or more teammates for Feedback with a Request message (#30), and choosing who
+ * besides the Requester reads what comes back — fixed once sent.
  *
  * Send stays enabled on an empty form on purpose: pressing it is how a person finds out what
  * is missing, and a disabled button explains nothing. Every field stays controlled, so what was
@@ -64,14 +64,14 @@ const PICK_SOMEONE_TO_SHARE_WITH = 'Pick at least one person to share it with.';
  * the picker simply has nothing to offer.
  *
  * The form is submitted by hand rather than through `action`, because React resets a form
- * after its action, which would clear the picked teammate from the page but not from state.
+ * after its action, which would clear the picked teammates from the page but not from state.
  */
 export function RequestFeedbackForm({
   teammates,
   workspaceGoals,
   action,
 }: RequestFeedbackFormProps) {
-  const [giverAccountId, setGiverAccountId] = useState('');
+  const [giverAccountIds, setGiverAccountIds] = useState<readonly string[]>([]);
   const [message, setMessage] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('ONLY_ME');
   const [selectedAccountIds, setSelectedAccountIds] = useState<
@@ -88,18 +88,16 @@ export function RequestFeedbackForm({
 
   const fieldErrors: FieldErrors = { ...state.fieldErrors, ...clientErrors };
 
-  // The Giver reads their own answer anyway, so they are not one of the people to select. The
-  // Requester is never among `teammates`.
-  const othersToShareWith = teammates.filter(
-    (teammate) => teammate.accountId !== giverAccountId,
-  );
-  const selectedOthers = othersToShareWith.filter((teammate) =>
+  // Anyone may be picked to read the answers, the people asked included: selecting one lets
+  // them read the others' answers, which is the Requester's call (#30). The Requester is never
+  // among `teammates`.
+  const selectedOthers = teammates.filter((teammate) =>
     selectedAccountIds.has(teammate.accountId),
   );
 
-  function handleGiverChange(accountId: string) {
-    setGiverAccountId(accountId);
-    setClientErrors((errors) => ({ ...errors, giverAccountId: undefined }));
+  function handleGiversChange(accountIds: readonly string[]) {
+    setGiverAccountIds(accountIds);
+    setClientErrors((errors) => ({ ...errors, giverAccountIds: undefined }));
   }
 
   function handleMessageChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -128,7 +126,7 @@ export function RequestFeedbackForm({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const missing: FieldErrors = {
-      giverAccountId: giverAccountId === '' ? PICK_SOMEONE : undefined,
+      giverAccountIds: giverAccountIds.length === 0 ? PICK_SOMEONE : undefined,
       message: message.trim() === '' ? WRITE_A_MESSAGE : undefined,
       selectedAccountIds:
         visibility === SELECTED_PEOPLE && selectedOthers.length === 0
@@ -136,13 +134,13 @@ export function RequestFeedbackForm({
           : undefined,
     };
     if (
-      missing.giverAccountId ||
+      missing.giverAccountIds ||
       missing.message ||
       missing.selectedAccountIds
     ) {
       setClientErrors(missing);
       // Focus the first field in error, in the order the page reads.
-      if (missing.giverAccountId) pickerRef.current?.focus();
+      if (missing.giverAccountIds) pickerRef.current?.focus();
       else if (missing.message) messageRef.current?.focus();
       else selectedRef.current?.querySelector('button')?.focus();
       return;
@@ -150,7 +148,7 @@ export function RequestFeedbackForm({
     setClientErrors({});
     const formData = new FormData(event.currentTarget);
     // The choice lives in state rather than in named fields: the radios and checkboxes are
-    // buttons, and only the people still offered — never a Giver picked since — are sent.
+    // buttons. The people asked arrive through the picker's own hidden fields.
     formData.set('visibility', visibility);
     if (visibility === SELECTED_PEOPLE) {
       for (const teammate of selectedOthers) {
@@ -162,12 +160,12 @@ export function RequestFeedbackForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-      <MemberPicker
+      <MemberMultiPicker
         ref={pickerRef}
         teammates={teammates}
-        value={giverAccountId}
-        errorMessage={fieldErrors.giverAccountId}
-        onChange={handleGiverChange}
+        value={giverAccountIds}
+        errorMessage={fieldErrors.giverAccountIds}
+        onChange={handleGiversChange}
       />
       <TextField
         ref={messageRef}
@@ -185,7 +183,7 @@ export function RequestFeedbackForm({
         ref={selectedRef}
         options={VISIBILITIES}
         value={visibility}
-        people={othersToShareWith}
+        people={teammates}
         selectedAccountIds={selectedAccountIds}
         helperText={
           <>
@@ -218,7 +216,7 @@ export function RequestFeedbackForm({
 export function RequestFeedbackFormSkeleton() {
   return (
     <div className="flex flex-col gap-4">
-      <MemberPickerSkeleton />
+      <MemberMultiPickerSkeleton />
       <TextFieldSkeleton />
       <VisibilityPickerSkeleton options={VISIBILITIES} />
       <Skeleton shape="control" className="mt-2 w-32 self-end rounded-button" />
