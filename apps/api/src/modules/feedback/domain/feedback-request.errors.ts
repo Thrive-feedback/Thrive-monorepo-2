@@ -1,20 +1,20 @@
 import { DomainError } from '@app/shared/errors/coded-error';
 
-export class TopicEmptyError extends DomainError {
-  readonly code = 'TOPIC_EMPTY';
+export class RequestMessageEmptyError extends DomainError {
+  readonly code = 'REQUEST_MESSAGE_EMPTY';
   readonly category = 'validation' as const;
 
   constructor() {
-    super('A Topic must contain at least one non-space character.');
+    super('A Request message must contain at least one non-space character.');
   }
 }
 
-export class TopicTooLongError extends DomainError {
-  readonly code = 'TOPIC_TOO_LONG';
+export class RequestMessageTooLongError extends DomainError {
+  readonly code = 'REQUEST_MESSAGE_TOO_LONG';
   readonly category = 'validation' as const;
 
   constructor(readonly maxLength: number) {
-    super(`A Topic must be at most ${maxLength} characters.`);
+    super(`A Request message must be at most ${maxLength} characters.`);
   }
 }
 
@@ -114,21 +114,21 @@ export class CannotSelectYourselfError extends DomainError {
   }
 }
 
-export class FeedbackBodyEmptyError extends DomainError {
-  readonly code = 'FEEDBACK_BODY_EMPTY';
+export class FeedbackMessageEmptyError extends DomainError {
+  readonly code = 'FEEDBACK_MESSAGE_EMPTY';
   readonly category = 'validation' as const;
 
   constructor() {
-    super('Feedback must contain at least one non-space character.');
+    super('A Feedback message must contain at least one non-space character.');
   }
 }
 
-export class FeedbackBodyTooLongError extends DomainError {
-  readonly code = 'FEEDBACK_BODY_TOO_LONG';
+export class FeedbackMessageTooLongError extends DomainError {
+  readonly code = 'FEEDBACK_MESSAGE_TOO_LONG';
   readonly category = 'validation' as const;
 
   constructor(readonly maxLength: number) {
-    super(`Feedback must be at most ${maxLength} characters.`);
+    super(`A Feedback message must be at most ${maxLength} characters.`);
   }
 }
 

@@ -5,8 +5,7 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { v7 as uuidv7 } from 'uuid';
 import { Feedback } from '../../domain/entity/feedback.entity';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
-import { FeedbackBody } from '../../domain/value-object/feedback-body.vo';
-import { Topic } from '../../domain/value-object/topic.vo';
+import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { PrismaFeedbackRepository } from '../repository/prisma-feedback.repository';
 import { PrismaFeedbackRequestQuery } from './prisma-feedback-request.query';
@@ -35,7 +34,7 @@ async function given(
   workspaceId: string,
   giverAccountId: string,
   receiverAccountId: string,
-  topic: string,
+  message: string,
   visibility: Visibility,
 ): Promise<string> {
   const id = uuidv7();
@@ -47,9 +46,8 @@ async function given(
       workspaceId,
       giverAccountId,
       receiverAccountId,
-      topic: Topic.of(topic),
       visibility,
-      body: FeedbackBody.of('You kept the room with you.'),
+      message: FeedbackMessage.of(message),
     }),
   );
   return id;
@@ -124,11 +122,9 @@ describe('reading the Feedback shared with a Member', () => {
       id: sharedWithAnaAndDan,
       origin: 'OFFERED',
       feedbackRequestId: null,
-      topic: 'the customer demo',
-      topicTags: { workspaceGoals: [], mentions: [] },
       giverAccountId: BEN,
       receiverAccountId: CARA,
-      body: 'You kept the room with you.',
+      message: 'the customer demo',
       tags: { workspaceGoals: [], mentions: [] },
       createdAt: expect.any(Date),
     });
@@ -143,10 +139,10 @@ describe('reading the Feedback shared with a Member', () => {
   it('leaves out Only me and Everyone, whatever else may read them', async () => {
     const shared = await query.sharedWith(WORKSPACE_ID, ANA, ONE_PAGE);
 
-    expect(shared.items.map((feedback) => feedback.topic)).not.toContain(
+    expect(shared.items.map((feedback) => feedback.message)).not.toContain(
       'the release notes',
     );
-    expect(shared.items.map((feedback) => feedback.topic)).not.toContain(
+    expect(shared.items.map((feedback) => feedback.message)).not.toContain(
       'the retro',
     );
   });
@@ -154,7 +150,7 @@ describe('reading the Feedback shared with a Member', () => {
   it('leaves out a piece shared with them in another Workspace', async () => {
     const shared = await query.sharedWith(WORKSPACE_ID, ANA, ONE_PAGE);
 
-    expect(shared.items.map((feedback) => feedback.topic)).not.toContain(
+    expect(shared.items.map((feedback) => feedback.message)).not.toContain(
       'a Workspace Ana is not in',
     );
   });

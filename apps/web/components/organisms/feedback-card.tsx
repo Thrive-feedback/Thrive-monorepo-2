@@ -24,7 +24,8 @@ const RECEIVER_WITH_NO_NAME = 'a teammate';
 /**
  * One piece of Feedback on a feed: who gave it to whom — never anonymous (`ADR-0022`), though a
  * Member who has not introduced themselves has no name to show — whether it was asked for, the
- * Topic, the answer, the day, and the Reactions.
+ * day, the Feedback message, and the Reactions. The message is the card's main text: there is no
+ * headline above it (`ADR-0039` in the brain).
  */
 export function FeedbackCard({ item }: FeedbackCardProps) {
   return (
@@ -51,18 +52,15 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
           </Text>
         </div>
       </header>
-      <Text as="h3" variant="subtitle-2" className="break-words">
-        <FeedbackText text={item.topic} tags={item.topicTags} />
-      </Text>
-      <Text as="p" variant="body-2" className="whitespace-pre-line break-words">
-        <FeedbackText text={item.body} tags={item.bodyTags} />
+      <Text as="p" variant="body-1" className="whitespace-pre-line break-words">
+        <FeedbackText text={item.message} tags={item.messageTags} />
       </Text>
       <ReactionBar reactions={item.reactions} />
     </article>
   );
 }
 
-/** A `FeedbackCard` still loading, line for line: who to whom, origin and day, Topic, body, Reactions. */
+/** A `FeedbackCard` still loading, line for line: who to whom, origin and day, message, Reactions. */
 export function FeedbackCardSkeleton() {
   return (
     <div className="flex flex-col gap-3 py-5">
@@ -73,10 +71,9 @@ export function FeedbackCardSkeleton() {
           <Skeleton className="w-1/3 text-body-3" />
         </div>
       </div>
-      <Skeleton className="w-2/3 text-subtitle-2" />
       <div className="flex flex-col">
-        <Skeleton />
-        <Skeleton className="w-4/5" />
+        <Skeleton className="text-body-1" />
+        <Skeleton className="w-4/5 text-body-1" />
       </div>
       <div className="flex flex-wrap gap-2">
         {REACTIONS.map(({ emoji }) => (

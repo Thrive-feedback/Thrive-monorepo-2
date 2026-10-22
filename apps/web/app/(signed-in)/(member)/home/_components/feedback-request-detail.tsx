@@ -99,9 +99,12 @@ export async function FeedbackRequestDetail({
                 <PersonName
                   name={ask.giverName ?? 'a teammate'}
                   inactive={ask.giverInactive}
-                />{' '}
-                about{' '}
-                <FeedbackText text={request.topic} tags={request.topicTags} />
+                />
+                :{' '}
+                <FeedbackText
+                  text={request.message}
+                  tags={request.messageTags}
+                />
               </Text>
               <Text variant="body-3" tone="muted">
                 Now {ASK_STATUS_WORDS[ask.status]}.
@@ -111,7 +114,10 @@ export async function FeedbackRequestDetail({
               // Their words, kept as they wrote them: the line breaks they chose are part of
               // the answer, and a paragraph run together reads as a different message.
               <Text variant="body-2" className="whitespace-pre-line">
-                <FeedbackText text={ask.answer.body} tags={ask.answer.tags} />
+                <FeedbackText
+                  text={ask.answer.message}
+                  tags={ask.answer.tags}
+                />
               </Text>
             )}
           </li>

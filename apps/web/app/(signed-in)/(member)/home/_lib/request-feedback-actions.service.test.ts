@@ -70,14 +70,14 @@ function apiRefuses(code: string, status: number) {
 function form(
   fields: Partial<{
     giverAccountId: string;
-    topic: string;
+    message: string;
     visibility: string;
     selectedAccountIds: string[];
   }> = {},
 ): FormData {
   const formData = new FormData();
   formData.set('giverAccountId', fields.giverAccountId ?? BEN);
-  formData.set('topic', fields.topic ?? 'my sprint review talk');
+  formData.set('message', fields.message ?? 'my sprint review talk');
   formData.set('visibility', fields.visibility ?? 'ONLY_ME');
   for (const accountId of fields.selectedAccountIds ?? []) {
     formData.append('selectedAccountIds', accountId);
@@ -114,13 +114,13 @@ describe('asking a teammate for Feedback', () => {
     expect(requireMember).toHaveBeenCalledWith(WORKSPACE_ID);
   });
 
-  it('refuses a blank Topic without calling the API', async () => {
-    const { state } = await send(form({ topic: '   ' }));
+  it('refuses a blank Request message without calling the API', async () => {
+    const { state } = await send(form({ message: '   ' }));
 
     expect(state).toEqual({
       fieldErrors: {
         giverAccountId: undefined,
-        topic: 'Add a Topic.',
+        message: 'Write what you would like feedback on.',
         selectedAccountIds: undefined,
       },
     });
@@ -134,7 +134,7 @@ describe('asking a teammate for Feedback', () => {
     );
 
     expect(received.body).toEqual({
-      topic: 'my sprint review talk',
+      message: 'my sprint review talk',
       giverAccountIds: [BEN],
       visibility: 'SELECTED_PEOPLE',
       selectedAccountIds: [CARA],
@@ -147,7 +147,7 @@ describe('asking a teammate for Feedback', () => {
     await send(form({ visibility: 'EVERYONE' }));
 
     expect(received.body).toEqual({
-      topic: 'my sprint review talk',
+      message: 'my sprint review talk',
       giverAccountIds: [BEN],
       visibility: 'EVERYONE',
     });

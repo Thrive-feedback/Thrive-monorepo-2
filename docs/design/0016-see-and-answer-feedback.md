@@ -7,6 +7,10 @@ FB-0009 (send a real answer) · Epic [#7](https://github.com/Thrive-feedback/Thr
 **Supersedes the mock cards:** #23 (FB-0004), #17 (FB-0006), #22 (FB-0008)
 **Status:** draft, 2026-10-12 · **Author:** naroebordin (with Claude) · **Follows:** `docs/design/0015-request-feedback.md`
 
+> **Since 2026-10-22:** Topic is retired (brain `ADR-0039`, ADR 0054). Read *Topic* below as the
+> request's **Request message**, and *body* as the **Feedback message**. Feedback no longer holds
+> or returns a Topic of its own. This record is left as it was decided.
+
 ---
 
 ## 1. Context

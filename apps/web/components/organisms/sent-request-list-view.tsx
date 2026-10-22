@@ -17,12 +17,12 @@ const PLACEHOLDERS = ['first', 'second', 'third'] as const;
 
 export type SentRequestListViewProps = {
   requests: readonly SentRequest[];
-  /** Where a request's Topic leads. Without one, the Topic is plain text. */
+  /** Where a Request message leads. Without one, it is plain text. */
   requestTarget?: (requestId: string) => NavTarget;
 };
 
 /**
- * Every Feedback Request the person sent, newest first: the Topic, the day it went out, and one
+ * Every Feedback Request the person sent, newest first: the Request message, the day it went out, and one
  * line per Member asked with where their Ask stands.
  */
 export function SentRequestListView({
@@ -44,10 +44,13 @@ export function SentRequestListView({
           <Text as="h2" variant="subtitle-2" className="break-words">
             {requestTarget ? (
               <TargetLink target={requestTarget(request.id)}>
-                <FeedbackText text={request.topic} tags={request.topicTags} />
+                <FeedbackText
+                  text={request.message}
+                  tags={request.messageTags}
+                />
               </TargetLink>
             ) : (
-              <FeedbackText text={request.topic} tags={request.topicTags} />
+              <FeedbackText text={request.message} tags={request.messageTags} />
             )}
           </Text>
           <Text as="p" variant="body-3" tone="muted">
@@ -75,7 +78,7 @@ export function SentRequestListView({
   );
 }
 
-/** A `SentRequestListView` still loading: a few rows of Topic, the day sent, and one Member asked. */
+/** A `SentRequestListView` still loading: a few rows of Request message, the day sent, and one Member asked. */
 export function SentRequestListViewSkeleton() {
   return (
     <div className="flex flex-col divide-y divide-border-muted">

@@ -3,7 +3,7 @@ import { TEXT_TAG_RULES } from '@/lib/feedback/text-tag-rules.constant';
 import type { TextTags } from '@/lib/feedback/text-tags.type';
 
 export type FeedbackTextProps = {
-  /** A Topic, Feedback or an answer, as it was written. */
+  /** A Request message or a Feedback message, as it was written. */
   text: string;
   /** What it was bound to when it was sent. */
   tags: TextTags;

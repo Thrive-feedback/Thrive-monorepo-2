@@ -29,7 +29,7 @@ export function TaggedTextEntry() {
       origin="thrive"
       source="components/molecules/tagged-text.tsx"
       summary="Sent text with every tag it was bound to drawn as a pill reading that tag's label. Tags that were not bound stay as written."
-      useFor="Reading back what AutocompleteTextarea or AutocompleteInput wrote — a Topic, Feedback, an answer."
+      useFor="Reading back what AutocompleteTextarea or AutocompleteInput wrote — a Request message or a Feedback message."
       avoidFor="Text being typed; the autocomplete fields colour their own."
       usage={`import { TaggedText } from '@/components/molecules/tagged-text';
 

@@ -24,11 +24,10 @@ function setUp() {
       workspaceId: WORKSPACE_ID,
       origin: 'REQUESTED',
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
-      topic: 'how Ben runs the planning meeting',
-      topicTags: NO_TAGS,
       giverAccountId: CARA,
       receiverAccountId: BEN,
-      body: 'You start with the three goals on one slide, which keeps the side topics out.',
+      message:
+        'You start with the three goals on one slide, which keeps the side topics out.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-11T03:00:00.000Z'),
       visibility: 'SELECTED_PEOPLE',
@@ -39,11 +38,9 @@ function setUp() {
       workspaceId: WORKSPACE_ID,
       origin: 'OFFERED',
       feedbackRequestId: null,
-      topic: 'the customer demo on Tuesday',
-      topicTags: NO_TAGS,
       giverAccountId: BEN,
       receiverAccountId: CARA,
-      body: 'You kept the room with you when the demo broke.',
+      message: 'You kept the room with you when the demo broke.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-12T03:00:00.000Z'),
       visibility: 'SELECTED_PEOPLE',
@@ -54,11 +51,9 @@ function setUp() {
       workspaceId: WORKSPACE_ID,
       origin: 'OFFERED',
       feedbackRequestId: null,
-      topic: 'onboarding the new designers',
-      topicTags: NO_TAGS,
       giverAccountId: CARA,
       receiverAccountId: DAN,
-      body: 'Your notes answered every question I had in my first week.',
+      message: 'Your notes answered every question I had in my first week.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-13T03:00:00.000Z'),
       visibility: 'SELECTED_PEOPLE',
@@ -69,11 +64,9 @@ function setUp() {
       workspaceId: WORKSPACE_ID,
       origin: 'OFFERED',
       feedbackRequestId: null,
-      topic: 'the release notes',
-      topicTags: NO_TAGS,
       giverAccountId: CARA,
       receiverAccountId: DAN,
-      body: 'They read clearly and they land a day late.',
+      message: 'They read clearly and they land a day late.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-14T03:00:00.000Z'),
       visibility: 'EVERYONE',
@@ -118,9 +111,9 @@ describe('reading the Feedback shared with me', () => {
     });
 
     expect(shared.total).toBe(2);
-    expect(shared.items.map((feedback) => feedback.topic)).toEqual([
-      'the customer demo on Tuesday',
-      'how Ben runs the planning meeting',
+    expect(shared.items.map((feedback) => feedback.message)).toEqual([
+      'You kept the room with you when the demo broke.',
+      'You start with the three goals on one slide, which keeps the side topics out.',
     ]);
     expect(shared.items[0]?.giverName).toBe('Ben Carter');
     expect(shared.items[0]?.receiverName).toBe('Cara Diaz');
@@ -175,7 +168,9 @@ describe('reading the Feedback shared with me', () => {
 
     expect(
       shared.items.some(
-        (feedback) => feedback.topic === 'onboarding the new designers',
+        (feedback) =>
+          feedback.message ===
+          'Your notes answered every question I had in my first week.',
       ),
     ).toBe(false);
   });
@@ -190,7 +185,10 @@ describe('reading the Feedback shared with me', () => {
     });
 
     expect(
-      shared.items.some((feedback) => feedback.topic === 'the release notes'),
+      shared.items.some(
+        (feedback) =>
+          feedback.message === 'They read clearly and they land a day late.',
+      ),
     ).toBe(false);
   });
 

@@ -26,7 +26,7 @@ import { feedbackTagTriggers } from './feedback-tag-triggers.util';
 
 export type RequestFeedbackFormProps = {
   teammates: readonly Teammate[];
-  /** The Workspace's active Workspace Goals, by name, offered on `#` in the Topic. */
+  /** The Workspace's active Workspace Goals, by name, offered on `#` in the Request message. */
   workspaceGoals: readonly string[];
   /** Sends the request: Home's server action, or a stand-in. */
   action: RequestFeedbackAction;
@@ -51,11 +51,11 @@ const VISIBILITY_MEANS: Readonly<Record<Visibility, string>> = {
 };
 
 const PICK_SOMEONE = 'Pick who to ask.';
-const ADD_A_TOPIC = 'Add a Topic.';
+const WRITE_A_MESSAGE = 'Write what you would like feedback on.';
 const PICK_SOMEONE_TO_SHARE_WITH = 'Pick at least one person to share it with.';
 
 /**
- * Asking a teammate about a Topic, and choosing who besides the Requester reads what comes
+ * Asking a teammate for Feedback with a Request message, and choosing who besides the Requester reads what comes
  * back — fixed once sent.
  *
  * Send stays enabled on an empty form on purpose: pressing it is how a person finds out what
@@ -72,7 +72,7 @@ export function RequestFeedbackForm({
   action,
 }: RequestFeedbackFormProps) {
   const [giverAccountId, setGiverAccountId] = useState('');
-  const [topic, setTopic] = useState('');
+  const [message, setMessage] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('ONLY_ME');
   const [selectedAccountIds, setSelectedAccountIds] = useState<
     ReadonlySet<string>
@@ -83,7 +83,7 @@ export function RequestFeedbackForm({
     FormData
   >(action, {});
   const pickerRef = useRef<HTMLButtonElement>(null);
-  const topicRef = useRef<HTMLInputElement>(null);
+  const messageRef = useRef<HTMLInputElement>(null);
   const selectedRef = useRef<HTMLFieldSetElement>(null);
 
   const fieldErrors: FieldErrors = { ...state.fieldErrors, ...clientErrors };
@@ -102,9 +102,9 @@ export function RequestFeedbackForm({
     setClientErrors((errors) => ({ ...errors, giverAccountId: undefined }));
   }
 
-  function handleTopicChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setTopic(event.target.value);
-    setClientErrors((errors) => ({ ...errors, topic: undefined }));
+  function handleMessageChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setMessage(event.target.value);
+    setClientErrors((errors) => ({ ...errors, message: undefined }));
   }
 
   function handleVisibilityChange(value: Visibility) {
@@ -129,17 +129,21 @@ export function RequestFeedbackForm({
     event.preventDefault();
     const missing: FieldErrors = {
       giverAccountId: giverAccountId === '' ? PICK_SOMEONE : undefined,
-      topic: topic.trim() === '' ? ADD_A_TOPIC : undefined,
+      message: message.trim() === '' ? WRITE_A_MESSAGE : undefined,
       selectedAccountIds:
         visibility === SELECTED_PEOPLE && selectedOthers.length === 0
           ? PICK_SOMEONE_TO_SHARE_WITH
           : undefined,
     };
-    if (missing.giverAccountId || missing.topic || missing.selectedAccountIds) {
+    if (
+      missing.giverAccountId ||
+      missing.message ||
+      missing.selectedAccountIds
+    ) {
       setClientErrors(missing);
       // Focus the first field in error, in the order the page reads.
       if (missing.giverAccountId) pickerRef.current?.focus();
-      else if (missing.topic) topicRef.current?.focus();
+      else if (missing.message) messageRef.current?.focus();
       else selectedRef.current?.querySelector('button')?.focus();
       return;
     }
@@ -166,16 +170,16 @@ export function RequestFeedbackForm({
         onChange={handleGiverChange}
       />
       <TextField
-        ref={topicRef}
-        label="What should they talk about?"
-        name="topic"
-        placeholder="e.g., my presentation at the sprint review"
+        ref={messageRef}
+        label="What would you like feedback on?"
+        name="message"
+        placeholder="e.g., How did my presentation at the sprint review land?"
         required
-        value={topic}
+        value={message}
         triggers={feedbackTagTriggers(workspaceGoals, teammates)}
-        onChange={handleTopicChange}
-        errorMessage={fieldErrors.topic}
-        helperText="One Topic per request. They answer in their own words."
+        onChange={handleMessageChange}
+        errorMessage={fieldErrors.message}
+        helperText="They answer in their own words."
       />
       <VisibilityPicker
         ref={selectedRef}
@@ -210,7 +214,7 @@ export function RequestFeedbackForm({
   );
 }
 
-/** A `RequestFeedbackForm` still loading: who to ask, the Topic, who else reads it, and Send. */
+/** A `RequestFeedbackForm` still loading: who to ask, the Request message, who else reads it, and Send. */
 export function RequestFeedbackFormSkeleton() {
   return (
     <div className="flex flex-col gap-4">

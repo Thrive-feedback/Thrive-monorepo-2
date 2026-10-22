@@ -4,9 +4,10 @@ import type { TextTags } from './text-tags.type';
 /** One Ask waiting for the signed-in person, as Waiting for me lists it. */
 export type MyAsk = {
   readonly askId: string;
-  readonly topic: string;
-  /** What the Topic was bound to when the request was sent. */
-  readonly topicTags: TextTags;
+  /** The Request message. */
+  readonly message: string;
+  /** What the Request message was bound to when the request was sent. */
+  readonly messageTags: TextTags;
   /** The Member who asked, or `null` while they have not introduced themselves. */
   readonly requesterName: string | null;
   /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */

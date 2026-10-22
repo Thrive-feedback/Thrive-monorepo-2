@@ -36,10 +36,8 @@ export const readSharedFeedback = cache(
       receiverName: feedback.receiver.name,
       receiverInactive: feedback.receiver.status === 'DEACTIVATED',
       origin: feedback.origin,
-      topic: feedback.topic,
-      topicTags: feedback.topicTags,
-      body: feedback.body,
-      bodyTags: feedback.tags,
+      message: feedback.message,
+      messageTags: feedback.tags,
       givenAt: feedback.createdAt,
       // Reactions are #92; until then a card shows the four with nobody behind them.
       reactions: {},

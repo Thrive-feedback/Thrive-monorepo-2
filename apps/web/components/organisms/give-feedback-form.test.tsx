@@ -31,10 +31,6 @@ async function pickReceiver(user: ReturnType<typeof userEvent.setup>) {
 async function fillIn(user: ReturnType<typeof userEvent.setup>) {
   await pickReceiver(user);
   await user.type(
-    screen.getByRole('combobox', { name: /What is it about\?/ }),
-    'The customer demo',
-  );
-  await user.type(
     screen.getByRole('textbox', { name: /Your feedback/ }),
     'You kept it calm.',
   );
@@ -59,7 +55,6 @@ describe('GiveFeedbackForm', () => {
     await user.click(screen.getByRole('button', { name: 'Send feedback' }));
 
     expect(screen.getByText('Pick who it is for.')).toBeInTheDocument();
-    expect(screen.getByText('Add a Topic.')).toBeInTheDocument();
     expect(screen.getByText('Write your feedback.')).toBeInTheDocument();
     expect(giveFeedback).not.toHaveBeenCalled();
   });
@@ -115,7 +110,7 @@ describe('GiveFeedbackForm', () => {
     expect(giveFeedback).not.toHaveBeenCalled();
   });
 
-  it('sends who it is for, the Topic, the feedback and who else may read it', async () => {
+  it('sends who it is for, the Feedback message and who else may read it', async () => {
     const user = userEvent.setup();
     render(
       <GiveFeedbackForm
@@ -131,8 +126,7 @@ describe('GiveFeedbackForm', () => {
     expect(giveFeedback).toHaveBeenCalledOnce();
     expect(sentFormData()).toEqual({
       receiverAccountId: [BEN],
-      topic: ['The customer demo'],
-      body: ['You kept it calm.'],
+      message: ['You kept it calm.'],
       visibility: ['ONLY_ME'],
     });
   });

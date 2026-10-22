@@ -31,7 +31,7 @@ Feature: Deactivating Members, leaving, and Reactivating
   @api
   Scenario: A Deactivated person cannot be asked for Feedback
     Given Ann has Deactivated Ben
-    When Ann asks Ben for Feedback on "the launch"
+    When Ann asks Ben for Feedback: "the launch"
     Then Ann is told Ben is not in their Workspace
 
   @api
@@ -58,10 +58,10 @@ Feature: Deactivating Members, leaving, and Reactivating
 
   @api
   Scenario: Feedback from someone Deactivated stays, showing them as inactive
-    Given Ben has given Ann Feedback on "The customer demo": "You kept the room with you.", shared with everyone in the Workspace
+    Given Ben has given Ann Feedback: "You kept the room with you.", shared with everyone in the Workspace
     And Ann has Deactivated Ben
     When Ann looks at the Workspace feed
-    Then Ann reads "You kept the room with you." from Ben to Ann about "The customer demo" on the feed
+    Then Ann reads "You kept the room with you." from Ben to Ann on the feed
     And Ann sees Ben as inactive on the feed
 
   @api
@@ -77,7 +77,7 @@ Feature: Deactivating Members, leaving, and Reactivating
 
   @api
   Scenario: Someone Reactivated is shown as active again
-    Given Ben has given Ann Feedback on "The customer demo": "You kept the room with you.", shared with everyone in the Workspace
+    Given Ben has given Ann Feedback: "You kept the room with you.", shared with everyone in the Workspace
     And Ann has Deactivated Ben
     When Ann Reactivates Ben
     And Ann looks at the Workspace feed
@@ -107,12 +107,12 @@ Feature: Deactivating Members, leaving, and Reactivating
 
   @api
   Scenario: Someone who comes back by Invitation reads the Feedback they were given before
-    Given Ann has given Ben Feedback on "The customer demo": "You kept the room with you.", shared with everyone in the Workspace
+    Given Ann has given Ben Feedback: "You kept the room with you.", shared with everyone in the Workspace
     And Ann has Deactivated Ben
     And Ann has invited Ben
     When Ben accepts the Invitation
     And Ben looks at the Workspace feed
-    Then Ben reads "You kept the room with you." from Ann to Ben about "The customer demo" on the feed
+    Then Ben reads "You kept the room with you." from Ann to Ben on the feed
 
   @api
   Scenario: An Invitation is no longer offered once its Workspace has taken the person back

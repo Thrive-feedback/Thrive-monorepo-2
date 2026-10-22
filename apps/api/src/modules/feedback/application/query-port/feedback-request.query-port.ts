@@ -14,8 +14,8 @@ export interface FeedbackRequestRow {
   readonly id: string;
   /** The Member who asked. Read so the use case can refuse everybody else. */
   readonly requesterAccountId: string;
-  readonly topic: string;
-  readonly topicTags: TagsView;
+  readonly message: string;
+  readonly tags: TagsView;
   readonly visibility: string;
   readonly selectedAccountIds: readonly string[];
   readonly asks: readonly FeedbackRequestAskRow[];
@@ -31,8 +31,8 @@ export interface FeedbackRequestPageRow {
 export interface FeedbackAskRow {
   readonly askId: string;
   readonly feedbackRequestId: string;
-  readonly topic: string;
-  readonly topicTags: TagsView;
+  readonly message: string;
+  readonly tags: TagsView;
   /** The Member who asked. Their name is Identity's and is added above this port. */
   readonly requesterAccountId: string;
   readonly status: string;
@@ -46,7 +46,7 @@ export interface FeedbackAskPageRow {
 
 export interface FeedbackAnswerRow {
   readonly askId: string;
-  readonly body: string;
+  readonly message: string;
   readonly tags: TagsView;
   readonly answeredAt: Date;
 }
@@ -60,11 +60,8 @@ export interface FeedbackRow {
   readonly origin: FeedbackOrigin;
   /** The request it answers, or `null` for Feedback given without being asked. */
   readonly feedbackRequestId: string | null;
-  readonly topic: string;
-  /** The Topic's own if Offered, the request's if it answers one. */
-  readonly topicTags: TagsView;
   readonly giverAccountId: string;
-  readonly body: string;
+  readonly message: string;
   /** What its Giver wrote is bound to. */
   readonly tags: TagsView;
   readonly createdAt: Date;
@@ -79,12 +76,9 @@ export interface FeedbackWithVisibilityRow {
   readonly origin: FeedbackOrigin;
   /** The request it answers, or `null` for Feedback given without being asked. */
   readonly feedbackRequestId: string | null;
-  readonly topic: string;
-  /** The Topic's own if Offered, the request's if it answers one. */
-  readonly topicTags: TagsView;
   readonly giverAccountId: string;
   readonly receiverAccountId: string;
-  readonly body: string;
+  readonly message: string;
   /** What its Giver wrote is bound to. */
   readonly tags: TagsView;
   readonly createdAt: Date;
@@ -108,12 +102,9 @@ export interface FeedbackWithPeopleRow {
   readonly origin: FeedbackOrigin;
   /** The request it answers, or `null` for Feedback given without being asked. */
   readonly feedbackRequestId: string | null;
-  readonly topic: string;
-  /** The Topic's own if Offered, the request's if it answers one. */
-  readonly topicTags: TagsView;
   readonly giverAccountId: string;
   readonly receiverAccountId: string;
-  readonly body: string;
+  readonly message: string;
   /** What its Giver wrote is bound to. */
   readonly tags: TagsView;
   readonly createdAt: Date;

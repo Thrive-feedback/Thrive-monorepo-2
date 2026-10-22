@@ -7,6 +7,10 @@
 `docs/design/0017-see-the-feedback-i-received.md`
 **Read with:** `docs/design/0019-see-the-workspace-feed.md` (#90), which reuses §4.2 and §5 of this one
 
+> **Since 2026-10-22:** Topic is retired (brain `ADR-0039`, ADR 0054). Read *Topic* below as the
+> request's **Request message**, and *body* as the **Feedback message**. Feedback no longer holds
+> or returns a Topic of its own. This record is left as it was decided.
+
 ---
 
 ## 1. Context

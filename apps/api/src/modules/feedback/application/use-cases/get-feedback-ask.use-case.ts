@@ -41,8 +41,8 @@ export class GetFeedbackAskUseCase {
     return {
       askId: ask.askId,
       feedbackRequestId: ask.feedbackRequestId,
-      topic: ask.topic,
-      topicTags: ask.topicTags,
+      message: ask.message,
+      tags: ask.tags,
       requesterAccountId: ask.requesterAccountId,
       requesterName: people.nameOf(ask.requesterAccountId),
       requesterStatus: people.statusOf(ask.requesterAccountId),

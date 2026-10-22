@@ -45,7 +45,7 @@ describe('AnswerAskForm', () => {
     await user.click(sendButton());
 
     expect(answerAsk).toHaveBeenCalledOnce();
-    expect(sentFormData()).toEqual({ askId: ASK_ID, body: WRITTEN });
+    expect(sentFormData()).toEqual({ askId: ASK_ID, message: WRITTEN });
   });
 
   it('refuses an empty box, says so on the field, and sends nothing', async () => {
@@ -74,7 +74,7 @@ describe('AnswerAskForm', () => {
   it('keeps what was written when the API refuses, so nobody retypes it', async () => {
     const user = userEvent.setup();
     answerAsk.mockResolvedValue({
-      fieldErrors: { body: 'Write your answer before sending it.' },
+      fieldErrors: { message: 'Write your answer before sending it.' },
     });
     render(
       <AnswerAskForm

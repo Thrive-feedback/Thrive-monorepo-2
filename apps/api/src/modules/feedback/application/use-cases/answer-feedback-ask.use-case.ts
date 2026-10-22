@@ -2,7 +2,7 @@ import { IdGenerator } from '@app/shared/application/id-generator.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable } from '@nestjs/common';
 import { FeedbackRequestRepository } from '../../domain/repository/feedback-request-repository.port';
-import { FeedbackBody } from '../../domain/value-object/feedback-body.vo';
+import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { TagsService } from '../service/tags.service';
 
@@ -12,7 +12,7 @@ export interface AnswerFeedbackAskInput {
   /** The signed-in caller. An Ask is answered by its own Giver and by nobody else. */
   readonly giverAccountId: string;
   readonly askId: string;
-  readonly body: string;
+  readonly message: string;
 }
 
 export interface AnswerFeedbackAskResult {
@@ -43,11 +43,11 @@ export class AnswerFeedbackAskUseCase {
   async execute(
     input: AnswerFeedbackAskInput,
   ): Promise<AnswerFeedbackAskResult> {
-    const body = FeedbackBody.of(input.body);
-    // Only what the Giver wrote: the request's Topic has its own, which the answer never takes.
+    const message = FeedbackMessage.of(input.message);
+    // Only what the Giver wrote: the Request message has its own, which the answer never takes.
     const tags = await this.tagsService.boundIn(
       input.workspaceId,
-      body.toString(),
+      message.toString(),
     );
 
     return this.unitOfWork.run(async () => {
@@ -63,7 +63,7 @@ export class AnswerFeedbackAskUseCase {
         askId: input.askId,
         giverAccountId: input.giverAccountId,
         feedbackId: this.idGenerator.next(),
-        body,
+        message,
         tags,
       });
       // The load already matched the Ask to this Giver, so the aggregate not holding it means

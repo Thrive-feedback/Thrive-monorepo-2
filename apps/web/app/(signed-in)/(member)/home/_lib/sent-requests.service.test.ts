@@ -38,11 +38,11 @@ function apiHolds(items: unknown[]) {
 }
 
 describe('reading the Feedback Requests I sent', () => {
-  it('reads the Topic, the day it was sent and where each Ask stands', async () => {
+  it('reads the Request message, the day it was sent and where each Ask stands', async () => {
     apiHolds([
       {
         id: 'request-1',
-        topic: 'my presentation skills',
+        message: 'my presentation skills',
         visibility: { value: 'ONLY_ME', selectedPeople: [] },
         createdAt: '2026-10-11T03:00:00.000Z',
         asks: [
@@ -60,7 +60,7 @@ describe('reading the Feedback Requests I sent', () => {
     expect(await readSentRequests(MEMBERSHIP)).toEqual([
       {
         id: 'request-1',
-        topic: 'my presentation skills',
+        message: 'my presentation skills',
         sentAt: '2026-10-11T03:00:00.000Z',
         asks: [
           {
@@ -78,7 +78,7 @@ describe('reading the Feedback Requests I sent', () => {
     apiHolds([
       {
         id: 'request-1',
-        topic: 'my presentation skills',
+        message: 'my presentation skills',
         visibility: { value: 'ONLY_ME', selectedPeople: [] },
         createdAt: '2026-10-11T03:00:00.000Z',
         asks: [

@@ -23,12 +23,10 @@ export type FeedItem = {
   readonly receiverInactive: boolean;
   /** Requested answers an Ask; Offered was given without being asked. */
   readonly origin: 'REQUESTED' | 'OFFERED';
-  readonly topic: string;
-  /** What the Topic was bound to: its Giver's if Offered, the request's if it answers one. */
-  readonly topicTags: TextTags;
-  readonly body: string;
-  /** What its Giver wrote was bound to. */
-  readonly bodyTags: TextTags;
+  /** The Feedback message, as its Giver wrote it. */
+  readonly message: string;
+  /** What the Feedback message was bound to. */
+  readonly messageTags: TextTags;
   readonly givenAt: string;
   /** Who reacted, by Reaction. Names are shown: a Reaction is never anonymous. */
   readonly reactions: Readonly<

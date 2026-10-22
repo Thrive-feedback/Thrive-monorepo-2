@@ -6,7 +6,7 @@ import {
 } from '@/lib/feedback/text-tag-rules.constant';
 
 /**
- * What a Member can complete while writing Feedback, a Topic or an answer: `#` and an active
+ * What a Member can complete while writing a Request message or a Feedback message: `#` and an active
  * Workspace Goal of their Workspace, by name only, and `@` and a teammate who has introduced
  * themselves, found by any of their names and written by their slug.
  *

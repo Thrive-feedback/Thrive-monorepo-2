@@ -8,8 +8,7 @@ import { FakeIdGenerator } from '@test/support/id-generator.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   CannotGiveYourselfFeedbackError,
-  FeedbackBodyEmptyError,
-  TopicEmptyError,
+  FeedbackMessageEmptyError,
 } from '../../domain/feedback-request.errors';
 import {
   ReceiverNotInWorkspaceError,
@@ -34,8 +33,7 @@ function offering(
     workspaceId: WORKSPACE_ID,
     giverAccountId: ANN,
     receiverAccountId: BEN,
-    topic: '  the customer   demo ',
-    body: '  You kept the room with you.\n\nKeep the recap. ',
+    message: '  You kept the room with you.\n\nKeep the recap. ',
     visibility: 'ONLY_ME',
     selectedAccountIds: [],
     ...overrides,
@@ -56,7 +54,7 @@ function setUp() {
 }
 
 describe('a Giver giving a teammate Feedback without being asked', () => {
-  it('stores Offered Feedback for the Receiver, with a tidied Topic and body', async () => {
+  it('stores Offered Feedback for the Receiver, with a tidied Feedback message', async () => {
     const { feedbackRepository, useCase } = setUp();
 
     const given = await useCase.execute(offering());
@@ -71,21 +69,20 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
         feedbackAskId: null,
         giverAccountId: ANN,
         receiverAccountId: BEN,
-        topic: 'the customer demo',
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
-        body: 'You kept the room with you.\n\nKeep the recap.',
+        message: 'You kept the room with you.\n\nKeep the recap.',
         workspaceGoals: [],
         mentions: [],
       },
     ]);
   });
 
-  it('binds what its Topic and its text name together', async () => {
+  it('binds what its Feedback message names', async () => {
     const { feedbackRepository, useCase } = setUp();
 
     await useCase.execute(
-      offering({ topic: 'The launch #Ownership', body: 'Thanks to @cara.' }),
+      offering({ message: 'The launch #Ownership. Thanks to @cara.' }),
     );
 
     expect(feedbackRepository.saved[0]).toMatchObject({
@@ -140,20 +137,12 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
     expect(feedbackRepository.saved).toEqual([]);
   });
 
-  it('refuses a blank Topic', async () => {
-    const { useCase } = setUp();
-
-    await expect(useCase.execute(offering({ topic: '   ' }))).rejects.toThrow(
-      TopicEmptyError,
-    );
-  });
-
   it('refuses blank Feedback', async () => {
     const { useCase } = setUp();
 
-    await expect(useCase.execute(offering({ body: ' \n ' }))).rejects.toThrow(
-      FeedbackBodyEmptyError,
-    );
+    await expect(
+      useCase.execute(offering({ message: ' \n ' })),
+    ).rejects.toThrow(FeedbackMessageEmptyError);
   });
 
   it('refuses a Giver giving themselves Feedback', async () => {

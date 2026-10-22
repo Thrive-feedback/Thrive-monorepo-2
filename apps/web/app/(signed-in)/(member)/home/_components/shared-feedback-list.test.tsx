@@ -18,10 +18,8 @@ const ONE_PIECE = {
   giverName: 'Ben Carter',
   receiverName: 'Cara Diaz',
   origin: 'OFFERED' as const,
-  topic: 'the customer demo',
-  topicTags: NO_TEXT_TAGS,
-  body: 'You kept the room with you.',
-  bodyTags: NO_TEXT_TAGS,
+  message: 'You kept the room with you.',
+  messageTags: NO_TEXT_TAGS,
   givenAt: '2026-10-12T03:00:00.000Z',
   reactions: {},
 };
@@ -43,9 +41,8 @@ describe('SharedFeedbackList', () => {
     readSharedFeedback.mockResolvedValue([ONE_PIECE]);
 
     await renderList();
-
     expect(
-      screen.getByRole('heading', { name: 'the customer demo' }),
+      screen.getByText('You kept the room with you.', { exact: false }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Ben Carter/)).toBeInTheDocument();
     expect(screen.getByText(/Cara Diaz/)).toBeInTheDocument();

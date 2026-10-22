@@ -26,10 +26,9 @@ const ONE_PIECE = {
   id: 'fb-1',
   origin: 'REQUESTED',
   feedbackRequestId: 'request-1',
-  topic: 'running the planning meeting',
   giver: { accountId: 'account-ben', name: 'Ben Carter', status: 'ACTIVE' },
   receiver: { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
-  body: 'You start with the three goals on one slide.',
+  message: 'You start with the three goals on one slide.',
   createdAt: '2026-10-12T03:00:00.000Z',
 };
 
@@ -53,7 +52,7 @@ function apiHolds(items: unknown[]) {
 }
 
 describe('reading the Workspace feed', () => {
-  it('reads who wrote it, who it is about, the Topic, the text and the day', async () => {
+  it('reads who wrote it, who it is about, the Feedback message and the day', async () => {
     apiHolds([ONE_PIECE]);
 
     expect(await readWorkspaceFeed(MEMBERSHIP)).toEqual([
@@ -64,8 +63,7 @@ describe('reading the Workspace feed', () => {
         receiverName: 'Cara Diaz',
         receiverInactive: false,
         origin: 'REQUESTED',
-        topic: 'running the planning meeting',
-        body: 'You start with the three goals on one slide.',
+        message: 'You start with the three goals on one slide.',
         givenAt: '2026-10-12T03:00:00.000Z',
         reactions: {},
       },
@@ -74,15 +72,15 @@ describe('reading the Workspace feed', () => {
 
   it('keeps the order the API answered in, which is newest first', async () => {
     apiHolds([
-      { ...ONE_PIECE, id: 'fb-2', topic: 'the release notes' },
+      { ...ONE_PIECE, id: 'fb-2', message: 'the release notes' },
       ONE_PIECE,
     ]);
 
     const feed = await readWorkspaceFeed(MEMBERSHIP);
 
-    expect(feed.map((feedback) => feedback.topic)).toEqual([
+    expect(feed.map((feedback) => feedback.message)).toEqual([
       'the release notes',
-      'running the planning meeting',
+      'You start with the three goals on one slide.',
     ]);
   });
 

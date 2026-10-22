@@ -11,22 +11,20 @@ const OFFERED: FeedItem = {
   receiverName: 'Cara Diaz',
   receiverInactive: false,
   origin: 'OFFERED',
-  topic: 'The customer demo',
-  topicTags: NO_TEXT_TAGS,
-  body: 'You kept the room with you.\nThe recap landed.',
-  bodyTags: NO_TEXT_TAGS,
+  message: 'You kept the room with you.\nThe recap landed.',
+  messageTags: NO_TEXT_TAGS,
   givenAt: '2026-10-12T03:00:00.000Z',
   reactions: { '👏': ['Ann Lee'] },
 };
 
 describe('FeedbackCard', () => {
-  it('says who wrote it, who it is about, what it is about and when', () => {
+  it('says who wrote it, who it is about, what they wrote and when', () => {
     render(<FeedbackCard item={OFFERED} />);
 
     expect(screen.getByText(/Ben Carter/)).toBeInTheDocument();
     expect(screen.getByText(/Cara Diaz/)).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: 'The customer demo' }),
+      screen.getByText(/You kept the room with you\./),
     ).toBeInTheDocument();
     expect(
       screen.getByText('12 Oct 2026', { exact: false }),

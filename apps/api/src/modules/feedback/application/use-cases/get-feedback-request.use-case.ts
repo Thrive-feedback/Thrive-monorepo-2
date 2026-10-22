@@ -56,7 +56,11 @@ function answerFor(
   }
   const answer = answers.get(ask.askId);
   return answer
-    ? { body: answer.body, tags: answer.tags, answeredAt: answer.answeredAt }
+    ? {
+        message: answer.message,
+        tags: answer.tags,
+        answeredAt: answer.answeredAt,
+      }
     : null;
 }
 
@@ -101,8 +105,8 @@ export class GetFeedbackRequestUseCase {
 
     return {
       id: row.id,
-      topic: row.topic,
-      topicTags: row.topicTags,
+      message: row.message,
+      tags: row.tags,
       visibility: isRequester
         ? {
             value: visibility.toString(),

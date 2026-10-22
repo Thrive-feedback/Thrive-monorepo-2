@@ -8,10 +8,10 @@ import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import {
   AskAlreadyAnsweredError,
-  FeedbackBodyEmptyError,
+  FeedbackMessageEmptyError,
 } from '../../domain/feedback-request.errors';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
-import { Topic } from '../../domain/value-object/topic.vo';
+import { RequestMessage } from '../../domain/value-object/request-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { AnswerFeedbackAskUseCase } from './answer-feedback-ask.use-case';
@@ -35,7 +35,7 @@ async function setUp() {
       id: REQUEST_ID,
       workspaceId: WORKSPACE_ID,
       requesterAccountId: ANN,
-      topic: Topic.of('my presentation skills'),
+      message: RequestMessage.of('my presentation skills'),
       tags: BoundTags.none(),
       visibility: Visibility.onlyMe(),
       givers: [{ askId: ASK_ID, giverAccountId: BEN }],
@@ -55,7 +55,7 @@ const answering = {
   workspaceId: WORKSPACE_ID,
   giverAccountId: BEN,
   askId: ASK_ID,
-  body: WRITTEN,
+  message: WRITTEN,
 };
 
 describe('a Giver answering an Ask', () => {
@@ -74,10 +74,9 @@ describe('a Giver answering an Ask', () => {
         feedbackAskId: ASK_ID,
         giverAccountId: BEN,
         receiverAccountId: ANN,
-        topic: 'my presentation skills',
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
-        body: WRITTEN,
+        message: WRITTEN,
         workspaceGoals: [],
         mentions: [],
       },
@@ -87,7 +86,7 @@ describe('a Giver answering an Ask', () => {
   it('binds what the Giver wrote', async () => {
     const { feedbackRequestRepository, useCase } = await setUp();
 
-    await useCase.execute({ ...answering, body: 'You owned it #ownership' });
+    await useCase.execute({ ...answering, message: 'You owned it #ownership' });
 
     expect(feedbackRequestRepository.answers[0]).toMatchObject({
       workspaceGoals: [
@@ -120,8 +119,8 @@ describe('a Giver answering an Ask', () => {
     const { feedbackRequestRepository, useCase } = await setUp();
 
     await expect(
-      useCase.execute({ ...answering, body: '   ' }),
-    ).rejects.toThrow(FeedbackBodyEmptyError);
+      useCase.execute({ ...answering, message: '   ' }),
+    ).rejects.toThrow(FeedbackMessageEmptyError);
     expect(feedbackRequestRepository.answers).toEqual([]);
   });
 
@@ -130,7 +129,7 @@ describe('a Giver answering an Ask', () => {
     await useCase.execute(answering);
 
     await expect(
-      useCase.execute({ ...answering, body: 'And another thing.' }),
+      useCase.execute({ ...answering, message: 'And another thing.' }),
     ).rejects.toThrow(AskAlreadyAnsweredError);
     expect(feedbackRequestRepository.answers).toHaveLength(1);
   });

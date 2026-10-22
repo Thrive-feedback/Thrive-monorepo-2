@@ -25,15 +25,13 @@ const receivedFeedbackSchema = z.object({
   origin: z.enum(FEEDBACK_ORIGINS),
   /** The request this answers, or `null` for Feedback given without being asked. */
   feedbackRequestId: z.uuid().nullable(),
-  topic: z.string(),
-  /** What the Topic was bound to when it was sent; highlight these and nothing else. */
-  topicTags: tagsSchema,
   giverAccountId: z.uuid(),
   /** `null` while the Giver has not introduced themselves. */
   giverName: z.string().nullable(),
   /** `DEACTIVATED` once the Giver was Deactivated in this Workspace; their Feedback stays. */
   giverStatus: z.enum(PERSON_STATUSES),
-  body: z.string(),
+  /** The Feedback message. */
+  message: z.string(),
   /** What its Giver wrote was bound to when it was sent. */
   tags: tagsSchema,
   createdAt: z.iso.datetime({ offset: true }),

@@ -6,7 +6,7 @@ import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
 import { tagsSchema } from './tags.dto';
 
 const answerSchema = z.object({
-  body: z.string(),
+  message: z.string(),
   /** What its Giver wrote was bound to when it was sent. */
   tags: tagsSchema,
   answeredAt: z.iso.datetime({ offset: true }),
@@ -49,9 +49,10 @@ const visibilitySchema = z.object({
 /** One Feedback Request on the wire. The list of them sends the same shape, so it is one. */
 export const feedbackRequestSchema = z.object({
   id: z.uuid(),
-  topic: z.string(),
-  /** What the Topic was bound to when it was sent; highlight these and nothing else. */
-  topicTags: tagsSchema,
+  /** The Request message. */
+  message: z.string(),
+  /** What the Request message was bound to when it was sent; highlight these and nothing else. */
+  tags: tagsSchema,
   /** `null` when the caller is a Giver, who is not told who else reads their answer. */
   visibility: visibilitySchema.nullable(),
   /** One per Member asked, oldest first. */

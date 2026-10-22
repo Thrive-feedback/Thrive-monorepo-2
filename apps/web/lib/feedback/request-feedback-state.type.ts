@@ -5,7 +5,7 @@
 export type RequestFeedbackState = {
   readonly fieldErrors?: {
     readonly giverAccountId?: string;
-    readonly topic?: string;
+    readonly message?: string;
     readonly selectedAccountIds?: string;
   };
   readonly formError?: string;

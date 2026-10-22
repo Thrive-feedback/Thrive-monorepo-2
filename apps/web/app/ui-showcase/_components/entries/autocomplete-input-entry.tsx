@@ -12,12 +12,12 @@ export function AutocompleteInputEntry() {
       origin="thrive"
       source="components/molecules/autocomplete-input.tsx — Input + suggestion chips + coloured tags"
       summary="The one-line AutocompleteTextarea: completes tags as they are typed and colours those that name something. A long line scrolls, and the colours scroll with it."
-      useFor="A short line that can name things, such as a Feedback Topic. TextField takes the same triggers."
+      useFor="A short line that can name things, such as a Request message. TextField takes the same triggers."
       avoidFor="Anything longer than a line; use AutocompleteTextarea."
       usage={`import { AutocompleteInput } from '@/components/molecules/autocomplete-input';
 
 <AutocompleteInput
-  aria-label="Topic"
+  aria-label="Request message"
   value={value}
   onChange={(event) => setValue(event.target.value)}
   triggers={triggers}

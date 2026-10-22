@@ -33,8 +33,8 @@ export async function readFeedbackAsk(
     return {
       askId: ask.askId,
       feedbackRequestId: ask.feedbackRequestId,
-      topic: ask.topic,
-      topicTags: ask.topicTags,
+      message: ask.message,
+      messageTags: ask.tags,
       requesterName: ask.requester.name,
       requesterInactive: ask.requester.status === 'DEACTIVATED',
       status: ask.status,

@@ -23,9 +23,10 @@ const requesterSchema = z.object({
 export const feedbackAskSchema = z.object({
   askId: z.uuid(),
   feedbackRequestId: z.uuid(),
-  topic: z.string(),
-  /** What the Topic was bound to when it was sent; highlight these and nothing else. */
-  topicTags: tagsSchema,
+  /** The Request message. */
+  message: z.string(),
+  /** What the Request message was bound to when it was sent; highlight these and nothing else. */
+  tags: tagsSchema,
   requester: requesterSchema,
   status: z.enum(ASK_STATUSES),
   createdAt: z.iso.datetime({ offset: true }),

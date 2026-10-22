@@ -13,10 +13,11 @@ export type ReceivedFeedbackListViewProps = {
 };
 
 /**
- * Everything people have written to this person, newest first: what it is about, who wrote it,
- * when, whether it was given without being asked, and what they wrote in full.
+ * Everything people have written to this person, newest first: who wrote it, when, whether it
+ * was given without being asked, and the Feedback message in full. The message is the row's main
+ * text: there is no headline above it (`ADR-0039` in the brain).
  *
- * The body is shown whole rather than trimmed to a preview — it is at most a few paragraphs,
+ * The message is shown whole rather than trimmed to a preview — it is at most a few paragraphs,
  * and a Receiver reading their own feedback has no second screen to open for the rest. Its
  * line breaks are the writer's, so they are kept.
  */
@@ -34,9 +35,6 @@ export function ReceivedFeedbackListView({
     <ul className="flex flex-col divide-y divide-border-muted">
       {items.map((feedback) => (
         <li key={feedback.id} className="flex flex-col gap-1 py-4">
-          <Text as="h2" variant="subtitle-2" className="break-words">
-            <FeedbackText text={feedback.topic} tags={feedback.topicTags} />
-          </Text>
           <Text as="p" variant="body-3" tone="muted">
             From{' '}
             <PersonName
@@ -51,10 +49,10 @@ export function ReceivedFeedbackListView({
           </Text>
           <Text
             as="p"
-            variant="body-2"
+            variant="body-1"
             className="whitespace-pre-wrap break-words"
           >
-            <FeedbackText text={feedback.body} tags={feedback.bodyTags} />
+            <FeedbackText text={feedback.message} tags={feedback.messageTags} />
           </Text>
         </li>
       ))}
@@ -62,17 +60,16 @@ export function ReceivedFeedbackListView({
   );
 }
 
-/** A `ReceivedFeedbackListView` still loading: a few rows of Topic, from whom and when, and the body. */
+/** A `ReceivedFeedbackListView` still loading: a few rows of from whom and when, and the message. */
 export function ReceivedFeedbackListViewSkeleton() {
   return (
     <div className="flex flex-col divide-y divide-border-muted">
       {PLACEHOLDERS.map((placeholder) => (
         <div key={placeholder} className="flex flex-col gap-1 py-4">
-          <Skeleton className="w-1/2 text-subtitle-2" />
           <Skeleton className="w-1/3 text-body-3" />
           <div className="flex flex-col">
-            <Skeleton />
-            <Skeleton className="w-4/5" />
+            <Skeleton className="text-body-1" />
+            <Skeleton className="w-4/5 text-body-1" />
           </div>
         </div>
       ))}

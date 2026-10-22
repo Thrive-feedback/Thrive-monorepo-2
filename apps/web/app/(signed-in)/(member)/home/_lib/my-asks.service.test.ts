@@ -46,7 +46,7 @@ function apiHolds(items: unknown[]) {
 const ONE_ASK = {
   askId: 'ask-1',
   feedbackRequestId: 'request-1',
-  topic: 'my presentation skills',
+  message: 'my presentation skills',
   requester: { accountId: 'account-ana', name: 'Ana Silva', status: 'ACTIVE' },
   status: 'PENDING',
   createdAt: '2026-10-11T03:00:00.000Z',
@@ -59,7 +59,7 @@ describe('reading the Asks waiting for me', () => {
     expect(await readMyAsks(MEMBERSHIP)).toEqual([
       {
         askId: 'ask-1',
-        topic: 'my presentation skills',
+        message: 'my presentation skills',
         requesterName: 'Ana Silva',
         requesterInactive: false,
         askedAt: '2026-10-11T03:00:00.000Z',

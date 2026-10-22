@@ -26,12 +26,12 @@ describe('SentRequestList', () => {
     expect(readSentRequests).toHaveBeenCalledWith(MEMBERSHIP);
   });
 
-  it('shows the Topic, the day it was sent, and each Ask’s state', async () => {
+  it('shows the Request message, the day it was sent, and each Ask’s state', async () => {
     readSentRequests.mockResolvedValue([
       {
         id: 'request-1',
-        topic: 'my presentation skills',
-        topicTags: NO_TEXT_TAGS,
+        message: 'my presentation skills',
+        messageTags: NO_TEXT_TAGS,
         sentAt: '2026-10-11T03:00:00.000Z',
         asks: [
           { askId: 'ask-1', giverName: 'Ben Carter', status: 'PENDING' },
@@ -56,8 +56,8 @@ describe('SentRequestList', () => {
     readSentRequests.mockResolvedValue([
       {
         id: 'request-1',
-        topic: 'my presentation skills',
-        topicTags: NO_TEXT_TAGS,
+        message: 'my presentation skills',
+        messageTags: NO_TEXT_TAGS,
         sentAt: '2026-10-11T03:00:00.000Z',
         asks: [{ askId: 'ask-1', giverName: null, status: 'PENDING' }],
       },
@@ -72,8 +72,8 @@ describe('SentRequestList', () => {
     readSentRequests.mockResolvedValue([
       {
         id: 'request-1',
-        topic: 'my presentation skills',
-        topicTags: NO_TEXT_TAGS,
+        message: 'my presentation skills',
+        messageTags: NO_TEXT_TAGS,
         sentAt: '2026-10-11T03:00:00.000Z',
         asks: [
           {
@@ -105,8 +105,8 @@ describe('SentRequestList', () => {
     readSentRequests.mockResolvedValue([
       {
         id: 'request-1',
-        topic: 'my presentation skills',
-        topicTags: NO_TEXT_TAGS,
+        message: 'my presentation skills',
+        messageTags: NO_TEXT_TAGS,
         sentAt: '2026-10-11T03:00:00.000Z',
         asks: [],
       },

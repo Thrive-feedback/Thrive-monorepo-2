@@ -5,8 +5,7 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { v7 as uuidv7 } from 'uuid';
 import { Feedback } from '../../domain/entity/feedback.entity';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
-import { FeedbackBody } from '../../domain/value-object/feedback-body.vo';
-import { Topic } from '../../domain/value-object/topic.vo';
+import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { PrismaFeedbackRepository } from '../repository/prisma-feedback.repository';
 import { PrismaFeedbackRequestQuery } from './prisma-feedback-request.query';
@@ -35,7 +34,7 @@ const everyone = () =>
  */
 async function given(
   workspaceId: string,
-  topic: string,
+  message: string,
   visibility: Visibility,
 ): Promise<string> {
   const id = uuidv7();
@@ -47,9 +46,8 @@ async function given(
       workspaceId,
       giverAccountId: BEN,
       receiverAccountId: CARA,
-      topic: Topic.of(topic),
       visibility,
-      body: FeedbackBody.of('You kept the room with you.'),
+      message: FeedbackMessage.of(message),
     }),
   );
   return id;
@@ -88,11 +86,9 @@ describe('reading the Workspace feed', () => {
       id: newerPublic,
       origin: 'OFFERED',
       feedbackRequestId: null,
-      topic: 'the customer demo',
-      topicTags: { workspaceGoals: [], mentions: [] },
       giverAccountId: BEN,
       receiverAccountId: CARA,
-      body: 'You kept the room with you.',
+      message: 'the customer demo',
       tags: { workspaceGoals: [], mentions: [] },
       createdAt: expect.any(Date),
     });
@@ -101,15 +97,15 @@ describe('reading the Workspace feed', () => {
   it('leaves out Only me and Selected people, whoever asked', async () => {
     const feed = await query.publicIn(WORKSPACE_ID, ONE_PAGE);
 
-    const topics = feed.items.map((feedback) => feedback.topic);
-    expect(topics).not.toContain('the release notes');
-    expect(topics).not.toContain('onboarding the new designers');
+    const messages = feed.items.map((feedback) => feedback.message);
+    expect(messages).not.toContain('the release notes');
+    expect(messages).not.toContain('onboarding the new designers');
   });
 
   it('leaves out another Workspace’s feed', async () => {
     const feed = await query.publicIn(WORKSPACE_ID, ONE_PAGE);
 
-    expect(feed.items.map((feedback) => feedback.topic)).not.toContain(
+    expect(feed.items.map((feedback) => feedback.message)).not.toContain(
       'another Workspace entirely',
     );
   });

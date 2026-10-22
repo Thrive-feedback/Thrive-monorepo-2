@@ -339,7 +339,7 @@ export interface paths {
         /** List the Feedback Requests the caller sent in this Workspace */
         get: operations["FeedbackRequestController_listSentFeedbackRequests"];
         put?: never;
-        /** Ask a Member of this Workspace for Feedback on a Topic, choosing who else reads the answers */
+        /** Ask a Member of this Workspace for Feedback with a Request message, choosing who else reads the answers */
         post: operations["FeedbackRequestController_sendFeedbackRequest"];
         delete?: never;
         options?: never;
@@ -707,7 +707,7 @@ export interface components {
             status: "PENDING" | "EXPIRED" | "ACCEPTED" | "REVOKED";
         };
         SendFeedbackRequestRequestDto: {
-            topic: string;
+            message: string;
             giverAccountIds: string[];
             /** @enum {string} */
             visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
@@ -721,8 +721,8 @@ export interface components {
             items: {
                 /** Format: uuid */
                 id: string;
-                topic: string;
-                topicTags: {
+                message: string;
+                tags: {
                     workspaceGoals: {
                         name: string;
                     }[];
@@ -753,7 +753,7 @@ export interface components {
                     /** @enum {string} */
                     status: "PENDING" | "ANSWERED" | "EXPIRED";
                     answer: {
-                        body: string;
+                        message: string;
                         tags: {
                             workspaceGoals: {
                                 name: string;
@@ -777,8 +777,8 @@ export interface components {
         GetFeedbackRequestResponseDto_Output: {
             /** Format: uuid */
             id: string;
-            topic: string;
-            topicTags: {
+            message: string;
+            tags: {
                 workspaceGoals: {
                     name: string;
                 }[];
@@ -809,7 +809,7 @@ export interface components {
                 /** @enum {string} */
                 status: "PENDING" | "ANSWERED" | "EXPIRED";
                 answer: {
-                    body: string;
+                    message: string;
                     tags: {
                         workspaceGoals: {
                             name: string;
@@ -832,8 +832,8 @@ export interface components {
                 askId: string;
                 /** Format: uuid */
                 feedbackRequestId: string;
-                topic: string;
-                topicTags: {
+                message: string;
+                tags: {
                     workspaceGoals: {
                         name: string;
                     }[];
@@ -863,8 +863,8 @@ export interface components {
             askId: string;
             /** Format: uuid */
             feedbackRequestId: string;
-            topic: string;
-            topicTags: {
+            message: string;
+            tags: {
                 workspaceGoals: {
                     name: string;
                 }[];
@@ -886,7 +886,7 @@ export interface components {
             createdAt: string;
         };
         AnswerFeedbackAskRequestDto: {
-            body: string;
+            message: string;
         };
         AnswerFeedbackAskResponseDto_Output: {
             /** Format: uuid */
@@ -895,8 +895,7 @@ export interface components {
         OfferFeedbackRequestDto: {
             /** Format: uuid */
             receiverAccountId: string;
-            topic: string;
-            body: string;
+            message: string;
             /** @enum {string} */
             visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
             selectedAccountIds?: string[];
@@ -913,22 +912,12 @@ export interface components {
                 origin: "REQUESTED" | "OFFERED";
                 /** Format: uuid */
                 feedbackRequestId: string | null;
-                topic: string;
-                topicTags: {
-                    workspaceGoals: {
-                        name: string;
-                    }[];
-                    mentions: {
-                        slug: string;
-                        displayName: string;
-                    }[];
-                };
                 /** Format: uuid */
                 giverAccountId: string;
                 giverName: string | null;
                 /** @enum {string} */
                 giverStatus: "ACTIVE" | "DEACTIVATED";
-                body: string;
+                message: string;
                 tags: {
                     workspaceGoals: {
                         name: string;
@@ -952,16 +941,6 @@ export interface components {
             origin: "REQUESTED" | "OFFERED";
             /** Format: uuid */
             feedbackRequestId: string | null;
-            topic: string;
-            topicTags: {
-                workspaceGoals: {
-                    name: string;
-                }[];
-                mentions: {
-                    slug: string;
-                    displayName: string;
-                }[];
-            };
             giver: {
                 /** Format: uuid */
                 accountId: string;
@@ -976,7 +955,7 @@ export interface components {
                 /** @enum {string} */
                 status: "ACTIVE" | "DEACTIVATED";
             };
-            body: string;
+            message: string;
             tags: {
                 workspaceGoals: {
                     name: string;
@@ -997,16 +976,6 @@ export interface components {
                 origin: "REQUESTED" | "OFFERED";
                 /** Format: uuid */
                 feedbackRequestId: string | null;
-                topic: string;
-                topicTags: {
-                    workspaceGoals: {
-                        name: string;
-                    }[];
-                    mentions: {
-                        slug: string;
-                        displayName: string;
-                    }[];
-                };
                 giver: {
                     /** Format: uuid */
                     accountId: string;
@@ -1021,7 +990,7 @@ export interface components {
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 };
-                body: string;
+                message: string;
                 tags: {
                     workspaceGoals: {
                         name: string;
@@ -1046,16 +1015,6 @@ export interface components {
                 origin: "REQUESTED" | "OFFERED";
                 /** Format: uuid */
                 feedbackRequestId: string | null;
-                topic: string;
-                topicTags: {
-                    workspaceGoals: {
-                        name: string;
-                    }[];
-                    mentions: {
-                        slug: string;
-                        displayName: string;
-                    }[];
-                };
                 giver: {
                     /** Format: uuid */
                     accountId: string;
@@ -1070,7 +1029,7 @@ export interface components {
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 };
-                body: string;
+                message: string;
                 tags: {
                     workspaceGoals: {
                         name: string;
@@ -2024,7 +1983,7 @@ export interface operations {
                     "application/json": components["schemas"]["SendFeedbackRequestResponseDto_Output"];
                 };
             };
-            /** @description REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF or SELECTED_PERSON_NOT_IN_WORKSPACE */
+            /** @description REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF or SELECTED_PERSON_NOT_IN_WORKSPACE */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2305,7 +2264,7 @@ export interface operations {
                     "application/json": components["schemas"]["OfferFeedbackResponseDto_Output"];
                 };
             };
-            /** @description REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, FEEDBACK_BODY_EMPTY, FEEDBACK_BODY_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE */
+            /** @description REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE */
             400: {
                 headers: {
                     [name: string]: unknown;

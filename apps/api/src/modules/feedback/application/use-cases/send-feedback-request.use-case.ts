@@ -4,7 +4,7 @@ import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable } from '@nestjs/common';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import { FeedbackRequestRepository } from '../../domain/repository/feedback-request-repository.port';
-import { Topic } from '../../domain/value-object/topic.vo';
+import { RequestMessage } from '../../domain/value-object/request-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import {
   GiverNotInWorkspaceError,
@@ -16,7 +16,7 @@ export interface SendFeedbackRequestInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
   readonly workspaceId: string;
   readonly requesterAccountId: string;
-  readonly topic: string;
+  readonly message: string;
   readonly giverAccountIds: readonly string[];
   /** Who besides the Requester and the Givers may read the answers. */
   readonly visibility: string;
@@ -29,7 +29,7 @@ export interface SendFeedbackRequestResult {
 }
 
 /**
- * The Requester asks Members of their Workspace for Feedback on a Topic, and chooses who besides
+ * The Requester asks Members of their Workspace for Feedback with a Request message, and chooses who besides
  * them may read the answers. That creates the request and one Ask per Member asked.
  *
  * Every Giver and every person selected is checked against the Workspace, in one read, before
@@ -48,7 +48,7 @@ export class SendFeedbackRequestUseCase {
   async execute(
     input: SendFeedbackRequestInput,
   ): Promise<SendFeedbackRequestResult> {
-    const topic = Topic.of(input.topic);
+    const message = RequestMessage.of(input.message);
     const visibility = Visibility.of({
       value: input.visibility,
       selectedAccountIds: input.selectedAccountIds,
@@ -70,14 +70,14 @@ export class SendFeedbackRequestUseCase {
     }
     const tags = await this.tagsService.boundIn(
       input.workspaceId,
-      topic.toString(),
+      message.toString(),
     );
 
     const request = FeedbackRequest.send({
       id: this.idGenerator.next(),
       workspaceId: input.workspaceId,
       requesterAccountId: input.requesterAccountId,
-      topic,
+      message,
       visibility,
       tags,
       givers: input.giverAccountIds.map((giverAccountId) => ({

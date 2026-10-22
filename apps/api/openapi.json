@@ -1095,7 +1095,7 @@
             }
           },
           "400": {
-            "description": "REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF or SELECTED_PERSON_NOT_IN_WORKSPACE"
+            "description": "REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF or SELECTED_PERSON_NOT_IN_WORKSPACE"
           },
           "401": {
             "description": "NOT_SIGNED_IN"
@@ -1104,7 +1104,7 @@
             "description": "WORKSPACE_NOT_FOUND"
           }
         },
-        "summary": "Ask a Member of this Workspace for Feedback on a Topic, choosing who else reads the answers",
+        "summary": "Ask a Member of this Workspace for Feedback with a Request message, choosing who else reads the answers",
         "tags": [
           "feedback"
         ]
@@ -1504,7 +1504,7 @@
             }
           },
           "400": {
-            "description": "REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, FEEDBACK_BODY_EMPTY, FEEDBACK_BODY_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE"
+            "description": "REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE"
           },
           "401": {
             "description": "NOT_SIGNED_IN"
@@ -2787,7 +2787,7 @@
       "SendFeedbackRequestRequestDto": {
         "type": "object",
         "properties": {
-          "topic": {
+          "message": {
             "type": "string"
           },
           "giverAccountIds": {
@@ -2819,7 +2819,7 @@
           }
         },
         "required": [
-          "topic",
+          "message",
           "giverAccountIds",
           "visibility"
         ],
@@ -2852,10 +2852,10 @@
                   "format": "uuid",
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                 },
-                "topic": {
+                "message": {
                   "type": "string"
                 },
-                "topicTags": {
+                "tags": {
                   "type": "object",
                   "properties": {
                     "workspaceGoals": {
@@ -2989,7 +2989,7 @@
                       "answer": {
                         "type": "object",
                         "properties": {
-                          "body": {
+                          "message": {
                             "type": "string"
                           },
                           "tags": {
@@ -3043,7 +3043,7 @@
                           }
                         },
                         "required": [
-                          "body",
+                          "message",
                           "tags",
                           "answeredAt"
                         ],
@@ -3070,8 +3070,8 @@
               },
               "required": [
                 "id",
-                "topic",
-                "topicTags",
+                "message",
+                "tags",
                 "visibility",
                 "asks",
                 "createdAt"
@@ -3111,10 +3111,10 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
-          "topic": {
+          "message": {
             "type": "string"
           },
-          "topicTags": {
+          "tags": {
             "type": "object",
             "properties": {
               "workspaceGoals": {
@@ -3248,7 +3248,7 @@
                 "answer": {
                   "type": "object",
                   "properties": {
-                    "body": {
+                    "message": {
                       "type": "string"
                     },
                     "tags": {
@@ -3302,7 +3302,7 @@
                     }
                   },
                   "required": [
-                    "body",
+                    "message",
                     "tags",
                     "answeredAt"
                   ],
@@ -3329,8 +3329,8 @@
         },
         "required": [
           "id",
-          "topic",
-          "topicTags",
+          "message",
+          "tags",
           "visibility",
           "asks",
           "createdAt"
@@ -3355,10 +3355,10 @@
                   "format": "uuid",
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                 },
-                "topic": {
+                "message": {
                   "type": "string"
                 },
-                "topicTags": {
+                "tags": {
                   "type": "object",
                   "properties": {
                     "workspaceGoals": {
@@ -3448,8 +3448,8 @@
               "required": [
                 "askId",
                 "feedbackRequestId",
-                "topic",
-                "topicTags",
+                "message",
+                "tags",
                 "requester",
                 "status",
                 "createdAt"
@@ -3494,10 +3494,10 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
-          "topic": {
+          "message": {
             "type": "string"
           },
-          "topicTags": {
+          "tags": {
             "type": "object",
             "properties": {
               "workspaceGoals": {
@@ -3587,8 +3587,8 @@
         "required": [
           "askId",
           "feedbackRequestId",
-          "topic",
-          "topicTags",
+          "message",
+          "tags",
           "requester",
           "status",
           "createdAt"
@@ -3598,12 +3598,12 @@
       "AnswerFeedbackAskRequestDto": {
         "type": "object",
         "properties": {
-          "body": {
+          "message": {
             "type": "string"
           }
         },
         "required": [
-          "body"
+          "message"
         ],
         "additionalProperties": false
       },
@@ -3629,10 +3629,7 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
-          "topic": {
-            "type": "string"
-          },
-          "body": {
+          "message": {
             "type": "string"
           },
           "visibility": {
@@ -3655,8 +3652,7 @@
         },
         "required": [
           "receiverAccountId",
-          "topic",
-          "body",
+          "message",
           "visibility"
         ],
         "additionalProperties": false
@@ -3701,53 +3697,6 @@
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                   "nullable": true
                 },
-                "topic": {
-                  "type": "string"
-                },
-                "topicTags": {
-                  "type": "object",
-                  "properties": {
-                    "workspaceGoals": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "name"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "mentions": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "slug": {
-                            "type": "string"
-                          },
-                          "displayName": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "slug",
-                          "displayName"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "workspaceGoals",
-                    "mentions"
-                  ],
-                  "additionalProperties": false
-                },
                 "giverAccountId": {
                   "type": "string",
                   "format": "uuid",
@@ -3766,7 +3715,7 @@
                     "DEACTIVATED"
                   ]
                 },
-                "body": {
+                "message": {
                   "type": "string"
                 },
                 "tags": {
@@ -3823,12 +3772,10 @@
                 "id",
                 "origin",
                 "feedbackRequestId",
-                "topic",
-                "topicTags",
                 "giverAccountId",
                 "giverName",
                 "giverStatus",
-                "body",
+                "message",
                 "tags",
                 "createdAt"
               ],
@@ -3879,53 +3826,6 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "nullable": true
-          },
-          "topic": {
-            "type": "string"
-          },
-          "topicTags": {
-            "type": "object",
-            "properties": {
-              "workspaceGoals": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "name"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "mentions": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "slug": {
-                      "type": "string"
-                    },
-                    "displayName": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "slug",
-                    "displayName"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            },
-            "required": [
-              "workspaceGoals",
-              "mentions"
-            ],
-            "additionalProperties": false
           },
           "giver": {
             "type": "object",
@@ -3985,7 +3885,7 @@
             ],
             "additionalProperties": false
           },
-          "body": {
+          "message": {
             "type": "string"
           },
           "tags": {
@@ -4042,11 +3942,9 @@
           "id",
           "origin",
           "feedbackRequestId",
-          "topic",
-          "topicTags",
           "giver",
           "receiver",
-          "body",
+          "message",
           "tags",
           "createdAt"
         ],
@@ -4077,53 +3975,6 @@
                   "format": "uuid",
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                   "nullable": true
-                },
-                "topic": {
-                  "type": "string"
-                },
-                "topicTags": {
-                  "type": "object",
-                  "properties": {
-                    "workspaceGoals": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "name"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "mentions": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "slug": {
-                            "type": "string"
-                          },
-                          "displayName": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "slug",
-                          "displayName"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "workspaceGoals",
-                    "mentions"
-                  ],
-                  "additionalProperties": false
                 },
                 "giver": {
                   "type": "object",
@@ -4183,7 +4034,7 @@
                   ],
                   "additionalProperties": false
                 },
-                "body": {
+                "message": {
                   "type": "string"
                 },
                 "tags": {
@@ -4240,11 +4091,9 @@
                 "id",
                 "origin",
                 "feedbackRequestId",
-                "topic",
-                "topicTags",
                 "giver",
                 "receiver",
-                "body",
+                "message",
                 "tags",
                 "createdAt"
               ],
@@ -4301,53 +4150,6 @@
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                   "nullable": true
                 },
-                "topic": {
-                  "type": "string"
-                },
-                "topicTags": {
-                  "type": "object",
-                  "properties": {
-                    "workspaceGoals": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "name"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "mentions": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "slug": {
-                            "type": "string"
-                          },
-                          "displayName": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "slug",
-                          "displayName"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "workspaceGoals",
-                    "mentions"
-                  ],
-                  "additionalProperties": false
-                },
                 "giver": {
                   "type": "object",
                   "properties": {
@@ -4406,7 +4208,7 @@
                   ],
                   "additionalProperties": false
                 },
-                "body": {
+                "message": {
                   "type": "string"
                 },
                 "tags": {
@@ -4463,11 +4265,9 @@
                 "id",
                 "origin",
                 "feedbackRequestId",
-                "topic",
-                "topicTags",
                 "giver",
                 "receiver",
-                "body",
+                "message",
                 "tags",
                 "createdAt"
               ],

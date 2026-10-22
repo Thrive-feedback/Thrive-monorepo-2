@@ -21,5 +21,5 @@ export const MENTION_RULE: TagRule = {
   typing: /[\p{L}\p{M}\p{N}._-]/u,
 };
 
-/** The tags Feedback, a Topic and an answer are written with, recognised as the API binds them. */
+/** The tags a Request message and a Feedback message are written with, recognised as the API binds them. */
 export const TEXT_TAG_RULES: readonly TagRule[] = [HASHTAG_RULE, MENTION_RULE];

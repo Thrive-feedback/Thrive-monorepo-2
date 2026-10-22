@@ -48,12 +48,10 @@ function toResponse(feedback: ReceivedFeedbackView) {
     id: feedback.id,
     origin: feedback.origin,
     feedbackRequestId: feedback.feedbackRequestId,
-    topic: feedback.topic,
-    topicTags: toTagsResponse(feedback.topicTags),
     giverAccountId: feedback.giverAccountId,
     giverName: feedback.giverName,
     giverStatus: feedback.giverStatus,
-    body: feedback.body,
+    message: feedback.message,
     tags: toTagsResponse(feedback.tags),
     createdAt: feedback.createdAt.toISOString(),
   };
@@ -88,7 +86,7 @@ export class FeedbackController {
   @ZodResponse({ status: HttpStatus.CREATED, type: OfferFeedbackResponseDto })
   @ApiBadRequestResponse({
     description:
-      'REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, FEEDBACK_BODY_EMPTY, FEEDBACK_BODY_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE',
+      'REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE',
   })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
   @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
@@ -101,8 +99,7 @@ export class FeedbackController {
       workspaceId: params.workspaceId,
       giverAccountId: actor.accountId,
       receiverAccountId: body.receiverAccountId,
-      topic: body.topic,
-      body: body.body,
+      message: body.message,
       visibility: body.visibility,
       selectedAccountIds: body.selectedAccountIds ?? [],
     });

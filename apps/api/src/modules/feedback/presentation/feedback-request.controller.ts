@@ -43,8 +43,8 @@ import { WorkspaceMemberGuard } from './workspace-member.guard';
 function toResponse(request: FeedbackRequestView) {
   return {
     id: request.id,
-    topic: request.topic,
-    topicTags: toTagsResponse(request.topicTags),
+    message: request.message,
+    tags: toTagsResponse(request.tags),
     visibility: request.visibility && {
       value: request.visibility.value,
       selectedPeople: request.visibility.selectedPeople.map((person) => ({
@@ -61,7 +61,7 @@ function toResponse(request: FeedbackRequestView) {
       status: ask.status,
       answer: ask.answer
         ? {
-            body: ask.answer.body,
+            message: ask.answer.message,
             tags: toTagsResponse(ask.answer.tags),
             answeredAt: ask.answer.answeredAt.toISOString(),
           }
@@ -88,7 +88,7 @@ export class FeedbackRequestController {
   @Post()
   @ApiOperation({
     summary:
-      'Ask a Member of this Workspace for Feedback on a Topic, choosing who else reads the answers',
+      'Ask a Member of this Workspace for Feedback with a Request message, choosing who else reads the answers',
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({
@@ -97,7 +97,7 @@ export class FeedbackRequestController {
   })
   @ApiBadRequestResponse({
     description:
-      'REQUEST_INVALID, TOPIC_EMPTY, TOPIC_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF or SELECTED_PERSON_NOT_IN_WORKSPACE',
+      'REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF or SELECTED_PERSON_NOT_IN_WORKSPACE',
   })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
   @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
@@ -109,7 +109,7 @@ export class FeedbackRequestController {
     const sent = await this.sendFeedbackRequestUseCase.execute({
       workspaceId: params.workspaceId,
       requesterAccountId: actor.accountId,
-      topic: body.topic,
+      message: body.message,
       giverAccountIds: body.giverAccountIds,
       visibility: body.visibility,
       selectedAccountIds: body.selectedAccountIds ?? [],

@@ -4,7 +4,7 @@
  */
 export type AnswerAskState = {
   readonly fieldErrors?: {
-    readonly body?: string;
+    readonly message?: string;
   };
   readonly formError?: string;
 };

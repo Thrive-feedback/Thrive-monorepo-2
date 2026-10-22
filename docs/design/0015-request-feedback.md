@@ -6,6 +6,10 @@
 (really send) · Epic [#7](https://github.com/Thrive-feedback/Thrive-monorepo-2/issues/7)
 **Status:** accepted, 2026-10-11 · **Author:** naroebordin (with Claude)
 
+> **Since 2026-10-22:** Topic is retired (brain `ADR-0039`, ADR 0054). Read *Topic* below as the
+> request's **Request message**, and *body* as the **Feedback message**. Feedback no longer holds
+> or returns a Topic of its own. This record is left as it was decided.
+
 ---
 
 ## 1. Context

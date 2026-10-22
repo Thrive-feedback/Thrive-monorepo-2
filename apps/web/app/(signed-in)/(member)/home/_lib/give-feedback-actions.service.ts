@@ -19,17 +19,16 @@ const VISIBILITIES = [
   'EVERYONE',
 ] as const satisfies readonly Visibility[];
 
-/** As long as the API lets Feedback be. */
-const MAX_BODY_LENGTH = 4000;
+/** As long as the API lets a Feedback message be. */
+const MAX_MESSAGE_LENGTH = 4000;
 
-const TOO_LONG = `Your feedback is too long. Keep it under ${MAX_BODY_LENGTH} characters.`;
+const TOO_LONG = `Your feedback is too long. Keep it under ${MAX_MESSAGE_LENGTH} characters.`;
 
 /** The shape the API's own schema accepts, so the browser is never the first to check it. */
 const GiveFeedbackInput = z
   .object({
     receiverAccountId: z.uuid(),
-    topic: z.string().trim().min(1),
-    body: z.string().trim().min(1).max(MAX_BODY_LENGTH),
+    message: z.string().trim().min(1).max(MAX_MESSAGE_LENGTH),
     visibility: z.enum(VISIBILITIES),
     selectedAccountIds: z.array(z.uuid()),
   })
@@ -47,8 +46,7 @@ const SEND_ERRORS: Readonly<Record<string, string>> = {
   NO_PEOPLE_SELECTED: 'Pick at least one person to share it with.',
   SELECTED_PERSON_NOT_IN_WORKSPACE:
     'Someone you picked to share it with is no longer in your Workspace.',
-  TOPIC_TOO_LONG: 'That Topic is too long. Try saying it more briefly.',
-  FEEDBACK_BODY_TOO_LONG: TOO_LONG,
+  FEEDBACK_MESSAGE_TOO_LONG: TOO_LONG,
 };
 
 /** Where to go instead when the API says this step is not the person's to take. */
@@ -76,25 +74,23 @@ export async function giveFeedback(
 ): Promise<GiveFeedbackState> {
   const input = GiveFeedbackInput.safeParse({
     receiverAccountId: formData.get('receiverAccountId'),
-    topic: formData.get('topic'),
-    body: formData.get('body'),
+    message: formData.get('message'),
     visibility: formData.get('visibility'),
     selectedAccountIds: formData.getAll('selectedAccountIds'),
   });
   if (!input.success) {
     const { fieldErrors } = z.flattenError(input.error);
-    const bodyTooLong = input.error.issues.some(
-      (issue) => issue.path[0] === 'body' && issue.code === 'too_big',
+    const messageTooLong = input.error.issues.some(
+      (issue) => issue.path[0] === 'message' && issue.code === 'too_big',
     );
     return {
       fieldErrors: {
         receiverAccountId: fieldErrors.receiverAccountId
           ? 'Pick who it is for.'
           : undefined,
-        topic: fieldErrors.topic ? 'Add a Topic.' : undefined,
-        body: bodyTooLong
+        message: messageTooLong
           ? TOO_LONG
-          : fieldErrors.body
+          : fieldErrors.message
             ? 'Write your feedback.'
             : undefined,
         selectedAccountIds: fieldErrors.selectedAccountIds
@@ -116,8 +112,7 @@ export async function giveFeedback(
         },
         body: {
           receiverAccountId: input.data.receiverAccountId,
-          topic: input.data.topic,
-          body: input.data.body,
+          message: input.data.message,
           visibility: input.data.visibility,
           // Only Selected people names anybody; the API refuses a list under any other choice.
           selectedAccountIds:

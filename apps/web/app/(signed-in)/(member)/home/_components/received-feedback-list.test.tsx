@@ -18,12 +18,10 @@ const MEMBERSHIP = {
 
 const ONE_PIECE = {
   id: 'fb-1',
-  topic: 'my presentation skills',
-  topicTags: NO_TEXT_TAGS,
   offered: false,
   giverName: 'Ben Carter',
-  body: 'You open strongly and lose the room at the detail.',
-  bodyTags: NO_TEXT_TAGS,
+  message: 'You open strongly and lose the room at the detail.',
+  messageTags: NO_TEXT_TAGS,
   writtenAt: '2026-10-11T03:00:00.000Z',
 };
 
@@ -44,10 +42,10 @@ describe('ReceivedFeedbackList', () => {
     readReceivedFeedback.mockResolvedValue([ONE_PIECE]);
 
     await renderList();
-
-    // Level 2, under Home's own h1: a skipped level leaves a screen reader guessing.
     expect(
-      screen.getByRole('heading', { level: 2, name: 'my presentation skills' }),
+      screen.getByText('You open strongly and lose the room at the detail.', {
+        exact: false,
+      }),
     ).toBeInTheDocument();
     expect(screen.getByText(/From Ben Carter/)).toBeInTheDocument();
     expect(screen.getByText('11 Oct 2026')).toBeInTheDocument();
@@ -71,7 +69,7 @@ describe('ReceivedFeedbackList', () => {
 
   it('marks Feedback given without being asked, and only that', async () => {
     readReceivedFeedback.mockResolvedValue([
-      { ...ONE_PIECE, id: 'fb-2', topic: 'the customer demo', offered: true },
+      { ...ONE_PIECE, id: 'fb-2', message: 'the customer demo', offered: true },
       ONE_PIECE,
     ]);
 
@@ -82,7 +80,7 @@ describe('ReceivedFeedbackList', () => {
 
   it('keeps the line breaks the Giver wrote', async () => {
     readReceivedFeedback.mockResolvedValue([
-      { ...ONE_PIECE, body: 'First point.\n\nSecond point.' },
+      { ...ONE_PIECE, message: 'First point.\n\nSecond point.' },
     ]);
 
     await renderList();

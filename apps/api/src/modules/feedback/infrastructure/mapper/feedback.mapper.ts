@@ -21,9 +21,8 @@ export function toFeedbackRecord(
     feedbackAskId: snapshot.feedbackAskId,
     giverAccountId: snapshot.giverAccountId,
     receiverAccountId: snapshot.receiverAccountId,
-    topic: snapshot.topic,
     visibility: snapshot.visibility as FeedbackRecord['visibility'],
-    body: snapshot.body,
+    message: snapshot.message,
   };
 }
 

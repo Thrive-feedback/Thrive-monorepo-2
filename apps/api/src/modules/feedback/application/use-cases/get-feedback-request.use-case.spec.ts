@@ -24,8 +24,8 @@ function setUp() {
     id: REQUEST_ID,
     workspaceId: WORKSPACE_ID,
     requesterAccountId: REQUESTER,
-    topic: 'my presentation skills',
-    topicTags: NO_TAGS,
+    message: 'my presentation skills',
+    tags: NO_TAGS,
     visibility: 'ONLY_ME',
     selectedAccountIds: [],
     createdAt: CREATED_AT,
@@ -67,7 +67,7 @@ function benHasAnswered(setUpResult: ReturnType<typeof setUp>): void {
   };
   feedbackRequestQuery.answers.push({
     askId: ASK_ID,
-    body: 'You open strongly and lose the room at the detail.',
+    message: 'You open strongly and lose the room at the detail.',
     tags: NO_TAGS,
     answeredAt: ANSWERED_AT,
   });
@@ -106,8 +106,8 @@ describe('reading one Feedback Request', () => {
 
     expect(found).toEqual({
       id: REQUEST_ID,
-      topic: 'my presentation skills',
-      topicTags: NO_TAGS,
+      message: 'my presentation skills',
+      tags: NO_TAGS,
       visibility: { value: 'ONLY_ME', selectedPeople: [] },
       asks: [
         {
@@ -152,7 +152,7 @@ describe('reading one Feedback Request', () => {
       requestId: REQUEST_ID,
     });
 
-    expect(found.topic).toBe('my presentation skills');
+    expect(found.message).toBe('my presentation skills');
   });
 
   it('tells the Requester who they shared it with, by name', async () => {
@@ -243,7 +243,7 @@ describe('reading one Feedback Request', () => {
     });
 
     expect(found.asks[0]?.answer).toEqual({
-      body: 'You open strongly and lose the room at the detail.',
+      message: 'You open strongly and lose the room at the detail.',
       tags: NO_TAGS,
       answeredAt: ANSWERED_AT,
     });
@@ -259,7 +259,7 @@ describe('reading one Feedback Request', () => {
       requestId: REQUEST_ID,
     });
 
-    expect(found.asks[0]?.answer?.body).toBe(
+    expect(found.asks[0]?.answer?.message).toBe(
       'You open strongly and lose the room at the detail.',
     );
   });
@@ -283,13 +283,13 @@ describe('reading one Feedback Request', () => {
     context.feedbackRequestQuery.answers.push(
       {
         askId: ASK_ID,
-        body: 'Ben wrote this.',
+        message: 'Ben wrote this.',
         tags: NO_TAGS,
         answeredAt: ANSWERED_AT,
       },
       {
         askId: OTHER_ASK,
-        body: 'Cara wrote this.',
+        message: 'Cara wrote this.',
         tags: NO_TAGS,
         answeredAt: ANSWERED_AT,
       },
@@ -301,7 +301,7 @@ describe('reading one Feedback Request', () => {
       requestId: REQUEST_ID,
     });
 
-    expect(found.asks.map((ask) => ask.answer?.body ?? null)).toEqual([
+    expect(found.asks.map((ask) => ask.answer?.message ?? null)).toEqual([
       'Ben wrote this.',
       null,
     ]);

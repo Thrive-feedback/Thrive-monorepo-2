@@ -23,7 +23,7 @@ const VISIBILITIES = [
 const RequestFeedbackInput = z
   .object({
     giverAccountId: z.uuid(),
-    topic: z.string().trim().min(1),
+    message: z.string().trim().min(1),
     visibility: z.enum(VISIBILITIES),
     selectedAccountIds: z.array(z.uuid()),
   })
@@ -39,7 +39,8 @@ const SEND_ERRORS: Readonly<Record<string, string>> = {
   GIVER_NOT_IN_WORKSPACE: 'That teammate is no longer in your Workspace.',
   CANNOT_ASK_YOURSELF: "You can't ask yourself for Feedback.",
   GIVER_ALREADY_ASKED: 'You have already asked this teammate about this.',
-  TOPIC_TOO_LONG: 'That Topic is too long. Try saying it more briefly.',
+  REQUEST_MESSAGE_TOO_LONG:
+    'That request is too long. Try saying it more briefly.',
   NO_PEOPLE_SELECTED: 'Pick at least one person to share it with.',
   SELECTED_PERSON_NOT_IN_WORKSPACE:
     'Someone you picked to share it with is no longer in your Workspace.',
@@ -55,7 +56,7 @@ const ELSEWHERE: Readonly<Record<string, string>> = {
 const COULD_NOT_SEND = "We couldn't send your request. Please try again.";
 
 /**
- * Asks one teammate for Feedback on a Topic, shared with whoever the Requester chose, then goes
+ * Asks one teammate for Feedback with a Request message, shared with whoever the Requester chose, then goes
  * back to Home's My requests tab. `workspaceId` is the Workspace the page was drawn for, bound
  * where the form is drawn; it must still be the one the person is in, or nothing is sent. The
  * API decides who is asking from the session cookie.
@@ -70,7 +71,7 @@ export async function requestFeedback(
 ): Promise<RequestFeedbackState> {
   const input = RequestFeedbackInput.safeParse({
     giverAccountId: formData.get('giverAccountId'),
-    topic: formData.get('topic'),
+    message: formData.get('message'),
     visibility: formData.get('visibility'),
     selectedAccountIds: formData.getAll('selectedAccountIds'),
   });
@@ -81,7 +82,9 @@ export async function requestFeedback(
         giverAccountId: fieldErrors.giverAccountId
           ? 'Pick who to ask.'
           : undefined,
-        topic: fieldErrors.topic ? 'Add a Topic.' : undefined,
+        message: fieldErrors.message
+          ? 'Write what you would like feedback on.'
+          : undefined,
         selectedAccountIds: fieldErrors.selectedAccountIds
           ? 'Pick at least one person to share it with.'
           : undefined,
@@ -100,7 +103,7 @@ export async function requestFeedback(
           header: { cookie },
         },
         body: {
-          topic: input.data.topic,
+          message: input.data.message,
           giverAccountIds: [input.data.giverAccountId],
           visibility: input.data.visibility,
           // Sent only with Selected people: the API refuses people picked for anything else.

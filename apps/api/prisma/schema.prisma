@@ -196,13 +196,14 @@ enum AskStatus {
   EXPIRED
 }
 
-/// A Member asking other Members for Feedback on a Topic (glossary: Feedback Request).
+/// A Member asking other Members for Feedback with a Request message (glossary: Feedback Request).
 model FeedbackRequest {
   id                 String                          @id
   workspaceId        String
   /// The Account of the Member who asked. They become the Receiver of what it collects.
   requesterAccountId String
-  topic              String
+  /// What the Requester wrote when asking (glossary: Request message).
+  message            String
   /// Who besides the Giver and the Requester reads what it collects. Fixed once sent. The
   /// default only fills rows written before the Requester could choose.
   visibility         Visibility                      @default(ONLY_ME)
@@ -266,13 +267,12 @@ model Feedback {
   /// The Accounts of the Member who wrote it and the Member it is for. No foreign keys.
   giverAccountId    String
   receiverAccountId String
-  /// The Requester's Topic for Requested Feedback, the Giver's own for Offered. Never changes,
-  /// so it is held here rather than read back through the request.
-  topic             String
   /// Who besides the Giver and the Receiver may read it, with the people in selectedPeople.
   /// The Giver's choice for Offered Feedback, the request's copied for Requested. Never changes.
   visibility        Visibility
-  body              String
+  /// What the Giver wrote (glossary: Feedback message). A Requested answer carries only its own,
+  /// never the request's Request message (brain `ADR-0039`, ADR 0054).
+  message           String
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
   selectedPeople    FeedbackSelectedPerson[]
@@ -305,7 +305,7 @@ model FeedbackSelectedPerson {
   @@map("feedback_selected_person")
 }
 
-/// A Workspace Goal a request's Topic names (glossary: Workspace Goal), bound when it was sent and
+/// A Workspace Goal a Request message names (glossary: Workspace Goal), bound when it was sent and
 /// never changed — hiding it later leaves this row. The name is the Admin's spelling then, which
 /// cannot drift: a Workspace Goal is never renamed. No foreign key: Workspace Goals are not
 /// Feedback's (BE_03 R7).
@@ -319,7 +319,7 @@ model FeedbackRequestWorkspaceGoal {
   @@map("feedback_request_workspace_goal")
 }
 
-/// A Member a request's Topic mentions (glossary: Mention), bound when it was sent. The slug and
+/// A Member a Request message mentions (glossary: Mention), bound when it was sent. The slug and
 /// the name they went by are kept as they were then, so a read names them without asking Identity.
 /// Personal data: an Account id and a display name. No foreign key: Accounts are Identity's.
 model FeedbackRequestMention {
@@ -333,7 +333,7 @@ model FeedbackRequestMention {
   @@map("feedback_request_mention")
 }
 
-/// A Workspace Goal one piece of Feedback names, in its Topic or its text (glossary: Workspace
+/// A Workspace Goal one piece of Feedback names in its Feedback message (glossary: Workspace
 /// Goal), bound when it was sent and never changed. An answer has only what its Giver wrote,
 /// never the request's. As on FeedbackRequestWorkspaceGoal, the name cannot drift and there is
 /// no foreign key.

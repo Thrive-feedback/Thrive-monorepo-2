@@ -15,11 +15,11 @@ const GOALS: AutocompleteTrigger = {
   ],
 };
 
-function Topic() {
+function RequestMessage() {
   const [value, setValue] = useState('');
   return (
     <AutocompleteInput
-      aria-label="Topic"
+      aria-label="Request message"
       value={value}
       triggers={[GOALS]}
       onChange={(event) => setValue(event.target.value)}
@@ -30,15 +30,15 @@ function Topic() {
 describe('AutocompleteInput', () => {
   it('is a combobox that says when its suggestions are open', async () => {
     const user = userEvent.setup();
-    render(<Topic />);
-    const topic = screen.getByRole('combobox', { name: 'Topic' });
+    render(<RequestMessage />);
+    const message = screen.getByRole('combobox', { name: 'Request message' });
 
-    expect(topic).toHaveAttribute('aria-expanded', 'false');
+    expect(message).toHaveAttribute('aria-expanded', 'false');
 
-    await user.type(topic, 'The launch #own');
+    await user.type(message, 'The launch #own');
 
-    expect(topic).toHaveAttribute('aria-expanded', 'true');
-    expect(topic).toHaveAttribute(
+    expect(message).toHaveAttribute('aria-expanded', 'true');
+    expect(message).toHaveAttribute(
       'aria-controls',
       screen.getByRole('listbox', { name: 'Workspace Goals' }).id,
     );
@@ -46,12 +46,12 @@ describe('AutocompleteInput', () => {
 
   it('writes the Workspace Goal picked, and colours it', async () => {
     const user = userEvent.setup();
-    const { container } = render(<Topic />);
-    const topic = screen.getByRole('combobox', { name: 'Topic' });
+    const { container } = render(<RequestMessage />);
+    const message = screen.getByRole('combobox', { name: 'Request message' });
 
-    await user.type(topic, 'The launch #OWN{Enter}');
+    await user.type(message, 'The launch #OWN{Enter}');
 
-    expect(topic).toHaveValue('The launch #ownership ');
+    expect(message).toHaveValue('The launch #ownership ');
     const highlights = container.querySelector(
       '[data-slot="tag-highlights"]',
     ) as HTMLElement;
@@ -70,12 +70,12 @@ describe('AutocompleteInput', () => {
           submitted += 1;
         }}
       >
-        <Topic />
+        <RequestMessage />
       </form>,
     );
 
     await user.type(
-      screen.getByRole('combobox', { name: 'Topic' }),
+      screen.getByRole('combobox', { name: 'Request message' }),
       '#own{Enter}',
     );
 
