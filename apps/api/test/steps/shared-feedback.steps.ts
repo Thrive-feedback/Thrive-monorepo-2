@@ -67,11 +67,15 @@ Then(
   },
 );
 
+/** Any list of Feedback the last step read: Shared with me, or Feedback I've given. */
 Then(
   '{person} reads about {string} before {string}',
   function (this: ThriveWorld, _name: string, first: string, second: string) {
+    const items: { readonly topic: string }[] | undefined =
+      this.lastResponse?.body?.items;
+    assert.ok(items, 'No list of Feedback was read.');
     assert.deepEqual(
-      sharedItems(this).map((feedback) => feedback.topic),
+      items.map((feedback) => feedback.topic),
       [first, second],
     );
   },

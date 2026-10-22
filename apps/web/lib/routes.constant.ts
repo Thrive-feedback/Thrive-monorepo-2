@@ -11,6 +11,7 @@ export const HOME_TABS = [
   'my-requests',
   'waiting',
   'received',
+  'given',
 ] as const;
 
 export type HomeTab = (typeof HOME_TABS)[number];

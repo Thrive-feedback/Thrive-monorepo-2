@@ -315,6 +315,22 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     );
   }
 
+  async givenBy(
+    workspaceId: string,
+    giverAccountId: string,
+    page: PageRequest,
+  ): Promise<FeedbackWithPeoplePageRow> {
+    const given = this.feedbackWithVisibility
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          row.giverAccountId === giverAccountId,
+      )
+      .sort(newestFirst)
+      .map(withoutVisibility);
+    return { items: pageOf(given, page), total: given.length };
+  }
+
   async sharedWith(
     workspaceId: string,
     readerAccountId: string,

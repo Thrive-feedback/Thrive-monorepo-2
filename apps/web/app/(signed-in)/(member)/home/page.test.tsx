@@ -149,6 +149,7 @@ describe('Home', () => {
       'My requests',
       'Waiting for me',
       'Feedback for me',
+      'Feedback I’ve given',
     ]);
   });
 

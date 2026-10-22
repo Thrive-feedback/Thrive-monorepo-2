@@ -444,6 +444,13 @@ exports[`Landing > renders the same page 1`] = `
                               >
                                 Feedback for me
                               </button>
+                              <button
+                                aria-pressed="false"
+                                class="inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-transparent text-fg-secondary hover:text-fg-primary"
+                                type="button"
+                              >
+                                Feedback I’ve given
+                              </button>
                             </div>
                           </nav>
                           <div
@@ -1279,6 +1286,13 @@ exports[`Landing > renders the same page 1`] = `
                                         type="button"
                                       >
                                         Feedback for me
+                                      </button>
+                                      <button
+                                        aria-pressed="false"
+                                        class="inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-transparent text-fg-secondary hover:text-fg-primary"
+                                        type="button"
+                                      >
+                                        Feedback I’ve given
                                       </button>
                                     </div>
                                   </nav>

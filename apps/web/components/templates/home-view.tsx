@@ -14,7 +14,13 @@ import type { HomeTab } from '@/lib/routes.constant';
 import styles from './home-view.module.css';
 
 /** The Workspace feed has a column of its own in the split, so the tabs beside it are the person's. */
-const PERSONAL_TABS = ['shared', 'my-requests', 'waiting', 'received'] as const;
+const PERSONAL_TABS = [
+  'shared',
+  'my-requests',
+  'waiting',
+  'received',
+  'given',
+] as const;
 
 export type HomeViewProps = {
   workspaceName: string;

@@ -170,6 +170,15 @@ export interface ReceivedFeedbackListView {
 }
 
 /**
+ * The Feedback one Member wrote, newest first. Every piece names both people, as everywhere a
+ * piece is read by someone other than its Receiver.
+ */
+export interface GivenFeedbackListView {
+  readonly items: readonly FeedbackView[];
+  readonly total: number;
+}
+
+/**
  * The Feedback one Member was selected to read, newest first. Every piece names both people,
  * because the reader is neither of them.
  */
