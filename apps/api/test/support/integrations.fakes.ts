@@ -7,7 +7,11 @@ import {
   InstallHandoff,
   type InstallStart,
 } from '@app/modules/integrations/application/port/install-handoff.port';
-import type { OfferedChannel } from '@app/modules/integrations/application/types/connection.types';
+import { ConnectionQuery } from '@app/modules/integrations/application/query-port/connection.query-port';
+import type {
+  ConnectedSpace,
+  OfferedChannel,
+} from '@app/modules/integrations/application/types/connection.types';
 import {
   ConnectionRepository,
   type ConnectionToStore,
@@ -31,7 +35,9 @@ export class FakeChatInstaller extends ChatInstaller {
   private channels: readonly OfferedChannel[] = [
     { id: 'channel-general', name: 'general' },
   ];
-  private refusal: 'exchange' | 'channels' | null = null;
+  private refusal: 'exchange' | 'channels' | 'leave' | null = null;
+  /** Every space this tool was asked to leave, so a test can see that it was — or was not. */
+  readonly left: string[] = [];
 
   constructor(private readonly name = 'DISCORD') {
     super();
@@ -56,11 +62,12 @@ export class FakeChatInstaller extends ChatInstaller {
   reset(): this {
     this.exchangedCodes.length = 0;
     this.listedSpaces.length = 0;
+    this.left.length = 0;
     this.refusal = null;
     return this;
   }
 
-  refusing(call: 'exchange' | 'channels'): this {
+  refusing(call: 'exchange' | 'channels' | 'leave'): this {
     this.refusal = call;
     return this;
   }
@@ -75,6 +82,13 @@ export class FakeChatInstaller extends ChatInstaller {
       throw new Error('the tool refused the exchange');
     }
     return this.space;
+  }
+
+  async leave(externalWorkspaceId: string): Promise<void> {
+    this.left.push(externalWorkspaceId);
+    if (this.refusal === 'leave') {
+      throw new Error('the tool would not let go');
+    }
   }
 
   async listChannels(
@@ -151,9 +165,40 @@ export class FakeChatPoster extends ChatPoster {
 
 /** What was stored, so a test can assert that nothing was when a step failed. */
 export class FakeConnectionRepository extends ConnectionRepository {
-  readonly saved: ConnectionToStore[] = [];
+  saved: ConnectionToStore[] = [];
 
   async save(connection: ConnectionToStore): Promise<void> {
     this.saved.push(connection);
+  }
+
+  async remove(connection: {
+    readonly workspaceId: string;
+    readonly provider: string;
+  }): Promise<boolean> {
+    const held = this.saved.length;
+    this.saved = this.saved.filter(
+      (stored) =>
+        stored.workspaceId !== connection.workspaceId ||
+        stored.provider !== connection.provider,
+    );
+    return this.saved.length < held;
+  }
+}
+
+/** What a Workspace is connected to, as the test sets it up. */
+export class FakeConnectionQuery extends ConnectionQuery {
+  private space: ConnectedSpace | null = null;
+
+  connectedTo(externalWorkspaceId: string): this {
+    this.space = { externalWorkspaceId };
+    return this;
+  }
+
+  async connectedSpace(): Promise<ConnectedSpace | null> {
+    return this.space;
+  }
+
+  async connectionsOfWorkspace(): Promise<never> {
+    throw new Error('Not the read under test.');
   }
 }

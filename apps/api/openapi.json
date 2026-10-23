@@ -2338,6 +2338,63 @@
           "integrations"
         ]
       }
+    },
+    "/v1/workspaces/{workspaceId}/integrations/{provider}": {
+      "delete": {
+        "operationId": "IntegrationController_disconnectIntegration",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 32,
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The Connection is gone and Thrive has left the space"
+          },
+          "400": {
+            "description": "REQUEST_INVALID or PROVIDER_NOT_SUPPORTED"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "NOT_ALLOWED_TO_MANAGE_INTEGRATIONS"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND or CONNECTION_NOT_FOUND"
+          }
+        },
+        "summary": "Disconnect a chat tool: Thrive leaves the space and forgets the Connection",
+        "tags": [
+          "integrations"
+        ]
+      }
     }
   },
   "info": {

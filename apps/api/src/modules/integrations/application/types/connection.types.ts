@@ -25,6 +25,11 @@ export interface ConnectionPage {
   readonly total: number;
 }
 
+/** What a call to the tool needs to act on a Workspace's Connection. */
+export interface ConnectedSpace {
+  readonly externalWorkspaceId: string;
+}
+
 /** One channel the chat tool offered, for the Admin to choose between. */
 export interface OfferedChannel {
   readonly id: string;

@@ -226,6 +226,34 @@ describe('when Discord does not answer the first time', () => {
   });
 });
 
+describe('leaving a server', () => {
+  it('asks Discord to remove the bot from that server', async () => {
+    const calls = stubDiscord({ status: 204 });
+    const { client } = clientUnderTest();
+
+    await client.leaveGuild(GUILD_ID);
+
+    const call = callAt(calls, 0);
+    expect(call.url).toContain(`/users/@me/guilds/${GUILD_ID}`);
+    expect(call.init.method).toBe('DELETE');
+  });
+
+  it('refuses a server id that is not a Discord id, before it reaches a URL', async () => {
+    const calls = stubDiscord({ status: 204 });
+    const { client } = clientUnderTest();
+
+    await expect(client.leaveGuild('../../users/@me')).rejects.toThrow();
+    expect(calls).toHaveLength(0);
+  });
+
+  it('is content when Discord says the bot was not there anyway', async () => {
+    stubDiscord({ status: 204 });
+    const { client } = clientUnderTest();
+
+    expect(await client.leaveGuild(GUILD_ID)).toBeUndefined();
+  });
+});
+
 describe('posting into a channel', () => {
   it('sends the message as its content, and nothing else', async () => {
     const calls = stubDiscord({ status: 200 });

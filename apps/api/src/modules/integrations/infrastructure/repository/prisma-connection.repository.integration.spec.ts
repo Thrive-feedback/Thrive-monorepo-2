@@ -193,4 +193,79 @@ describe('storing a Workspace’s Connection', () => {
       }),
     ).toBe(2);
   });
+
+  it('deletes the Connection, leaving nothing to reconnect from', async () => {
+    const { workspaceId, accountId } =
+      await aWorkspaceWithAnAdmin('connection-gone');
+    await connectionRepository.save(
+      aConnection({ workspaceId, connectedByAccountId: accountId }),
+    );
+
+    expect(
+      await connectionRepository.remove({ workspaceId, provider: 'DISCORD' }),
+    ).toBe(true);
+
+    const { items, total } = await connectionQuery.connectionsOfWorkspace(
+      workspaceId,
+      PAGE,
+    );
+    expect(items).toEqual([]);
+    expect(total).toBe(0);
+  });
+
+  it('answers that there was nothing to forget, rather than failing', async () => {
+    const { workspaceId } = await aWorkspaceWithAnAdmin('connection-absent');
+
+    expect(
+      await connectionRepository.remove({ workspaceId, provider: 'DISCORD' }),
+    ).toBe(false);
+  });
+
+  it('leaves another Workspace\u2019s Connection where it is', async () => {
+    const acme = await aWorkspaceWithAnAdmin('connection-kept-acme');
+    const globex = await aWorkspaceWithAnAdmin('connection-kept-globex');
+    await connectionRepository.save(
+      aConnection({
+        workspaceId: acme.workspaceId,
+        connectedByAccountId: acme.accountId,
+      }),
+    );
+    await connectionRepository.save(
+      aConnection({
+        workspaceId: globex.workspaceId,
+        connectedByAccountId: globex.accountId,
+      }),
+    );
+
+    await connectionRepository.remove({
+      workspaceId: acme.workspaceId,
+      provider: 'DISCORD',
+    });
+
+    const theirs = await connectionQuery.connectionsOfWorkspace(
+      globex.workspaceId,
+      PAGE,
+    );
+    expect(theirs.total).toBe(1);
+  });
+
+  it('answers the ids a call to the tool needs, and nothing when there is no Connection', async () => {
+    const { workspaceId, accountId } =
+      await aWorkspaceWithAnAdmin('connection-space');
+    await connectionRepository.save(
+      aConnection({
+        workspaceId,
+        connectedByAccountId: accountId,
+        externalWorkspaceId: 'guild-for-leaving',
+      }),
+    );
+
+    expect(
+      await connectionQuery.connectedSpace(workspaceId, 'DISCORD'),
+    ).toEqual({ externalWorkspaceId: 'guild-for-leaving' });
+    await connectionRepository.remove({ workspaceId, provider: 'DISCORD' });
+    expect(
+      await connectionQuery.connectedSpace(workspaceId, 'DISCORD'),
+    ).toBeNull();
+  });
 });
