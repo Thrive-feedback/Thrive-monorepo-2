@@ -9,7 +9,11 @@ vi.mock(
 );
 vi.mock(
   '@/app/(signed-in)/(member)/settings/workspace/_lib/integration-actions.service',
-  () => ({ beginInstall: vi.fn(), chooseChannel: vi.fn() }),
+  () => ({
+    beginInstall: vi.fn(),
+    chooseChannel: vi.fn(),
+    disconnectIntegration: vi.fn(),
+  }),
 );
 
 import type { CurrentMembership } from '@/lib/session/current-account.type';
@@ -49,9 +53,9 @@ describe('IntegrationList', () => {
 
     await renderList();
 
-    expect(
-      screen.getByText('#standups in Acme HQ · connected by Ann · 18 Oct 2026'),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/#standups in Acme HQ/)).toHaveTextContent(
+      '#standups in Acme HQ · connected by Ann · 18 Oct 2026',
+    );
   });
 
   it('says what connecting would do while nothing is connected', async () => {
@@ -74,6 +78,40 @@ describe('IntegrationList', () => {
     expect(
       screen.getByRole('button', { name: 'Connect Discord' }),
     ).toBeInTheDocument();
+  });
+
+  it('tells every Member that disconnecting also stops their own messages', async () => {
+    readConnections.mockResolvedValue([DISCORD]);
+
+    await renderList(MEMBER);
+
+    expect(
+      screen.getByText(
+        /Disconnecting stops this channel hearing about Feedback/,
+      ),
+    ).toHaveTextContent(
+      'stops Thrive messaging anyone who linked their own account',
+    );
+  });
+
+  it('offers an Admin the way to disconnect what is connected', async () => {
+    readConnections.mockResolvedValue([DISCORD]);
+
+    await renderList();
+
+    expect(
+      screen.getByRole('button', { name: 'Disconnect Discord' }),
+    ).toBeInTheDocument();
+  });
+
+  it('offers nothing to disconnect when nothing is connected', async () => {
+    readConnections.mockResolvedValue([]);
+
+    await renderList();
+
+    expect(
+      screen.queryByRole('button', { name: 'Disconnect Discord' }),
+    ).not.toBeInTheDocument();
   });
 
   it('offers an Admin the way to change one that is', async () => {

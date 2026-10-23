@@ -33,6 +33,17 @@ const CHANNEL_ERRORS: Readonly<Record<string, string>> = {
     'That chat tool refused the connection. Press Connect to start again.',
 };
 
+/** What to say when the API refused to disconnect, by its error code. */
+const DISCONNECT_ERRORS: Readonly<Record<string, string>> = {
+  NOT_ALLOWED_TO_MANAGE_INTEGRATIONS:
+    'Only Admins can disconnect a chat tool from this workspace.',
+  CONNECTION_NOT_FOUND:
+    'That chat tool is already disconnected. Reload to see where things stand.',
+};
+
+const COULD_NOT_DISCONNECT =
+  "We couldn't disconnect that chat tool. Please try again in a moment.";
+
 const COULD_NOT_CHOOSE =
   "We couldn't connect that channel. Please try again in a moment.";
 
@@ -41,10 +52,17 @@ const ChannelId = z.string().min(1).max(64);
 
 const Installation = z.string().min(1).max(2048);
 
+/**
+ * What an action answers when it could not do what was asked. The two that send somebody to a
+ * chat tool answer only this, because a success has already navigated away.
+ */
 export type IntegrationActionResult = {
   readonly ok: false;
   readonly message: string;
 };
+
+/** Disconnecting stays on the page, so it says when it worked as well as when it did not. */
+export type DisconnectResult = { readonly ok: true } | IntegrationActionResult;
 
 /**
  * Starts connecting a chat tool: asks the API where to send the Admin, and sends them there.
@@ -149,4 +167,50 @@ export async function chooseChannel(
   }
   revalidatePath(ROUTES.settings.workspace);
   redirect(ROUTES.settings.workspace);
+}
+
+/**
+ * Ends the Workspace's Connection to one chat tool: Thrive leaves the space and forgets it, so
+ * connecting again has to be authorised again. It also, quietly, stops every direct message to
+ * every Member — a tool only lets Thrive message somebody it shares a space with — which is why
+ * the screen says so before it is pressed.
+ *
+ * Answers only when it fails; on success the section is drawn again without that Connection.
+ */
+export async function disconnectIntegration(
+  segment: string,
+): Promise<DisconnectResult> {
+  const provider = providerForSegment(segment);
+  if (!provider) {
+    return { ok: false, message: COULD_NOT_DISCONNECT };
+  }
+  const { membership } = await requireMember();
+  const cookie = (await headers()).get('cookie') ?? undefined;
+  try {
+    await apiClient().DELETE(
+      '/v1/workspaces/{workspaceId}/integrations/{provider}',
+      {
+        params: {
+          path: {
+            workspaceId: membership.workspace.id,
+            provider: provider.value,
+          },
+          header: { cookie },
+        },
+      },
+    );
+  } catch (error) {
+    if (!(error instanceof ApiError)) {
+      throw error;
+    }
+    if (error.code === 'NOT_SIGNED_IN') {
+      redirect(ROUTES.signIn);
+    }
+    return {
+      ok: false,
+      message: DISCONNECT_ERRORS[error.code] ?? COULD_NOT_DISCONNECT,
+    };
+  }
+  revalidatePath(ROUTES.settings.workspace);
+  return { ok: true };
 }
