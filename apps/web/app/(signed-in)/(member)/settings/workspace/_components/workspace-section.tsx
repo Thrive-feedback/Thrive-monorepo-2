@@ -7,6 +7,7 @@ import {
   SettingValues,
   SettingValuesSkeleton,
 } from '../../_components/setting-row';
+import { IntegrationList, IntegrationListSkeleton } from './integration-list';
 import {
   LeaveWorkspaceRow,
   LeaveWorkspaceRowSkeleton,
@@ -18,8 +19,9 @@ const YOUR_ROLE = 'Your Role';
 
 /**
  * The Workspace this device is in: its name and the person's Role in it; Switch Workspace, to
- * open another of the person's or create one; and, last, the way to leave it. Who is in it lives
- * in Settings → Members.
+ * open another of the person's or create one; the chat tools it posts into, which every Member
+ * can see and only an Admin can change; and, last, the way to leave it. Who is in it lives in
+ * Settings → Members.
  */
 export function WorkspaceSection({ session }: { session: MemberAccount }) {
   return (
@@ -35,6 +37,9 @@ export function WorkspaceSection({ session }: { session: MemberAccount }) {
           <WorkspaceSwitcherLoader membership={session.membership} />
         </Suspense>
       </SwitchWorkspaceRow>
+      <Suspense fallback={<IntegrationListSkeleton />}>
+        <IntegrationList membership={session.membership} />
+      </Suspense>
       <Suspense fallback={<LeaveWorkspaceRowSkeleton />}>
         <LeaveWorkspaceRow
           membership={session.membership}
@@ -53,6 +58,7 @@ export function WorkspaceSectionSkeleton() {
       <SwitchWorkspaceRow>
         <SwitchWorkspaceButtonSkeleton />
       </SwitchWorkspaceRow>
+      <IntegrationListSkeleton />
       <LeaveWorkspaceRowSkeleton />
     </div>
   );

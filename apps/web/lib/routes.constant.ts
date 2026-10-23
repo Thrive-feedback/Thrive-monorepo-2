@@ -51,6 +51,13 @@ export const ROUTES = {
     members: '/settings/members',
     /** The colour mode. */
     appearance: '/settings/appearance',
+    /**
+     * Where a chat tool returns an Admin once they have authorised Thrive in it. The API builds
+     * the same address for the tool it sends them to, so the segment here and the one it
+     * registers with that tool have to agree.
+     */
+    workspaceIntegrationCallback: (provider: string) =>
+      `/settings/workspace/integrations/${provider}/callback`,
   },
   invitation: (invitationId: string) => `/invitations/${invitationId}`,
   /** Which of their Workspaces to open, for someone in several whose session is in none. */
