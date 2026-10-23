@@ -23,15 +23,25 @@ export const metadata: Metadata = {
 };
 
 type SignInPageProps = {
-  /** Better Auth sends a failed attempt back here with `?error=<code>`. */
-  searchParams: Promise<{ error?: string | string[] }>;
+  /**
+   * Better Auth sends a failed attempt back here with `?error=<code>`. `next` is the page the
+   * visitor was going to when Thrive asked them to sign in.
+   */
+  searchParams: Promise<{
+    error?: string | string[];
+    next?: string | string[];
+  }>;
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
+  // Someone already signed in goes to Home, as they always have: `next` is for the visitor who
+  // has to sign in on the way, not for anyone who opens this page with a destination on it.
   if (await readSession()) {
     redirect(ROUTES.home);
   }
-  const { error } = SignInSearchParams.parse(await searchParams);
+  const { error, next } = SignInSearchParams.parse(await searchParams);
 
-  return <SignInPrompt didSignInFail={error !== undefined} />;
+  return (
+    <SignInPrompt didSignInFail={error !== undefined} destination={next} />
+  );
 }
