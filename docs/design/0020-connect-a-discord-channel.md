@@ -21,7 +21,7 @@ to message one person (Epic #13, `NO-0001`–`NO-0004`).
 | --- | --- |
 | #199 | an Admin adds the Thrive bot to their Discord server, picks a channel, and sees a test message arrive |
 | #200 | disconnect it, and Thrive leaves the server |
-| #201 | public Feedback and its Topic appear in that channel |
+| #201 | public Feedback appears in that channel — **what it carries is now an open question**, see §13 |
 | #211→#215 | a Member links their own Discord account and is messaged directly (Epic #13) |
 
 **What #199 is really buying.** The Discord calls are small. What this Task pays for and everything
@@ -423,3 +423,30 @@ D12.
 **Still unbuilt at the end of PR 1:** the web (PR 2) and the Discord application itself, which
 `ADR-0035` and `STATE.md` Open decision #3 keep shut until its owner is settled. So AC 2–5 cannot
 be walked in a browser yet; the code and its tests stand on faked providers, as `EmailSender` is.
+
+
+---
+
+## 13. Topic was retired after this was written (2026-10-23)
+
+`ADR-0039` retired **Topic** on 2026-10-22: a Feedback Request now has a **Request message** and a
+piece of Feedback a **Feedback message**, and `feedback.topic` is dropped. #199 is unaffected — it
+posts one test message and names no Feedback at all — and it merged on 2026-10-23.
+
+**#201 is affected, and cannot be built as written.** Both this document and `ADR-0035` §5 describe
+the channel post as *"who gave Feedback to whom, what it was about, and a link"*, where "what it was
+about" was the Topic. There is no longer a short label to carry: what remains is the Feedback
+message, which is the Feedback's own words — and `ADR-0035` §5 deliberately keeps those out of a
+channel that guests and contractors may read.
+
+So the open question for #201, which is a product question and not a code one:
+
+| | |
+| --- | --- |
+| **Who gave Feedback to whom, and a link** | still true, still safe, and on its own may be thin |
+| **The Feedback message** | the words themselves. Against `ADR-0035` §5 and the risk it logged |
+| **The Workspace Goals it names** | a `#goal` is a short public label an Admin wrote — the nearest thing to what Topic did, and new since this design |
+| **Nothing until the Giver chooses** | naming the channel on the Give feedback screen, which `ADR-0035`'s Consequences already names as the way to reverse the audience risk |
+
+Settle it in `ADR-0035`'s own successor, not here. Card #201's title still says Topic and wants the
+same edit.
