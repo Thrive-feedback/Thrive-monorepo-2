@@ -42,6 +42,11 @@ Requester and the people it asks. A channel is read by the whole team, so #201 c
 gave Feedback to whom. A DM has exactly one reader, and that reader is a party — so these messages may
 name who asked and what about. That is the whole reason `ADR-0035` chose a bot over a pasted address.
 
+**Written before Topic was retired.** `ADR-0039` (2026-10-22) replaced a Topic with a **Request
+message** and a **Feedback message**; the port method above takes the Request message where it used
+to take a Topic, and a direct message has one reader who is a party to it, so carrying those words is
+not the question it is for a shared channel (`0020` §13). Nothing else here changes.
+
 **Two things that are not here, deliberately.** Reminders about unanswered Asks (`ADR-0035` §7:
 nothing in Thrive can do something later, and adding a scheduler is bigger than all three messages
 together), and any preference beyond linked/not-linked (`ADR-0035` §6: one switch per Member, so the
@@ -139,7 +144,7 @@ D8), `NOT_LINKED` (not_found, on unlink).
 ### 4.2 Sending one message
 
 ```
-ChatPersonNotifier.askReceived({ workspaceId, workspaceName, accountId, requesterName, topic, askId })
+ChatPersonNotifier.askReceived({ workspaceId, workspaceName, accountId, requesterName, requestMessage, askId })
   1  linkedAccountQuery.forAccount(accountId)       → none? return, nothing logged
   2  workspaceMembership.isActiveMemberOf(...)      → not active? return (D7)
   3  copy.askReceived(...)                          → one message, with ROUTES.homeAsk(askId)
@@ -177,7 +182,7 @@ cases exhaustive rather than overlapping — #215 AC 5.
 
 ```
 Nut asked you for feedback in Thrive Team
-On: how our standups are going                     ← #213
+On: how our standups are going                     ← #213, the Request message, trimmed
 Ploy answered your request in Thrive Team          ← #214
 Nut wrote feedback to you in Thrive Team           ← #215
 ```
