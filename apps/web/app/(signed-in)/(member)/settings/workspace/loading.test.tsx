@@ -10,6 +10,14 @@ vi.mock(
   '@/app/(signed-in)/(member)/settings/_lib/member-deactivation-actions.service',
   () => ({ deactivateMember: vi.fn(), leaveWorkspace: vi.fn() }),
 );
+vi.mock(
+  '@/app/(signed-in)/(member)/settings/workspace/_lib/connections.service',
+  () => ({ readConnections: vi.fn() }),
+);
+vi.mock(
+  '@/app/(signed-in)/(member)/settings/workspace/_lib/integration-actions.service',
+  () => ({ beginInstall: vi.fn(), chooseChannel: vi.fn() }),
+);
 vi.mock('@/lib/workspace/my-workspaces.service', () => ({
   readMyWorkspaces: vi.fn(),
 }));

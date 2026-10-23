@@ -22,6 +22,10 @@ vi.mock('./_components/leave-workspace-row', () => ({
 vi.mock('./_components/workspace-switcher-loader', () => ({
   WorkspaceSwitcherLoader: () => <output>workspace switcher</output>,
 }));
+vi.mock('./_components/integration-list', () => ({
+  IntegrationList: () => <output>chat tools</output>,
+  IntegrationListSkeleton: () => null,
+}));
 
 describe('Workspace', () => {
   it('lets the gate turn away anyone who may not be here', async () => {
@@ -67,5 +71,13 @@ describe('Workspace', () => {
     render(await Workspace());
 
     expect(screen.queryByRole('heading', { name: 'Members' })).toBeNull();
+  });
+
+  it('shows which chat tools the Workspace posts into', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await Workspace());
+
+    expect(screen.getByText('chat tools')).toBeInTheDocument();
   });
 });
