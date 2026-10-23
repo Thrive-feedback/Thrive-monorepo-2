@@ -69,6 +69,20 @@ export class ChannelNotOfferedError extends ApplicationError {
 }
 
 /**
+ * There is no Connection to that chat tool to act on. Said plainly rather than answered as a
+ * success: an Admin who pressed Disconnect twice, or whose teammate got there first, is told what
+ * is so instead of being left to wonder what happened.
+ */
+export class ConnectionNotFoundError extends ApplicationError {
+  readonly code = 'CONNECTION_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super('This Workspace is not connected to that chat tool.');
+  }
+}
+
+/**
  * The test message did not arrive, most often because the bot cannot post in that channel.
  * Nothing is stored in that case, so a Connection that has never worked cannot exist.
  */

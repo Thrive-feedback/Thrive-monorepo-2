@@ -13,6 +13,7 @@ import { ChatInstallerRegistry } from './application/service/chat-installer-regi
 import { BeginInstallUseCase } from './application/use-cases/begin-install.use-case';
 import { ChooseChannelUseCase } from './application/use-cases/choose-channel.use-case';
 import { CompleteInstallUseCase } from './application/use-cases/complete-install.use-case';
+import { DisconnectIntegrationUseCase } from './application/use-cases/disconnect-integration.use-case';
 import { ListConnectionsUseCase } from './application/use-cases/list-connections.use-case';
 import { ConnectionRepository } from './domain/repository/connection-repository.port';
 import { DiscordChatInstaller } from './infrastructure/provider/discord-chat-installer.adapter';
@@ -72,6 +73,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     BeginInstallUseCase,
     CompleteInstallUseCase,
     ChooseChannelUseCase,
+    DisconnectIntegrationUseCase,
     ListConnectionsUseCase,
     WorkspaceMemberGuard,
   ],

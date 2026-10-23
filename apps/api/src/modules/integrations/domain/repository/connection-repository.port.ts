@@ -25,4 +25,14 @@ export abstract class ConnectionRepository {
    * the row's id, so nothing that later names a Connection is invalidated by a reconnection.
    */
   abstract save(connection: ConnectionToStore): Promise<void>;
+
+  /**
+   * Forgets the Workspace's Connection to that tool. Deleted rather than marked unused: what is
+   * stored is an authorisation somebody gave, so connecting again has to be authorised again
+   * (#200). Answers whether there was one to forget.
+   */
+  abstract remove(connection: {
+    readonly workspaceId: string;
+    readonly provider: IntegrationProviderValue;
+  }): Promise<boolean>;
 }

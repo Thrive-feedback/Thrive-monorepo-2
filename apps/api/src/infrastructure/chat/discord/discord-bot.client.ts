@@ -102,6 +102,16 @@ export class DiscordBotClient {
     return channelsOf(answer);
   }
 
+  /**
+   * Leaves the server. Discord answers `204` whether or not the bot was still in it, so a
+   * Workspace that removed the bot by hand disconnects just as cleanly as one that did not.
+   */
+  async leaveGuild(guildId: string): Promise<void> {
+    await this.request(`users/@me/guilds/${asSnowflake(guildId)}`, {
+      method: 'DELETE',
+    });
+  }
+
   async postToChannel(channelId: string, text: string): Promise<void> {
     await this.request(`channels/${asSnowflake(channelId)}/messages`, {
       method: 'POST',

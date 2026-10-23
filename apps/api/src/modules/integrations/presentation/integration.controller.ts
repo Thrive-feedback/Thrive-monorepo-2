@@ -3,6 +3,7 @@ import { COOKIE_HEADER } from '@app/shared/presentation/dto/cookie-header.dto';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -27,6 +28,7 @@ import { ZodResponse } from 'nestjs-zod';
 import { BeginInstallUseCase } from '../application/use-cases/begin-install.use-case';
 import { ChooseChannelUseCase } from '../application/use-cases/choose-channel.use-case';
 import { CompleteInstallUseCase } from '../application/use-cases/complete-install.use-case';
+import { DisconnectIntegrationUseCase } from '../application/use-cases/disconnect-integration.use-case';
 import { ListConnectionsUseCase } from '../application/use-cases/list-connections.use-case';
 import {
   BeginInstallResponseDto,
@@ -65,6 +67,7 @@ export class IntegrationController {
     private readonly completeInstallUseCase: CompleteInstallUseCase,
     private readonly chooseChannelUseCase: ChooseChannelUseCase,
     private readonly listConnectionsUseCase: ListConnectionsUseCase,
+    private readonly disconnectIntegrationUseCase: DisconnectIntegrationUseCase,
   ) {}
 
   @Get()
@@ -202,6 +205,35 @@ export class IntegrationController {
       isAdmin: access.isAdmin,
       installation: body.installation,
       channelId: body.channelId,
+    });
+  }
+
+  @Delete(':provider')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Disconnect a chat tool: Thrive leaves the space and forgets the Connection',
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ApiNoContentResponse({
+    description: 'The Connection is gone and Thrive has left the space',
+  })
+  @ApiBadRequestResponse({
+    description: 'REQUEST_INVALID or PROVIDER_NOT_SUPPORTED',
+  })
+  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
+  @ApiForbiddenResponse({ description: 'NOT_ALLOWED_TO_MANAGE_INTEGRATIONS' })
+  @ApiNotFoundResponse({
+    description: 'WORKSPACE_NOT_FOUND or CONNECTION_NOT_FOUND',
+  })
+  async disconnectIntegration(
+    @CurrentWorkspaceAccess() access: WorkspaceAccess,
+    @Param() params: IntegrationPathParamsDto,
+  ): Promise<void> {
+    await this.disconnectIntegrationUseCase.execute({
+      workspaceId: access.workspaceId,
+      provider: params.provider,
+      isAdmin: access.isAdmin,
     });
   }
 }

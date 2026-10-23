@@ -50,6 +50,38 @@ Feature: Connecting a chat tool
     And Ann's Workspace has connected nothing
 
   @api
+  Scenario: An Admin disconnects, and Thrive leaves the server
+    Given Ann has connected Discord and chosen the "general" channel
+    When Ann disconnects Discord
+    Then Thrive has left the Discord server
+    And Ann's Workspace has connected nothing
+
+  @api
+  Scenario: Disconnecting forgets the Connection, so connecting again starts over
+    Given Ann has connected Discord and chosen the "general" channel
+    And Ann has disconnected Discord
+    When Ann looks at what Ann's Workspace has connected
+    Then Ann's Workspace has connected nothing
+
+  @api
+  Scenario: The Connection goes even when Discord will not let Thrive leave
+    Given Ann has connected Discord and chosen the "general" channel
+    And Discord will not let Thrive leave
+    When Ann disconnects Discord
+    Then Ann's Workspace has connected nothing
+
+  @api
+  Scenario: A Member who is not an Admin cannot disconnect
+    Given Ann has connected Discord and chosen the "general" channel
+    When Ben disconnects Discord from Ann's Workspace
+    Then Ben is told they may not manage Integrations
+
+  @api
+  Scenario: Disconnecting when nothing is connected says so
+    When Ann disconnects Discord
+    Then Ann is told nothing is connected
+
+  @api
   Scenario: A channel the bot cannot post in connects nothing
     Given Discord will not let Thrive post
     When Ann connects Discord and chooses the "standups" channel

@@ -64,6 +64,10 @@ export class DiscordChatInstaller extends ChatInstaller {
     return this.discordBotClient.listTextChannels(externalWorkspaceId);
   }
 
+  async leave(externalWorkspaceId: string): Promise<void> {
+    await this.discordBotClient.leaveGuild(externalWorkspaceId);
+  }
+
   /**
    * Discord checks this against the application's registered redirect, and checks it again on
    * the exchange, so both calls build it from the same place.

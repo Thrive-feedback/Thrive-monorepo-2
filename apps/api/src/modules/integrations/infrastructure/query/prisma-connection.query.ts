@@ -2,9 +2,11 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { Injectable } from '@nestjs/common';
 import { ConnectionQuery } from '../../application/query-port/connection.query-port';
 import type {
+  ConnectedSpace,
   ConnectionPage,
   PageRequest,
 } from '../../application/types/connection.types';
+import type { IntegrationProviderValue } from '../../domain/value-object/integration-provider.vo';
 import { toConnectionView } from '../mapper/connection.mapper';
 
 /** Reads through `client`, so a read inside a unit of work joins its transaction. */
@@ -40,5 +42,21 @@ export class PrismaConnectionQuery extends ConnectionQuery {
       }),
     ]);
     return { items: connections.map(toConnectionView), total };
+  }
+
+  async connectedSpace(
+    workspaceId: string,
+    provider: IntegrationProviderValue,
+  ): Promise<ConnectedSpace | null> {
+    const connection =
+      await this.prismaTransactionContext.client.integrationConnection.findUnique(
+        {
+          where: { workspaceId_provider: { workspaceId, provider } },
+          select: { externalWorkspaceId: true },
+        },
+      );
+    return (
+      connection && { externalWorkspaceId: connection.externalWorkspaceId }
+    );
   }
 }

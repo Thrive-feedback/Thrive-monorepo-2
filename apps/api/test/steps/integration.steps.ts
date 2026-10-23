@@ -52,6 +52,61 @@ Given('Discord will not let Thrive post', () => {
   harness().chatPoster.unreachableChannel();
 });
 
+Given('Discord will not let Thrive leave', () => {
+  harness().chatInstaller.refusing('leave');
+});
+
+/** Disconnecting is one call, as the screen's button makes it. */
+function disconnect(
+  world: ThriveWorld,
+  name: string,
+  workspaceId: string,
+): Promise<ApiResponse> {
+  return world.as(
+    name,
+    'DELETE',
+    `/v1/workspaces/${workspaceId}/integrations/DISCORD`,
+  );
+}
+
+Given(
+  '{person} has disconnected Discord',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await disconnect(this, name, this.workspaceOf(name)),
+      `${name} disconnecting Discord`,
+    );
+  },
+);
+
+When(
+  '{person} disconnects Discord',
+  async function (this: ThriveWorld, name: string) {
+    await disconnect(this, name, this.workspaceOf(name));
+  },
+);
+
+When(
+  "{person} disconnects Discord from {person}'s Workspace",
+  async function (this: ThriveWorld, name: string, owner: string) {
+    await disconnect(this, name, this.workspaceOf(owner));
+  },
+);
+
+Then('Thrive has left the Discord server', () => {
+  assert.ok(
+    harness().chatInstaller.left.length > 0,
+    'Thrive was never asked to leave the server.',
+  );
+});
+
+Then(
+  '{person} is told nothing is connected',
+  function (this: ThriveWorld, _name: string) {
+    this.refusedWith('CONNECTION_NOT_FOUND');
+  },
+);
+
 Given(
   '{person} has connected Discord and chosen the {string} channel',
   async function (this: ThriveWorld, name: string, channelName: string) {

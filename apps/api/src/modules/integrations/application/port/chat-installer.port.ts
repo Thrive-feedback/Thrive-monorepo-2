@@ -37,4 +37,11 @@ export abstract class ChatInstaller {
   abstract listChannels(
     externalWorkspaceId: string,
   ): Promise<readonly OfferedChannel[]>;
+
+  /**
+   * Leaves the space, so Thrive is not sitting in a server it no longer serves (#200). Rejects
+   * when the tool refuses; the caller decides what that means, and forgetting the Connection is
+   * not conditional on the tool agreeing.
+   */
+  abstract leave(externalWorkspaceId: string): Promise<void>;
 }
