@@ -14,9 +14,14 @@ import { signIn } from '@/lib/session/session-actions.service';
 export type SignInPromptProps = {
   /** Google or the API turned the last attempt back, and the visitor should know. */
   didSignInFail?: boolean;
+  /** The page the visitor was going to, or `null` to land them where they belong. */
+  destination?: string | null;
 };
 
-export function SignInPrompt({ didSignInFail = false }: SignInPromptProps) {
+export function SignInPrompt({
+  didSignInFail = false,
+  destination = null,
+}: SignInPromptProps) {
   return (
     <div className="m-auto flex w-full max-w-2xl flex-col items-center gap-8 text-center">
       <div className="flex flex-col items-center">
@@ -35,7 +40,10 @@ export function SignInPrompt({ didSignInFail = false }: SignInPromptProps) {
           together.
         </Text>
       </div>
-      <form action={signIn} className="w-full max-w-110">
+      <form
+        action={signIn.bind(null, destination)}
+        className="w-full max-w-110"
+      >
         {/* Google's own mark, unmodified, as their brand guidelines require. */}
         <Button
           type="submit"

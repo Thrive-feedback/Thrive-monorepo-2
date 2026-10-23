@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { server, TEST_API_BASE_URL } from '@/lib/test/msw-server';
 
 const requestHeaders = new Headers();
-const cookieStore = { set: vi.fn() };
+const cookieStore = { set: vi.fn(), delete: vi.fn() };
 
 vi.stubEnv('API_BASE_URL', TEST_API_BASE_URL);
 vi.mock('server-only', () => ({}));
@@ -27,9 +27,21 @@ const { refreshSession, signIn, signOut } = await import(
   './session-actions.service'
 );
 
+function answerGoogle() {
+  server.use(
+    http.post(`${TEST_API_BASE_URL}/v1/sessions/google`, () =>
+      HttpResponse.json({
+        url: 'https://accounts.google.com/o/oauth2/v2/auth?state=s1',
+      }),
+    ),
+  );
+}
+
 describe('session actions', () => {
   beforeEach(() => {
     requestHeaders.delete('cookie');
+    cookieStore.set.mockClear();
+    cookieStore.delete.mockClear();
   });
 
   it('signing in hands the browser the state cookie, then sends it to Google', async () => {
@@ -52,7 +64,7 @@ describe('session actions', () => {
       ),
     );
 
-    await expect(signIn()).rejects.toThrow(
+    await expect(signIn(null)).rejects.toThrow(
       'redirect:https://accounts.google.com/o/oauth2/v2/auth?state=s1',
     );
     expect(cookieStore.set).toHaveBeenCalledWith('thrive.state', 's1.sig+', {
@@ -63,6 +75,58 @@ describe('session actions', () => {
     });
     // No Invitation: Google sends the person back to where they usually land.
     expect(bodies).toEqual([{}]);
+  });
+
+  it('signing in from a link holds on to the page it pointed at', async () => {
+    answerGoogle();
+
+    await expect(
+      signIn('/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001'),
+    ).rejects.toThrow('redirect:https://accounts.google.com');
+
+    expect(cookieStore.set).toHaveBeenCalledWith(
+      'thrive.sign_in_destination',
+      '/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001',
+      expect.objectContaining({ httpOnly: true, sameSite: 'lax' }),
+    );
+  });
+
+  it.each([
+    'https://evil.test/phish',
+    '//evil.test',
+    '/\\evil.test',
+    '/..//evil.test',
+    '/home?signedIn=1',
+  ])(
+    'signing in with %j for a destination holds on to nothing',
+    async (destination) => {
+      answerGoogle();
+
+      await expect(signIn(destination)).rejects.toThrow(
+        'redirect:https://accounts.google.com',
+      );
+
+      expect(cookieStore.set).not.toHaveBeenCalledWith(
+        'thrive.sign_in_destination',
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(cookieStore.delete).toHaveBeenCalledWith(
+        'thrive.sign_in_destination',
+      );
+    },
+  );
+
+  it('signing in from the landing page drops what an abandoned attempt left behind', async () => {
+    answerGoogle();
+
+    await expect(signIn(null)).rejects.toThrow(
+      'redirect:https://accounts.google.com',
+    );
+
+    expect(cookieStore.delete).toHaveBeenCalledWith(
+      'thrive.sign_in_destination',
+    );
   });
 
   it('signing out ends the session, clears the cookie and returns to sign-in', async () => {

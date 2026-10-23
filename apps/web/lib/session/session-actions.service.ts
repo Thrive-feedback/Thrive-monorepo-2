@@ -6,13 +6,30 @@ import { apiClient } from '@/lib/api-client.service';
 import { ROUTES } from '@/lib/routes.constant';
 import { forwardCookies } from './forward-cookies.service';
 import { startGoogleSignIn } from './google-sign-in.service';
+import { toSignInDestination } from './sign-in-destination.constant';
+import {
+  forgetSignInDestination,
+  rememberSignInDestination,
+} from './sign-in-destination.service';
 
 /**
  * Only the actions live here: every export of a `'use server'` file can be called from
  * the browser, so nothing that reads data belongs beside them.
  */
 
-export async function signIn(): Promise<void> {
+/**
+ * Sends the visitor to Google, remembering the page they were going to so the way back can land
+ * them there. The destination is checked here as well as where it was read: this is an endpoint
+ * the browser can call with anything. Nothing to follow forgets whatever an abandoned attempt
+ * left behind, so signing in from the landing page lands where it always has.
+ */
+export async function signIn(destination: string | null): Promise<void> {
+  const safe = toSignInDestination(destination);
+  if (safe === null) {
+    await forgetSignInDestination();
+  } else {
+    await rememberSignInDestination(safe);
+  }
   await startGoogleSignIn(null);
 }
 
