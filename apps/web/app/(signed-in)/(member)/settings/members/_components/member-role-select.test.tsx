@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MemberRoleActionResult } from '@/app/(signed-in)/(member)/settings/members/_lib/member-role-actions.service';
@@ -120,9 +120,13 @@ describe('MemberRoleSelect', () => {
     expect(toast.error).toHaveBeenCalledWith(
       'Make someone else an Admin first.',
     );
-    expect(
-      screen.getByRole('combobox', { name: "Ben's Role" }),
-    ).toHaveTextContent('Admin');
+    // The Role shown while the change was in flight is React's to put back, and it does so in a
+    // later paint than the refusal: reading it straight after the toast catches the old frame.
+    await waitFor(() =>
+      expect(
+        screen.getByRole('combobox', { name: "Ben's Role" }),
+      ).toHaveTextContent('Admin'),
+    );
   });
 
   it('asks before an Admin makes themselves a Member', async () => {
