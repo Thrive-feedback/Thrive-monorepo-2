@@ -19,6 +19,8 @@ export const ROUTES = {
   landing: '/',
   signIn: '/signin',
   home: '/home',
+  /** The new Home, Feedback written as a letter, built here until it replaces `home`. */
+  home2: '/home-2',
   /** One tab of Home's feed. `workspace` is the tab Home opens on, so it needs no query. */
   homeTab: (tab: HomeTab) =>
     tab === HOME_TABS[0] ? '/home' : `/home?tab=${tab}`,

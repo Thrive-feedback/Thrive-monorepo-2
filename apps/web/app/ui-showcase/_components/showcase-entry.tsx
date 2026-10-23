@@ -1,4 +1,5 @@
 import { Text } from '@/components/atoms/text';
+import { cn } from '@/lib/cn.util';
 import { CodeBlock } from './code-block';
 import { type AtomicLevel, LevelBadge } from './level-badge';
 import { type PropRow, PropsTable } from './props-table';
@@ -109,13 +110,25 @@ export function ShowcaseEntry({
 export type StateCellProps = {
   label: string;
   hint?: string;
+  /** Takes the whole row, for a component too big to show a third of the width. */
+  wide?: boolean;
   children: React.ReactNode;
 };
 
 /** One state, labelled. `hint` says how to reach a state that cannot be shown standing still. */
-export function StateCell({ label, hint, children }: StateCellProps) {
+export function StateCell({
+  label,
+  hint,
+  wide = false,
+  children,
+}: StateCellProps) {
   return (
-    <figure className="flex flex-col overflow-hidden rounded-surface border border-border-default">
+    <figure
+      className={cn(
+        'flex flex-col overflow-hidden rounded-surface border border-border-default',
+        wide && 'col-span-full',
+      )}
+    >
       <div className="flex min-h-24 flex-1 flex-wrap items-center justify-center gap-3 p-4">
         {children}
       </div>

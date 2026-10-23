@@ -1,0 +1,111 @@
+/*
+ * The letter is one sheet with two faces. Both faces sit in the same grid cell, back to back:
+ * the back is turned half a revolution in advance, each face hides its back side, and the sheet
+ * turns as a whole, so whichever face points at the reader is the one shown. Perspective,
+ * preserved 3D and a hidden back side have no utility.
+ *
+ * Without motion the sheet still turns, only instantly.
+ */
+.stage {
+  perspective: calc(var(--space-unit) * 500);
+}
+
+.sheet {
+  transform-style: preserve-3d;
+}
+
+.turned {
+  transform: rotateY(180deg);
+}
+
+.face {
+  backface-visibility: hidden;
+}
+
+.back {
+  transform: rotateY(180deg);
+}
+
+/*
+ * Old writing paper: a cream wash over the raised surface, a fine grid of dots, and a deep shadow
+ * so the sheet lifts off the page. The tokens have no paper tone; the cream is the warning
+ * surface, the nearest warm tint, thinned. Two layered gradients and a doubled shadow have no
+ * utility.
+ */
+.paper {
+  background-color: var(--surface-raised);
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in oklch, var(--border-muted) 35%, transparent)
+        calc(var(--space-unit) * 0.25),
+      transparent calc(var(--space-unit) * 0.375)
+    ),
+    linear-gradient(
+      color-mix(in oklch, var(--status-warning-surface-hover) 60%, transparent)
+        0 0
+    );
+  background-size:
+    calc(var(--space-unit) * 3) calc(var(--space-unit) * 3),
+    auto;
+  box-shadow: var(--elevation-high), var(--elevation-high);
+}
+
+/*
+ * Writing paper: one hairline at the foot of every line of body text, spaced by the body type's
+ * own line height, so what is written sits on the lines at every breakpoint. `local` makes the
+ * lines scroll with the text inside a field.
+ */
+.ruled {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(var(--type-body-1-leading) - 1px),
+    var(--border-muted) calc(var(--type-body-1-leading) - 1px)
+      var(--type-body-1-leading)
+  );
+  background-attachment: local;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    translate: 0 calc(var(--space-unit) * 2);
+  }
+}
+
+/*
+ * A refusal to turn over: the letter shakes side to side, one swing per step of the enter motion,
+ * three times. Repeating the step stands in for a duration the tokens do not have.
+ */
+@keyframes shake {
+  25% {
+    translate: calc(var(--space-unit) * -2) 0;
+  }
+
+  75% {
+    translate: calc(var(--space-unit) * 2) 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shake {
+    animation: shake var(--motion-enter) 3;
+  }
+
+  /*
+   * The tokens have no motion slow enough for a sheet turning over, and the enter step reads as
+   * a snap. This value is the letter's own, a request to design for a turn motion.
+   */
+  .sheet {
+    transition: transform 600ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /*
+   * `backwards`, not `both`: a fill that outlives the animation keeps the writing on a layer of
+   * its own, and Chromium stops repainting that layer inside a face with a hidden back side, so
+   * what is typed never shows.
+   */
+  .reveal {
+    animation: reveal var(--motion-enter) backwards;
+  }
+}
