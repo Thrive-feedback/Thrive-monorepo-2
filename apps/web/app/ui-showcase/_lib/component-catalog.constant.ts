@@ -55,6 +55,10 @@ import {
   LabelPreview,
 } from '@/app/ui-showcase/_components/entries/label-entry';
 import {
+  LetterEntry,
+  LetterPreview,
+} from '@/app/ui-showcase/_components/entries/letter-entry';
+import {
   LinkEntry,
   LinkPreview,
 } from '@/app/ui-showcase/_components/entries/link-entry';
@@ -150,6 +154,13 @@ export const ATOMIC_LEVELS = [
     folder: 'components/molecules/',
     description:
       'Arrange atoms into one job, and add nothing but their arrangement.',
+  },
+  {
+    level: 'organism',
+    title: 'Organisms',
+    folder: 'components/organisms/',
+    description:
+      'Name a domain concept, and may read data and decide business rules.',
   },
 ] as const;
 
@@ -382,5 +393,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'molecule',
     Preview: PhotoAvatarPreview,
     Entry: PhotoAvatarEntry,
+  },
+  {
+    // Not `letter`: that address is the letter's first look, a page of its own.
+    slug: 'letter-sheet',
+    name: 'Letter',
+    level: 'organism',
+    Preview: LetterPreview,
+    Entry: LetterEntry,
   },
 ];

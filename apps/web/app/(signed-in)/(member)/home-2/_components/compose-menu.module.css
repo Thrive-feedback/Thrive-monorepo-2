@@ -1,0 +1,43 @@
+/*
+ * "+" turns an eighth of a revolution into a ×, which closes the menu, and back again. Rotating
+ * an icon by its trigger's state has no utility.
+ */
+.plus[data-state='open'] svg {
+  rotate: 45deg;
+}
+
+/*
+ * The menu grows out of the corner of "+" it opens from, which Radix names in a custom property,
+ * and shrinks back into it.
+ */
+.menu {
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    scale: 0.9;
+  }
+}
+
+@keyframes menu-out {
+  to {
+    opacity: 0;
+    scale: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .plus svg {
+    transition: rotate var(--motion-enter);
+  }
+
+  .menu[data-state='open'] {
+    animation: menu-in var(--motion-enter);
+  }
+
+  .menu[data-state='closed'] {
+    animation: menu-out var(--motion-exit) forwards;
+  }
+}

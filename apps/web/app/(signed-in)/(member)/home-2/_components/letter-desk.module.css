@@ -1,0 +1,14 @@
+/* Sending: the letter rises off the page and fades, as if posted. */
+@keyframes send-away {
+  to {
+    opacity: 0;
+    translate: 0 calc(var(--space-unit) * -24);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The letter's own timing, like its turn: the tokens have nothing this long. */
+  .sendAway {
+    animation: send-away 600ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+}
