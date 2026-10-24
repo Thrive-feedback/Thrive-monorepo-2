@@ -54,3 +54,34 @@ export class NotLinkedError extends ApplicationError {
     super('You have not linked an account in that chat tool.');
   }
 }
+
+/**
+ * The caller is not a Member of the Workspace in the path — the same answer Workspace gives,
+ * under the same code, so the two are indistinguishable to a caller. Declared here rather than
+ * imported: Workspace publishes whether somebody is a Member, not the code that refuses them.
+ */
+export class WorkspaceNotFoundError extends ApplicationError {
+  readonly code = 'WORKSPACE_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super('No Workspace with this id has the caller as a Member.');
+  }
+}
+
+/**
+ * There is no Notification of the caller's with that id here — because there never was one, or
+ * because it is somebody else's.
+ *
+ * The two are deliberately one answer. Telling them apart would let anyone walk a list of ids
+ * and learn which of them name a Notification a teammate was sent, which is the whole of what a
+ * Notification reveals: that a named person was asked, answered or written to.
+ */
+export class NotificationNotFoundError extends ApplicationError {
+  readonly code = 'NOTIFICATION_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super('You have no notification with this id in this Workspace.');
+  }
+}

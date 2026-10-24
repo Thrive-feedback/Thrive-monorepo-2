@@ -13,3 +13,17 @@ export class ProviderNotSupportedError extends DomainError {
     super('Thrive does not message people through that chat tool.');
   }
 }
+
+/**
+ * A stored Notification names a type this release does not know. It can only be a row written by
+ * a later release and read back by an older one, so it is refused where it is read rather than
+ * drawn as a type the bell has no sentence for.
+ */
+export class NotificationTypeNotSupportedError extends DomainError {
+  readonly code = 'NOTIFICATION_TYPE_NOT_SUPPORTED';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('Thrive does not tell people about that kind of thing.');
+  }
+}

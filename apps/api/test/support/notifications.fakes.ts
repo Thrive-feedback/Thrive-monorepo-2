@@ -18,11 +18,22 @@ import {
   LinkedAccountQuery,
   type ReachableAccount,
 } from '@app/modules/notifications/application/query-port/linked-account.query-port';
+import { NotificationQuery } from '@app/modules/notifications/application/query-port/notification.query-port';
 import type { LinkedAccountView } from '@app/modules/notifications/application/types/linked-account.types';
+import type {
+  NotificationRow,
+  NotificationRowPage,
+  PageRequest,
+} from '@app/modules/notifications/application/types/notification.types';
 import {
   LinkedAccountRepository,
   type LinkedAccountToStore,
 } from '@app/modules/notifications/domain/repository/linked-account-repository.port';
+import {
+  type NotificationOfRecipient,
+  NotificationRepository,
+  type NotificationToRecord,
+} from '@app/modules/notifications/domain/repository/notification-repository.port';
 import { WorkspaceNamePort } from '@app/modules/workspace';
 
 /**
@@ -312,5 +323,171 @@ export class FakeProfileNamePort extends ProfileNamePort {
 
   async displayNameOf(accountId: string): Promise<string | null> {
     return this.names.get(accountId) ?? null;
+  }
+}
+
+/** One stored Notification, with any field the test cares about overridden. */
+export function aNotificationRecord(
+  overrides: Partial<NotificationToRecord> = {},
+): NotificationToRecord {
+  return {
+    id: '0199a0f0-0000-7000-8000-00000000n001',
+    workspaceId: '0199a0f0-0000-7000-8000-0000000000w1',
+    recipientAccountId: 'account-ann',
+    type: 'ASK_RECEIVED',
+    actorAccountId: 'account-ben',
+    subjectId: '0199a0f0-0000-7000-8000-0000000000s1',
+    ...overrides,
+  };
+}
+
+/** One Notification as a bell line reads it, with any field the test cares about overridden. */
+export function aNotificationRow(
+  overrides: Partial<NotificationRow> = {},
+): NotificationRow {
+  return {
+    id: '0199a0f0-0000-7000-8000-00000000n001',
+    type: 'ASK_RECEIVED',
+    actorAccountId: 'account-ben',
+    subjectId: '0199a0f0-0000-7000-8000-0000000000s1',
+    createdAt: new Date('2026-10-24T03:00:00.000Z'),
+    readAt: null,
+    ...overrides,
+  };
+}
+
+/**
+ * Notifications held in memory, with the idempotency the unique index enforces and the same
+ * matching rules: the recipient and the Workspace are part of every match, never a check run
+ * after a row has been found.
+ */
+export class FakeNotificationRepository extends NotificationRepository {
+  readonly stored: {
+    row: NotificationToRecord;
+    readAt: Date | null;
+  }[] = [];
+
+  /** One entry per call, holding the batch: how a test sees a fan-out done row by row. */
+  readonly recordCalls: (readonly NotificationToRecord[])[] = [];
+
+  holding(...rows: NotificationToRecord[]): this {
+    this.stored.push(...rows.map((row) => ({ row, readAt: null })));
+    return this;
+  }
+
+  private refusing = false;
+
+  /** For proving the bell failing never silences the chat message, and vice versa. */
+  refusingToRecord(): this {
+    this.refusing = true;
+    return this;
+  }
+
+  async recordAll(
+    notifications: readonly NotificationToRecord[],
+  ): Promise<void> {
+    this.recordCalls.push([...notifications]);
+    if (this.refusing) {
+      throw new Error('The bell could not be written.');
+    }
+    for (const row of notifications) {
+      const duplicate = this.stored.some(
+        (held) =>
+          held.row.recipientAccountId === row.recipientAccountId &&
+          held.row.type === row.type &&
+          held.row.subjectId === row.subjectId,
+      );
+      if (!duplicate) {
+        this.stored.push({ row, readAt: null });
+      }
+    }
+  }
+
+  async markRead(
+    notification: NotificationOfRecipient,
+    readAt: Date,
+  ): Promise<boolean> {
+    const held = this.stored.find(
+      (candidate) =>
+        candidate.row.id === notification.notificationId &&
+        candidate.row.workspaceId === notification.workspaceId &&
+        candidate.row.recipientAccountId === notification.recipientAccountId,
+    );
+    if (!held) {
+      return false;
+    }
+    held.readAt = readAt;
+    return true;
+  }
+
+  async markAllRead(
+    recipient: {
+      readonly workspaceId: string;
+      readonly recipientAccountId: string;
+    },
+    readAt: Date,
+  ): Promise<void> {
+    for (const held of this.stored) {
+      if (
+        held.readAt === null &&
+        held.row.workspaceId === recipient.workspaceId &&
+        held.row.recipientAccountId === recipient.recipientAccountId
+      ) {
+        held.readAt = readAt;
+      }
+    }
+  }
+}
+
+/** Answers the rows it was handed, for the recipient and Workspace that ask. */
+export class FakeNotificationQuery extends NotificationQuery {
+  readonly rows: {
+    workspaceId: string;
+    recipientAccountId: string;
+    row: NotificationRow;
+  }[] = [];
+
+  with(
+    workspaceId: string,
+    recipientAccountId: string,
+    ...rows: NotificationRow[]
+  ): this {
+    this.rows.push(
+      ...rows.map((row) => ({ workspaceId, recipientAccountId, row })),
+    );
+    return this;
+  }
+
+  async forRecipient(
+    workspaceId: string,
+    recipientAccountId: string,
+    page: PageRequest,
+  ): Promise<NotificationRowPage> {
+    const mine = this.rows
+      .filter(
+        (held) =>
+          held.workspaceId === workspaceId &&
+          held.recipientAccountId === recipientAccountId,
+      )
+      .map((held) => held.row);
+    return {
+      items: mine.slice(
+        (page.page - 1) * page.pageSize,
+        page.page * page.pageSize,
+      ),
+      total: mine.length,
+    };
+  }
+
+  async unreadCountFor(
+    workspaceId: string,
+    recipientAccountId: string,
+  ): Promise<number> {
+    return this.rows.filter(
+      (held) =>
+        held.workspaceId === workspaceId &&
+        held.recipientAccountId === recipientAccountId &&
+        held.row.readAt === null,
+    ).length;
   }
 }

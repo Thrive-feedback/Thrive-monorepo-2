@@ -455,3 +455,38 @@ model LinkedAccount {
   @@unique([provider, externalTeamId, externalUserId])
   @@map("linked_account")
 }
+
+/// One thing one Member is told about, inside Thrive (glossary: Notification). It is a pointer,
+/// never a copy: it names who did something and which Ask, Feedback Request or Feedback it
+/// concerns, and carries none of the words — following it, behind a sign-in, is how those are
+/// read (design 0022 D3).
+///
+/// Written after the thing it is about has committed, in this module's own transaction: a
+/// cross-module transaction is forbidden, so a crash in between loses it. That is accepted and
+/// is the gap a transactional outbox would close (design 0022 D5).
+model Notification {
+  id                 String    @id
+  /// The Workspace this is about. A Member of several is shown this one's only. No foreign key:
+  /// Workspaces are Workspace's (BE_03 R7), as on IntegrationConnection.
+  workspaceId        String
+  /// Who is being told. No foreign key: Accounts are Identity's.
+  recipientAccountId String
+  /// ASK_RECEIVED, ASK_ANSWERED, FEEDBACK_RECEIVED or FEEDBACK_SHARED. Text rather than a
+  /// database enum, as every other value this application keys a registry or a copy map by is.
+  type               String
+  /// Who did the thing. Never the recipient — nobody is told about their own action.
+  actorAccountId     String
+  /// The Ask, Feedback Request or Feedback it names. Which of the three it is follows from
+  /// `type`, each of which has exactly one kind of subject, so a second column would hold a
+  /// value derivable from the first (design 0022 D4). No foreign key: they are Feedback's.
+  subjectId          String
+  /// Null until the Member opens it or marks everything read. The unread count counts these.
+  readAt             DateTime?
+  createdAt          DateTime  @default(now())
+
+  /// One line per person per thing: a retried or double-submitted write cannot make two.
+  @@unique([recipientAccountId, type, subjectId])
+  /// The unread count, which runs on every poll of the bell.
+  @@index([recipientAccountId, workspaceId, readAt])
+  @@map("notification")
+}
