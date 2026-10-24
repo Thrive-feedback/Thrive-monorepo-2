@@ -21,6 +21,10 @@ Then(
   "{person} is told the session is {person}'s",
   function (this: ThriveWorld, _asker: string, owner: string) {
     assert.equal(
+      this.lastResponse?.body?.account?.accountId,
+      this.person(owner).accountId,
+    );
+    assert.equal(
       this.lastResponse?.body?.account?.email,
       this.person(owner).email,
     );

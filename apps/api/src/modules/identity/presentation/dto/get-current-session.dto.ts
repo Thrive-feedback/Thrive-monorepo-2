@@ -8,6 +8,8 @@ const profileSchema = z.object({
 });
 
 const currentAccountSchema = z.object({
+  /** Who the caller is, as every other route names a person. Tells "me" apart in a list of Members. */
+  accountId: z.uuid(),
   email: z.email(),
   /** The name the sign-in provider gave, which pre-fills "Introduce yourself". */
   name: z.string(),

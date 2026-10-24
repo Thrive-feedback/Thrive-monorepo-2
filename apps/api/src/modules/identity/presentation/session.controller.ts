@@ -83,6 +83,7 @@ export class SessionController {
     return {
       account: account
         ? {
+            accountId: account.id,
             email: account.email,
             name: account.name,
             photoUrl: account.photoUrl,

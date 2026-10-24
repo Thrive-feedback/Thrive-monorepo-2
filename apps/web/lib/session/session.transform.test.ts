@@ -5,6 +5,7 @@ import {
   toNeedsRefresh,
 } from './session.transform';
 
+const ANN_ACCOUNT_ID = '0199a0f0-0000-7000-8000-000000000001';
 const PHOTO = 'https://lh3.googleusercontent.com/a/ann=s96-c';
 
 describe('toCurrentAccount', () => {
@@ -14,6 +15,7 @@ describe('toCurrentAccount', () => {
     expect(
       toCurrentAccount({
         account: {
+          accountId: ANN_ACCOUNT_ID,
           email: 'ann@acme.test',
           name: 'Ann Lee',
           photoUrl: PHOTO,
@@ -33,6 +35,7 @@ describe('toCurrentAccount', () => {
     expect(
       toCurrentAccount({
         account: {
+          accountId: ANN_ACCOUNT_ID,
           email: 'ann@acme.test',
           name: 'Ann Lee',
           photoUrl: null,
@@ -58,6 +61,7 @@ describe('toNeedsRefresh', () => {
     expect(
       toNeedsRefresh({
         account: {
+          accountId: ANN_ACCOUNT_ID,
           email: 'ann@acme.test',
           name: 'Ann Lee',
           photoUrl: null,

@@ -134,7 +134,7 @@ export class FeedbackAskController {
   })
   @ApiBadRequestResponse({
     description:
-      'REQUEST_INVALID, FEEDBACK_BODY_EMPTY or FEEDBACK_BODY_TOO_LONG',
+      'REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY or FEEDBACK_MESSAGE_TOO_LONG',
   })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
   @ApiNotFoundResponse({

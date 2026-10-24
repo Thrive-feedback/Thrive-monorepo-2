@@ -151,6 +151,18 @@ export class BetterAuthWorkspaceInvitingAdapter extends WorkspaceInviting {
     });
   }
 
+  async restoreSent(
+    invitationId: string,
+    before: { readonly lastSentAt: Date; readonly expiresAt: Date },
+  ): Promise<void> {
+    const { adapter } = await this.auth.$context;
+    await adapter.update({
+      model: 'invitation',
+      where: [{ field: 'id', value: invitationId }],
+      update: { lastSentAt: before.lastSentAt, expiresAt: before.expiresAt },
+    });
+  }
+
   async inviteBack(request: InvitationRequest): Promise<InvitationStored> {
     if (await this.pendingInvitationFor(request)) {
       return { outcome: 'already_invited' };

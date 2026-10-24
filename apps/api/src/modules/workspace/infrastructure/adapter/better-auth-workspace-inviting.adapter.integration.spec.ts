@@ -368,4 +368,25 @@ describe('reissuing an Invitation through the organization plugin', () => {
     });
     expect(row.lastSentAt).toEqual(sentAt);
   });
+
+  it('puts back when it was last sent and when it expires', async () => {
+    const { admin, workspaceId } = await anAdminWithAWorkspace();
+    const invitationId = await fixtures.anInvitation(workspaceId, admin, {
+      lastSentAt: new Date(),
+      expiresAt: new Date(Date.now() + SEVEN_DAYS_MS),
+    });
+    const before = {
+      lastSentAt: new Date('2026-10-13T05:00:00Z'),
+      expiresAt: new Date('2026-10-20T05:00:00Z'),
+    };
+
+    await workspaceInviting.restoreSent(invitationId, before);
+
+    const row = await prismaService.invitation.findUniqueOrThrow({
+      where: { id: invitationId },
+    });
+    expect({ lastSentAt: row.lastSentAt, expiresAt: row.expiresAt }).toEqual(
+      before,
+    );
+  });
 });

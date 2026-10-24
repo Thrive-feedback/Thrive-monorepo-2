@@ -80,6 +80,7 @@ export function toInvitationDetailView(
     role: roleOf(record.role),
     status: statusOf(record.status, record.expiresAt, now).toString(),
     lastSentAt: record.lastSentAt ?? record.createdAt,
+    expiresAt: record.expiresAt,
   };
 }
 

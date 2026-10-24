@@ -104,7 +104,9 @@ export class PrismaInvitationQuery extends InvitationQuery {
             select: {
               id: true,
               name: true,
-              _count: { select: { members: true } },
+              _count: {
+                select: { members: { where: { deactivatedAt: null } } },
+              },
             },
           },
         },

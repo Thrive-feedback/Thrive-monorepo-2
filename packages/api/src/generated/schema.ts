@@ -775,6 +775,8 @@ export interface components {
         };
         GetCurrentSessionResponseDto_Output: {
             account: {
+                /** Format: uuid */
+                accountId: string;
                 /** Format: email */
                 email: string;
                 name: string;
@@ -2462,7 +2464,7 @@ export interface operations {
                     "application/json": components["schemas"]["AnswerFeedbackAskResponseDto_Output"];
                 };
             };
-            /** @description REQUEST_INVALID, FEEDBACK_BODY_EMPTY or FEEDBACK_BODY_TOO_LONG */
+            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY or FEEDBACK_MESSAGE_TOO_LONG */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2566,7 +2568,7 @@ export interface operations {
                     "application/json": components["schemas"]["OfferFeedbackResponseDto_Output"];
                 };
             };
-            /** @description REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE */
+            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE */
             400: {
                 headers: {
                     [name: string]: unknown;

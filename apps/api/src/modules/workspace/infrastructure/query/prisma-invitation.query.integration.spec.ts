@@ -122,6 +122,7 @@ describe('reading one Invitation by its id', () => {
       role: 'MEMBER',
       status: 'PENDING',
       lastSentAt: sentAt,
+      expiresAt: new Date(sentAt.getTime() + 7 * DAY_MS),
     });
   });
 
@@ -187,6 +188,32 @@ describe('reading the Invitations Pending for one address', () => {
       [toGlobex, 'Globex', 1],
       [toAcme, 'Acme', 2],
     ]);
+  });
+
+  it('counts only the active Members of each Workspace, not those Deactivated there', async () => {
+    const admin = await fixtures.aSignedInAccount('invitations-count-admin');
+    const left = await fixtures.aSignedInAccount('invitations-count-left');
+    const workspaceId = await fixtures.aWorkspace(admin, 'Acme');
+    await fixtures.addMember(workspaceId, left, 'member');
+    await prismaService.member.update({
+      where: { workspaceId_userId: { workspaceId, userId: left.accountId } },
+      data: { deactivatedAt: new Date() },
+    });
+    const invitee = `invitee-${uuidv7()}@acme.test`;
+    const now = new Date();
+    await fixtures.anInvitation(workspaceId, admin, {
+      email: invitee,
+      expiresAt: new Date(now.getTime() + DAY_MS),
+    });
+
+    const page = await invitationQuery.pendingInvitationsTo(
+      InvitationRecipient.of(invitee),
+      uuidv7(),
+      now,
+      { page: 1, pageSize: 20 },
+    );
+
+    expect(page.items.map((i) => i.workspace.memberCount)).toEqual([1]);
   });
 
   it('leaves out the ones expired, at their expiry or after, revoked, accepted, or sent to someone else', async () => {

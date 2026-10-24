@@ -34,6 +34,8 @@ export interface InvitationDetailView {
   readonly status: InvitationStatusValue;
   /** When its email last went out: when it was sent, or last resent. */
   readonly lastSentAt: Date;
+  /** When it stops being acceptable, or stopped. */
+  readonly expiresAt: Date;
 }
 
 /**

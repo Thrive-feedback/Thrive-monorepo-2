@@ -238,6 +238,17 @@ export class FakeWorkspaceInviting extends WorkspaceInviting {
   async markSent(invitationId: string, sentAt: Date): Promise<void> {
     this.sentAt.set(invitationId, sentAt);
   }
+
+  /** When each Invitation was put back to expiring, by id, after a resend that did not go out. */
+  readonly restoredExpiresAt = new Map<string, Date>();
+
+  async restoreSent(
+    invitationId: string,
+    before: { readonly lastSentAt: Date; readonly expiresAt: Date },
+  ): Promise<void> {
+    this.sentAt.set(invitationId, before.lastSentAt);
+    this.restoredExpiresAt.set(invitationId, before.expiresAt);
+  }
 }
 
 /**
