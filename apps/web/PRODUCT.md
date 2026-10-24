@@ -34,22 +34,31 @@ and whoever writes the Feedback chooses who reads it.
 
 ## Capabilities and Constraints
 
-What works today, per the brain's `STATE.md`:
+What works today, per the brain's `STATE.md` (as of 2026-10-24):
 
 - Google sign-in, creating a Workspace and inviting teammates by email.
+- One Account in many Workspaces, switched from Settings → Workspace (`ADR-0041`); nothing outside
+  the switcher shows another Workspace.
 - Admin and Member Roles. Admins can deactivate and reactivate people.
 - Asking for, answering and giving Feedback, with Visibility set to Only me, Selected people or
   Everyone.
 - The Workspace feed.
 - Workspace Goals as `#hashtags` and `@Mentions` in Feedback text.
+- **Notifications** (Epic #13): a bell in the navbar tells every Member, always, when somebody asked
+  them, answered their request, or wrote or shared Feedback with them. A Member who links their own
+  Discord account gets the same three as direct messages. Neither carries anybody's words: a
+  Notification names who did something and links to it, behind a sign-in.
+- **Discord Connection**: an Admin connects a server and picks a channel from Settings → Workspace.
+  The channel post (#201, `ADR-0040`: who gave Feedback to whom, and a link) is not built.
 
-Planned but not built: **Kudos** (not designed), the **Discord** integration (`ADR-0035`), **Insights**
-for Admins, Notifications and Reminders, and personal Goals. The landing page lists Kudos, Discord
-and Insights as features with no "on the way", chosen knowingly in `ADR-0038`; it describes Kudos
-only by what it is for. Nothing may promise how fast an answer arrives: nothing notifies anybody.
+Planned but not built: **Kudos** (not designed), the Discord channel post, Slack, **Insights** for
+Admins, and personal Goals. **Reminders are left out on purpose** (`ADR-0035`): nothing Thrive runs can
+act later. The landing page lists Kudos, Discord and Insights as features with no "on the way",
+chosen knowingly in `ADR-0038`; it describes Kudos only by what it is for. Copy may say people are
+told when something waits for them, but never promises how fast anyone answers.
 
-Use the brain's `glossary.md` names exactly: Member, Workspace, Feedback Request, Ask, Request message, Feedback message.
-Never say "user".
+Use the brain's `glossary.md` names exactly: Member, Workspace, Feedback Request, Ask, Request
+message, Feedback message, Notification, Connection, Linked Account. Never say "user".
 
 ## Brand Commitments
 
