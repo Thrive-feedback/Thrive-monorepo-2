@@ -43,3 +43,31 @@ Feature: Being messaged in a chat tool about Feedback
     And Ben has unlinked Discord
     When Ann asks Ben for Feedback: "Running the planning meeting"
     Then nobody is messaged in Discord
+
+  @api
+  Scenario: The Member who asked is messaged when their request is answered
+    Given Ann has linked her Discord account as "ann#0001"
+    And Ann has asked Ben for Feedback: "Running the planning meeting"
+    And the messages sent so far are set aside
+    When Ben answers "You open strongly and lose the room at the detail."
+    Then Ann is messaged in Discord about "answered your feedback request"
+    And the message names "Acme"
+    And the message links to the request
+    And no message carries "lose the room"
+
+  @api
+  Scenario: Nobody but the Member who asked is told an Ask was answered
+    Given Cara is a Member of Ann's Workspace
+    And Cara has linked her Discord account as "cara#0001"
+    And Ann has asked Ben for Feedback: "Running the planning meeting"
+    And Ann has asked Cara for Feedback: "Running the planning meeting"
+    And the messages sent so far are set aside
+    When Ben answers "You open strongly and lose the room at the detail."
+    Then nobody is messaged in Discord
+
+  @api
+  Scenario: Answering succeeds when the Requester linked nothing
+    Given Ann has asked Ben for Feedback: "Running the planning meeting"
+    When Ben answers "You open strongly and lose the room at the detail."
+    Then nobody is messaged in Discord
+    And Ann reads "You open strongly and lose the room at the detail." on the request saying "Running the planning meeting"

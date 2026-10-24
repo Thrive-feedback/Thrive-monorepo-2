@@ -250,3 +250,36 @@ Then('nobody is messaged in Discord', async function (this: ThriveWorld) {
   await settled();
   assert.deepEqual(messagesSent(), []);
 });
+
+/**
+ * Setting up an Ask sends its own message (#213), so a scenario about what *answering* causes
+ * has to start from nothing — otherwise it is asserting against the setup rather than the
+ * behaviour. Waits first, so a message still in flight is cleared rather than arriving later.
+ */
+Given('the messages sent so far are set aside', async () => {
+  await settled();
+  harness().directMessenger.posted.length = 0;
+});
+
+Then('the message links to the request', function (this: ThriveWorld) {
+  assert.match(
+    messagesSent()[0]?.text ?? '',
+    /\/home\?tab=my-requests&request=/,
+  );
+});
+
+Then(
+  'no message carries {string}',
+  async function (this: ThriveWorld, words: string) {
+    await settled();
+    // #214: nothing of what was written travels in a chat message. A chat client keeps it on
+    // the person's own machine and in the tool's history; the link does that job behind a
+    // sign-in.
+    for (const sent of messagesSent()) {
+      assert.ok(
+        !sent.text.includes(words),
+        `A message carried "${words}": ${sent.text}`,
+      );
+    }
+  },
+);
