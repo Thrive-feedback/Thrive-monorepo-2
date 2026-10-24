@@ -284,11 +284,22 @@ implementation and no evidence.
 Four pull requests, one per card, in key order: **#211 → #213 → #214 → #215**.
 
 #211 carries the module, the migration, the `ChatProvider` interface and registry, the Discord adapter,
-the link flow and the Settings row. #213 carries the published port, the notifier, the copy service, the
-first Feedback call site, and `isActiveMemberOf` with its code ADR. #214 and #215 are one call site and
-one message each — which is why they are `S` and #213 is `M`.
+the link flow and the Settings row. #213 carries the published port, the notifier, the copy service and
+the first Feedback call site. #214 and #215 are one call site and one message each — which is why they
+are `S` and #213 is `M`.
 
-Code ADR numbers: **0048** is claimed by `0020`'s `isAdminOf`, so this programme starts at **0049**.
+**Corrected 2026-10-24, because this plan had gone stale while #199, #200 and #212 shipped:**
+
+- **#213 does not carry `isActiveMemberOf`.** `isMemberOf` already answers *active* membership
+  (`membershipInWorkspace` filters `deactivatedAt: null`, ADR 0047), and `isAdminOf` — which this
+  programme never needed — was published by Workspace Goals under **ADR 0052**. Workspace's published
+  port needs nothing from these four cards.
+- **The code ADR numbers here are void.** 0048 through 0055 are taken; the next free number is
+  **0056**. Check `docs/adr/` rather than this line, which will go stale again.
+- **One thing to do outside the repository before #211:** Thrive's Discord application registers only
+  the Workspace-integration return address. Linking a personal account returns to
+  `/settings/account/links/discord/callback`, and Discord refuses an address it was not given — add it
+  for both `https://thriveteam.app` and `http://localhost:3001`.
 
 ## 10. Risks and sequencing
 
