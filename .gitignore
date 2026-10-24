@@ -67,3 +67,6 @@ CLAUDE.local.md
 # Misc
 .DS_Store
 *.pem
+
+# Scratch worktrees used by background agents; never source.
+.claude/worktrees/

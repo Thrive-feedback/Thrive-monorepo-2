@@ -1,0 +1,45 @@
+Feature: Being messaged in a chat tool about Feedback
+  Somebody who has linked their own chat account is messaged there when a teammate
+  asks them for Feedback. A direct message has one reader, and that reader is a party
+  to the thing, so it may name who asked and what about — unlike a shared channel.
+  Nobody who has not linked an account is messaged, nobody is told about their own
+  action, and asking for Feedback never fails because a chat tool is unreachable.
+
+  Background:
+    Given Ann owns a Workspace called "Acme"
+    And Ben is a Member of Ann's Workspace
+
+  @api
+  Scenario: Somebody who linked their account is messaged when they are asked
+    Given Ben has linked his Discord account as "ben#0001"
+    When Ann asks Ben for Feedback: "Running the planning meeting"
+    Then Ben is messaged in Discord about "Running the planning meeting"
+    And the message names "Acme"
+    And the message links to the Ask
+
+  @api
+  Scenario: Somebody who linked nothing is not messaged, and the request still works
+    When Ann asks Ben for Feedback: "Running the planning meeting"
+    Then nobody is messaged in Discord
+    And Ben can open the request saying "Running the planning meeting"
+
+  @api
+  Scenario: Nobody is messaged about their own action
+    Given Ann has linked her Discord account as "ann#0001"
+    When Ann asks Ben for Feedback: "Running the planning meeting"
+    Then nobody is messaged in Discord
+
+  @api
+  Scenario: Asking succeeds even when the chat tool will not deliver
+    Given Ben has linked his Discord account as "ben#0001"
+    And Discord will not let Thrive message anybody
+    When Ann asks Ben for Feedback: "Running the planning meeting"
+    Then nobody is messaged in Discord
+    And Ben can open the request saying "Running the planning meeting"
+
+  @api
+  Scenario: A Member who unlinked is no longer messaged
+    Given Ben has linked his Discord account as "ben#0001"
+    And Ben has unlinked Discord
+    When Ann asks Ben for Feedback: "Running the planning meeting"
+    Then nobody is messaged in Discord

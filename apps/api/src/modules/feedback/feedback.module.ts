@@ -1,5 +1,6 @@
 import { DatabaseModule } from '@app/infrastructure/database/database.module';
 import { IdentityModule } from '@app/modules/identity';
+import { NotificationsModule } from '@app/modules/notifications';
 import { WorkspaceModule } from '@app/modules/workspace';
 import { WorkspaceGoalModule } from '@app/modules/workspace-goal';
 import { Module } from '@nestjs/common';
@@ -43,6 +44,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     IdentityModule,
     WorkspaceModule,
     WorkspaceGoalModule,
+    NotificationsModule,
   ],
   controllers: [
     FeedbackRequestController,

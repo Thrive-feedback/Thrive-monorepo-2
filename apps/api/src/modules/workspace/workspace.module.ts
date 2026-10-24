@@ -34,6 +34,7 @@ import { RevokeInvitationUseCase } from './application/use-cases/revoke-invitati
 import { SendInvitationsUseCase } from './application/use-cases/send-invitations.use-case';
 import { SwitchWorkspaceUseCase } from './application/use-cases/switch-workspace.use-case';
 import { WorkspaceMembershipPort } from './domain/port/workspace-membership.port';
+import { WorkspaceNamePort } from './domain/port/workspace-name.port';
 import { BetterAuthMemberRoleChangingAdapter } from './infrastructure/adapter/better-auth-member-role-changing.adapter';
 import { BetterAuthSessionWorkspaceAdapter } from './infrastructure/adapter/better-auth-session-workspace.adapter';
 import { BetterAuthWorkspaceFoundingAdapter } from './infrastructure/adapter/better-auth-workspace-founding.adapter';
@@ -42,6 +43,7 @@ import { PrismaInvitationSettlingAdapter } from './infrastructure/adapter/prisma
 import { PrismaMemberDeactivatingAdapter } from './infrastructure/adapter/prisma-member-deactivating.adapter';
 import { PrismaMemberReactivatingAdapter } from './infrastructure/adapter/prisma-member-reactivating.adapter';
 import { PrismaMemberRejoiningAdapter } from './infrastructure/adapter/prisma-member-rejoining.adapter';
+import { PrismaWorkspaceNameAdapter } from './infrastructure/adapter/prisma-workspace-name.adapter';
 import { PrismaWorkspaceSwitchingAdapter } from './infrastructure/adapter/prisma-workspace-switching.adapter';
 import { PrismaInvitationQuery } from './infrastructure/query/prisma-invitation.query';
 import { PrismaMembershipQuery } from './infrastructure/query/prisma-membership.query';
@@ -109,6 +111,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     },
     { provide: MembershipQuery, useClass: PrismaMembershipQuery },
     { provide: WorkspaceMembershipPort, useClass: WorkspaceMembershipAdapter },
+    { provide: WorkspaceNamePort, useClass: PrismaWorkspaceNameAdapter },
     { provide: InvitationQuery, useClass: PrismaInvitationQuery },
     CreateWorkspaceUseCase,
     SwitchWorkspaceUseCase,
@@ -132,6 +135,6 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
   ],
   // Published so a module acting inside a Workspace can ask whether an Account is a Member
   // of it, without reaching into Workspace's own tables.
-  exports: [WorkspaceMembershipPort],
+  exports: [WorkspaceMembershipPort, WorkspaceNamePort],
 })
 export class WorkspaceModule {}

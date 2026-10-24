@@ -112,7 +112,7 @@ bun run build          # build everything, respecting the task graph
 bun run test           # unit tests
 bun run test:e2e       # end-to-end tests
 bun run lint           # lint everything
-bun run format         # Prettier write across the repo
+bun run format         # Biome format --write across the repo
 ```
 
 Three tasks are not in that list because they are not run on every change:
