@@ -21,7 +21,8 @@ export type HomeDialogProps = {
 };
 
 /**
- * A Feedback Request or Ask open over Home. On Home its id is in the address, so the dialog is
+ * A Feedback Request, an Ask or one piece of Feedback open over Home. On Home its id is in the
+ * address, so the dialog is
  * open whenever the page draws it; closing it — the ×, Escape or the scrim — drops the id from
  * the address, so a reload afterwards does not bring it back. It closes at once rather than
  * waiting for the navigation to finish.

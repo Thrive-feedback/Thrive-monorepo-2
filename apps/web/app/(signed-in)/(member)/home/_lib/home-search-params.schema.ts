@@ -8,9 +8,9 @@ import { HOME_TABS } from '@/lib/routes.constant';
  * `switched=1` by any action refused because its page was for a Workspace the person is no longer
  * in, `opened=1` by switching to the Workspace shown, and `left=1` by leaving the one before, so
  * the page can say so once. `tab`
- * is the feed tab that is open; a missing or unknown one opens the first. `request` or `ask` is
- * the Feedback Request or Ask open in a dialog over the tab, kept here so a reload or a shared
- * link opens it again. Any other value is ignored.
+ * is the feed tab that is open; a missing or unknown one opens the first. `request`, `ask` or
+ * `feedback` is the Feedback Request, Ask or piece of Feedback open in a dialog over the tab,
+ * kept here so a reload or a shared link opens it again. Any other value is ignored.
  */
 export const HomeSearchParams = z.object({
   signedIn: z.literal('1').optional().catch(undefined),
@@ -22,4 +22,5 @@ export const HomeSearchParams = z.object({
   tab: z.enum(HOME_TABS).catch(HOME_TABS[0]),
   request: z.uuid().optional().catch(undefined),
   ask: z.uuid().optional().catch(undefined),
+  feedback: z.uuid().optional().catch(undefined),
 });
