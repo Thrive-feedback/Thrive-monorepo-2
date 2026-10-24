@@ -21,18 +21,17 @@ describe('LetterDemo', () => {
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
-  it('offers three letters to write, with Kudo not ready yet', () => {
+  it('offers three things to write: two letters and Kudos', () => {
     render(<LetterDemo />);
 
     const write = screen.getByRole('complementary', { name: 'Write' });
     expect(write).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Request feedback' }),
-    ).toHaveAttribute('aria-pressed', 'false');
-    expect(
-      screen.getByRole('button', { name: 'Give feedback' }),
-    ).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByRole('button', { name: /Kudo/ })).toBeDisabled();
+    for (const name of ['Request feedback', 'Give feedback', 'Kudos']) {
+      expect(screen.getByRole('button', { name })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      );
+    }
   });
 
   it('opens the Give message for writing, starting at who it is for', async () => {
@@ -362,5 +361,120 @@ describe('LetterDemo', () => {
       screen.getByRole('button', { name: 'Who else can read it: Only me' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+  });
+
+  it('puts a Kudos card where the letter was, with nothing to turn or stamp', async () => {
+    const user = userEvent.setup();
+    render(<LetterDemo />);
+
+    await choose(user, 'Kudos');
+
+    expect(screen.getByRole('button', { name: 'Kudos' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('region', { name: 'Kudos' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Your Kudos' })).toHaveFocus();
+    expect(
+      screen.queryByRole('heading', { name: 'Give message' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Turn over/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Stamps' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Who else can read it/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('steps the Kudos card through its three styles and back to the first', async () => {
+    const user = userEvent.setup();
+    render(<LetterDemo />);
+
+    await choose(user, 'Kudos');
+
+    for (const [shown, next] of [
+      ['1/3', 'Sunburst'],
+      ['2/3', 'Stripes'],
+      ['3/3', 'Confetti'],
+    ]) {
+      await user.click(
+        screen.getByRole('button', {
+          name: `Style ${shown} to change to ${next}`,
+        }),
+      );
+      expect(screen.getByText(new RegExp(`: ${next}$`))).toBeInTheDocument();
+    }
+    expect(
+      screen.getByRole('button', { name: 'Style 1/3 to change to Sunburst' }),
+    ).toBeInTheDocument();
+  });
+
+  it('waits to send a Kudos until it @mentions a teammate', async () => {
+    const user = userEvent.setup();
+    render(<LetterDemo />);
+
+    await choose(user, 'Kudos');
+    const kudos = screen.getByRole('textbox', { name: 'Your Kudos' });
+    const send = screen.getByRole('button', { name: 'Send' });
+
+    await user.type(kudos, 'Great demo');
+    expect(send).toBeDisabled();
+
+    await user.clear(kudos);
+    await user.type(kudos, '@nobody great demo');
+    expect(send).toBeDisabled();
+
+    await user.clear(kudos);
+    await user.type(kudos, '@mali great demo');
+    expect(send).toBeEnabled();
+  });
+
+  it('pretends to send a Kudos, then clears it and keeps its style', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <LetterDemo />
+        <Toaster />
+      </>,
+    );
+
+    await choose(user, 'Kudos');
+    await user.click(screen.getByRole('button', { name: /^Style 1\/3/ }));
+    await user.type(
+      screen.getByRole('textbox', { name: 'Your Kudos' }),
+      '@mali great demo',
+    );
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+
+    expect(await screen.findByText('Kudos sent.')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Your Kudos' })).toHaveValue('');
+    expect(
+      screen.getByRole('button', { name: /^Style 2\/3/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the Kudos and the letters apart while switching between them', async () => {
+    const user = userEvent.setup();
+    render(<LetterDemo />);
+
+    await choose(user, 'Give feedback');
+    await user.type(screen.getByRole('textbox', { name: 'Dear' }), 'Mali');
+    await choose(user, 'Kudos');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Your Kudos' }),
+      'Thanks @krit',
+    );
+    await choose(user, 'Give feedback');
+
+    expect(screen.getByRole('textbox', { name: 'Dear' })).toHaveValue('Mali');
+
+    await choose(user, 'Kudos');
+
+    expect(screen.getByRole('textbox', { name: 'Your Kudos' })).toHaveValue(
+      'Thanks @krit',
+    );
   });
 });

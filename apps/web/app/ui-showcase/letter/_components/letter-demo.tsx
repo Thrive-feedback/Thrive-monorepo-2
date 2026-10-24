@@ -1,7 +1,7 @@
 'use client';
 
 import { cva } from 'class-variance-authority';
-import { LockIcon, Rotate3dIcon, StampIcon } from 'lucide-react';
+import { LockIcon, Rotate3dIcon, ShuffleIcon, StampIcon } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { toast } from 'sonner';
@@ -9,14 +9,19 @@ import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
 import { cn } from '@/lib/cn.util';
+import { MENTION_RULE } from '@/lib/feedback/text-tag-rules.constant';
+import { segmentsOf, tagKeyOf } from '@/lib/tag-text.util';
+import { KudosCard } from './kudos-card';
+import { KUDOS_STYLES } from './kudos-styles.constant';
 import styles from './letter.module.css';
 import { LetterBody } from './letter-body';
 import { LetterFace, type LetterSide } from './letter-face';
 import { LetterSendBar, type LetterVisibility } from './letter-send-bar';
-import { LetterSidebar } from './letter-sidebar';
+import { LetterSidebar, type WritingKind } from './letter-sidebar';
 import { LetterStamp, type PlacedStamp } from './letter-stamp';
 import type { StampKind } from './letter-stamp-kinds.constant';
 import { LetterStampPanel } from './letter-stamp-panel';
+import { LETTER_TEAMMATES } from './letter-teammates.mock';
 
 const SIDE_COPY: Readonly<
   Record<
@@ -85,6 +90,19 @@ function isReady(letter: Letter) {
   );
 }
 
+const TEAMMATE_KEYS = new Set(
+  LETTER_TEAMMATES.flatMap(({ slug }) =>
+    slug === null ? [] : [tagKeyOf(slug)],
+  ),
+);
+
+/** A Kudos is for whoever it @mentions, so it is ready once it names a teammate. */
+function namesTeammate(message: string) {
+  return segmentsOf(message, [MENTION_RULE]).some(
+    (segment) => segment.kind === 'tag' && TEAMMATE_KEYS.has(segment.key),
+  );
+}
+
 const stage = cva(styles.stage, {
   variants: {
     motion: {
@@ -92,6 +110,13 @@ const stage = cva(styles.stage, {
       shaking: styles.shake,
       sending: styles.sendAway,
     },
+  },
+});
+
+// Over a Kudos card the toolbar narrows to the card, so Style sits at its top right corner.
+const toolbar = cva('mx-auto flex w-full justify-end gap-3', {
+  variants: {
+    kudos: { true: 'max-w-72', false: 'max-w-2xl' },
   },
 });
 
@@ -107,9 +132,12 @@ const sheet = cva('grid', {
 /**
  * Feedback as a letter, as a first look: one sheet with a Give message on the front and a
  * Request message on the back. The sidebar offers the kinds of letter; choosing Give feedback or
- * Request feedback turns the sheet to that face and opens it for writing, and Kudo is not ready.
- * Each face keeps its own letter. Nothing is sent or kept: what is typed lives until the page
- * is left.
+ * Request feedback turns the sheet to that face and opens it for writing. Each face keeps its own
+ * letter. Nothing is sent or kept: what is typed lives until the page is left.
+ *
+ * Kudos is not a letter. Choosing it puts a small upright card where the sheet was, with nothing
+ * to turn and no stamps: Style steps the card through its three looks, and the message names who
+ * it is for with an @Mention. Send waits for one.
  *
  * Only the letter being written can be typed in. While it is the Give message the sheet will not
  * turn over: Turn over shakes it instead. While it is the Request message the sheet turns
@@ -124,7 +152,7 @@ const sheet = cva('grid', {
  */
 export function LetterDemo() {
   const [side, setSide] = useState<LetterSide>('give');
-  const [writing, setWriting] = useState<LetterSide | null>(null);
+  const [writing, setWriting] = useState<WritingKind | null>(null);
   const [motion, setMotion] = useState<'still' | 'shaking' | 'sending'>(
     'still',
   );
@@ -148,9 +176,18 @@ export function LetterDemo() {
   const stampCount = useRef(0);
   const stampPanelId = useId();
   const stampsButtonRef = useRef<HTMLButtonElement>(null);
+  const [kudos, setKudos] = useState('');
+  const [kudosStyle, setKudosStyle] = useState(0);
+  const kudosRef = useRef<HTMLTextAreaElement>(null);
+  const writingKudos = writing === 'kudos';
+  const nextKudosStyle = (kudosStyle + 1) % KUDOS_STYLES.length;
+  // Both indexes stay inside the list; the fallback only satisfies the index check.
+  const shownKudosStyle = KUDOS_STYLES[kudosStyle] ?? KUDOS_STYLES[0];
+  const nextKudosStyleName = (KUDOS_STYLES[nextKudosStyle] ?? KUDOS_STYLES[0])
+    .label;
   const otherSide = OTHER_SIDE[side];
   const turnLocked = writing === 'give';
-  const stampsHere = takesStamps(side);
+  const stampsHere = !writingKudos && takesStamps(side);
   const stampDrawerOpen = stampPanelOpen && stampsHere;
 
   // The Give side of a Request message is left for the people asked, so nothing is stuck on it.
@@ -218,9 +255,15 @@ export function LetterDemo() {
     }));
   }
 
-  // The letter is drawn at once, so its writing can take focus straight away: who it is for
-  // first, or the message if that is already filled in.
-  function handleChoose(letterSide: LetterSide) {
+  // What is chosen is drawn at once, so its writing can take focus straight away: on a letter,
+  // who it is for first, or the message if that is already filled in.
+  function handleChoose(kind: WritingKind) {
+    if (kind === 'kudos') {
+      flushSync(() => setWriting(kind));
+      kudosRef.current?.focus();
+      return;
+    }
+    const letterSide = kind;
     flushSync(() => {
       setSide(letterSide);
       setWriting(letterSide);
@@ -265,6 +308,18 @@ export function LetterDemo() {
 
   function finishSending() {
     if (writing === null) {
+      return;
+    }
+    // A Kudos keeps the look it was sent in, ready for the next one.
+    if (writing === 'kudos') {
+      flushSync(() => {
+        setKudos('');
+        setMotion('still');
+      });
+      toast.success('Kudos sent.', {
+        description: 'This is a demo: nothing left this page.',
+      });
+      kudosRef.current?.focus();
       return;
     }
     const sentSide = writing;
@@ -338,32 +393,53 @@ export function LetterDemo() {
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-6">
-        <div className="mx-auto flex w-full max-w-2xl justify-end gap-3">
-          <Button
-            variant="secondary"
-            prefixIcon={<StampIcon />}
-            aria-expanded={stampDrawerOpen}
-            aria-controls={stampDrawerOpen ? stampPanelId : undefined}
-            disabled={!stampsHere}
-            ref={stampsButtonRef}
-            onClick={handleToggleStamps}
-          >
-            Stamps
-          </Button>
-          <Button
-            variant="secondary"
-            prefixIcon={turnLocked ? <LockIcon /> : <Rotate3dIcon />}
-            aria-disabled={turnLocked}
-            onClick={handleTurnOver}
-          >
-            Turn over
-            <span className="sr-only"> to {SIDE_COPY[otherSide].title}</span>
-          </Button>
+        <div className={toolbar({ kudos: writingKudos })}>
+          {writingKudos ? (
+            <Button
+              variant="secondary"
+              prefixIcon={<ShuffleIcon />}
+              onClick={() => setKudosStyle(nextKudosStyle)}
+            >
+              <span className="tabular-nums">
+                Style {kudosStyle + 1}/{KUDOS_STYLES.length}
+              </span>
+              <span className="sr-only">
+                {' '}
+                to change to {nextKudosStyleName}
+              </span>
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                prefixIcon={<StampIcon />}
+                aria-expanded={stampDrawerOpen}
+                aria-controls={stampDrawerOpen ? stampPanelId : undefined}
+                disabled={!stampsHere}
+                ref={stampsButtonRef}
+                onClick={handleToggleStamps}
+              >
+                Stamps
+              </Button>
+              <Button
+                variant="secondary"
+                prefixIcon={turnLocked ? <LockIcon /> : <Rotate3dIcon />}
+                aria-disabled={turnLocked}
+                onClick={handleTurnOver}
+              >
+                Turn over
+                <span className="sr-only">
+                  {' '}
+                  to {SIDE_COPY[otherSide].title}
+                </span>
+              </Button>
+            </>
+          )}
         </div>
         <p aria-live="polite" className="sr-only">
-          {turnLocked
-            ? 'The letter stays on Give message while you write it.'
-            : ''}
+          {writingKudos &&
+            `Style ${kudosStyle + 1} of ${KUDOS_STYLES.length}: ${shownKudosStyle.label}`}
+          {turnLocked && 'The letter stays on Give message while you write it.'}
         </p>
 
         <div
@@ -371,61 +447,80 @@ export function LetterDemo() {
           className={cn('mx-auto w-full max-w-2xl', stage({ motion }))}
           onAnimationEnd={handleStageAnimationEnd}
         >
-          <div className={sheet({ side })}>
-            {SIDES.map((letterSide) => (
-              <LetterFace
-                key={letterSide}
-                side={letterSide}
-                title={SIDE_COPY[letterSide].title}
-                shown={side === letterSide}
-              >
-                {renderFaceContent(letterSide)}
-                {takesStamps(letterSide) &&
-                  stamps[letterSide].map((stamp) => (
-                    <LetterStamp
-                      key={stamp.id}
-                      stamp={stamp}
-                      side={letterSide}
-                      selected={selectedStampId === stamp.id}
-                      onSelect={() => setSelectedStampId(stamp.id)}
-                      onChange={(change) =>
-                        changeStamps(letterSide, (current) =>
-                          current.map((each) =>
-                            each.id === stamp.id
-                              ? { ...each, ...change }
-                              : each,
-                          ),
-                        )
-                      }
-                      onDelete={() =>
-                        changeStamps(letterSide, (current) =>
-                          current.filter((each) => each.id !== stamp.id),
-                        )
-                      }
-                    />
-                  ))}
-              </LetterFace>
-            ))}
-          </div>
+          {writingKudos ? (
+            <div className="flex justify-center">
+              <KudosCard
+                style={shownKudosStyle.style}
+                message={kudos}
+                messageRef={kudosRef}
+                onMessageChange={setKudos}
+              />
+            </div>
+          ) : (
+            <div className={sheet({ side })}>
+              {SIDES.map((letterSide) => (
+                <LetterFace
+                  key={letterSide}
+                  side={letterSide}
+                  title={SIDE_COPY[letterSide].title}
+                  shown={side === letterSide}
+                >
+                  {renderFaceContent(letterSide)}
+                  {takesStamps(letterSide) &&
+                    stamps[letterSide].map((stamp) => (
+                      <LetterStamp
+                        key={stamp.id}
+                        stamp={stamp}
+                        side={letterSide}
+                        selected={selectedStampId === stamp.id}
+                        onSelect={() => setSelectedStampId(stamp.id)}
+                        onChange={(change) =>
+                          changeStamps(letterSide, (current) =>
+                            current.map((each) =>
+                              each.id === stamp.id
+                                ? { ...each, ...change }
+                                : each,
+                            ),
+                          )
+                        }
+                        onDelete={() =>
+                          changeStamps(letterSide, (current) =>
+                            current.filter((each) => each.id !== stamp.id),
+                          )
+                        }
+                      />
+                    ))}
+                </LetterFace>
+              ))}
+            </div>
+          )}
         </div>
-        {/* Under the letter on either face, for the letter being written. It sticks to the foot
-            of the window while the letter runs past it; only the bar itself takes clicks, so the
-            writing either side of it stays reachable. */}
+        {/* Under what is being written, a letter on either face or the Kudos card. It sticks to
+            the foot of the window while the letter runs past it; only the bar itself takes
+            clicks, so the writing either side of it stays reachable. A Kudos has no Visibility
+            to choose. */}
         {writing !== null && (
           <div className="pointer-events-none sticky bottom-6 z-20 flex justify-center *:pointer-events-auto">
-            <LetterSendBar
-              side={writing}
-              visibility={letters[writing].visibility}
-              selectedAccountIds={letters[writing].selectedAccountIds}
-              ready={motion === 'still' && isReady(letters[writing])}
-              onVisibilityChange={(visibility) =>
-                changeLetter(writing, { visibility })
-              }
-              onSelectedChange={(accountId, selected) =>
-                handleSelectedChange(writing, accountId, selected)
-              }
-              onSend={handleSend}
-            />
+            {writing === 'kudos' ? (
+              <LetterSendBar
+                ready={motion === 'still' && namesTeammate(kudos)}
+                onSend={handleSend}
+              />
+            ) : (
+              <LetterSendBar
+                visibility={{
+                  side: writing,
+                  value: letters[writing].visibility,
+                  selectedAccountIds: letters[writing].selectedAccountIds,
+                  onValueChange: (visibility) =>
+                    changeLetter(writing, { visibility }),
+                  onSelectedChange: (accountId, selected) =>
+                    handleSelectedChange(writing, accountId, selected),
+                }}
+                ready={motion === 'still' && isReady(letters[writing])}
+                onSend={handleSend}
+              />
+            )}
           </div>
         )}
       </div>

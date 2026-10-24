@@ -68,6 +68,73 @@
 }
 
 /*
+ * The three looks of a Kudos card. Each is a surface wash with a pattern of its own, faint enough
+ * that the message reads over it, and cleared to the plain wash in the middle where the message
+ * sits. The tokens have no pattern and layered gradients have no utility.
+ */
+.confetti {
+  --wash: var(--action-primary-surface);
+
+  background-color: var(--wash);
+  background-image:
+    radial-gradient(closest-side, var(--wash) 55%, transparent),
+    radial-gradient(
+      circle,
+      color-mix(in oklch, var(--action-primary) 55%, transparent)
+        calc(var(--space-unit) * 1),
+      transparent calc(var(--space-unit) * 1.125)
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in oklch, var(--status-warning) 70%, transparent)
+        calc(var(--space-unit) * 0.75),
+      transparent calc(var(--space-unit) * 0.875)
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in oklch, var(--action-secondary) 55%, transparent)
+        calc(var(--space-unit) * 0.875),
+      transparent calc(var(--space-unit) * 1)
+    );
+  background-size:
+    auto,
+    calc(var(--space-unit) * 14) calc(var(--space-unit) * 14),
+    calc(var(--space-unit) * 10) calc(var(--space-unit) * 10),
+    calc(var(--space-unit) * 18) calc(var(--space-unit) * 18);
+  background-position:
+    center,
+    0 0,
+    calc(var(--space-unit) * 5) calc(var(--space-unit) * 7),
+    calc(var(--space-unit) * 11) calc(var(--space-unit) * 3);
+}
+
+.sunburst {
+  --wash: var(--status-warning-surface);
+
+  background-color: var(--wash);
+  background-image:
+    radial-gradient(closest-side, var(--wash) 55%, transparent),
+    repeating-conic-gradient(
+      color-mix(in oklch, var(--status-warning) 22%, transparent) 0 7.5deg,
+      transparent 7.5deg 15deg
+    );
+}
+
+.stripes {
+  --wash: var(--action-secondary-surface);
+
+  background-color: var(--wash);
+  background-image:
+    radial-gradient(closest-side, var(--wash) 55%, transparent),
+    repeating-linear-gradient(
+      135deg,
+      color-mix(in oklch, var(--action-secondary) 16%, transparent) 0
+        calc(var(--space-unit) * 3),
+      transparent calc(var(--space-unit) * 3) calc(var(--space-unit) * 6)
+    );
+}
+
+/*
  * Writing paper: one hairline at the foot of every line of body text, spaced by the body type's
  * own line height, so what is typed sits on the lines at every breakpoint. `local` makes the
  * lines scroll with the text inside a field.
