@@ -2395,6 +2395,194 @@
           "integrations"
         ]
       }
+    },
+    "/v1/linked-accounts/mine": {
+      "get": {
+        "operationId": "LinkedAccountController_listMine",
+        "parameters": [
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListLinkedAccountsResponseDto_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          }
+        },
+        "summary": "List the chat accounts I have linked, and when each was linked",
+        "tags": [
+          "linked-accounts"
+        ]
+      }
+    },
+    "/v1/linked-accounts/mine/{provider}/link": {
+      "post": {
+        "operationId": "LinkedAccountController_beginLink",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 32,
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BeginAccountLinkResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID, PROVIDER_NOT_SUPPORTED"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          }
+        },
+        "summary": "Begin linking my own account in one chat tool",
+        "tags": [
+          "linked-accounts"
+        ]
+      }
+    },
+    "/v1/linked-accounts/mine/{provider}/complete": {
+      "post": {
+        "operationId": "LinkedAccountController_completeLink",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 32,
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteAccountLinkRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteAccountLinkResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID, PROVIDER_NOT_SUPPORTED, LINK_STATE_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "409": {
+            "description": "LINK_REFUSED, ACCOUNT_ALREADY_LINKED"
+          }
+        },
+        "summary": "Finish linking, with what the chat tool sent my browser back with",
+        "tags": [
+          "linked-accounts"
+        ]
+      }
+    },
+    "/v1/linked-accounts/mine/{provider}": {
+      "delete": {
+        "operationId": "LinkedAccountController_unlink",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 32,
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The link is forgotten."
+          },
+          "400": {
+            "description": "REQUEST_INVALID, PROVIDER_NOT_SUPPORTED"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "NOT_LINKED"
+          }
+        },
+        "summary": "Unlink my account in one chat tool, so Thrive stops messaging me there",
+        "tags": [
+          "linked-accounts"
+        ]
+      }
     }
   },
   "info": {
@@ -4881,6 +5069,95 @@
         "required": [
           "installation",
           "channelId"
+        ],
+        "additionalProperties": false
+      },
+      "ListLinkedAccountsResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "DISCORD"
+                  ]
+                },
+                "externalUsername": {
+                  "type": "string"
+                },
+                "linkedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "provider",
+                "externalUsername",
+                "linkedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "BeginAccountLinkResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "authorizeUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "authorizeUrl"
+        ],
+        "additionalProperties": false
+      },
+      "CompleteAccountLinkRequestDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "state": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "code",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "CompleteAccountLinkResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "DISCORD"
+            ]
+          },
+          "externalUsername": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "externalUsername"
         ],
         "additionalProperties": false
       }

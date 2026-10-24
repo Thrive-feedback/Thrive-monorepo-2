@@ -414,3 +414,38 @@ model IntegrationConnection {
   @@unique([workspaceId, provider])
   @@map("integration_connection")
 }
+
+// Notifications' table. The Account and the chat tool are held as ids with no foreign key into
+// another module's tables (BE_03 R7), as on IntegrationConnection.
+
+/// One Member's own link to their account in a chat tool, which is what lets Thrive message them
+/// directly (glossary: Linked Account). Each Member links their own; its existence is their
+/// consent, and unlinking is how they stop being messaged (brain ADR-0035 §6).
+///
+/// No user access token is kept: Thrive messages with its own bot credential, and the token the
+/// provider issues at linking is used once, to learn who they are, and discarded (design 0021 D9).
+/// Nothing here is a secret — a Discord user id is shown to everyone who shares a server.
+model LinkedAccount {
+  id               String   @id
+  /// The Account this belongs to. No foreign key: Accounts are Identity's.
+  accountId        String
+  /// Which chat tool, as the provider value the registry is keyed by.
+  provider         String
+  /// The provider's own space, where it has one — a Slack team. **Empty string, never null**, for
+  /// a provider whose user ids stand alone, as Discord's do: Postgres treats NULLs as distinct in
+  /// a unique index, so a nullable column would make the second index below silently stop holding
+  /// and let two Accounts share one notification stream (design 0021 D8).
+  externalTeamId   String
+  /// The provider's id for this person.
+  externalUserId   String
+  /// Shown on their own Settings so they can see which account is linked. Refreshed when linking.
+  externalUsername String
+  linkedAt         DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  /// One link per Account per tool: linking again replaces it in place.
+  @@unique([accountId, provider])
+  /// And one Account per chat-tool identity, so two Members cannot claim the same one.
+  @@unique([provider, externalTeamId, externalUserId])
+  @@map("linked_account")
+}

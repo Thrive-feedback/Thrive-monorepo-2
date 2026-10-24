@@ -177,6 +177,11 @@ export class WorkspaceFixtures {
       where: { workspaceId: { in: workspaceIds } },
     });
     await this.prismaService.workspace.deleteMany({ where: workspaces });
+    // And a Linked Account, which names its Account by id and belongs to no Workspace at all,
+    // so nothing above reaches it.
+    await this.prismaService.linkedAccount.deleteMany({
+      where: { accountId: { in: this.accountIds } },
+    });
     // Deleting the Better Auth user cascades to its sessions.
     await this.prismaService.user.deleteMany({
       where: { id: { in: this.accountIds } },

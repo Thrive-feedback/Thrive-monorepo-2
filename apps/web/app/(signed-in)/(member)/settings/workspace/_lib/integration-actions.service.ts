@@ -6,9 +6,9 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
+import { providerForSegment } from '@/lib/chat/chat-providers.constant';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
-import { providerForSegment } from './chat-providers.constant';
 
 /** What to say when the API refused to start an install, by its error code. */
 const BEGIN_ERRORS: Readonly<Record<string, string>> = {

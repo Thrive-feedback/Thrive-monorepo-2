@@ -1,3 +1,4 @@
+import { LinkedAccountList } from '@/app/(signed-in)/(member)/settings/account/_components/linked-account-list';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
@@ -37,6 +38,7 @@ export function AccountSection({ session }: { session: MemberAccount }) {
           { label: EMAIL, value: session.email },
         ]}
       />
+      <LinkedAccountList />
       <SettingRow label={SIGN_OUT} description={SIGN_OUT_DESCRIPTION}>
         <SignOutForm />
       </SettingRow>

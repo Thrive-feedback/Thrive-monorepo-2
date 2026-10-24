@@ -45,6 +45,14 @@ export const ROUTES = {
     index: '/settings',
     /** The signed-in person's own Profile, read from the session, and Sign out. */
     account: '/settings/account',
+    /**
+     * Where a chat tool returns a Member once they have authorised Thrive to learn which
+     * account there is theirs. The API builds the same address for the tool it sends them to,
+     * so the segment here and the one it registers with that tool have to agree — and it is a
+     * different address from the Workspace install's, which returns an Admin instead.
+     */
+    accountLinkCallback: (provider: string) =>
+      `/settings/account/links/${provider}/callback`,
     /** The Workspace's name, the way to switch to another, and the way to leave it. */
     workspace: '/settings/workspace',
     /** The Workspace's Workspace Goals: read by every Member, added, hidden and shown by Admins. */

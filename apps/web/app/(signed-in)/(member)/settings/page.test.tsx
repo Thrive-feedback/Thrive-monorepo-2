@@ -16,6 +16,10 @@ vi.mock('@/lib/session/session.service', () => ({
 vi.mock('@/lib/session/session-actions.service', () => ({
   signOut: vi.fn(),
 }));
+vi.mock(
+  '@/app/(signed-in)/(member)/settings/account/_components/linked-account-list',
+  () => ({ LinkedAccountList: () => <output>chat tools</output> }),
+);
 
 describe('Settings', () => {
   it('lets the gate turn away anyone who may not be here', async () => {
