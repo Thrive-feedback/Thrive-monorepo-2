@@ -7,7 +7,12 @@
 [#13](https://github.com/Thrive-feedback/Thrive-monorepo-2/issues/13)
 **Product decision:** brain `ADR-0035` §6–§9 — a Member links their own account, three events, no
 reminders, skipped quietly, DMs belong to #13
-**Status:** draft, 2026-10-18 · **Author:** naroebordin (with Claude) · **Follows:**
+**Status:** draft, 2026-10-18 · **Amended 2026-10-24** — three changes, all made so that in-app
+Notifications need not reopen Feedback's call sites later: `actorAccountId` on every port method (§4.2),
+`notification-copy.service.ts` renamed `chat-copy.service.ts` (§3), and D6 narrowed to mean *chat
+delivery*. Nothing any of the four cards does for a person changed. Their reasoning is
+`docs/design/0022-in-app-notifications/technical-design.md` §11
+**Author:** naroebordin (with Claude) · **Follows:**
 `docs/design/0020-connect-a-discord-channel.md`, which it depends on entirely
 
 ---
@@ -66,7 +71,7 @@ acceptance criterion exists for that reason.
 | D3 | **Providers are resolved through a registry**: one `ChatProvider` adapter interface, one implementation per provider, chosen by the stored `provider` value | a Discord-only module, generalised when Slack arrives; a `switch` in the use case | **Taken on 2026-10-18 at the author's instruction, against `PROJECT.md` §2.** The retired Go build used exactly this ("providers register by name at startup, so adding one does not touch the service" — brain `research/2026-09-26-…` §9) and it is the one part of that build worth keeping. **Cost, stated plainly:** with one provider the registry is a map with a single entry, and the interface is being designed against one real example — the usual way to get an abstraction wrong. It earns its place only when Slack lands |
 | D4 | **The direct-channel id is cached on the `LinkedAccount` row**, filled on first success | opening a conversation before every message; caching in Redis | Both providers return a stable id for a one-to-one conversation (Discord `openDirectChannel`, Slack `conversations.open`) and both limit how often it may be opened. There is no Redis (`BE_19` is `todo`). A nullable column costs nothing and removes one call from every message after the first |
 | D5 | **Notifying happens after the transaction commits, and cannot fail the action** — fire-and-forget with `.catch(logError)` | inside the `UnitOfWork`; awaiting it before responding | `ADR-0035` §8: asking for Feedback must never fail because a chat tool is unreachable. Inside the transaction it would hold a Postgres connection across two HTTP calls per recipient and could roll back real work over a chat outage |
-| D6 | **Unreachable is not an error and is not stored** — logged once, at `warn`, and forgotten | a `deliveryState` column; a banner in Thrive | `ADR-0035` §8, which also rejected telling them inside Thrive: that only reaches somebody who already opened it. A per-Member delivery state is a notification system's bookkeeping, and this is three messages |
+| D6 | **An unreachable *chat delivery* is not an error and is not stored** — logged once, at `warn`, and forgotten | a `deliveryState` column; a banner in Thrive | `ADR-0035` §8, which also rejected telling them inside Thrive: that only reaches somebody who already opened it. A per-Member delivery state is a notification system's bookkeeping, and this is three messages. **Narrowed 2026-10-24:** this is about *chat delivery*, never about the event. The in-app Notification of the same event **is** stored, by its own card — `docs/design/0022-in-app-notifications/`. Read unnarrowed, this reads as a decision never to store anything, which was not what it meant |
 | D7 | **A Deactivated Member is never messaged** | messaging anyone with a `LinkedAccount` | #210 added `member.deactivatedAt` (ADR 0047). Somebody Deactivated has been removed from the Workspace's life; a DM about its Feedback would be the only thing still reaching them |
 | D8 | **The identity is the triple `(provider, externalTeamId, externalUserId)`**, and `externalTeamId` is **non-null**, holding `''` where a provider has no such concept | `(provider, externalUserId)`; a nullable team column | A Discord user id is global, so the pair would do — but Slack documents the identifier as `(team, user)` and does not promise the user id alone is enough, and Enterprise Grid complicates it further. **The nullable version is a trap:** Postgres treats NULLs as distinct in a unique index, so `(discord, NULL, U1)` could be inserted twice and the constraint would silently not hold. `''` is ugly and correct; `NULLS NOT DISTINCT` needs Postgres 15+ (we are on 17) but is not reliably expressible through Prisma |
 | D9 | **Only an identifying scope is asked for**, and the user access token is used once and discarded | storing the user's access token; asking for anything broader | All Thrive needs is which account this is — Discord's `identify`, Slack's OpenID `identity`. A stored user token is a credential with no consumer, because the bot credential does the messaging. Broader scopes would let Thrive read every space they belong to, for no reason |
@@ -90,8 +95,10 @@ modules/notifications/
                                                  authorizeUrl(state) · exchangeCode(code)
                                                  openDirectChannel(ref) · postDirect(channelId, message)
     service/chat-provider.registry.ts          D3 — provider → ChatProvider
-    service/notification-copy.service.ts       the prose, and later the language
+    service/chat-copy.service.ts               the prose a chat tool carries, and later the language
     adapter/chat-person-notifier.adapter.ts    implements PersonNotifierPort over the registry
+                                               (in-app Notifications rebind the port to a fan-out
+                                                adapter that calls this one — `0022` §4)
     use-cases/begin-account-link.use-case.ts
     use-cases/complete-account-link.use-case.ts
     use-cases/unlink-account.use-case.ts
@@ -144,9 +151,10 @@ D8), `NOT_LINKED` (not_found, on unlink).
 ### 4.2 Sending one message
 
 ```
-ChatPersonNotifier.askReceived({ workspaceId, workspaceName, accountId, requesterName, requestMessage, askId })
+ChatPersonNotifier.askReceived({ workspaceId, workspaceName, accountId,
+                                 actorAccountId, requesterName, requestMessage, askId })
   1  linkedAccountQuery.forAccount(accountId)       → none? return, nothing logged
-  2  workspaceMembership.isActiveMemberOf(...)      → not active? return (D7)
+  2  workspaceMembership.isMemberOf(...)            → not an active Member? return (D7)
   3  copy.askReceived(...)                          → one message, with ROUTES.homeAsk(askId)
   4  for each Linked Account (D12), settled in parallel:
        registry.get(provider)
@@ -158,6 +166,12 @@ ChatPersonNotifier.askReceived({ workspaceId, workspaceName, accountId, requeste
 The copy is composed **once**, above the registry, because it is the same words whichever tool carries
 them. Only rendering differs — a Discord embed, a Slack block — and that belongs in the provider
 adapter, which is why `postDirect` takes a message the adapter shapes rather than a string.
+
+**`actorAccountId` added 2026-10-24**, with nothing else about this design changed. It is the id of the
+person who did the thing, beside the ready-made `requesterName` that chat copy uses. Chat does not need
+it; **in-app Notifications do** — to name the actor, to resolve them in a batch, and to refuse to notify
+somebody about their own action. Every call site already holds it, so it costs a field now and three
+reopened Feedback call sites later. See `docs/design/0022-in-app-notifications/technical-design.md` §11.
 
 Step 2 needs nothing new, **corrected 2026-10-18**: `isMemberOf` already answers *active* membership —
 `MembershipQuery.membershipInWorkspace` filters `deactivatedAt: null` (ADR 0047), so a Deactivated
@@ -178,7 +192,7 @@ All after commit, none awaited (D5). #215 fires on `origin === 'OFFERED'` only; 
 cases exhaustive rather than overlapping — #215 AC 5.
 
 **Naming the Workspace** (D11). Each port method takes `workspaceName` beside `workspaceId`, and
-`notification-copy.service.ts` puts it in every message:
+`chat-copy.service.ts` puts it in every message:
 
 ```
 Nut asked you for feedback in Thrive Team
