@@ -1,6 +1,6 @@
 # 0049 — The current Workspace is the active membership used last, stamped on `member`
 
-Status:   accepted
+Status:   superseded by 0057
 Date:     2026-10-18
 Deciders: kritpavin
 
