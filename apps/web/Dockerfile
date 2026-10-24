@@ -11,7 +11,7 @@
 # server and static assets are about 65 MB. A change past 360 MB needs a reason stated in
 # the pull request.
 
-FROM node:26.9.0-alpine AS base
+FROM node:26.12.1-alpine AS base
 # Bun installs; Node runs. Pinned to the version the repository declares, so a build here
 # resolves exactly what a laptop resolves.
 RUN npm install --global bun@1.3.14
@@ -42,7 +42,7 @@ RUN bun run --cwd apps/web build
 
 # Not `base`: that stage carries Bun so it can install, and a package manager has no place
 # in a runtime image. Node alone runs the standalone server.
-FROM node:26.9.0-alpine AS runner
+FROM node:26.12.1-alpine AS runner
 WORKDIR /repo
 
 RUN addgroup --system --gid 1001 thrive \
