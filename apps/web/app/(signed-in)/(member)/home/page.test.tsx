@@ -1,5 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { ROUTES } from '@/lib/routes.constant';
 import Home from './page';
 
 const ANN = {
@@ -58,6 +59,11 @@ vi.mock('./_components/answer-ask-detail', () => ({
     <output>{`ask ${askId}`}</output>
   ),
 }));
+vi.mock('./_components/feedback-detail', () => ({
+  FeedbackDetail: ({ feedbackId }: { feedbackId: string }) => (
+    <output>{`feedback ${feedbackId}`}</output>
+  ),
+}));
 vi.mock('@/components/atoms/one-time-toast', () => ({
   OneTimeToast: ({
     type,
@@ -72,6 +78,11 @@ vi.mock('@/components/atoms/one-time-toast', () => ({
 
 function open(searchParams: Record<string, string> = {}) {
   return Home({ searchParams: Promise.resolve(searchParams) });
+}
+
+/** The query of an address from `ROUTES`, as the framework hands it to the page. */
+function paramsOf(href: string): Record<string, string> {
+  return Object.fromEntries(new URL(href, 'https://thrive.test').searchParams);
 }
 
 describe('Home', () => {
@@ -258,6 +269,45 @@ describe('Home', () => {
     const dialog = screen.getByRole('region', { name: 'Give your feedback' });
     expect(dialog).toHaveTextContent(`ask ${ID}`);
     expect(dialog).toHaveAttribute('data-close', '/home?tab=waiting');
+  });
+
+  it('opens the Feedback the shared address names in a dialog, closing back to its tab', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open(paramsOf(ROUTES.homeFeedback(ID))));
+
+    const dialog = screen.getByRole('region', { name: 'Feedback' });
+    expect(dialog).toHaveTextContent(`feedback ${ID}`);
+    expect(dialog).toHaveAttribute('data-close', '/home');
+  });
+
+  it('opens nothing for Feedback the address names by something that is not an id', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open({ feedback: 'nonsense' }));
+
+    expect(screen.queryByRole('region')).toBeNull();
+  });
+
+  it('opens the request, then the Ask, then the Feedback when the address names several', async () => {
+    const OTHER = '0199a0f0-0000-7000-8000-0000000000f2';
+    const THIRD = '0199a0f0-0000-7000-8000-0000000000f3';
+    requireMember.mockResolvedValue(ANN);
+
+    const both = render(
+      await open({ request: ID, ask: OTHER, feedback: THIRD }),
+    );
+    expect(
+      screen.getByRole('region', { name: 'Your feedback request' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('region')).toHaveLength(1);
+    both.unmount();
+
+    render(await open({ ask: OTHER, feedback: THIRD }));
+    expect(
+      screen.getByRole('region', { name: 'Give your feedback' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('region')).toHaveLength(1);
   });
 
   it('opens no dialog on an ordinary visit', async () => {
