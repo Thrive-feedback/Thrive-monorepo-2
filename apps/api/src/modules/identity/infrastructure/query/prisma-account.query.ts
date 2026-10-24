@@ -46,12 +46,10 @@ export class PrismaAccountQuery extends AccountQuery {
     if (emails.length === 0) {
       return [];
     }
+    // Better Auth stores every address lowercased, so lowercasing the question lets the unique
+    // index on `email` answer it. A case-insensitive match would read every Account in Thrive.
     const accounts = await this.prismaService.user.findMany({
-      where: {
-        OR: emails.map((email) => ({
-          email: { equals: email, mode: 'insensitive' as const },
-        })),
-      },
+      where: { email: { in: emails.map((email) => email.toLowerCase()) } },
       select: { id: true, email: true },
     });
     return accounts.map((account) => ({

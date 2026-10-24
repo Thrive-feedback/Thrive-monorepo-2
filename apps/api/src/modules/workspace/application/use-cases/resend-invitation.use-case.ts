@@ -121,7 +121,10 @@ export class ResendInvitationUseCase {
           .catch(() => undefined);
       } else {
         await this.workspaceInviting
-          .markSent(reissued.invitationId, invitation.lastSentAt)
+          .restoreSent(reissued.invitationId, {
+            lastSentAt: invitation.lastSentAt,
+            expiresAt: invitation.expiresAt,
+          })
           .catch(() => undefined);
       }
       throw error;

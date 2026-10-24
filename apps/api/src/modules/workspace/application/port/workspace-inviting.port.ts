@@ -83,4 +83,13 @@ export abstract class WorkspaceInviting {
 
   /** Records when the Invitation's email last went out. */
   abstract markSent(invitationId: string, sentAt: Date): Promise<void>;
+
+  /**
+   * Puts an Invitation back as it was before a resend whose email never went out: when it was
+   * last sent, and when it expires, since resending a Pending one had extended it.
+   */
+  abstract restoreSent(
+    invitationId: string,
+    before: { readonly lastSentAt: Date; readonly expiresAt: Date },
+  ): Promise<void>;
 }

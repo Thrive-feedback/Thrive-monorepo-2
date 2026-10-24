@@ -286,6 +286,9 @@ model Feedback {
   /// For the Workspace feed (#90): everything set to Everyone, newest first. The two indexes
   /// above lead with a person, which that read does not filter on.
   @@index([workspaceId, visibility, createdAt])
+  /// For one request's answers (#24): every piece it collected. Without it, that read walks the
+  /// Workspace's Feedback.
+  @@index([feedbackRequestId])
   @@map("feedback")
 }
 

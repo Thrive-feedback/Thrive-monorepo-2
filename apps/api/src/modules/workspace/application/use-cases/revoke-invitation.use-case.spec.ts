@@ -36,6 +36,7 @@ function setUp(
     role: 'MEMBER',
     status,
     lastSentAt: NOW,
+    expiresAt: new Date(NOW.getTime() + 7 * 24 * 60 * 60 * 1000),
   });
   const useCase = new RevokeInvitationUseCase(
     workspaceInviting,

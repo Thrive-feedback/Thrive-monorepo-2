@@ -33,6 +33,7 @@ const ANN_COOKIE = 'thrive.session_token=ann';
 const NOW = new Date('2026-10-10T03:00:00Z');
 const AN_HOUR_AGO = new Date('2026-10-10T02:00:00Z');
 const A_MINUTE_AGO = new Date('2026-10-10T02:59:00Z');
+const TOMORROW = new Date('2026-10-11T03:00:00Z');
 const NEXT_WEEK = new Date('2026-10-17T03:00:00Z');
 const SOMCHAI = 'somchai@acme.co';
 
@@ -62,6 +63,7 @@ function setUp(
     role: options.role ?? 'MEMBER',
     status,
     lastSentAt: options.lastSentAt ?? AN_HOUR_AGO,
+    expiresAt: TOMORROW,
   });
   const emailSender = new FakeEmailSender();
   const profileNamePort = new FakeProfileNamePort();
@@ -158,6 +160,16 @@ describe('resending a Pending Invitation whose email does not go out', () => {
     await expect(useCase.execute(resend())).rejects.toThrow();
     expect(workspaceInviting.sentAt.get(INVITATION_ID)).toEqual(AN_HOUR_AGO);
     expect(workspaceInviting.revoked).toEqual([]);
+  });
+
+  it('puts back when it expires, so an email that never went out extends nothing', async () => {
+    const { workspaceInviting, emailSender, useCase } = setUp();
+    emailSender.failingFor.add(SOMCHAI);
+
+    await expect(useCase.execute(resend())).rejects.toThrow();
+    expect(workspaceInviting.restoredExpiresAt.get(INVITATION_ID)).toEqual(
+      TOMORROW,
+    );
   });
 });
 

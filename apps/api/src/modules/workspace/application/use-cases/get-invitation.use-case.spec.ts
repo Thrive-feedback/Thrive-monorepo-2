@@ -21,6 +21,7 @@ function setUp(status: InvitationStatusValue = 'PENDING') {
     role: 'MEMBER',
     status,
     lastSentAt: NOW,
+    expiresAt: new Date(NOW.getTime() + 7 * 24 * 60 * 60 * 1000),
   });
   const profileNamePort = new FakeProfileNamePort();
   const useCase = new GetInvitationUseCase(
