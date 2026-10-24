@@ -71,3 +71,34 @@ Feature: Being messaged in a chat tool about Feedback
     When Ben answers "You open strongly and lose the room at the detail."
     Then nobody is messaged in Discord
     And Ann reads "You open strongly and lose the room at the detail." on the request saying "Running the planning meeting"
+
+  @api
+  Scenario: Somebody is messaged when Feedback is written to them unasked
+    Given Ben has linked his Discord account as "ben#0001"
+    When Ann gives Ben Feedback: "You kept the room with you."
+    Then Ben is messaged in Discord about "wrote feedback to you"
+    And the message links to the Feedback
+    And no message carries "kept the room"
+
+  @api
+  Scenario: Somebody chosen to see it is told it was shared with them
+    Given Cara is a Member of Ann's Workspace
+    And Cara has linked her Discord account as "cara#0001"
+    When Ann gives Ben Feedback: "You kept the room with you.", shared with Cara
+    Then Cara is messaged in Discord about "shared feedback with you"
+
+  @api
+  Scenario: Answering an Ask sends the answered message, never this one
+    Given Ann has linked her Discord account as "ann#0001"
+    And Ann has asked Ben for Feedback: "Running the planning meeting"
+    And the messages sent so far are set aside
+    When Ben answers "You open strongly and lose the room at the detail."
+    Then Ann is messaged in Discord about "answered your feedback request"
+    And no message carries "wrote feedback to you"
+
+  @api
+  Scenario: Giving Feedback succeeds when the Receiver linked nothing
+    When Ann gives Ben Feedback: "You kept the room with you."
+    Then nobody is messaged in Discord
+    And Ben looks at the Feedback written to them
+    And Ben reads "You kept the room with you." from Ann, given without being asked

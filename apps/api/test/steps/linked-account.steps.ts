@@ -283,3 +283,7 @@ Then(
     }
   },
 );
+
+Then('the message links to the Feedback', function (this: ThriveWorld) {
+  assert.match(messagesSent()[0]?.text ?? '', /\/home\?feedback=/);
+});
