@@ -7,6 +7,7 @@ import {
 } from '@/lib/session/session.service';
 import { AccountAvatar } from './account-avatar';
 import styles from './glass.module.css';
+import { NotificationBell } from './notification-bell';
 import { SessionRefresher } from './session-refresher';
 import { SettingsLink } from './settings-link';
 
@@ -14,6 +15,8 @@ import { SettingsLink } from './settings-link';
  * The navbar of every page a Member uses: the logo, leading Home, on the left; Settings and the
  * person's avatar on the right. The colour mode is chosen in Settings, so there is no switch
  * here. Register keeps `SiteNavbar`, because someone still registering has no Home to go to.
+ * The bell is beside Settings, and only for somebody signed in: it asks the server what is
+ * waiting for them, and there is nothing waiting for nobody.
  * This is where a session due a refresh gets one on a Member's pages.
  */
 export async function MemberNavbar() {
@@ -36,6 +39,7 @@ export async function MemberNavbar() {
       <div className="flex items-center gap-gap-nav">
         {session && (
           <>
+            <NotificationBell />
             <SettingsLink />
             <AccountAvatar
               name={session.profile?.displayName ?? session.name}

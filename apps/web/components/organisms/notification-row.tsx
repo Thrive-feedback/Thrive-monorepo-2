@@ -1,0 +1,56 @@
+'use client';
+
+import NextLink from 'next/link';
+import { DropdownMenuItem } from '@/components/atoms/dropdown-menu';
+import { Text } from '@/components/atoms/text';
+import { cn } from '@/lib/cn.util';
+import type { BellNotification } from '@/lib/notifications/notification.type';
+import { notificationLine } from '@/lib/notifications/notification-copy.constant';
+import { timeAgo } from '@/lib/notifications/time-ago.util';
+
+export type NotificationRowProps = {
+  notification: BellNotification;
+  /** Pressing the line: it is about to open what it points at, and counts as read. */
+  onOpen: (notification: BellNotification) => void;
+};
+
+/**
+ * One line in the bell: what happened, how long ago, and whether it is still unread.
+ *
+ * It is a link rather than a button, so it opens in a new tab on a middle click and reads as a
+ * link to a screen reader. Unread is said in words as well as drawn as a dot, because a colour
+ * says nothing to somebody who cannot see it.
+ */
+export function NotificationRow({
+  notification,
+  onOpen,
+}: NotificationRowProps) {
+  const { sentence, destination } = notificationLine(notification);
+
+  return (
+    <DropdownMenuItem asChild onSelect={() => onOpen(notification)}>
+      <NextLink href={destination} className="items-start gap-3">
+        <span
+          aria-hidden="true"
+          className={cn(
+            'mt-1.5 size-2 shrink-0 rounded-full',
+            notification.isRead ? 'bg-transparent' : 'bg-action-primary',
+          )}
+        />
+        <span className="flex min-w-0 flex-col gap-0.5">
+          <Text
+            as="span"
+            variant="body-2"
+            className={cn(notification.isRead ? undefined : 'font-semibold')}
+          >
+            {sentence}
+          </Text>
+          <Text as="span" variant="caption" tone="muted">
+            {timeAgo(notification.createdAt)}
+          </Text>
+        </span>
+        {!notification.isRead && <span className="sr-only">Unread</span>}
+      </NextLink>
+    </DropdownMenuItem>
+  );
+}
