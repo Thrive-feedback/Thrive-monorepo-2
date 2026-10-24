@@ -6,6 +6,8 @@ const CLIENT_SECRET = 'a-discord-client-secret';
 const BOT_TOKEN = 'a-discord-bot-token';
 const GUILD_ID = '200000000000000002';
 const CHANNEL_ID = '300000000000000003';
+const MEMBER_USER_ID = '500000000000000005';
+const DIRECT_CHANNEL_ID = '600000000000000006';
 const REDIRECT_URI = 'https://thriveteam.app/settings/workspace/x/callback';
 
 const realFetch = globalThis.fetch;
@@ -251,6 +253,113 @@ describe('leaving a server', () => {
     const { client } = clientUnderTest();
 
     expect(await client.leaveGuild(GUILD_ID)).toBeUndefined();
+  });
+});
+
+describe('opening a one-to-one conversation', () => {
+  it('answers the channel id Discord opened for that person', async () => {
+    stubDiscord({ status: 200, body: { id: DIRECT_CHANNEL_ID } });
+    const { client } = clientUnderTest();
+
+    expect(await client.openDirectChannel(MEMBER_USER_ID)).toBe(
+      DIRECT_CHANNEL_ID,
+    );
+  });
+
+  it('names the person as the recipient, as the bot', async () => {
+    const calls = stubDiscord({ status: 200, body: { id: DIRECT_CHANNEL_ID } });
+    const { client } = clientUnderTest();
+
+    await client.openDirectChannel(MEMBER_USER_ID);
+
+    const call = callAt(calls, 0);
+    expect(call.url).toContain('/users/@me/channels');
+    expect(call.init.method).toBe('POST');
+    expect(JSON.parse(String(call.init.body))).toEqual({
+      recipient_id: MEMBER_USER_ID,
+    });
+    expect(headerOf(call, 'Authorization')).toBe(`Bot ${BOT_TOKEN}`);
+  });
+
+  it('refuses an account id that is not a Discord id, before it reaches Discord', async () => {
+    const calls = stubDiscord({ status: 200, body: { id: DIRECT_CHANNEL_ID } });
+    const { client } = clientUnderTest();
+
+    await expect(client.openDirectChannel('not-a-snowflake')).rejects.toThrow();
+    expect(calls).toHaveLength(0);
+  });
+
+  it('refuses an answer that names no conversation, rather than reading past it', async () => {
+    stubDiscord({ status: 200, body: { recipients: [] } });
+    const { client } = clientUnderTest();
+
+    const refusal = await client
+      .openDirectChannel(MEMBER_USER_ID)
+      .catch((error: unknown) => error);
+
+    expect(refusal).toBeInstanceOf(Error);
+    expect(refusal).not.toBeInstanceOf(TypeError);
+  });
+
+  it('refuses an answer whose conversation id is not a string', async () => {
+    stubDiscord({ status: 200, body: { id: Number(DIRECT_CHANNEL_ID) } });
+    const { client } = clientUnderTest();
+
+    const refusal = await client
+      .openDirectChannel(MEMBER_USER_ID)
+      .catch((error: unknown) => error);
+
+    expect(refusal).toBeInstanceOf(Error);
+    expect(refusal).not.toBeInstanceOf(TypeError);
+  });
+
+  it('asks once when the bot shares no server with that person, because asking again cannot change it', async () => {
+    const calls = stubDiscord({ status: 403 });
+    const { client } = clientUnderTest();
+
+    await expect(client.openDirectChannel(MEMBER_USER_ID)).rejects.toThrow();
+    expect(calls).toHaveLength(1);
+  });
+
+  it('waits as long as Discord asked when it is rate-limiting, then opens the conversation', async () => {
+    stubDiscord(
+      { status: 429, retryAfter: '2' },
+      { status: 200, body: { id: DIRECT_CHANNEL_ID } },
+    );
+    const { client, waits } = clientUnderTest();
+
+    expect(await client.openDirectChannel(MEMBER_USER_ID)).toBe(
+      DIRECT_CHANNEL_ID,
+    );
+    expect(waits).toEqual([2000]);
+  });
+
+  it('says nothing about the credential when Discord refuses', async () => {
+    stubDiscord({ status: 403 });
+    const { client } = clientUnderTest();
+
+    const refusal = await client
+      .openDirectChannel(MEMBER_USER_ID)
+      .catch((error: Error) => error);
+
+    expect(String(refusal)).not.toContain(BOT_TOKEN);
+    expect(String(refusal)).not.toContain(CLIENT_SECRET);
+  });
+
+  it('is written into by the same post as any other channel', async () => {
+    const calls = stubDiscord({ status: 200 });
+    const { client } = clientUnderTest();
+
+    await client.postToChannel(
+      DIRECT_CHANNEL_ID,
+      'Someone asked you for Feedback',
+    );
+
+    const call = callAt(calls, 0);
+    expect(call.url).toContain(`/channels/${DIRECT_CHANNEL_ID}/messages`);
+    expect(JSON.parse(String(call.init.body))).toEqual({
+      content: 'Someone asked you for Feedback',
+    });
   });
 });
 

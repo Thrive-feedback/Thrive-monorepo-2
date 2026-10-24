@@ -19,7 +19,7 @@ const API_BASE_URL = 'https://discord.com/api/v10';
 /** Discord's own channel type for an ordinary text channel. */
 const GUILD_TEXT = 0;
 
-/** A Discord id — a snowflake, 17 to 20 digits. Checked before one reaches a URL path. */
+/** A Discord id — a snowflake, 17 to 20 digits. Checked before one reaches Discord. */
 const SNOWFLAKE = /^\d{17,20}$/;
 
 /** Injected so a test can run the retry path without the delay it is built around. */
@@ -161,6 +161,30 @@ export class DiscordBotClient {
     await this.request(`users/@me/guilds/${asSnowflake(guildId)}`, {
       method: 'DELETE',
     });
+  }
+
+  /**
+   * Opens the one-to-one conversation with a person and answers Discord's id for it. Discord
+   * returns the same id every time, so a caller may store it and skip this call afterwards.
+   *
+   * Discord refuses with `403` when the bot shares no server with that person, or when they
+   * closed their direct messages. That is an ordinary answer rather than a fault, and asking
+   * again cannot change it, which is why `403` is outside the retried statuses.
+   *
+   * Nothing further is needed to write into the conversation: what comes back is an ordinary
+   * channel id, and `postToChannel` posts into it.
+   */
+  async openDirectChannel(userId: string): Promise<string> {
+    const answer = await this.request('users/@me/channels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipient_id: asSnowflake(userId) }),
+    });
+    const channelId = channelIdOf(answer);
+    if (!channelId) {
+      throw new Error('Discord opened no conversation with that account');
+    }
+    return channelId;
   }
 
   async postToChannel(channelId: string, text: string): Promise<void> {
@@ -317,6 +341,14 @@ function guildOf(answer: unknown): DiscordGuild | null {
     : null;
 }
 
+function channelIdOf(answer: unknown): string | null {
+  if (typeof answer !== 'object' || answer === null) {
+    return null;
+  }
+  const { id } = answer as Record<string, unknown>;
+  return typeof id === 'string' && id.length > 0 ? id : null;
+}
+
 function channelsOf(answer: unknown): readonly DiscordChannel[] {
   if (!Array.isArray(answer)) {
     return [];
@@ -341,8 +373,9 @@ function backoffFor(attempt: number): number {
 }
 
 /**
- * An id reaches here from a Connection or from something a person chose on screen, and goes
- * straight into a URL path. Anything but a snowflake is refused before the call is made.
+ * An id reaches here from a Connection, from a Linked Account, or from something a person chose
+ * on screen, and goes straight into a URL path or a request body. Anything but a snowflake is
+ * refused before the call is made.
  */
 function asSnowflake(id: string): string {
   if (!SNOWFLAKE.test(id)) {
