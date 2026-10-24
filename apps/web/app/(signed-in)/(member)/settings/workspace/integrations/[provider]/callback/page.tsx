@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ChooseChannelForm } from '@/app/(signed-in)/(member)/settings/workspace/_components/choose-channel-form';
-import { providerForSegment } from '@/app/(signed-in)/(member)/settings/workspace/_lib/chat-providers.constant';
 import { completeInstall } from '@/app/(signed-in)/(member)/settings/workspace/_lib/installs.service';
 import { Link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
+import { providerForSegment } from '@/lib/chat/chat-providers.constant';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 

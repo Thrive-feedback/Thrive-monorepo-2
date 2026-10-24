@@ -39,6 +39,12 @@ export interface DiscordChannel {
   readonly name: string;
 }
 
+/** The person a Member proved they are in Discord, as Discord itself reported it. */
+export interface DiscordUser {
+  readonly id: string;
+  readonly username: string;
+}
+
 /**
  * The one authenticated Discord client in Thrive, and the only place that knows Discord exists.
  * Mirrors `infrastructure/email/resend-email-sender.adapter.ts`: a timeout, a capped number of
@@ -87,6 +93,51 @@ export class DiscordBotClient {
       throw new Error('Discord authorised no server for this installation');
     }
     return guild;
+  }
+
+  /**
+   * Exchanges a Member's authorisation code for Discord's own account of **who** they are, and
+   * nothing else — the `identify` scope (design 0021 D9).
+   *
+   * The user access token lives inside this method: it is spent on the one call that needs it
+   * and never returned, logged or stored. Thrive messages with its own bot credential, so a
+   * stored user token would be a credential with no consumer and a liability with no upside.
+   */
+  async exchangeIdentity(
+    code: string,
+    redirectUri: string,
+  ): Promise<DiscordUser> {
+    const body = new URLSearchParams({
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri,
+    });
+    const token = await this.request('oauth2/token', {
+      method: 'POST',
+      // The application names itself in the body here, so the bot token has no business on
+      // this one route — Discord refuses a token request that carries another credential.
+      auth: 'application',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    });
+    const accessToken = accessTokenOf(token);
+    if (!accessToken) {
+      throw new Error('Discord issued no access token for this link');
+    }
+    // Asked as the person, not as the bot: the bot's own `users/@me` is the application.
+    const user = userOf(
+      await this.request('users/@me', {
+        method: 'GET',
+        auth: 'bearer',
+        bearerToken: accessToken,
+      }),
+    );
+    if (!user) {
+      throw new Error('Discord did not say which account authorised this link');
+    }
+    return user;
   }
 
   /**
@@ -153,9 +204,7 @@ export class DiscordBotClient {
       response = await fetch(`${API_BASE_URL}/${path}`, {
         method: init.method,
         headers: {
-          ...(init.auth === 'application'
-            ? {}
-            : { Authorization: `Bot ${this.botToken}` }),
+          ...authorizationFor(init, this.botToken),
           ...init.headers,
         },
         body: init.body,
@@ -183,10 +232,48 @@ export class DiscordBotClient {
 
 interface DiscordRequest {
   readonly method: string;
-  /** `application` for the token route, which authenticates by its own body. */
-  readonly auth?: 'bot' | 'application';
+  /**
+   * `application` for the token route, which authenticates by its own body; `bearer` for the
+   * one call made **as the person** who just authorised, rather than as Thrive's bot.
+   */
+  readonly auth?: 'bot' | 'application' | 'bearer';
+  /** Required by `bearer` and meaningless otherwise. Never logged: it is that person's token. */
+  readonly bearerToken?: string;
   readonly headers?: Record<string, string>;
   readonly body?: BodyInit;
+}
+
+function authorizationFor(
+  init: DiscordRequest,
+  botToken: string,
+): Record<string, string> {
+  if (init.auth === 'application') {
+    return {};
+  }
+  if (init.auth === 'bearer') {
+    return { Authorization: `Bearer ${init.bearerToken ?? ''}` };
+  }
+  return { Authorization: `Bot ${botToken}` };
+}
+
+function accessTokenOf(answer: unknown): string | null {
+  if (typeof answer !== 'object' || answer === null) {
+    return null;
+  }
+  const { access_token: accessToken } = answer as Record<string, unknown>;
+  return typeof accessToken === 'string' && accessToken.length > 0
+    ? accessToken
+    : null;
+}
+
+function userOf(answer: unknown): DiscordUser | null {
+  if (typeof answer !== 'object' || answer === null) {
+    return null;
+  }
+  const { id, username } = answer as Record<string, unknown>;
+  return typeof id === 'string' && typeof username === 'string'
+    ? { id, username }
+    : null;
 }
 
 interface Attempt {

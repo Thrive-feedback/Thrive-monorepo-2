@@ -4,6 +4,7 @@ import type { PrismaService } from '@app/infrastructure/database/prisma.service'
 import type { INestApplication } from '@nestjs/common';
 import type { FakeEmailSender } from './email-sender.fake';
 import type { FakeChatInstaller, FakeChatPoster } from './integrations.fakes';
+import type { FakeAccountLinker } from './notifications.fakes';
 
 /**
  * The application the scenarios run against: booted once per run, wired as it ships, with
@@ -17,6 +18,8 @@ export interface Harness {
   /** The chat tool a scenario connects to; nothing reaches Discord. */
   readonly chatInstaller: FakeChatInstaller;
   readonly chatPoster: FakeChatPoster;
+  /** The chat tool a scenario links a personal account in; nothing reaches Discord. */
+  readonly accountLinker: FakeAccountLinker;
   readonly prismaService: PrismaService;
   readonly auth: Auth;
   readonly configuration: Configuration;

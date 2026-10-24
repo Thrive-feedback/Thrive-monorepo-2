@@ -2,8 +2,9 @@ import 'server-only';
 import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { apiClient } from '@/lib/api-client.service';
+import type { ChatProvider } from '@/lib/chat/chat-providers.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import type { AuthorizedInstall, ChatProvider } from './connection.type';
+import type { AuthorizedInstall } from './connection.type';
 
 /** What to say when the tool would not finish the install, by the API's error code. */
 const COMPLETE_ERRORS: Readonly<Record<string, string>> = {

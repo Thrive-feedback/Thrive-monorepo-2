@@ -1,10 +1,4 @@
-import type { components } from '@repo/api';
-
-type ConnectionResponse =
-  components['schemas']['ListConnectionsResponseDto_Output']['items'][number];
-
-/** Which chat tool a Connection is to. Discord today; Slack is next (brain `ADR-0035`). */
-export type ChatProvider = ConnectionResponse['provider'];
+import type { ChatProvider } from '@/lib/chat/chat-providers.constant';
 
 /** One chat tool this Workspace is connected to, as Settings → Workspace lists it. */
 export type WorkspaceConnection = {

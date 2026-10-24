@@ -621,6 +621,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/linked-accounts/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the chat accounts I have linked, and when each was linked */
+        get: operations["LinkedAccountController_listMine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/linked-accounts/mine/{provider}/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Begin linking my own account in one chat tool */
+        post: operations["LinkedAccountController_beginLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/linked-accounts/mine/{provider}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finish linking, with what the chat tool sent my browser back with */
+        post: operations["LinkedAccountController_completeLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/linked-accounts/mine/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Unlink my account in one chat tool, so Thrive stops messaging me there */
+        delete: operations["LinkedAccountController_unlink"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1186,6 +1254,28 @@ export interface components {
         ChooseChannelRequestDto: {
             installation: string;
             channelId: string;
+        };
+        ListLinkedAccountsResponseDto_Output: {
+            items: {
+                /** @enum {string} */
+                provider: "DISCORD";
+                externalUsername: string;
+                /** Format: date-time */
+                linkedAt: string;
+            }[];
+        };
+        BeginAccountLinkResponseDto_Output: {
+            /** Format: uri */
+            authorizeUrl: string;
+        };
+        CompleteAccountLinkRequestDto: {
+            code: string;
+            state: string;
+        };
+        CompleteAccountLinkResponseDto_Output: {
+            /** @enum {string} */
+            provider: "DISCORD";
+            externalUsername: string;
         };
     };
     responses: never;
@@ -3050,6 +3140,166 @@ export interface operations {
                 content?: never;
             };
             /** @description WORKSPACE_NOT_FOUND or CONNECTION_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LinkedAccountController_listMine: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListLinkedAccountsResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LinkedAccountController_beginLink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BeginAccountLinkResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, PROVIDER_NOT_SUPPORTED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LinkedAccountController_completeLink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompleteAccountLinkRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompleteAccountLinkResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, PROVIDER_NOT_SUPPORTED, LINK_STATE_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description LINK_REFUSED, ACCOUNT_ALREADY_LINKED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LinkedAccountController_unlink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The link is forgotten. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID, PROVIDER_NOT_SUPPORTED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_LINKED */
             404: {
                 headers: {
                     [name: string]: unknown;
