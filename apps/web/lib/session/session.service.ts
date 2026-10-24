@@ -42,7 +42,14 @@ const readCurrentSession = cache(async () => {
  * one for someone in just one. Asked alongside the session rather than after it, so a page waits
  * for one round trip, not two.
  */
-const readCurrentMembership = cache(
+/**
+ * Exported for the one caller that needs the Workspace and nothing else: the bell's poll, which
+ * runs every minute per signed-in tab. Going through `requireMember` would read the session too,
+ * for a fact it then throws away — three API calls a minute instead of two.
+ *
+ * `cache()` still de-duplicates it within one request, so a page that also reads it pays once.
+ */
+export const readCurrentMembership = cache(
   async (): Promise<CurrentMembership | null> => {
     try {
       const result = await apiClient().GET('/v1/members/mine/current', {

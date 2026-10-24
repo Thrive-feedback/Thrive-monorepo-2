@@ -13,6 +13,10 @@ vi.mock('next/navigation', () => ({ usePathname: () => pathname() }));
 vi.mock('./session-refresher', () => ({
   SessionRefresher: () => <output>session refresher</output>,
 }));
+// The bell reaches the server as soon as it mounts, which is its own suite's subject.
+vi.mock('./notification-bell', () => ({
+  NotificationBell: () => <output>notification bell</output>,
+}));
 
 const ANN = {
   email: 'ann@acme.test',
@@ -61,11 +65,20 @@ describe('MemberNavbar', () => {
     expect(screen.queryByRole('button', { name: 'Dark theme' })).toBeNull();
   });
 
+  it('rings the bell for somebody signed in', async () => {
+    readSession.mockResolvedValue(ANN);
+
+    render(await MemberNavbar());
+
+    expect(screen.getByText('notification bell')).toBeInTheDocument();
+  });
+
   it('shows only the logo when nobody is signed in', async () => {
     readSession.mockResolvedValue(null);
 
     render(await MemberNavbar());
 
+    expect(screen.queryByText('notification bell')).toBeNull();
     expect(screen.queryByRole('link', { name: 'Settings' })).toBeNull();
     expect(screen.queryByRole('link', { name: /Account/ })).toBeNull();
     expect(screen.getByRole('link')).toHaveAttribute('href', '/');

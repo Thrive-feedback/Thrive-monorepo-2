@@ -32,9 +32,10 @@ So this design does not add a parallel system — it adds **what sits behind `Pe
    removes the need to snapshot a name and removes any reason for Notifications to read Feedback.
 2. **The browser never reaches the API.** `apps/web/lib/api-client.service.ts` is `server-only`, and the
    API has no public domain (ADR 0027). Anything that refreshes a count has to go through the web server.
-3. **There is no route to a single piece of Feedback.** Home's dialog takes `request` and `ask` only
-   (`apps/web/app/(signed-in)/(member)/home/page.tsx`). §10 R4 — **this already blocks #215**, which is
-   carded and says "land on that Feedback".
+3. ~~**There is no route to a single piece of Feedback.**~~ **Fixed 2026-10-24, PR #249.** Home's
+   dialog now takes `feedback` beside `request` and `ask`, and `ROUTES.homeFeedback(id)` builds it as
+   `/home?feedback={id}`. It was found while writing this design, and it had already been blocking
+   #215 — which is why it shipped first.
 
 **What is deliberately not here.** Reminders (no scheduler — `BE_18` is `todo`), email (its own card, and
 Resend's shared 100-a-day cap), preferences (`requirement.md` §5), and anything that pushes to the
@@ -52,7 +53,7 @@ browser (§2 D9).
 | D6 | **The row write is `await`ed and its failure swallowed**, unlike the chat message, which stays fire-and-forget | fire-and-forget for both (`0021` D5); awaiting both | They are different risks. The row is one local Postgres insert, ~1 ms, and losing it means the person is **never told by any channel**. The chat call is two HTTPS round trips to a third party that may be down. So: `await` the row inside a `try/catch` that logs and returns; leave chat as `0021` wrote it. **Cost, stated:** ~1–3 ms added to the p50 of three write endpoints, measurable before and after with the existing suites |
 | D7 | **Fan-out is one `createMany`**, not a call per recipient | `Promise.allSettled` over inserts | A request asking five people is one round trip, not five. This is also why D2's shape pays: the recipients are already in hand |
 | D8 | **Idempotent on `(recipientAccountId, type, subjectId)`, unique, inserted with `skipDuplicates`** | nothing; a dedup check read before insert | A double-submitted form or a retried request must not put two lines in a bell. A check-then-insert is a race (`BE_12`); a unique index is not. It also enforces `requirement.md` rule 4 at the database rather than in a code path somebody can reorder |
-| D9 | **Freshness is polling: on mount, on the tab regaining focus, and every 60 s while visible** | SSE; websockets; a shorter interval | There is no Redis and no broker (`BE_19`, `INFRA_12` both `todo`), the API may run more than one replica, and a held connection would cross Railway's proxy and the private hop. A 50-Member Workspace polling once a minute is **under 1 request per second**; at 5 s it is 10 rps to change a number that changes a few times a day. **Cost: the count can be up to 60 s stale** — `requirement.md` §4 step 3 says "within a minute" for that reason |
+| D9 | **Freshness is polling: on mount, on the tab regaining focus, and every 60 s while visible** | SSE; websockets; a shorter interval | There is no Redis and no broker (`BE_19`, `INFRA_12` both `todo`), the API may run more than one replica, and a held connection would cross Railway's proxy and the private hop. A 50-Member Workspace polling once a minute is **under 2 requests a second** (two calls per poll — §4.3 says why one is not reachable); at 5 s it would be ten times that, to change a number that changes a few times a day. **Cost: the count can be up to 60 s stale** — `requirement.md` §4 step 3 says "within a minute" for that reason |
 | D10 | **The web polls through a server action**, as `SessionRefresher` already does | the browser calling the API; a Next route handler | §1 fact 2 — the client has no way to reach the API. `apps/web/lib/session/session-actions.service.ts` is the established shape; a route handler is the alternative if the action's POST semantics prove awkward, and that is a `FE_09`/`FE_11` call made when the code is written, not here |
 | D11 | **Routes sit under the Workspace**: `GET /v1/workspaces/{workspaceId}/notifications`, `POST …/notifications/read`, `POST …/notifications/{id}/read` | `/v1/notifications/mine`, as `0021` put Linked Accounts | A Linked Account belongs to an **Account**; a Notification belongs to a **Workspace** (`requirement.md` rule 5). Under the Workspace it gets `WorkspaceMemberGuard` free (`BE_21` R3). **And the surface has no way to name a person** — the caller is always the recipient — so rule 7 is a property of the API's shape, not of a check somebody might forget |
 | D12 | **In-app copy is composed in the web; chat copy stays on the API** | one rendered string from the API for both; both in the web | **The one to argue with.** The API must compose chat copy — it posts it, and it needs an absolute URL. The web must own in-app copy — the destination is a *web route* (`ROUTES.homeAsk`), and `ROUTES` is not the API's to know; `0021` §4.2 step 3 having the API build a web path is already a layering smell that works only because chat needs a URL anyway. It also puts the sentence where `FE_23` (i18n, `todo`) will want it. **Cost: the sentence exists in two places.** Mitigated by the `type` enum being the one shared vocabulary and by §4.4 listing both renderings side by side |
@@ -189,9 +190,19 @@ SELECT count(*) FROM notification
  WHERE recipient_account_id = $1 AND workspace_id = $2 AND read_at IS NULL
 ```
 
-Index `(recipient_account_id, workspace_id, read_at)` covers it. At a 50-Member Workspace polling once a
-minute that is **under 1 query per second against an index**, over a table holding roughly 90,000 rows a
-year (`requirement.md` §7 question 3). A partial index on `read_at IS NULL` would be tighter and Prisma
+Index `(recipient_account_id, workspace_id, read_at)` covers it.
+
+**Corrected 2026-10-24, while building the bell.** A poll is **two** API calls, not one: the browser
+cannot reach the API, so the web server must first learn which Workspace the session is in
+(`GET /v1/members/mine/current`) before it can ask for the count. It was briefly three, because the
+first version went through `requireMember`, which reads the session as well for a fact it then throws
+away; `readCurrentMembership` is now exported for this one caller, so it is two.
+
+**One is not reachable without a change this does not justify** — either a Workspace-less count route,
+which `requirement.md` rule 5 rules out, or caching the Workspace id in the browser, which goes stale
+the moment somebody switches. So: at a 50-Member Workspace polling once a minute, **under 2 requests a
+second**, one of them an index scan over a table holding roughly 90,000 rows a year
+(`requirement.md` §7 question 3). A partial index on `read_at IS NULL` would be tighter and Prisma
 does not express one cleanly; it is a raw migration if it ever shows up in a measurement, and **nothing
 should be done about it before then**.
 
@@ -327,7 +338,7 @@ use cases are untouched; after 3, confirm the contract diff is empty in CI befor
 | **R1 · A crash between commit and the row loses the Notification, silently and forever** | The sharpest thing here, and it is forced: a cross-module transaction is forbidden (`AGENTS.md` §6). D6 narrows the window to one awaited local insert. `BE_17`'s outbox is the real answer and does not exist. **Nobody is told their notification was lost** — the same acceptance `ADR-0035` §8 already made for chat |
 | **R2 · D12 puts the sentence in two places** | Argue with it. The alternative — one rendered string from the API — puts web routes inside the API and i18n in the wrong app. Neither option is clean; this one keeps the layering honest and the duplication visible in §4.4 |
 | **R3 · The count is up to 60 s stale** | D9. Accepted, and `requirement.md` §4 words the walk as "within a minute" so it is not discovered as a bug. Revisit only with a measurement |
-| **R4 · There is no route to a single piece of Feedback — and this already blocks #215** | Home's dialog takes `request` and `ask` only. #215 is carded and says "land on that Feedback", so **this is #215's problem before it is this card's**. The cheap fix is a third dialog param, `feedback=<id>`, matching the pattern merged 2026-10-15. It needs deciding before #215, not before this |
+| ~~**R4 · There is no route to a single piece of Feedback**~~ | **Resolved 2026-10-24, PR #249.** A third dialog parameter, `feedback=<id>`, matching the pattern merged 2026-10-15, plus `ROUTES.homeFeedback`. Precedence is `request → ask → feedback` — appended rather than inserted, so an address that already worked cannot change what it opens |
 | **R5 · `0021` D6 reads as "nothing is stored", which this contradicts** | It means *chat delivery state* is not stored. §11 proposes the sentence that says so. Left unamended, the next reader concludes this design broke a decision it is actually obeying |
 | **R6 · A bell is the first thing in Thrive that can become noise** | Four types, three events, all of them "something is waiting for you". `requirement.md` §5 keeps reactions and feed activity out for exactly this reason. The test is whether anybody asks for an off switch (`requirement.md` §10) |
 | **R7 · Notifications a Member cannot act on** | Rule 8 keeps a line whose subject became unreadable, and following it shows a not-found. Filtering instead would mean reading Feedback's tables from Notifications — a module cycle (`BE_03`) for a cosmetic gain |
