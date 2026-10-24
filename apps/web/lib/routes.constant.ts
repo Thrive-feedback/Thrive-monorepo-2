@@ -40,6 +40,13 @@ export const ROUTES = {
     `/home?tab=my-requests&request=${requestId}`,
   /** One Ask waiting for them, open in a dialog over Waiting for me, where they answer it. */
   homeAsk: (askId: string) => `/home?tab=waiting&ask=${askId}`,
+  /**
+   * One piece of Feedback, open in a dialog over Home. It names no tab, unlike the two above:
+   * the same Feedback sits on the Workspace feed, on Shared with me or on Feedback for me
+   * depending on who follows the address, so the only tab true for every reader is the one Home
+   * opens on.
+   */
+  homeFeedback: (feedbackId: string) => `/home?feedback=${feedbackId}`,
   settings: {
     /** The settings menu; beside it on a wide screen, the Account section. */
     index: '/settings',

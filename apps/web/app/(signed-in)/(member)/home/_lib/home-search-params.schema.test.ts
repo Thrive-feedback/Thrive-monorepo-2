@@ -10,6 +10,7 @@ describe('HomeSearchParams', () => {
       tab: 'workspace',
       request: undefined,
       ask: undefined,
+      feedback: undefined,
     });
   });
 
@@ -21,6 +22,7 @@ describe('HomeSearchParams', () => {
       tab: 'my-requests',
       request: undefined,
       ask: undefined,
+      feedback: undefined,
     });
   });
 
@@ -47,25 +49,29 @@ describe('HomeSearchParams', () => {
       tab: 'workspace',
       request: undefined,
       ask: undefined,
+      feedback: undefined,
     });
   });
 
-  it('reads the Feedback Request or Ask open in a dialog', () => {
+  it('reads the Feedback Request, Ask or Feedback open in a dialog', () => {
     const id = '0199a0f0-0000-7000-8000-0000000000f1';
 
     expect(HomeSearchParams.parse({ tab: 'my-requests', request: id })).toEqual(
       expect.objectContaining({ tab: 'my-requests', request: id }),
     );
     expect(HomeSearchParams.parse({ tab: 'waiting', ask: id }).ask).toBe(id);
+    expect(HomeSearchParams.parse({ feedback: id }).feedback).toBe(id);
   });
 
-  it('opens no dialog for a request or Ask that is not an id', () => {
+  it('opens no dialog for a request, Ask or Feedback that is not an id', () => {
     const parsed = HomeSearchParams.parse({
       request: 'nonsense',
       ask: ['a', 'b'],
+      feedback: 'nope',
     });
 
     expect(parsed.request).toBeUndefined();
     expect(parsed.ask).toBeUndefined();
+    expect(parsed.feedback).toBeUndefined();
   });
 });

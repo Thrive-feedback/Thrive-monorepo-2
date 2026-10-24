@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { AnswerAskViewSkeleton } from '@/components/organisms/answer-ask-view';
+import { FeedbackCardSkeleton } from '@/components/organisms/feedback-card';
 import { FeedbackComposerSkeleton } from '@/components/organisms/feedback-composer';
 import { FeedbackFeedSkeleton } from '@/components/organisms/feedback-feed';
 import { HomeDialog } from '@/components/organisms/home-dialog';
@@ -10,6 +11,7 @@ import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 import { AnswerAskDetail } from './_components/answer-ask-detail';
 import { FeedbackComposerCard } from './_components/feedback-composer-card';
+import { FeedbackDetail } from './_components/feedback-detail';
 import {
   FeedbackRequestDetail,
   FeedbackRequestDetailSkeleton,
@@ -33,7 +35,7 @@ type HomeProps = {
    * `switched` when what they sent was dropped because its page was for a Workspace they are no
    * longer in, `opened` when they have just switched to this Workspace, `left` when they have just
    * left the one before, `tab` is the feed tab that
-   * is open, and `request` or `ask` is the one open in a
+   * is open, and `request`, `ask` or `feedback` is the one open in a
    * dialog over it.
    */
   searchParams: Promise<{
@@ -46,6 +48,7 @@ type HomeProps = {
     tab?: string | string[];
     request?: string | string[];
     ask?: string | string[];
+    feedback?: string | string[];
   }>;
 };
 
@@ -57,12 +60,25 @@ type HomeProps = {
  * drawn and CSS shows one, so the page needs no script to choose; each read is deduplicated, so
  * drawing both reads the API once. Who the person is now lives on their Profile.
  *
- * A Feedback Request or an Ask opens in a dialog over either layout, drawn once. It is named in
- * the address, so a reload or a shared link opens it again; a request wins if both are named.
+ * A Feedback Request, an Ask or one piece of Feedback opens in a dialog over either layout,
+ * drawn once. It is named in the address, so a reload or a shared link opens it again. Only one
+ * can be open, and an address naming several is only reachable by hand: a request wins, then an
+ * Ask, then Feedback — the order they were added, so a new parameter never changes what an
+ * address that already worked opens.
  */
 export default async function Home({ searchParams }: HomeProps) {
-  const { signedIn, sent, given, switched, opened, left, tab, request, ask } =
-    HomeSearchParams.parse(await searchParams);
+  const {
+    signedIn,
+    sent,
+    given,
+    switched,
+    opened,
+    left,
+    tab,
+    request,
+    ask,
+    feedback,
+  } = HomeSearchParams.parse(await searchParams);
   const session = await requireMember(signedIn);
 
   return (
@@ -150,18 +166,31 @@ export default async function Home({ searchParams }: HomeProps) {
             />
           </Suspense>
         </HomeDialog>
+      ) : ask !== undefined ? (
+        <HomeDialog
+          key={ask}
+          title="Give your feedback"
+          close={{ href: ROUTES.homeTab(tab) }}
+        >
+          <Suspense fallback={<AnswerAskViewSkeleton />}>
+            <AnswerAskDetail
+              membership={session.membership}
+              ownEmail={session.email}
+              askId={ask}
+            />
+          </Suspense>
+        </HomeDialog>
       ) : (
-        ask !== undefined && (
+        feedback !== undefined && (
           <HomeDialog
-            key={ask}
-            title="Give your feedback"
+            key={feedback}
+            title="Feedback"
             close={{ href: ROUTES.homeTab(tab) }}
           >
-            <Suspense fallback={<AnswerAskViewSkeleton />}>
-              <AnswerAskDetail
+            <Suspense fallback={<FeedbackCardSkeleton />}>
+              <FeedbackDetail
                 membership={session.membership}
-                ownEmail={session.email}
-                askId={ask}
+                feedbackId={feedback}
               />
             </Suspense>
           </HomeDialog>
