@@ -5,9 +5,11 @@ import {
   SparklesIcon,
 } from 'lucide-react';
 import { useId } from 'react';
-import { Badge } from '@/components/atoms/badge';
 import { Text } from '@/components/atoms/text';
 import type { LetterSide } from './letter-face';
+
+/** What can be written: either face of the letter, or a Kudos card. */
+export type WritingKind = LetterSide | 'kudos';
 
 const choice = cva(
   'flex w-full cursor-pointer items-center gap-2.5 rounded-button px-3 py-2 text-button-sm disabled:cursor-not-allowed disabled:text-fg-disabled max-md:py-3.5',
@@ -24,20 +26,21 @@ const choice = cva(
 
 const CHOICES = [
   {
-    side: 'request',
+    kind: 'request',
     label: 'Request feedback',
     Icon: MessageCircleQuestionMarkIcon,
   },
-  { side: 'give', label: 'Give feedback', Icon: PenLineIcon },
+  { kind: 'give', label: 'Give feedback', Icon: PenLineIcon },
+  { kind: 'kudos', label: 'Kudos', Icon: SparklesIcon },
 ] as const;
 
 export type LetterSidebarProps = {
-  /** The letter being written, marked as chosen; none before the first choice. */
-  writing: LetterSide | null;
-  onChoose: (side: LetterSide) => void;
+  /** What is being written, marked as chosen; none before the first choice. */
+  writing: WritingKind | null;
+  onChoose: (kind: WritingKind) => void;
 };
 
-/** The kinds of letter there are to write, down the side of the page, the one being written marked. */
+/** The things there are to write, down the side of the page, the one being written marked. */
 export function LetterSidebar({ writing, onChoose }: LetterSidebarProps) {
   const headingId = useId();
 
@@ -53,26 +56,19 @@ export function LetterSidebar({ writing, onChoose }: LetterSidebarProps) {
         Write
       </Text>
       <ul className="flex flex-col gap-0.5">
-        {CHOICES.map(({ side, label, Icon }) => (
-          <li key={side}>
+        {CHOICES.map(({ kind, label, Icon }) => (
+          <li key={kind}>
             <button
               type="button"
-              aria-pressed={writing === side}
-              onClick={() => onChoose(side)}
-              className={choice({ chosen: writing === side })}
+              aria-pressed={writing === kind}
+              onClick={() => onChoose(kind)}
+              className={choice({ chosen: writing === kind })}
             >
               <Icon aria-hidden className="size-4.5 shrink-0" />
               {label}
             </button>
           </li>
         ))}
-        <li>
-          <button type="button" disabled className={choice({ chosen: false })}>
-            <SparklesIcon aria-hidden className="size-4.5 shrink-0" />
-            Kudo
-            <Badge className="ms-auto">Soon</Badge>
-          </button>
-        </li>
       </ul>
     </aside>
   );

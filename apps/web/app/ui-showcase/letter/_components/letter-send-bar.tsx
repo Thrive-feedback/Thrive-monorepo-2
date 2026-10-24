@@ -44,64 +44,35 @@ const MEANS: Readonly<Record<LetterSide, Record<LetterVisibility, string>>> = {
   },
 };
 
-export type LetterSendBarProps = {
+/** Who else can read the letter being written, as the bar offers it. */
+export type LetterSendBarVisibility = {
   side: LetterSide;
-  visibility: LetterVisibility;
+  value: LetterVisibility;
   selectedAccountIds: ReadonlySet<string>;
+  onValueChange: (visibility: LetterVisibility) => void;
+  onSelectedChange: (accountId: string, selected: boolean) => void;
+};
+
+export type LetterSendBarProps = {
+  /** Left out for a Kudos, which has no Visibility to choose: the bar holds Send alone. */
+  visibility?: LetterSendBarVisibility;
   /** Whether everything a letter needs is there; Send waits until it is. */
   ready: boolean;
-  onVisibilityChange: (visibility: LetterVisibility) => void;
-  onSelectedChange: (accountId: string, selected: boolean) => void;
   onSend: () => void;
 };
 
 /**
- * The bar that floats under the letter being written: who else can read it, chosen in a panel
+ * The bar that floats under what is being written: who else can read it, chosen in a panel
  * that opens from the bar, and Send.
  */
 export function LetterSendBar({
-  side,
   visibility,
-  selectedAccountIds,
   ready,
-  onVisibilityChange,
-  onSelectedChange,
   onSend,
 }: LetterSendBarProps) {
-  const options = ORDER.map((value) => ({ value, label: LABELS[side][value] }));
-
   return (
     <div className="flex items-center gap-1.5 rounded-full border border-border-muted bg-surface-raised p-1.5 shadow-high">
-      <Popover.Root>
-        <Popover.Trigger asChild>
-          <Button
-            variant="ghost"
-            className="rounded-full"
-            prefixIcon={<EyeIcon />}
-          >
-            <span className="sr-only">Who else can read it: </span>
-            {LABELS[side][visibility]}
-            <ChevronDownIcon />
-          </Button>
-        </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Content
-            side="top"
-            sideOffset={12}
-            className="z-50 flex w-80 flex-col gap-3 rounded-control border border-border-muted bg-surface-raised p-4 text-fg-primary shadow-med"
-          >
-            <VisibilityPicker
-              options={options}
-              value={visibility}
-              people={LETTER_TEAMMATES}
-              selectedAccountIds={selectedAccountIds}
-              helperText={MEANS[side][visibility]}
-              onValueChange={onVisibilityChange}
-              onSelectedChange={onSelectedChange}
-            />
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover.Root>
+      {visibility && <VisibilityButton {...visibility} />}
       <Button
         variant="primary"
         className="rounded-full"
@@ -112,5 +83,51 @@ export function LetterSendBar({
         Send
       </Button>
     </div>
+  );
+}
+
+function VisibilityButton({
+  side,
+  value,
+  selectedAccountIds,
+  onValueChange,
+  onSelectedChange,
+}: LetterSendBarVisibility) {
+  const options = ORDER.map((each) => ({
+    value: each,
+    label: LABELS[side][each],
+  }));
+
+  return (
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <Button
+          variant="ghost"
+          className="rounded-full"
+          prefixIcon={<EyeIcon />}
+        >
+          <span className="sr-only">Who else can read it: </span>
+          {LABELS[side][value]}
+          <ChevronDownIcon />
+        </Button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          side="top"
+          sideOffset={12}
+          className="z-50 flex w-80 flex-col gap-3 rounded-control border border-border-muted bg-surface-raised p-4 text-fg-primary shadow-med"
+        >
+          <VisibilityPicker
+            options={options}
+            value={value}
+            people={LETTER_TEAMMATES}
+            selectedAccountIds={selectedAccountIds}
+            helperText={MEANS[side][value]}
+            onValueChange={onValueChange}
+            onSelectedChange={onSelectedChange}
+          />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

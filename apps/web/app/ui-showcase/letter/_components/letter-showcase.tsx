@@ -10,8 +10,9 @@ export function LetterShowcase() {
           Letter
         </Text>
         <Text variant="body-2" tone="muted">
-          Feedback written as a letter. Choose Request feedback or Give feedback
-          under Write to start writing. Nothing here is saved or sent.
+          Feedback written as a letter, and Kudos on a card. Choose Request
+          feedback, Give feedback or Kudos under Write to start writing. Nothing
+          here is saved or sent.
         </Text>
       </header>
       <LetterDemo />
