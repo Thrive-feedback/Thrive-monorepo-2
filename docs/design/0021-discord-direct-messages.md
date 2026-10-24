@@ -201,9 +201,21 @@ Ploy answered your request in Thrive Team          ← #214
 Nut wrote feedback to you in Thrive Team           ← #215
 ```
 
-The caller already holds the name — every one of these fires inside a use case running under
+~~The caller already holds the name — every one of these fires inside a use case running under
 `/v1/workspaces/:workspaceId`, where the guard has resolved a `MembershipView` carrying
-`workspace.name`. So this costs an argument, not a read.
+`workspace.name`. So this costs an argument, not a read.~~
+
+**Wrong, corrected 2026-10-24 while building #213.** That is true of Integrations, whose guard
+resolves a whole membership, and **false of Feedback**, whose guard only asks `isMemberOf` and
+keeps nothing (`modules/feedback/presentation/workspace-member.guard.ts`). Feedback never has the
+Workspace's name, and the same applies to the actor's name.
+
+**D11's intent stands; its mechanism changed.** Messages still name their Workspace. The port now
+carries **ids only**, and Notifications resolves both names itself — the Workspace's through a new
+narrow published port, `WorkspaceNamePort`, and the actor's through Identity's existing
+`ProfileNamePort`. Two reads per event, after the caller's transaction has committed and off the
+path of anything a person is waiting for. The reasoning, and the three options rejected, are
+`docs/adr/0056`.
 
 **Fan-out.** A request asking five people is five calls, each costing one provider call after the first
 message ever sent to that person (D4), times the number of accounts they have linked (D12). One failing

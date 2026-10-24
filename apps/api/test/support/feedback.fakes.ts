@@ -73,10 +73,7 @@ export class FakeWorkspaceMembershipPort extends WorkspaceMembershipPort {
     readonly workspaceId: string;
     readonly accountId: string;
   }): Promise<boolean> {
-    return (
-      this.members.get(membership.workspaceId)?.has(membership.accountId) ===
-      true
-    );
+    return this.isActive(membership.workspaceId, membership.accountId);
   }
 
   async isAdminOf(membership: {
@@ -93,8 +90,23 @@ export class FakeWorkspaceMembershipPort extends WorkspaceMembershipPort {
     readonly workspaceId: string;
     readonly accountIds: readonly string[];
   }): Promise<readonly string[]> {
-    const held = this.members.get(members.workspaceId);
-    return members.accountIds.filter((accountId) => held?.has(accountId));
+    return members.accountIds.filter((accountId) =>
+      this.isActive(members.workspaceId, accountId),
+    );
+  }
+
+  /**
+   * **Active** membership, which is what the real port answers and what this fake used not to.
+   * `MembershipQuery.membershipInWorkspace` filters `deactivatedAt: null` (ADR 0047), so a
+   * Deactivated person is not a Member to `isMemberOf` or `membersAmong` — only to
+   * `deactivatedAmong`, which is asked for them by name. A fake that answered otherwise would
+   * let a test assert behaviour the application cannot produce.
+   */
+  private isActive(workspaceId: string, accountId: string): boolean {
+    return (
+      this.members.get(workspaceId)?.has(accountId) === true &&
+      this.deactivated.get(workspaceId)?.has(accountId) !== true
+    );
   }
 
   async deactivatedAmong(members: {

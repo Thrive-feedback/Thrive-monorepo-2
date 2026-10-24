@@ -1,17 +1,29 @@
+import { ProfileNamePort } from '@app/modules/identity';
+import {
+  type AskAnswered,
+  type AskReceived,
+  type FeedbackWritten,
+  PersonNotifierPort,
+} from '@app/modules/notifications';
 import {
   AccountLinker,
   type LinkedIdentity,
 } from '@app/modules/notifications/application/port/account-linker.port';
+import { DirectMessenger } from '@app/modules/notifications/application/port/direct-messenger.port';
 import {
   LinkHandoff,
   type LinkStart,
 } from '@app/modules/notifications/application/port/link-handoff.port';
-import { LinkedAccountQuery } from '@app/modules/notifications/application/query-port/linked-account.query-port';
+import {
+  LinkedAccountQuery,
+  type ReachableAccount,
+} from '@app/modules/notifications/application/query-port/linked-account.query-port';
 import type { LinkedAccountView } from '@app/modules/notifications/application/types/linked-account.types';
 import {
   LinkedAccountRepository,
   type LinkedAccountToStore,
 } from '@app/modules/notifications/domain/repository/linked-account-repository.port';
+import { WorkspaceNamePort } from '@app/modules/workspace';
 
 /**
  * One chat tool's linking half, as a test sets it up. It records the codes it was given,
@@ -122,6 +134,28 @@ export class FakeLinkedAccountRepository extends LinkedAccountRepository {
     return true;
   }
 
+  /** What each link's conversation was cached as, so a test can see it happened — or did not. */
+  readonly conversations = new Map<string, string>();
+
+  async rememberConversation(conversation: {
+    readonly accountId: string;
+    readonly provider: string;
+    readonly directChannelId: string;
+  }): Promise<void> {
+    const stored = this.saved.find(
+      (link) =>
+        link.accountId === conversation.accountId &&
+        link.providerAccount.provider === conversation.provider,
+    );
+    // Mirrors `updateMany`: a link removed mid-flight simply has nothing to cache against.
+    if (stored) {
+      this.conversations.set(
+        `${conversation.accountId}:${conversation.provider}`,
+        conversation.directChannelId,
+      );
+    }
+  }
+
   async remove(link: {
     readonly accountId: string;
     readonly provider: string;
@@ -142,6 +176,21 @@ export class FakeLinkedAccountRepository extends LinkedAccountRepository {
 /** Answers the views it was handed, for the Account that asks. */
 export class FakeLinkedAccountQuery extends LinkedAccountQuery {
   private readonly views = new Map<string, readonly LinkedAccountView[]>();
+  private readonly reachable = new Map<string, readonly ReachableAccount[]>();
+
+  /** Every way this person can be reached. More than one is somebody who linked two tools. */
+  withReachable(accountId: string, ...links: ReachableAccount[]): this {
+    this.reachable.set(accountId, links);
+    return this;
+  }
+
+  async reachableFor(
+    accountIds: readonly string[],
+  ): Promise<readonly ReachableAccount[]> {
+    return accountIds.flatMap(
+      (accountId) => this.reachable.get(accountId) ?? [],
+    );
+  }
 
   withLinksFor(accountId: string, ...views: LinkedAccountView[]): this {
     this.views.set(accountId, views);
@@ -150,5 +199,118 @@ export class FakeLinkedAccountQuery extends LinkedAccountQuery {
 
   async forAccount(accountId: string): Promise<readonly LinkedAccountView[]> {
     return this.views.get(accountId) ?? [];
+  }
+}
+
+/**
+ * What Feedback calls. It records what it was told, because most of the rules are about *who*
+ * is notified rather than what the message says — and it can be made to reject, because the
+ * promise that matters is that nothing a person does fails when it does.
+ */
+export class FakePersonNotifier extends PersonNotifierPort {
+  readonly asksReceived: AskReceived[] = [];
+  readonly asksAnswered: AskAnswered[] = [];
+  readonly feedbackWritten_: FeedbackWritten[] = [];
+  private rejecting = false;
+
+  /** The port promises never to reject. This is for proving the caller survives it anyway. */
+  rejectingEverything(): this {
+    this.rejecting = true;
+    return this;
+  }
+
+  async askReceived(event: AskReceived): Promise<void> {
+    this.asksReceived.push(event);
+    this.refuseIfAsked();
+  }
+
+  async askAnswered(event: AskAnswered): Promise<void> {
+    this.asksAnswered.push(event);
+    this.refuseIfAsked();
+  }
+
+  async feedbackWritten(event: FeedbackWritten): Promise<void> {
+    this.feedbackWritten_.push(event);
+    this.refuseIfAsked();
+  }
+
+  private refuseIfAsked(): void {
+    if (this.rejecting) {
+      throw new Error('Nobody could be told.');
+    }
+  }
+}
+
+/** One chat tool's messaging half, recording what it was asked and able to refuse. */
+export class FakeDirectMessenger extends DirectMessenger {
+  readonly opened: string[] = [];
+  readonly posted: { channelId: string; text: string }[] = [];
+  private refusing: 'open' | 'post' | null = null;
+
+  constructor(private readonly channelId = 'dm-channel') {
+    super();
+  }
+
+  /**
+   * A chat tool refuses both ways round: it may decline to open a conversation with somebody the
+   * bot shares no space with, and in Discord's case the refusal often lands on the message
+   * instead. Both have to read as "cannot reach this person".
+   */
+  /** The application boots once per run, so each scenario starts from here. */
+  reset(): this {
+    this.opened.length = 0;
+    this.posted.length = 0;
+    this.refusing = null;
+    return this;
+  }
+
+  refusingTo(step: 'open' | 'post'): this {
+    this.refusing = step;
+    return this;
+  }
+
+  async openConversation(
+    externalUserId: string,
+  ): Promise<{ readonly channelId: string }> {
+    this.opened.push(externalUserId);
+    if (this.refusing === 'open') {
+      throw new Error('Cannot send messages to this user');
+    }
+    return { channelId: this.channelId };
+  }
+
+  async postDirect(channelId: string, text: string): Promise<void> {
+    if (this.refusing === 'post') {
+      throw new Error('Cannot send messages to this user');
+    }
+    this.posted.push({ channelId, text });
+  }
+}
+
+/** What a Workspace is called, for the one fact Notifications reads about it. */
+export class FakeWorkspaceNamePort extends WorkspaceNamePort {
+  private readonly names = new Map<string, string>();
+
+  withName(workspaceId: string, name: string): this {
+    this.names.set(workspaceId, name);
+    return this;
+  }
+
+  async nameOf(workspaceId: string): Promise<string | null> {
+    return this.names.get(workspaceId) ?? null;
+  }
+}
+
+/** The Display name of whoever caused an event, or `null` before they introduced themselves. */
+export class FakeProfileNamePort extends ProfileNamePort {
+  private readonly names = new Map<string, string>();
+
+  withName(accountId: string, displayName: string): this {
+    this.names.set(accountId, displayName);
+    return this;
+  }
+
+  async displayNameOf(accountId: string): Promise<string | null> {
+    return this.names.get(accountId) ?? null;
   }
 }

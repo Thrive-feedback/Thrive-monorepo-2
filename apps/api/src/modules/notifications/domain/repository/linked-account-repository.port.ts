@@ -18,6 +18,17 @@ export abstract class LinkedAccountRepository {
    */
   abstract save(link: LinkedAccountToStore): Promise<boolean>;
 
+  /**
+   * Remembers the one-to-one conversation a chat tool opened, so the next message does not have
+   * to open it again (design 0021 D4). Best effort: it is a cache on the row, so a link that
+   * has since been removed simply stores nothing.
+   */
+  abstract rememberConversation(conversation: {
+    readonly accountId: string;
+    readonly provider: ChatProviderValue;
+    readonly directChannelId: string;
+  }): Promise<void>;
+
   /** `false` when there was no link to remove, which the caller words rather than throwing. */
   abstract remove(link: {
     readonly accountId: string;

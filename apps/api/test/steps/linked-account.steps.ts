@@ -161,3 +161,92 @@ Then(
     this.refusedWith('PROVIDER_NOT_SUPPORTED');
   },
 );
+
+Given(
+  '{person} has unlinked Discord',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await this.as(name, 'DELETE', `${LINKS}/DISCORD`),
+      `${name} unlinking Discord`,
+    );
+  },
+);
+
+Given('Discord will not let Thrive message anybody', () => {
+  // The refusal lands on the message rather than on opening the conversation, which is where
+  // Discord most often puts it: the bot may open a conversation and still be refused the post.
+  harness().directMessenger.refusingTo('post');
+});
+
+/**
+ * Every direct message Thrive sent in this scenario. The chat tool is a fake (`BE_13` R9) —
+ * nothing here reaches Discord.
+ */
+function messagesSent() {
+  return harness().directMessenger.posted;
+}
+
+/**
+ * A message is sent **after** the request it is about has committed, and is never awaited, so
+ * that asking for Feedback is not held up by a chat tool (design 0021 D5). The API has therefore
+ * already answered by the time a step runs, and the message may not have left yet.
+ *
+ * So these steps wait for it rather than pretending it is synchronous — which is also the
+ * honest description of the behaviour: it arrives shortly afterwards, not atomically.
+ */
+async function eventually(
+  isReady: () => boolean,
+  what: string,
+  timeoutMs = 2000,
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (!isReady()) {
+    if (Date.now() > deadline) {
+      assert.fail(`Timed out after ${timeoutMs}ms waiting for ${what}.`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
+
+/**
+ * For the scenarios that assert **nothing** was sent: there is no event to wait for, so this
+ * gives anything in flight a moment to arrive and then checks it did not. Without it the
+ * assertion could pass simply by running first.
+ */
+async function settled(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 150));
+}
+
+Then(
+  '{person} is messaged in Discord about {string}',
+  async function (this: ThriveWorld, _name: string, about: string) {
+    await eventually(
+      () => messagesSent().length > 0,
+      'a direct message to arrive',
+    );
+    const sent = messagesSent();
+    assert.equal(sent.length, 1, `Expected one message, got ${sent.length}.`);
+    assert.ok(
+      sent[0]?.text.includes(about),
+      `The message did not mention "${about}": ${sent[0]?.text}`,
+    );
+  },
+);
+
+Then('the message names {string}', function (this: ThriveWorld, name: string) {
+  // One Account can be a Member of several Workspaces and they all reach the same conversation,
+  // so a message that did not name its Workspace would be ambiguous (brain `ADR-0034`).
+  assert.ok(
+    messagesSent()[0]?.text.includes(name),
+    `The message did not name "${name}": ${messagesSent()[0]?.text}`,
+  );
+});
+
+Then('the message links to the Ask', function (this: ThriveWorld) {
+  assert.match(messagesSent()[0]?.text ?? '', /\/home\?tab=waiting&ask=/);
+});
+
+Then('nobody is messaged in Discord', async function (this: ThriveWorld) {
+  await settled();
+  assert.deepEqual(messagesSent(), []);
+});

@@ -5,6 +5,7 @@ import {
   FakeWorkspaceMembershipPort,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
+import { FakePersonNotifier } from '@test/support/notifications.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   CannotAskYourselfError,
@@ -51,14 +52,17 @@ function setUp() {
     CARA,
   );
   const unitOfWork = new FakeUnitOfWork();
+  const personNotifier = new FakePersonNotifier();
   const useCase = new SendFeedbackRequestUseCase(
     feedbackRequestRepository,
     workspaceMembershipPort,
     aTagsService(WORKSPACE_ID),
     new FakeIdGenerator(REQUEST_ID, ASK_ID),
     unitOfWork,
+    personNotifier,
   );
   return {
+    personNotifier,
     feedbackRequestRepository,
     workspaceMembershipPort,
     unitOfWork,
@@ -97,6 +101,7 @@ describe('a Requester asking a teammate for Feedback', () => {
       aTagsService(WORKSPACE_ID),
       new FakeIdGenerator(REQUEST_ID, ASK_ID, SECOND_ASK_ID),
       new FakeUnitOfWork(),
+      new FakePersonNotifier(),
     );
 
     await useCase.execute(request({ giverAccountIds: [BEN, CARA] }));
@@ -182,5 +187,31 @@ describe('a Requester asking a teammate for Feedback', () => {
       RequestMessageEmptyError,
     );
     expect(feedbackRequestRepository.saved).toEqual([]);
+  });
+});
+
+describe('telling the people asked', () => {
+  it('names every Giver, the Ask each of them opens, and who asked', async () => {
+    const { useCase, personNotifier } = setUp();
+
+    await useCase.execute(request());
+
+    expect(personNotifier.asksReceived).toHaveLength(1);
+    const told = personNotifier.asksReceived[0];
+    expect(told?.workspaceId).toBe(WORKSPACE_ID);
+    expect(told?.actorAccountId).toBe(ANN);
+    expect(told?.giverAccountIds).toEqual([BEN]);
+    expect(told?.askIdByGiver).toEqual({ [BEN]: ASK_ID });
+  });
+
+  it('succeeds, and still stores the request, when nobody can be told', async () => {
+    const { useCase, personNotifier, feedbackRequestRepository } = setUp();
+    personNotifier.rejectingEverything();
+
+    const sent = await useCase.execute(request());
+
+    // `ADR-0035` §8: asking for Feedback never fails because somebody could not be reached.
+    expect(sent.id).toBe(REQUEST_ID);
+    expect(feedbackRequestRepository.saved).toHaveLength(1);
   });
 });

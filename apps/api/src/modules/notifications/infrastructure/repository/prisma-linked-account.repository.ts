@@ -56,6 +56,23 @@ export class PrismaLinkedAccountRepository extends LinkedAccountRepository {
     }
   }
 
+  async rememberConversation(conversation: {
+    readonly accountId: string;
+    readonly provider: ChatProviderValue;
+    readonly directChannelId: string;
+  }): Promise<void> {
+    // `updateMany` rather than `update`: a link unlinked between the message being sent and
+    // this being written is not an error, it is somebody changing their mind mid-flight, and
+    // the row simply is not there to cache against.
+    await this.prismaTransactionContext.client.linkedAccount.updateMany({
+      where: {
+        accountId: conversation.accountId,
+        provider: conversation.provider,
+      },
+      data: { directChannelId: conversation.directChannelId },
+    });
+  }
+
   async remove(link: {
     readonly accountId: string;
     readonly provider: ChatProviderValue;

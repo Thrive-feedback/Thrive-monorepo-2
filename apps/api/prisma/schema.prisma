@@ -440,6 +440,12 @@ model LinkedAccount {
   externalUserId   String
   /// Shown on their own Settings so they can see which account is linked. Refreshed when linking.
   externalUsername String
+  /// The one-to-one conversation with this person, learned the first time Thrive messages them
+  /// and reused after — both providers return a stable id for it and both limit how often it may
+  /// be opened, and there is no Redis to cache it in (design 0021 D4). Null until a message has
+  /// actually arrived: an id from a conversation that then refused the message is not worth
+  /// keeping. Not a credential — it grants nothing on its own.
+  directChannelId  String?
   linkedAt         DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
