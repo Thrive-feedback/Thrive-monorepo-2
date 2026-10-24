@@ -2243,6 +2243,228 @@
         ]
       }
     },
+    "/v1/workspaces/{workspaceId}/notifications": {
+      "get": {
+        "operationId": "NotificationController_listMine",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListNotificationsResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "List what I have been told about in this Workspace, newest first",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationController_countMyUnread",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnreadCountResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "How many things I have been told about here and not yet read",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/notifications/read": {
+      "post": {
+        "operationId": "NotificationController_markAllRead",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The bell is clear in this Workspace."
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "Mark everything I have been told about in this Workspace as read",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/notifications/{id}/read": {
+      "post": {
+        "operationId": "NotificationController_markRead",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "It no longer counts as unread."
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND or NOTIFICATION_NOT_FOUND"
+          }
+        },
+        "summary": "Mark one thing I was told about as read",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/v1/workspaces/{workspaceId}/integrations": {
       "get": {
         "operationId": "IntegrationController_listConnections",
@@ -5004,6 +5226,113 @@
         "required": [
           "provider",
           "externalUsername"
+        ],
+        "additionalProperties": false
+      },
+      "ListNotificationsResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "ASK_RECEIVED",
+                    "ASK_ANSWERED",
+                    "FEEDBACK_RECEIVED",
+                    "FEEDBACK_SHARED"
+                  ]
+                },
+                "actor": {
+                  "type": "object",
+                  "properties": {
+                    "accountId": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "accountId",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "subjectId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "readAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "actor",
+                "subjectId",
+                "createdAt",
+                "readAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "additionalProperties": false
+      },
+      "UnreadCountResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "count"
         ],
         "additionalProperties": false
       },
