@@ -5,6 +5,7 @@ import {
   FakeWorkspaceMembershipPort,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
+import { FakePersonNotifier } from '@test/support/notifications.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   CannotGiveYourselfFeedbackError,
@@ -43,14 +44,16 @@ function offering(
 function setUp() {
   const feedbackRepository = new FakeFeedbackRepository();
   const unitOfWork = new FakeUnitOfWork();
+  const personNotifier = new FakePersonNotifier();
   const useCase = new OfferFeedbackUseCase(
     feedbackRepository,
     new FakeWorkspaceMembershipPort().with(WORKSPACE_ID, ANN, BEN, CARA),
     aTagsService(WORKSPACE_ID),
     new FakeIdGenerator(FEEDBACK_ID),
     unitOfWork,
+    personNotifier,
   );
-  return { feedbackRepository, unitOfWork, useCase };
+  return { feedbackRepository, unitOfWork, useCase, personNotifier };
 }
 
 describe('a Giver giving a teammate Feedback without being asked', () => {
@@ -151,5 +154,62 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
     await expect(
       useCase.execute(offering({ receiverAccountId: ANN })),
     ).rejects.toThrow(CannotGiveYourselfFeedbackError);
+  });
+});
+
+describe('telling the people Feedback was written for', () => {
+  it('names the Receiver and the Feedback to open', async () => {
+    const { useCase, personNotifier } = setUp();
+
+    await useCase.execute(offering());
+
+    expect(personNotifier.feedbackWritten_).toHaveLength(1);
+    const told = personNotifier.feedbackWritten_[0];
+    expect(told?.actorAccountId).toBe(ANN);
+    expect(told?.receiverAccountId).toBe(BEN);
+    expect(told?.feedbackId).toBe(FEEDBACK_ID);
+  });
+
+  it('names the people the Giver chose to share it with', async () => {
+    const { useCase, personNotifier } = setUp();
+
+    await useCase.execute(
+      offering({ visibility: 'SELECTED_PEOPLE', selectedAccountIds: [CARA] }),
+    );
+
+    expect(personNotifier.feedbackWritten_[0]?.sharedWithAccountIds).toEqual([
+      CARA,
+    ]);
+  });
+
+  it('shares with nobody when the Feedback is for the Receiver alone', async () => {
+    const { useCase, personNotifier } = setUp();
+
+    await useCase.execute(offering());
+
+    expect(personNotifier.feedbackWritten_[0]?.sharedWithAccountIds).toEqual(
+      [],
+    );
+  });
+
+  it('carries none of the Feedback message', async () => {
+    const { useCase, personNotifier } = setUp();
+
+    await useCase.execute(offering());
+
+    // #215: neither message carries any of the Feedback's words.
+    expect(JSON.stringify(personNotifier.feedbackWritten_[0])).not.toContain(
+      'Keep the recap',
+    );
+  });
+
+  it('succeeds, and still stores the Feedback, when nobody can be told', async () => {
+    const { useCase, personNotifier, feedbackRepository } = setUp();
+    personNotifier.rejectingEverything();
+
+    const given = await useCase.execute(offering());
+
+    expect(given.id).toBe(FEEDBACK_ID);
+    expect(feedbackRepository.saved).toHaveLength(1);
   });
 });
