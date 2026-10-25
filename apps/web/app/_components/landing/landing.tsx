@@ -1,4 +1,4 @@
-import { LandingBackdrop } from './landing-backdrop';
+import { OrbBackdrop } from '@/components/atoms/orb-backdrop';
 import { LandingFinalCta } from './landing-final-cta';
 import { LandingFooter } from './landing-footer';
 import { LandingForLeads } from './landing-for-leads';
@@ -19,7 +19,7 @@ import { LandingWhy } from './landing-why';
 export function Landing() {
   return (
     <div className="relative isolate flex min-h-dvh flex-col bg-surface-base">
-      <LandingBackdrop />
+      <OrbBackdrop spread="page" />
       <LandingNavbar />
       <main className="flex flex-1 flex-col gap-gap-section px-inset-container pt-12 pb-16 md:gap-32 md:pb-24">
         <div className="flex flex-col gap-16 md:gap-24">
