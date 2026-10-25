@@ -484,6 +484,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/kudos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Kudos given in this Workspace */
+        get: operations["KudosController_listWorkspaceKudos"];
+        put?: never;
+        /** Give Kudos to the Members of this Workspace it @mentions */
+        post: operations["KudosController_giveKudos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspaceId}/workspace-goals": {
         parameters: {
             query?: never;
@@ -1268,6 +1286,46 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+        };
+        GiveKudosRequestDto: {
+            message: string;
+        };
+        GiveKudosResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
+        };
+        ListWorkspaceKudosResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                giver: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                recipients: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                }[];
+                message: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            nextCursor: string[];
         };
         ListWorkspaceGoalsResponseDto_Output: {
             items: {
@@ -2711,6 +2769,103 @@ export interface operations {
                 };
             };
             /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    KudosController_listWorkspaceKudos: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListWorkspaceKudosResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    KudosController_giveKudos: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GiveKudosRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GiveKudosResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, KUDOS_MESSAGE_EMPTY, KUDOS_MESSAGE_TOO_LONG or KUDOS_NEEDS_A_RECIPIENT */
             400: {
                 headers: {
                     [name: string]: unknown;

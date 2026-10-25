@@ -380,6 +380,22 @@ export function listWorkspaceGoals(
  * The slug `name` is mentioned by: their Profile's slug, which is made from an email no
  * scenario controls. Reading it calls the API, so read it before the response a step asserts on.
  */
+/** Gives Kudos as the person named, with each `@Name` sent as that person's slug. */
+export async function giveKudos(
+  world: ThriveWorld,
+  giver: string,
+  message: string,
+): Promise<ApiResponse> {
+  return world.as(
+    giver,
+    'POST',
+    `/v1/workspaces/${world.workspaceOf(giver)}/kudos`,
+    {
+      message: await withSlugs(world, message),
+    },
+  );
+}
+
 export async function slugOf(
   world: ThriveWorld,
   name: string,
