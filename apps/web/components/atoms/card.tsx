@@ -1,3 +1,4 @@
+import glass from '@/components/organisms/glass.module.css';
 import { cn } from '@/lib/cn.util';
 
 export type CardProps = React.ComponentPropsWithRef<'section'> & {
@@ -6,8 +7,9 @@ export type CardProps = React.ComponentPropsWithRef<'section'> & {
 };
 
 /**
- * A flat card, set apart from the page by its surface alone, with its title in a divided header. The title's heading level is the
- * page's call: it is the `h1` when the card is the page, an `h2` under a page heading.
+ * A panel of the untinted frosted glass the landing page's tour stands on, edged by a hairline,
+ * with its title in a divided header. The page's orbs show through it, blurred. The title's
+ * heading level is the page's call: it is the `h1` when the card is the page, an `h2` under a page heading.
  */
 export function Card({
   title,
@@ -19,7 +21,9 @@ export function Card({
   return (
     <section
       className={cn(
-        'flex w-full flex-col rounded-page bg-surface-raised',
+        'flex w-full flex-col rounded-page border border-border-muted shadow-med',
+        glass.glass,
+        glass.neutral,
         className,
       )}
       {...rest}

@@ -16,7 +16,7 @@ export type InvitationSignInProps = {
 export function InvitationSignIn({ invitation }: InvitationSignInProps) {
   return (
     <div className="m-auto flex w-full max-w-2xl flex-col items-center gap-8 text-center">
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-5">
         <InvitationHeading invitation={invitation} />
         <Text variant="body-2" tone="muted">
           Continue with the Google account for{' '}
