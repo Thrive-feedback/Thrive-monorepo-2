@@ -28,6 +28,11 @@ vi.mock('./_components/invitation-notices', () => ({
 vi.mock('./_components/workspace-feed', () => ({
   WorkspaceFeed: () => <output>workspace feed</output>,
 }));
+vi.mock('./_components/waiting-ask-list', () => ({
+  WaitingAskList: ({ headingAs }: { headingAs: string }) => (
+    <output>{`waiting for me, as ${headingAs}`}</output>
+  ),
+}));
 vi.mock('./_components/home-tab-panel', () => ({
   HomeTabPanel: ({ tab }: { tab: string }) => (
     <output>{`panel: ${tab}`}</output>
@@ -136,13 +141,13 @@ describe('Home', () => {
     ).toHaveLength(2);
   });
 
-  it('opens the Workspace feed by default, and Shared with me beside the feed on a wide screen', async () => {
+  it('opens the Workspace feed by default, and Feedback for me beside the feed on a wide screen', async () => {
     requireMember.mockResolvedValue(ANN);
 
     render(await open());
 
     expect(screen.getByText('panel: workspace')).toBeInTheDocument();
-    expect(screen.getByText('panel: shared')).toBeInTheDocument();
+    expect(screen.getByText('panel: received')).toBeInTheDocument();
     const [narrow, wide] = screen.getAllByRole('navigation', {
       name: 'Feedback',
     });
@@ -155,24 +160,48 @@ describe('Home', () => {
       within(wide as HTMLElement)
         .getAllByRole('link')
         .map((link) => link.textContent),
+    ).toEqual(['Feedback for me', 'My requests', 'Shared with me']);
+    expect(
+      within(narrow as HTMLElement)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
     ).toEqual([
-      'Shared with me',
-      'My requests',
-      'Waiting for me',
+      'Workspace feed',
       'Feedback for me',
+      'My requests',
+      'Shared with me',
     ]);
+  });
+
+  it('keeps what is waiting for the person in view above the tabs, in either layout', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open());
+
+    // Once for each layout, under the page's h1; CSS shows one.
+    expect(screen.getAllByText('waiting for me, as h2')).toHaveLength(2);
   });
 
   it('opens the tab the address names, and the Workspace feed for an unknown one', async () => {
     requireMember.mockResolvedValue(ANN);
 
-    const { unmount } = render(await open({ tab: 'waiting' }));
+    const { unmount } = render(await open({ tab: 'my-requests' }));
     // Once for each layout; CSS shows one.
-    expect(screen.getAllByText('panel: waiting')).toHaveLength(2);
+    expect(screen.getAllByText('panel: my-requests')).toHaveLength(2);
     unmount();
 
     render(await open({ tab: 'nope' }));
     expect(screen.getByText('panel: workspace')).toBeInTheDocument();
+  });
+
+  it('opens the default tabs for an address that names what is waiting, which is always in view', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open({ tab: 'waiting' }));
+
+    expect(screen.getByText('panel: workspace')).toBeInTheDocument();
+    expect(screen.getByText('panel: received')).toBeInTheDocument();
+    expect(screen.getAllByText('waiting for me, as h2')).toHaveLength(2);
   });
 
   it('says who signed in when Google has just sent them back', async () => {

@@ -36,6 +36,15 @@ async function fillIn(user: ReturnType<typeof userEvent.setup>) {
   );
 }
 
+/** The one button by Send that says, and opens, who else can read it. */
+function audienceButton() {
+  return screen.getByRole('button', { name: /^Who else can read it:/ });
+}
+
+async function openAudience(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(audienceButton());
+}
+
 describe('GiveFeedbackForm', () => {
   beforeEach(() => {
     giveFeedback.mockReset();
@@ -59,7 +68,8 @@ describe('GiveFeedbackForm', () => {
     expect(giveFeedback).not.toHaveBeenCalled();
   });
 
-  it('is shared with only the Receiver unless the Giver chooses otherwise', () => {
+  it('is shared with only the Receiver unless the Giver chooses otherwise', async () => {
+    const user = userEvent.setup();
     render(
       <GiveFeedbackForm
         teammates={TEAMMATES}
@@ -67,6 +77,12 @@ describe('GiveFeedbackForm', () => {
         action={giveFeedback}
       />,
     );
+
+    expect(audienceButton()).toHaveAccessibleName(
+      'Who else can read it: Only them',
+    );
+
+    await openAudience(user);
 
     expect(screen.getByRole('radio', { name: 'Only them' })).toBeChecked();
   });
@@ -82,6 +98,7 @@ describe('GiveFeedbackForm', () => {
     );
 
     await pickReceiver(user);
+    await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
 
     expect(
@@ -101,6 +118,7 @@ describe('GiveFeedbackForm', () => {
     );
 
     await fillIn(user);
+    await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
     await user.click(screen.getByRole('button', { name: 'Send feedback' }));
 
@@ -142,6 +160,7 @@ describe('GiveFeedbackForm', () => {
     );
 
     await fillIn(user);
+    await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
     await user.click(screen.getByRole('checkbox', { name: 'Cara Diaz' }));
     await user.click(screen.getByRole('button', { name: 'Send feedback' }));

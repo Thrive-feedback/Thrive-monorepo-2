@@ -1,7 +1,12 @@
-import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { ReceivedFeedback } from '@/lib/feedback/received-feedback.type';
+import { initials } from '@/lib/initials.util';
+import {
+  ActivityAvatar,
+  ActivityRow,
+  ActivityRowSkeleton,
+} from './activity-row';
 import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
 
@@ -34,26 +39,35 @@ export function ReceivedFeedbackListView({
   return (
     <ul className="flex flex-col divide-y divide-border-muted">
       {items.map((feedback) => (
-        <li key={feedback.id} className="flex flex-col gap-1 py-4">
-          <Text as="p" variant="body-3" tone="muted">
-            From{' '}
-            <PersonName
-              name={feedback.giverName ?? 'a teammate'}
-              inactive={feedback.giverInactive}
-            />{' '}
-            ·{' '}
-            <time dateTime={feedback.writtenAt}>
-              {calendarDay(feedback.writtenAt)}
-            </time>
-            {feedback.offered && ' · Given without a request'}
-          </Text>
-          <Text
-            as="p"
-            variant="body-1"
-            className="whitespace-pre-wrap break-words"
-          >
-            <FeedbackText text={feedback.message} tags={feedback.messageTags} />
-          </Text>
+        <li key={feedback.id}>
+          <ActivityRow
+            lead={
+              <ActivityAvatar initials={initials(feedback.giverName ?? '')} />
+            }
+            title={
+              <>
+                <PersonName
+                  name={feedback.giverName ?? 'A teammate'}
+                  inactive={feedback.giverInactive}
+                />
+                <span className="text-fg-secondary"> to you</span>
+              </>
+            }
+            meta={
+              <>
+                {feedback.offered ? 'Offered' : 'Requested'} ·{' '}
+                <time dateTime={feedback.writtenAt}>
+                  {calendarDay(feedback.writtenAt)}
+                </time>
+              </>
+            }
+            message={
+              <FeedbackText
+                text={feedback.message}
+                tags={feedback.messageTags}
+              />
+            }
+          />
         </li>
       ))}
     </ul>
@@ -65,13 +79,7 @@ export function ReceivedFeedbackListViewSkeleton() {
   return (
     <div className="flex flex-col divide-y divide-border-muted">
       {PLACEHOLDERS.map((placeholder) => (
-        <div key={placeholder} className="flex flex-col gap-1 py-4">
-          <Skeleton className="w-1/3 text-body-3" />
-          <div className="flex flex-col">
-            <Skeleton className="text-body-1" />
-            <Skeleton className="w-4/5 text-body-1" />
-          </div>
-        </div>
+        <ActivityRowSkeleton key={placeholder} />
       ))}
     </div>
   );

@@ -8,9 +8,14 @@ import { cn } from '@/lib/cn.util';
  * and read as white, so a badge on them would show only its words.
  */
 export const badgeVariants = cva(
-  'inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border border-transparent px-2.5 py-0.5 text-tag',
+  'inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border border-transparent',
   {
     variants: {
+      /** `md` for a badge that carries a name someone has to read, such as who a message is to. */
+      size: {
+        sm: 'px-2.5 py-0.5 text-tag',
+        md: 'px-3 py-1 text-body-2',
+      },
       tone: {
         neutral: 'bg-action-neutral-surface-hover text-fg-primary',
         brand: 'bg-action-primary-surface-hover text-action-primary-fg',
@@ -22,7 +27,7 @@ export const badgeVariants = cva(
         outline: 'border-border-default text-fg-primary',
       },
     },
-    defaultVariants: { tone: 'neutral' },
+    defaultVariants: { tone: 'neutral', size: 'sm' },
   },
 );
 
@@ -40,6 +45,7 @@ export type BadgeProps = React.ComponentPropsWithRef<'span'> &
  */
 export function Badge({
   tone,
+  size,
   asChild = false,
   className,
   ...rest
@@ -48,7 +54,7 @@ export function Badge({
   return (
     <Comp
       data-slot="badge"
-      className={cn(badgeVariants({ tone }), className)}
+      className={cn(badgeVariants({ tone, size }), className)}
       {...rest}
     />
   );

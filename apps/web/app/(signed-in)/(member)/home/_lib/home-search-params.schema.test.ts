@@ -31,6 +31,11 @@ describe('HomeSearchParams', () => {
     expect(HomeSearchParams.parse({ given: 'yes' }).given).toBeUndefined();
   });
 
+  it('reads kudos=1 from Kudos just given', () => {
+    expect(HomeSearchParams.parse({ kudos: '1' }).kudos).toBe('1');
+    expect(HomeSearchParams.parse({ kudos: 'yes' }).kudos).toBeUndefined();
+  });
+
   it('opens the Workspace feed for a missing or unknown tab', () => {
     expect(HomeSearchParams.parse({}).tab).toBe('workspace');
     expect(HomeSearchParams.parse({ tab: 'nope' }).tab).toBe('workspace');

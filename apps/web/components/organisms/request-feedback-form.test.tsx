@@ -24,7 +24,7 @@ function trigger() {
 }
 
 function messageField() {
-  return screen.getByRole('combobox', {
+  return screen.getByRole('textbox', {
     name: /What would you like feedback on/,
   });
 }
@@ -61,6 +61,15 @@ async function pick(
 
 async function pickBen(user: ReturnType<typeof userEvent.setup>) {
   await pick(user, 'Ben Carter');
+}
+
+/** The one button by Send that says, and opens, who else can read it. */
+function audienceButton() {
+  return screen.getByRole('button', { name: /^Who else can read it:/ });
+}
+
+async function openAudience(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(audienceButton());
 }
 
 describe('RequestFeedbackForm', () => {
@@ -105,7 +114,8 @@ describe('RequestFeedbackForm', () => {
     });
   });
 
-  it('keeps the answers for the Requester alone unless they choose otherwise, and says so', () => {
+  it('keeps the answers for the Requester alone unless they choose otherwise, and says so', async () => {
+    const user = userEvent.setup();
     render(
       <RequestFeedbackForm
         teammates={TEAMMATES}
@@ -113,6 +123,12 @@ describe('RequestFeedbackForm', () => {
         action={requestFeedback}
       />,
     );
+
+    expect(audienceButton()).toHaveAccessibleName(
+      'Who else can read it: Only me',
+    );
+
+    await openAudience(user);
 
     expect(screen.getByRole('radio', { name: 'Only me' })).toBeChecked();
     expect(
@@ -129,6 +145,8 @@ describe('RequestFeedbackForm', () => {
         action={requestFeedback}
       />,
     );
+
+    await openAudience(user);
 
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
 
@@ -148,6 +166,8 @@ describe('RequestFeedbackForm', () => {
         action={requestFeedback}
       />,
     );
+
+    await openAudience(user);
 
     await user.click(
       screen.getByRole('radio', { name: 'Everyone in the Workspace' }),
@@ -171,6 +191,7 @@ describe('RequestFeedbackForm', () => {
     );
 
     await pickBen(user);
+    await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
 
     expect(
@@ -231,6 +252,7 @@ describe('RequestFeedbackForm', () => {
     );
 
     await fillIn(user);
+    await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
     await user.click(screen.getByRole('checkbox', { name: 'Cara Diaz' }));
     await user.click(sendButton());
@@ -250,6 +272,7 @@ describe('RequestFeedbackForm', () => {
     );
 
     await fillIn(user);
+    await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
     await user.click(sendButton());
 

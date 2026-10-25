@@ -1,5 +1,6 @@
 'use client';
 
+import { cva } from 'class-variance-authority';
 import { ChevronDownIcon, XIcon } from 'lucide-react';
 import { useId } from 'react';
 import { Badge } from '@/components/atoms/badge';
@@ -14,8 +15,18 @@ import { Skeleton } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 
+/** The question above the picker, or kept for a screen reader where a row label stands in. */
+const pickerLabel = cva('', {
+  variants: {
+    hidden: { true: 'sr-only', false: 'mb-1 block' },
+    invalid: { true: 'text-status-error-fg', false: '' },
+  },
+});
+
 export type MemberMultiPickerProps = {
   teammates: readonly Teammate[];
+  /** Keeps the label for a screen reader only, where a row label already says who it is for. */
+  hideLabel?: boolean;
   /** What the picker asks. */
   label?: string;
   /** The form field each picked Account id is sent as, once per person. */
@@ -43,6 +54,7 @@ export function MemberMultiPicker({
   name = 'giverAccountIds',
   value,
   errorMessage,
+  hideLabel = false,
   onChange,
   ref,
 }: MemberMultiPickerProps) {
@@ -67,7 +79,7 @@ export function MemberMultiPicker({
     <div className="flex flex-col">
       <Label
         htmlFor={id}
-        className={invalid ? 'mb-1 block text-status-error-fg' : 'mb-1 block'}
+        className={pickerLabel({ hidden: hideLabel, invalid })}
       >
         <span aria-hidden="true" className="me-1 text-status-error-fg">
           *
@@ -112,7 +124,7 @@ export function MemberMultiPicker({
         <ul aria-label="Picked" className="mt-2 flex flex-wrap gap-1.5">
           {pickedTeammates.map((teammate) => (
             <li key={teammate.accountId}>
-              <Badge tone="brand" className="gap-1 pe-1">
+              <Badge tone="brand" size="md" className="gap-1 pe-1.5">
                 {teammate.name}
                 <button
                   type="button"

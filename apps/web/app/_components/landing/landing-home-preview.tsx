@@ -210,6 +210,14 @@ export function LandingHomePreview({
                 emptyMessage="Nothing has been shared with everyone yet."
               />
             }
+            waitingFor={(headingAs) => (
+              <WaitingAskListView
+                // As on Home, only what is still to answer is waiting.
+                asks={waitingAsks.filter((ask) => ask.status === 'PENDING')}
+                askTarget={(askId) => ({ onSelect: () => setOpenAskId(askId) })}
+                headingAs={headingAs}
+              />
+            )}
             tab={tab}
             targetFor={(value) => ({ onSelect: () => setTab(value) })}
             panelFor={panelFor}

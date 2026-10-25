@@ -26,6 +26,8 @@ export const ROUTES = {
     tab === HOME_TABS[0] ? '/home' : `/home?tab=${tab}`,
   /** Home, saying once that the Feedback the person just gave was sent. */
   homeGiven: '/home?given=1',
+  /** Home, saying once that the Kudos the person just gave was sent. */
+  homeKudos: '/home?kudos=1',
   /**
    * Home, saying once that what the person just sent was dropped, because the page was drawn for
    * a Workspace they are no longer in: they switched in another tab, or were Deactivated there.

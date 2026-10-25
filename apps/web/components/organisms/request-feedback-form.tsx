@@ -1,28 +1,28 @@
 'use client';
 
-import { startTransition, useActionState, useRef, useState } from 'react';
+import {
+  startTransition,
+  useActionState,
+  useId,
+  useRef,
+  useState,
+} from 'react';
 import { Button } from '@/components/atoms/button';
-import { Skeleton } from '@/components/atoms/skeleton';
-import { Text } from '@/components/atoms/text';
-import {
-  TextField,
-  TextFieldSkeleton,
-} from '@/components/molecules/text-field';
-import {
-  MemberMultiPicker,
-  MemberMultiPickerSkeleton,
-} from '@/components/organisms/member-multi-picker';
-import {
-  SELECTED_PEOPLE,
-  VisibilityPicker,
-  VisibilityPickerSkeleton,
-} from '@/components/organisms/visibility-picker';
+import { TextAreaField } from '@/components/molecules/text-area-field';
+import { MemberMultiPicker } from '@/components/organisms/member-multi-picker';
+import { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
 import type {
   RequestFeedbackAction,
   RequestFeedbackState,
 } from '@/lib/feedback/request-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import {
+  ComposerLayout,
+  ComposerLayoutSkeleton,
+  ComposerToRow,
+} from './composer-layout';
 import { feedbackTagTriggers } from './feedback-tag-triggers.util';
+import { VisibilityMenu } from './visibility-menu';
 
 export type RequestFeedbackFormProps = {
   teammates: readonly Teammate[];
@@ -78,13 +78,14 @@ export function RequestFeedbackForm({
     ReadonlySet<string>
   >(new Set());
   const [clientErrors, setClientErrors] = useState<FieldErrors>({});
+  const [audienceOpen, setAudienceOpen] = useState(false);
+  const audienceErrorId = useId();
   const [state, formAction, isSending] = useActionState<
     RequestFeedbackState,
     FormData
   >(action, {});
   const pickerRef = useRef<HTMLButtonElement>(null);
-  const messageRef = useRef<HTMLInputElement>(null);
-  const selectedRef = useRef<HTMLFieldSetElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
 
   const fieldErrors: FieldErrors = { ...state.fieldErrors, ...clientErrors };
 
@@ -100,7 +101,7 @@ export function RequestFeedbackForm({
     setClientErrors((errors) => ({ ...errors, giverAccountIds: undefined }));
   }
 
-  function handleMessageChange(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleMessageChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
     setMessage(event.target.value);
     setClientErrors((errors) => ({ ...errors, message: undefined }));
   }
@@ -139,10 +140,11 @@ export function RequestFeedbackForm({
       missing.selectedAccountIds
     ) {
       setClientErrors(missing);
-      // Focus the first field in error, in the order the page reads.
+      // Focus the first field in error, in the order the page reads. Nobody to share with opens
+      // who-can-read-it, which takes focus to the people still to pick.
       if (missing.giverAccountIds) pickerRef.current?.focus();
       else if (missing.message) messageRef.current?.focus();
-      else selectedRef.current?.querySelector('button')?.focus();
+      else setAudienceOpen(true);
       return;
     }
     setClientErrors({});
@@ -159,67 +161,69 @@ export function RequestFeedbackForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-      <MemberMultiPicker
-        ref={pickerRef}
-        teammates={teammates}
-        value={giverAccountIds}
-        errorMessage={fieldErrors.giverAccountIds}
-        onChange={handleGiversChange}
-      />
-      <TextField
-        ref={messageRef}
-        label="What would you like feedback on?"
-        name="message"
-        placeholder="e.g., How did my presentation at the sprint review land?"
-        required
-        value={message}
-        triggers={feedbackTagTriggers(workspaceGoals, teammates)}
-        onChange={handleMessageChange}
-        errorMessage={fieldErrors.message}
-        helperText="They answer in their own words."
-      />
-      <VisibilityPicker
-        ref={selectedRef}
-        options={VISIBILITIES}
-        value={visibility}
-        people={teammates}
-        selectedAccountIds={selectedAccountIds}
-        helperText={
-          <>
-            {VISIBILITY_MEANS[visibility]} This can&apos;t be changed after you
-            send it.
-          </>
-        }
-        errorMessage={fieldErrors.selectedAccountIds}
-        onValueChange={handleVisibilityChange}
-        onSelectedChange={handleSelectedChange}
-      />
-      {state.formError && (
-        <Text role="alert" variant="body-2" tone="danger">
-          {state.formError}
-        </Text>
-      )}
-      <Button
-        type="submit"
-        variant="primary"
-        disabled={isSending}
-        className="mt-2 self-end"
-      >
-        Send request
-      </Button>
-    </form>
+    <ComposerLayout
+      onSubmit={handleSubmit}
+      to={
+        <ComposerToRow>
+          <MemberMultiPicker
+            ref={pickerRef}
+            hideLabel
+            teammates={teammates}
+            value={giverAccountIds}
+            errorMessage={fieldErrors.giverAccountIds}
+            onChange={handleGiversChange}
+          />
+        </ComposerToRow>
+      }
+      message={
+        <TextAreaField
+          ref={messageRef}
+          hideLabel
+          label="What would you like feedback on?"
+          name="message"
+          rows={2}
+          placeholder="e.g., How did my presentation at the sprint review land?"
+          required
+          value={message}
+          triggers={feedbackTagTriggers(workspaceGoals, teammates)}
+          onChange={handleMessageChange}
+          errorMessage={fieldErrors.message}
+          helperText="They answer in their own words."
+        />
+      }
+      audience={
+        <VisibilityMenu
+          options={VISIBILITIES}
+          value={visibility}
+          people={teammates}
+          selectedAccountIds={selectedAccountIds}
+          helperText={
+            <>
+              {VISIBILITY_MEANS[visibility]} This can&apos;t be changed after
+              you send it.
+            </>
+          }
+          errorMessage={fieldErrors.selectedAccountIds}
+          errorId={audienceErrorId}
+          open={audienceOpen}
+          onOpenChange={setAudienceOpen}
+          onValueChange={handleVisibilityChange}
+          onSelectedChange={handleSelectedChange}
+        />
+      }
+      footerError={fieldErrors.selectedAccountIds}
+      footerErrorId={audienceErrorId}
+      formError={state.formError}
+      submit={
+        <Button type="submit" variant="primary" disabled={isSending}>
+          Send request
+        </Button>
+      }
+    />
   );
 }
 
-/** A `RequestFeedbackForm` still loading: who to ask, the Request message, who else reads it, and Send. */
+/** A `RequestFeedbackForm` still loading, in the composer's shape. */
 export function RequestFeedbackFormSkeleton() {
-  return (
-    <div className="flex flex-col gap-4">
-      <MemberMultiPickerSkeleton />
-      <TextFieldSkeleton />
-      <VisibilityPickerSkeleton options={VISIBILITIES} />
-      <Skeleton shape="control" className="mt-2 w-32 self-end rounded-button" />
-    </div>
-  );
+  return <ComposerLayoutSkeleton />;
 }

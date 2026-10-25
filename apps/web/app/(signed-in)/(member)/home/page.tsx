@@ -6,6 +6,7 @@ import { FeedbackCardSkeleton } from '@/components/organisms/feedback-card';
 import { FeedbackComposerSkeleton } from '@/components/organisms/feedback-composer';
 import { FeedbackFeedSkeleton } from '@/components/organisms/feedback-feed';
 import { HomeDialog } from '@/components/organisms/home-dialog';
+import { WaitingAskListViewSkeleton } from '@/components/organisms/waiting-ask-list-view';
 import { HomeView } from '@/components/templates/home-view';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
@@ -19,6 +20,7 @@ import {
 import styles from './_components/home-split.module.css';
 import { HomeTabPanel } from './_components/home-tab-panel';
 import { InvitationNotices } from './_components/invitation-notices';
+import { WaitingAskList } from './_components/waiting-ask-list';
 import { WorkspaceFeed } from './_components/workspace-feed';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
 
@@ -32,6 +34,7 @@ type HomeProps = {
   /**
    * `signedIn` is set when Google sent a returning person back here, `sent` when they have just
    * sent a Feedback Request, `given` when they have just given Feedback without being asked,
+   * `kudos` when they have just given Kudos,
    * `switched` when what they sent was dropped because its page was for a Workspace they are no
    * longer in, `opened` when they have just switched to this Workspace, `left` when they have just
    * left the one before, `tab` is the feed tab that
@@ -42,6 +45,7 @@ type HomeProps = {
     signedIn?: string | string[];
     sent?: string | string[];
     given?: string | string[];
+    kudos?: string | string[];
     switched?: string | string[];
     opened?: string | string[];
     left?: string | string[];
@@ -71,6 +75,7 @@ export default async function Home({ searchParams }: HomeProps) {
     signedIn,
     sent,
     given,
+    kudos,
     switched,
     opened,
     left,
@@ -101,6 +106,13 @@ export default async function Home({ searchParams }: HomeProps) {
         <OneTimeToast
           type="success"
           message="Feedback sent"
+          then={ROUTES.homeTab(tab)}
+        />
+      )}
+      {kudos !== undefined && (
+        <OneTimeToast
+          type="success"
+          message="Kudos sent"
           then={ROUTES.homeTab(tab)}
         />
       )}
@@ -146,6 +158,14 @@ export default async function Home({ searchParams }: HomeProps) {
             <WorkspaceFeed membership={session.membership} />
           </Suspense>
         }
+        waitingFor={(headingAs) => (
+          <Suspense fallback={<WaitingAskListViewSkeleton />}>
+            <WaitingAskList
+              membership={session.membership}
+              headingAs={headingAs}
+            />
+          </Suspense>
+        )}
         tab={tab}
         targetFor={(value) => ({ href: ROUTES.homeTab(value) })}
         panelFor={(value) => (

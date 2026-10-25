@@ -5,6 +5,7 @@ import { cn } from '@/lib/cn.util';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
 import { HOME_TABS, type HomeTab } from '@/lib/routes.constant';
 import styles from './home-tabs.module.css';
+import { OpenTabInView } from './open-tab-in-view';
 
 const TAB_NAMES: Readonly<Record<HomeTab, string>> = {
   workspace: 'Workspace feed',
@@ -90,6 +91,7 @@ export function HomeTabs({
               </button>
             );
           })}
+          <OpenTabInView key={tab} />
         </div>
       </nav>
       {children}
