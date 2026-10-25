@@ -1,11 +1,15 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { WorkspaceFeed } from './workspace-feed';
 
 const readWorkspaceFeed = vi.fn();
 vi.mock('@/app/(signed-in)/(member)/home/_lib/workspace-feed.service', () => ({
   readWorkspaceFeed: (...args: unknown[]) => readWorkspaceFeed(...args),
+}));
+const readWorkspaceKudos = vi.fn();
+vi.mock('@/app/(signed-in)/(member)/home/_lib/workspace-kudos.service', () => ({
+  readWorkspaceKudos: (...args: unknown[]) => readWorkspaceKudos(...args),
 }));
 
 const MEMBERSHIP = {
@@ -29,6 +33,10 @@ async function renderFeed() {
 }
 
 describe('WorkspaceFeed', () => {
+  beforeEach(() => {
+    readWorkspaceKudos.mockResolvedValue([]);
+  });
+
   it('reads the feed of the person’s own Workspace', async () => {
     readWorkspaceFeed.mockResolvedValue([]);
 
@@ -68,5 +76,26 @@ describe('WorkspaceFeed', () => {
     await renderFeed();
 
     expect(screen.queryByText(/Preview data/)).not.toBeInTheDocument();
+  });
+
+  it('shows the Workspace’s Kudos among its Feedback, newest first', async () => {
+    readWorkspaceFeed.mockResolvedValue([ONE_PIECE]);
+    readWorkspaceKudos.mockResolvedValue([
+      {
+        id: 'kudos-1',
+        giver: { name: 'Ann Lee', inactive: false },
+        recipients: [{ name: 'Ben Carter', inactive: false }],
+        message: 'Thanks for carrying the launch.',
+        messageTags: NO_TEXT_TAGS,
+        givenAt: '2026-10-13T03:00:00.000Z',
+      },
+    ]);
+
+    await renderFeed();
+
+    expect(readWorkspaceKudos).toHaveBeenCalledWith(MEMBERSHIP);
+    expect(screen.getAllByRole('article')[0]).toHaveTextContent(
+      'Thanks for carrying the launch.',
+    );
   });
 });

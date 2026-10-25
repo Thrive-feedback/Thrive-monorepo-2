@@ -1,0 +1,12 @@
+/*
+ * Should the modes ever outgrow a phone, they scroll sideways — by touch, trackpad or Tab —
+ * without a bar under them, as Home's tabs do. Hiding a scrollbar has no utility, which is why
+ * this is CSS.
+ */
+.modes {
+  scrollbar-width: none;
+}
+
+.modes::-webkit-scrollbar {
+  display: none;
+}

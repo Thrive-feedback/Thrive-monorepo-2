@@ -14,8 +14,15 @@ const messageLine = cva('mt-2 text-caption', {
   defaultVariants: { invalid: false },
 });
 
+/** The field's label, or kept for a screen reader where what surrounds the box already says it. */
+const fieldLabel = cva('', {
+  variants: { hidden: { true: 'sr-only', false: 'mb-1 block' } },
+});
+
 export type TextAreaFieldProps = Omit<TextareaProps, 'id'> & {
   label: string;
+  /** Keeps the label for a screen reader only, where what surrounds the box already says it. */
+  hideLabel?: boolean;
   helperText?: string;
   errorMessage?: string;
   /**
@@ -35,6 +42,7 @@ export type TextAreaFieldProps = Omit<TextareaProps, 'id'> & {
  */
 export function TextAreaField({
   label,
+  hideLabel = false,
   helperText,
   errorMessage,
   required,
@@ -48,7 +56,7 @@ export function TextAreaField({
 
   return (
     <div className={cn('flex flex-col', className)}>
-      <Label htmlFor={id} className="mb-1 block">
+      <Label htmlFor={id} className={fieldLabel({ hidden: hideLabel })}>
         {required && (
           <span aria-hidden="true" className="me-1 text-status-error-fg">
             *

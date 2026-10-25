@@ -8,13 +8,21 @@ import { Text } from '@/components/atoms/text';
 import { FeedbackComposerSkeleton } from '@/components/organisms/feedback-composer';
 import { FeedbackFeedSkeleton } from '@/components/organisms/feedback-feed';
 import { HomeTabs, HomeTabsSkeleton } from '@/components/organisms/home-tabs';
+import { WaitingAskListViewSkeleton } from '@/components/organisms/waiting-ask-list-view';
 import { cn } from '@/lib/cn.util';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
 import type { HomeTab } from '@/lib/routes.constant';
 import styles from './home-view.module.css';
 
-/** The Workspace feed has a column of its own in the split, so the tabs beside it are the person's. */
-const PERSONAL_TABS = ['shared', 'my-requests', 'waiting', 'received'] as const;
+/**
+ * What is waiting on the person sits above the tabs, always in view, so the tabs hold history:
+ * what was written to them, what they asked, and what others shared with them. The Workspace feed
+ * has a column of its own in the split, so only the narrow column offers it as a tab.
+ */
+const PERSONAL_TABS = ['received', 'my-requests', 'shared'] as const;
+const NARROW_TABS = ['workspace', ...PERSONAL_TABS] as const;
+
+type HeadingLevel = 'h2' | 'h3';
 
 export type HomeViewProps = {
   workspaceName: string;
@@ -26,6 +34,11 @@ export type HomeViewProps = {
   notices?: React.ReactNode;
   /** The Workspace feed, for the split's own column. */
   workspaceFeed: React.ReactNode;
+  /**
+   * What is waiting on the person, above the tabs in both layouts, given the level its heading
+   * takes on this page.
+   */
+  waitingFor: (headingAs: HeadingLevel) => React.ReactNode;
   tab: HomeTab;
   /** Where each tab leads: its address on Home, or a callback where there is none. */
   targetFor: (tab: HomeTab) => NavTarget;
@@ -43,9 +56,12 @@ export type HomeViewProps = {
  * on the right, asking or giving, then the person's activity in tabs. The line between them can
  * be dragged, and each column scrolls on its own.
  *
+ * In both, what is waiting on the person comes before their history, always in view.
+ *
  * Both layouts are drawn and CSS shows one, so nothing needs a script to choose. The address
- * `/home` names the Workspace feed, which the split always shows, so the split opens Shared with
- * me beside it.
+ * `/home` names the Workspace feed, which the split always shows, so the split opens Feedback for
+ * me beside it. `waiting` is no longer a tab: its address opens the default tab, with the list
+ * it named in view above it.
  */
 export function HomeView({
   workspaceName,
@@ -53,17 +69,21 @@ export function HomeView({
   composer,
   notices,
   workspaceFeed,
+  waitingFor,
   tab,
   targetFor,
   panelFor,
   splitClassName,
 }: HomeViewProps) {
   const Title = headingLevel === 1 ? 'h1' : 'h2';
-  const personalTab = tab === 'workspace' ? 'shared' : tab;
+  const sectionHeadingLevel = headingLevel === 1 ? 'h2' : 'h3';
+  const narrowTab = tab === 'waiting' ? 'workspace' : tab;
+  const personalTab =
+    tab === 'workspace' || tab === 'waiting' ? 'received' : tab;
 
   return (
     <HomeLayout
-      sectionHeadingLevel={headingLevel === 1 ? 'h2' : 'h3'}
+      sectionHeadingLevel={sectionHeadingLevel}
       title={
         <Text variant="display-5" as={Title}>
           {workspaceName}
@@ -80,9 +100,10 @@ export function HomeView({
       notices={notices}
       composer={composer}
       workspaceFeed={workspaceFeed}
+      waiting={waitingFor(sectionHeadingLevel)}
       activity={
-        <HomeTabs tab={tab} targetFor={targetFor}>
-          {panelFor(tab)}
+        <HomeTabs tab={narrowTab} tabs={NARROW_TABS} targetFor={targetFor}>
+          {panelFor(narrowTab)}
         </HomeTabs>
       }
       personalActivity={
@@ -118,6 +139,7 @@ export function HomeViewSkeleton({
       }
       composer={<FeedbackComposerSkeleton />}
       workspaceFeed={<FeedbackFeedSkeleton />}
+      waiting={<WaitingAskListViewSkeleton />}
       activity={
         <HomeTabsSkeleton>
           <FeedbackFeedSkeleton />
@@ -146,7 +168,7 @@ function WelcomeTo() {
 }
 
 type HomeLayoutProps = {
-  sectionHeadingLevel: 'h2' | 'h3';
+  sectionHeadingLevel: HeadingLevel;
   /** The Workspace's name atop the narrow column. */
   title: React.ReactNode;
   /** The welcome that stays atop the split's feed column. */
@@ -154,6 +176,8 @@ type HomeLayoutProps = {
   notices?: React.ReactNode;
   composer: React.ReactNode;
   workspaceFeed: React.ReactNode;
+  /** What is waiting on the person, between the composer and the tabs. */
+  waiting: React.ReactNode;
   /** Every tab, under the composer in the narrow column. */
   activity: React.ReactNode;
   /** The person's own tabs, in the split's right column. */
@@ -169,6 +193,7 @@ function HomeLayout({
   notices,
   composer,
   workspaceFeed,
+  waiting,
   activity,
   personalActivity,
   splitClassName,
@@ -179,6 +204,7 @@ function HomeLayout({
         {title}
         {notices}
         {composer}
+        {waiting}
         {activity}
       </div>
       <div className={cn('hidden lg:block', splitClassName)}>
@@ -209,6 +235,7 @@ function HomeLayout({
                 Feedback
               </Text>
               {composer}
+              <div className="mt-6">{waiting}</div>
               <Text
                 as={sectionHeadingLevel}
                 variant="subtitle-3"

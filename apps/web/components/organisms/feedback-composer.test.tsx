@@ -8,6 +8,9 @@ vi.mock('./request-feedback-form', () => ({
 vi.mock('./give-feedback-form', () => ({
   GiveFeedbackForm: () => <output>give form</output>,
 }));
+vi.mock('./kudos-form', () => ({
+  KudosForm: () => <output>kudos form</output>,
+}));
 
 const { FeedbackComposer, preloadComposerForms } = await import(
   './feedback-composer'
@@ -29,33 +32,18 @@ function renderComposer() {
 }
 
 describe('FeedbackComposer', () => {
-  it('opens folded, offering to ask for advice or to give Feedback, drawing no form yet', () => {
+  it('is always open, ready to write, on asking for Feedback, drawing only that form', () => {
     renderComposer();
-
-    expect(screen.queryByText('request form')).toBeNull();
-    expect(screen.queryByText('give form')).toBeNull();
-    expect(
-      screen.getByRole('button', { name: 'Ask for advice…' }),
-    ).toHaveAttribute('aria-expanded', 'false');
-    expect(
-      screen.getByRole('button', { name: 'Give feedback' }),
-    ).toHaveAttribute('aria-expanded', 'false');
-  });
-
-  it('opens on asking for Feedback from the prompt', async () => {
-    const user = userEvent.setup();
-    renderComposer();
-
-    await user.click(screen.getByRole('button', { name: 'Ask for advice…' }));
 
     expect(
       screen.getByRole('button', { name: 'Request feedback' }),
     ).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('request form')).toBeVisible();
     expect(screen.queryByText('give form')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Hide form' })).toBeNull();
   });
 
-  it('opens on giving Feedback, and switches between the two', async () => {
+  it('switches between asking for and giving Feedback, keeping each form it has drawn', async () => {
     const user = userEvent.setup();
     renderComposer();
 
@@ -65,6 +53,7 @@ describe('FeedbackComposer', () => {
       screen.getByRole('button', { name: 'Give feedback' }),
     ).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('give form')).toBeVisible();
+    expect(screen.getByText('request form')).not.toBeVisible();
 
     await user.click(screen.getByRole('button', { name: 'Request feedback' }));
 
@@ -75,34 +64,35 @@ describe('FeedbackComposer', () => {
     expect(screen.getByText('give form')).not.toBeVisible();
   });
 
-  it('folds again, and opens in the mode picked next', async () => {
+  it('offers Kudos as a third mode where Kudos can be sent', async () => {
     const user = userEvent.setup();
-    renderComposer();
+    render(
+      <FeedbackComposer
+        teammates={[]}
+        workspaceGoals={[]}
+        requestAction={vi.fn()}
+        giveAction={vi.fn()}
+        kudosAction={vi.fn()}
+      />,
+    );
 
-    await user.click(screen.getByRole('button', { name: 'Ask for advice…' }));
-    expect(screen.getByRole('button', { name: 'Hide form' })).toHaveAttribute(
-      'aria-expanded',
+    await user.click(screen.getByRole('button', { name: 'Kudos' }));
+
+    expect(await screen.findByText('kudos form')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Kudos' })).toHaveAttribute(
+      'aria-pressed',
       'true',
     );
 
-    await user.click(screen.getByRole('button', { name: 'Hide form' }));
-
-    expect(screen.getByText('request form')).not.toBeVisible();
-
     await user.click(screen.getByRole('button', { name: 'Give feedback' }));
 
-    expect(screen.getByText('give form')).toBeVisible();
+    expect(screen.getByText('kudos form')).not.toBeVisible();
+    expect(await screen.findByText('give form')).toBeVisible();
   });
 
-  it('keeps a form it has drawn while folded or switched away from', async () => {
-    const user = userEvent.setup();
+  it('has no Kudos where none can be sent', () => {
     renderComposer();
 
-    await user.click(screen.getByRole('button', { name: 'Ask for advice…' }));
-    await user.click(screen.getByRole('button', { name: 'Give feedback' }));
-    await user.click(screen.getByRole('button', { name: 'Hide form' }));
-
-    expect(screen.getByText('request form')).not.toBeVisible();
-    expect(screen.getByText('give form')).not.toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Kudos' })).toBeNull();
   });
 });

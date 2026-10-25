@@ -42,17 +42,15 @@ describe('SentRequestList', () => {
 
     await renderList();
 
-    // Level 2, under the page's own h1: a skipped level leaves a screen reader guessing.
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'my presentation skills' }),
-    ).toBeInTheDocument();
+    // Where each Ask stands sits beside the name of the person asked.
+    expect(screen.getByRole('article')).toHaveTextContent(
+      'You asked Ben Carter Pending and Cara Diaz Answered',
+    );
+    expect(screen.getByText('my presentation skills')).toBeInTheDocument();
     expect(screen.getByText('11 Oct 2026')).toBeInTheDocument();
-    expect(screen.getByText('Pending')).toBeInTheDocument();
-    expect(screen.getByText('Answered')).toBeInTheDocument();
-    expect(screen.getByText(/Ben Carter/)).toBeInTheDocument();
   });
 
-  it('shows a dash for a Member who has not introduced themselves', async () => {
+  it('calls a Member who has not introduced themselves a teammate', async () => {
     readSentRequests.mockResolvedValue([
       {
         id: 'request-1',
@@ -65,7 +63,9 @@ describe('SentRequestList', () => {
 
     await renderList();
 
-    expect(screen.getByText(/—/)).toBeInTheDocument();
+    expect(screen.getByRole('article')).toHaveTextContent(
+      'You asked a teammate Pending',
+    );
   });
 
   it('shows a Member asked who was Deactivated as inactive', async () => {

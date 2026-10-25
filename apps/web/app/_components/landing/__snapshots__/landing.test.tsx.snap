@@ -349,55 +349,204 @@ exports[`Landing > renders the same page 1`] = `
                           class="flex w-full flex-col rounded-page border border-border-muted bg-surface-base"
                         >
                           <div
-                            class="flex items-center gap-2 p-2"
+                            class="border-border-subtle border-b px-5 pt-3"
                           >
-                            <button
-                              aria-controls="_r_5_"
-                              aria-expanded="false"
-                              class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-input px-3 py-2.5 text-left text-fg-secondary hover:bg-action-neutral-surface-hover"
-                              type="button"
+                            <fieldset
+                              class="flex min-w-0 items-end gap-5 overflow-x-auto overflow-y-hidden _modes_b2814d"
                             >
-                              <svg
-                                aria-hidden="true"
-                                class="lucide lucide-pen-line lucide-edit-3 size-4 shrink-0"
-                                fill="none"
-                                height="24"
-                                stroke="currentColor"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                viewBox="0 0 24 24"
-                                width="24"
-                                xmlns="http://www.w3.org/2000/svg"
+                              <legend
+                                class="sr-only"
                               >
-                                <path
-                                  d="M13 21h8"
-                                />
-                                <path
-                                  d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
-                                />
-                              </svg>
-                              <span
-                                class="truncate text-input-value-md"
+                                Feedback form
+                              </legend>
+                              <button
+                                aria-label="Request feedback"
+                                aria-pressed="true"
+                                class="-mb-px inline-flex cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-action-primary text-fg-primary"
+                                data-mode="request"
+                                type="button"
                               >
-                                Ask for advice…
-                              </span>
-                            </button>
-                            <button
-                              aria-controls="_r_5_"
-                              aria-expanded="false"
-                              class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface-hover px-3 py-2 text-button-sm leading-5"
-                              data-slot="button"
-                              type="button"
-                            >
-                              Give feedback
-                            </button>
+                                <span
+                                  class="sm:hidden"
+                                >
+                                  Request
+                                </span>
+                                <span
+                                  class="max-sm:hidden"
+                                >
+                                  Request feedback
+                                </span>
+                              </button>
+                              <button
+                                aria-label="Give feedback"
+                                aria-pressed="false"
+                                class="-mb-px inline-flex cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-transparent text-fg-secondary hover:text-fg-primary"
+                                data-mode="give"
+                                type="button"
+                              >
+                                <span
+                                  class="sm:hidden"
+                                >
+                                  Give
+                                </span>
+                                <span
+                                  class="max-sm:hidden"
+                                >
+                                  Give feedback
+                                </span>
+                              </button>
+                            </fieldset>
                           </div>
                           <div
                             class="p-5"
-                            hidden=""
-                            id="_r_5_"
-                          />
+                          >
+                            <div>
+                              <div
+                                class="flex flex-col gap-4"
+                              >
+                                <div
+                                  class="flex items-center gap-3"
+                                >
+                                  <div
+                                    aria-hidden="true"
+                                    class="bg-surface-skeleton motion-safe:animate-pulse h-lh rounded-element bg-clip-content py-1 w-6 text-body-2"
+                                    data-slot="skeleton"
+                                  />
+                                  <div
+                                    aria-hidden="true"
+                                    class="bg-surface-skeleton motion-safe:animate-pulse w-full h-11.5 flex-1 rounded-input"
+                                    data-slot="skeleton"
+                                  />
+                                </div>
+                                <div
+                                  aria-hidden="true"
+                                  class="bg-surface-skeleton motion-safe:animate-pulse w-full h-20 rounded-input"
+                                  data-slot="skeleton"
+                                />
+                                <div
+                                  class="flex items-center justify-between border-border-subtle border-t pt-4"
+                                >
+                                  <div
+                                    aria-hidden="true"
+                                    class="bg-surface-skeleton motion-safe:animate-pulse h-lh rounded-element bg-clip-content py-1 w-24 text-button-sm"
+                                    data-slot="skeleton"
+                                  />
+                                  <div
+                                    aria-hidden="true"
+                                    class="bg-surface-skeleton motion-safe:animate-pulse h-10 w-32 rounded-button"
+                                    data-slot="skeleton"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </section>
+                        <section
+                          aria-labelledby="_r_5_"
+                          class="flex flex-col gap-1"
+                        >
+                          <div
+                            class="flex items-center gap-2"
+                          >
+                            <h3
+                              class="text-subtitle-3"
+                              data-slot="text"
+                              id="_r_5_"
+                            >
+                              Waiting for me
+                            </h3>
+                            <span
+                              class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border border-transparent px-3 py-1 text-body-2 bg-action-primary-surface-hover text-action-primary-fg tabular-nums"
+                              data-slot="badge"
+                            >
+                              1
+                            </span>
+                          </div>
+                          <ul
+                            class="flex flex-col divide-y divide-border-muted"
+                          >
+                            <li>
+                              <article
+                                class="relative flex flex-col gap-3 py-5"
+                              >
+                                <header
+                                  class="flex items-center gap-3"
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
+                                    data-slot="avatar"
+                                  >
+                                    <span
+                                      class="flex size-full items-center justify-center font-medium"
+                                      data-slot="avatar-fallback"
+                                    >
+                                      FS
+                                    </span>
+                                  </span>
+                                  <div
+                                    class="flex min-w-0 flex-1 flex-col"
+                                  >
+                                    <p
+                                      class="text-subtitle-4 break-words"
+                                      data-slot="text"
+                                    >
+                                      Fern Somsak
+                                      <span
+                                        class="text-fg-secondary"
+                                      >
+                                         asked you
+                                      </span>
+                                    </p>
+                                    <p
+                                      class="text-body-3 text-fg-secondary"
+                                      data-slot="text"
+                                    >
+                                      <time
+                                        datetime="2026-10-20T06:20:00.000Z"
+                                      >
+                                        20 Oct 2026
+                                      </time>
+                                    </p>
+                                  </div>
+                                  <span
+                                    aria-hidden="true"
+                                    class="flex shrink-0 items-center gap-0.5 text-button-sm text-fg-accent"
+                                  >
+                                    Answer
+                                    <svg
+                                      aria-hidden="true"
+                                      class="lucide lucide-chevron-right size-4"
+                                      fill="none"
+                                      height="24"
+                                      stroke="currentColor"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2"
+                                      viewBox="0 0 24 24"
+                                      width="24"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="m9 18 6-6-6-6"
+                                      />
+                                    </svg>
+                                  </span>
+                                </header>
+                                <p
+                                  class="text-body-1 whitespace-pre-wrap break-words"
+                                  data-slot="text"
+                                >
+                                  <button
+                                    class="rounded-element underline-offset-4 hover:underline cursor-pointer text-left font-normal text-fg-primary after:absolute after:inset-0"
+                                    type="button"
+                                  >
+                                    In our run-through just now, where did you get lost?
+                                  </button>
+                                </p>
+                              </article>
+                            </li>
+                          </ul>
                         </section>
                         <div
                           class="flex flex-col gap-4"
@@ -421,7 +570,7 @@ exports[`Landing > renders the same page 1`] = `
                                 class="inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-transparent text-fg-secondary hover:text-fg-primary"
                                 type="button"
                               >
-                                Shared with me
+                                Feedback for me
                               </button>
                               <button
                                 aria-pressed="false"
@@ -435,15 +584,11 @@ exports[`Landing > renders the same page 1`] = `
                                 class="inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-transparent text-fg-secondary hover:text-fg-primary"
                                 type="button"
                               >
-                                Waiting for me
+                                Shared with me
                               </button>
-                              <button
-                                aria-pressed="false"
-                                class="inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-transparent text-fg-secondary hover:text-fg-primary"
-                                type="button"
-                              >
-                                Feedback for me
-                              </button>
+                              <span
+                                hidden=""
+                              />
                             </div>
                           </nav>
                           <div
@@ -1162,56 +1307,209 @@ exports[`Landing > renders the same page 1`] = `
                                   class="flex w-full flex-col rounded-page border border-border-muted bg-surface-base"
                                 >
                                   <div
-                                    class="flex items-center gap-2 p-2"
+                                    class="border-border-subtle border-b px-5 pt-3"
                                   >
-                                    <button
-                                      aria-controls="_r_a_"
-                                      aria-expanded="false"
-                                      class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-input px-3 py-2.5 text-left text-fg-secondary hover:bg-action-neutral-surface-hover"
-                                      type="button"
+                                    <fieldset
+                                      class="flex min-w-0 items-end gap-5 overflow-x-auto overflow-y-hidden _modes_b2814d"
                                     >
-                                      <svg
-                                        aria-hidden="true"
-                                        class="lucide lucide-pen-line lucide-edit-3 size-4 shrink-0"
-                                        fill="none"
-                                        height="24"
-                                        stroke="currentColor"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        viewBox="0 0 24 24"
-                                        width="24"
-                                        xmlns="http://www.w3.org/2000/svg"
+                                      <legend
+                                        class="sr-only"
                                       >
-                                        <path
-                                          d="M13 21h8"
-                                        />
-                                        <path
-                                          d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
-                                        />
-                                      </svg>
-                                      <span
-                                        class="truncate text-input-value-md"
+                                        Feedback form
+                                      </legend>
+                                      <button
+                                        aria-label="Request feedback"
+                                        aria-pressed="true"
+                                        class="-mb-px inline-flex cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-action-primary text-fg-primary"
+                                        data-mode="request"
+                                        type="button"
                                       >
-                                        Ask for advice…
-                                      </span>
-                                    </button>
-                                    <button
-                                      aria-controls="_r_a_"
-                                      aria-expanded="false"
-                                      class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface-hover px-3 py-2 text-button-sm leading-5"
-                                      data-slot="button"
-                                      type="button"
-                                    >
-                                      Give feedback
-                                    </button>
+                                        <span
+                                          class="sm:hidden"
+                                        >
+                                          Request
+                                        </span>
+                                        <span
+                                          class="max-sm:hidden"
+                                        >
+                                          Request feedback
+                                        </span>
+                                      </button>
+                                      <button
+                                        aria-label="Give feedback"
+                                        aria-pressed="false"
+                                        class="-mb-px inline-flex cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-transparent text-fg-secondary hover:text-fg-primary"
+                                        data-mode="give"
+                                        type="button"
+                                      >
+                                        <span
+                                          class="sm:hidden"
+                                        >
+                                          Give
+                                        </span>
+                                        <span
+                                          class="max-sm:hidden"
+                                        >
+                                          Give feedback
+                                        </span>
+                                      </button>
+                                    </fieldset>
                                   </div>
                                   <div
                                     class="p-5"
-                                    hidden=""
-                                    id="_r_a_"
-                                  />
+                                  >
+                                    <div>
+                                      <div
+                                        class="flex flex-col gap-4"
+                                      >
+                                        <div
+                                          class="flex items-center gap-3"
+                                        >
+                                          <div
+                                            aria-hidden="true"
+                                            class="bg-surface-skeleton motion-safe:animate-pulse h-lh rounded-element bg-clip-content py-1 w-6 text-body-2"
+                                            data-slot="skeleton"
+                                          />
+                                          <div
+                                            aria-hidden="true"
+                                            class="bg-surface-skeleton motion-safe:animate-pulse w-full h-11.5 flex-1 rounded-input"
+                                            data-slot="skeleton"
+                                          />
+                                        </div>
+                                        <div
+                                          aria-hidden="true"
+                                          class="bg-surface-skeleton motion-safe:animate-pulse w-full h-20 rounded-input"
+                                          data-slot="skeleton"
+                                        />
+                                        <div
+                                          class="flex items-center justify-between border-border-subtle border-t pt-4"
+                                        >
+                                          <div
+                                            aria-hidden="true"
+                                            class="bg-surface-skeleton motion-safe:animate-pulse h-lh rounded-element bg-clip-content py-1 w-24 text-button-sm"
+                                            data-slot="skeleton"
+                                          />
+                                          <div
+                                            aria-hidden="true"
+                                            class="bg-surface-skeleton motion-safe:animate-pulse h-10 w-32 rounded-button"
+                                            data-slot="skeleton"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </section>
+                                <div
+                                  class="mt-6"
+                                >
+                                  <section
+                                    aria-labelledby="_r_a_"
+                                    class="flex flex-col gap-1"
+                                  >
+                                    <div
+                                      class="flex items-center gap-2"
+                                    >
+                                      <h3
+                                        class="text-subtitle-3"
+                                        data-slot="text"
+                                        id="_r_a_"
+                                      >
+                                        Waiting for me
+                                      </h3>
+                                      <span
+                                        class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border border-transparent px-3 py-1 text-body-2 bg-action-primary-surface-hover text-action-primary-fg tabular-nums"
+                                        data-slot="badge"
+                                      >
+                                        1
+                                      </span>
+                                    </div>
+                                    <ul
+                                      class="flex flex-col divide-y divide-border-muted"
+                                    >
+                                      <li>
+                                        <article
+                                          class="relative flex flex-col gap-3 py-5"
+                                        >
+                                          <header
+                                            class="flex items-center gap-3"
+                                          >
+                                            <span
+                                              aria-hidden="true"
+                                              class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
+                                              data-slot="avatar"
+                                            >
+                                              <span
+                                                class="flex size-full items-center justify-center font-medium"
+                                                data-slot="avatar-fallback"
+                                              >
+                                                FS
+                                              </span>
+                                            </span>
+                                            <div
+                                              class="flex min-w-0 flex-1 flex-col"
+                                            >
+                                              <p
+                                                class="text-subtitle-4 break-words"
+                                                data-slot="text"
+                                              >
+                                                Fern Somsak
+                                                <span
+                                                  class="text-fg-secondary"
+                                                >
+                                                   asked you
+                                                </span>
+                                              </p>
+                                              <p
+                                                class="text-body-3 text-fg-secondary"
+                                                data-slot="text"
+                                              >
+                                                <time
+                                                  datetime="2026-10-20T06:20:00.000Z"
+                                                >
+                                                  20 Oct 2026
+                                                </time>
+                                              </p>
+                                            </div>
+                                            <span
+                                              aria-hidden="true"
+                                              class="flex shrink-0 items-center gap-0.5 text-button-sm text-fg-accent"
+                                            >
+                                              Answer
+                                              <svg
+                                                aria-hidden="true"
+                                                class="lucide lucide-chevron-right size-4"
+                                                fill="none"
+                                                height="24"
+                                                stroke="currentColor"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                viewBox="0 0 24 24"
+                                                width="24"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                              >
+                                                <path
+                                                  d="m9 18 6-6-6-6"
+                                                />
+                                              </svg>
+                                            </span>
+                                          </header>
+                                          <p
+                                            class="text-body-1 whitespace-pre-wrap break-words"
+                                            data-slot="text"
+                                          >
+                                            <button
+                                              class="rounded-element underline-offset-4 hover:underline cursor-pointer text-left font-normal text-fg-primary after:absolute after:inset-0"
+                                              type="button"
+                                            >
+                                              In our run-through just now, where did you get lost?
+                                            </button>
+                                          </p>
+                                        </article>
+                                      </li>
+                                    </ul>
+                                  </section>
+                                </div>
                                 <h3
                                   class="text-subtitle-3 text-fg-secondary mt-6"
                                   data-slot="text"
@@ -1233,7 +1531,7 @@ exports[`Landing > renders the same page 1`] = `
                                         class="inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-action-primary text-fg-primary"
                                         type="button"
                                       >
-                                        Shared with me
+                                        Feedback for me
                                       </button>
                                       <button
                                         aria-pressed="false"
@@ -1247,163 +1545,129 @@ exports[`Landing > renders the same page 1`] = `
                                         class="inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-transparent text-fg-secondary hover:text-fg-primary"
                                         type="button"
                                       >
-                                        Waiting for me
+                                        Shared with me
                                       </button>
-                                      <button
-                                        aria-pressed="false"
-                                        class="inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap border-b-3 px-1 pb-2.5 text-button-sm border-transparent text-fg-secondary hover:text-fg-primary"
-                                        type="button"
-                                      >
-                                        Feedback for me
-                                      </button>
+                                      <span
+                                        hidden=""
+                                      />
                                     </div>
                                   </nav>
-                                  <div
-                                    class="flex flex-col gap-4"
+                                  <ul
+                                    class="flex flex-col divide-y divide-border-muted"
                                   >
-                                    <ul
-                                      class="flex flex-col divide-y divide-border-muted"
-                                    >
-                                      <li>
-                                        <article
-                                          class="flex flex-col gap-3 py-5"
+                                    <li>
+                                      <article
+                                        class="relative flex flex-col gap-3 py-5"
+                                      >
+                                        <header
+                                          class="flex items-center gap-3"
                                         >
-                                          <header
-                                            class="flex items-center gap-3"
+                                          <span
+                                            aria-hidden="true"
+                                            class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
+                                            data-slot="avatar"
                                           >
                                             <span
-                                              aria-hidden="true"
-                                              class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                              data-slot="avatar"
+                                              class="flex size-full items-center justify-center font-medium"
+                                              data-slot="avatar-fallback"
                                             >
-                                              <span
-                                                class="flex size-full items-center justify-center font-medium"
-                                                data-slot="avatar-fallback"
-                                              >
-                                                AW
-                                              </span>
+                                              AW
                                             </span>
-                                            <div
-                                              class="flex min-w-0 flex-1 flex-col"
+                                          </span>
+                                          <div
+                                            class="flex min-w-0 flex-1 flex-col"
+                                          >
+                                            <p
+                                              class="text-subtitle-4 break-words"
+                                              data-slot="text"
                                             >
-                                              <p
-                                                class="text-subtitle-4 break-words"
-                                                data-slot="text"
+                                              Arm Wattana
+                                              <span
+                                                class="text-fg-secondary"
                                               >
-                                                Arm Wattana
-                                                <span
-                                                  class="text-fg-secondary"
-                                                >
-                                                   to 
-                                                </span>
-                                                Fern Somsak
-                                              </p>
-                                              <p
-                                                class="text-body-3 text-fg-secondary"
-                                                data-slot="text"
+                                                 to you
+                                              </span>
+                                            </p>
+                                            <p
+                                              class="text-body-3 text-fg-secondary"
+                                              data-slot="text"
+                                            >
+                                              Requested
+                                               ·
+                                               
+                                              <time
+                                                datetime="2026-10-20T03:40:00.000Z"
                                               >
-                                                Requested
-                                                 ·
-                                                 
-                                                <time
-                                                  datetime="2026-10-20T07:45:00.000Z"
-                                                >
-                                                  20 Oct 2026
-                                                </time>
-                                              </p>
-                                            </div>
-                                          </header>
-                                          <p
-                                            class="text-body-1 whitespace-pre-line break-words"
-                                            data-slot="text"
+                                                20 Oct 2026
+                                              </time>
+                                            </p>
+                                          </div>
+                                        </header>
+                                        <p
+                                          class="text-body-1 whitespace-pre-wrap break-words"
+                                          data-slot="text"
+                                        >
+                                          When you opened with market size, the room went quiet. When you told Mai’s story, they leaned in. Next time, open with the story.
+                                        </p>
+                                      </article>
+                                    </li>
+                                    <li>
+                                      <article
+                                        class="relative flex flex-col gap-3 py-5"
+                                      >
+                                        <header
+                                          class="flex items-center gap-3"
+                                        >
+                                          <span
+                                            aria-hidden="true"
+                                            class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
+                                            data-slot="avatar"
                                           >
-                                            The demo started before you explained the problem, so I didn’t know what I was looking at. Swap them.
-                                          </p>
-                                          <ul
-                                            aria-label="Reactions"
-                                            class="flex flex-wrap gap-2"
+                                            <span
+                                              class="flex size-full items-center justify-center font-medium"
+                                              data-slot="avatar-fallback"
+                                            >
+                                              NC
+                                            </span>
+                                          </span>
+                                          <div
+                                            class="flex min-w-0 flex-1 flex-col"
                                           >
-                                            <li>
-                                              <button
-                                                aria-label="Clap, 0"
-                                                aria-pressed="false"
-                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
-                                                type="button"
+                                            <p
+                                              class="text-subtitle-4 break-words"
+                                              data-slot="text"
+                                            >
+                                              Nok Chaiyo
+                                              <span
+                                                class="text-fg-secondary"
                                               >
-                                                <span
-                                                  aria-hidden="true"
-                                                >
-                                                  👏
-                                                </span>
-                                                <span
-                                                  aria-hidden="true"
-                                                >
-                                                  0
-                                                </span>
-                                              </button>
-                                            </li>
-                                            <li>
-                                              <button
-                                                aria-label="Heart, 0"
-                                                aria-pressed="false"
-                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
-                                                type="button"
+                                                 to you
+                                              </span>
+                                            </p>
+                                            <p
+                                              class="text-body-3 text-fg-secondary"
+                                              data-slot="text"
+                                            >
+                                              Requested
+                                               ·
+                                               
+                                              <time
+                                                datetime="2026-10-19T04:15:00.000Z"
                                               >
-                                                <span
-                                                  aria-hidden="true"
-                                                >
-                                                  ❤️
-                                                </span>
-                                                <span
-                                                  aria-hidden="true"
-                                                >
-                                                  0
-                                                </span>
-                                              </button>
-                                            </li>
-                                            <li>
-                                              <button
-                                                aria-label="Idea, 0"
-                                                aria-pressed="false"
-                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
-                                                type="button"
-                                              >
-                                                <span
-                                                  aria-hidden="true"
-                                                >
-                                                  💡
-                                                </span>
-                                                <span
-                                                  aria-hidden="true"
-                                                >
-                                                  0
-                                                </span>
-                                              </button>
-                                            </li>
-                                            <li>
-                                              <button
-                                                aria-label="Thanks, 0"
-                                                aria-pressed="false"
-                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
-                                                type="button"
-                                              >
-                                                <span
-                                                  aria-hidden="true"
-                                                >
-                                                  🙏
-                                                </span>
-                                                <span
-                                                  aria-hidden="true"
-                                                >
-                                                  0
-                                                </span>
-                                              </button>
-                                            </li>
-                                          </ul>
-                                        </article>
-                                      </li>
-                                    </ul>
-                                  </div>
+                                                19 Oct 2026
+                                              </time>
+                                            </p>
+                                          </div>
+                                        </header>
+                                        <p
+                                          class="text-body-1 whitespace-pre-wrap break-words"
+                                          data-slot="text"
+                                        >
+                                          We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.
+                                        </p>
+                                      </article>
+                                    </li>
+                                  </ul>
                                 </div>
                               </div>
                             </div>

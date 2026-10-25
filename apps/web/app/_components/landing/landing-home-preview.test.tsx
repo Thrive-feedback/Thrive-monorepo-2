@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { preloadComposerForms } from '@/components/organisms/feedback-composer';
@@ -47,18 +47,20 @@ describe('LandingHomePreview', () => {
     const user = userEvent.setup();
     render(<LandingHomePreview />);
 
-    // Fern's question is also on Shared with me, which the wide layout opens beside the feed, so
-    // the Ask is told apart by who asked it.
-    expect(screen.queryByText(/Asked by/)).toBeNull();
+    await user.click(first('button', 'My requests'));
 
-    await user.click(first('button', 'Waiting for me'));
-
-    expect(first('button', 'Waiting for me')).toHaveAttribute(
+    expect(first('button', 'My requests')).toHaveAttribute(
       'aria-pressed',
       'true',
     );
-    expect(screen.getAllByText(/Asked by/).length).toBeGreaterThan(0);
-    expect(screen.queryByRole('link', { name: 'Waiting for me' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'My requests' })).toBeNull();
+  });
+
+  it('keeps what is waiting in view above the tabs, whichever is open', () => {
+    render(<LandingHomePreview />);
+
+    expect(first('heading', 'Waiting for me')).toBeInTheDocument();
+    expect(screen.getAllByText(/asked you/).length).toBeGreaterThan(0);
   });
 
   it('counts a Reaction when it is pressed', async () => {
@@ -86,7 +88,6 @@ describe('LandingHomePreview', () => {
     const user = userEvent.setup();
     render(<LandingHomePreview />);
 
-    await user.click(first('button', 'Waiting for me'));
     await user.click(
       first('button', 'In our run-through just now, where did you get lost?'),
     );
@@ -112,9 +113,8 @@ describe('LandingHomePreview', () => {
 
     // Driven from the keyboard rather than clicked: jsdom lays everything out at zero size, so
     // the resize slug's hit area covers every click in the form and takes it.
-    first('button', 'Ask for advice…').focus();
-    await user.keyboard('{Enter}');
-    first('combobox', /What would you like feedback on/).focus();
+    // The composer opens ready to write, on asking for Feedback.
+    first('textbox', /What would you like feedback on/).focus();
     await user.keyboard('My first board update');
     first('button', /Who do you want to ask/).focus();
     await user.keyboard('{Enter}');
@@ -128,12 +128,18 @@ describe('LandingHomePreview', () => {
     first('button', 'Send request').focus();
     await user.keyboard('{Enter}');
 
-    expect(
-      await screen.findAllByText('My first board update'),
-    ).not.toHaveLength(0);
-    expect(first('button', 'My requests')).toHaveAttribute(
-      'aria-pressed',
-      'true',
+    // The message box draws what is typed as text of its own, so the request is looked for as a
+    // row of My requests, once that tab has opened, rather than anywhere on the page.
+    await waitFor(() =>
+      expect(first('button', 'My requests')).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      ),
     );
+    expect(
+      screen
+        .getAllByRole('article')
+        .some((row) => row.textContent?.includes('My first board update')),
+    ).toBe(true);
   });
 });

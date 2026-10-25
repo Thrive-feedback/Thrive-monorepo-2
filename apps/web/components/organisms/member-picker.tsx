@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority';
 import { useId } from 'react';
 import { Label } from '@/components/atoms/label';
 import {
@@ -10,8 +11,18 @@ import {
 import { Skeleton } from '@/components/atoms/skeleton';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 
+/** The question above the picker, or kept for a screen reader where a row label stands in. */
+const pickerLabel = cva('', {
+  variants: {
+    hidden: { true: 'sr-only', false: 'mb-1 block' },
+    invalid: { true: 'text-status-error-fg', false: '' },
+  },
+});
+
 export type MemberPickerProps = {
   teammates: readonly Teammate[];
+  /** Keeps the label for a screen reader only, where a row label already says who it is for. */
+  hideLabel?: boolean;
   /** What the picker asks. Asking for Feedback and giving it pick a different person. */
   label?: string;
   /** The form field the Account id is sent as. */
@@ -39,6 +50,7 @@ export function MemberPicker({
   name = 'giverAccountId',
   value,
   errorMessage,
+  hideLabel = false,
   onChange,
   ref,
 }: MemberPickerProps) {
@@ -50,7 +62,7 @@ export function MemberPicker({
     <div className="flex flex-col">
       <Label
         htmlFor={id}
-        className={invalid ? 'mb-1 block text-status-error-fg' : 'mb-1 block'}
+        className={pickerLabel({ hidden: hideLabel, invalid })}
       >
         <span aria-hidden="true" className="me-1 text-status-error-fg">
           *

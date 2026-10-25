@@ -1,6 +1,7 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { preloadComposerForms } from '@/components/organisms/feedback-composer';
 import { LandingTour } from './landing-tour';
 
 // The preview's dialog asks for the router, which only matters when it closes to an address.
@@ -15,6 +16,10 @@ function first(role: string, name: string | RegExp) {
   if (!element) throw new Error(`No ${role} named ${name}`);
   return element;
 }
+
+// The preview's composer opens on a form that loads apart from the page. Fetched first, as the
+// page fetches it when idle, it draws at once rather than holding the preview mid-load.
+beforeAll(() => preloadComposerForms());
 
 describe('LandingTour', () => {
   it('opens on the Workspace, as Home does', () => {
@@ -40,13 +45,12 @@ describe('LandingTour', () => {
     expect(
       screen.getByRole('tab', { name: 'Answer what you’re asked' }),
     ).toHaveAttribute('aria-selected', 'true');
-    expect(first('button', 'Waiting for me')).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    // What is waiting is no tab of its own on Home: it is always in view, above the tabs.
     expect(
-      screen.getByRole('tabpanel', { name: 'Answer what you’re asked' }),
-    ).toBeInTheDocument();
+      within(
+        screen.getByRole('tabpanel', { name: 'Answer what you’re asked' }),
+      ).getAllByRole('heading', { name: 'Waiting for me' }).length,
+    ).toBeGreaterThan(0);
   });
 
   it('lights the chapter of a tab opened inside the preview', async () => {

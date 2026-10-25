@@ -48,17 +48,21 @@ What works today, per the brain's `STATE.md` (as of 2026-10-24):
   them, answered their request, or wrote or shared Feedback with them. A Member who links their own
   Discord account gets the same three as direct messages. Neither carries anybody's words: a
   Notification names who did something and links to it, behind a sign-in.
+- **Kudos** (brain `ADR-0043`, proposed; built on a branch, not merged): one message of at most 280
+  characters to every teammate it @mentions, read by every Member. Sent from Home's composer, shown in
+  the Workspace feed. Nobody is told they received one.
 - **Discord Connection**: an Admin connects a server and picks a channel from Settings → Workspace.
   The channel post (#201, `ADR-0040`: who gave Feedback to whom, and a link) is not built.
 
-Planned but not built: **Kudos** (not designed), the Discord channel post, Slack, **Insights** for
+Planned but not built: the Discord channel post, Slack, **Insights** for
 Admins, and personal Goals. **Reminders are left out on purpose** (`ADR-0035`): nothing Thrive runs can
 act later. The landing page lists Kudos, Discord and Insights as features with no "on the way",
-chosen knowingly in `ADR-0038`; it describes Kudos only by what it is for. Copy may say people are
+chosen knowingly in `ADR-0038`. Copy may say people are
 told when something waits for them, but never promises how fast anyone answers.
 
 Use the brain's `glossary.md` names exactly: Member, Workspace, Feedback Request, Ask, Request
-message, Feedback message, Notification, Connection, Linked Account. Never say "user".
+message, Feedback message, Notification, Connection, Linked Account, Kudos, Kudos recipient. Never
+say "user".
 
 ## Brand Commitments
 

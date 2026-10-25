@@ -42,12 +42,15 @@ describe('WaitingAskList', () => {
 
     // Level 2, under the page's own h1: a skipped level leaves a screen reader guessing.
     expect(
-      screen.getByRole('heading', { level: 2, name: 'my presentation skills' }),
+      screen.getByRole('heading', { level: 2, name: 'Waiting for me' }),
     ).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'my presentation skills' }),
     ).toHaveAttribute('href', '/home?tab=waiting&ask=ask-1');
-    expect(screen.getByText('Asked by Ana Silva')).toBeInTheDocument();
+    expect(screen.getByRole('article')).toHaveTextContent(
+      'Ana Silva asked you',
+    );
     expect(screen.getByText('11 Oct 2026')).toBeInTheDocument();
   });
 
@@ -65,7 +68,9 @@ describe('WaitingAskList', () => {
 
     await renderList();
 
-    expect(screen.getByText('Asked by a teammate')).toBeInTheDocument();
+    expect(screen.getByRole('article')).toHaveTextContent(
+      'A teammate asked you',
+    );
   });
 
   it('shows a Requester who was Deactivated as inactive, and keeps their Ask', async () => {

@@ -1,17 +1,24 @@
 'use client';
 
-import { startTransition, useActionState, useRef, useState } from 'react';
+import {
+  startTransition,
+  useActionState,
+  useId,
+  useRef,
+  useState,
+} from 'react';
 import { Button } from '@/components/atoms/button';
-import { Text } from '@/components/atoms/text';
 import { TextAreaField } from '@/components/molecules/text-area-field';
 import type {
   GiveFeedbackAction,
   GiveFeedbackState,
 } from '@/lib/feedback/give-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { ComposerLayout, ComposerToRow } from './composer-layout';
 import { feedbackTagTriggers } from './feedback-tag-triggers.util';
 import { MemberPicker } from './member-picker';
-import { SELECTED_PEOPLE, VisibilityPicker } from './visibility-picker';
+import { VisibilityMenu } from './visibility-menu';
+import { SELECTED_PEOPLE } from './visibility-picker';
 
 export type GiveFeedbackFormProps = {
   teammates: readonly Teammate[];
@@ -58,13 +65,14 @@ export function GiveFeedbackForm({
     ReadonlySet<string>
   >(new Set());
   const [clientErrors, setClientErrors] = useState<FieldErrors>({});
+  const [audienceOpen, setAudienceOpen] = useState(false);
+  const audienceErrorId = useId();
   const [state, formAction, isSending] = useActionState<
     GiveFeedbackState,
     FormData
   >(action, {});
   const pickerRef = useRef<HTMLButtonElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
-  const selectedRef = useRef<HTMLFieldSetElement>(null);
 
   const errors: FieldErrors = { ...state.fieldErrors, ...clientErrors };
   const tagTriggers = feedbackTagTriggers(workspaceGoals, teammates);
@@ -114,7 +122,7 @@ export function GiveFeedbackForm({
       // Focus the first field in error, in the order the page reads.
       if (found.receiverAccountId) pickerRef.current?.focus();
       else if (found.message) messageRef.current?.focus();
-      else selectedRef.current?.querySelector('button')?.focus();
+      else setAudienceOpen(true);
       return;
     }
     setClientErrors({});
@@ -131,68 +139,76 @@ export function GiveFeedbackForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-      <MemberPicker
-        ref={pickerRef}
-        label="Who is it for?"
-        name="receiverAccountId"
-        teammates={teammates}
-        value={receiverAccountId}
-        errorMessage={errors.receiverAccountId}
-        onChange={(accountId) => {
-          setReceiverAccountId(accountId);
-          setClientErrors((current) => ({
-            ...current,
-            receiverAccountId: undefined,
-          }));
-        }}
-      />
-      <TextAreaField
-        ref={messageRef}
-        label="Your feedback"
-        name="message"
-        rows={5}
-        placeholder="What happened, what it did, and what to keep or try next time."
-        required
-        value={message}
-        triggers={tagTriggers}
-        onChange={(event) => {
-          setMessage(event.target.value);
-          setClientErrors((current) => ({ ...current, message: undefined }));
-        }}
-        errorMessage={errors.message}
-        helperText="Your name is shown with it."
-      />
-      <VisibilityPicker
-        ref={selectedRef}
-        options={VISIBILITIES}
-        value={visibility}
-        people={othersToShareWith}
-        selectedAccountIds={selectedAccountIds}
-        helperText="This can't be changed after you send it."
-        errorMessage={errors.selectedAccountIds}
-        onValueChange={(value) => {
-          setVisibility(value);
-          setClientErrors((current) => ({
-            ...current,
-            selectedAccountIds: undefined,
-          }));
-        }}
-        onSelectedChange={toggleSelected}
-      />
-      {state.formError && (
-        <Text role="alert" variant="body-2" tone="danger">
-          {state.formError}
-        </Text>
-      )}
-      <Button
-        type="submit"
-        variant="primary"
-        disabled={isSending}
-        className="mt-2 self-end"
-      >
-        Send feedback
-      </Button>
-    </form>
+    <ComposerLayout
+      onSubmit={handleSubmit}
+      to={
+        <ComposerToRow>
+          <MemberPicker
+            ref={pickerRef}
+            hideLabel
+            label="Who is it for?"
+            name="receiverAccountId"
+            teammates={teammates}
+            value={receiverAccountId}
+            errorMessage={errors.receiverAccountId}
+            onChange={(accountId) => {
+              setReceiverAccountId(accountId);
+              setClientErrors((current) => ({
+                ...current,
+                receiverAccountId: undefined,
+              }));
+            }}
+          />
+        </ComposerToRow>
+      }
+      message={
+        <TextAreaField
+          ref={messageRef}
+          hideLabel
+          label="Your feedback"
+          name="message"
+          rows={3}
+          placeholder="What happened, what it did, and what to keep or try next time."
+          required
+          value={message}
+          triggers={tagTriggers}
+          onChange={(event) => {
+            setMessage(event.target.value);
+            setClientErrors((current) => ({ ...current, message: undefined }));
+          }}
+          errorMessage={errors.message}
+          helperText="Your name is shown with it."
+        />
+      }
+      audience={
+        <VisibilityMenu
+          options={VISIBILITIES}
+          value={visibility}
+          people={othersToShareWith}
+          selectedAccountIds={selectedAccountIds}
+          helperText="This can't be changed after you send it."
+          errorMessage={errors.selectedAccountIds}
+          errorId={audienceErrorId}
+          open={audienceOpen}
+          onOpenChange={setAudienceOpen}
+          onValueChange={(value) => {
+            setVisibility(value);
+            setClientErrors((current) => ({
+              ...current,
+              selectedAccountIds: undefined,
+            }));
+          }}
+          onSelectedChange={toggleSelected}
+        />
+      }
+      footerError={errors.selectedAccountIds}
+      footerErrorId={audienceErrorId}
+      formError={state.formError}
+      submit={
+        <Button type="submit" variant="primary" disabled={isSending}>
+          Send feedback
+        </Button>
+      }
+    />
   );
 }

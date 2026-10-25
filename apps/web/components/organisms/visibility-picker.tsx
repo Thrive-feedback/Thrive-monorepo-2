@@ -24,6 +24,11 @@ export type VisibilityPickerProps<Value extends string> = {
   /** What the current choice means, under the choices. */
   helperText: React.ReactNode;
   errorMessage?: string;
+  /**
+   * Where the error is already said, by element id. Given, the picker marks the people invalid
+   * and points at it rather than saying it a second time.
+   */
+  errorId?: string;
   onValueChange: (value: Value) => void;
   onSelectedChange: (accountId: string, selected: boolean) => void;
   /** The list of people, so a form can move focus there when nobody is picked. */
@@ -41,12 +46,13 @@ export function VisibilityPicker<Value extends string>({
   selectedAccountIds,
   helperText,
   errorMessage,
+  errorId,
   onValueChange,
   onSelectedChange,
   ref,
 }: VisibilityPickerProps<Value>) {
   const id = useId();
-  const messageId = `${id}-message`;
+  const messageId = errorId ?? `${id}-message`;
 
   return (
     <>
@@ -81,9 +87,9 @@ export function VisibilityPicker<Value extends string>({
         <fieldset
           ref={ref}
           aria-describedby={errorMessage ? messageId : undefined}
-          className="flex flex-col gap-2 rounded-element border border-border-subtle p-3"
+          className="flex flex-col gap-2 border-border-subtle border-t pt-3"
         >
-          <Text as="legend" variant="label" className="px-1">
+          <Text as="legend" variant="label" className="float-left mb-2 w-full">
             Share it with
           </Text>
           {people.length === 0 ? (
@@ -108,7 +114,7 @@ export function VisibilityPicker<Value extends string>({
               );
             })
           )}
-          {errorMessage && (
+          {errorMessage && !errorId && (
             <p
               id={messageId}
               className="text-input-helper text-status-error-fg"

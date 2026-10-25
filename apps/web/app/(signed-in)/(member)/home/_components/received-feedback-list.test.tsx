@@ -47,7 +47,7 @@ describe('ReceivedFeedbackList', () => {
         exact: false,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/From Ben Carter/)).toBeInTheDocument();
+    expect(screen.getByRole('article')).toHaveTextContent('Ben Carter to you');
     expect(screen.getByText('11 Oct 2026')).toBeInTheDocument();
     expect(
       screen.getByText('You open strongly and lose the room at the detail.'),
@@ -67,7 +67,7 @@ describe('ReceivedFeedbackList', () => {
     ).toBeInTheDocument();
   });
 
-  it('marks Feedback given without being asked, and only that', async () => {
+  it('marks Feedback given without being asked apart from an answer', async () => {
     readReceivedFeedback.mockResolvedValue([
       { ...ONE_PIECE, id: 'fb-2', message: 'the customer demo', offered: true },
       ONE_PIECE,
@@ -75,7 +75,8 @@ describe('ReceivedFeedbackList', () => {
 
     await renderList();
 
-    expect(screen.getAllByText(/Given without a request/)).toHaveLength(1);
+    expect(screen.getAllByText(/^Offered ·/)).toHaveLength(1);
+    expect(screen.getAllByText(/^Requested ·/)).toHaveLength(1);
   });
 
   it('keeps the line breaks the Giver wrote', async () => {
@@ -95,7 +96,7 @@ describe('ReceivedFeedbackList', () => {
 
     await renderList();
 
-    expect(screen.getByText(/From a teammate/)).toBeInTheDocument();
+    expect(screen.getByRole('article')).toHaveTextContent('A teammate to you');
   });
 
   it('says so when nobody has written anything', async () => {

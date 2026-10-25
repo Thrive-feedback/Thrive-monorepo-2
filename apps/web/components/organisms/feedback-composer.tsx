@@ -1,28 +1,33 @@
 'use client';
 
 import { cva } from 'class-variance-authority';
-import { ChevronUpIcon, PenLineIcon } from 'lucide-react';
-import { Suspense, use, useEffect, useId, useState } from 'react';
-import { Button } from '@/components/atoms/button';
+import { Suspense, use, useEffect, useRef, useState } from 'react';
 import { Skeleton } from '@/components/atoms/skeleton';
+import { cn } from '@/lib/cn.util';
 import type { GiveFeedbackAction } from '@/lib/feedback/give-feedback-state.type';
+import type { GiveKudosAction } from '@/lib/feedback/give-kudos-state.type';
 import type { RequestFeedbackAction } from '@/lib/feedback/request-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { preloadable } from '@/lib/preloadable.util';
 import { whenIdle } from '@/lib/when-idle.util';
+import { ComposerLayoutSkeleton } from './composer-layout';
+import styles from './feedback-composer.module.css';
 import type { GiveFeedbackFormProps } from './give-feedback-form';
+import type { KudosFormProps } from './kudos-form';
 import type { RequestFeedbackFormProps } from './request-feedback-form';
 
 /*
- * The two forms carry the autocomplete and most of the composer's code, and a page needs neither
- * until someone opens a form, so they load apart from the page, fetched once the browser is idle.
+ * The forms carry the autocomplete and most of the composer's code, and a page needs none of
+ * them until someone opens a form, so they load apart from the page, fetched once the browser is
+ * idle.
  */
 const loadRequestForm = preloadable(() => import('./request-feedback-form'));
 const loadGiveForm = preloadable(() => import('./give-feedback-form'));
+const loadKudosForm = preloadable(() => import('./kudos-form'));
 
-/** Fetches both forms ahead of need, as the composer does once the browser is idle. */
+/** Fetches every form ahead of need, as the composer does once the browser is idle. */
 export function preloadComposerForms() {
-  return Promise.all([loadRequestForm(), loadGiveForm()]);
+  return Promise.all([loadRequestForm(), loadGiveForm(), loadKudosForm()]);
 }
 
 function RequestFeedbackForm(props: RequestFeedbackFormProps) {
@@ -35,11 +40,24 @@ function GiveFeedbackForm(props: GiveFeedbackFormProps) {
   return <Form {...props} />;
 }
 
-type ComposerMode = 'request' | 'give';
+function KudosForm(props: KudosFormProps) {
+  const { KudosForm: Form } = use(loadKudosForm());
+  return <Form {...props} />;
+}
+
+type ComposerMode = 'request' | 'give' | 'kudos';
 
 const MODE_NAMES: Readonly<Record<ComposerMode, string>> = {
   request: 'Request feedback',
   give: 'Give feedback',
+  kudos: 'Kudos',
+};
+
+/** Each mode by its first word, where the three names do not fit side by side. */
+const SHORT_MODE_NAMES: Readonly<Record<ComposerMode, string>> = {
+  request: 'Request',
+  give: 'Give',
+  kudos: 'Kudos',
 };
 
 /** The two modes as an underlined pair, the open one marked, as tabs are elsewhere. */
@@ -59,35 +77,44 @@ export type FeedbackComposerProps = {
   teammates: readonly Teammate[];
   /** The Workspace's active Workspace Goals, by name, offered on `#` as either form is written. */
   workspaceGoals: readonly string[];
+  /** The Workspace's name, which the Kudos form names as its readers. */
+  workspaceName?: string;
   /** Sends a Feedback Request: Home's server action, or a stand-in. */
   requestAction: RequestFeedbackAction;
   /** Gives Feedback without being asked: Home's server action, or a stand-in. */
   giveAction: GiveFeedbackAction;
+  /** Gives Kudos. Without it there is no Kudos mode, as on the landing page's preview. */
+  kudosAction?: GiveKudosAction;
 };
 
 /**
  * One form, two modes: ask a teammate for Feedback, or give it without being asked — the two
- * moments `ADR-0022` holds equally important. The mode is not in the URL: it is a choice made
+ * moments `ADR-0022` holds equally important — and, where Kudos can be sent, a third: Kudos, the
+ * fastest way to give Feedback (brain `ADR-0043`). The mode is not in the URL: it is a choice made
  * on the way to writing, not a place to come back to.
  *
- * It opens folded to one line, so a page someone came to read stays quiet: a prompt to ask for
- * advice, and Give feedback beside it. Either opens the form in its mode; Hide form folds it
- * again. A form is first drawn when its mode is first opened, since most visits only read and
- * Home draws the composer once per layout; from then on it stays mounted and is only hidden, so
- * folding or switching keeps what was typed.
+ * It is always open, ready to write, on asking for Feedback first: the form itself is the first
+ * thing on Home. The other modes' forms are first drawn when they are first chosen; from then on
+ * each stays mounted and is only hidden, so switching keeps what was typed.
  *
  * It draws its own box, so every page that offers it shows the same one.
  */
 export function FeedbackComposer({
   teammates,
   workspaceGoals,
+  workspaceName = 'your Workspace',
   requestAction,
   giveAction,
+  kudosAction,
 }: FeedbackComposerProps) {
+  const modes: readonly ComposerMode[] = kudosAction
+    ? ['request', 'give', 'kudos']
+    : ['request', 'give'];
   const [mode, setMode] = useState<ComposerMode>('request');
-  const [expanded, setExpanded] = useState(false);
-  const [drawn, setDrawn] = useState<ReadonlySet<ComposerMode>>(new Set());
-  const formsId = useId();
+  const [drawn, setDrawn] = useState<ReadonlySet<ComposerMode>>(
+    new Set(['request']),
+  );
+  const modesRef = useRef<HTMLFieldSetElement>(null);
 
   useEffect(
     () =>
@@ -97,6 +124,20 @@ export function FeedbackComposer({
     [],
   );
 
+  // On a phone the modes scroll sideways, so the open one is brought into view when it opens.
+  // Only the strip scrolls, never the page: the composer opens with the page, wherever it sits.
+  useEffect(() => {
+    const strip = modesRef.current;
+    const open = strip?.querySelector(`[data-mode="${mode}"]`);
+    if (!strip || !open) {
+      return;
+    }
+    const stripBox = strip.getBoundingClientRect();
+    const openBox = open.getBoundingClientRect();
+    strip.scrollLeft +=
+      openBox.left - stripBox.left - (stripBox.width - openBox.width) / 2;
+  }, [mode]);
+
   function choose(next: ComposerMode) {
     setMode(next);
     setDrawn((current) =>
@@ -104,70 +145,38 @@ export function FeedbackComposer({
     );
   }
 
-  function open(next: ComposerMode) {
-    choose(next);
-    setExpanded(true);
-  }
-
   return (
     <section
       aria-label="Ask for or give feedback"
       className="flex w-full flex-col rounded-page border border-border-muted bg-surface-base"
     >
-      {expanded ? (
-        <div className="flex items-center justify-between gap-4 border-border-subtle border-b px-5 pt-3">
-          <fieldset className="flex min-w-0 items-end gap-5">
-            <legend className="sr-only">Feedback form</legend>
-            {(['request', 'give'] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={mode === value}
-                onClick={() => choose(value)}
-                className={modeButton({ pressed: mode === value })}
-              >
-                {MODE_NAMES[value]}
-              </button>
-            ))}
-          </fieldset>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Hide form"
-            aria-expanded
-            aria-controls={formsId}
-            onClick={() => setExpanded(false)}
-            className="mb-2"
-          >
-            <ChevronUpIcon aria-hidden="true" className="size-5" />
-          </Button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 p-2">
-          <button
-            type="button"
-            aria-expanded={false}
-            aria-controls={formsId}
-            onClick={() => open('request')}
-            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-input px-3 py-2.5 text-left text-fg-secondary hover:bg-action-neutral-surface-hover"
-          >
-            <PenLineIcon aria-hidden="true" className="size-4 shrink-0" />
-            <span className="truncate text-input-value-md">
-              Ask for advice…
-            </span>
-          </button>
-          <Button
-            variant="secondary"
-            size="sm"
-            aria-expanded={false}
-            aria-controls={formsId}
-            onClick={() => open('give')}
-          >
-            {MODE_NAMES.give}
-          </Button>
-        </div>
-      )}
-      <div id={formsId} hidden={!expanded} className="p-5">
+      <div className="border-border-subtle border-b px-5 pt-3">
+        <fieldset
+          ref={modesRef}
+          className={cn(
+            'flex min-w-0 items-end gap-5 overflow-x-auto overflow-y-hidden',
+            styles.modes,
+          )}
+        >
+          <legend className="sr-only">Feedback form</legend>
+          {modes.map((value) => (
+            <button
+              key={value}
+              type="button"
+              data-mode={value}
+              aria-pressed={mode === value}
+              aria-label={MODE_NAMES[value]}
+              onClick={() => choose(value)}
+              className={modeButton({ pressed: mode === value })}
+            >
+              {/* On a phone the three modes fit by their first word; the name stays whole. */}
+              <span className="sm:hidden">{SHORT_MODE_NAMES[value]}</span>
+              <span className="max-sm:hidden">{MODE_NAMES[value]}</span>
+            </button>
+          ))}
+        </fieldset>
+      </div>
+      <div className="p-5">
         {drawn.has('request') && (
           <div hidden={mode !== 'request'}>
             <Suspense fallback={<FormSkeleton />}>
@@ -190,6 +199,18 @@ export function FeedbackComposer({
             </Suspense>
           </div>
         )}
+        {kudosAction && drawn.has('kudos') && (
+          <div hidden={mode !== 'kudos'}>
+            <Suspense fallback={<FormSkeleton />}>
+              <KudosForm
+                teammates={teammates}
+                workspaceGoals={workspaceGoals}
+                workspaceName={workspaceName}
+                action={kudosAction}
+              />
+            </Suspense>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -200,20 +221,21 @@ export function FeedbackComposer({
  * waits behind its own, so opening the second never hides the first.
  */
 function FormSkeleton() {
-  return (
-    <div className="flex flex-col gap-4">
-      <Skeleton shape="control" className="h-11 w-full rounded-input" />
-      <Skeleton shape="control" className="h-24 w-full rounded-input" />
-    </div>
-  );
+  return <ComposerLayoutSkeleton />;
 }
 
-/** A `FeedbackComposer` still loading, as it first opens: folded to its one line. */
+/** A `FeedbackComposer` still loading, as it first opens: ready to write, on its first mode. */
 export function FeedbackComposerSkeleton() {
   return (
-    <div className="flex w-full items-center gap-2 rounded-page border border-border-muted p-2">
-      <Skeleton shape="control" className="h-11 flex-1 rounded-input" />
-      <Skeleton shape="control" className="h-9 w-28 rounded-button" />
+    <div className="flex w-full flex-col rounded-page border border-border-muted">
+      <div className="flex items-end gap-5 border-border-subtle border-b px-5 pt-3 pb-2.5">
+        <Skeleton className="w-28 text-button-sm" />
+        <Skeleton className="w-24 text-button-sm" />
+        <Skeleton className="w-12 text-button-sm" />
+      </div>
+      <div className="p-5">
+        <ComposerLayoutSkeleton />
+      </div>
     </div>
   );
 }
