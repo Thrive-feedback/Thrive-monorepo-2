@@ -12,7 +12,7 @@ export function CardEntry() {
       level="atom"
       origin="thrive"
       source="components/atoms/card.tsx"
-      summary="A flat panel, set apart from the page by its surface, with its title at the top."
+      summary="A panel of frosted glass, edged by a hairline, with its title at the top. The orbs behind a signed-out screen show through it."
       useFor="The one panel a step lives in: sign-in, introduce yourself."
       avoidFor="Grouping inside a page that is already a card."
       usage={`import { Card } from '@/components/atoms/card';

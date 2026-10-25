@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/atoms/button';
+import { HandUnderline } from '@/components/atoms/hand-underline';
 import { link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
 import { ROUTES } from '@/lib/routes.constant';
@@ -28,10 +29,7 @@ export function LandingHero() {
         >
           <NotedText text={hero.headlineStart} note={hero.note} />
           {hero.headlineJoin}
-          <span className="relative inline-block whitespace-nowrap">
-            {hero.headlineMark}
-            <HandUnderline />
-          </span>
+          <HandUnderline>{hero.headlineMark}</HandUnderline>
         </Text>
         <Text variant="subtitle-1" tone="muted" className="text-balance">
           {hero.lead}
@@ -51,33 +49,5 @@ export function LandingHero() {
         </Text>
       </div>
     </section>
-  );
-}
-
-/** Two quick pen strokes under the words they mark, drawn in the secondary colour. */
-function HandUnderline() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 200 16"
-      preserveAspectRatio="none"
-      fill="none"
-      className="absolute -bottom-2 left-0 h-4 w-full overflow-visible text-action-secondary"
-    >
-      <path
-        d="M3 9 C 48 3, 120 2, 197 7"
-        stroke="currentColor"
-        strokeWidth="5"
-        strokeLinecap="round"
-        vectorEffect="non-scaling-stroke"
-      />
-      <path
-        d="M24 14 C 80 9, 146 9, 186 12"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
   );
 }

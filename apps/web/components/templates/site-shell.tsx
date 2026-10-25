@@ -1,3 +1,4 @@
+import { OrbBackdrop } from '@/components/atoms/orb-backdrop';
 import { SiteNavbar } from '@/components/organisms/site-navbar';
 
 export type SiteShellProps = {
@@ -7,7 +8,8 @@ export type SiteShellProps = {
 };
 
 /**
- * The page shape every signed-out and signed-in screen shares: navbar, then content.
+ * The page shape every signed-out and signed-in screen shares: navbar, then content, over the
+ * landing page's ground of drifting orbs, so the way in looks like the page that led to it.
  *
  * The main region is a flex column so a page can centre itself in the space below the navbar
  * with `m-auto`, without the shell knowing what it holds. Its side padding steps up with the
@@ -15,7 +17,8 @@ export type SiteShellProps = {
  */
 export function SiteShell({ children, hasNavbar = true }: SiteShellProps) {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="relative isolate flex min-h-dvh flex-col bg-surface-base">
+      <OrbBackdrop spread="screen" />
       {hasNavbar && <SiteNavbar />}
       <main className="flex flex-1 flex-col px-inset-container py-12">
         {children}
