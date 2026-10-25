@@ -11,16 +11,27 @@ import type {
   FeedbackWithVisibilityRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
+import {
+  type KudosPageRow,
+  KudosQuery,
+  type KudosRow,
+} from '@app/modules/feedback/application/query-port/kudos.query-port';
 import { TagsService } from '@app/modules/feedback/application/service/tags.service';
 import type { PageRequest } from '@app/modules/feedback/application/types/feedback-request.types';
+import type { CursorPageRequest } from '@app/modules/feedback/application/types/kudos.types';
 import type { Feedback } from '@app/modules/feedback/domain/entity/feedback.entity';
 import {
   FeedbackRequest,
   type FeedbackRequestSnapshot,
 } from '@app/modules/feedback/domain/entity/feedback-request.entity';
+import type {
+  Kudos,
+  KudosSnapshot,
+} from '@app/modules/feedback/domain/entity/kudos.entity';
 import { AskAlreadyAnsweredError } from '@app/modules/feedback/domain/feedback-request.errors';
 import { FeedbackRepository } from '@app/modules/feedback/domain/repository/feedback-repository.port';
 import { FeedbackRequestRepository } from '@app/modules/feedback/domain/repository/feedback-request-repository.port';
+import { KudosRepository } from '@app/modules/feedback/domain/repository/kudos-repository.port';
 import type { AskStatusValue } from '@app/modules/feedback/domain/value-object/ask-status.vo';
 import { type AccountBySlug, AccountBySlugPort } from '@app/modules/identity';
 import { WorkspaceMembershipPort } from '@app/modules/workspace';
@@ -444,4 +455,40 @@ function newestFirst(
 function pageOf<T>(rows: readonly T[], page: PageRequest): T[] {
   const from = (page.page - 1) * page.pageSize;
   return rows.slice(from, from + page.pageSize);
+}
+
+export class FakeKudosRepository extends KudosRepository {
+  readonly saved: KudosSnapshot[] = [];
+
+  async save(kudos: Kudos): Promise<void> {
+    this.saved.push(kudos.snapshot());
+  }
+}
+
+/** Kudos held in memory, paged newest first by the id cursor the real read uses. */
+export class FakeKudosQuery extends KudosQuery {
+  readonly rows: (KudosRow & { readonly workspaceId: string })[] = [];
+
+  async publicIn(
+    workspaceId: string,
+    page: CursorPageRequest,
+  ): Promise<KudosPageRow> {
+    const newestFirst = this.rows
+      .filter((row) => row.workspaceId === workspaceId)
+      .sort(
+        (a, b) =>
+          b.createdAt.getTime() - a.createdAt.getTime() ||
+          b.id.localeCompare(a.id),
+      );
+    const start =
+      page.afterId === null
+        ? 0
+        : newestFirst.findIndex((row) => row.id === page.afterId) + 1;
+    const rest =
+      start === 0 && page.afterId !== null ? [] : newestFirst.slice(start);
+    return {
+      items: rest.slice(0, page.limit),
+      hasMore: rest.length > page.limit,
+    };
+  }
 }

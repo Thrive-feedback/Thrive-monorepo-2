@@ -25,3 +25,41 @@ export const pageResultShape = {
   page: z.number().int(),
   pageSize: z.number().int(),
 };
+
+/**
+ * The cursor every collection route will take instead of `page` (ADR 0059): opaque to a client,
+ * which only ever sends back the `nextCursor` it was given. It is the base64url of the id of the
+ * last row sent; one that does not decode to an id is refused as an invalid request.
+ */
+export const cursorQueryShape = {
+  cursor: z
+    .string()
+    .optional()
+    .transform((cursor, context) => {
+      if (cursor === undefined) {
+        return null;
+      }
+      const id = Buffer.from(cursor, 'base64url').toString('utf8');
+      if (!z.uuid().safeParse(id).success) {
+        context.addIssue({ code: 'custom', message: 'Not a cursor.' });
+        return z.NEVER;
+      }
+      return id;
+    }),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_PAGE_SIZE)
+    .default(DEFAULT_PAGE_SIZE),
+};
+
+/** The paging field a cursor-paged response carries beside its `items`; `null` on the last page. */
+export const cursorResultShape = {
+  nextCursor: z.string().nullable(),
+};
+
+/** The opaque cursor for the page after the row with this id, or `null` when there is none. */
+export function toCursor(afterId: string | null): string | null {
+  return afterId === null ? null : Buffer.from(afterId).toString('base64url');
+}

@@ -167,3 +167,34 @@ export class AskAlreadyAnsweredError extends DomainError {
     super('This Ask has already been answered.');
   }
 }
+
+export class KudosMessageEmptyError extends DomainError {
+  readonly code = 'KUDOS_MESSAGE_EMPTY';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('A Kudos must contain at least one non-space character.');
+  }
+}
+
+export class KudosMessageTooLongError extends DomainError {
+  readonly code = 'KUDOS_MESSAGE_TOO_LONG';
+  readonly category = 'validation' as const;
+
+  constructor(readonly maxLength: number) {
+    super(`A Kudos must be at most ${maxLength} characters.`);
+  }
+}
+
+/**
+ * A Kudos is for the teammates it @mentions, so one that names nobody — or only its Giver, or
+ * only people outside the Workspace — is for nobody.
+ */
+export class KudosNeedsARecipientError extends DomainError {
+  readonly code = 'KUDOS_NEEDS_A_RECIPIENT';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('A Kudos must @mention at least one other Member of the Workspace.');
+  }
+}

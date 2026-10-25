@@ -363,6 +363,64 @@ model FeedbackMention {
   @@map("feedback_mention")
 }
 
+/// A Kudos: praise written once and sent to every teammate it @mentions (brain `ADR-0043`).
+/// Every Member of its Workspace reads it, so it carries no Visibility (ADR 0060).
+model Kudos {
+  id             String               @id
+  /// Workspace's id, held without a foreign key (BE_03 R7), as on Feedback.
+  workspaceId    String
+  /// The Account of the Member who wrote it. No foreign key: Accounts are Identity's.
+  giverAccountId String
+  /// What the Giver wrote, up to 280 characters.
+  message        String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  recipients     KudosRecipient[]
+  workspaceGoals KudosWorkspaceGoal[]
+  mentions       KudosMention[]
+
+  /// For the Workspace feed: a Workspace's Kudos, newest first, `id` breaking ties for the cursor.
+  @@index([workspaceId, createdAt, id])
+  @@map("kudos")
+}
+
+/// One teammate a Kudos is for: an active Member it @mentions, never its Giver.
+model KudosRecipient {
+  kudosId   String
+  kudos     Kudos  @relation(fields: [kudosId], references: [id], onDelete: Cascade)
+  /// No foreign key: Accounts are Identity's.
+  accountId String
+
+  @@id([kudosId, accountId])
+  /// For the Kudos one Member was given, a read that starts at the person.
+  @@index([accountId])
+  @@map("kudos_recipient")
+}
+
+/// A Workspace Goal a Kudos named, as on Feedback.
+model KudosWorkspaceGoal {
+  kudosId         String
+  kudos           Kudos  @relation(fields: [kudosId], references: [id], onDelete: Cascade)
+  workspaceGoalId String
+  name            String
+
+  @@id([kudosId, workspaceGoalId])
+  @@map("kudos_workspace_goal")
+}
+
+/// A Member a Kudos @mentioned, kept as they were then, as on Feedback. Every recipient is one;
+/// a Giver who mentions themselves is a mention and not a recipient.
+model KudosMention {
+  kudosId     String
+  kudos       Kudos  @relation(fields: [kudosId], references: [id], onDelete: Cascade)
+  accountId   String
+  slug        String
+  displayName String
+
+  @@id([kudosId, accountId])
+  @@map("kudos_mention")
+}
+
 // Workspace Goal's table. The Workspace is held as an id with no foreign key into Workspace's
 // tables, which this module does not own (BE_03 R7).
 
