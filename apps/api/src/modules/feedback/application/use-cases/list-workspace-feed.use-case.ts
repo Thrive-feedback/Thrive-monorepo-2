@@ -51,9 +51,11 @@ export class ListWorkspaceFeedUseCase {
         giverAccountId: feedback.giverAccountId,
         // An Account cascades away with the person, so a missing one was deleted mid-read.
         giverName: people.nameOf(feedback.giverAccountId),
+        giverPhotoUrl: people.photoOf(feedback.giverAccountId),
         giverStatus: people.statusOf(feedback.giverAccountId),
         receiverAccountId: feedback.receiverAccountId,
         receiverName: people.nameOf(feedback.receiverAccountId),
+        receiverPhotoUrl: people.photoOf(feedback.receiverAccountId),
         receiverStatus: people.statusOf(feedback.receiverAccountId),
         message: feedback.message,
         tags: feedback.tags,

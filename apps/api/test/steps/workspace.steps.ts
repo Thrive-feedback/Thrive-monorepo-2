@@ -121,16 +121,41 @@ Then(
   },
 );
 
-/** The photo the last list of Members showed for `name`, or `undefined` if they were not in it. */
+/** One person as a list shows them: a Member, or a giver, receiver or requester inside an item. */
+type ListedPerson = { accountId?: string; photoUrl?: string | null };
+
+/**
+ * The people one item of the last list names, whatever its shape: the item itself on the list of
+ * Members, nested giver, receiver and requester objects, or a flat `giverAccountId` and
+ * `giverPhotoUrl` pair.
+ */
+function peopleIn(item: Record<string, unknown>): ListedPerson[] {
+  return [
+    item as ListedPerson,
+    item.giver as ListedPerson,
+    item.receiver as ListedPerson,
+    item.requester as ListedPerson,
+    {
+      accountId: item.giverAccountId as string | undefined,
+      photoUrl: item.giverPhotoUrl as string | null | undefined,
+    },
+  ].filter((person) => person?.accountId !== undefined);
+}
+
+/**
+ * The photo the last list showed for `name` — of Members, or of Feedback or Asks naming them —
+ * or `undefined` if they were not in it.
+ */
 function listedPhotoOf(
   world: ThriveWorld,
   name: string,
 ): string | null | undefined {
   assert.equal(world.lastResponse?.status, 200);
-  const items: { accountId: string; photoUrl: string | null }[] =
-    world.lastResponse?.body.items;
+  const items: Record<string, unknown>[] = world.lastResponse?.body.items;
   const { accountId } = world.person(name);
-  return items.find((member) => member.accountId === accountId)?.photoUrl;
+  return items
+    .flatMap(peopleIn)
+    .find((person) => person.accountId === accountId)?.photoUrl;
 }
 
 Then(

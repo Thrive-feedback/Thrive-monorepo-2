@@ -50,6 +50,7 @@ function toResponse(feedback: ReceivedFeedbackView) {
     feedbackRequestId: feedback.feedbackRequestId,
     giverAccountId: feedback.giverAccountId,
     giverName: feedback.giverName,
+    giverPhotoUrl: feedback.giverPhotoUrl,
     giverStatus: feedback.giverStatus,
     message: feedback.message,
     tags: toTagsResponse(feedback.tags),

@@ -45,6 +45,7 @@ export class GetFeedbackAskUseCase {
       tags: ask.tags,
       requesterAccountId: ask.requesterAccountId,
       requesterName: people.nameOf(ask.requesterAccountId),
+      requesterPhotoUrl: people.photoOf(ask.requesterAccountId),
       requesterStatus: people.statusOf(ask.requesterAccountId),
       status: AskStatus.of(ask.status).toString(),
       createdAt: ask.createdAt,

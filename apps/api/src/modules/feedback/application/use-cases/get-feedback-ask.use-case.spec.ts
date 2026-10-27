@@ -65,6 +65,7 @@ describe('reading one Ask waiting for me', () => {
       tags: NO_TAGS,
       requesterAccountId: ANA,
       requesterName: 'Ana Silva',
+      requesterPhotoUrl: null,
       requesterStatus: 'ACTIVE',
       status: 'PENDING',
       createdAt: CREATED_AT,

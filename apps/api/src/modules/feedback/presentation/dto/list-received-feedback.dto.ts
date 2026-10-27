@@ -28,6 +28,8 @@ const receivedFeedbackSchema = z.object({
   giverAccountId: z.uuid(),
   /** `null` while the Giver has not introduced themselves. */
   giverName: z.string().nullable(),
+  /** The Giver's Google photo, or `null` when they have none. */
+  giverPhotoUrl: z.url().nullable(),
   /** `DEACTIVATED` once the Giver was Deactivated in this Workspace; their Feedback stays. */
   giverStatus: z.enum(PERSON_STATUSES),
   /** The Feedback message. */

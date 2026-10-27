@@ -17,6 +17,8 @@ const personSchema = z.object({
   accountId: z.uuid(),
   /** `null` while they have not introduced themselves. */
   name: z.string().nullable(),
+  /** Their Google photo, or `null` when they have none. */
+  photoUrl: z.url().nullable(),
   /** `DEACTIVATED` once they were Deactivated in this Workspace; their Feedback stays. */
   status: z.enum(PERSON_STATUSES),
 });
