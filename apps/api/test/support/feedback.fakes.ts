@@ -383,11 +383,10 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
 
   /**
    * The Feedback rows the test has written, as the `feedback` table holds them: addressed to
-   * one Member of one Workspace.
+   * one or more Members of one Workspace.
    */
   readonly feedback: (FeedbackRow & {
     readonly workspaceId: string;
-    readonly receiverAccountId: string;
   })[] = [];
 
   async receivedBy(
@@ -399,7 +398,7 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
       .filter(
         (row) =>
           row.workspaceId === workspaceId &&
-          row.receiverAccountId === receiverAccountId,
+          row.receiverAccountIds.includes(receiverAccountId),
       )
       .sort(newestFirst);
     return { items: pageOf(received, page), total: received.length };
@@ -438,7 +437,7 @@ function withoutVisibility(
     origin: row.origin,
     feedbackRequestId: row.feedbackRequestId,
     giverAccountId: row.giverAccountId,
-    receiverAccountId: row.receiverAccountId,
+    receiverAccountIds: row.receiverAccountIds,
     message: row.message,
     tags: row.tags,
     createdAt: row.createdAt,

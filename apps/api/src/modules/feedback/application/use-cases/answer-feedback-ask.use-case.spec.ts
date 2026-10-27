@@ -76,7 +76,7 @@ describe('a Giver answering an Ask', () => {
         feedbackRequestId: REQUEST_ID,
         feedbackAskId: ASK_ID,
         giverAccountId: BEN,
-        receiverAccountId: ANN,
+        receiverAccountIds: [ANN],
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         message: WRITTEN,

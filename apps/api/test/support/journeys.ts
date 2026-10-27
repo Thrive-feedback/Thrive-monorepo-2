@@ -194,21 +194,24 @@ export function visibilityOf(
   };
 }
 
-/** The Giver gives the Receiver Feedback without being asked, as Give feedback sends it. */
+/** The Giver gives one or more Receivers Feedback without being asked, as Give feedback sends it. */
 export async function giveFeedback(
   world: ThriveWorld,
   giver: string,
-  receiver: string,
+  receivers: string | readonly string[],
   message: string,
   visibility: VisibilityChosen = { visibility: 'ONLY_ME' },
 ): Promise<ApiResponse> {
   const workspaceId = world.workspaceOf(giver);
+  const forWhom = typeof receivers === 'string' ? [receivers] : receivers;
   const response = await world.as(
     giver,
     'POST',
     `/v1/workspaces/${workspaceId}/feedback`,
     {
-      receiverAccountId: world.person(receiver).accountId,
+      receiverAccountIds: forWhom.map(
+        (receiver) => world.person(receiver).accountId,
+      ),
       message: await withSlugs(world, message),
       ...visibility,
     },

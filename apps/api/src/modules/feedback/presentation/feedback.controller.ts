@@ -25,6 +25,7 @@ import { ListReceivedFeedbackUseCase } from '../application/use-cases/list-recei
 import { OfferFeedbackUseCase } from '../application/use-cases/offer-feedback.use-case';
 import {
   toFeedbackResponse,
+  toPersonResponse,
   toTagsResponse,
 } from './dto/feedback-response.mapper';
 import { GetFeedbackResponseDto } from './dto/get-feedback.dto';
@@ -35,6 +36,7 @@ import {
 import {
   OfferFeedbackRequestDto,
   OfferFeedbackResponseDto,
+  receiversOf,
 } from './dto/offer-feedback.dto';
 import {
   FeedbackPathParamsDto,
@@ -52,6 +54,7 @@ function toResponse(feedback: ReceivedFeedbackView) {
     giverName: feedback.giverName,
     giverPhotoUrl: feedback.giverPhotoUrl,
     giverStatus: feedback.giverStatus,
+    otherReceivers: feedback.otherReceivers.map(toPersonResponse),
     message: feedback.message,
     tags: toTagsResponse(feedback.tags),
     createdAt: feedback.createdAt.toISOString(),
@@ -81,13 +84,13 @@ export class FeedbackController {
   @Post()
   @ApiOperation({
     summary:
-      'Give a Member of this Workspace Feedback without being asked for it',
+      'Give one or more Members of this Workspace Feedback without being asked for it',
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.CREATED, type: OfferFeedbackResponseDto })
   @ApiBadRequestResponse({
     description:
-      'REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE',
+      'REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE',
   })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
   @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
@@ -99,7 +102,7 @@ export class FeedbackController {
     const given = await this.offerFeedbackUseCase.execute({
       workspaceId: params.workspaceId,
       giverAccountId: actor.accountId,
-      receiverAccountId: body.receiverAccountId,
+      receiverAccountIds: receiversOf(body),
       message: body.message,
       visibility: body.visibility,
       selectedAccountIds: body.selectedAccountIds ?? [],

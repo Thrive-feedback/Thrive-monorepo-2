@@ -1,7 +1,9 @@
 Feature: Offered feedback
-  A Member gives a teammate Feedback without being asked. It reaches the person it is
-  for, marked as given without a request, and asks nobody anything. Whoever else the
-  Giver chose to share it with can read it too, and nobody else.
+  A Member gives one or more teammates Feedback without being asked. It reaches everyone
+  it is for, marked as given without a request, and asks nobody anything. Given to
+  several, it is one piece of Feedback: each of them reads it and sees who else it was
+  for (brain `ADR-0044`). Whoever else the Giver chose to share it with can read it
+  too, and nobody else.
 
   Background:
     Given Ann owns a Workspace called "Acme"
@@ -63,3 +65,32 @@ Feature: Offered feedback
     Given Dan owns a Workspace called "Globex"
     When Ann gives Ben Feedback: "You kept the room with you.", shared with Dan
     Then Ann is told they can only share it inside their Workspace
+
+  @api
+  Scenario: A Member gives Feedback to several teammates at once
+    Given Cara is a Member of Ann's Workspace
+    When Ann gives Ben and Cara Feedback: "You two kept the demo calm."
+    Then Ben finds "You two kept the demo calm." from Ann, written to them and Cara
+    And Cara finds "You two kept the demo calm." from Ann, written to them and Ben
+
+  @api
+  Scenario: Feedback given to several is one piece, naming everyone it is for
+    Given Cara is a Member of Ann's Workspace
+    And Ann has given Ben and Cara Feedback: "You two kept the demo calm."
+    When Cara opens the Feedback Ann wrote
+    Then Cara reads it as written by Ann to Ben and Cara
+
+  @api
+  Scenario: Feedback given to several is still nobody else's to read
+    Given Cara is a Member of Ann's Workspace
+    And Dan is a Member of Ann's Workspace
+    And Ann has given Ben and Cara Feedback: "You two kept the demo calm."
+    When Dan opens the Feedback Ann wrote
+    Then Dan is told the Feedback cannot be found
+
+  @api
+  Scenario: One teammate outside the Workspace stops the whole send
+    Given Dan owns a Workspace called "Globex"
+    When Ann gives Ben and Dan Feedback: "You two kept the demo calm."
+    Then Ann is told Dan is not in their Workspace to give Feedback to
+    And Ben has been given no Feedback

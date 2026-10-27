@@ -1,5 +1,6 @@
 import type {
   FeedbackMention as FeedbackMentionRecord,
+  FeedbackReceiver as FeedbackReceiverRecord,
   Feedback as FeedbackRecord,
   FeedbackSelectedPerson as FeedbackSelectedPersonRecord,
   FeedbackWorkspaceGoal as FeedbackWorkspaceGoalRecord,
@@ -20,14 +21,25 @@ export function toFeedbackRecord(
     feedbackRequestId: snapshot.feedbackRequestId,
     feedbackAskId: snapshot.feedbackAskId,
     giverAccountId: snapshot.giverAccountId,
-    receiverAccountId: snapshot.receiverAccountId,
+    // Only an older API reads this column, mid-deploy (ADR 0061): every Receiver is in
+    // `feedback_receiver`, and a piece always has at least one.
+    receiverAccountId: snapshot.receiverAccountIds[0] ?? '',
     visibility: snapshot.visibility as FeedbackRecord['visibility'],
     message: snapshot.message,
   };
 }
 
+/** One row per Receiver, in the order the Giver chose them. */
+function toFeedbackReceiverRecords(
+  feedback: Feedback,
+): Omit<FeedbackReceiverRecord, 'feedbackId'>[] {
+  return feedback
+    .snapshot()
+    .receiverAccountIds.map((accountId, position) => ({ accountId, position }));
+}
+
 /** One row per Member selected to read it. */
-export function toFeedbackSelectedPersonRecords(
+function toFeedbackSelectedPersonRecords(
   feedback: Feedback,
 ): Omit<FeedbackSelectedPersonRecord, 'feedbackId'>[] {
   return feedback
@@ -36,7 +48,7 @@ export function toFeedbackSelectedPersonRecords(
 }
 
 /** One row per Workspace Goal its Giver named. */
-export function toFeedbackWorkspaceGoalRecords(
+function toFeedbackWorkspaceGoalRecords(
   feedback: Feedback,
 ): Omit<FeedbackWorkspaceGoalRecord, 'feedbackId'>[] {
   return feedback.snapshot().workspaceGoals.map((workspaceGoal) => ({
@@ -46,7 +58,7 @@ export function toFeedbackWorkspaceGoalRecords(
 }
 
 /** One row per Member its Giver mentioned. */
-export function toFeedbackMentionRecords(
+function toFeedbackMentionRecords(
   feedback: Feedback,
 ): Omit<FeedbackMentionRecord, 'feedbackId'>[] {
   return feedback.snapshot().mentions.map((mention) => ({
@@ -54,4 +66,20 @@ export function toFeedbackMentionRecords(
     slug: mention.slug,
     displayName: mention.displayName,
   }));
+}
+
+/**
+ * Everything one piece of Feedback is stored as, for one `create`: the row with its Receivers,
+ * the people selected to read it and what it names. Both ways Feedback is written — offered, and
+ * answering an Ask — store it through this, so neither can leave a part behind: until its
+ * Receivers are added, a piece is for nobody.
+ */
+export function toFeedbackCreateData(feedback: Feedback) {
+  return {
+    ...toFeedbackRecord(feedback),
+    receivers: { create: toFeedbackReceiverRecords(feedback) },
+    selectedPeople: { create: toFeedbackSelectedPersonRecords(feedback) },
+    workspaceGoals: { create: toFeedbackWorkspaceGoalRecords(feedback) },
+    mentions: { create: toFeedbackMentionRecords(feedback) },
+  };
 }

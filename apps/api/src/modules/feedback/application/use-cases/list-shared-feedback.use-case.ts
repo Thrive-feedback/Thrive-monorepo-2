@@ -45,7 +45,7 @@ export class ListSharedFeedbackUseCase {
       input.workspaceId,
       shared.items.flatMap((feedback) => [
         feedback.giverAccountId,
-        feedback.receiverAccountId,
+        ...feedback.receiverAccountIds,
       ]),
     );
 
@@ -59,10 +59,7 @@ export class ListSharedFeedbackUseCase {
         giverName: people.nameOf(feedback.giverAccountId),
         giverPhotoUrl: people.photoOf(feedback.giverAccountId),
         giverStatus: people.statusOf(feedback.giverAccountId),
-        receiverAccountId: feedback.receiverAccountId,
-        receiverName: people.nameOf(feedback.receiverAccountId),
-        receiverPhotoUrl: people.photoOf(feedback.receiverAccountId),
-        receiverStatus: people.statusOf(feedback.receiverAccountId),
+        receivers: feedback.receiverAccountIds.map(people.personOf),
         message: feedback.message,
         tags: feedback.tags,
         createdAt: feedback.createdAt,

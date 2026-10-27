@@ -149,7 +149,7 @@ describe('sending a Feedback Request', () => {
         feedbackRequestId: REQUEST_ID,
         feedbackAskId: ASK_ID,
         giverAccountId: 'account-ben',
-        receiverAccountId: 'account-ann',
+        receiverAccountIds: ['account-ann'],
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         message: 'You lose the room at the detail.',

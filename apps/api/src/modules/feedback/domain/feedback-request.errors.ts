@@ -142,13 +142,33 @@ export class CannotGiveYourselfFeedbackError extends DomainError {
   }
 }
 
-/** The Receiver always reads Feedback written to them, so they are not somebody to select. */
+/** Every Receiver always reads Feedback written to them, so none is somebody to select. */
 export class CannotSelectTheReceiverError extends DomainError {
   readonly code = 'CANNOT_SELECT_THE_RECEIVER';
   readonly category = 'validation' as const;
 
   constructor() {
-    super('The Receiver already reads this Feedback; select other Members.');
+    super('A Receiver already reads this Feedback; select other Members.');
+  }
+}
+
+/** Feedback is for somebody: Offered Feedback names at least one Receiver. */
+export class NoReceiversError extends DomainError {
+  readonly code = 'NO_RECEIVERS';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('Name at least one Member to give Feedback to.');
+  }
+}
+
+/** One Member is one Receiver: named twice, they would be told twice about one piece. */
+export class ReceiverAlreadyNamedError extends DomainError {
+  readonly code = 'RECEIVER_ALREADY_NAMED';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('This Member is already one of the Receivers.');
   }
 }
 

@@ -31,7 +31,7 @@ function setUp(
     origin: 'REQUESTED',
     feedbackRequestId: REQUEST_ID,
     giverAccountId: GIVER,
-    receiverAccountId: RECEIVER,
+    receiverAccountIds: [RECEIVER],
     message: 'You open strongly and lose the room at the detail.',
     tags: NO_TAGS,
     createdAt: CREATED_AT,
@@ -93,10 +93,14 @@ describe('reading one piece of Feedback', () => {
       giverName: 'Ben Carter',
       giverPhotoUrl: null,
       giverStatus: 'ACTIVE',
-      receiverAccountId: RECEIVER,
-      receiverName: 'Ana Lee',
-      receiverPhotoUrl: null,
-      receiverStatus: 'ACTIVE',
+      receivers: [
+        {
+          accountId: RECEIVER,
+          name: 'Ana Lee',
+          photoUrl: null,
+          status: 'ACTIVE',
+        },
+      ],
       message: 'You open strongly and lose the room at the detail.',
       tags: NO_TAGS,
       createdAt: CREATED_AT,
@@ -108,7 +112,7 @@ describe('reading one piece of Feedback', () => {
 
     const feedback = await readAs(useCase, RECEIVER);
 
-    expect([feedback.giverStatus, feedback.receiverStatus]).toEqual([
+    expect([feedback.giverStatus, feedback.receivers[0]?.status]).toEqual([
       'DEACTIVATED',
       'ACTIVE',
     ]);

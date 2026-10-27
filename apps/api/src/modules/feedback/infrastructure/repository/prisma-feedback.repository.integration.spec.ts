@@ -36,7 +36,7 @@ function offered(
     id,
     workspaceId,
     giverAccountId: uuidv7(),
-    receiverAccountId,
+    receiverAccountIds: [receiverAccountId],
     visibility,
     message: FeedbackMessage.of('You kept the room with you.'),
   });
@@ -67,11 +67,36 @@ describe('storing Offered Feedback', () => {
         origin: 'OFFERED',
         feedbackRequestId: null,
         giverAccountId: snapshot.giverAccountId,
+        receiverAccountIds: [receiverAccountId],
         message: 'You kept the room with you.',
         tags: { workspaceGoals: [], mentions: [] },
         createdAt: expect.any(Date),
       },
     ]);
+  });
+
+  it('saves every Receiver in the order chosen, and each of them reads it', async () => {
+    const workspaceId = uuidv7();
+    const [first, second] = [uuidv7(), uuidv7()];
+    const feedback = Feedback.offer({
+      tags: BoundTags.none(),
+      id: uuidv7(),
+      workspaceId,
+      giverAccountId: uuidv7(),
+      receiverAccountIds: [second, first],
+      visibility: Visibility.onlyMe(),
+      message: FeedbackMessage.of('You two kept the demo calm.'),
+    });
+    written.push(feedback.snapshot().id);
+
+    await repository.save(feedback);
+
+    for (const reader of [first, second]) {
+      const received = await query.receivedBy(workspaceId, reader, ONE_PAGE);
+      expect(received.items.map((item) => item.receiverAccountIds)).toEqual([
+        [second, first],
+      ]);
+    }
   });
 
   it('saves what its Giver named, which its Feedback message is read with', async () => {

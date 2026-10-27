@@ -425,7 +425,7 @@ export interface paths {
         /** List the Feedback written to the caller in this Workspace */
         get: operations["FeedbackController_listReceivedFeedback"];
         put?: never;
-        /** Give a Member of this Workspace Feedback without being asked for it */
+        /** Give one or more Members of this Workspace Feedback without being asked for it */
         post: operations["FeedbackController_offerFeedback"];
         delete?: never;
         options?: never;
@@ -1138,8 +1138,9 @@ export interface components {
             feedbackId: string;
         };
         OfferFeedbackRequestDto: {
+            receiverAccountIds?: string[];
             /** Format: uuid */
-            receiverAccountId: string;
+            receiverAccountId?: string;
             message: string;
             /** @enum {string} */
             visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
@@ -1164,6 +1165,15 @@ export interface components {
                 giverPhotoUrl: string | null;
                 /** @enum {string} */
                 giverStatus: "ACTIVE" | "DEACTIVATED";
+                otherReceivers: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                }[];
                 message: string;
                 tags: {
                     workspaceGoals: {
@@ -1206,6 +1216,15 @@ export interface components {
                 /** @enum {string} */
                 status: "ACTIVE" | "DEACTIVATED";
             };
+            receivers: {
+                /** Format: uuid */
+                accountId: string;
+                name: string | null;
+                /** Format: uri */
+                photoUrl: string | null;
+                /** @enum {string} */
+                status: "ACTIVE" | "DEACTIVATED";
+            }[];
             message: string;
             tags: {
                 workspaceGoals: {
@@ -1245,6 +1264,15 @@ export interface components {
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 };
+                receivers: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                }[];
                 message: string;
                 tags: {
                     workspaceGoals: {
@@ -1288,6 +1316,15 @@ export interface components {
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 };
+                receivers: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                }[];
                 message: string;
                 tags: {
                     workspaceGoals: {
@@ -2644,7 +2681,7 @@ export interface operations {
                     "application/json": components["schemas"]["OfferFeedbackResponseDto_Output"];
                 };
             };
-            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE */
+            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE */
             400: {
                 headers: {
                     [name: string]: unknown;

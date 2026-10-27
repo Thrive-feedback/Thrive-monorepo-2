@@ -63,3 +63,9 @@ Feature: The Workspace feed
     When Ann looks at the Workspace feed
     Then Ann sees Ben's Google photo
     And Ann sees no photo for Cara
+
+  @api
+  Scenario: Feedback given to several is on the feed once, naming everyone it is for
+    Given Ann has given Ben and Cara Feedback: "You two kept the demo calm.", shared with everyone in the Workspace
+    When Ann looks at the Workspace feed
+    Then Ann reads "You two kept the demo calm." from Ann to Ben and Cara on the feed

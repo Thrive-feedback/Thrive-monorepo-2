@@ -21,7 +21,7 @@ function setUp() {
     {
       id: '0199a0f0-0000-7000-8000-0000000000d1',
       workspaceId: WORKSPACE_ID,
-      receiverAccountId: ANA,
+      receiverAccountIds: [ANA],
       origin: 'REQUESTED',
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
       giverAccountId: BEN,
@@ -32,7 +32,7 @@ function setUp() {
     {
       id: '0199a0f0-0000-7000-8000-0000000000d2',
       workspaceId: WORKSPACE_ID,
-      receiverAccountId: ANA,
+      receiverAccountIds: [ANA],
       origin: 'OFFERED',
       feedbackRequestId: null,
       giverAccountId: CARA,
@@ -43,7 +43,7 @@ function setUp() {
     {
       id: '0199a0f0-0000-7000-8000-0000000000d3',
       workspaceId: WORKSPACE_ID,
-      receiverAccountId: BEN,
+      receiverAccountIds: [BEN],
       origin: 'REQUESTED',
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f3',
       giverAccountId: ANA,
@@ -76,7 +76,12 @@ function setUp() {
     feedbackRequestQuery,
     new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { workspaceMembershipPort, accountSummaryPort, useCase };
+  return {
+    feedbackRequestQuery,
+    workspaceMembershipPort,
+    accountSummaryPort,
+    useCase,
+  };
 }
 
 describe('reading the Feedback written to me', () => {
@@ -98,6 +103,32 @@ describe('reading the Feedback written to me', () => {
     expect(received.items[0]?.message).toBe(
       'Short and clear. Keep leaving the last five minutes open.',
     );
+  });
+
+  it('names everyone else it was written to, never the reader', async () => {
+    const { feedbackRequestQuery, useCase } = setUp();
+    feedbackRequestQuery.feedback.push({
+      id: '0199a0f0-0000-7000-8000-0000000000d4',
+      workspaceId: WORKSPACE_ID,
+      receiverAccountIds: [BEN, ANA],
+      origin: 'OFFERED',
+      feedbackRequestId: null,
+      giverAccountId: CARA,
+      message: 'You two kept the demo calm.',
+      tags: NO_TAGS,
+      createdAt: new Date('2026-10-13T03:00:00.000Z'),
+    });
+
+    const received = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      receiverAccountId: ANA,
+      page: ONE_PAGE,
+    });
+
+    expect(received.items[0]?.otherReceivers).toEqual([
+      { accountId: BEN, name: 'Ben Carter', photoUrl: null, status: 'ACTIVE' },
+    ]);
+    expect(received.items[1]?.otherReceivers).toEqual([]);
   });
 
   it('tells Feedback given without being asked from an answer, which names its request', async () => {

@@ -102,12 +102,16 @@ export class ChatPersonNotifier extends PersonNotifierPort {
       this.notificationRecipients.of({
         workspaceId: event.workspaceId,
         actorAccountId: event.actorAccountId,
-        // The Receiver first, so somebody also named under Selected people is de-duplicated to
+        // The Receivers first, so somebody also named under Selected people is de-duplicated to
         // the wording that is true of them: it was written *to* them (#215 AC 5).
-        candidates: [event.receiverAccountId, ...event.sharedWithAccountIds],
+        candidates: [
+          ...event.receiverAccountIds,
+          ...event.sharedWithAccountIds,
+        ],
       }),
       this.eventContextService.of(event),
     ]);
+    const receivers = new Set(event.receiverAccountIds);
     await this.deliver(
       recipients.map((accountId) => ({
         accountId,
@@ -115,7 +119,7 @@ export class ChatPersonNotifier extends PersonNotifierPort {
           actorName: context.actorName,
           workspaceName: context.workspaceName,
           feedbackId: event.feedbackId,
-          isReceiver: accountId === event.receiverAccountId,
+          isReceiver: receivers.has(accountId),
         }),
       })),
     );

@@ -249,7 +249,7 @@ model FeedbackAsk {
   @@map("feedback_ask")
 }
 
-/// A message from a Giver to a Receiver (glossary: Feedback) — either an answer to an Ask
+/// A message from a Giver to one or more Receivers (glossary: Feedback) — either an answer to an Ask
 /// (REQUESTED) or given without being asked (OFFERED), which has no request and no Ask. A CHECK
 /// constraint in the migration holds that pairing, which Prisma cannot declare.
 model Feedback {
@@ -264,8 +264,10 @@ model Feedback {
   /// application can do on its own. Set exactly when origin is REQUESTED.
   feedbackAskId     String?                  @unique
   feedbackAsk       FeedbackAsk?             @relation(fields: [feedbackAskId], references: [id], onDelete: Cascade)
-  /// The Accounts of the Member who wrote it and the Member it is for. No foreign keys.
+  /// The Account of the Member who wrote it. No foreign key.
   giverAccountId    String
+  /// The first of its Receivers, kept only while an older API may still read it during a deploy
+  /// (ADR 0061, BE_15 R5): every read goes through `receivers`. Dropped in its own change.
   receiverAccountId String
   /// Who besides the Giver and the Receiver may read it, with the people in selectedPeople.
   /// The Giver's choice for Offered Feedback, the request's copied for Requested. Never changes.
@@ -275,6 +277,8 @@ model Feedback {
   message           String
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
+  /// Everyone it is for (brain `ADR-0044`): one for Requested Feedback, one or more for Offered.
+  receivers         FeedbackReceiver[]
   selectedPeople    FeedbackSelectedPerson[]
   workspaceGoals    FeedbackWorkspaceGoal[]
   mentions          FeedbackMention[]
@@ -290,6 +294,23 @@ model Feedback {
   /// Workspace's Feedback.
   @@index([feedbackRequestId])
   @@map("feedback")
+}
+
+/// One Member a piece of Feedback is for (glossary: Receiver). Requested Feedback has one, the
+/// Requester; Offered Feedback has one or more, each of whom reads it and sees the others
+/// (brain `ADR-0044`, ADR 0061). Personal data: an Account id only.
+model FeedbackReceiver {
+  feedbackId String
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  /// The Account of the Member it is for. No foreign key: Accounts are Identity's.
+  accountId  String
+  /// Where the Giver put them, from 0, so every read names them in the order they were chosen.
+  position   Int
+
+  @@id([feedbackId, accountId])
+  /// For "the Feedback I received" (#26): that read starts at the Receiver.
+  @@index([accountId])
+  @@map("feedback_receiver")
 }
 
 /// One Member selected to read one piece of Feedback, when its Visibility is SELECTED_PEOPLE

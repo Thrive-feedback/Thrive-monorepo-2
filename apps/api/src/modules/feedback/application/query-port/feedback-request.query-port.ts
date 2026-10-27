@@ -52,8 +52,8 @@ export interface FeedbackAnswerRow {
 }
 
 /**
- * One piece of Feedback as the Member it was written to reads it. The Giver's name is
- * Identity's and is added above this port.
+ * One piece of Feedback as a Member it was written to reads it. The names are Identity's and
+ * are added above this port.
  */
 export interface FeedbackRow {
   readonly id: string;
@@ -61,6 +61,8 @@ export interface FeedbackRow {
   /** The request it answers, or `null` for Feedback given without being asked. */
   readonly feedbackRequestId: string | null;
   readonly giverAccountId: string;
+  /** Everyone it is for, the reader among them, in the order the Giver chose them. */
+  readonly receiverAccountIds: readonly string[];
   readonly message: string;
   /** What its Giver wrote is bound to. */
   readonly tags: TagsView;
@@ -77,7 +79,8 @@ export interface FeedbackWithVisibilityRow {
   /** The request it answers, or `null` for Feedback given without being asked. */
   readonly feedbackRequestId: string | null;
   readonly giverAccountId: string;
-  readonly receiverAccountId: string;
+  /** Everyone it is for, in the order the Giver chose them: one for Requested Feedback. */
+  readonly receiverAccountIds: readonly string[];
   readonly message: string;
   /** What its Giver wrote is bound to. */
   readonly tags: TagsView;
@@ -103,7 +106,8 @@ export interface FeedbackWithPeopleRow {
   /** The request it answers, or `null` for Feedback given without being asked. */
   readonly feedbackRequestId: string | null;
   readonly giverAccountId: string;
-  readonly receiverAccountId: string;
+  /** Everyone it is for, in the order the Giver chose them: one for Requested Feedback. */
+  readonly receiverAccountIds: readonly string[];
   readonly message: string;
   /** What its Giver wrote is bound to. */
   readonly tags: TagsView;
@@ -154,7 +158,8 @@ export abstract class FeedbackRequestQuery {
   ): Promise<FeedbackAskPageRow>;
 
   /**
-   * The Feedback written to one Member in one Workspace, newest first. The Receiver is a
+   * The Feedback written to one Member in one Workspace — as its only Receiver or one of several
+   * — newest first. The Receiver is a
    * required argument for the same reason the Workspace is: one Member's Feedback is not
    * another's, and a read scoped to nobody cannot be written.
    */
