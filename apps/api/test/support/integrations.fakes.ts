@@ -146,26 +146,41 @@ export class FakeInstallHandoff extends InstallHandoff {
 
 /** Every post, in order, so a test can assert what a channel was told — or that it was not. */
 export class FakeChatPoster extends ChatPoster {
+  /** Every post attempted, whether or not the channel took it. */
   readonly posts: ChatChannelPost[] = [];
-  private unreachable = false;
+  /** Only the posts that actually arrived, for proving one failure did not stop another. */
+  readonly delivered: ChatChannelPost[] = [];
+  private unreachable: readonly string[] | 'all' | null = null;
 
+  /** Every channel refuses. */
   unreachableChannel(): this {
-    this.unreachable = true;
+    this.unreachable = 'all';
+    return this;
+  }
+
+  /** Only the channels named refuse, so a test can prove the others still got the post. */
+  unreachableChannels(...channelIds: readonly string[]): this {
+    this.unreachable = channelIds;
     return this;
   }
 
   /** Scenarios share one booted application, so each starts from a channel that works. */
   reset(): this {
     this.posts.length = 0;
-    this.unreachable = false;
+    this.delivered.length = 0;
+    this.unreachable = null;
     return this;
   }
 
   async postToChannel(post: ChatChannelPost): Promise<void> {
     this.posts.push(post);
-    if (this.unreachable) {
+    if (
+      this.unreachable === 'all' ||
+      this.unreachable?.includes(post.channelId)
+    ) {
       throw new Error('the bot cannot post there');
     }
+    this.delivered.push(post);
   }
 }
 

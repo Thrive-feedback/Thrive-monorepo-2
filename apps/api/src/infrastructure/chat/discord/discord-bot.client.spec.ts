@@ -359,6 +359,7 @@ describe('opening a one-to-one conversation', () => {
     expect(call.url).toContain(`/channels/${DIRECT_CHANNEL_ID}/messages`);
     expect(JSON.parse(String(call.init.body))).toEqual({
       content: 'Someone asked you for Feedback',
+      allowed_mentions: { parse: [] },
     });
   });
 });
@@ -374,7 +375,22 @@ describe('posting into a channel', () => {
     expect(call.url).toContain(`/channels/${CHANNEL_ID}/messages`);
     expect(JSON.parse(String(call.init.body))).toEqual({
       content: 'Thrive is connected',
+      allowed_mentions: { parse: [] },
     });
+  });
+
+  it('lets nothing in the message notify anybody', async () => {
+    const calls = stubDiscord({ status: 200 });
+    const { client } = clientUnderTest();
+
+    // A Kudos carries what a Member wrote and both post shapes carry Display names, which are
+    // free text. Without this, somebody could notify a whole server — guests included — by
+    // typing it into a Kudos or into their own name.
+    await client.postToChannel(CHANNEL_ID, '@everyone look at this');
+
+    const body = JSON.parse(String(callAt(calls, 0).init.body));
+    expect(body.content).toBe('@everyone look at this');
+    expect(body.allowed_mentions).toEqual({ parse: [] });
   });
 
   it('does not follow Discord anywhere it did not mean to go', async () => {

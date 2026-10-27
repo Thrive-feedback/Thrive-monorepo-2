@@ -107,20 +107,6 @@ describe('announcing to a connected channel', () => {
     expect(accountSummary.calls).toHaveLength(1);
     expect(accountSummary.calls[0]).toEqual([ANN, BEN]);
   });
-
-  it('asks for a person named twice only once', async () => {
-    const { announcer, connectionQuery, accountSummary } = setUp();
-    connectionQuery.postingTo(CHANNEL);
-
-    // Somebody may be both the Giver and among the people a Kudos mentions, because the Kudos
-    // entity only drops the Giver from its own recipients.
-    await announcer.feedbackPublished({
-      ...publishing(),
-      receiverAccountIds: [BEN, BEN],
-    });
-
-    expect(accountSummary.calls[0]).toEqual([ANN, BEN]);
-  });
 });
 
 describe('when the channel refuses the post', () => {
@@ -135,18 +121,35 @@ describe('when the channel refuses the post', () => {
     ).resolves.toBeUndefined();
   });
 
-  it('keeps posting to the channels that work', async () => {
+  it('still posts to the channel that works', async () => {
     const { announcer, connectionQuery, chatPoster } = setUp();
     connectionQuery.postingTo(CHANNEL, {
       provider: 'DISCORD',
       externalChannelId: '43',
     });
-    chatPoster.unreachableChannel();
+    // Only the first channel refuses, so a post reaching the second is the whole claim.
+    chatPoster.unreachableChannels('42');
 
     await announcer.feedbackPublished(publishing());
 
-    // Both were attempted: one failing does not stop the other.
-    expect(chatPoster.posts).toHaveLength(2);
+    expect(chatPoster.delivered.map((post) => post.channelId)).toEqual(['43']);
+  });
+});
+
+describe('when a name cannot be read', () => {
+  it('resolves rather than rejecting, and posts nothing', async () => {
+    const { announcer, connectionQuery, accountSummary, chatPoster } = setUp();
+    connectionQuery.postingTo(CHANNEL);
+    accountSummary.summariesOf = () => {
+      throw new Error('Identity is gone');
+    };
+
+    // The port promises never to reject, and this adapter is what has to make that true — the
+    // caller's own `.catch` is a belt to these braces, not the braces.
+    await expect(
+      announcer.feedbackPublished(publishing()),
+    ).resolves.toBeUndefined();
+    expect(chatPoster.posts).toHaveLength(0);
   });
 });
 

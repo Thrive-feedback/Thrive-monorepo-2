@@ -7,7 +7,7 @@
  * to build one.
  *
  * It sits in `shared/` because two modules now compose such a message — Notifications, for a direct
- * message to one person, and Integrations, for a post into a Workspace's channel (`GEN_16` R5).
+ * message to one person, and Integrations, for a post into a Workspace's channel.
  *
  * **These paths and the web's `ROUTES` have to agree.** Changing a Home dialog parameter without
  * changing them sends people to a page that ignores it.
@@ -29,3 +29,11 @@ export const WEB_PATHS = {
    */
   home: () => '/home',
 } as const;
+
+/**
+ * A path from {@link WEB_PATHS} as an address somebody outside Thrive can follow. The origin is
+ * the deployment's, read from configuration rather than guessed.
+ */
+export function webUrl(origin: string, path: string): string {
+  return `${origin}${path}`;
+}
