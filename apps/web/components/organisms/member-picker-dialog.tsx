@@ -2,7 +2,6 @@
 
 import { cva } from 'class-variance-authority';
 import { useId, useRef, useState } from 'react';
-import { Avatar, AvatarFallback } from '@/components/atoms/avatar';
 import { Button } from '@/components/atoms/button';
 import { Checkbox } from '@/components/atoms/checkbox';
 import {
@@ -16,13 +15,13 @@ import {
 } from '@/components/atoms/dialog';
 import { Input } from '@/components/atoms/input';
 import { Text } from '@/components/atoms/text';
+import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import {
   matchesSearch,
   searchWord,
   takeMentions,
 } from '@/lib/feedback/member-search.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
-import { initials } from '@/lib/initials.util';
 
 /**
  * Where the list goes. A Workspace long enough to scroll keeps it one height while the search
@@ -225,9 +224,11 @@ function MemberPickerBody({
                     htmlFor={rowId}
                     className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-action-neutral-surface-hover"
                   >
-                    <Avatar size="lg" aria-hidden="true">
-                      <AvatarFallback>{initials(teammate.name)}</AvatarFallback>
-                    </Avatar>
+                    <PhotoAvatar
+                      name={teammate.name}
+                      photoUrl={teammate.photoUrl}
+                      size="lg"
+                    />
                     <span className="flex min-w-0 flex-1 flex-col">
                       <span
                         id={`${rowId}-name`}

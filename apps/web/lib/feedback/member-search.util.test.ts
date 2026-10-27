@@ -11,6 +11,7 @@ const MALI: Teammate = {
   accountId: 'mali',
   name: 'Mali Sombat',
   email: 'mali@acme.test',
+  photoUrl: null,
   slug: 'mali',
   displayName: 'Mali',
 };
@@ -18,6 +19,7 @@ const CHAI: Teammate = {
   accountId: 'chai',
   name: 'chai.s@acme.test',
   email: 'chai.s@acme.test',
+  photoUrl: null,
   slug: null,
   displayName: null,
 };

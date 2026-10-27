@@ -3,15 +3,11 @@ import { useId } from 'react';
 import { Badge } from '@/components/atoms/badge';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
+import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
-import { initials } from '@/lib/initials.util';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
-import {
-  ActivityAvatar,
-  ActivityRow,
-  ActivityRowSkeleton,
-} from './activity-row';
+import { ActivityRow, ActivityRowSkeleton } from './activity-row';
 import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
 
@@ -66,8 +62,10 @@ export function WaitingAskListView({
             <li key={ask.askId}>
               <ActivityRow
                 lead={
-                  <ActivityAvatar
-                    initials={initials(ask.requesterName ?? '')}
+                  <PhotoAvatar
+                    name={ask.requesterName ?? ''}
+                    photoUrl={ask.requesterPhotoUrl}
+                    size="md"
                   />
                 }
                 title={

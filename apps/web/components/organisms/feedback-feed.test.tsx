@@ -10,6 +10,7 @@ function feedback(id: string, message: string, givenAt: string): FeedItem {
   return {
     id,
     giverName: 'Ben Carter',
+    giverPhotoUrl: null,
     giverInactive: false,
     receiverName: 'Cara Diaz',
     receiverInactive: false,

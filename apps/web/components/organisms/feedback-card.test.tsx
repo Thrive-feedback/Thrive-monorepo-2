@@ -1,12 +1,14 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
+import { photosWill } from '@/lib/test/photos-will';
 import { FeedbackCard } from './feedback-card';
 
 const OFFERED: FeedItem = {
   id: 'fb-1',
   giverName: 'Ben Carter',
+  giverPhotoUrl: null,
   giverInactive: false,
   receiverName: 'Cara Diaz',
   receiverInactive: false,
@@ -17,7 +19,31 @@ const OFFERED: FeedItem = {
   reactions: { '👏': ['Ann Lee'] },
 };
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe('FeedbackCard', () => {
+  it("shows the Giver's Google photo once it has loaded", async () => {
+    photosWill('load');
+    const photo = 'https://lh3.googleusercontent.com/a/ben=s96-c';
+
+    const { container } = render(
+      <FeedbackCard item={{ ...OFFERED, giverPhotoUrl: photo }} />,
+    );
+
+    await vi.waitFor(() =>
+      expect(container.querySelector('img')).toHaveAttribute('src', photo),
+    );
+  });
+
+  it("shows the Giver's initials while they have no photo", () => {
+    const { container } = render(<FeedbackCard item={OFFERED} />);
+
+    expect(screen.getByText('BC')).toBeInTheDocument();
+    expect(container.querySelector('img')).toBeNull();
+  });
+
   it('says who wrote it, who it is about, what they wrote and when', () => {
     render(<FeedbackCard item={OFFERED} />);
 

@@ -34,6 +34,7 @@ export async function readFeedback(
     return {
       id: feedback.id,
       giverName: feedback.giver.name,
+      giverPhotoUrl: feedback.giver.photoUrl,
       giverInactive: feedback.giver.status === 'DEACTIVATED',
       receiverName: feedback.receiver.name,
       receiverInactive: feedback.receiver.status === 'DEACTIVATED',
