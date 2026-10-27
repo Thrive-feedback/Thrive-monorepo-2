@@ -2,7 +2,7 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
-import { MemberPickerDemo } from './member-picker-demo';
+import { MemberPickerDemo, MemberPickerSingleDemo } from './member-picker-demo';
 
 export function MemberPickerDialogEntry() {
   return (
@@ -10,10 +10,10 @@ export function MemberPickerDialogEntry() {
       name="MemberPickerDialog"
       level="organism"
       origin="thrive"
-      source="components/organisms/member-picker-dialog.tsx — composes Dialog, Input, Checkbox, Avatar, Button"
-      summary="Choosing several teammates in a dialog, by ticking them or by typing @handles."
-      useFor="Who to ask, who a letter is for, who else can read it. Open it from an AvatarGroupButton."
-      avoidFor="Choosing exactly one person. Use MemberPicker."
+      source="components/organisms/member-picker-dialog.tsx — composes Dialog, Input, Checkbox, RadioGroup, Avatar, Button"
+      summary="Choosing teammates in a dialog, by ticking them or by typing @handles — several, or with single just one."
+      useFor="Who to ask, who a letter is for, who else can read it, and (single) who Feedback is for. Open it from an AvatarGroupButton, or use MemberPicker / MemberMultiPicker, which pair them."
+      avoidFor="Choosing from a short fixed list that is not people. Use RadioGroup or Select."
       usage={`import { MemberPickerDialog } from '@/components/organisms/member-picker-dialog';
 
 <AvatarGroupButton label="Choose who to ask" people={chosen} onClick={() => setOpen(true)} />
@@ -46,6 +46,12 @@ export function MemberPickerDialogEntry() {
             'What is being chosen, and who reads it whatever is chosen.',
         },
         {
+          name: 'single',
+          type: 'boolean',
+          description:
+            'Exactly one person is chosen: the rows are radios, and picking someone replaces them.',
+        },
+        {
           name: 'open / onOpenChange',
           type: 'boolean / (open: boolean) => void',
           description: 'Whether it is open. Done closes it too.',
@@ -64,7 +70,7 @@ export function MemberPickerDialogEntry() {
       ]}
       accessibility={[
         'A dialog named by its title; focus starts in the search field and returns to the button that opened it.',
-        'Each row is one label: the name names the checkbox and the email describes it.',
+        'Each row is one label: the name names the checkbox (or radio, with single) and the email describes it.',
         'A handle that names nobody is said under the field and announced.',
         'How many are chosen is announced as it changes.',
       ]}
@@ -74,6 +80,9 @@ export function MemberPickerDialogEntry() {
       </StateCell>
       <StateCell label="Some chosen">
         <MemberPickerDemo initial={['mali', 'krit', 'ann', 'ben', 'dao']} />
+      </StateCell>
+      <StateCell label="Choosing one person (MemberPicker)">
+        <MemberPickerSingleDemo initial="ann" />
       </StateCell>
       <StateCell label="Empty Workspace">
         <MemberPickerDemo teammates={[]} />

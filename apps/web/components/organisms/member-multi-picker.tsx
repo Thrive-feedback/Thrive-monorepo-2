@@ -28,7 +28,7 @@ export type MemberMultiPickerProps = {
  * a dashed "+"; pressing either opens `MemberPickerDialog` to change them.
  *
  * There is no limit on how many people can be picked. Each picked Account id reaches the form
- * through a hidden field of its own, the way `MemberPicker`'s `Select` sends one.
+ * through a hidden field of its own, the way `MemberPicker` sends its one.
  */
 export function MemberMultiPicker({
   teammates,

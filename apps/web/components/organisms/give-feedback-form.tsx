@@ -142,9 +142,6 @@ export function GiveFeedbackForm({
         <ComposerToRow>
           <MemberPicker
             ref={pickerRef}
-            hideLabel
-            label="Who is it for?"
-            name="receiverAccountId"
             teammates={teammates}
             value={receiverAccountId}
             errorMessage={errors.receiverAccountId}
