@@ -15,12 +15,39 @@ const requestFeedback =
 const BEN = '0199a0f0-0000-7000-8000-00000000000b';
 const CARA = '0199a0f0-0000-7000-8000-00000000000c';
 const TEAMMATES = [
-  { accountId: BEN, name: 'Ben Carter', slug: null, displayName: null },
-  { accountId: CARA, name: 'Cara Diaz', slug: null, displayName: null },
+  {
+    accountId: BEN,
+    name: 'Ben Carter',
+    email: 'ben@acme.test',
+    slug: null,
+    displayName: null,
+  },
+  {
+    accountId: CARA,
+    name: 'Cara Diaz',
+    email: 'cara@acme.test',
+    slug: null,
+    displayName: null,
+  },
 ];
 
 function trigger() {
-  return screen.getByRole('button', { name: /Who do you want to ask/ });
+  return screen.getByRole('button', { name: /^Choose who to ask/ });
+}
+
+function peopleButton() {
+  return screen.getByRole('button', { name: /^Choose who else can read/ });
+}
+
+/** Ticks or unticks each person in the open dialog, then presses Done. */
+async function tickAndDone(
+  user: ReturnType<typeof userEvent.setup>,
+  ...names: string[]
+) {
+  for (const name of names) {
+    await user.click(screen.getByRole('checkbox', { name }));
+  }
+  await user.click(screen.getByRole('button', { name: /^Done/ }));
 }
 
 function messageField() {
@@ -53,10 +80,7 @@ async function pick(
   ...names: string[]
 ) {
   await user.click(trigger());
-  for (const name of names) {
-    await user.click(screen.getByRole('menuitemcheckbox', { name }));
-  }
-  await user.keyboard('{Escape}');
+  await tickAndDone(user, ...names);
 }
 
 async function pickBen(user: ReturnType<typeof userEvent.setup>) {
@@ -195,6 +219,9 @@ describe('RequestFeedbackForm', () => {
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
 
     expect(
+      screen.getByRole('dialog', { name: 'Choose who else can read' }),
+    ).toHaveAccessibleDescription('You can always read what they send back.');
+    expect(
       screen.getByRole('checkbox', { name: 'Cara Diaz' }),
     ).toBeInTheDocument();
     expect(
@@ -232,7 +259,7 @@ describe('RequestFeedbackForm', () => {
     );
 
     await pick(user, 'Ben Carter', 'Cara Diaz');
-    await user.click(screen.getByRole('button', { name: 'Remove Ben Carter' }));
+    await pick(user, 'Ben Carter');
     await user.type(messageField(), 'my sprint review talk');
     await user.click(sendButton());
 
@@ -254,7 +281,12 @@ describe('RequestFeedbackForm', () => {
     await fillIn(user);
     await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
-    await user.click(screen.getByRole('checkbox', { name: 'Cara Diaz' }));
+    await tickAndDone(user, 'Cara Diaz');
+
+    expect(peopleButton()).toHaveAccessibleName(
+      'Choose who else can read. Chosen: Cara Diaz',
+    );
+
     await user.click(sendButton());
 
     expect(sentFormData()?.visibility).toBe('SELECTED_PEOPLE');
@@ -274,13 +306,42 @@ describe('RequestFeedbackForm', () => {
     await fillIn(user);
     await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
+    await tickAndDone(user, 'Cara Diaz');
+    await user.click(peopleButton());
+    await tickAndDone(user, 'Cara Diaz');
     await user.click(sendButton());
 
     expect(
       screen.getByText('Pick at least one person to share it with.'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Ben Carter' })).toHaveFocus();
+    expect(peopleButton()).toHaveFocus();
+    expect(peopleButton()).toHaveAttribute('aria-invalid', 'true');
     expect(requestFeedback).not.toHaveBeenCalled();
+  });
+
+  it('puts the choice back when Selected people is left with nobody picked', async () => {
+    const user = userEvent.setup();
+    render(
+      <RequestFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={requestFeedback}
+      />,
+    );
+
+    await openAudience(user);
+    await user.click(
+      screen.getByRole('radio', { name: 'Everyone in the Workspace' }),
+    );
+    await user.click(screen.getByRole('radio', { name: 'Selected people' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(
+      screen.getByRole('radio', { name: 'Everyone in the Workspace' }),
+    ).toBeChecked();
+    expect(
+      screen.queryByRole('button', { name: /^Choose who else can read/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('refuses an empty form, says what is missing on both fields, and sends nothing', async () => {
@@ -384,13 +445,14 @@ describe('RequestFeedbackForm', () => {
     expect(
       await screen.findByText('That teammate is no longer in your Workspace.'),
     ).toHaveAttribute('role', 'alert');
-    expect(screen.getByRole('list', { name: 'Picked' })).toHaveTextContent(
-      'Ben Carter',
+    expect(trigger()).toHaveAccessibleName(
+      'Choose who to ask. Chosen: Ben Carter',
     );
     expect(messageField()).toHaveValue('my sprint review talk');
   });
 
-  it('still shows the form when there is nobody to ask', () => {
+  it('still shows the form when there is nobody to ask, and says why in the dialog', async () => {
+    const user = userEvent.setup();
     render(
       <RequestFeedbackForm
         teammates={[]}
@@ -399,9 +461,14 @@ describe('RequestFeedbackForm', () => {
       />,
     );
 
-    expect(trigger()).toHaveTextContent('Pick teammates');
     expect(messageField()).toBeInTheDocument();
     expect(sendButton()).toBeInTheDocument();
     expect(screen.queryByRole('link')).toBeNull();
+
+    await user.click(trigger());
+
+    expect(
+      screen.getByText('Nobody else is in your Workspace yet.'),
+    ).toBeInTheDocument();
   });
 });

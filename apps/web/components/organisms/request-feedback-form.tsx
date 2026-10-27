@@ -111,16 +111,8 @@ export function RequestFeedbackForm({
     setClientErrors((errors) => ({ ...errors, selectedAccountIds: undefined }));
   }
 
-  function handleSelectedChange(accountId: string, selected: boolean) {
-    setSelectedAccountIds((current) => {
-      const next = new Set(current);
-      if (selected) {
-        next.add(accountId);
-      } else {
-        next.delete(accountId);
-      }
-      return next;
-    });
+  function handleSelectedChange(accountIds: ReadonlySet<string>) {
+    setSelectedAccountIds(accountIds);
     setClientErrors((errors) => ({ ...errors, selectedAccountIds: undefined }));
   }
 
@@ -167,7 +159,6 @@ export function RequestFeedbackForm({
         <ComposerToRow>
           <MemberMultiPicker
             ref={pickerRef}
-            hideLabel
             teammates={teammates}
             value={giverAccountIds}
             errorMessage={fieldErrors.giverAccountIds}
@@ -203,6 +194,7 @@ export function RequestFeedbackForm({
               you send it.
             </>
           }
+          peopleDescription="You can always read what they send back."
           errorMessage={fieldErrors.selectedAccountIds}
           errorId={audienceErrorId}
           open={audienceOpen}

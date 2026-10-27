@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { Toaster } from '@/components/atoms/toaster';
@@ -9,6 +9,21 @@ async function choose(user: ReturnType<typeof userEvent.setup>, kind: string) {
   await user.click(screen.getByRole('menuitemcheckbox', { name: kind }));
 }
 
+/** The button after "Dear": named for what it chooses, then everyone chosen. */
+function dear(name: RegExp = /^Choose who (it's for|to ask)/) {
+  return screen.getByRole('button', { name });
+}
+
+/** Chooses who the letter is for by typing their handles in the dialog, then Done. */
+async function address(
+  user: ReturnType<typeof userEvent.setup>,
+  handles: string,
+) {
+  await user.click(dear());
+  await user.keyboard(`${handles} `);
+  await user.click(screen.getByRole('button', { name: /^Done/ }));
+}
+
 describe('LetterDesk', () => {
   it('opens on a Feedback message, ready to write', () => {
     render(<LetterDesk />);
@@ -16,7 +31,7 @@ describe('LetterDesk', () => {
     expect(
       screen.getByRole('heading', { name: 'Feedback message' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Dear' })).toBeInTheDocument();
+    expect(dear(/^Choose who it's for$/)).toBeInTheDocument();
     expect(
       screen.getByRole('textbox', { name: 'Your feedback' }),
     ).toBeInTheDocument();
@@ -55,7 +70,7 @@ describe('LetterDesk', () => {
     expect(
       screen.queryByRole('menuitemcheckbox', { name: 'Request feedback' }),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Dear' })).toHaveFocus();
+    expect(dear(/^Choose who to ask$/)).toHaveFocus();
     expect(
       screen.getByRole('button', { name: 'Who else can read it: Only me' }),
     ).toBeInTheDocument();
@@ -97,14 +112,14 @@ describe('LetterDesk', () => {
     const user = userEvent.setup();
     render(<LetterDesk />);
 
-    await user.type(screen.getByRole('textbox', { name: 'Dear' }), 'Mali');
+    await address(user, '@mali');
     await choose(user, 'Request feedback');
 
-    expect(screen.getByRole('textbox', { name: 'Dear' })).toHaveValue('');
+    expect(dear(/^Choose who to ask$/)).toBeInTheDocument();
 
     await choose(user, 'Give feedback');
 
-    expect(screen.getByRole('textbox', { name: 'Dear' })).toHaveValue('Mali');
+    expect(dear(/Chosen: Mali Sombat$/)).toBeInTheDocument();
     expect(
       screen.getByRole('textbox', { name: 'Your feedback' }),
     ).toHaveFocus();
@@ -117,7 +132,8 @@ describe('LetterDesk', () => {
     const send = screen.getByRole('button', { name: 'Send' });
     expect(send).toBeDisabled();
 
-    await user.type(screen.getByRole('textbox', { name: 'Dear' }), 'Mali');
+    await address(user, '@mali @krit');
+    expect(dear(/Chosen: Mali Sombat and Krit Chan$/)).toBeInTheDocument();
     expect(send).toBeDisabled();
 
     await user.type(
@@ -131,7 +147,7 @@ describe('LetterDesk', () => {
     const user = userEvent.setup();
     render(<LetterDesk />);
 
-    await user.type(screen.getByRole('textbox', { name: 'Dear' }), 'Mali');
+    await address(user, '@mali');
     await user.type(
       screen.getByRole('textbox', { name: 'Your feedback' }),
       'Clear and kind.',
@@ -141,10 +157,18 @@ describe('LetterDesk', () => {
     );
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
 
-    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+    expect(
+      screen.getByRole('dialog', { name: 'Choose who else can read' }),
+    ).toHaveAccessibleDescription('Mali Sombat and you can always read it.');
 
     await user.click(screen.getByRole('checkbox', { name: 'Ann Lee' }));
+    await user.click(screen.getByRole('button', { name: 'Done (1)' }));
 
+    expect(
+      screen.getByRole('button', {
+        name: 'Choose who else can read. Chosen: Ann Lee',
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled();
   });
 
@@ -157,7 +181,7 @@ describe('LetterDesk', () => {
       </>,
     );
 
-    await user.type(screen.getByRole('textbox', { name: 'Dear' }), 'Mali');
+    await address(user, '@mali');
     await user.type(
       screen.getByRole('textbox', { name: 'Your feedback' }),
       'Clear and kind.',
@@ -167,8 +191,7 @@ describe('LetterDesk', () => {
     expect(
       await screen.findByText('Feedback message sent.'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Dear' })).toHaveValue('');
-    expect(screen.getByRole('textbox', { name: 'Dear' })).toHaveFocus();
+    await waitFor(() => expect(dear(/^Choose who it's for$/)).toHaveFocus());
     expect(screen.getByRole('textbox', { name: 'Your feedback' })).toHaveValue(
       '',
     );

@@ -38,6 +38,7 @@ export const readTeammates = cache(
       .map((member) => ({
         accountId: member.accountId,
         name: member.fullName ?? member.email,
+        email: member.email,
         slug: member.slug,
         displayName: member.displayName,
       }));

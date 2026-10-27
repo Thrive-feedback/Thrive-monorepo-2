@@ -82,16 +82,13 @@ export function GiveFeedbackForm({
     (teammate) => teammate.accountId !== receiverAccountId,
   );
 
-  function toggleSelected(accountId: string, checked: boolean) {
-    setSelectedAccountIds((current) => {
-      const next = new Set(current);
-      if (checked) {
-        next.add(accountId);
-      } else {
-        next.delete(accountId);
-      }
-      return next;
-    });
+  // Whoever it is for always reads it, and the dialog that picks the others says so by name.
+  const receiverName = teammates.find(
+    (teammate) => teammate.accountId === receiverAccountId,
+  )?.name;
+
+  function handleSelectedChange(accountIds: ReadonlySet<string>) {
+    setSelectedAccountIds(accountIds);
     setClientErrors((current) => ({
       ...current,
       selectedAccountIds: undefined,
@@ -187,6 +184,7 @@ export function GiveFeedbackForm({
           people={othersToShareWith}
           selectedAccountIds={selectedAccountIds}
           helperText="This can't be changed after you send it."
+          peopleDescription={`${receiverName ?? 'Whoever it is for'} and you can always read it.`}
           errorMessage={errors.selectedAccountIds}
           errorId={audienceErrorId}
           open={audienceOpen}
@@ -198,7 +196,7 @@ export function GiveFeedbackForm({
               selectedAccountIds: undefined,
             }));
           }}
-          onSelectedChange={toggleSelected}
+          onSelectedChange={handleSelectedChange}
         />
       }
       footerError={errors.selectedAccountIds}

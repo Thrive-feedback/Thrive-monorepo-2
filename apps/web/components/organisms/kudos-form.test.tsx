@@ -10,12 +10,14 @@ const TEAMMATES = [
   {
     accountId: '0199a0f0-0000-7000-8000-00000000000b',
     name: 'Ben Carter',
+    email: 'ben@acme.test',
     slug: 'ben',
     displayName: 'Ben',
   },
   {
     accountId: '0199a0f0-0000-7000-8000-00000000000c',
     name: 'Cara Diaz',
+    email: 'cara@acme.test',
     slug: 'cara',
     displayName: 'Cara',
   },

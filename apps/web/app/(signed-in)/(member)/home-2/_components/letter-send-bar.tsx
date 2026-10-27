@@ -8,6 +8,8 @@ import {
 } from '@/components/organisms/visibility-picker';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 
+const names = new Intl.ListFormat('en', { type: 'conjunction' });
+
 export type LetterVisibility = 'ONLY_ME' | typeof SELECTED_PEOPLE | 'EVERYONE';
 
 const ORDER: readonly LetterVisibility[] = [
@@ -50,10 +52,12 @@ export type LetterSendBarProps = {
   /** Who can be picked under Selected people. */
   people: readonly Teammate[];
   selectedAccountIds: ReadonlySet<string>;
+  /** Who the letter is for, by name: they always read it, and the people dialog says so. */
+  recipientNames: readonly string[];
   /** Whether everything a letter needs is there; Send waits until it is. */
   ready: boolean;
   onVisibilityChange: (visibility: LetterVisibility) => void;
-  onSelectedChange: (accountId: string, selected: boolean) => void;
+  onSelectedChange: (accountIds: ReadonlySet<string>) => void;
   onSend: () => void;
 };
 
@@ -66,12 +70,17 @@ export function LetterSendBar({
   visibility,
   people,
   selectedAccountIds,
+  recipientNames,
   ready,
   onVisibilityChange,
   onSelectedChange,
   onSend,
 }: LetterSendBarProps) {
   const options = ORDER.map((value) => ({ value, label: LABELS[side][value] }));
+  const alwaysReads =
+    side === 'request'
+      ? 'You can always read what they send back.'
+      : `${recipientNames.length > 0 ? names.format(recipientNames) : 'Whoever it is for'} and you can always read it.`;
 
   return (
     <div className="flex items-center gap-1.5 rounded-full border border-border-muted bg-surface-raised p-1.5 shadow-high">
@@ -99,6 +108,7 @@ export function LetterSendBar({
               people={people}
               selectedAccountIds={selectedAccountIds}
               helperText={MEANS[side][visibility]}
+              peopleDescription={alwaysReads}
               onValueChange={onVisibilityChange}
               onSelectedChange={onSelectedChange}
             />
