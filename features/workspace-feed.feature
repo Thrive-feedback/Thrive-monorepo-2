@@ -55,3 +55,11 @@ Feature: The Workspace feed
     And Cara has given Ben Feedback: "They read clearly and they land a day late.", shared with everyone in the Workspace
     When Ann looks at the Workspace feed
     Then Ann reads "They read clearly and they land a day late." before "You kept the room with you." on the feed
+
+  @api
+  Scenario: The feed shows each person with their Google photo
+    Given Ben's Google account has a photo
+    And Ben has given Cara Feedback: "You kept the room with you.", shared with everyone in the Workspace
+    When Ann looks at the Workspace feed
+    Then Ann sees Ben's Google photo
+    And Ann sees no photo for Cara

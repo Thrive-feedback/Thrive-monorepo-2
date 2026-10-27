@@ -53,6 +53,7 @@ export class ListMyFeedbackAsksUseCase {
         requesterAccountId: ask.requesterAccountId,
         // The Requester's Account cascades away with them, as a Giver's does.
         requesterName: people.nameOf(ask.requesterAccountId),
+        requesterPhotoUrl: people.photoOf(ask.requesterAccountId),
         requesterStatus: people.statusOf(ask.requesterAccountId),
         status: AskStatus.of(ask.status).toString(),
         createdAt: ask.createdAt,

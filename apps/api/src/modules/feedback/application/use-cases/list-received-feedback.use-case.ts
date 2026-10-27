@@ -52,6 +52,7 @@ export class ListReceivedFeedbackUseCase {
         giverAccountId: feedback.giverAccountId,
         // A Giver's Account cascades away with them, so a missing one was deleted mid-read.
         giverName: people.nameOf(feedback.giverAccountId),
+        giverPhotoUrl: people.photoOf(feedback.giverAccountId),
         giverStatus: people.statusOf(feedback.giverAccountId),
         message: feedback.message,
         tags: feedback.tags,
