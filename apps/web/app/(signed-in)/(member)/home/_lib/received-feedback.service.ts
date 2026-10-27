@@ -34,6 +34,7 @@ export const readReceivedFeedback = cache(
       id: feedback.id,
       offered: feedback.origin === 'OFFERED',
       giverName: feedback.giverName,
+      giverPhotoUrl: feedback.giverPhotoUrl,
       giverInactive: feedback.giverStatus === 'DEACTIVATED',
       message: feedback.message,
       messageTags: feedback.tags,

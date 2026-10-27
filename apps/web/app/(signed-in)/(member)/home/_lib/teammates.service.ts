@@ -39,6 +39,7 @@ export const readTeammates = cache(
         accountId: member.accountId,
         name: member.fullName ?? member.email,
         email: member.email,
+        photoUrl: member.photoUrl,
         slug: member.slug,
         displayName: member.displayName,
       }));

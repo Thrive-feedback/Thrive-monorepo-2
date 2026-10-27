@@ -26,7 +26,12 @@ const ONE_PIECE = {
   id: 'fb-1',
   origin: 'REQUESTED',
   feedbackRequestId: 'request-1',
-  giver: { accountId: 'account-ben', name: 'Ben Carter', status: 'ACTIVE' },
+  giver: {
+    accountId: 'account-ben',
+    name: 'Ben Carter',
+    status: 'ACTIVE',
+    photoUrl: 'https://lh3.googleusercontent.com/a/account-ben=s96-c',
+  },
   receiver: { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
   message: 'You start with the three goals on one slide.',
   createdAt: '2026-10-12T03:00:00.000Z',
@@ -59,6 +64,7 @@ describe('reading the Workspace feed', () => {
       {
         id: 'fb-1',
         giverName: 'Ben Carter',
+        giverPhotoUrl: 'https://lh3.googleusercontent.com/a/account-ben=s96-c',
         giverInactive: false,
         receiverName: 'Cara Diaz',
         receiverInactive: false,

@@ -7,6 +7,8 @@ export type ReceivedFeedback = {
   readonly offered: boolean;
   /** The Giver, by the name on their Profile, or `null` while they have none. */
   readonly giverName: string | null;
+  /** The Giver's Google photo, or `null` when they have none. */
+  readonly giverPhotoUrl: string | null;
   /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
   readonly giverInactive: boolean;
   /** The Feedback message, as they wrote it — line breaks and all. */

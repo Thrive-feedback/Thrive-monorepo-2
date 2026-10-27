@@ -1,12 +1,8 @@
 import { Text } from '@/components/atoms/text';
+import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { ReceivedFeedback } from '@/lib/feedback/received-feedback.type';
-import { initials } from '@/lib/initials.util';
-import {
-  ActivityAvatar,
-  ActivityRow,
-  ActivityRowSkeleton,
-} from './activity-row';
+import { ActivityRow, ActivityRowSkeleton } from './activity-row';
 import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
 
@@ -42,7 +38,11 @@ export function ReceivedFeedbackListView({
         <li key={feedback.id}>
           <ActivityRow
             lead={
-              <ActivityAvatar initials={initials(feedback.giverName ?? '')} />
+              <PhotoAvatar
+                name={feedback.giverName ?? ''}
+                photoUrl={feedback.giverPhotoUrl}
+                size="md"
+              />
             }
             title={
               <>

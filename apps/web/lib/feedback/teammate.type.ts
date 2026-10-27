@@ -5,6 +5,8 @@ export type Teammate = {
   readonly name: string;
   /** The address they sign in with, shown under the name so two people of one name are told apart. */
   readonly email: string;
+  /** Their Google photo, or `null` when they have none. */
+  readonly photoUrl: string | null;
   /** The slug a Mention writes them by, or `null` while they have not introduced themselves. */
   readonly slug: string | null;
   /** The name a Mention shows, or `null` while they have not introduced themselves. */

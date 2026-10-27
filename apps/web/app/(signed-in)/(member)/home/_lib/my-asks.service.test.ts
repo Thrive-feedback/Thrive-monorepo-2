@@ -47,7 +47,12 @@ const ONE_ASK = {
   askId: 'ask-1',
   feedbackRequestId: 'request-1',
   message: 'my presentation skills',
-  requester: { accountId: 'account-ana', name: 'Ana Silva', status: 'ACTIVE' },
+  requester: {
+    accountId: 'account-ana',
+    name: 'Ana Silva',
+    status: 'ACTIVE',
+    photoUrl: 'https://lh3.googleusercontent.com/a/account-ana=s96-c',
+  },
   status: 'PENDING',
   createdAt: '2026-10-11T03:00:00.000Z',
 };
@@ -61,6 +66,8 @@ describe('reading the Asks waiting for me', () => {
         askId: 'ask-1',
         message: 'my presentation skills',
         requesterName: 'Ana Silva',
+        requesterPhotoUrl:
+          'https://lh3.googleusercontent.com/a/account-ana=s96-c',
         requesterInactive: false,
         askedAt: '2026-10-11T03:00:00.000Z',
         status: 'PENDING',

@@ -15,6 +15,8 @@ export type FeedItem = {
   readonly id: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
+  /** The Giver's Google photo, or `null` when they have none. */
+  readonly giverPhotoUrl: string | null;
   /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
   readonly giverInactive: boolean;
   /** `null` while the Receiver has not introduced themselves. */

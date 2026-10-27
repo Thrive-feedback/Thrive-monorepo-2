@@ -1,17 +1,42 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { photosWill } from '@/lib/test/photos-will';
 import { AvatarGroupButton } from './avatar-group-button';
 
 const PEOPLE = [
-  { id: 'mali', name: 'Mali Sombat' },
-  { id: 'krit', name: 'Krit Chan' },
-  { id: 'ann', name: 'Ann Lee' },
-  { id: 'ben', name: 'Ben Park' },
-  { id: 'dao', name: 'Dao Prasert' },
+  { id: 'mali', name: 'Mali Sombat', photoUrl: null },
+  { id: 'krit', name: 'Krit Chan', photoUrl: null },
+  { id: 'ann', name: 'Ann Lee', photoUrl: null },
+  { id: 'ben', name: 'Ben Park', photoUrl: null },
+  { id: 'dao', name: 'Dao Prasert', photoUrl: null },
 ];
 
+const MALI_PHOTO = 'https://lh3.googleusercontent.com/a/mali=s96-c';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe('AvatarGroupButton', () => {
+  it("shows each person's Google photo, and initials for someone without one", async () => {
+    photosWill('load');
+    const people = [
+      { id: 'mali', name: 'Mali Sombat', photoUrl: MALI_PHOTO },
+      ...PEOPLE.slice(1),
+    ];
+
+    const { container } = render(
+      <AvatarGroupButton people={people} label="Choose who to ask" />,
+    );
+
+    await vi.waitFor(() =>
+      expect(container.querySelector('img')).toHaveAttribute('src', MALI_PHOTO),
+    );
+    expect(screen.queryByText('MS')).not.toBeInTheDocument();
+    expect(screen.getByText('KC')).toBeInTheDocument();
+  });
+
   it('is the "+" alone, named by what it does, while nobody is chosen', () => {
     render(<AvatarGroupButton people={[]} label="Choose who to ask" />);
 

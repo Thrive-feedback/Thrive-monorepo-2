@@ -1,16 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import { standInPhoto } from '@/app/ui-showcase/_lib/stand-in-photo.util';
 import { AvatarGroupButton } from '@/components/molecules/avatar-group-button';
 import { MemberPickerDialog } from '@/components/organisms/member-picker-dialog';
+import { chosenPeople } from '@/lib/feedback/chosen-people.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 
-/** Made-up teammates: the showcase reaches no Workspace. More than four, so "+N" shows. */
+/**
+ * Made-up teammates: the showcase reaches no Workspace. More than four, so "+N" shows; some
+ * with a drawn stand-in for a photo, some with initials only.
+ */
 const DEMO_TEAMMATES: readonly Teammate[] = [
   {
     accountId: 'mali',
     name: 'Mali Sombat',
     email: 'mali@brightco.example',
+    photoUrl: standInPhoto('#a78bfa', '#6d28d9'),
     slug: 'mali',
     displayName: 'Mali',
   },
@@ -18,6 +24,7 @@ const DEMO_TEAMMATES: readonly Teammate[] = [
     accountId: 'krit',
     name: 'Krit Chan',
     email: 'krit@brightco.example',
+    photoUrl: null,
     slug: 'krit',
     displayName: 'Krit',
   },
@@ -25,6 +32,7 @@ const DEMO_TEAMMATES: readonly Teammate[] = [
     accountId: 'ann',
     name: 'Ann Lee',
     email: 'ann@brightco.example',
+    photoUrl: standInPhoto('#fdba74', '#ea580c'),
     slug: 'ann',
     displayName: 'Ann',
   },
@@ -32,6 +40,7 @@ const DEMO_TEAMMATES: readonly Teammate[] = [
     accountId: 'ben',
     name: 'Ben Park',
     email: 'ben@brightco.example',
+    photoUrl: null,
     slug: 'ben',
     displayName: 'Ben',
   },
@@ -39,6 +48,7 @@ const DEMO_TEAMMATES: readonly Teammate[] = [
     accountId: 'dao',
     name: 'Dao Prasert',
     email: 'dao@brightco.example',
+    photoUrl: standInPhoto('#86efac', '#15803d'),
     slug: 'dao',
     displayName: 'Dao',
   },
@@ -46,6 +56,7 @@ const DEMO_TEAMMATES: readonly Teammate[] = [
     accountId: 'nok',
     name: 'Nok Wattana',
     email: 'nok@brightco.example',
+    photoUrl: standInPhoto('#7dd3fc', '#0369a1'),
     slug: 'nok',
     displayName: 'Nok',
   },
@@ -53,6 +64,7 @@ const DEMO_TEAMMATES: readonly Teammate[] = [
     accountId: 'chai',
     name: 'Chai Srisuk',
     email: 'chai@brightco.example',
+    photoUrl: null,
     slug: null,
     displayName: null,
   },
@@ -68,10 +80,7 @@ export function MemberPickerDemo({
 }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(initial);
-  const chosen = value.flatMap((accountId) => {
-    const teammate = teammates.find((one) => one.accountId === accountId);
-    return teammate ? [{ id: teammate.accountId, name: teammate.name }] : [];
-  });
+  const chosen = chosenPeople(teammates, value);
 
   return (
     <>

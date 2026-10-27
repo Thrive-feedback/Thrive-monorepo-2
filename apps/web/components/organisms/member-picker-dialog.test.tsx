@@ -1,8 +1,9 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { photosWill } from '@/lib/test/photos-will';
 import { MemberPickerDialog } from './member-picker-dialog';
 
 const TEAMMATES: readonly Teammate[] = [
@@ -10,6 +11,7 @@ const TEAMMATES: readonly Teammate[] = [
     accountId: 'mali',
     name: 'Mali Sombat',
     email: 'mali@acme.test',
+    photoUrl: null,
     slug: 'mali',
     displayName: 'Mali',
   },
@@ -17,6 +19,7 @@ const TEAMMATES: readonly Teammate[] = [
     accountId: 'krit',
     name: 'Krit Chan',
     email: 'krit@acme.test',
+    photoUrl: null,
     slug: 'krit',
     displayName: 'Krit',
   },
@@ -24,6 +27,7 @@ const TEAMMATES: readonly Teammate[] = [
     accountId: 'chai',
     name: 'chai.s@acme.test',
     email: 'chai.s@acme.test',
+    photoUrl: null,
     slug: null,
     displayName: null,
   },
@@ -68,7 +72,31 @@ const search = () =>
   screen.getByRole('searchbox', { name: /search by name or email/i });
 const box = (name: string) => screen.getByRole('checkbox', { name });
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe('MemberPickerDialog', () => {
+  it("shows each teammate's Google photo beside their name", async () => {
+    photosWill('load');
+    const photo = 'https://lh3.googleusercontent.com/a/krit=s96-c';
+    render(
+      <Harness
+        teammates={TEAMMATES.map((teammate) =>
+          teammate.accountId === 'krit'
+            ? { ...teammate, photoUrl: photo }
+            : teammate,
+        )}
+      />,
+    );
+
+    const dialog = screen.getByRole('dialog');
+    await vi.waitFor(() =>
+      expect(dialog.querySelector('img')).toHaveAttribute('src', photo),
+    );
+    expect(screen.getByText('MS')).toBeInTheDocument();
+  });
+
   it('opens named by its title, with the search field ready to type in', () => {
     render(<Harness />);
 
