@@ -35,9 +35,9 @@ export interface AskAnswered extends PersonEvent {
 }
 
 export interface FeedbackWritten extends PersonEvent {
-  /** Who it was written to. */
-  readonly receiverAccountId: string;
-  /** Anyone else it was shared with. The Receiver is never counted twice. */
+  /** Everyone it was written to: one or more (brain `ADR-0044`). */
+  readonly receiverAccountIds: readonly string[];
+  /** Anyone else it was shared with. A Receiver is never counted twice. */
   readonly sharedWithAccountIds: readonly string[];
   /** The Feedback they open. None of its words travel with this. */
   readonly feedbackId: string;

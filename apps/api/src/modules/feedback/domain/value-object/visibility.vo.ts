@@ -14,7 +14,7 @@ function isVisibility(raw: string): raw is VisibilityValue {
 }
 
 /**
- * Who besides the Giver and the Receiver may read a piece of Feedback: nobody, the Members
+ * Who besides the Giver and the Receivers may read a piece of Feedback: nobody, the Members
  * selected, or every Member of the Workspace. Chosen when sending — by the Requester for what a
  * request collects, by the Giver for Offered Feedback — and never changed afterwards
  * (`ADR-0022`).
@@ -61,7 +61,7 @@ export class Visibility {
   }
 
   /**
-   * Whether one Member may read a piece of Feedback. The Giver who wrote it and the Receiver it
+   * Whether one Member may read a piece of Feedback. The Giver who wrote it and every Receiver it
    * is for always may; anyone else only as this Visibility allows.
    *
    * The reader must already be known to be a Member of the Feedback's Workspace: Everyone means
@@ -70,11 +70,11 @@ export class Visibility {
   letsRead(reading: {
     readonly readerAccountId: string;
     readonly giverAccountId: string;
-    readonly receiverAccountId: string;
+    readonly receiverAccountIds: readonly string[];
   }): boolean {
     if (
       reading.readerAccountId === reading.giverAccountId ||
-      reading.readerAccountId === reading.receiverAccountId
+      reading.receiverAccountIds.includes(reading.readerAccountId)
     ) {
       return true;
     }

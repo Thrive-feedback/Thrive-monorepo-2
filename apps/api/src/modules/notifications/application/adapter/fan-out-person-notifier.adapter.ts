@@ -95,19 +95,19 @@ export class FanOutPersonNotifier extends PersonNotifierPort {
     const recipients = await this.notificationRecipients.of({
       workspaceId: event.workspaceId,
       actorAccountId: event.actorAccountId,
-      // The Receiver first, so somebody also named under Selected people is de-duplicated to
+      // The Receivers first, so somebody also named under Selected people is de-duplicated to
       // the type that is true of them: it was written *to* them (#215 AC 5). The unique index
       // could not do this — the two would carry different types — so the order matters.
-      candidates: [event.receiverAccountId, ...event.sharedWithAccountIds],
+      candidates: [...event.receiverAccountIds, ...event.sharedWithAccountIds],
     });
+    const receivers = new Set(event.receiverAccountIds);
     await this.fanOut(
       event,
       recipients.map((recipientAccountId) => ({
         recipientAccountId,
-        type:
-          recipientAccountId === event.receiverAccountId
-            ? ('FEEDBACK_RECEIVED' as const)
-            : ('FEEDBACK_SHARED' as const),
+        type: receivers.has(recipientAccountId)
+          ? ('FEEDBACK_RECEIVED' as const)
+          : ('FEEDBACK_SHARED' as const),
         subjectId: event.feedbackId,
       })),
       () => this.chatPersonNotifier.feedbackWritten(event),

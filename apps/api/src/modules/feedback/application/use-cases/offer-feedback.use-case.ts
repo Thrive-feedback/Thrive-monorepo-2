@@ -18,9 +18,10 @@ export interface OfferFeedbackInput {
   readonly workspaceId: string;
   /** The signed-in caller, always. Never read from the body. */
   readonly giverAccountId: string;
-  readonly receiverAccountId: string;
+  /** Everyone it is for, in the order the Giver chose them (brain `ADR-0044`). */
+  readonly receiverAccountIds: readonly string[];
   readonly message: string;
-  /** Who besides the Giver and the Receiver may read it. */
+  /** Who besides the Giver and the Receivers may read it. */
   readonly visibility: string;
   /** The Members picked when the Visibility is Selected people. */
   readonly selectedAccountIds: readonly string[];
@@ -31,12 +32,13 @@ export interface OfferFeedbackResult {
 }
 
 /**
- * The Giver gives a Member of their Workspace Feedback without being asked — Offered Feedback —
- * and chooses who besides the two of them may read it. No Feedback Request and no Ask come into
- * being; the Feedback goes straight to the Receiver.
+ * The Giver gives one or more Members of their Workspace Feedback without being asked — Offered
+ * Feedback — and chooses who besides them may read it. No Feedback Request and no Ask come into
+ * being; the Feedback goes straight to its Receivers, as one piece they all receive.
  *
- * The Receiver and every person selected are checked against the Workspace, in one read, before
- * anything is written, so a body naming somebody outside it stores nothing. What the Feedback
+ * Every Receiver and every person selected are checked against the Workspace, in one read, before
+ * anything is written, so a body naming somebody outside it stores nothing — not even for the
+ * Receivers who are in it. What the Feedback
  * message names is bound then too, in the same read-before-write. Who may then open
  * it is decided where one piece of Feedback is read, by the same rule as for an answer.
  */
@@ -63,10 +65,12 @@ export class OfferFeedbackUseCase {
     const members = new Set(
       await this.workspaceMembershipPort.membersAmong({
         workspaceId: input.workspaceId,
-        accountIds: [input.receiverAccountId, ...input.selectedAccountIds],
+        accountIds: [...input.receiverAccountIds, ...input.selectedAccountIds],
       }),
     );
-    if (!members.has(input.receiverAccountId)) {
+    if (
+      !input.receiverAccountIds.every((accountId) => members.has(accountId))
+    ) {
       throw new ReceiverNotInWorkspaceError();
     }
     if (
@@ -83,7 +87,7 @@ export class OfferFeedbackUseCase {
       id: this.idGenerator.next(),
       workspaceId: input.workspaceId,
       giverAccountId: input.giverAccountId,
-      receiverAccountId: input.receiverAccountId,
+      receiverAccountIds: input.receiverAccountIds,
       visibility,
       message,
       tags,
@@ -102,8 +106,8 @@ export class OfferFeedbackUseCase {
       .feedbackWritten({
         workspaceId: input.workspaceId,
         actorAccountId: input.giverAccountId,
-        receiverAccountId: input.receiverAccountId,
-        // Whoever the Giver chose may read it, so they are told it was shared with them. The
+        receiverAccountIds: written.receiverAccountIds,
+        // Whoever the Giver chose may read it, so they are told it was shared with them. A
         // Receiver is never counted twice: the notifier de-duplicates to the wording that is
         // true of them.
         sharedWithAccountIds: visibility.selectedAccountIds(),

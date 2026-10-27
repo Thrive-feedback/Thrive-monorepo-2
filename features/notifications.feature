@@ -39,6 +39,13 @@ Feature: Being told inside Thrive
     Then Ben is told that Ann wrote Feedback to them
 
   @api
+  Scenario: Everyone Feedback is written to is told
+    Given Cara is a Member of Ann's Workspace
+    When Ann gives Ben and Cara Feedback: "You two kept the demo calm."
+    Then Ben is told that Ann wrote Feedback to them
+    And Cara is told that Ann wrote Feedback to them
+
+  @api
   Scenario: Somebody chosen to see it is told it was shared with them
     Given Cara is a Member of Ann's Workspace
     When Ann gives Ben Feedback: "You kept the room with you.", shared with Cara

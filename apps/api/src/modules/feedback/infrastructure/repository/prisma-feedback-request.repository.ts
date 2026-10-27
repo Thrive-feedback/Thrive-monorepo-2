@@ -6,10 +6,8 @@ import type { FeedbackRequest } from '../../domain/entity/feedback-request.entit
 import { AskAlreadyAnsweredError } from '../../domain/feedback-request.errors';
 import { FeedbackRequestRepository } from '../../domain/repository/feedback-request-repository.port';
 import {
-  toFeedbackMentionRecords,
+  toFeedbackCreateData,
   toFeedbackRecord,
-  toFeedbackSelectedPersonRecords,
-  toFeedbackWorkspaceGoalRecords,
 } from '../mapper/feedback.mapper';
 import {
   toFeedbackRequest,
@@ -114,14 +112,7 @@ export class PrismaFeedbackRequestRepository extends FeedbackRequestRepository {
       throw new AskAlreadyAnsweredError();
     }
     try {
-      await client.feedback.create({
-        data: {
-          ...answer,
-          selectedPeople: { create: toFeedbackSelectedPersonRecords(feedback) },
-          workspaceGoals: { create: toFeedbackWorkspaceGoalRecords(feedback) },
-          mentions: { create: toFeedbackMentionRecords(feedback) },
-        },
-      });
+      await client.feedback.create({ data: toFeedbackCreateData(feedback) });
     } catch (error) {
       if (isSecondAnswerToOneAsk(error)) {
         throw new AskAlreadyAnsweredError();

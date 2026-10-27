@@ -207,7 +207,7 @@ describe('messaging somebody Feedback was written to', () => {
     await notifier.feedbackWritten({
       workspaceId: WORKSPACE,
       actorAccountId: ANN,
-      receiverAccountId: BEN,
+      receiverAccountIds: [BEN],
       sharedWithAccountIds: [CARA],
       feedbackId: 'feedback-1',
     });
@@ -228,7 +228,7 @@ describe('messaging somebody Feedback was written to', () => {
     await notifier.feedbackWritten({
       workspaceId: WORKSPACE,
       actorAccountId: ANN,
-      receiverAccountId: BEN,
+      receiverAccountIds: [BEN],
       sharedWithAccountIds: [BEN],
       feedbackId: 'feedback-1',
     });

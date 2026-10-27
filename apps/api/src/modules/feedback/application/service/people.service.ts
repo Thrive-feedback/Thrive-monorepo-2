@@ -45,11 +45,18 @@ export class PeopleService {
       summaries.map((summary) => [summary.accountId, summary.photoUrl]),
     );
     const inactive = new Set(deactivated);
-    return {
+    const people: People = {
       nameOf: (accountId) => names.get(accountId) ?? null,
       photoOf: (accountId) => photos.get(accountId) ?? null,
       statusOf: (accountId) =>
         inactive.has(accountId) ? 'DEACTIVATED' : 'ACTIVE',
+      personOf: (accountId) => ({
+        accountId,
+        name: people.nameOf(accountId),
+        photoUrl: people.photoOf(accountId),
+        status: people.statusOf(accountId),
+      }),
     };
+    return people;
   }
 }

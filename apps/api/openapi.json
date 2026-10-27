@@ -1504,7 +1504,7 @@
             }
           },
           "400": {
-            "description": "REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE"
+            "description": "REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER or SELECTED_PERSON_NOT_IN_WORKSPACE"
           },
           "401": {
             "description": "NOT_SIGNED_IN"
@@ -1513,7 +1513,7 @@
             "description": "WORKSPACE_NOT_FOUND"
           }
         },
-        "summary": "Give a Member of this Workspace Feedback without being asked for it",
+        "summary": "Give one or more Members of this Workspace Feedback without being asked for it",
         "tags": [
           "feedback"
         ]
@@ -4521,6 +4521,16 @@
       "OfferFeedbackRequestDto": {
         "type": "object",
         "properties": {
+          "receiverAccountIds": {
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
           "receiverAccountId": {
             "type": "string",
             "format": "uuid",
@@ -4548,7 +4558,6 @@
           }
         },
         "required": [
-          "receiverAccountId",
           "message",
           "visibility"
         ],
@@ -4617,6 +4626,44 @@
                     "DEACTIVATED"
                   ]
                 },
+                "otherReceivers": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "accountId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "photoUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "ACTIVE",
+                          "DEACTIVATED"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "accountId",
+                      "name",
+                      "photoUrl",
+                      "status"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
                 "message": {
                   "type": "string"
                 },
@@ -4678,6 +4725,7 @@
                 "giverName",
                 "giverPhotoUrl",
                 "giverStatus",
+                "otherReceivers",
                 "message",
                 "tags",
                 "createdAt"
@@ -4800,6 +4848,45 @@
             ],
             "additionalProperties": false
           },
+          "receivers": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "accountId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "photoUrl": {
+                  "type": "string",
+                  "format": "uri",
+                  "nullable": true
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ACTIVE",
+                    "DEACTIVATED"
+                  ]
+                }
+              },
+              "required": [
+                "accountId",
+                "name",
+                "photoUrl",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          },
           "message": {
             "type": "string"
           },
@@ -4859,6 +4946,7 @@
           "feedbackRequestId",
           "giver",
           "receiver",
+          "receivers",
           "message",
           "tags",
           "createdAt"
@@ -4961,6 +5049,45 @@
                   ],
                   "additionalProperties": false
                 },
+                "receivers": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "accountId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "photoUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "ACTIVE",
+                          "DEACTIVATED"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "accountId",
+                      "name",
+                      "photoUrl",
+                      "status"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
                 "message": {
                   "type": "string"
                 },
@@ -5020,6 +5147,7 @@
                 "feedbackRequestId",
                 "giver",
                 "receiver",
+                "receivers",
                 "message",
                 "tags",
                 "createdAt"
@@ -5147,6 +5275,45 @@
                   ],
                   "additionalProperties": false
                 },
+                "receivers": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "accountId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "photoUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "ACTIVE",
+                          "DEACTIVATED"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "accountId",
+                      "name",
+                      "photoUrl",
+                      "status"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
                 "message": {
                   "type": "string"
                 },
@@ -5206,6 +5373,7 @@
                 "feedbackRequestId",
                 "giver",
                 "receiver",
+                "receivers",
                 "message",
                 "tags",
                 "createdAt"

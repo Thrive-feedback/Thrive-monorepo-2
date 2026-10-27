@@ -39,9 +39,18 @@ export class ListReceivedFeedbackUseCase {
       input.receiverAccountId,
       input.page,
     );
+    // The reader knows it was written to them; the screen names who else it was for, so only
+    // they are looked up.
+    const othersOf = (receiverAccountIds: readonly string[]) =>
+      receiverAccountIds.filter(
+        (accountId) => accountId !== input.receiverAccountId,
+      );
     const people = await this.peopleService.peopleIn(
       input.workspaceId,
-      received.items.map((feedback) => feedback.giverAccountId),
+      received.items.flatMap((feedback) => [
+        feedback.giverAccountId,
+        ...othersOf(feedback.receiverAccountIds),
+      ]),
     );
 
     return {
@@ -54,6 +63,9 @@ export class ListReceivedFeedbackUseCase {
         giverName: people.nameOf(feedback.giverAccountId),
         giverPhotoUrl: people.photoOf(feedback.giverAccountId),
         giverStatus: people.statusOf(feedback.giverAccountId),
+        otherReceivers: othersOf(feedback.receiverAccountIds).map(
+          people.personOf,
+        ),
         message: feedback.message,
         tags: feedback.tags,
         createdAt: feedback.createdAt,

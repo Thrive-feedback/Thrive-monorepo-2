@@ -3,6 +3,8 @@ import {
   CannotGiveYourselfFeedbackError,
   CannotSelectTheReceiverError,
   CannotSelectYourselfError,
+  NoReceiversError,
+  ReceiverAlreadyNamedError,
 } from '../feedback-request.errors';
 import { BoundTags } from '../value-object/bound-tags.vo';
 import { FeedbackMessage } from '../value-object/feedback-message.vo';
@@ -15,7 +17,7 @@ const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
 function offering(
   overrides: {
     giver?: string;
-    receiver?: string;
+    receivers?: string[];
     visibility?: Visibility;
   } = {},
 ) {
@@ -23,7 +25,7 @@ function offering(
     id: FEEDBACK_ID,
     workspaceId: WORKSPACE_ID,
     giverAccountId: overrides.giver ?? 'account-ann',
-    receiverAccountId: overrides.receiver ?? 'account-ben',
+    receiverAccountIds: overrides.receivers ?? ['account-ben'],
     visibility: overrides.visibility ?? Visibility.onlyMe(),
     message: FeedbackMessage.of('You kept the room with you.'),
     tags: BoundTags.none(),
@@ -48,7 +50,7 @@ describe('offering Feedback without being asked', () => {
       feedbackRequestId: null,
       feedbackAskId: null,
       giverAccountId: 'account-ann',
-      receiverAccountId: 'account-ben',
+      receiverAccountIds: ['account-ben'],
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       message: 'You kept the room with you.',
@@ -58,9 +60,38 @@ describe('offering Feedback without being asked', () => {
   });
 
   it('refuses a Giver giving themselves Feedback', () => {
-    expect(() => Feedback.offer(offering({ receiver: 'account-ann' }))).toThrow(
-      CannotGiveYourselfFeedbackError,
+    expect(() =>
+      Feedback.offer(offering({ receivers: ['account-ann'] })),
+    ).toThrow(CannotGiveYourselfFeedbackError);
+  });
+
+  it('is one piece of Feedback for several Receivers, in the order the Giver chose them', () => {
+    const feedback = Feedback.offer(
+      offering({ receivers: ['account-cara', 'account-ben'] }),
     );
+
+    expect(feedback.snapshot().receiverAccountIds).toEqual([
+      'account-cara',
+      'account-ben',
+    ]);
+  });
+
+  it('refuses Feedback for nobody', () => {
+    expect(() => Feedback.offer(offering({ receivers: [] }))).toThrow(
+      NoReceiversError,
+    );
+  });
+
+  it('refuses naming one Receiver twice', () => {
+    expect(() =>
+      Feedback.offer(offering({ receivers: ['account-ben', 'account-ben'] })),
+    ).toThrow(ReceiverAlreadyNamedError);
+  });
+
+  it('refuses the Giver among several Receivers', () => {
+    expect(() =>
+      Feedback.offer(offering({ receivers: ['account-ben', 'account-ann'] })),
+    ).toThrow(CannotGiveYourselfFeedbackError);
   });
 
   it('keeps the people the Giver selected to read it', () => {
@@ -83,6 +114,17 @@ describe('offering Feedback without being asked', () => {
   it('refuses selecting the Receiver, who reads it anyway', () => {
     expect(() =>
       Feedback.offer(offering({ visibility: selecting('account-ben') })),
+    ).toThrow(CannotSelectTheReceiverError);
+  });
+
+  it('refuses selecting any one of several Receivers', () => {
+    expect(() =>
+      Feedback.offer(
+        offering({
+          receivers: ['account-ben', 'account-cara'],
+          visibility: selecting('account-dan', 'account-cara'),
+        }),
+      ),
     ).toThrow(CannotSelectTheReceiverError);
   });
 });

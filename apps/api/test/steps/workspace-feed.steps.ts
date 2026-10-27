@@ -6,6 +6,7 @@ interface FeedItem {
   readonly message: string;
   readonly giver: { readonly accountId: string; readonly status: string };
   readonly receiver: { readonly accountId: string; readonly status: string };
+  readonly receivers: readonly { readonly accountId: string }[];
 }
 
 /** How a person is shown: `inactive` while they are Deactivated in the Workspace. */
@@ -114,6 +115,32 @@ Then(
     assert.deepEqual(
       [...new Set(shown.map((named) => named.status))],
       [status],
+    );
+  },
+);
+
+Then(
+  '{person} reads {string} from {person} to {people} on the feed',
+  function (
+    this: ThriveWorld,
+    _name: string,
+    message: string,
+    giver: string,
+    receivers: string[],
+  ) {
+    assert.deepEqual(
+      feedItems(this).map((feedback) => [
+        feedback.message,
+        feedback.giver.accountId,
+        feedback.receivers.map((person) => person.accountId),
+      ]),
+      [
+        [
+          message,
+          this.person(giver).accountId,
+          receivers.map((name) => this.person(name).accountId),
+        ],
+      ],
     );
   },
 );

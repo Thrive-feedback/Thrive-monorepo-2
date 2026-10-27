@@ -6,6 +6,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
+import { personSchema } from './person.dto';
 import { tagsSchema } from './tags.dto';
 
 export const listReceivedFeedbackQuerySchema = z.strictObject(pageQueryShape);
@@ -32,6 +33,11 @@ const receivedFeedbackSchema = z.object({
   giverPhotoUrl: z.url().nullable(),
   /** `DEACTIVATED` once the Giver was Deactivated in this Workspace; their Feedback stays. */
   giverStatus: z.enum(PERSON_STATUSES),
+  /**
+   * Everyone else it was written to, in the order the Giver chose them — empty when it was for
+   * the caller alone (brain `ADR-0044`).
+   */
+  otherReceivers: z.array(personSchema),
   /** The Feedback message. */
   message: z.string(),
   /** What its Giver wrote was bound to when it was sent. */

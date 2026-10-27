@@ -33,7 +33,7 @@ function offering(
   return {
     workspaceId: WORKSPACE_ID,
     giverAccountId: ANN,
-    receiverAccountId: BEN,
+    receiverAccountIds: [BEN],
     message: '  You kept the room with you.\n\nKeep the recap. ',
     visibility: 'ONLY_ME',
     selectedAccountIds: [],
@@ -71,7 +71,7 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
         feedbackRequestId: null,
         feedbackAskId: null,
         giverAccountId: ANN,
-        receiverAccountId: BEN,
+        receiverAccountIds: [BEN],
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         message: 'You kept the room with you.\n\nKeep the recap.',
@@ -121,7 +121,7 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
     const { feedbackRepository, useCase } = setUp();
 
     await expect(
-      useCase.execute(offering({ receiverAccountId: DAN })),
+      useCase.execute(offering({ receiverAccountIds: [DAN] })),
     ).rejects.toThrow(ReceiverNotInWorkspaceError);
     expect(feedbackRepository.saved).toEqual([]);
   });
@@ -152,7 +152,7 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
     const { useCase } = setUp();
 
     await expect(
-      useCase.execute(offering({ receiverAccountId: ANN })),
+      useCase.execute(offering({ receiverAccountIds: [ANN] })),
     ).rejects.toThrow(CannotGiveYourselfFeedbackError);
   });
 });
@@ -166,7 +166,7 @@ describe('telling the people Feedback was written for', () => {
     expect(personNotifier.feedbackWritten_).toHaveLength(1);
     const told = personNotifier.feedbackWritten_[0];
     expect(told?.actorAccountId).toBe(ANN);
-    expect(told?.receiverAccountId).toBe(BEN);
+    expect(told?.receiverAccountIds).toEqual([BEN]);
     expect(told?.feedbackId).toBe(FEEDBACK_ID);
   });
 

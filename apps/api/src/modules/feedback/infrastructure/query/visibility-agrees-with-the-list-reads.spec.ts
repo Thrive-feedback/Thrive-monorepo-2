@@ -47,7 +47,7 @@ function theVisibilityLetsRead(
   }).letsRead({
     readerAccountId,
     giverAccountId: GIVER,
-    receiverAccountId: RECEIVER,
+    receiverAccountIds: [RECEIVER],
   });
 }
 

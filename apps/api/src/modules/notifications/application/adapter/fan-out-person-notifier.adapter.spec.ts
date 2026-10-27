@@ -162,7 +162,7 @@ describe('who is told, and about what', () => {
     await notifier.feedbackWritten({
       workspaceId: WORKSPACE,
       actorAccountId: ANN,
-      receiverAccountId: BEN,
+      receiverAccountIds: [BEN],
       sharedWithAccountIds: [CARA],
       feedbackId: 'feedback-1',
     });
@@ -177,13 +177,35 @@ describe('who is told, and about what', () => {
     expect(byRecipient.get(CARA)).toBe('FEEDBACK_SHARED');
   });
 
+  it('tells every one of several Receivers it was written to them', async () => {
+    const { notifier, notifications } = setUp();
+
+    await notifier.feedbackWritten({
+      workspaceId: WORKSPACE,
+      actorAccountId: ANN,
+      receiverAccountIds: [BEN, CARA],
+      sharedWithAccountIds: [],
+      feedbackId: 'feedback-1',
+    });
+
+    expect(
+      notifications.stored.map((held) => [
+        held.row.recipientAccountId,
+        held.row.type,
+      ]),
+    ).toEqual([
+      [BEN, 'FEEDBACK_RECEIVED'],
+      [CARA, 'FEEDBACK_RECEIVED'],
+    ]);
+  });
+
   it('tells somebody who is both the Receiver and Selected exactly once', async () => {
     const { notifier, notifications } = setUp();
 
     await notifier.feedbackWritten({
       workspaceId: WORKSPACE,
       actorAccountId: ANN,
-      receiverAccountId: BEN,
+      receiverAccountIds: [BEN],
       sharedWithAccountIds: [BEN],
       feedbackId: 'feedback-1',
     });

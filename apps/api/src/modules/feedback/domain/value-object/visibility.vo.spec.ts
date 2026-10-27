@@ -14,7 +14,7 @@ function reading(readerAccountId: string) {
   return {
     readerAccountId,
     giverAccountId: GIVER,
-    receiverAccountId: RECEIVER,
+    receiverAccountIds: [RECEIVER],
   };
 }
 
@@ -58,6 +58,18 @@ describe('choosing who may read a request’s answers', () => {
 describe('who may read a piece of Feedback', () => {
   it('lets the Receiver read it, whatever the Visibility', () => {
     expect(Visibility.onlyMe().letsRead(reading(RECEIVER))).toBe(true);
+  });
+
+  it('lets every one of several Receivers read it, whatever the Visibility', () => {
+    const forBoth = (readerAccountId: string) => ({
+      readerAccountId,
+      giverAccountId: GIVER,
+      receiverAccountIds: [RECEIVER, 'account-cara'],
+    });
+
+    expect(Visibility.onlyMe().letsRead(forBoth(RECEIVER))).toBe(true);
+    expect(Visibility.onlyMe().letsRead(forBoth('account-cara'))).toBe(true);
+    expect(Visibility.onlyMe().letsRead(forBoth('account-dan'))).toBe(false);
   });
 
   it('lets the Giver read what they wrote, whatever the Visibility', () => {

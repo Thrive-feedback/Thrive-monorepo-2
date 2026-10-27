@@ -125,3 +125,128 @@ Then(
     this.refusedWith('RECEIVER_NOT_IN_WORKSPACE');
   },
 );
+
+Given(
+  '{person} has given {people} Feedback: {string}',
+  async function (
+    this: ThriveWorld,
+    giver: string,
+    receivers: string[],
+    message: string,
+  ) {
+    this.succeeded(
+      await giveFeedback(this, giver, receivers, message),
+      `${giver} giving ${receivers.join(' and ')} Feedback`,
+    );
+  },
+);
+
+Given(
+  '{person} has given {people} Feedback: {string}, shared with {sharedWith}',
+  async function (
+    this: ThriveWorld,
+    giver: string,
+    receivers: string[],
+    message: string,
+    sharedWith: string,
+  ) {
+    this.succeeded(
+      await giveFeedback(
+        this,
+        giver,
+        receivers,
+        message,
+        visibilityOf(this, sharedWith),
+      ),
+      `${giver} giving ${receivers.join(' and ')} Feedback, shared with ${sharedWith}`,
+    );
+  },
+);
+
+When(
+  '{person} gives {people} Feedback: {string}',
+  async function (
+    this: ThriveWorld,
+    giver: string,
+    receivers: string[],
+    message: string,
+  ) {
+    await giveFeedback(this, giver, receivers, message);
+  },
+);
+
+Then(
+  '{person} finds {string} from {person}, written to them and {person}',
+  async function (
+    this: ThriveWorld,
+    reader: string,
+    message: string,
+    giver: string,
+    other: string,
+  ) {
+    const listed = this.succeeded(
+      await this.as(
+        reader,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(reader)}/feedback`,
+      ),
+      `${reader} listing the Feedback written to them`,
+    );
+    const items: {
+      message: string;
+      giverAccountId: string;
+      otherReceivers: { accountId: string }[];
+    }[] = listed.body.items;
+    assert.deepEqual(
+      items.map((feedback) => [
+        feedback.message,
+        feedback.giverAccountId,
+        feedback.otherReceivers.map((person) => person.accountId),
+      ]),
+      [[message, this.person(giver).accountId, [this.person(other).accountId]]],
+    );
+  },
+);
+
+Then(
+  '{person} reads it as written by {person} to {people}',
+  function (
+    this: ThriveWorld,
+    _reader: string,
+    giver: string,
+    receivers: string[],
+  ) {
+    const feedback: {
+      giver: { accountId: string };
+      receivers: { accountId: string }[];
+    } = this.succeeded(
+      this.lastResponse as ApiResponse,
+      'opening the Feedback',
+    ).body;
+    assert.deepEqual(
+      [
+        feedback.giver.accountId,
+        feedback.receivers.map((person) => person.accountId),
+      ],
+      [
+        this.person(giver).accountId,
+        receivers.map((name) => this.person(name).accountId),
+      ],
+    );
+  },
+);
+
+Then(
+  '{person} has been given no Feedback',
+  async function (this: ThriveWorld, name: string) {
+    const listed = this.succeeded(
+      await this.as(
+        name,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(name)}/feedback`,
+      ),
+      `${name} listing the Feedback written to them`,
+    );
+    assert.deepEqual(listed.body.items, []);
+  },
+);

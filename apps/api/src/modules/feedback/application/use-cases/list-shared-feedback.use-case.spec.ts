@@ -25,7 +25,7 @@ function setUp() {
       origin: 'REQUESTED',
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
       giverAccountId: CARA,
-      receiverAccountId: BEN,
+      receiverAccountIds: [BEN],
       message:
         'You start with the three goals on one slide, which keeps the side topics out.',
       tags: NO_TAGS,
@@ -39,7 +39,7 @@ function setUp() {
       origin: 'OFFERED',
       feedbackRequestId: null,
       giverAccountId: BEN,
-      receiverAccountId: CARA,
+      receiverAccountIds: [CARA],
       message: 'You kept the room with you when the demo broke.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-12T03:00:00.000Z'),
@@ -52,7 +52,7 @@ function setUp() {
       origin: 'OFFERED',
       feedbackRequestId: null,
       giverAccountId: CARA,
-      receiverAccountId: DAN,
+      receiverAccountIds: [DAN],
       message: 'Your notes answered every question I had in my first week.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-13T03:00:00.000Z'),
@@ -65,7 +65,7 @@ function setUp() {
       origin: 'OFFERED',
       feedbackRequestId: null,
       giverAccountId: CARA,
-      receiverAccountId: DAN,
+      receiverAccountIds: [DAN],
       message: 'They read clearly and they land a day late.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-14T03:00:00.000Z'),
@@ -116,7 +116,9 @@ describe('reading the Feedback shared with me', () => {
       'You start with the three goals on one slide, which keeps the side topics out.',
     ]);
     expect(shared.items[0]?.giverName).toBe('Ben Carter');
-    expect(shared.items[0]?.receiverName).toBe('Cara Diaz');
+    expect(shared.items[0]?.receivers.map((person) => person.name)).toEqual([
+      'Cara Diaz',
+    ]);
   });
 
   it('shows whichever of the two people has since been Deactivated as inactive', async () => {
@@ -132,8 +134,9 @@ describe('reading the Feedback shared with me', () => {
     expect(shared.items[0]).toMatchObject({
       giverName: 'Ben Carter',
       giverStatus: 'ACTIVE',
-      receiverName: 'Cara Diaz',
-      receiverStatus: 'DEACTIVATED',
+      receivers: [
+        expect.objectContaining({ name: 'Cara Diaz', status: 'DEACTIVATED' }),
+      ],
     });
   });
 
@@ -228,7 +231,7 @@ describe('reading the Feedback shared with me', () => {
     });
 
     expect(shared.items[0]?.giverName).toBeNull();
-    expect(shared.items[0]?.receiverName).toBeNull();
+    expect(shared.items[0]?.receivers[0]?.name).toBeNull();
   });
 
   it('counts every piece shared with me, not only the page asked for', async () => {

@@ -44,7 +44,7 @@ export class GetFeedbackUseCase {
       !visibility.letsRead({
         readerAccountId: input.readerAccountId,
         giverAccountId: row.giverAccountId,
-        receiverAccountId: row.receiverAccountId,
+        receiverAccountIds: row.receiverAccountIds,
       })
     ) {
       throw new FeedbackNotFoundError();
@@ -52,7 +52,7 @@ export class GetFeedbackUseCase {
 
     const people = await this.peopleService.peopleIn(input.workspaceId, [
       row.giverAccountId,
-      row.receiverAccountId,
+      ...row.receiverAccountIds,
     ]);
     return {
       id: row.id,
@@ -62,10 +62,7 @@ export class GetFeedbackUseCase {
       giverName: people.nameOf(row.giverAccountId),
       giverPhotoUrl: people.photoOf(row.giverAccountId),
       giverStatus: people.statusOf(row.giverAccountId),
-      receiverAccountId: row.receiverAccountId,
-      receiverName: people.nameOf(row.receiverAccountId),
-      receiverPhotoUrl: people.photoOf(row.receiverAccountId),
-      receiverStatus: people.statusOf(row.receiverAccountId),
+      receivers: row.receiverAccountIds.map(people.personOf),
       message: row.message,
       tags: row.tags,
       createdAt: row.createdAt,

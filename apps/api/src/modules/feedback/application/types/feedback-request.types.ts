@@ -24,6 +24,18 @@ export interface People {
   /** Their Google photo, or `null` when they have none or their Account is gone. */
   photoOf(accountId: string): string | null;
   statusOf(accountId: string): PersonStatus;
+  /** Everything above about one person, as a reader is shown them. */
+  personOf(accountId: string): PersonView;
+}
+
+/** One person a piece of Feedback names, as a reader is shown them. */
+export interface PersonView {
+  readonly accountId: string;
+  /** `null` while they have not introduced themselves, or when their Account is gone. */
+  readonly name: string | null;
+  /** `null` when they have no photo. */
+  readonly photoUrl: string | null;
+  readonly status: PersonStatus;
 }
 
 /** What some sent text was bound to, as a reader is shown it. */
@@ -116,10 +128,10 @@ export interface MyAskListView {
 }
 
 /**
- * One piece of Feedback as its Receiver reads it: who wrote it, whether they were asked, and
- * what they wrote. There is no `visibility` here — Visibility governs who
- * *besides* the Giver and the Receiver may read, and the Receiver is never the person it
- * excludes.
+ * One piece of Feedback as one of its Receivers reads it: who wrote it, who else it was for,
+ * whether they were asked, and what they wrote. There is no `visibility` here — Visibility
+ * governs who *besides* the Giver and the Receivers may read, and a Receiver is never the person
+ * it excludes.
  */
 export interface ReceivedFeedbackView {
   readonly id: string;
@@ -133,6 +145,8 @@ export interface ReceivedFeedbackView {
   /** `null` when the Giver has no photo. */
   readonly giverPhotoUrl: string | null;
   readonly giverStatus: PersonStatus;
+  /** Everyone else it was for, in the order the Giver chose them; empty when only the reader. */
+  readonly otherReceivers: readonly PersonView[];
   readonly message: string;
   /** What its Giver's Feedback message names. */
   readonly tags: TagsView;
@@ -140,8 +154,8 @@ export interface ReceivedFeedbackView {
 }
 
 /**
- * One piece of Feedback, the same for every reader its Visibility lets in: the Receiver, the Giver, or a
- * Member its Visibility reaches — who needs to be told who it is about.
+ * One piece of Feedback, the same for every reader its Visibility lets in: a Receiver, the Giver,
+ * or a Member its Visibility reaches — who needs to be told who it is about.
  */
 export interface FeedbackView {
   readonly id: string;
@@ -155,12 +169,8 @@ export interface FeedbackView {
   /** `null` when the Giver has no photo. */
   readonly giverPhotoUrl: string | null;
   readonly giverStatus: PersonStatus;
-  readonly receiverAccountId: string;
-  /** `null` while the Receiver has not introduced themselves. */
-  readonly receiverName: string | null;
-  /** `null` when the Receiver has no photo. */
-  readonly receiverPhotoUrl: string | null;
-  readonly receiverStatus: PersonStatus;
+  /** Everyone it is for, in the order the Giver chose them: one for Requested Feedback. */
+  readonly receivers: readonly PersonView[];
   readonly message: string;
   /** What its Giver's Feedback message names. */
   readonly tags: TagsView;

@@ -4,24 +4,14 @@ import {
 } from '@app/shared/presentation/dto/page.dto';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
+import { personSchema } from './person.dto';
 import { tagsSchema } from './tags.dto';
 
 export const listSharedFeedbackQuerySchema = z.strictObject(pageQueryShape);
 export class ListSharedFeedbackQueryDto extends createZodDto(
   listSharedFeedbackQuerySchema,
 ) {}
-
-const personSchema = z.object({
-  accountId: z.uuid(),
-  /** `null` while they have not introduced themselves. */
-  name: z.string().nullable(),
-  /** Their Google photo, or `null` when they have none. */
-  photoUrl: z.url().nullable(),
-  /** `DEACTIVATED` once they were Deactivated in this Workspace; their Feedback stays. */
-  status: z.enum(PERSON_STATUSES),
-});
 
 /**
  * One piece of Feedback shared with the caller. Both people are nested objects, as on the route
@@ -36,7 +26,10 @@ const sharedFeedbackSchema = z.object({
   /** The request it answers, or `null` for Feedback given without being asked. */
   feedbackRequestId: z.uuid().nullable(),
   giver: personSchema,
+  /** Deprecated: the first of `receivers`, kept for clients built before Feedback could have several. */
   receiver: personSchema,
+  /** Everyone it is for, in the order the Giver chose them: one for Requested Feedback. */
+  receivers: z.array(personSchema).min(1),
   /** The Feedback message. */
   message: z.string(),
   /** What its Giver wrote was bound to when it was sent. */

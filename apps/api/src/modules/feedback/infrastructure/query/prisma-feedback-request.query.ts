@@ -43,6 +43,12 @@ const ASK_FIELDS = {
   status: true,
 } as const;
 
+/** Receivers in the order the Giver chose them, so a piece names them the same on every open. */
+const RECEIVERS_IN_ORDER = {
+  orderBy: { position: 'asc' },
+  select: { accountId: true },
+} as const;
+
 /** Selected people in a fixed order, so a request reads the same on every open. */
 const SELECTED_PEOPLE_IN_ORDER = {
   orderBy: { accountId: 'asc' },
@@ -69,7 +75,7 @@ const FEEDBACK_WITH_PEOPLE_FIELDS = {
   origin: true,
   feedbackRequestId: true,
   giverAccountId: true,
-  receiverAccountId: true,
+  receivers: RECEIVERS_IN_ORDER,
   message: true,
   createdAt: true,
   ...TAGS_FIELDS,
@@ -189,7 +195,12 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     receiverAccountId: string,
     page: PageRequest,
   ): Promise<FeedbackPageRow> {
-    const where = { workspaceId, receiverAccountId };
+    // Through the Receivers, not `feedback.receiverAccountId`: that column holds only the first
+    // of several, and is kept for an older API mid-deploy (ADR 0061).
+    const where = {
+      workspaceId,
+      receivers: { some: { accountId: receiverAccountId } },
+    };
     const client = this.prismaTransactionContext.client;
     const [records, total] = await Promise.all([
       client.feedback.findMany({
@@ -202,6 +213,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
           origin: true,
           feedbackRequestId: true,
           giverAccountId: true,
+          receivers: RECEIVERS_IN_ORDER,
           message: true,
           createdAt: true,
           ...TAGS_FIELDS,
@@ -215,6 +227,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         origin: record.origin,
         feedbackRequestId: record.feedbackRequestId,
         giverAccountId: record.giverAccountId,
+        receiverAccountIds: accountIdsOf(record.receivers),
         message: record.message,
         tags: tagsOf(record),
         createdAt: record.createdAt,
@@ -283,7 +296,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
           origin: true,
           feedbackRequestId: true,
           giverAccountId: true,
-          receiverAccountId: true,
+          receivers: RECEIVERS_IN_ORDER,
           message: true,
           createdAt: true,
           visibility: true,
@@ -299,7 +312,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       origin: record.origin,
       feedbackRequestId: record.feedbackRequestId,
       giverAccountId: record.giverAccountId,
-      receiverAccountId: record.receiverAccountId,
+      receiverAccountIds: accountIdsOf(record.receivers),
       message: record.message,
       tags: tagsOf(record),
       createdAt: record.createdAt,
@@ -394,6 +407,12 @@ interface StoredTags {
   }[];
 }
 
+function accountIdsOf(
+  people: readonly { readonly accountId: string }[],
+): readonly string[] {
+  return people.map((person) => person.accountId);
+}
+
 function tagsOf(record: StoredTags): TagsView {
   return {
     workspaceGoals: record.workspaceGoals.map((workspaceGoal) => ({
@@ -412,7 +431,7 @@ function toFeedbackWithPeopleRow(
     readonly origin: FeedbackWithPeopleRow['origin'];
     readonly feedbackRequestId: string | null;
     readonly giverAccountId: string;
-    readonly receiverAccountId: string;
+    readonly receivers: readonly { readonly accountId: string }[];
     readonly message: string;
     readonly createdAt: Date;
   },
@@ -422,7 +441,7 @@ function toFeedbackWithPeopleRow(
     origin: record.origin,
     feedbackRequestId: record.feedbackRequestId,
     giverAccountId: record.giverAccountId,
-    receiverAccountId: record.receiverAccountId,
+    receiverAccountIds: accountIdsOf(record.receivers),
     message: record.message,
     tags: tagsOf(record),
     createdAt: record.createdAt,

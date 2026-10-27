@@ -24,7 +24,7 @@ function setUp() {
       origin: 'REQUESTED',
       feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
       giverAccountId: CARA,
-      receiverAccountId: BEN,
+      receiverAccountIds: [BEN],
       message: 'You start with the three goals on one slide.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-11T03:00:00.000Z'),
@@ -37,7 +37,7 @@ function setUp() {
       origin: 'OFFERED',
       feedbackRequestId: null,
       giverAccountId: BEN,
-      receiverAccountId: CARA,
+      receiverAccountIds: [CARA],
       message: 'You kept the room with you when the demo broke.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-12T03:00:00.000Z'),
@@ -50,7 +50,7 @@ function setUp() {
       origin: 'OFFERED',
       feedbackRequestId: null,
       giverAccountId: BEN,
-      receiverAccountId: CARA,
+      receiverAccountIds: [CARA],
       message: 'Your notes answered every question I had.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-13T03:00:00.000Z'),
@@ -63,7 +63,7 @@ function setUp() {
       origin: 'OFFERED',
       feedbackRequestId: null,
       giverAccountId: BEN,
-      receiverAccountId: CARA,
+      receiverAccountIds: [CARA],
       message: 'They read clearly and they land a day late.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-14T03:00:00.000Z'),
@@ -76,7 +76,7 @@ function setUp() {
       origin: 'OFFERED',
       feedbackRequestId: null,
       giverAccountId: BEN,
-      receiverAccountId: CARA,
+      receiverAccountIds: [CARA],
       message: 'Nobody here should read this.',
       tags: NO_TAGS,
       createdAt: new Date('2026-10-15T03:00:00.000Z'),
@@ -126,7 +126,9 @@ describe('reading the Workspace feed', () => {
       'You start with the three goals on one slide.',
     ]);
     expect(feed.items[0]?.giverName).toBe('Ben Carter');
-    expect(feed.items[0]?.receiverName).toBe('Cara Diaz');
+    expect(feed.items[0]?.receivers.map((person) => person.name)).toEqual([
+      'Cara Diaz',
+    ]);
   });
 
   it('shows a person who has since been Deactivated as inactive, and keeps their Feedback on the feed', async () => {
@@ -142,7 +144,7 @@ describe('reading the Workspace feed', () => {
     expect(
       feed.items.map((feedback) => [
         feedback.giverStatus,
-        feedback.receiverStatus,
+        feedback.receivers[0]?.status,
       ]),
     ).toEqual([
       ['DEACTIVATED', 'ACTIVE'],
@@ -227,7 +229,7 @@ describe('reading the Workspace feed', () => {
     });
 
     expect(feed.items[0]?.giverName).toBeNull();
-    expect(feed.items[0]?.receiverName).toBeNull();
+    expect(feed.items[0]?.receivers[0]?.name).toBeNull();
   });
 
   it('counts the whole feed, not only the page asked for', async () => {
