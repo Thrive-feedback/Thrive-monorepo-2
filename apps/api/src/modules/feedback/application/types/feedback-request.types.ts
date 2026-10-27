@@ -21,6 +21,8 @@ export type PersonStatus = (typeof PERSON_STATUSES)[number];
 export interface People {
   /** `null` while they have not introduced themselves, or when their Account is gone. */
   nameOf(accountId: string): string | null;
+  /** Their Google photo, or `null` when they have none or their Account is gone. */
+  photoOf(accountId: string): string | null;
   statusOf(accountId: string): PersonStatus;
 }
 
@@ -100,6 +102,8 @@ export interface MyAskView {
   readonly requesterAccountId: string;
   /** `null` while the Requester has not introduced themselves. */
   readonly requesterName: string | null;
+  /** `null` when the Requester has no photo. */
+  readonly requesterPhotoUrl: string | null;
   readonly requesterStatus: PersonStatus;
   readonly status: AskStatusValue;
   readonly createdAt: Date;
@@ -126,6 +130,8 @@ export interface ReceivedFeedbackView {
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
+  /** `null` when the Giver has no photo. */
+  readonly giverPhotoUrl: string | null;
   readonly giverStatus: PersonStatus;
   readonly message: string;
   /** What its Giver's Feedback message names. */
@@ -146,10 +152,14 @@ export interface FeedbackView {
   readonly giverAccountId: string;
   /** `null` while the Giver has not introduced themselves. */
   readonly giverName: string | null;
+  /** `null` when the Giver has no photo. */
+  readonly giverPhotoUrl: string | null;
   readonly giverStatus: PersonStatus;
   readonly receiverAccountId: string;
   /** `null` while the Receiver has not introduced themselves. */
   readonly receiverName: string | null;
+  /** `null` when the Receiver has no photo. */
+  readonly receiverPhotoUrl: string | null;
   readonly receiverStatus: PersonStatus;
   readonly message: string;
   /** What its Giver's Feedback message names. */

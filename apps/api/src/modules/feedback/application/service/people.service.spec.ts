@@ -45,6 +45,30 @@ describe('naming the people on one page', () => {
     expect(people.nameOf(CARA)).toBe(null);
   });
 
+  it('shows the Google photo Identity has, and none for an Account it does not know', async () => {
+    const { accountSummaryPort, service } = setUp();
+    accountSummaryPort.summaries.push({
+      accountId: CARA,
+      email: 'cara@acme.test',
+      fullName: null,
+      displayName: null,
+      slug: null,
+      photoUrl: 'https://lh3.googleusercontent.com/a/cara=s96-c',
+    });
+
+    const people = await service.peopleIn(WORKSPACE_ID, [
+      BEN,
+      CARA,
+      'account-gone',
+    ]);
+
+    expect(people.photoOf(CARA)).toBe(
+      'https://lh3.googleusercontent.com/a/cara=s96-c',
+    );
+    expect(people.photoOf(BEN)).toBe(null);
+    expect(people.photoOf('account-gone')).toBe(null);
+  });
+
   it('marks someone Deactivated in this Workspace, and only them', async () => {
     const { workspaceMembershipPort, service } = setUp();
     workspaceMembershipPort.withDeactivated(WORKSPACE_ID, BEN);

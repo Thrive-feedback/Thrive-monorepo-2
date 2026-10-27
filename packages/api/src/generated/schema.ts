@@ -1087,6 +1087,8 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 };
@@ -1118,6 +1120,8 @@ export interface components {
                 /** Format: uuid */
                 accountId: string;
                 name: string | null;
+                /** Format: uri */
+                photoUrl: string | null;
                 /** @enum {string} */
                 status: "ACTIVE" | "DEACTIVATED";
             };
@@ -1156,6 +1160,8 @@ export interface components {
                 /** Format: uuid */
                 giverAccountId: string;
                 giverName: string | null;
+                /** Format: uri */
+                giverPhotoUrl: string | null;
                 /** @enum {string} */
                 giverStatus: "ACTIVE" | "DEACTIVATED";
                 message: string;
@@ -1186,6 +1192,8 @@ export interface components {
                 /** Format: uuid */
                 accountId: string;
                 name: string | null;
+                /** Format: uri */
+                photoUrl: string | null;
                 /** @enum {string} */
                 status: "ACTIVE" | "DEACTIVATED";
             };
@@ -1193,6 +1201,8 @@ export interface components {
                 /** Format: uuid */
                 accountId: string;
                 name: string | null;
+                /** Format: uri */
+                photoUrl: string | null;
                 /** @enum {string} */
                 status: "ACTIVE" | "DEACTIVATED";
             };
@@ -1221,6 +1231,8 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 };
@@ -1228,6 +1240,8 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 };
@@ -1260,6 +1274,8 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 };
@@ -1267,6 +1283,8 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 };

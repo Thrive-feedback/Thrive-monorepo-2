@@ -29,11 +29,13 @@ export function toFeedbackResponse(feedback: FeedbackView) {
     giver: {
       accountId: feedback.giverAccountId,
       name: feedback.giverName,
+      photoUrl: feedback.giverPhotoUrl,
       status: feedback.giverStatus,
     },
     receiver: {
       accountId: feedback.receiverAccountId,
       name: feedback.receiverName,
+      photoUrl: feedback.receiverPhotoUrl,
       status: feedback.receiverStatus,
     },
     message: feedback.message,

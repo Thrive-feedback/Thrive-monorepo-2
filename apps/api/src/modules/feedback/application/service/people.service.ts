@@ -4,8 +4,9 @@ import { Injectable } from '@nestjs/common';
 import type { People } from '../types/feedback-request.types';
 
 /**
- * The people named on one page of a Workspace: the name each introduced themselves with, and
- * whether they are still active there or were Deactivated.
+ * The people named on one page of a Workspace: the name each introduced themselves with, their
+ * Google photo, and whether they are still active there or were Deactivated. The photo comes with
+ * the name from the same lookup, so showing faces costs no call of its own.
  *
  * Every read in this module shows people by name, and every one of them had the same shape of
  * bug available to it: a person resolved per row rather than per page. Asking once for the whole
@@ -40,9 +41,13 @@ export class PeopleService {
     const names = new Map(
       summaries.map((summary) => [summary.accountId, summary.fullName]),
     );
+    const photos = new Map(
+      summaries.map((summary) => [summary.accountId, summary.photoUrl]),
+    );
     const inactive = new Set(deactivated);
     return {
       nameOf: (accountId) => names.get(accountId) ?? null,
+      photoOf: (accountId) => photos.get(accountId) ?? null,
       statusOf: (accountId) =>
         inactive.has(accountId) ? 'DEACTIVATED' : 'ACTIVE',
     };

@@ -50,6 +50,7 @@ function toResponse(ask: MyAskView) {
     requester: {
       accountId: ask.requesterAccountId,
       name: ask.requesterName,
+      photoUrl: ask.requesterPhotoUrl,
       status: ask.requesterStatus,
     },
     status: ask.status,

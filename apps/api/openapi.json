@@ -4301,6 +4301,11 @@
                         "null"
                       ]
                     },
+                    "photoUrl": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
                     "status": {
                       "type": "string",
                       "enum": [
@@ -4312,6 +4317,7 @@
                   "required": [
                     "accountId",
                     "name",
+                    "photoUrl",
                     "status"
                   ],
                   "additionalProperties": false
@@ -4440,6 +4446,11 @@
                   "null"
                 ]
               },
+              "photoUrl": {
+                "type": "string",
+                "format": "uri",
+                "nullable": true
+              },
               "status": {
                 "type": "string",
                 "enum": [
@@ -4451,6 +4462,7 @@
             "required": [
               "accountId",
               "name",
+              "photoUrl",
               "status"
             ],
             "additionalProperties": false
@@ -4593,6 +4605,11 @@
                     "null"
                   ]
                 },
+                "giverPhotoUrl": {
+                  "type": "string",
+                  "format": "uri",
+                  "nullable": true
+                },
                 "giverStatus": {
                   "type": "string",
                   "enum": [
@@ -4659,6 +4676,7 @@
                 "feedbackRequestId",
                 "giverAccountId",
                 "giverName",
+                "giverPhotoUrl",
                 "giverStatus",
                 "message",
                 "tags",
@@ -4726,6 +4744,11 @@
                   "null"
                 ]
               },
+              "photoUrl": {
+                "type": "string",
+                "format": "uri",
+                "nullable": true
+              },
               "status": {
                 "type": "string",
                 "enum": [
@@ -4737,6 +4760,7 @@
             "required": [
               "accountId",
               "name",
+              "photoUrl",
               "status"
             ],
             "additionalProperties": false
@@ -4755,6 +4779,11 @@
                   "null"
                 ]
               },
+              "photoUrl": {
+                "type": "string",
+                "format": "uri",
+                "nullable": true
+              },
               "status": {
                 "type": "string",
                 "enum": [
@@ -4766,6 +4795,7 @@
             "required": [
               "accountId",
               "name",
+              "photoUrl",
               "status"
             ],
             "additionalProperties": false
@@ -4875,6 +4905,11 @@
                         "null"
                       ]
                     },
+                    "photoUrl": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
                     "status": {
                       "type": "string",
                       "enum": [
@@ -4886,6 +4921,7 @@
                   "required": [
                     "accountId",
                     "name",
+                    "photoUrl",
                     "status"
                   ],
                   "additionalProperties": false
@@ -4904,6 +4940,11 @@
                         "null"
                       ]
                     },
+                    "photoUrl": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
                     "status": {
                       "type": "string",
                       "enum": [
@@ -4915,6 +4956,7 @@
                   "required": [
                     "accountId",
                     "name",
+                    "photoUrl",
                     "status"
                   ],
                   "additionalProperties": false
@@ -5049,6 +5091,11 @@
                         "null"
                       ]
                     },
+                    "photoUrl": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
                     "status": {
                       "type": "string",
                       "enum": [
@@ -5060,6 +5107,7 @@
                   "required": [
                     "accountId",
                     "name",
+                    "photoUrl",
                     "status"
                   ],
                   "additionalProperties": false
@@ -5078,6 +5126,11 @@
                         "null"
                       ]
                     },
+                    "photoUrl": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
                     "status": {
                       "type": "string",
                       "enum": [
@@ -5089,6 +5142,7 @@
                   "required": [
                     "accountId",
                     "name",
+                    "photoUrl",
                     "status"
                   ],
                   "additionalProperties": false

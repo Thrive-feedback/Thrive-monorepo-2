@@ -147,6 +147,21 @@ Feature: Feedback requests
     Then Ann reads "You open strongly and lose the room at the detail." from Ben
 
   @api
+  Scenario: A Member sees the Google photo of whoever wrote Feedback to them
+    Given Ben's Google account has a photo
+    And Ann has asked Ben for Feedback: "Running the planning meeting"
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When Ann looks at the Feedback written to them
+    Then Ann sees Ben's Google photo
+
+  @api
+  Scenario: A teammate sees the Google photo of the Member who asked them
+    Given Ann's Google account has a photo
+    And Ann has asked Ben for Feedback: "Running the planning meeting"
+    When Ben looks at what they have been asked
+    Then Ben sees Ann's Google photo
+
+  @api
   Scenario: Feedback written to one Member is not another Member's to read
     Given Cara is a Member of Ann's Workspace
     And Ann has asked Ben for Feedback: "Running the planning meeting"
