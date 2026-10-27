@@ -58,14 +58,34 @@ describe('what a Workspace channel is told about Kudos', () => {
     );
   });
 
-  it('keeps a message with newlines on one quoted line', () => {
+  it('quotes every line of a message written over several', () => {
     const post = copy.kudosGiven({
       giverName: 'Ann',
       recipientNames: ['Ben'],
-      message: 'Shipped it.\n\nOver the weekend.  ',
+      message: 'Shipped it.\nOver the weekend.',
     });
 
-    expect(post).toContain('> Shipped it. Over the weekend.');
+    // Each line marked, so the link after the quote is not swallowed into it.
+    expect(post).toBe(
+      [
+        '**Ann** gave **Ben** kudos',
+        '> Shipped it.',
+        '> Over the weekend.',
+        'https://thrive.test/home',
+      ].join('\n'),
+    );
+  });
+
+  it('carries the message exactly as it was written, @mentions and all', () => {
+    const post = copy.kudosGiven({
+      giverName: 'Ann',
+      recipientNames: ['Ben'],
+      message: '@ben carried the launch #ownership',
+    });
+
+    // Verbatim, which is what brain ADR-0045 decided: a slug reaches the channel as the Giver
+    // typed it rather than as a name.
+    expect(post).toContain('> @ben carried the launch #ownership');
   });
 });
 

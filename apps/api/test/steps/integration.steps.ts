@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { Given, Then, When } from '@cucumber/cucumber';
 import { harness } from '../support/harness';
+import { slugOf } from '../support/journeys';
 import type { ApiResponse, ThriveWorld } from '../support/world';
 
 /** Where a Workspace's Connections live, for the Workspace the person belongs to. */
@@ -308,19 +309,26 @@ Then(
 
 Then(
   'the {string} channel is told that {person} gave {person} kudos saying {string}',
-  async (
+  async function (
+    this: ThriveWorld,
     channelName: string,
     giver: string,
     recipient: string,
     said: string,
-  ) => {
+  ) {
     const post = await announcementIn(channelName);
     assert.match(post, new RegExp(`${giver}.*gave.*${recipient}.*kudos`));
-    // A Kudos carries its words, unlike Feedback (brain ADR-0045). Quoted verbatim, so an
-    // @mention appears as the slug the Giver typed rather than as a display name.
+    // A Kudos carries its words, unlike Feedback (brain ADR-0045).
     assert.ok(
       post.includes(said),
       `The post in ${channelName} did not carry "${said}". It was: ${post}`,
+    );
+    // Quoted verbatim, so the @mention arrives as the slug the Giver typed rather than as a
+    // display name. The slug is the person's own, which the world knows.
+    const slug = await slugOf(this, recipient);
+    assert.ok(
+      post.includes(`@${slug}`),
+      `The post in ${channelName} did not carry the slug @${slug}. It was: ${post}`,
     );
   },
 );
@@ -338,15 +346,19 @@ Then(
 );
 
 Then(
-  'nothing more arrives in the {string} channel',
+  'no announcement arrives in the {string} channel',
   async (channelName: string) => {
-    // Nothing to wait for, so wait a moment and prove nothing came: an announcement that is
-    // never made cannot be distinguished from one that is merely slow except by waiting.
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    // Exactly one: the test message the connect itself posted, and nothing since.
+    // An announcement that is never made cannot be told from one that is merely slow except by
+    // waiting, so this waits. It asserts on the *shape* of what is there rather than on a count:
+    // every announcement says "gave", and the test message the connect posted does not, so this
+    // cannot pass by luck or be thrown off by a post left over from another scenario.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const announcements = postsIn(channelName).filter((text) =>
+      text.includes('gave'),
+    );
     assert.deepEqual(
-      postsIn(channelName).length,
-      1,
+      announcements,
+      [],
       `Something was announced in ${channelName} that should not have been.`,
     );
   },

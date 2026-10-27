@@ -37,8 +37,9 @@ export interface KudosGiven extends WorkspaceEvent {
  * room is then told, which is deliberately less than a direct message may say.
  *
  * **Nothing a person does may fail because a channel is unreachable.** Every method resolves rather
- * than rejecting; a refused post is logged once and forgotten (`ADR-0035` §8). There is no delivery
- * state and no retry — `BE_17` is `todo`, and the thing being announced has already committed.
+ * than rejecting; a refused post is logged once and forgotten (brain `ADR-0035` §8). There is no
+ * delivery state and no retry: there is no outbox, and the thing being announced has already
+ * committed.
  */
 export abstract class ChannelAnnouncerPort {
   /**

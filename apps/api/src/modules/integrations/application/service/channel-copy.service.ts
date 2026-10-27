@@ -1,5 +1,5 @@
 import { WebConfig } from '@app/config/configuration';
-import { WEB_PATHS } from '@app/shared/application/web-paths.constant';
+import { WEB_PATHS, webUrl } from '@app/shared/application/web-paths.constant';
 import { Injectable } from '@nestjs/common';
 
 /** What a post calls somebody who has not introduced themselves. The sentence has to hold. */
@@ -46,14 +46,13 @@ export class ChannelCopyService {
   }): string {
     return [
       `**${named(event.giverName)}** gave **${listOf(event.recipientNames)}** kudos`,
-      `> ${oneLine(event.message)}`,
+      quoted(event.message),
       this.linkTo(WEB_PATHS.home()),
     ].join('\n');
   }
 
-  /** The origin is the deployment's, read from configuration rather than guessed. */
   private linkTo(path: string): string {
-    return `${this.webConfig.origin}${path}`;
+    return webUrl(this.webConfig.origin, path);
   }
 }
 
@@ -63,22 +62,27 @@ function named(name: string | null): string {
 }
 
 /**
- * "Ann", "Ann and Ben", "Ann, Ben and Cat". Offered Feedback has several Receivers (ADR 0061) and
- * a Kudos is for everybody its message @mentions, so a post naming one person is the exception
- * rather than the rule.
+ * "Ann", "Ann and Ben", "Ann, Ben and Cat". Offered Feedback has several Receivers and a Kudos is
+ * for everybody its message @mentions, so a post naming one person is the exception rather than
+ * the rule.
  */
+/**
+ * The Kudos as it was written, as a quote block. Every line is marked rather than only the first:
+ * `>` quotes one line and `>>>` quotes everything after it, including the link, so a Kudos written
+ * over several lines needs the marker repeated. Nothing else is done to it — "carries its message"
+ * means verbatim (brain `ADR-0045`).
+ */
+function quoted(message: string): string {
+  return message
+    .split('\n')
+    .map((line) => `> ${line}`)
+    .join('\n');
+}
+
 function listOf(names: readonly (string | null)[]): string {
   const people = names.map(named);
   if (people.length <= 1) {
     return people[0] ?? SOMEBODY;
   }
   return `${people.slice(0, -1).join(', ')} and ${people[people.length - 1]}`;
-}
-
-/**
- * A Kudos is at most 280 characters, so there is nothing to trim — but it may carry newlines, and
- * a quote block that spans lines loses its own markers after the first.
- */
-function oneLine(message: string): string {
-  return message.replace(/\s+/g, ' ').trim();
 }

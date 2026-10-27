@@ -13,13 +13,11 @@ import type { PostableChannel } from '../types/connection.types';
 /**
  * Tells a Workspace's connected channels about something that happened in the open.
  *
- * **Nothing a person does may fail because a channel is unreachable** (`ADR-0035` §8). Every method
- * here resolves, always: a Workspace that has connected nothing returns before it reads anything
- * else and is not even logged, and a channel that refuses the post is logged once at `warn` and
- * skipped. Giving Feedback and giving Kudos never learn that any of this happened.
- *
- * **The cheap read comes first.** Most Workspaces have connected nothing, and for those this costs
- * one indexed read and stops — no names resolved, no copy composed, nothing asked of a chat tool.
+ * **Nothing a person does may fail because a channel is unreachable** (brain `ADR-0035` §8). Every
+ * method here resolves, always, and {@link ConnectionChannelAnnouncer.announce} is what makes that
+ * true rather than the caller's own `.catch`: a Workspace that has connected nothing returns in
+ * silence, and anything that goes wrong after that is one `warn` line. Giving Feedback and giving
+ * Kudos never learn that any of this happened.
  */
 @Injectable()
 export class ConnectionChannelAnnouncer extends ChannelAnnouncerPort {
@@ -35,61 +33,67 @@ export class ConnectionChannelAnnouncer extends ChannelAnnouncerPort {
   }
 
   async feedbackPublished(event: FeedbackPublished): Promise<void> {
-    const channels = await this.channelsOf(event.workspaceId);
-    if (channels.length === 0) {
-      return;
-    }
-    const nameOf = await this.namesOf([
-      event.giverAccountId,
-      ...event.receiverAccountIds,
-    ]);
-    await this.post(
-      channels,
-      this.channelCopyService.feedbackPublished({
+    await this.announce(event.workspaceId, async () => {
+      const nameOf = await this.namesOf([
+        event.giverAccountId,
+        ...event.receiverAccountIds,
+      ]);
+      return this.channelCopyService.feedbackPublished({
         giverName: nameOf(event.giverAccountId),
         receiverNames: event.receiverAccountIds.map(nameOf),
         feedbackId: event.feedbackId,
-      }),
-    );
+      });
+    });
   }
 
   async kudosGiven(event: KudosGiven): Promise<void> {
-    const channels = await this.channelsOf(event.workspaceId);
-    if (channels.length === 0) {
-      return;
-    }
-    const nameOf = await this.namesOf([
-      event.giverAccountId,
-      ...event.recipientAccountIds,
-    ]);
-    await this.post(
-      channels,
-      this.channelCopyService.kudosGiven({
+    await this.announce(event.workspaceId, async () => {
+      const nameOf = await this.namesOf([
+        event.giverAccountId,
+        ...event.recipientAccountIds,
+      ]);
+      return this.channelCopyService.kudosGiven({
         giverName: nameOf(event.giverAccountId),
         recipientNames: event.recipientAccountIds.map(nameOf),
         message: event.message,
-      }),
-    );
+      });
+    });
   }
 
   /**
-   * A Workspace that has connected nothing is the ordinary case, and a read that fails is not
-   * worth failing an announcement over — both answer "there is nowhere to post".
+   * The one place every announcement passes, and the one place that guarantees the port's
+   * promise: this resolves whatever the Workspace read, the name read, the copy or the chat tool
+   * does. The caller's `.catch` is a belt to these braces, not the braces.
+   *
+   * The cheap read comes first, so a Workspace that has connected nothing — the ordinary case —
+   * costs one indexed read and stops, with no names resolved and no copy composed.
    */
-  private async channelsOf(
+  private async announce(
     workspaceId: string,
-  ): Promise<readonly PostableChannel[]> {
+    compose: () => Promise<string>,
+  ): Promise<void> {
     try {
-      return await this.connectionQuery.postableChannelsOf(workspaceId);
+      const channels = await this.channelsOf(workspaceId);
+      if (channels.length === 0) {
+        return;
+      }
+      await this.post(channels, await compose());
     } catch {
-      this.logger.warn({ event: 'integration.channels_unreadable' });
-      return [];
+      // Most often a name could not be read. Nothing a person does may fail because somebody
+      // could not be told, and an announcement nobody is waiting for is not worth more than a
+      // line (brain `ADR-0035` §8).
+      this.logger.warn({ event: 'integration.announcement_failed' });
     }
   }
 
+  private channelsOf(workspaceId: string): Promise<readonly PostableChannel[]> {
+    return this.connectionQuery.postableChannelsOf(workspaceId);
+  }
+
   /**
-   * One read of Identity however many people a post names (`BE_06` R9). Somebody who has not
-   * introduced themselves has no name, which the copy words rather than leaving a gap.
+   * One read of Identity however many people a post names, so a post about five people costs
+   * the same as one about one. Somebody who has not introduced themselves has no name, which the
+   * copy words rather than leaving a gap.
    */
   private async namesOf(
     accountIds: readonly string[],
@@ -104,8 +108,9 @@ export class ConnectionChannelAnnouncer extends ChannelAnnouncerPort {
   }
 
   /**
-   * `allSettled`, not a loop with `await`: one channel refusing must not stop another. At this
-   * size that is one call, because a Workspace has at most one Connection per tool.
+   * `allSettled`, not a loop with `await`: one channel refusing must not stop another, and they
+   * do not wait for each other. At this size that is one call, because a Workspace has at most
+   * one Connection per tool.
    */
   private async post(
     channels: readonly PostableChannel[],
@@ -121,8 +126,8 @@ export class ConnectionChannelAnnouncer extends ChannelAnnouncerPort {
           })
           .catch(() => {
             // Most often the bot was removed from the channel by hand. Not an error and not
-            // stored — said once, and forgotten (`ADR-0035` §8). No identifier of anybody's
-            // goes in the line: `BE_20`, and it would be personal data.
+            // stored — said once, and forgotten (brain `ADR-0035` §8). No identifier of
+            // anybody's goes in the line: it would be personal data.
             this.logger.warn({
               event: 'integration.channel_post_skipped',
               provider: channel.provider,

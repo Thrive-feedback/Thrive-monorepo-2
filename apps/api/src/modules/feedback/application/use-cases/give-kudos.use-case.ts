@@ -21,8 +21,7 @@ export interface GiveKudosResult {
 }
 
 /**
- * The Giver gives Kudos to the teammates they @mention (brain `ADR-0043`). Nobody is named
- * beside the message: binding its tags is what finds the recipients, and binding only ever finds
+ * The Giver gives Kudos to the teammates they @mention. Nobody is named beside the message: binding its tags is what finds the recipients, and binding only ever finds
  * active Members of this Workspace, so a slug naming a stranger, or nobody, gives nobody Kudos.
  *
  * **The Workspace's channel is told, and nobody else is.** A Kudos posted to a connected channel
@@ -30,6 +29,9 @@ export interface GiveKudosResult {
  * reads every Kudos already — and praise without its words says only that praise happened
  * somewhere else (brain `ADR-0045`). The bell line and the direct message for a Kudos are still
  * not built (ADR 0060).
+ *
+ * What a Kudos *is* has no brain ADR: ADR 0060 cites `ADR-0043` for it and that record was never
+ * written. The glossary's Kudos row is the nearest thing until somebody writes it.
  */
 @Injectable()
 export class GiveKudosUseCase {

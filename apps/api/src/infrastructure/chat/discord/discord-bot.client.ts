@@ -187,11 +187,28 @@ export class DiscordBotClient {
     return channelId;
   }
 
+  /**
+   * Every message Thrive sends, into a server channel or a one-to-one conversation.
+   *
+   * **Nothing in `text` may notify anybody.** A Kudos carries what a Member wrote, and both post
+   * shapes carry Display names, which are free text — so `@everyone`, `@here`, a role or another
+   * person can all arrive inside a message Thrive composes without anybody intending it. Discord
+   * decides what to notify from the message body unless it is told otherwise, and it is told here:
+   * mentions render as text and ping nobody.
+   *
+   * Thrive asks a server for `VIEW_CHANNEL` and `SEND_MESSAGES` only, which already stops
+   * `@everyone` resolving — but that number is what the install *requests*, not a ceiling a server
+   * keeps, and a person mention needs no permission at all. The audience of a channel is the thing
+   * `ADR-0035` is careful about; a notification to that audience is not Thrive's to hand out.
+   */
   async postToChannel(channelId: string, text: string): Promise<void> {
     await this.request(`channels/${asSnowflake(channelId)}/messages`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: text }),
+      body: JSON.stringify({
+        content: text,
+        allowed_mentions: { parse: [] },
+      }),
     });
   }
 

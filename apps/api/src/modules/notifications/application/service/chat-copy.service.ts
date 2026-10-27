@@ -1,5 +1,5 @@
 import { WebConfig } from '@app/config/configuration';
-import { WEB_PATHS } from '@app/shared/application/web-paths.constant';
+import { WEB_PATHS, webUrl } from '@app/shared/application/web-paths.constant';
 import { Injectable } from '@nestjs/common';
 
 /**
@@ -70,9 +70,8 @@ export class ChatCopyService {
     );
   }
 
-  /** The origin is the deployment's, read from configuration rather than guessed. */
   private linkTo(path: string): string {
-    return `${this.webConfig.origin}${path}`;
+    return webUrl(this.webConfig.origin, path);
   }
 }
 

@@ -100,7 +100,29 @@ Feature: Connecting a chat tool
   Scenario: Feedback for the Receiver alone never reaches the channel
     Given Ann has connected Discord and chosen the "general" channel
     When Ann gives Ben Feedback: "Running the planning meeting", shared with nobody else
-    Then nothing more arrives in the "general" channel
+    Then no announcement arrives in the "general" channel
+
+  @api
+  Scenario: Feedback only Selected people may read never reaches the channel
+    Given Cara is a Member of Ann's Workspace
+    And Ann has connected Discord and chosen the "general" channel
+    When Ann gives Ben Feedback: "Running the planning meeting", shared with Cara
+    Then no announcement arrives in the "general" channel
+
+  @api
+  Scenario: A Workspace that has connected nothing is announced to nowhere
+    When Ann gives Ben Feedback: "Running the planning meeting", shared with everyone in the Workspace
+    And Ann signs in and looks at the feed of Ann's Workspace
+    Then Ann reads "Running the planning meeting" from Ann to Ben on the feed
+    And Ann's Workspace has connected nothing
+
+  @api
+  Scenario: A channel the bot can no longer post in costs the Feedback nothing
+    Given Ann has connected Discord and chosen the "general" channel
+    And Discord will not let Thrive post
+    When Ann gives Ben Feedback: "Running the planning meeting", shared with everyone in the Workspace
+    And Ann signs in and looks at the feed of Ann's Workspace
+    Then Ann reads "Running the planning meeting" from Ann to Ben on the feed
 
   @api
   Scenario: A Kudos reaches the channel, carrying what it said
