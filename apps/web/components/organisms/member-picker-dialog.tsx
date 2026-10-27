@@ -14,8 +14,10 @@ import {
   DialogTitle,
 } from '@/components/atoms/dialog';
 import { Input } from '@/components/atoms/input';
+import { RadioGroup, RadioGroupItem } from '@/components/atoms/radio-group';
 import { Text } from '@/components/atoms/text';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
+import { cn } from '@/lib/cn.util';
 import {
   matchesSearch,
   searchWord,
@@ -44,6 +46,8 @@ export type MemberPickerDialogProps = {
   /** Who reads it whatever is chosen, or what the people chosen will do. */
   description: React.ReactNode;
   open: boolean;
+  /** Exactly one person is chosen, such as who Feedback is for: picking someone replaces them. */
+  single?: boolean;
   onOpenChange: (open: boolean) => void;
   /** Done was pressed: the people now chosen, in the order they were ticked. */
   onDone: (accountIds: readonly string[]) => void;
@@ -52,12 +56,14 @@ export type MemberPickerDialogProps = {
 };
 
 /**
- * Choosing several teammates in a dialog: who to ask, who a letter is for, who else can read it.
- * Ticks are a draft until Done, so Cancel leaves the choice as it was.
+ * Choosing teammates in a dialog: who to ask, who a letter is for, who else can read it — or,
+ * with `single`, the one person Feedback is for. Ticks are a draft until Done, so Cancel leaves
+ * the choice as it was.
  *
  * The search filters by name, email or handle, and `@handle` ticks people straight from the
  * keyboard: "@mali @krit " ticks both once each is finished by a space, and a pasted line ticks
  * everyone it names. A handle that names nobody stays in the field, and the dialog says so.
+ * Choosing one person, the rows are radios and the last handle typed is the one chosen.
  */
 export function MemberPickerDialog({
   open,
@@ -107,7 +113,7 @@ export function MemberPickerDialog({
 
 type MemberPickerBodyProps = Pick<
   MemberPickerDialogProps,
-  'teammates' | 'value' | 'title' | 'description' | 'onDone'
+  'teammates' | 'value' | 'title' | 'description' | 'single' | 'onDone'
 >;
 
 function MemberPickerBody({
@@ -115,6 +121,7 @@ function MemberPickerBody({
   value,
   title,
   description,
+  single = false,
   onDone,
 }: MemberPickerBodyProps) {
   const id = useId();
@@ -127,6 +134,13 @@ function MemberPickerBody({
   const { unknown } = takeMentions(query, teammates);
 
   function choose(accountIds: readonly string[]) {
+    const last = accountIds.at(-1);
+    if (single) {
+      if (last !== undefined) {
+        setDraft([last]);
+      }
+      return;
+    }
     setDraft((current) => [
       ...current,
       ...accountIds.filter((accountId) => !current.includes(accountId)),
@@ -212,72 +226,137 @@ function MemberPickerBody({
             Nobody matches “{word}”.
           </Text>
         ) : (
-          <ul
-            aria-label="Teammates"
-            className="max-h-80 divide-y divide-border-subtle overflow-y-auto rounded-control border border-border-muted"
+          <TeammateList
+            single={single}
+            chosen={draft}
+            onChosenChange={(accountId) => setDraft([accountId])}
           >
             {shown.map((teammate) => {
               const rowId = `${id}-${teammate.accountId}`;
+              const control = {
+                id: rowId,
+                'aria-labelledby': `${rowId}-name`,
+                'aria-describedby':
+                  teammate.email !== teammate.name
+                    ? `${rowId}-email`
+                    : undefined,
+              };
               return (
-                <li key={teammate.accountId}>
-                  <label
-                    htmlFor={rowId}
-                    className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-action-neutral-surface-hover"
-                  >
-                    <PhotoAvatar
-                      name={teammate.name}
-                      photoUrl={teammate.photoUrl}
-                      size="lg"
-                    />
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span
-                        id={`${rowId}-name`}
-                        className="truncate text-body-1 text-fg-primary"
-                      >
-                        {teammate.name}
-                      </span>
-                      {teammate.email !== teammate.name && (
-                        <span
-                          id={`${rowId}-email`}
-                          className="truncate text-body-3 text-fg-secondary"
-                        >
-                          {teammate.email}
-                        </span>
-                      )}
-                    </span>
+                <TeammateRow
+                  key={teammate.accountId}
+                  single={single}
+                  rowId={rowId}
+                  teammate={teammate}
+                >
+                  {single ? (
+                    <RadioGroupItem {...control} value={teammate.accountId} />
+                  ) : (
                     <Checkbox
-                      id={rowId}
-                      aria-labelledby={`${rowId}-name`}
-                      aria-describedby={
-                        teammate.email !== teammate.name
-                          ? `${rowId}-email`
-                          : undefined
-                      }
+                      {...control}
                       checked={chosen.has(teammate.accountId)}
                       onCheckedChange={(checked) =>
                         toggle(teammate.accountId, checked === true)
                       }
                     />
-                  </label>
-                </li>
+                  )}
+                </TeammateRow>
               );
             })}
-          </ul>
+          </TeammateList>
         )}
       </div>
 
-      <Text variant="body-3" tone="muted" aria-live="polite">
-        {draft.length} chosen
-      </Text>
+      {!single && (
+        <Text variant="body-3" tone="muted" aria-live="polite">
+          {draft.length} chosen
+        </Text>
+      )}
 
       <DialogFooter>
         <DialogClose asChild>
           <Button>Cancel</Button>
         </DialogClose>
         <Button variant="primary" onClick={() => onDone(draft)}>
-          {draft.length > 0 ? `Done (${draft.length})` : 'Done'}
+          {!single && draft.length > 0 ? `Done (${draft.length})` : 'Done'}
         </Button>
       </DialogFooter>
     </>
+  );
+}
+
+const LIST_CLASS =
+  'max-h-80 divide-y divide-border-subtle overflow-y-auto rounded-control border border-border-muted';
+
+type TeammateListProps = {
+  chosen: readonly string[];
+  single: boolean;
+  onChosenChange: (accountId: string) => void;
+  children: React.ReactNode;
+};
+
+/** A list of checkboxes, or one radio group when exactly one person is chosen. */
+function TeammateList({
+  chosen,
+  single,
+  onChosenChange,
+  children,
+}: TeammateListProps) {
+  return single ? (
+    <RadioGroup
+      aria-label="Teammates"
+      value={chosen[0] ?? ''}
+      onValueChange={onChosenChange}
+      className={cn('gap-0', LIST_CLASS)}
+    >
+      {children}
+    </RadioGroup>
+  ) : (
+    <ul aria-label="Teammates" className={LIST_CLASS}>
+      {children}
+    </ul>
+  );
+}
+
+type TeammateRowProps = {
+  rowId: string;
+  teammate: Teammate;
+  single: boolean;
+  /** The checkbox or radio, which the row's name labels. */
+  children: React.ReactNode;
+};
+
+/** One teammate: their face, name and email, all one label for the control at the end. */
+function TeammateRow({ rowId, teammate, single, children }: TeammateRowProps) {
+  const Row = single ? 'div' : 'li';
+  return (
+    <Row>
+      <label
+        htmlFor={rowId}
+        className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-action-neutral-surface-hover"
+      >
+        <PhotoAvatar
+          name={teammate.name}
+          photoUrl={teammate.photoUrl}
+          size="lg"
+        />
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span
+            id={`${rowId}-name`}
+            className="truncate text-body-1 text-fg-primary"
+          >
+            {teammate.name}
+          </span>
+          {teammate.email !== teammate.name && (
+            <span
+              id={`${rowId}-email`}
+              className="truncate text-body-3 text-fg-secondary"
+            >
+              {teammate.email}
+            </span>
+          )}
+        </span>
+        {children}
+      </label>
+    </Row>
   );
 }

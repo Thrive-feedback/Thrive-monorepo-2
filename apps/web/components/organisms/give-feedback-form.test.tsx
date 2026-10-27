@@ -38,8 +38,11 @@ function sentFormData() {
 }
 
 async function pickReceiver(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole('combobox', { name: /Who is it for\?/ }));
-  await user.click(screen.getByRole('option', { name: 'Ben Carter' }));
+  await user.click(
+    screen.getByRole('button', { name: /^Choose who it is for/ }),
+  );
+  await user.click(screen.getByRole('radio', { name: 'Ben Carter' }));
+  await user.click(screen.getByRole('button', { name: 'Done' }));
 }
 
 async function fillIn(user: ReturnType<typeof userEvent.setup>) {

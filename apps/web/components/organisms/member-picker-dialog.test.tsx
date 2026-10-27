@@ -36,11 +36,13 @@ const TEAMMATES: readonly Teammate[] = [
 function Harness({
   teammates = TEAMMATES,
   initial = [],
+  single,
   onDone = () => {},
   onCancel,
 }: {
   teammates?: readonly Teammate[];
   initial?: readonly string[];
+  single?: boolean;
   onDone?: (accountIds: readonly string[]) => void;
   onCancel?: () => void;
 }) {
@@ -57,6 +59,7 @@ function Harness({
         title="Choose who to ask"
         description="They each answer in their own words."
         open={open}
+        single={single}
         onOpenChange={setOpen}
         onDone={(accountIds) => {
           setValue(accountIds);
@@ -195,6 +198,29 @@ describe('MemberPickerDialog', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(onCancel).toHaveBeenCalledTimes(2);
     expect(onDone).not.toHaveBeenCalled();
+  });
+
+  it('chooses one person when only one can be, the last handle typed among them', async () => {
+    const onDone = vi.fn();
+    render(<Harness single initial={['krit']} onDone={onDone} />);
+
+    expect(screen.getByRole('radio', { name: 'Krit Chan' })).toBeChecked();
+    expect(screen.queryByText('1 chosen')).not.toBeInTheDocument();
+
+    await userEvent.type(search(), '@mali @chai.s ');
+
+    expect(
+      screen.getByRole('radio', { name: 'chai.s@acme.test' }),
+    ).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Krit Chan' })).not.toBeChecked();
+    expect(
+      screen.getByRole('radio', { name: 'Mali Sombat' }),
+    ).not.toBeChecked();
+
+    await userEvent.click(screen.getByText('Mali Sombat'));
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+
+    expect(onDone).toHaveBeenCalledWith(['mali']);
   });
 
   it('says so when nobody else is in the Workspace', () => {
