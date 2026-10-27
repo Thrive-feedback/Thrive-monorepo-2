@@ -3,12 +3,16 @@ import { ChatModule } from '@app/infrastructure/chat/chat.module';
 import { DiscordBotClient } from '@app/infrastructure/chat/discord/discord-bot.client';
 import { SignedHandoff } from '@app/infrastructure/chat/signed-handoff';
 import { DatabaseModule } from '@app/infrastructure/database/database.module';
+import { IdentityModule } from '@app/modules/identity';
 import { WorkspaceModule } from '@app/modules/workspace';
 import { Clock } from '@app/shared/application/clock.port';
 import { Module } from '@nestjs/common';
+import { ConnectionChannelAnnouncer } from './application/adapter/connection-channel-announcer.adapter';
+import { ChannelAnnouncerPort } from './application/port/channel-announcer.port';
 import { ChatInstaller } from './application/port/chat-installer.port';
 import { InstallHandoff } from './application/port/install-handoff.port';
 import { ConnectionQuery } from './application/query-port/connection.query-port';
+import { ChannelCopyService } from './application/service/channel-copy.service';
 import { ChatInstallerRegistry } from './application/service/chat-installer-registry.service';
 import { BeginInstallUseCase } from './application/use-cases/begin-install.use-case';
 import { ChooseChannelUseCase } from './application/use-cases/choose-channel.use-case';
@@ -27,13 +31,16 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
  * Integrations owns a Workspace's Connection to one chat tool and the channel it posts in. It
  * depends on Workspace, for whether the caller is a Member of the Workspace being connected and
  * whether they are an Admin there, and on the application's chat clients, which Notifications
- * also uses to message one person — so neither module reaches into the other.
+ * also uses to message one person — so neither module reaches into the other. It reads Identity's
+ * `AccountSummaryPort` for the names a channel post puts in a sentence.
  *
- * Nothing depends on Integrations: a Workspace exists whether or not it has connected anything,
- * which is why the barrel publishes only this module.
+ * Feedback depends on it, through `ChannelAnnouncerPort` and nothing else: what a shared channel
+ * is told is Integrations' to own, where what one person is told is Notifications' (brain
+ * `ADR-0035` §9, ADR 0062). A Workspace still exists whether or not it has connected anything, and
+ * a Workspace that has connected nothing is announced to in silence.
  */
 @Module({
-  imports: [ChatModule, DatabaseModule, WorkspaceModule],
+  imports: [ChatModule, DatabaseModule, IdentityModule, WorkspaceModule],
   controllers: [IntegrationController],
   providers: [
     {
@@ -68,6 +75,10 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
         ),
       inject: [ChatConfig, Clock],
     },
+    // What Feedback calls when something happens in the open. Integrations owns it because it
+    // owns the Connection and what the channel is told (brain `ADR-0035` §9, ADR 0062).
+    { provide: ChannelAnnouncerPort, useClass: ConnectionChannelAnnouncer },
+    ChannelCopyService,
     { provide: ConnectionRepository, useClass: PrismaConnectionRepository },
     { provide: ConnectionQuery, useClass: PrismaConnectionQuery },
     BeginInstallUseCase,
@@ -77,5 +88,6 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ListConnectionsUseCase,
     WorkspaceMemberGuard,
   ],
+  exports: [ChannelAnnouncerPort],
 })
 export class IntegrationsModule {}

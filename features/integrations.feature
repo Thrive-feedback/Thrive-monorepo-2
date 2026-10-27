@@ -87,3 +87,24 @@ Feature: Connecting a chat tool
     When Ann connects Discord and chooses the "standups" channel
     Then Ann is told Thrive could not post there
     And Ann's Workspace has connected nothing
+
+  @api
+  Scenario: Feedback shown to the whole Workspace reaches the channel
+    Given Ben has introduced themselves
+    And Ann has connected Discord and chosen the "general" channel
+    When Ann gives Ben Feedback: "Running the planning meeting", shared with everyone in the Workspace
+    Then the "general" channel is told that Ann gave Ben feedback
+    And the "general" channel is told nothing of what the Feedback said
+
+  @api
+  Scenario: Feedback for the Receiver alone never reaches the channel
+    Given Ann has connected Discord and chosen the "general" channel
+    When Ann gives Ben Feedback: "Running the planning meeting", shared with nobody else
+    Then nothing more arrives in the "general" channel
+
+  @api
+  Scenario: A Kudos reaches the channel, carrying what it said
+    Given Ben has introduced themselves
+    And Ann has connected Discord and chosen the "general" channel
+    When Ann gives Kudos: "@Ben carried the launch"
+    Then the "general" channel is told that Ann gave Ben kudos saying "carried the launch"

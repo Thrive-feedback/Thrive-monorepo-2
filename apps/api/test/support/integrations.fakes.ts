@@ -1,4 +1,9 @@
 import {
+  ChannelAnnouncerPort,
+  type FeedbackPublished,
+  type KudosGiven,
+} from '@app/modules/integrations';
+import {
   type AuthorizedSpace,
   ChatInstaller,
 } from '@app/modules/integrations/application/port/chat-installer.port';
@@ -11,6 +16,7 @@ import { ConnectionQuery } from '@app/modules/integrations/application/query-por
 import type {
   ConnectedSpace,
   OfferedChannel,
+  PostableChannel,
 } from '@app/modules/integrations/application/types/connection.types';
 import {
   ConnectionRepository,
@@ -200,5 +206,49 @@ export class FakeConnectionQuery extends ConnectionQuery {
 
   async connectionsOfWorkspace(): Promise<never> {
     throw new Error('Not the read under test.');
+  }
+
+  private channels: readonly PostableChannel[] = [];
+
+  /** A Workspace that has connected a channel. With none, announcing is silent. */
+  postingTo(...channels: readonly PostableChannel[]): this {
+    this.channels = channels;
+    return this;
+  }
+
+  async postableChannelsOf(): Promise<readonly PostableChannel[]> {
+    return this.channels;
+  }
+}
+
+/**
+ * What Feedback calls when something happens in the open. It records what it was told, and can be
+ * made to reject — the promise that matters is that nothing a person does fails when it does.
+ */
+export class FakeChannelAnnouncer extends ChannelAnnouncerPort {
+  readonly feedbackPublished_: FeedbackPublished[] = [];
+  readonly kudosGiven_: KudosGiven[] = [];
+  private rejecting = false;
+
+  /** The port promises never to reject. This is for proving the caller survives it anyway. */
+  rejectingEverything(): this {
+    this.rejecting = true;
+    return this;
+  }
+
+  async feedbackPublished(event: FeedbackPublished): Promise<void> {
+    this.feedbackPublished_.push(event);
+    this.refuseIfAsked();
+  }
+
+  async kudosGiven(event: KudosGiven): Promise<void> {
+    this.kudosGiven_.push(event);
+    this.refuseIfAsked();
+  }
+
+  private refuseIfAsked(): void {
+    if (this.rejecting) {
+      throw new Error('No channel could be told.');
+    }
   }
 }

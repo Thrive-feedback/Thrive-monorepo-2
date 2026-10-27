@@ -4,6 +4,7 @@ import {
   FakeFeedbackRequestRepository,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
+import { FakeChannelAnnouncer } from '@test/support/integrations.fakes';
 import { FakePersonNotifier } from '@test/support/notifications.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
@@ -29,7 +30,7 @@ const BEN = 'account-ben';
 const CARA = 'account-cara';
 const WRITTEN = 'You open strongly and lose the room at the detail.';
 
-async function setUp() {
+async function setUp(visibility: Visibility = Visibility.onlyMe()) {
   const feedbackRequestRepository = new FakeFeedbackRequestRepository();
   await feedbackRequestRepository.save(
     FeedbackRequest.send({
@@ -38,20 +39,28 @@ async function setUp() {
       requesterAccountId: ANN,
       message: RequestMessage.of('my presentation skills'),
       tags: BoundTags.none(),
-      visibility: Visibility.onlyMe(),
+      visibility,
       givers: [{ askId: ASK_ID, giverAccountId: BEN }],
     }),
   );
   const unitOfWork = new FakeUnitOfWork();
   const personNotifier = new FakePersonNotifier();
+  const channelAnnouncer = new FakeChannelAnnouncer();
   const useCase = new AnswerFeedbackAskUseCase(
     feedbackRequestRepository,
     aTagsService(WORKSPACE_ID),
     new FakeIdGenerator(FEEDBACK_ID, SECOND_FEEDBACK_ID),
     unitOfWork,
     personNotifier,
+    channelAnnouncer,
   );
-  return { feedbackRequestRepository, unitOfWork, useCase, personNotifier };
+  return {
+    feedbackRequestRepository,
+    unitOfWork,
+    useCase,
+    personNotifier,
+    channelAnnouncer,
+  };
 }
 
 const answering = {
@@ -199,6 +208,58 @@ describe('telling the Requester their request was answered', () => {
     const { useCase, personNotifier, feedbackRequestRepository } =
       await setUp();
     personNotifier.rejectingEverything();
+
+    const answered = await useCase.execute(answering);
+
+    expect(answered.feedbackId).toBe(FEEDBACK_ID);
+    expect(feedbackRequestRepository.answers).toHaveLength(1);
+  });
+});
+
+describe('telling the Workspace channel about an answer', () => {
+  /** A request the Requester set to Everyone, so what it collects is public too. */
+  function everyone(): Visibility {
+    return Visibility.of({ value: 'EVERYONE', selectedAccountIds: [] });
+  }
+
+  it('announces an answer to a request set to Everyone', async () => {
+    const { useCase, channelAnnouncer } = await setUp(everyone());
+
+    await useCase.execute(answering);
+
+    // The Workspace feed shows public Feedback whatever its origin, so the channel must agree
+    // with it rather than showing Offered Feedback only (ADR 0062).
+    expect(channelAnnouncer.feedbackPublished_).toHaveLength(1);
+    expect(channelAnnouncer.feedbackPublished_[0]).toEqual({
+      workspaceId: WORKSPACE_ID,
+      giverAccountId: BEN,
+      receiverAccountIds: [ANN],
+      feedbackId: FEEDBACK_ID,
+    });
+  });
+
+  it('announces nothing when the request was for the Requester alone', async () => {
+    const { useCase, channelAnnouncer } = await setUp();
+
+    await useCase.execute(answering);
+
+    expect(channelAnnouncer.feedbackPublished_).toHaveLength(0);
+  });
+
+  it('carries none of what was written (brain ADR-0040)', async () => {
+    const { useCase, channelAnnouncer } = await setUp(everyone());
+
+    await useCase.execute(answering);
+
+    expect(
+      JSON.stringify(channelAnnouncer.feedbackPublished_[0]),
+    ).not.toContain('lose the room');
+  });
+
+  it('succeeds, and still stores the answer, when no channel can be told', async () => {
+    const { useCase, channelAnnouncer, feedbackRequestRepository } =
+      await setUp(everyone());
+    channelAnnouncer.rejectingEverything();
 
     const answered = await useCase.execute(answering);
 

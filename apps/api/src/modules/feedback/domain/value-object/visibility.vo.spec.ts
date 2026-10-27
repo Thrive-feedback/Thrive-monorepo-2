@@ -5,7 +5,7 @@ import {
   PersonAlreadySelectedError,
   VisibilityInvalidError,
 } from '../feedback-request.errors';
-import { Visibility } from './visibility.vo';
+import { isEveryone, Visibility } from './visibility.vo';
 
 const GIVER = 'account-ben';
 const RECEIVER = 'account-ann';
@@ -99,5 +99,26 @@ describe('who may read a piece of Feedback', () => {
     });
 
     expect(everyone.letsRead(reading('account-dan'))).toBe(true);
+  });
+});
+
+describe('whether every Member may read it', () => {
+  it('is true only of Everyone', () => {
+    expect(
+      Visibility.of({ value: 'EVERYONE', selectedAccountIds: [] }).isEveryone(),
+    ).toBe(true);
+    expect(Visibility.onlyMe().isEveryone()).toBe(false);
+    expect(
+      Visibility.of({
+        value: 'SELECTED_PEOPLE',
+        selectedAccountIds: ['account-ben'],
+      }).isEveryone(),
+    ).toBe(false);
+  });
+
+  it('answers the same of a stored value, for a caller holding a snapshot', () => {
+    expect(isEveryone('EVERYONE')).toBe(true);
+    expect(isEveryone('ONLY_ME')).toBe(false);
+    expect(isEveryone('SELECTED_PEOPLE')).toBe(false);
   });
 });

@@ -30,6 +30,16 @@ export interface ConnectedSpace {
   readonly externalWorkspaceId: string;
 }
 
+/**
+ * Where to post one announcement. A list because a Workspace may connect a second chat tool, not
+ * because this one is long — there is at most one Connection per tool, so today at most one
+ * altogether.
+ */
+export interface PostableChannel {
+  readonly provider: IntegrationProviderValue;
+  readonly externalChannelId: string;
+}
+
 /** One channel the chat tool offered, for the Admin to choose between. */
 export interface OfferedChannel {
   readonly id: string;

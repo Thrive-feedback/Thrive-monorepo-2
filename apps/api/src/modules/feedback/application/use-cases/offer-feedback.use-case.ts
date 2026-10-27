@@ -1,3 +1,4 @@
+import { ChannelAnnouncerPort } from '@app/modules/integrations';
 import { PersonNotifierPort } from '@app/modules/notifications';
 import { WorkspaceMembershipPort } from '@app/modules/workspace';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
@@ -53,6 +54,7 @@ export class OfferFeedbackUseCase {
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
     private readonly personNotifierPort: PersonNotifierPort,
+    private readonly channelAnnouncerPort: ChannelAnnouncerPort,
   ) {}
 
   async execute(input: OfferFeedbackInput): Promise<OfferFeedbackResult> {
@@ -121,6 +123,27 @@ export class OfferFeedbackUseCase {
           error: error instanceof Error ? error.message : 'unknown',
         });
       });
+
+    if (visibility.isEveryone()) {
+      // Only Feedback the Giver put in front of the whole Workspace, and the same way: after the
+      // commit, never awaited. The channel is told who gave Feedback to whom and nothing of what
+      // it said (brain `ADR-0040`); which tool, which channel, and whether there is one at all
+      // are Integrations' (ADR 0062).
+      void this.channelAnnouncerPort
+        .feedbackPublished({
+          workspaceId: input.workspaceId,
+          giverAccountId: input.giverAccountId,
+          receiverAccountIds: written.receiverAccountIds,
+          feedbackId: written.id,
+        })
+        .catch((error: unknown) => {
+          this.logger.warn({
+            event: 'feedback.announce_failed',
+            announcement: 'feedbackPublished',
+            error: error instanceof Error ? error.message : 'unknown',
+          });
+        });
+    }
 
     return { id: written.id };
   }
