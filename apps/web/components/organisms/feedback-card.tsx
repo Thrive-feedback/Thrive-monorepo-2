@@ -1,10 +1,12 @@
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
+import { PeopleStack } from '@/components/molecules/people-stack';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { calendarDay } from '@/lib/calendar-day.util';
 import { type FeedItem, REACTIONS } from '@/lib/feedback/feed-item.type';
 import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
+import { PersonNameList } from './person-name-list';
 import { ReactionBar } from './reaction-bar';
 
 const ORIGIN_NAMES: Readonly<Record<FeedItem['origin'], string>> = {
@@ -25,6 +27,10 @@ const RECEIVER_WITH_NO_NAME = 'a teammate';
  * Member who has not introduced themselves has no name to show — whether it was asked for, the
  * day, the Feedback message, and the Reactions. The message is the card's main text: there is no
  * headline above it (`ADR-0039` in the brain).
+ *
+ * Feedback can be for several people at once (`ADR-0044` in the brain), so it names every one of
+ * them and ends the header in their faces as one stack — the Giver's face leads, the Receivers'
+ * close — the same stack the composer shows while choosing them.
  */
 export function FeedbackCard({ item }: FeedbackCardProps) {
   return (
@@ -42,9 +48,9 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
               inactive={item.giverInactive}
             />
             <span className="text-fg-secondary"> to </span>
-            <PersonName
-              name={item.receiverName ?? RECEIVER_WITH_NO_NAME}
-              inactive={item.receiverInactive}
+            <PersonNameList
+              people={item.receivers}
+              unnamed={RECEIVER_WITH_NO_NAME}
             />
           </Text>
           <Text as="p" variant="body-3" tone="muted">
@@ -52,6 +58,7 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
             <time dateTime={item.givenAt}>{calendarDay(item.givenAt)}</time>
           </Text>
         </div>
+        <PeopleStack people={item.receivers} />
       </header>
       <Text as="p" variant="body-1" className="whitespace-pre-line break-words">
         <FeedbackText text={item.message} tags={item.messageTags} />
@@ -71,6 +78,7 @@ export function FeedbackCardSkeleton() {
           <Skeleton className="w-1/2 text-subtitle-4" />
           <Skeleton className="w-1/3 text-body-3" />
         </div>
+        <Skeleton shape="circle" className="size-8 shrink-0" />
       </div>
       <div className="flex flex-col">
         <Skeleton className="text-body-1" />

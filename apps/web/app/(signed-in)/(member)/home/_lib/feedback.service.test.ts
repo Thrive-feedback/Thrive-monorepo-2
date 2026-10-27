@@ -25,6 +25,12 @@ const ENDPOINT = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/feedback/${
 
 const NO_TAGS = { workspaceGoals: [], mentions: [] };
 
+const RECEIVER_AS_STORED = {
+  accountId: '0199a0f0-0000-7000-8000-00000000000b',
+  name: 'Ben Ooi' as string | null,
+  status: 'ACTIVE',
+};
+
 const FEEDBACK_AS_STORED = {
   id: FEEDBACK_ID,
   origin: 'OFFERED',
@@ -34,11 +40,8 @@ const FEEDBACK_AS_STORED = {
     name: 'Ann Lee' as string | null,
     status: 'ACTIVE',
   },
-  receiver: {
-    accountId: '0199a0f0-0000-7000-8000-00000000000b',
-    name: 'Ben Ooi' as string | null,
-    status: 'ACTIVE',
-  },
+  receiver: RECEIVER_AS_STORED,
+  receivers: [RECEIVER_AS_STORED],
   message: 'You ran the planning meeting well',
   tags: NO_TAGS,
   createdAt: '2026-10-13T03:00:00.000Z',
@@ -71,8 +74,7 @@ describe('reading one piece of Feedback', () => {
       id: FEEDBACK_ID,
       giverName: 'Ann Lee',
       giverInactive: false,
-      receiverName: 'Ben Ooi',
-      receiverInactive: false,
+      receivers: [{ name: 'Ben Ooi', inactive: false }],
       origin: 'REQUESTED',
       message: 'You ran the planning meeting well',
       messageTags: NO_TAGS,
@@ -84,25 +86,25 @@ describe('reading one piece of Feedback', () => {
   it('leaves either side unnamed while they have not introduced themselves', async () => {
     apiHolds({
       giver: { ...FEEDBACK_AS_STORED.giver, name: null },
-      receiver: { ...FEEDBACK_AS_STORED.receiver, name: null },
+      receivers: [{ ...RECEIVER_AS_STORED, name: null }],
     });
 
     const feedback = await readFeedback(MEMBERSHIP, FEEDBACK_ID);
 
     expect(feedback?.giverName).toBeNull();
-    expect(feedback?.receiverName).toBeNull();
+    expect(feedback?.receivers[0]?.name).toBeNull();
   });
 
   it('marks a Deactivated Member as inactive, keeping what they wrote', async () => {
     apiHolds({
       giver: { ...FEEDBACK_AS_STORED.giver, status: 'DEACTIVATED' },
-      receiver: { ...FEEDBACK_AS_STORED.receiver, status: 'DEACTIVATED' },
+      receivers: [{ ...RECEIVER_AS_STORED, status: 'DEACTIVATED' }],
     });
 
     const feedback = await readFeedback(MEMBERSHIP, FEEDBACK_ID);
 
     expect(feedback?.giverInactive).toBe(true);
-    expect(feedback?.receiverInactive).toBe(true);
+    expect(feedback?.receivers[0]?.inactive).toBe(true);
     expect(feedback?.message).toBe('You ran the planning meeting well');
   });
 

@@ -4,7 +4,7 @@
  */
 export type GiveFeedbackState = {
   readonly fieldErrors?: {
-    readonly receiverAccountId?: string;
+    readonly receiverAccountIds?: string;
     readonly message?: string;
     readonly selectedAccountIds?: string;
   };

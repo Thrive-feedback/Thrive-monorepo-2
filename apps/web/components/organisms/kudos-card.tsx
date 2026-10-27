@@ -1,10 +1,10 @@
 import { SparklesIcon } from 'lucide-react';
-import { Fragment } from 'react';
 import { Text } from '@/components/atoms/text';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { KudosItem } from '@/lib/feedback/kudos-item.type';
 import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
+import { PersonNameList } from './person-name-list';
 
 export type KudosCardProps = {
   item: KudosItem;
@@ -13,12 +13,6 @@ export type KudosCardProps = {
 /** What a card calls somebody who has not introduced themselves yet. */
 const GIVER_WITH_NO_NAME = 'A teammate';
 const RECIPIENT_WITH_NO_NAME = 'a teammate';
-
-/** Between the names it is for: commas, and "and" before the last. */
-function separatorBefore(index: number, count: number) {
-  if (index === 0) return '';
-  return index === count - 1 ? ' and ' : ', ';
-}
 
 /**
  * One Kudos on a feed: who gave it to whom — one person or many — marked as Kudos, the day, and
@@ -42,19 +36,10 @@ export function KudosCard({ item }: KudosCardProps) {
               inactive={item.giver.inactive}
             />
             <span className="text-fg-secondary"> to </span>
-            {item.recipients.map((recipient, index) => (
-              // A recipient's place in the list is fixed once the Kudos is sent.
-              // biome-ignore lint/suspicious/noArrayIndexKey: see above
-              <Fragment key={index}>
-                <span className="text-fg-secondary">
-                  {separatorBefore(index, item.recipients.length)}
-                </span>
-                <PersonName
-                  name={recipient.name ?? RECIPIENT_WITH_NO_NAME}
-                  inactive={recipient.inactive}
-                />
-              </Fragment>
-            ))}
+            <PersonNameList
+              people={item.recipients}
+              unnamed={RECIPIENT_WITH_NO_NAME}
+            />
           </Text>
           <Text as="p" variant="body-3" tone="muted">
             <span className="text-action-primary">Kudos</span> ·{' '}

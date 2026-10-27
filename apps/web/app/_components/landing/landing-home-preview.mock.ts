@@ -56,14 +56,22 @@ export const PREVIEW_TEAMMATES: readonly Teammate[] = [
   },
 ];
 
+/** Somebody a preview card names, with no photo: the preview draws initials. */
+function named(name: string) {
+  return { name, photoUrl: null, inactive: false } as const;
+}
+
 export const PREVIEW_WORKSPACE_FEED: readonly FeedItem[] = [
   {
     id: 'preview-feed-1',
     giverName: 'Dao Rattana',
     giverPhotoUrl: null,
     giverInactive: false,
-    receiverName: 'Nok Chaiyo',
-    receiverInactive: false,
+    receivers: [
+      named('Nok Chaiyo'),
+      named('Ploy Srisuk'),
+      named('Fern Somsak'),
+    ],
     origin: 'OFFERED',
     message:
       'Your onboarding notes answered every question our new designer had. She shipped her first screen on day three. Thank you!',
@@ -76,8 +84,7 @@ export const PREVIEW_WORKSPACE_FEED: readonly FeedItem[] = [
     giverName: 'Nok Chaiyo',
     giverPhotoUrl: null,
     giverInactive: false,
-    receiverName: 'Ploy Srisuk',
-    receiverInactive: false,
+    receivers: [named('Ploy Srisuk')],
     origin: 'REQUESTED',
     message:
       'We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.',
@@ -93,8 +100,7 @@ export const PREVIEW_SHARED_WITH_ME: readonly FeedItem[] = [
     giverName: 'Arm Wattana',
     giverPhotoUrl: null,
     giverInactive: false,
-    receiverName: 'Fern Somsak',
-    receiverInactive: false,
+    receivers: [named('Fern Somsak')],
     origin: 'REQUESTED',
     message:
       'The demo started before you explained the problem, so I didn’t know what I was looking at. Swap them.',
@@ -158,11 +164,24 @@ export const PREVIEW_WAITING_ASKS: readonly MyAsk[] = [
 
 export const PREVIEW_RECEIVED: readonly ReceivedFeedback[] = [
   {
+    id: 'preview-received-0',
+    offered: true,
+    giverName: 'Dao Rattana',
+    giverPhotoUrl: null,
+    giverInactive: false,
+    otherReceivers: [named('Nok Chaiyo'), named('Fern Somsak')],
+    message:
+      'Your onboarding notes answered every question our new designer had. She shipped her first screen on day three. Thank you!',
+    messageTags: NO_TEXT_TAGS,
+    writtenAt: '2026-10-20T09:30:00.000Z',
+  },
+  {
     id: 'preview-received-1',
     offered: false,
     giverName: 'Arm Wattana',
     giverPhotoUrl: null,
     giverInactive: false,
+    otherReceivers: [],
     message:
       'When you opened with market size, the room went quiet. When you told Mai’s story, they leaned in. Next time, open with the story.',
     messageTags: NO_TEXT_TAGS,
@@ -174,6 +193,7 @@ export const PREVIEW_RECEIVED: readonly ReceivedFeedback[] = [
     giverName: 'Nok Chaiyo',
     giverPhotoUrl: null,
     giverInactive: false,
+    otherReceivers: [],
     message:
       'We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.',
     messageTags: NO_TEXT_TAGS,

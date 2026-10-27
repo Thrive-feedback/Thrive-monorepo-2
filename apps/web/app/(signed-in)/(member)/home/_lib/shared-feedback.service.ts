@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
+import { toFeedbackPerson } from '@/lib/feedback/feedback-person.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 /** As on the other tabs: one page covers a Workspace of 20–50 people. */
@@ -34,8 +35,7 @@ export const readSharedFeedback = cache(
       giverName: feedback.giver.name,
       giverPhotoUrl: feedback.giver.photoUrl,
       giverInactive: feedback.giver.status === 'DEACTIVATED',
-      receiverName: feedback.receiver.name,
-      receiverInactive: feedback.receiver.status === 'DEACTIVATED',
+      receivers: feedback.receivers.map(toFeedbackPerson),
       origin: feedback.origin,
       message: feedback.message,
       messageTags: feedback.tags,

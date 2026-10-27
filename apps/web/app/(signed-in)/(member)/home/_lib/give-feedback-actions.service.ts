@@ -27,7 +27,7 @@ const TOO_LONG = `Your feedback is too long. Keep it under ${MAX_MESSAGE_LENGTH}
 /** The shape the API's own schema accepts, so the browser is never the first to check it. */
 const GiveFeedbackInput = z
   .object({
-    receiverAccountId: z.uuid(),
+    receiverAccountIds: z.array(z.uuid()).min(1),
     message: z.string().trim().min(1).max(MAX_MESSAGE_LENGTH),
     visibility: z.enum(VISIBILITIES),
     selectedAccountIds: z.array(z.uuid()),
@@ -41,7 +41,8 @@ const GiveFeedbackInput = z
 
 /** What to say when the API refused it, by its error code. */
 const SEND_ERRORS: Readonly<Record<string, string>> = {
-  RECEIVER_NOT_IN_WORKSPACE: 'That teammate is no longer in your Workspace.',
+  RECEIVER_NOT_IN_WORKSPACE:
+    'Someone you picked it for is no longer in your Workspace.',
   CANNOT_GIVE_YOURSELF_FEEDBACK: "You can't give yourself Feedback.",
   NO_PEOPLE_SELECTED: 'Pick at least one person to share it with.',
   SELECTED_PERSON_NOT_IN_WORKSPACE:
@@ -59,7 +60,7 @@ const ELSEWHERE: Readonly<Record<string, string>> = {
 const COULD_NOT_SEND = "We couldn't send your feedback. Please try again.";
 
 /**
- * Gives one teammate Feedback without being asked, then goes back to Home, saying once that it
+ * Gives one or more teammates Feedback without being asked, then goes back to Home, saying once that it
  * went. `workspaceId` is the Workspace the page was drawn for, bound where the form is drawn; it
  * must still be the one the person is in, or nothing is sent. The API decides who is giving it
  * from the session cookie.
@@ -73,7 +74,7 @@ export async function giveFeedback(
   formData: FormData,
 ): Promise<GiveFeedbackState> {
   const input = GiveFeedbackInput.safeParse({
-    receiverAccountId: formData.get('receiverAccountId'),
+    receiverAccountIds: formData.getAll('receiverAccountIds'),
     message: formData.get('message'),
     visibility: formData.get('visibility'),
     selectedAccountIds: formData.getAll('selectedAccountIds'),
@@ -85,7 +86,7 @@ export async function giveFeedback(
     );
     return {
       fieldErrors: {
-        receiverAccountId: fieldErrors.receiverAccountId
+        receiverAccountIds: fieldErrors.receiverAccountIds
           ? 'Pick who it is for.'
           : undefined,
         message: messageTooLong
@@ -111,7 +112,7 @@ export async function giveFeedback(
           header: { cookie },
         },
         body: {
-          receiverAccountId: input.data.receiverAccountId,
+          receiverAccountIds: input.data.receiverAccountIds,
           message: input.data.message,
           visibility: input.data.visibility,
           // Only Selected people names anybody; the API refuses a list under any other choice.

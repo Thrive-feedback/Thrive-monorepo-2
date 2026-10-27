@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { Button } from '@/components/atoms/button';
 import { TextAreaField } from '@/components/molecules/text-area-field';
+import { chosenPeople } from '@/lib/feedback/chosen-people.util';
 import type {
   GiveFeedbackAction,
   GiveFeedbackState,
@@ -16,9 +17,11 @@ import type {
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { ComposerLayout, ComposerToRow } from './composer-layout';
 import { feedbackTagTriggers } from './feedback-tag-triggers.util';
-import { MemberPicker } from './member-picker';
+import { MemberMultiPicker } from './member-multi-picker';
 import { VisibilityMenu } from './visibility-menu';
 import { SELECTED_PEOPLE } from './visibility-picker';
+
+const names = new Intl.ListFormat('en', { type: 'conjunction' });
 
 export type GiveFeedbackFormProps = {
   teammates: readonly Teammate[];
@@ -46,9 +49,10 @@ type FieldErrors = NonNullable<GiveFeedbackState['fieldErrors']>;
 const MAX_MESSAGE_LENGTH = 4000;
 
 /**
- * Giving Feedback without being asked — Offered Feedback. The Giver picks the Receiver, writes
- * one Feedback message, and chooses who else may read it, which never changes afterwards. Sending
- * goes back to Home, which says once that it went.
+ * Giving Feedback without being asked — Offered Feedback. The Giver picks one or more Receivers
+ * from the stack of faces — one piece of Feedback they all receive, each seeing the others (brain
+ * `ADR-0044`) — writes one Feedback message, and chooses who else may read it, which never changes
+ * afterwards. Sending goes back to Home, which says once that it went.
  *
  * Every field stays controlled, so what was picked and typed survives a refusal. The form is
  * submitted by hand rather than through `action`, because React resets a form after its action.
@@ -58,7 +62,9 @@ export function GiveFeedbackForm({
   workspaceGoals,
   action,
 }: GiveFeedbackFormProps) {
-  const [receiverAccountId, setReceiverAccountId] = useState('');
+  const [receiverAccountIds, setReceiverAccountIds] = useState<
+    readonly string[]
+  >([]);
   const [message, setMessage] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('ONLY_ME');
   const [selectedAccountIds, setSelectedAccountIds] = useState<
@@ -77,15 +83,15 @@ export function GiveFeedbackForm({
   const errors: FieldErrors = { ...state.fieldErrors, ...clientErrors };
   const tagTriggers = feedbackTagTriggers(workspaceGoals, teammates);
 
-  // The Receiver always reads it, so they are not one of the people to select.
+  // Every Receiver always reads it, so none of them is one of the people to select.
   const othersToShareWith = teammates.filter(
-    (teammate) => teammate.accountId !== receiverAccountId,
+    (teammate) => !receiverAccountIds.includes(teammate.accountId),
   );
 
   // Whoever it is for always reads it, and the dialog that picks the others says so by name.
-  const receiverName = teammates.find(
-    (teammate) => teammate.accountId === receiverAccountId,
-  )?.name;
+  const receiverNames = chosenPeople(teammates, receiverAccountIds).map(
+    (person) => person.name,
+  );
 
   function handleSelectedChange(accountIds: ReadonlySet<string>) {
     setSelectedAccountIds(accountIds);
@@ -101,8 +107,8 @@ export function GiveFeedbackForm({
       selectedAccountIds.has(teammate.accountId),
     );
     const found: FieldErrors = {
-      receiverAccountId:
-        receiverAccountId === '' ? 'Pick who it is for.' : undefined,
+      receiverAccountIds:
+        receiverAccountIds.length === 0 ? 'Pick who it is for.' : undefined,
       message:
         message.trim() === ''
           ? 'Write your feedback.'
@@ -114,17 +120,19 @@ export function GiveFeedbackForm({
           ? 'Pick at least one person to share it with.'
           : undefined,
     };
-    if (found.receiverAccountId || found.message || found.selectedAccountIds) {
+    if (found.receiverAccountIds || found.message || found.selectedAccountIds) {
       setClientErrors(found);
       // Focus the first field in error, in the order the page reads.
-      if (found.receiverAccountId) pickerRef.current?.focus();
+      if (found.receiverAccountIds) pickerRef.current?.focus();
       else if (found.message) messageRef.current?.focus();
       else setAudienceOpen(true);
       return;
     }
     setClientErrors({});
     const formData = new FormData();
-    formData.set('receiverAccountId', receiverAccountId);
+    for (const accountId of receiverAccountIds) {
+      formData.append('receiverAccountIds', accountId);
+    }
     formData.set('message', message);
     formData.set('visibility', visibility);
     if (visibility === SELECTED_PEOPLE) {
@@ -140,16 +148,19 @@ export function GiveFeedbackForm({
       onSubmit={handleSubmit}
       to={
         <ComposerToRow>
-          <MemberPicker
+          <MemberMultiPicker
             ref={pickerRef}
             teammates={teammates}
-            value={receiverAccountId}
-            errorMessage={errors.receiverAccountId}
-            onChange={(accountId) => {
-              setReceiverAccountId(accountId);
+            value={receiverAccountIds}
+            label="Choose who it's for"
+            description="They can always read it, and see who else it's for."
+            name="receiverAccountIds"
+            errorMessage={errors.receiverAccountIds}
+            onChange={(accountIds) => {
+              setReceiverAccountIds(accountIds);
               setClientErrors((current) => ({
                 ...current,
-                receiverAccountId: undefined,
+                receiverAccountIds: undefined,
               }));
             }}
           />
@@ -181,7 +192,7 @@ export function GiveFeedbackForm({
           people={othersToShareWith}
           selectedAccountIds={selectedAccountIds}
           helperText="This can't be changed after you send it."
-          peopleDescription={`${receiverName ?? 'Whoever it is for'} and you can always read it.`}
+          peopleDescription={`${names.format([...(receiverNames.length > 0 ? receiverNames : ['Whoever it is for']), 'you'])} can always read it.`}
           errorMessage={errors.selectedAccountIds}
           errorId={audienceErrorId}
           open={audienceOpen}

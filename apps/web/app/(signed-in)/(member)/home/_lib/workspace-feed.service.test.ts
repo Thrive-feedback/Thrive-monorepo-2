@@ -33,6 +33,9 @@ const ONE_PIECE = {
     photoUrl: 'https://lh3.googleusercontent.com/a/account-ben=s96-c',
   },
   receiver: { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
+  receivers: [
+    { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
+  ],
   message: 'You start with the three goals on one slide.',
   createdAt: '2026-10-12T03:00:00.000Z',
 };
@@ -66,8 +69,7 @@ describe('reading the Workspace feed', () => {
         giverName: 'Ben Carter',
         giverPhotoUrl: 'https://lh3.googleusercontent.com/a/account-ben=s96-c',
         giverInactive: false,
-        receiverName: 'Cara Diaz',
-        receiverInactive: false,
+        receivers: [{ name: 'Cara Diaz', inactive: false }],
         origin: 'REQUESTED',
         message: 'You start with the three goals on one slide.',
         givenAt: '2026-10-12T03:00:00.000Z',
@@ -95,14 +97,16 @@ describe('reading the Workspace feed', () => {
       {
         ...ONE_PIECE,
         giver: { accountId: 'account-ben', name: null, status: 'ACTIVE' },
-        receiver: { accountId: 'account-cara', name: null, status: 'ACTIVE' },
+        receivers: [
+          { accountId: 'account-cara', name: null, status: 'ACTIVE' },
+        ],
       },
     ]);
 
     const feed = await readWorkspaceFeed(MEMBERSHIP);
 
     expect(feed[0]?.giverName).toBeNull();
-    expect(feed[0]?.receiverName).toBeNull();
+    expect(feed[0]?.receivers[0]?.name).toBeNull();
   });
 
   it('shows somebody Deactivated in the Workspace as inactive', async () => {
@@ -119,7 +123,7 @@ describe('reading the Workspace feed', () => {
 
     const feed = await readWorkspaceFeed(MEMBERSHIP);
 
-    expect([feed[0]?.giverInactive, feed[0]?.receiverInactive]).toEqual([
+    expect([feed[0]?.giverInactive, feed[0]?.receivers[0]?.inactive]).toEqual([
       true,
       false,
     ]);
