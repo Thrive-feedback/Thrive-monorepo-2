@@ -24,11 +24,12 @@ export type MemberMultiPickerProps = {
 
 /**
  * Several teammates, from the Members of the person's own Workspace: everyone a Feedback Request
- * asks (#30), or everyone a letter is for. The people picked show as a stack of faces ending in
- * a dashed "+"; pressing either opens `MemberPickerDialog` to change them.
+ * asks (#30), everyone Offered Feedback is for (brain `ADR-0044`), or everyone a letter is for.
+ * The people picked show as a stack of faces ending in a dashed "+"; pressing either opens
+ * `MemberPickerDialog` to change them.
  *
  * There is no limit on how many people can be picked. Each picked Account id reaches the form
- * through a hidden field of its own, the way `MemberPicker` sends its one.
+ * through a hidden field of its own.
  */
 export function MemberMultiPicker({
   teammates,

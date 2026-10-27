@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { standInPhoto } from '@/app/ui-showcase/_lib/stand-in-photo.util';
 import { AvatarGroupButton } from '@/components/molecules/avatar-group-button';
-import { MemberPicker } from '@/components/organisms/member-picker';
 import { MemberPickerDialog } from '@/components/organisms/member-picker-dialog';
 import { chosenPeople } from '@/lib/feedback/chosen-people.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
@@ -100,18 +99,5 @@ export function MemberPickerDemo({
         onDone={setValue}
       />
     </>
-  );
-}
-
-/** `MemberPicker`: the same stack and dialog, choosing the one person Feedback is for. */
-export function MemberPickerSingleDemo({ initial = '' }: { initial?: string }) {
-  const [value, setValue] = useState(initial);
-
-  return (
-    <MemberPicker
-      teammates={DEMO_TEAMMATES}
-      value={value}
-      onChange={setValue}
-    />
   );
 }

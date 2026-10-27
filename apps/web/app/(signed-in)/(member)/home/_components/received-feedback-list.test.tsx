@@ -20,6 +20,7 @@ const ONE_PIECE = {
   id: 'fb-1',
   offered: false,
   giverName: 'Ben Carter',
+  otherReceivers: [],
   message: 'You open strongly and lose the room at the detail.',
   messageTags: NO_TEXT_TAGS,
   writtenAt: '2026-10-11T03:00:00.000Z',
@@ -52,6 +53,27 @@ describe('ReceivedFeedbackList', () => {
     expect(
       screen.getByText('You open strongly and lose the room at the detail.'),
     ).toBeInTheDocument();
+  });
+
+  it('names everyone else it was written to, after the reader, with their faces', async () => {
+    readReceivedFeedback.mockResolvedValue([
+      {
+        ...ONE_PIECE,
+        offered: true,
+        otherReceivers: [
+          { name: 'Cara Diaz', photoUrl: null, inactive: false },
+          { name: 'Dan Ooi', photoUrl: null, inactive: true },
+        ],
+      },
+    ]);
+
+    await renderList();
+
+    expect(screen.getByRole('article')).toHaveTextContent(
+      'Ben Carter to you, Cara Diaz and Dan Ooi (inactive)',
+    );
+    expect(screen.getByText('CD')).toBeInTheDocument();
+    expect(screen.getByText('DO')).toBeInTheDocument();
   });
 
   it('shows a Giver who was Deactivated as inactive, and keeps what they wrote', async () => {

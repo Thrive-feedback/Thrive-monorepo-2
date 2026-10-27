@@ -37,16 +37,24 @@ function sentFormData() {
     : undefined;
 }
 
-async function pickReceiver(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(
-    screen.getByRole('button', { name: /^Choose who it is for/ }),
-  );
-  await user.click(screen.getByRole('radio', { name: 'Ben Carter' }));
-  await user.click(screen.getByRole('button', { name: 'Done' }));
+function receiversButton() {
+  return screen.getByRole('button', { name: /^Choose who it's for/ });
+}
+
+/** Opens who it is for, ticks each person, and presses Done. */
+async function pickReceivers(
+  user: ReturnType<typeof userEvent.setup>,
+  ...names: string[]
+) {
+  await user.click(receiversButton());
+  for (const name of names) {
+    await user.click(screen.getByRole('checkbox', { name }));
+  }
+  await user.click(screen.getByRole('button', { name: /^Done/ }));
 }
 
 async function fillIn(user: ReturnType<typeof userEvent.setup>) {
-  await pickReceiver(user);
+  await pickReceivers(user, 'Ben Carter');
   await user.type(
     screen.getByRole('textbox', { name: /Your feedback/ }),
     'You kept it calm.',
@@ -129,7 +137,7 @@ describe('GiveFeedbackForm', () => {
       />,
     );
 
-    await pickReceiver(user);
+    await pickReceivers(user, 'Ben Carter');
     await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
 
@@ -140,6 +148,32 @@ describe('GiveFeedbackForm', () => {
       screen.getByRole('checkbox', { name: 'Cara Diaz' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('checkbox', { name: 'Ben Carter' })).toBeNull();
+  });
+
+  it('gives it to several people at once, none of whom is somebody to share it with', async () => {
+    const user = userEvent.setup();
+    render(
+      <GiveFeedbackForm
+        teammates={TEAMMATES}
+        workspaceGoals={[]}
+        action={giveFeedback}
+      />,
+    );
+
+    await pickReceivers(user, 'Cara Diaz', 'Ben Carter');
+
+    expect(receiversButton()).toHaveAccessibleName(
+      "Choose who it's for. Chosen: Cara Diaz and Ben Carter",
+    );
+    await openAudience(user);
+    await user.click(screen.getByRole('radio', { name: 'Selected people' }));
+    expect(
+      screen.getByRole('dialog', { name: 'Choose who else can read' }),
+    ).toHaveAccessibleDescription(
+      'Cara Diaz, Ben Carter, and you can always read it.',
+    );
+    expect(screen.queryByRole('checkbox', { name: 'Ben Carter' })).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: 'Cara Diaz' })).toBeNull();
   });
 
   it('needs at least one person when sharing with selected people', async () => {
@@ -182,7 +216,7 @@ describe('GiveFeedbackForm', () => {
 
     expect(giveFeedback).toHaveBeenCalledOnce();
     expect(sentFormData()).toEqual({
-      receiverAccountId: [BEN],
+      receiverAccountIds: [BEN],
       message: ['You kept it calm.'],
       visibility: ['ONLY_ME'],
     });

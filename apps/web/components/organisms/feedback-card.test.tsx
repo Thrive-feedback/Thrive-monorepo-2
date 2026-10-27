@@ -5,13 +5,14 @@ import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { photosWill } from '@/lib/test/photos-will';
 import { FeedbackCard } from './feedback-card';
 
+const CARA = { name: 'Cara Diaz', photoUrl: null, inactive: false };
+
 const OFFERED: FeedItem = {
   id: 'fb-1',
   giverName: 'Ben Carter',
   giverPhotoUrl: null,
   giverInactive: false,
-  receiverName: 'Cara Diaz',
-  receiverInactive: false,
+  receivers: [CARA],
   origin: 'OFFERED',
   message: 'You kept the room with you.\nThe recap landed.',
   messageTags: NO_TEXT_TAGS,
@@ -57,6 +58,32 @@ describe('FeedbackCard', () => {
     ).toBeInTheDocument();
   });
 
+  it('names everyone it is for, and closes with their faces as one stack', () => {
+    render(
+      <FeedbackCard
+        item={{
+          ...OFFERED,
+          receivers: [
+            CARA,
+            { name: 'Ann Lee', photoUrl: null, inactive: false },
+            { name: 'Dan Ooi', photoUrl: null, inactive: true },
+            { name: 'Eve Ng', photoUrl: null, inactive: false },
+            { name: 'Fon Pak', photoUrl: null, inactive: false },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByText(/^Ben Carter/)).toHaveTextContent(
+      'Ben Carter to Cara Diaz, Ann Lee, Dan Ooi (inactive), Eve Ng and Fon Pak',
+    );
+    for (const initials of ['CD', 'AL', 'DO', 'EN']) {
+      expect(screen.getByText(initials)).toBeInTheDocument();
+    }
+    expect(screen.queryByText('FP')).not.toBeInTheDocument();
+    expect(screen.getByText('+1')).toBeInTheDocument();
+  });
+
   it('keeps the line breaks the writer typed', () => {
     render(<FeedbackCard item={OFFERED} />);
 
@@ -81,7 +108,11 @@ describe('FeedbackCard', () => {
   });
 
   it('calls a Receiver with no Profile a teammate too', () => {
-    render(<FeedbackCard item={{ ...OFFERED, receiverName: null }} />);
+    render(
+      <FeedbackCard
+        item={{ ...OFFERED, receivers: [{ ...CARA, name: null }] }}
+      />,
+    );
 
     expect(screen.getByText(/Ben Carter/)).toBeInTheDocument();
     expect(screen.getByText(/a teammate/)).toBeInTheDocument();
@@ -90,7 +121,11 @@ describe('FeedbackCard', () => {
   it('shows a Giver or Receiver who was Deactivated as inactive', () => {
     render(
       <FeedbackCard
-        item={{ ...OFFERED, giverInactive: true, receiverInactive: true }}
+        item={{
+          ...OFFERED,
+          giverInactive: true,
+          receivers: [{ ...CARA, inactive: true }],
+        }}
       />,
     );
 

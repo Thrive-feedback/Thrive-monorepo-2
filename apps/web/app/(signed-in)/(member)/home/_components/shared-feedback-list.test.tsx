@@ -16,7 +16,7 @@ const MEMBERSHIP = {
 const ONE_PIECE = {
   id: 'fb-1',
   giverName: 'Ben Carter',
-  receiverName: 'Cara Diaz',
+  receivers: [{ name: 'Cara Diaz', photoUrl: null, inactive: false }],
   origin: 'OFFERED' as const,
   message: 'You kept the room with you.',
   messageTags: NO_TEXT_TAGS,
@@ -54,7 +54,11 @@ describe('SharedFeedbackList', () => {
 
   it('calls somebody with no Profile a teammate rather than leaving a gap', async () => {
     readSharedFeedback.mockResolvedValue([
-      { ...ONE_PIECE, giverName: null, receiverName: null },
+      {
+        ...ONE_PIECE,
+        giverName: null,
+        receivers: [{ name: null, photoUrl: null, inactive: false }],
+      },
     ]);
 
     await renderList();

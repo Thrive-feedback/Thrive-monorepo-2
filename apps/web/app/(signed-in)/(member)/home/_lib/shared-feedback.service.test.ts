@@ -33,6 +33,9 @@ const ONE_PIECE = {
     photoUrl: 'https://lh3.googleusercontent.com/a/account-ben=s96-c',
   },
   receiver: { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
+  receivers: [
+    { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
+  ],
   message: 'You kept the room with you.',
   createdAt: '2026-10-12T03:00:00.000Z',
 };
@@ -66,8 +69,7 @@ describe('reading the Feedback shared with me', () => {
         giverName: 'Ben Carter',
         giverPhotoUrl: 'https://lh3.googleusercontent.com/a/account-ben=s96-c',
         giverInactive: false,
-        receiverName: 'Cara Diaz',
-        receiverInactive: false,
+        receivers: [{ name: 'Cara Diaz', inactive: false }],
         origin: 'OFFERED',
         message: 'You kept the room with you.',
         givenAt: '2026-10-12T03:00:00.000Z',
@@ -95,14 +97,16 @@ describe('reading the Feedback shared with me', () => {
       {
         ...ONE_PIECE,
         giver: { accountId: 'account-ben', name: null, status: 'ACTIVE' },
-        receiver: { accountId: 'account-cara', name: null, status: 'ACTIVE' },
+        receivers: [
+          { accountId: 'account-cara', name: null, status: 'ACTIVE' },
+        ],
       },
     ]);
 
     const shared = await readSharedFeedback(MEMBERSHIP);
 
     expect(shared[0]?.giverName).toBeNull();
-    expect(shared[0]?.receiverName).toBeNull();
+    expect(shared[0]?.receivers[0]?.name).toBeNull();
   });
 
   it('asks once, for one page of the signed-in person’s own Workspace', async () => {

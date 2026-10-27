@@ -3,6 +3,7 @@ import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { apiClient } from '@/lib/api-client.service';
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
+import { toFeedbackPerson } from '@/lib/feedback/feedback-person.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 /**
@@ -36,8 +37,7 @@ export async function readFeedback(
       giverName: feedback.giver.name,
       giverPhotoUrl: feedback.giver.photoUrl,
       giverInactive: feedback.giver.status === 'DEACTIVATED',
-      receiverName: feedback.receiver.name,
-      receiverInactive: feedback.receiver.status === 'DEACTIVATED',
+      receivers: feedback.receivers.map(toFeedbackPerson),
       origin: feedback.origin,
       message: feedback.message,
       messageTags: feedback.tags,

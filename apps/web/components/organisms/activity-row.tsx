@@ -9,6 +9,8 @@ export type ActivityRowProps = {
   lead: React.ReactNode;
   /** Who did what to whom, as one line. */
   title: React.ReactNode;
+  /** What closes the header, such as the faces of the others it was for. */
+  aside?: React.ReactNode;
   /** The day, and how it came about, muted under the title. */
   meta: React.ReactNode;
   /** What was written, the row's main text. */
@@ -30,6 +32,7 @@ export type ActivityRowProps = {
 export function ActivityRow({
   lead,
   title,
+  aside,
   meta,
   message,
   target,
@@ -48,6 +51,7 @@ export function ActivityRow({
             {meta}
           </Text>
         </div>
+        {aside}
         {target && (
           // The message is the link a screen reader follows; this only says it for the eye.
           <span

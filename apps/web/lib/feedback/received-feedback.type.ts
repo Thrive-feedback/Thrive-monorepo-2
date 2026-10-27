@@ -1,3 +1,4 @@
+import type { FeedbackPerson } from './feedback-person.util';
 import type { TextTags } from './text-tags.type';
 
 /** One piece of Feedback written to the signed-in person, as Feedback for me shows it. */
@@ -11,6 +12,8 @@ export type ReceivedFeedback = {
   readonly giverPhotoUrl: string | null;
   /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
   readonly giverInactive: boolean;
+  /** Everyone else it was written to, in the order the Giver chose them; empty when only them. */
+  readonly otherReceivers: readonly FeedbackPerson[];
   /** The Feedback message, as they wrote it — line breaks and all. */
   readonly message: string;
   /** What the Feedback message was bound to. */

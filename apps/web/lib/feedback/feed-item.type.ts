@@ -1,3 +1,4 @@
+import type { FeedbackPerson } from './feedback-person.util';
 import type { TextTags } from './text-tags.type';
 
 /** The fixed set of Reactions a Member can add to Feedback on the feed (`ADR-0022`). */
@@ -19,10 +20,8 @@ export type FeedItem = {
   readonly giverPhotoUrl: string | null;
   /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
   readonly giverInactive: boolean;
-  /** `null` while the Receiver has not introduced themselves. */
-  readonly receiverName: string | null;
-  /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
-  readonly receiverInactive: boolean;
+  /** Everyone it is for, in the order the Giver chose them — one or more (brain `ADR-0044`). */
+  readonly receivers: readonly FeedbackPerson[];
   /** Requested answers an Ask; Offered was given without being asked. */
   readonly origin: 'REQUESTED' | 'OFFERED';
   /** The Feedback message, as its Giver wrote it. */

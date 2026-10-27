@@ -3,6 +3,7 @@ import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
+import { toFeedbackPerson } from '@/lib/feedback/feedback-person.util';
 import type { ReceivedFeedback } from '@/lib/feedback/received-feedback.type';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
@@ -36,6 +37,7 @@ export const readReceivedFeedback = cache(
       giverName: feedback.giverName,
       giverPhotoUrl: feedback.giverPhotoUrl,
       giverInactive: feedback.giverStatus === 'DEACTIVATED',
+      otherReceivers: feedback.otherReceivers.map(toFeedbackPerson),
       message: feedback.message,
       messageTags: feedback.tags,
       writtenAt: feedback.createdAt,
