@@ -25,24 +25,28 @@ export const PREVIEW_TEAMMATES: readonly Teammate[] = [
   {
     accountId: 'preview-nok',
     name: 'Nok Chaiyo',
+    email: 'nok@thrive.example',
     slug: 'nok',
     displayName: 'Nok',
   },
   {
     accountId: 'preview-arm',
     name: 'Arm Wattana',
+    email: 'arm@thrive.example',
     slug: 'arm',
     displayName: 'Arm',
   },
   {
     accountId: 'preview-fern',
     name: 'Fern Somsak',
+    email: 'fern@thrive.example',
     slug: 'fern',
     displayName: 'Fern',
   },
   {
     accountId: 'preview-dao',
     name: 'Dao Rattana',
+    email: 'dao@thrive.example',
     slug: 'dao',
     displayName: 'Dao',
   },

@@ -12,7 +12,7 @@ export function LetterEntry() {
       name="Letter"
       level="organism"
       origin="thrive"
-      source="components/organisms/letter.tsx — Input + Textarea + Text on a sheet that turns over"
+      source="components/organisms/letter.tsx — MemberMultiPicker + Textarea + Text on a sheet that turns over"
       summary="Feedback as a letter: one sheet with the Feedback message on the front and the Request message on the back, and Turn over beside it. Only the face being written can be typed on."
       useFor="Writing or reading a Feedback message or a Request message as a letter, as on Home."
       avoidFor="A message in a list or a card; use FeedbackCard. A form with more fields than who it is for and what it says."
@@ -20,13 +20,14 @@ export function LetterEntry() {
 
 <Letter
   writing="feedback"
-  recipient={recipient}
+  teammates={teammates}
+  recipientAccountIds={recipientAccountIds}
   feedbackMessage={feedbackMessage}
   requestMessage={requestMessage}
   isTurnedOver={isTurnedOver}
   isTurnLocked
   onTurnOver={() => setIsTurnedOver((turned) => !turned)}
-  onRecipientChange={setRecipient}
+  onRecipientsChange={setRecipientAccountIds}
   onFeedbackMessageChange={setFeedbackMessage}
   onRequestMessageChange={setRequestMessage}
 />`}
@@ -35,12 +36,18 @@ export function LetterEntry() {
           name: 'writing',
           type: "'feedback' | 'request' | null",
           description:
-            'The face that can be typed on. null, and both faces only show what is written. A change moves the cursor to "Dear", or to the message if who it is for is filled in.',
+            'The face that can be written on. null, and both faces only show what is written. A change moves focus to the people after "Dear", or to the message if somebody is chosen.',
         },
         {
-          name: 'recipient',
-          type: 'string',
-          description: 'Who the letter being written is for, after "Dear".',
+          name: 'teammates',
+          type: 'Teammate[]',
+          description: 'Who can be chosen after "Dear".',
+        },
+        {
+          name: 'recipientAccountIds',
+          type: 'string[]',
+          description:
+            'Who the letter being written is for, after "Dear": a stack of faces ending in a dashed "+".',
         },
         {
           name: 'feedbackMessage',
@@ -72,9 +79,9 @@ export function LetterEntry() {
             'Turn over was pressed while the letter is free to turn.',
         },
         {
-          name: 'onRecipientChange',
-          type: '(value: string) => void',
-          description: 'Pairs with recipient.',
+          name: 'onRecipientsChange',
+          type: '(accountIds: string[]) => void',
+          description: 'Pairs with recipientAccountIds.',
         },
         {
           name: 'onFeedbackMessageChange',
@@ -90,7 +97,7 @@ export function LetterEntry() {
       accessibility={[
         'Each face is a section headed by its title; the face turned away is inert and hidden from a screen reader.',
         'Turn over is named for the face it turns to. Locked, it is aria-disabled rather than disabled, so it can still be reached, and a polite live region says why it will not turn.',
-        '"Dear" labels who it is for; the message field has a label for screen readers only.',
+        'The button after "Dear" is named for what it chooses, then everyone chosen; the message field has a label for screen readers only.',
         'With reduced motion the sheet turns at once and does not shake.',
       ]}
     >
@@ -109,7 +116,7 @@ export function LetterEntry() {
         <LetterSheetDemo
           writing="request"
           isTurnedOver
-          recipient="Mali"
+          recipientAccountIds={['mali', 'krit']}
           requestMessage="How did my kickoff land?"
         />
       </StateCell>

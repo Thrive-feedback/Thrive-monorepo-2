@@ -283,20 +283,6 @@ export function LetterDemo() {
     setSide(otherSide);
   }
 
-  function handleSelectedChange(
-    letterSide: LetterSide,
-    accountId: string,
-    selected: boolean,
-  ) {
-    const next = new Set(letters[letterSide].selectedAccountIds);
-    if (selected) {
-      next.add(accountId);
-    } else {
-      next.delete(accountId);
-    }
-    changeLetter(letterSide, { selectedAccountIds: next });
-  }
-
   // The letter flies off before it is cleared. With reduced motion there is nothing to wait for,
   // so it is cleared at once.
   function handleSend() {
@@ -514,8 +500,8 @@ export function LetterDemo() {
                   selectedAccountIds: letters[writing].selectedAccountIds,
                   onValueChange: (visibility) =>
                     changeLetter(writing, { visibility }),
-                  onSelectedChange: (accountId, selected) =>
-                    handleSelectedChange(writing, accountId, selected),
+                  onSelectedChange: (selectedAccountIds) =>
+                    changeLetter(writing, { selectedAccountIds }),
                 }}
                 ready={motion === 'still' && isReady(letters[writing])}
                 onSend={handleSend}

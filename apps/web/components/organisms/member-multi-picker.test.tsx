@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { MemberMultiPicker } from './member-multi-picker';
@@ -7,8 +7,20 @@ const BEN = '0199a0f0-0000-7000-8000-00000000000b';
 const CARA = '0199a0f0-0000-7000-8000-00000000000c';
 
 const TEAMMATES = [
-  { accountId: BEN, name: 'Ben Carter', slug: null, displayName: null },
-  { accountId: CARA, name: 'Cara Diaz', slug: null, displayName: null },
+  {
+    accountId: BEN,
+    name: 'Ben Carter',
+    email: 'ben@acme.test',
+    slug: null,
+    displayName: null,
+  },
+  {
+    accountId: CARA,
+    name: 'Cara Diaz',
+    email: 'cara@acme.test',
+    slug: null,
+    displayName: null,
+  },
 ];
 
 function picker(
@@ -24,58 +36,46 @@ function picker(
   );
 }
 
-function trigger() {
-  return screen.getByRole('button', { name: /Who do you want to ask/ });
+function trigger(name: RegExp = /^Choose who to ask/) {
+  return screen.getByRole('button', { name });
 }
 
 describe('MemberMultiPicker', () => {
-  it('asks who to ask, and shows nobody picked yet', () => {
+  it('is the "+" alone, asking who to ask, while nobody is picked', () => {
     render(picker());
 
-    expect(trigger()).toHaveTextContent('Pick teammates');
-    expect(screen.queryByRole('list', { name: 'Picked' })).toBeNull();
+    expect(trigger(/^Choose who to ask$/)).toBeInTheDocument();
   });
 
-  it('adds a teammate when they are ticked, keeping the menu open for the next', async () => {
+  it('names everyone picked, and opens the dialog on them', async () => {
+    const user = userEvent.setup();
+    render(picker({ value: [BEN, CARA] }));
+
+    await user.click(trigger(/Chosen: Ben Carter and Cara Diaz$/));
+
+    const dialog = screen.getByRole('dialog', { name: 'Choose who to ask' });
+    expect(dialog).toHaveAccessibleDescription(
+      'They each answer in their own words.',
+    );
+    expect(screen.getByRole('checkbox', { name: 'Ben Carter' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Cara Diaz' })).toBeChecked();
+  });
+
+  it('hands on who is picked once Done is pressed, and not before', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(picker({ value: [BEN], onChange }));
 
     await user.click(trigger());
-    await user.click(
-      screen.getByRole('menuitemcheckbox', { name: 'Cara Diaz' }),
-    );
+    await user.click(screen.getByRole('checkbox', { name: 'Cara Diaz' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Ben Carter' }));
 
-    expect(onChange).toHaveBeenCalledWith([BEN, CARA]);
-    expect(screen.getByRole('menu')).toBeInTheDocument();
-  });
+    expect(onChange).not.toHaveBeenCalled();
 
-  it('takes a teammate off when they are unticked', async () => {
-    const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(picker({ value: [BEN, CARA], onChange }));
-
-    await user.click(trigger());
-    await user.click(
-      screen.getByRole('menuitemcheckbox', { name: 'Ben Carter' }),
-    );
+    await user.click(screen.getByRole('button', { name: 'Done (1)' }));
 
     expect(onChange).toHaveBeenCalledWith([CARA]);
-  });
-
-  it('shows each person picked as a chip that can be removed', async () => {
-    const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(picker({ value: [BEN, CARA], onChange }));
-
-    expect(trigger()).toHaveTextContent('2 picked');
-    expect(screen.getByRole('list', { name: 'Picked' })).toHaveTextContent(
-      'Ben CarterCara Diaz',
-    );
-
-    await user.click(screen.getByRole('button', { name: 'Remove Cara Diaz' }));
-
-    expect(onChange).toHaveBeenCalledWith([BEN]);
+    await waitFor(() => expect(trigger()).toHaveFocus());
   });
 
   it('sends every person picked as a field of its own', () => {
@@ -88,7 +88,7 @@ describe('MemberMultiPicker', () => {
     expect(new FormData(form).getAll('giverAccountIds')).toEqual([BEN, CARA]);
   });
 
-  it('says what is wrong, tied to the trigger', () => {
+  it('says what is wrong, tied to the button', () => {
     render(picker({ errorMessage: 'Pick at least one person to ask.' }));
 
     expect(trigger()).toHaveAttribute('aria-invalid', 'true');

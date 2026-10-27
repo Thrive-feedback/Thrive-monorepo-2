@@ -17,14 +17,14 @@ const TITLES: Readonly<Record<LetterSide, string>> = {
 };
 
 type Draft = {
-  recipient: string;
+  recipientAccountIds: readonly string[];
   message: string;
   visibility: LetterVisibility;
   selectedAccountIds: ReadonlySet<string>;
 };
 
 const BLANK: Draft = {
-  recipient: '',
+  recipientAccountIds: [],
   message: '',
   visibility: 'ONLY_ME',
   selectedAccountIds: new Set(),
@@ -32,7 +32,7 @@ const BLANK: Draft = {
 
 function isReady(draft: Draft) {
   return (
-    draft.recipient.trim() !== '' &&
+    draft.recipientAccountIds.length > 0 &&
     draft.message.trim() !== '' &&
     (draft.visibility !== SELECTED_PEOPLE || draft.selectedAccountIds.size > 0)
   );
@@ -72,16 +72,6 @@ export function LetterDesk() {
     setIsTurnedOver(side === 'request');
   }
 
-  function handleSelectedChange(accountId: string, selected: boolean) {
-    const next = new Set(draft.selectedAccountIds);
-    if (selected) {
-      next.add(accountId);
-    } else {
-      next.delete(accountId);
-    }
-    changeDraft({ selectedAccountIds: next });
-  }
-
   // The letter flies off before it is cleared. With reduced motion there is nothing to wait for,
   // so it is cleared at once.
   function handleSend() {
@@ -91,8 +81,8 @@ export function LetterDesk() {
     }
   }
 
-  // Send is disabled once the draft is blank, so the cursor goes back to the top of the letter
-  // rather than being lost with it. Only the face being written has fields.
+  // Send is disabled once the draft is blank, so focus goes back to "Dear" at the top of the
+  // letter rather than being lost with it. Only the face being written has controls.
   function finishSending() {
     flushSync(() => {
       changeDraft(BLANK);
@@ -101,7 +91,10 @@ export function LetterDesk() {
     toast.success(`${TITLES[writing]} sent.`, {
       description: 'This is a first look: nothing left this page.',
     });
-    stageRef.current?.querySelector('input')?.focus();
+    const dear = stageRef.current?.querySelector('section:not([inert]) button');
+    if (dear instanceof HTMLElement) {
+      dear.focus();
+    }
   }
 
   function handleStageAnimationEnd(event: React.AnimationEvent) {
@@ -125,13 +118,16 @@ export function LetterDesk() {
         >
           <Letter
             writing={writing}
-            recipient={draft.recipient}
+            teammates={MOCK_TEAMMATES}
+            recipientAccountIds={draft.recipientAccountIds}
             feedbackMessage={drafts.feedback.message}
             requestMessage={drafts.request.message}
             isTurnedOver={isTurnedOver}
             isTurnLocked={writing === 'feedback'}
             onTurnOver={() => setIsTurnedOver((turned) => !turned)}
-            onRecipientChange={(recipient) => changeDraft({ recipient })}
+            onRecipientsChange={(recipientAccountIds) =>
+              changeDraft({ recipientAccountIds })
+            }
             onFeedbackMessageChange={(message) => changeDraft({ message })}
             onRequestMessageChange={(message) => changeDraft({ message })}
           />
@@ -144,10 +140,15 @@ export function LetterDesk() {
           side={writing}
           visibility={draft.visibility}
           people={MOCK_TEAMMATES}
+          recipientNames={MOCK_TEAMMATES.filter((teammate) =>
+            draft.recipientAccountIds.includes(teammate.accountId),
+          ).map((teammate) => teammate.name)}
           selectedAccountIds={draft.selectedAccountIds}
           ready={!sending && isReady(draft)}
           onVisibilityChange={(visibility) => changeDraft({ visibility })}
-          onSelectedChange={handleSelectedChange}
+          onSelectedChange={(selectedAccountIds) =>
+            changeDraft({ selectedAccountIds })
+          }
           onSend={handleSend}
         />
       </div>

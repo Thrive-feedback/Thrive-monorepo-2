@@ -11,6 +11,10 @@ import {
   AvatarPreview,
 } from '@/app/ui-showcase/_components/entries/avatar-entry';
 import {
+  AvatarGroupButtonEntry,
+  AvatarGroupButtonPreview,
+} from '@/app/ui-showcase/_components/entries/avatar-group-button-entry';
+import {
   AvatarGroupEntry,
   AvatarGroupPreview,
 } from '@/app/ui-showcase/_components/entries/avatar-group-entry';
@@ -62,6 +66,10 @@ import {
   LinkEntry,
   LinkPreview,
 } from '@/app/ui-showcase/_components/entries/link-entry';
+import {
+  MemberPickerDialogEntry,
+  MemberPickerDialogPreview,
+} from '@/app/ui-showcase/_components/entries/member-picker-dialog-entry';
 import {
   PhotoAvatarEntry,
   PhotoAvatarPreview,
@@ -388,6 +396,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: AvatarGroupEntry,
   },
   {
+    slug: 'avatar-group-button',
+    name: 'AvatarGroupButton',
+    level: 'molecule',
+    Preview: AvatarGroupButtonPreview,
+    Entry: AvatarGroupButtonEntry,
+  },
+  {
     slug: 'photo-avatar',
     name: 'PhotoAvatar',
     level: 'molecule',
@@ -401,5 +416,12 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'organism',
     Preview: LetterPreview,
     Entry: LetterEntry,
+  },
+  {
+    slug: 'member-picker-dialog',
+    name: 'MemberPickerDialog',
+    level: 'organism',
+    Preview: MemberPickerDialogPreview,
+    Entry: MemberPickerDialogEntry,
   },
 ];

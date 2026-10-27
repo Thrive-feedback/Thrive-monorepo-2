@@ -44,13 +44,19 @@ const MEANS: Readonly<Record<LetterSide, Record<LetterVisibility, string>>> = {
   },
 };
 
+/** Who reads it whatever else is chosen, said under the people dialog's title. */
+const ALWAYS_READS: Readonly<Record<LetterSide, string>> = {
+  give: 'Whoever it is for and you can always read it.',
+  request: 'You can always read what they send back.',
+};
+
 /** Who else can read the letter being written, as the bar offers it. */
 export type LetterSendBarVisibility = {
   side: LetterSide;
   value: LetterVisibility;
   selectedAccountIds: ReadonlySet<string>;
   onValueChange: (visibility: LetterVisibility) => void;
-  onSelectedChange: (accountId: string, selected: boolean) => void;
+  onSelectedChange: (accountIds: ReadonlySet<string>) => void;
 };
 
 export type LetterSendBarProps = {
@@ -123,6 +129,7 @@ function VisibilityButton({
             people={LETTER_TEAMMATES}
             selectedAccountIds={selectedAccountIds}
             helperText={MEANS[side][value]}
+            peopleDescription={ALWAYS_READS[side]}
             onValueChange={onValueChange}
             onSelectedChange={onSelectedChange}
           />

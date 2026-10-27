@@ -116,15 +116,10 @@ describe('LandingHomePreview', () => {
     // The composer opens ready to write, on asking for Feedback.
     first('textbox', /What would you like feedback on/).focus();
     await user.keyboard('My first board update');
-    first('button', /Who do you want to ask/).focus();
+    first('button', /^Choose who to ask/).focus();
     await user.keyboard('{Enter}');
-    await user.click(
-      screen.getByRole('menuitemcheckbox', { name: 'Arm Wattana' }),
-    );
-    await user.click(
-      screen.getByRole('menuitemcheckbox', { name: 'Nok Chaiyo' }),
-    );
-    await user.keyboard('{Escape}');
+    await user.keyboard('@arm @nok ');
+    await user.click(screen.getByRole('button', { name: 'Done (2)' }));
     first('button', 'Send request').focus();
     await user.keyboard('{Enter}');
 

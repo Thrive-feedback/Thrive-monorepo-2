@@ -1,18 +1,40 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import type { Teammate } from '@/lib/feedback/teammate.type';
 import { Letter } from './letter';
+
+const TEAMMATES: readonly Teammate[] = [
+  {
+    accountId: 'mali',
+    name: 'Mali Sombat',
+    email: 'mali@acme.test',
+    slug: 'mali',
+    displayName: 'Mali',
+  },
+  {
+    accountId: 'krit',
+    name: 'Krit Chan',
+    email: 'krit@acme.test',
+    slug: 'krit',
+    displayName: 'Krit',
+  },
+];
+
+const dear = (name = /^Choose who it's for/) =>
+  screen.getByRole('button', { name });
 
 function letter(props: Partial<React.ComponentProps<typeof Letter>> = {}) {
   return (
     <Letter
       writing="feedback"
-      recipient=""
+      teammates={TEAMMATES}
+      recipientAccountIds={[]}
       feedbackMessage=""
       requestMessage=""
       isTurnedOver={false}
       onTurnOver={vi.fn()}
-      onRecipientChange={vi.fn()}
+      onRecipientsChange={vi.fn()}
       onFeedbackMessageChange={vi.fn()}
       onRequestMessageChange={vi.fn()}
       {...props}
@@ -30,7 +52,7 @@ describe('Letter', () => {
     expect(
       screen.queryByRole('heading', { name: 'Request message' }),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Dear' })).toBeInTheDocument();
+    expect(dear()).toBeInTheDocument();
     expect(
       screen.getByRole('textbox', { name: 'Your feedback' }),
     ).toBeInTheDocument();
@@ -45,22 +67,36 @@ describe('Letter', () => {
     expect(
       screen.getByRole('textbox', { name: 'What you would like feedback on' }),
     ).toBeInTheDocument();
+    expect(dear(/^Choose who to ask/)).toBeInTheDocument();
   });
 
-  it('hands on what is typed', async () => {
+  it('chooses who it is for in a dialog, and hands on what is typed', async () => {
     const user = userEvent.setup();
-    const onRecipientChange = vi.fn();
+    const onRecipientsChange = vi.fn();
     const onFeedbackMessageChange = vi.fn();
-    render(letter({ onRecipientChange, onFeedbackMessageChange }));
+    render(letter({ onRecipientsChange, onFeedbackMessageChange }));
 
-    await user.type(screen.getByRole('textbox', { name: 'Dear' }), 'M');
+    await user.click(dear());
+    const dialog = screen.getByRole('dialog', { name: "Choose who it's for" });
+    expect(dialog).toHaveAccessibleDescription('They can always read it.');
+    await user.type(
+      screen.getByRole('searchbox', { name: /search by name/i }),
+      '@krit @mali ',
+    );
+    await user.click(screen.getByRole('button', { name: 'Done (2)' }));
     await user.type(
       screen.getByRole('textbox', { name: 'Your feedback' }),
       'W',
     );
 
-    expect(onRecipientChange).toHaveBeenCalledWith('M');
+    expect(onRecipientsChange).toHaveBeenCalledWith(['krit', 'mali']);
     expect(onFeedbackMessageChange).toHaveBeenCalledWith('W');
+  });
+
+  it('names everyone it is for', () => {
+    render(letter({ recipientAccountIds: ['mali', 'krit'] }));
+
+    expect(dear(/Chosen: Mali Sombat and Krit Chan$/)).toBeInTheDocument();
   });
 
   it('only shows what is written when nothing is being written', () => {
@@ -113,20 +149,22 @@ describe('Letter', () => {
     ).toBeInTheDocument();
   });
 
-  it('puts the cursor on who it is for when the face being written changes', () => {
+  it('moves focus to who it is for when the face being written changes', () => {
     const { rerender } = render(letter());
 
-    expect(screen.getByRole('textbox', { name: 'Dear' })).not.toHaveFocus();
+    expect(dear()).not.toHaveFocus();
 
     rerender(letter({ writing: 'request', isTurnedOver: true }));
 
-    expect(screen.getByRole('textbox', { name: 'Dear' })).toHaveFocus();
+    expect(dear(/^Choose who to ask/)).toHaveFocus();
   });
 
-  it('puts the cursor on the message when who it is for is filled in', () => {
-    const { rerender } = render(letter({ writing: null, recipient: 'Mali' }));
+  it('puts the cursor on the message when somebody is already chosen', () => {
+    const { rerender } = render(
+      letter({ writing: null, recipientAccountIds: ['mali'] }),
+    );
 
-    rerender(letter({ recipient: 'Mali' }));
+    rerender(letter({ recipientAccountIds: ['mali'] }));
 
     expect(
       screen.getByRole('textbox', { name: 'Your feedback' }),

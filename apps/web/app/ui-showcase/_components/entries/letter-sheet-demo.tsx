@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { LETTER_TEAMMATES } from '@/app/ui-showcase/letter/_components/letter-teammates.mock';
 import { Letter, type LetterSide } from '@/components/organisms/letter';
 
 export type LetterSheetDemoProps = {
   writing: LetterSide | null;
-  recipient?: string;
+  recipientAccountIds?: readonly string[];
   feedbackMessage?: string;
   requestMessage?: string;
   isTurnedOver?: boolean;
@@ -18,12 +19,13 @@ export type LetterSheetDemoProps = {
  */
 export function LetterSheetDemo({
   writing,
-  recipient: initialRecipient = '',
+  recipientAccountIds: initialRecipients = [],
   feedbackMessage: initialFeedback = '',
   requestMessage: initialRequest = '',
   isTurnedOver: initiallyTurnedOver = false,
 }: LetterSheetDemoProps) {
-  const [recipient, setRecipient] = useState(initialRecipient);
+  const [recipientAccountIds, setRecipientAccountIds] =
+    useState(initialRecipients);
   const [feedbackMessage, setFeedbackMessage] = useState(initialFeedback);
   const [requestMessage, setRequestMessage] = useState(initialRequest);
   const [isTurnedOver, setIsTurnedOver] = useState(initiallyTurnedOver);
@@ -32,13 +34,14 @@ export function LetterSheetDemo({
     <div className="w-full max-w-2xl lg:pr-16">
       <Letter
         writing={writing}
-        recipient={recipient}
+        teammates={LETTER_TEAMMATES}
+        recipientAccountIds={recipientAccountIds}
         feedbackMessage={feedbackMessage}
         requestMessage={requestMessage}
         isTurnedOver={isTurnedOver}
         isTurnLocked={writing === 'feedback'}
         onTurnOver={() => setIsTurnedOver((turned) => !turned)}
-        onRecipientChange={setRecipient}
+        onRecipientsChange={setRecipientAccountIds}
         onFeedbackMessageChange={setFeedbackMessage}
         onRequestMessageChange={setRequestMessage}
       />

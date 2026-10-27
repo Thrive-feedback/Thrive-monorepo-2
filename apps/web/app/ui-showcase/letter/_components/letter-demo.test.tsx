@@ -312,9 +312,12 @@ describe('LetterDemo', () => {
     );
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
 
-    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+    expect(
+      screen.getByRole('dialog', { name: 'Choose who else can read' }),
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole('checkbox', { name: 'Ann Lee' }));
+    await user.click(screen.getByRole('button', { name: 'Done (1)' }));
 
     expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled();
     expect(

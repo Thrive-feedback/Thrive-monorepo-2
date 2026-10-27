@@ -9,8 +9,20 @@ const giveFeedback = vi.fn<GiveFeedbackAction>();
 const BEN = '0199a0f0-0000-7000-8000-00000000000b';
 const CARA = '0199a0f0-0000-7000-8000-00000000000c';
 const TEAMMATES = [
-  { accountId: BEN, name: 'Ben Carter', slug: null, displayName: null },
-  { accountId: CARA, name: 'Cara Diaz', slug: null, displayName: null },
+  {
+    accountId: BEN,
+    name: 'Ben Carter',
+    email: 'ben@acme.test',
+    slug: null,
+    displayName: null,
+  },
+  {
+    accountId: CARA,
+    name: 'Cara Diaz',
+    email: 'cara@acme.test',
+    slug: null,
+    displayName: null,
+  },
 ];
 
 /** What the action was sent, each field with every value it carries. */
@@ -34,6 +46,21 @@ async function fillIn(user: ReturnType<typeof userEvent.setup>) {
     screen.getByRole('textbox', { name: /Your feedback/ }),
     'You kept it calm.',
   );
+}
+
+function peopleButton() {
+  return screen.getByRole('button', { name: /^Choose who else can read/ });
+}
+
+/** Ticks or unticks each person in the open dialog, then presses Done. */
+async function tickAndDone(
+  user: ReturnType<typeof userEvent.setup>,
+  ...names: string[]
+) {
+  for (const name of names) {
+    await user.click(screen.getByRole('checkbox', { name }));
+  }
+  await user.click(screen.getByRole('button', { name: /^Done/ }));
 }
 
 /** The one button by Send that says, and opens, who else can read it. */
@@ -102,6 +129,9 @@ describe('GiveFeedbackForm', () => {
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
 
     expect(
+      screen.getByRole('dialog', { name: 'Choose who else can read' }),
+    ).toHaveAccessibleDescription('Ben Carter and you can always read it.');
+    expect(
       screen.getByRole('checkbox', { name: 'Cara Diaz' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('checkbox', { name: 'Ben Carter' })).toBeNull();
@@ -120,11 +150,15 @@ describe('GiveFeedbackForm', () => {
     await fillIn(user);
     await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
+    await tickAndDone(user, 'Cara Diaz');
+    await user.click(peopleButton());
+    await tickAndDone(user, 'Cara Diaz');
     await user.click(screen.getByRole('button', { name: 'Send feedback' }));
 
     expect(
       screen.getByText('Pick at least one person to share it with.'),
     ).toBeInTheDocument();
+    expect(peopleButton()).toHaveFocus();
     expect(giveFeedback).not.toHaveBeenCalled();
   });
 
@@ -162,7 +196,7 @@ describe('GiveFeedbackForm', () => {
     await fillIn(user);
     await openAudience(user);
     await user.click(screen.getByRole('radio', { name: 'Selected people' }));
-    await user.click(screen.getByRole('checkbox', { name: 'Cara Diaz' }));
+    await tickAndDone(user, 'Cara Diaz');
     await user.click(screen.getByRole('button', { name: 'Send feedback' }));
 
     expect(sentFormData()).toMatchObject({

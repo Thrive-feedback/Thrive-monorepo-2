@@ -2,7 +2,7 @@
 
 import { ChevronDownIcon, CircleAlertIcon, EyeIcon } from 'lucide-react';
 import { Popover } from 'radix-ui';
-import { useId } from 'react';
+import { useId, useRef } from 'react';
 import { Button } from '@/components/atoms/button';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import {
@@ -20,6 +20,8 @@ export type VisibilityMenuProps<Value extends string> = {
   selectedAccountIds: ReadonlySet<string>;
   /** What the current choice means, under the choices. */
   helperText: React.ReactNode;
+  /** Who reads it whatever is chosen, said under the people dialog's title. */
+  peopleDescription: React.ReactNode;
   /** Nobody picked for Selected people. Marks the button and the people still to pick. */
   errorMessage?: string;
   /** Where the form already says the error, so the menu points at it rather than repeating it. */
@@ -27,7 +29,7 @@ export type VisibilityMenuProps<Value extends string> = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onValueChange: (value: Value) => void;
-  onSelectedChange: (accountId: string, selected: boolean) => void;
+  onSelectedChange: (accountIds: ReadonlySet<string>) => void;
 };
 
 /**
@@ -42,6 +44,7 @@ export function VisibilityMenu<Value extends string>({
   people,
   selectedAccountIds,
   helperText,
+  peopleDescription,
   errorMessage,
   errorId,
   open,
@@ -50,6 +53,7 @@ export function VisibilityMenu<Value extends string>({
   onSelectedChange,
 }: VisibilityMenuProps<Value>) {
   const contentId = useId();
+  const peopleRef = useRef<HTMLButtonElement>(null);
   const chosen = options.find((option) => option.value === value);
   const picked = people.filter((person) =>
     selectedAccountIds.has(person.accountId),
@@ -85,12 +89,9 @@ export function VisibilityMenu<Value extends string>({
           collisionPadding={16}
           onOpenAutoFocus={(event) => {
             // Opened by a refusal, focus goes to the people still to pick rather than the choices.
-            const firstPerson = (
-              event.currentTarget as HTMLElement | null
-            )?.querySelector<HTMLElement>('fieldset button');
-            if (errorMessage && firstPerson) {
+            if (errorMessage && peopleRef.current) {
               event.preventDefault();
-              firstPerson.focus();
+              peopleRef.current.focus();
             }
           }}
           className="z-50 flex w-80 max-w-(--radix-popover-content-available-width) flex-col gap-3 rounded-control border border-border-muted bg-surface-raised p-4 text-fg-primary shadow-med"
@@ -101,10 +102,12 @@ export function VisibilityMenu<Value extends string>({
             people={people}
             selectedAccountIds={selectedAccountIds}
             helperText={helperText}
+            peopleDescription={peopleDescription}
             errorMessage={errorMessage}
             errorId={errorId}
             onValueChange={onValueChange}
             onSelectedChange={onSelectedChange}
+            ref={peopleRef}
           />
         </Popover.Content>
       </Popover.Portal>

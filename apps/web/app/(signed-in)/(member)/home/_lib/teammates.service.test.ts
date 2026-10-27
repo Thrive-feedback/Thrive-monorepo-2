@@ -50,7 +50,7 @@ describe('reading who can be asked for Feedback', () => {
     const teammates = await readTeammates(MEMBERSHIP, 'ann@acme.test');
 
     expect(teammates).toEqual([
-      { accountId: 'account-ben', name: 'Ben Carter' },
+      { accountId: 'account-ben', name: 'Ben Carter', email: 'ben@acme.test' },
     ]);
   });
 
@@ -62,7 +62,11 @@ describe('reading who can be asked for Feedback', () => {
     const teammates = await readTeammates(MEMBERSHIP, 'ann@acme.test');
 
     expect(teammates).toEqual([
-      { accountId: 'account-ben', name: 'ben@acme.test' },
+      {
+        accountId: 'account-ben',
+        name: 'ben@acme.test',
+        email: 'ben@acme.test',
+      },
     ]);
   });
 

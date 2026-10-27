@@ -4,11 +4,12 @@ import { cva } from 'class-variance-authority';
 import { LockIcon, Rotate3dIcon } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Button } from '@/components/atoms/button';
-import { Input } from '@/components/atoms/input';
 import { Text } from '@/components/atoms/text';
 import { Textarea } from '@/components/atoms/textarea';
 import { cn } from '@/lib/cn.util';
+import type { Teammate } from '@/lib/feedback/teammate.type';
 import styles from './letter.module.css';
+import { MemberMultiPicker } from './member-multi-picker';
 
 /** The two faces of a letter: the Feedback message on the front, the Request message on the back. */
 export type LetterSide = 'feedback' | 'request';
@@ -18,18 +19,29 @@ const SIDES = ['feedback', 'request'] as const;
 const SIDE_COPY: Readonly<
   Record<
     LetterSide,
-    { title: string; messageLabel: string; placeholder: string }
+    {
+      title: string;
+      messageLabel: string;
+      placeholder: string;
+      /** Choosing who it is for: the button after "Dear" and the dialog it opens. */
+      recipientsLabel: string;
+      recipientsDescription: string;
+    }
   >
 > = {
   feedback: {
     title: 'Feedback message',
     messageLabel: 'Your feedback',
     placeholder: 'What did you notice, while it still matters?',
+    recipientsLabel: "Choose who it's for",
+    recipientsDescription: 'They can always read it.',
   },
   request: {
     title: 'Request message',
     messageLabel: 'What you would like feedback on',
     placeholder: 'What would you like their feedback on?',
+    recipientsLabel: 'Choose who to ask',
+    recipientsDescription: 'They each answer in their own words.',
   },
 };
 
@@ -54,8 +66,10 @@ const face = cva(
 export type LetterProps = {
   /** The face being written, the only one that can be typed on; none, and both are only read. */
   writing: LetterSide | null;
-  /** Who the letter being written is for, after "Dear". */
-  recipient: string;
+  /** Who can be chosen after "Dear": the Members of the Workspace but the writer. */
+  teammates: readonly Teammate[];
+  /** Who the letter being written is for, after "Dear", by Account id. */
+  recipientAccountIds: readonly string[];
   feedbackMessage: string;
   requestMessage: string;
   /** Whether the Request message points at the reader rather than the Feedback message. */
@@ -64,7 +78,7 @@ export type LetterProps = {
   isTurnLocked?: boolean;
   /** Turn over was pressed and the letter is free to turn. */
   onTurnOver: () => void;
-  onRecipientChange: (value: string) => void;
+  onRecipientsChange: (accountIds: readonly string[]) => void;
   onFeedbackMessageChange: (value: string) => void;
   onRequestMessageChange: (value: string) => void;
 };
@@ -75,23 +89,25 @@ export type LetterProps = {
  * Only the face being written can be typed on. The other shows its message as written, except
  * that while a Request is written the front is left for the people asked, and says so.
  *
- * When the face being written changes, the cursor goes to "Dear", or to the message if who it is
- * for is already filled in.
+ * "Dear" is followed by the people it is for, as a stack of faces ending in a dashed "+"; either
+ * opens a dialog to choose them. When the face being written changes, focus goes to that button,
+ * or to the message if somebody is already chosen.
  */
 export function Letter({
   writing,
-  recipient,
+  teammates,
+  recipientAccountIds,
   feedbackMessage,
   requestMessage,
   isTurnedOver,
   isTurnLocked = false,
   onTurnOver,
-  onRecipientChange,
+  onRecipientsChange,
   onFeedbackMessageChange,
   onRequestMessageChange,
 }: LetterProps) {
   const [shaking, setShaking] = useState(false);
-  const recipientRef = useRef<HTMLInputElement>(null);
+  const recipientRef = useRef<HTMLButtonElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
   const writingBefore = useRef(writing);
   const side: LetterSide = isTurnedOver ? 'request' : 'feedback';
@@ -111,8 +127,11 @@ export function Letter({
     if (writing === null) {
       return;
     }
-    (recipient === '' ? recipientRef : messageRef).current?.focus();
-  }, [writing, recipient]);
+    (recipientAccountIds.length === 0
+      ? recipientRef
+      : messageRef
+    ).current?.focus();
+  }, [writing, recipientAccountIds]);
 
   function handleTurnOver() {
     if (isTurnLocked) {
@@ -133,13 +152,16 @@ export function Letter({
       const copy = SIDE_COPY[letterSide];
       return (
         <LetterWriting
-          recipient={recipient}
+          teammates={teammates}
+          recipientAccountIds={recipientAccountIds}
+          recipientsLabel={copy.recipientsLabel}
+          recipientsDescription={copy.recipientsDescription}
           message={messages[letterSide]}
           messageLabel={copy.messageLabel}
           placeholder={copy.placeholder}
           recipientRef={recipientRef}
           messageRef={messageRef}
-          onRecipientChange={onRecipientChange}
+          onRecipientsChange={onRecipientsChange}
           onMessageChange={onMessageChange[letterSide]}
         />
       );
@@ -220,48 +242,54 @@ export function Letter({
 }
 
 type LetterWritingProps = {
-  recipient: string;
+  teammates: readonly Teammate[];
+  recipientAccountIds: readonly string[];
+  recipientsLabel: string;
+  recipientsDescription: string;
   message: string;
   /** The message field's name for a screen reader; the paper shows no label for it. */
   messageLabel: string;
   placeholder: string;
-  recipientRef: React.Ref<HTMLInputElement>;
+  recipientRef: React.Ref<HTMLButtonElement>;
   messageRef: React.Ref<HTMLTextAreaElement>;
-  onRecipientChange: (value: string) => void;
+  onRecipientsChange: (accountIds: readonly string[]) => void;
   onMessageChange: (value: string) => void;
 };
 
 /** The face being written: who it is for, the message on the lines, and the writer's signature. */
 function LetterWriting({
-  recipient,
+  teammates,
+  recipientAccountIds,
+  recipientsLabel,
+  recipientsDescription,
   message,
   messageLabel,
   placeholder,
   recipientRef,
   messageRef,
-  onRecipientChange,
+  onRecipientsChange,
   onMessageChange,
 }: LetterWritingProps) {
-  const recipientId = useId();
   const messageId = useId();
 
   return (
     <div className={cn('flex flex-1 flex-col gap-4', styles.reveal)}>
-      <div className="flex items-baseline gap-3">
-        <label
-          htmlFor={recipientId}
+      <div className="flex items-center gap-4">
+        {/* For the eye: the button after it names what it chooses for a screen reader. */}
+        <span
+          aria-hidden="true"
           className="font-handwrite text-subtitle-handwrite-1"
         >
           Dear
-        </label>
-        <Input
+        </span>
+        <MemberMultiPicker
           ref={recipientRef}
-          id={recipientId}
-          value={recipient}
-          onChange={(event) => onRecipientChange(event.target.value)}
-          placeholder="a teammate"
-          autoComplete="off"
-          className="flex-1 rounded-none border-x-0 border-t-0 bg-transparent px-0"
+          teammates={teammates}
+          value={recipientAccountIds}
+          label={recipientsLabel}
+          description={recipientsDescription}
+          name="recipientAccountIds"
+          onChange={onRecipientsChange}
         />
       </div>
       <label htmlFor={messageId} className="sr-only">

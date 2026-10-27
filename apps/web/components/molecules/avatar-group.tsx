@@ -4,6 +4,11 @@ import {
   AvatarFallback,
   type AvatarProps,
 } from '@/components/atoms/avatar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/atoms/tooltip';
 import { cn } from '@/lib/cn.util';
 
 export type AvatarGroupProps = React.ComponentPropsWithRef<'div'> & {
@@ -11,6 +16,8 @@ export type AvatarGroupProps = React.ComponentPropsWithRef<'div'> & {
   max?: number;
   /** The "+N" bubble's size. Match the size of the avatars you pass in. */
   size?: AvatarProps['size'];
+  /** What the "+N" bubble says on hover, such as the names it stands for. */
+  moreTooltip?: React.ReactNode;
 };
 
 /**
@@ -31,6 +38,7 @@ export type AvatarGroupProps = React.ComponentPropsWithRef<'div'> & {
 export function AvatarGroup({
   max,
   size = 'lg',
+  moreTooltip,
   className,
   children,
   ...rest
@@ -51,16 +59,33 @@ export function AvatarGroup({
       {...rest}
     >
       {shown}
-      {hiddenCount > 0 && (
-        <Avatar size={size} role="img" aria-label={`${hiddenCount} more`}>
-          <AvatarFallback
-            aria-hidden="true"
-            className="bg-surface-subtle text-fg-secondary"
-          >
-            +{hiddenCount}
-          </AvatarFallback>
-        </Avatar>
-      )}
+      {hiddenCount > 0 &&
+        (moreTooltip === undefined ? (
+          <MoreBubble size={size} hiddenCount={hiddenCount} />
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <MoreBubble size={size} hiddenCount={hiddenCount} />
+            </TooltipTrigger>
+            <TooltipContent>{moreTooltip}</TooltipContent>
+          </Tooltip>
+        ))}
     </div>
+  );
+}
+
+type MoreBubbleProps = AvatarProps & { hiddenCount: number };
+
+/** The "+N" that stands for everyone past `max`, announced as "N more". */
+function MoreBubble({ hiddenCount, ...rest }: MoreBubbleProps) {
+  return (
+    <Avatar role="img" aria-label={`${hiddenCount} more`} {...rest}>
+      <AvatarFallback
+        aria-hidden="true"
+        className="bg-surface-subtle text-fg-secondary"
+      >
+        +{hiddenCount}
+      </AvatarFallback>
+    </Avatar>
   );
 }
