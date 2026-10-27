@@ -256,3 +256,98 @@ Then(
     this.refusedWith('CHANNEL_UNREACHABLE');
   },
 );
+
+/** The id of a channel the tool offered, which is what a post names. */
+function channelIdOf(channelName: string): string {
+  const { chatInstaller } = harness();
+  const channel = chatInstaller.channelsOffered.find(
+    (offered) => offered.name === channelName,
+  );
+  assert.ok(channel, `No ${channelName} channel was ever offered.`);
+  return channel.id;
+}
+
+function postsIn(channelName: string): string[] {
+  const id = channelIdOf(channelName);
+  return harness()
+    .chatPoster.posts.filter((post) => post.channelId === id)
+    .map((post) => post.text);
+}
+
+/**
+ * An announcement is made after the write commits and is never awaited, so it has not
+ * necessarily happened by the time a step runs. These steps wait for it rather than pretending
+ * it is atomic — which is also the honest description of the behaviour.
+ *
+ * The connect itself posted a test message, so the announcement is the second post onwards.
+ */
+async function announcementIn(
+  channelName: string,
+  timeoutMs = 2000,
+): Promise<string> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const posts = postsIn(channelName);
+    if (posts.length > 1) {
+      return posts[posts.length - 1] as string;
+    }
+    if (Date.now() > deadline) {
+      assert.fail(`Timed out waiting for an announcement in ${channelName}.`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
+
+Then(
+  'the {string} channel is told that {person} gave {person} feedback',
+  async (channelName: string, giver: string, receiver: string) => {
+    const post = await announcementIn(channelName);
+    assert.match(post, new RegExp(`${giver}.*gave.*${receiver}.*feedback`));
+  },
+);
+
+Then(
+  'the {string} channel is told that {person} gave {person} kudos saying {string}',
+  async (
+    channelName: string,
+    giver: string,
+    recipient: string,
+    said: string,
+  ) => {
+    const post = await announcementIn(channelName);
+    assert.match(post, new RegExp(`${giver}.*gave.*${recipient}.*kudos`));
+    // A Kudos carries its words, unlike Feedback (brain ADR-0045). Quoted verbatim, so an
+    // @mention appears as the slug the Giver typed rather than as a display name.
+    assert.ok(
+      post.includes(said),
+      `The post in ${channelName} did not carry "${said}". It was: ${post}`,
+    );
+  },
+);
+
+Then(
+  'the {string} channel is told nothing of what the Feedback said',
+  async (channelName: string) => {
+    const post = await announcementIn(channelName);
+    // brain ADR-0040: a channel is read by whoever is in that server.
+    assert.ok(
+      !post.includes('Running the planning meeting'),
+      `The post in ${channelName} carried the Feedback message.`,
+    );
+  },
+);
+
+Then(
+  'nothing more arrives in the {string} channel',
+  async (channelName: string) => {
+    // Nothing to wait for, so wait a moment and prove nothing came: an announcement that is
+    // never made cannot be distinguished from one that is merely slow except by waiting.
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    // Exactly one: the test message the connect itself posted, and nothing since.
+    assert.deepEqual(
+      postsIn(channelName).length,
+      1,
+      `Something was announced in ${channelName} that should not have been.`,
+    );
+  },
+);

@@ -1,4 +1,5 @@
 import { WebConfig } from '@app/config/configuration';
+import { WEB_PATHS } from '@app/shared/application/web-paths.constant';
 import { Injectable } from '@nestjs/common';
 
 /**
@@ -7,26 +8,6 @@ import { Injectable } from '@nestjs/common';
  * bites the longest ones.
  */
 const QUOTED_LENGTH = 120;
-
-/**
- * Where a chat message points, mirroring `apps/web/lib/routes.constant.ts`.
- *
- * The API has no business knowing the web app's addresses, and for the bell it does not — the
- * web composes that itself (design 0022 D12). A chat message is the exception that has to:
- * it leaves Thrive entirely, so it must carry an absolute URL, and only the API is there to
- * build one. Integrations makes the same compromise for its callback path.
- *
- * **These three strings and the web's `ROUTES` have to agree.** Changing a Home dialog
- * parameter without changing them sends people to a page that ignores it.
- */
-const WEB_PATHS = {
-  ask: (askId: string) => `/home?tab=waiting&ask=${askId}`,
-  request: (requestId: string) => `/home?tab=my-requests&request=${requestId}`,
-  // No tab: the same Feedback sits on the Workspace feed, Shared with me or Feedback for me
-  // depending on who follows the link, so no tab is true for every reader. Matches
-  // `ROUTES.homeFeedback`.
-  feedback: (feedbackId: string) => `/home?feedback=${feedbackId}`,
-} as const;
 
 /**
  * The words a chat tool carries, composed once above the provider registry because they are the

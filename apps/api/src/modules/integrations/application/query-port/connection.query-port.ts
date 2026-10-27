@@ -3,6 +3,7 @@ import type {
   ConnectedSpace,
   ConnectionPage,
   PageRequest,
+  PostableChannel,
 } from '../types/connection.types';
 
 export abstract class ConnectionQuery {
@@ -24,4 +25,15 @@ export abstract class ConnectionQuery {
     workspaceId: string,
     provider: IntegrationProviderValue,
   ): Promise<ConnectedSpace | null>;
+
+  /**
+   * Every channel this Workspace has connected, for announcing something that happened in the
+   * open. Empty when it has connected nothing, which is the ordinary case and not a refusal.
+   *
+   * Kept apart from `connectedSpace`, which names one tool because its caller is acting on that
+   * tool's Connection; an announcement does not know or care which tools exist.
+   */
+  abstract postableChannelsOf(
+    workspaceId: string,
+  ): Promise<readonly PostableChannel[]>;
 }

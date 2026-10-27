@@ -439,7 +439,14 @@ about" was the Topic. There is no longer a short label to carry: what remains is
 message, which is the Feedback's own words — and `ADR-0035` §5 deliberately keeps those out of a
 channel that guests and contractors may read.
 
-So the open question for #201, which is a product question and not a code one:
+**Settled on 2026-10-23 by brain `ADR-0040`, and extended on 2026-10-27 by brain `ADR-0045`.** The
+channel post names the Giver, the Receivers and a link, and carries none of the Feedback's words. A
+**Kudos** post does carry its message, because a Kudos has no Visibility — every Member reads every
+Kudos already — and praise without its words says only that praise happened somewhere else. Where
+that code lives is `docs/adr/0062`: Integrations publishes `ChannelAnnouncerPort` and Feedback calls
+it, because `ADR-0035` §9 gives Integrations what a channel is told.
+
+The question as it stood, left here for the reasoning:
 
 | | |
 | --- | --- |
@@ -448,5 +455,5 @@ So the open question for #201, which is a product question and not a code one:
 | **The Workspace Goals it names** | a `#goal` is a short public label an Admin wrote — the nearest thing to what Topic did, and new since this design |
 | **Nothing until the Giver chooses** | naming the channel on the Give feedback screen, which `ADR-0035`'s Consequences already names as the way to reverse the audience risk |
 
-Settle it in `ADR-0035`'s own successor, not here. Card #201's title still says Topic and wants the
-same edit.
+~~Settle it in `ADR-0035`'s own successor, not here.~~ Settled, as above. Card #201's title still
+says Topic and wants the same edit.

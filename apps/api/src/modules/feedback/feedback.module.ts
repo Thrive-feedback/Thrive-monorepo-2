@@ -1,5 +1,6 @@
 import { DatabaseModule } from '@app/infrastructure/database/database.module';
 import { IdentityModule } from '@app/modules/identity';
+import { IntegrationsModule } from '@app/modules/integrations';
 import { NotificationsModule } from '@app/modules/notifications';
 import { WorkspaceModule } from '@app/modules/workspace';
 import { WorkspaceGoalModule } from '@app/modules/workspace-goal';
@@ -50,6 +51,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
   imports: [
     DatabaseModule,
     IdentityModule,
+    IntegrationsModule,
     WorkspaceModule,
     WorkspaceGoalModule,
     NotificationsModule,

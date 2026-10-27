@@ -1,9 +1,11 @@
+import { ChannelAnnouncerPort } from '@app/modules/integrations';
 import { PersonNotifierPort } from '@app/modules/notifications';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable, Logger } from '@nestjs/common';
 import { FeedbackRequestRepository } from '../../domain/repository/feedback-request-repository.port';
 import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
+import { isEveryone } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { TagsService } from '../service/tags.service';
 
@@ -42,6 +44,7 @@ export class AnswerFeedbackAskUseCase {
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
     private readonly personNotifierPort: PersonNotifierPort,
+    private readonly channelAnnouncerPort: ChannelAnnouncerPort,
   ) {}
 
   async execute(
@@ -77,10 +80,16 @@ export class AnswerFeedbackAskUseCase {
       }
       await this.feedbackRequestRepository.saveAnswer(request, feedback);
       const asked = request.snapshot();
+      const written = feedback.snapshot();
       return {
-        feedbackId: feedback.snapshot().id,
+        feedbackId: written.id,
         feedbackRequestId: asked.id,
         requesterAccountId: asked.requesterAccountId,
+        // Carried out of the transaction for the channel announcement below. An answer copies
+        // the request's Visibility, so an answer to a request set to Everyone is public too and
+        // belongs on the channel exactly as Offered Feedback does.
+        receiverAccountIds: written.receiverAccountIds,
+        isPublic: isEveryone(written.visibility),
       };
     });
 
@@ -104,6 +113,25 @@ export class AnswerFeedbackAskUseCase {
           error: error instanceof Error ? error.message : 'unknown',
         });
       });
+
+    if (answered.isPublic) {
+      // The Workspace feed shows public Feedback whatever its origin, so a channel that showed
+      // only Offered Feedback would quietly disagree with it (ADR 0062).
+      void this.channelAnnouncerPort
+        .feedbackPublished({
+          workspaceId: input.workspaceId,
+          giverAccountId: input.giverAccountId,
+          receiverAccountIds: answered.receiverAccountIds,
+          feedbackId: answered.feedbackId,
+        })
+        .catch((error: unknown) => {
+          this.logger.warn({
+            event: 'feedback.announce_failed',
+            announcement: 'feedbackPublished',
+            error: error instanceof Error ? error.message : 'unknown',
+          });
+        });
+    }
 
     return { feedbackId: answered.feedbackId };
   }

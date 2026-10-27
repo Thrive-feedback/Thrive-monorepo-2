@@ -6,6 +6,7 @@ import {
   FakeWorkspaceMembershipPort,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
+import { FakeChannelAnnouncer } from '@test/support/integrations.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   KudosMessageEmptyError,
@@ -38,13 +39,15 @@ function setUp() {
     // Dan has an Account but is in another Workspace.
     new FakeWorkspaceMembershipPort().with(WORKSPACE_ID, ANN, BEN, CARA),
   );
+  const channelAnnouncer = new FakeChannelAnnouncer();
   const useCase = new GiveKudosUseCase(
     kudosRepository,
     tagsService,
     new FakeIdGenerator(KUDOS_ID),
     unitOfWork,
+    channelAnnouncer,
   );
-  return { kudosRepository, unitOfWork, useCase };
+  return { kudosRepository, unitOfWork, useCase, channelAnnouncer };
 }
 
 function giving(message: string) {
@@ -109,5 +112,43 @@ describe('a Member giving Kudos', () => {
     await expect(useCase.execute(giving('   '))).rejects.toThrow(
       KudosMessageEmptyError,
     );
+  });
+});
+
+describe('telling the Workspace channel about a Kudos', () => {
+  it('announces it, with its message (brain ADR-0045)', async () => {
+    const { useCase, channelAnnouncer } = setUp();
+
+    await useCase.execute(giving('@ben carried the launch #ownership.'));
+
+    expect(channelAnnouncer.kudosGiven_).toHaveLength(1);
+    expect(channelAnnouncer.kudosGiven_[0]).toEqual({
+      workspaceId: WORKSPACE_ID,
+      giverAccountId: ANN,
+      recipientAccountIds: [BEN],
+      message: '@ben carried the launch #ownership.',
+      kudosId: KUDOS_ID,
+    });
+  });
+
+  it('names everyone the Kudos is for', async () => {
+    const { useCase, channelAnnouncer } = setUp();
+
+    await useCase.execute(giving('@ben and @cara carried the launch.'));
+
+    expect(channelAnnouncer.kudosGiven_[0]?.recipientAccountIds).toEqual([
+      BEN,
+      CARA,
+    ]);
+  });
+
+  it('succeeds, and still stores the Kudos, when no channel can be told', async () => {
+    const { useCase, channelAnnouncer, kudosRepository } = setUp();
+    channelAnnouncer.rejectingEverything();
+
+    const given = await useCase.execute(giving('@ben carried the launch.'));
+
+    expect(given.id).toBe(KUDOS_ID);
+    expect(kudosRepository.saved).toHaveLength(1);
   });
 });

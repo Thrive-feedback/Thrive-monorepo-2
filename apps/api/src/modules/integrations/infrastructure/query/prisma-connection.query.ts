@@ -5,8 +5,12 @@ import type {
   ConnectedSpace,
   ConnectionPage,
   PageRequest,
+  PostableChannel,
 } from '../../application/types/connection.types';
-import type { IntegrationProviderValue } from '../../domain/value-object/integration-provider.vo';
+import {
+  INTEGRATION_PROVIDERS,
+  type IntegrationProviderValue,
+} from '../../domain/value-object/integration-provider.vo';
 import { toConnectionView } from '../mapper/connection.mapper';
 
 /** Reads through `client`, so a read inside a unit of work joins its transaction. */
@@ -59,4 +63,29 @@ export class PrismaConnectionQuery extends ConnectionQuery {
       connection && { externalWorkspaceId: connection.externalWorkspaceId }
     );
   }
+
+  async postableChannelsOf(
+    workspaceId: string,
+  ): Promise<readonly PostableChannel[]> {
+    const connections =
+      await this.prismaTransactionContext.client.integrationConnection.findMany(
+        {
+          where: { workspaceId },
+          orderBy: [{ connectedAt: 'asc' }, { id: 'asc' }],
+          select: { provider: true, externalChannelId: true },
+        },
+      );
+    return connections.filter(isKnownProvider);
+  }
+}
+
+/**
+ * The column is text, as every provider value is stored. Only rows this release knows how to post
+ * through are answered, so a tool that has been retired reads as nothing rather than as a value
+ * the registry would throw on.
+ */
+function isKnownProvider<Row extends { readonly provider: string }>(
+  row: Row,
+): row is Row & { readonly provider: IntegrationProviderValue } {
+  return (INTEGRATION_PROVIDERS as readonly string[]).includes(row.provider);
 }

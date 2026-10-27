@@ -14,6 +14,14 @@ function isVisibility(raw: string): raw is VisibilityValue {
 }
 
 /**
+ * Whether every Member of the Workspace may read it, asked of the stored value rather than of the
+ * object — for a caller that holds a snapshot instead of the Visibility itself.
+ */
+export function isEveryone(value: VisibilityValue): boolean {
+  return value === 'EVERYONE';
+}
+
+/**
  * Who besides the Giver and the Receivers may read a piece of Feedback: nobody, the Members
  * selected, or every Member of the Workspace. Chosen when sending — by the Requester for what a
  * request collects, by the Giver for Offered Feedback — and never changed afterwards
@@ -58,6 +66,15 @@ export class Visibility {
   /** The Members picked when the Visibility is Selected people; empty otherwise. */
   selectedAccountIds(): readonly string[] {
     return this.selected;
+  }
+
+  /**
+   * Whether every Member of the Workspace may read it. Asked when something outside Feedback may
+   * only ever hear about Feedback the Giver put in the open — a Workspace's chat channel is the
+   * one that does (brain `ADR-0040`).
+   */
+  isEveryone(): boolean {
+    return isEveryone(this.value);
   }
 
   /**

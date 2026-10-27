@@ -5,6 +5,7 @@ import {
   FakeWorkspaceMembershipPort,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
+import { FakeChannelAnnouncer } from '@test/support/integrations.fakes';
 import { FakePersonNotifier } from '@test/support/notifications.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
@@ -45,6 +46,7 @@ function setUp() {
   const feedbackRepository = new FakeFeedbackRepository();
   const unitOfWork = new FakeUnitOfWork();
   const personNotifier = new FakePersonNotifier();
+  const channelAnnouncer = new FakeChannelAnnouncer();
   const useCase = new OfferFeedbackUseCase(
     feedbackRepository,
     new FakeWorkspaceMembershipPort().with(WORKSPACE_ID, ANN, BEN, CARA),
@@ -52,8 +54,15 @@ function setUp() {
     new FakeIdGenerator(FEEDBACK_ID),
     unitOfWork,
     personNotifier,
+    channelAnnouncer,
   );
-  return { feedbackRepository, unitOfWork, useCase, personNotifier };
+  return {
+    feedbackRepository,
+    unitOfWork,
+    useCase,
+    personNotifier,
+    channelAnnouncer,
+  };
 }
 
 describe('a Giver giving a teammate Feedback without being asked', () => {
@@ -208,6 +217,64 @@ describe('telling the people Feedback was written for', () => {
     personNotifier.rejectingEverything();
 
     const given = await useCase.execute(offering());
+
+    expect(given.id).toBe(FEEDBACK_ID);
+    expect(feedbackRepository.saved).toHaveLength(1);
+  });
+});
+
+describe('telling the Workspace channel', () => {
+  it('announces Feedback the Giver showed everyone', async () => {
+    const { useCase, channelAnnouncer } = setUp();
+
+    await useCase.execute(offering({ visibility: 'EVERYONE' }));
+
+    expect(channelAnnouncer.feedbackPublished_).toHaveLength(1);
+    expect(channelAnnouncer.feedbackPublished_[0]).toEqual({
+      workspaceId: WORKSPACE_ID,
+      giverAccountId: ANN,
+      receiverAccountIds: [BEN],
+      feedbackId: FEEDBACK_ID,
+    });
+  });
+
+  it('announces nothing when the Feedback is for the Receiver alone', async () => {
+    const { useCase, channelAnnouncer } = setUp();
+
+    await useCase.execute(offering({ visibility: 'ONLY_ME' }));
+
+    expect(channelAnnouncer.feedbackPublished_).toHaveLength(0);
+  });
+
+  it('announces nothing when only Selected people may read it', async () => {
+    const { useCase, channelAnnouncer } = setUp();
+
+    await useCase.execute(
+      offering({
+        visibility: 'SELECTED_PEOPLE',
+        selectedAccountIds: [CARA],
+      }),
+    );
+
+    // A channel is a wider room than the people the Giver picked.
+    expect(channelAnnouncer.feedbackPublished_).toHaveLength(0);
+  });
+
+  it('carries none of the Feedback message (brain ADR-0040)', async () => {
+    const { useCase, channelAnnouncer } = setUp();
+
+    await useCase.execute(offering({ visibility: 'EVERYONE' }));
+
+    expect(
+      JSON.stringify(channelAnnouncer.feedbackPublished_[0]),
+    ).not.toContain('Keep the recap');
+  });
+
+  it('succeeds, and still stores the Feedback, when no channel can be told', async () => {
+    const { useCase, channelAnnouncer, feedbackRepository } = setUp();
+    channelAnnouncer.rejectingEverything();
+
+    const given = await useCase.execute(offering({ visibility: 'EVERYONE' }));
 
     expect(given.id).toBe(FEEDBACK_ID);
     expect(feedbackRepository.saved).toHaveLength(1);
