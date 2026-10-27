@@ -1,12 +1,11 @@
 import { ChevronRightIcon } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/atoms/avatar';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { TargetLink } from '@/components/molecules/target-link';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
 
 export type ActivityRowProps = {
-  /** What stands at the start of the row: an `ActivityAvatar`, or a mark for the person's own. */
+  /** What stands at the start of the row: the other person's `PhotoAvatar`, or a mark for the person's own. */
   lead: React.ReactNode;
   /** Who did what to whom, as one line. */
   title: React.ReactNode;
@@ -74,15 +73,6 @@ export function ActivityRow({
       </Text>
       {footer}
     </article>
-  );
-}
-
-/** Somebody's initials in a circle, as a feed card shows the Giver. */
-export function ActivityAvatar({ initials }: { initials: string }) {
-  return (
-    <Avatar size="md" aria-hidden="true">
-      <AvatarFallback>{initials}</AvatarFallback>
-    </Avatar>
   );
 }
 

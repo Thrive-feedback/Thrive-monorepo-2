@@ -7,9 +7,17 @@ import type { Teammate } from './teammate.type';
 export function chosenPeople(
   teammates: readonly Teammate[],
   accountIds: Iterable<string>,
-): { id: string; name: string }[] {
+): { id: string; name: string; photoUrl: string | null }[] {
   return [...accountIds].flatMap((accountId) => {
     const teammate = teammates.find((one) => one.accountId === accountId);
-    return teammate ? [{ id: teammate.accountId, name: teammate.name }] : [];
+    return teammate
+      ? [
+          {
+            id: teammate.accountId,
+            name: teammate.name,
+            photoUrl: teammate.photoUrl,
+          },
+        ]
+      : [];
   });
 }

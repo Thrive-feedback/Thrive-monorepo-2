@@ -19,6 +19,7 @@ const MEMBERSHIP = {
 const FEEDBACK: FeedItem = {
   id: FEEDBACK_ID,
   giverName: 'Ann Lee',
+  giverPhotoUrl: null,
   giverInactive: false,
   receiverName: 'Ben Ooi',
   receiverInactive: false,

@@ -2,16 +2,29 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
+import { standInPhoto } from '@/app/ui-showcase/_lib/stand-in-photo.util';
 import { AvatarGroupButton } from '@/components/molecules/avatar-group-button';
 
 const PEOPLE = [
-  { id: 'ts', name: 'Tida Somsri' },
-  { id: 'pp', name: 'Pim Prasert' },
-  { id: 'hh', name: 'Hana Hoshi' },
-  { id: 'nr', name: 'Nok Rattana' },
-  { id: 'sr', name: 'Som Ruang' },
-  { id: 'bb', name: 'Ben Boon' },
-  { id: 'cb', name: 'Chai Boonma' },
+  {
+    id: 'ts',
+    name: 'Tida Somsri',
+    photoUrl: standInPhoto('#a78bfa', '#6d28d9'),
+  },
+  { id: 'pp', name: 'Pim Prasert', photoUrl: null },
+  {
+    id: 'hh',
+    name: 'Hana Hoshi',
+    photoUrl: standInPhoto('#fdba74', '#ea580c'),
+  },
+  {
+    id: 'nr',
+    name: 'Nok Rattana',
+    photoUrl: standInPhoto('#86efac', '#15803d'),
+  },
+  { id: 'sr', name: 'Som Ruang', photoUrl: null },
+  { id: 'bb', name: 'Ben Boon', photoUrl: null },
+  { id: 'cb', name: 'Chai Boonma', photoUrl: null },
 ];
 
 export function AvatarGroupButtonEntry() {
@@ -24,7 +37,8 @@ export function AvatarGroupButtonEntry() {
       summary='The people chosen so far as an overlapping stack, ending in a dashed "+" the size of one face.'
       useFor="Choosing several people where the choice opens elsewhere: who to ask, who it is for, who else can read it."
       avoidFor="Showing people nobody can change. Use AvatarGroup."
-      usage={`import { AvatarGroupButton } from '@/components/molecules/avatar-group-button';
+      usage={`import { standInPhoto } from '@/app/ui-showcase/_lib/stand-in-photo.util';
+import { AvatarGroupButton } from '@/components/molecules/avatar-group-button';
 
 <AvatarGroupButton
   label="Choose who to ask"
@@ -34,7 +48,7 @@ export function AvatarGroupButtonEntry() {
       props={[
         {
           name: 'people',
-          type: '{ id: string; name: string }[]',
+          type: '{ id: string; name: string; photoUrl: string | null }[]',
           description: 'The people chosen so far, in the order they stack.',
         },
         {

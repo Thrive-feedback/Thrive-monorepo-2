@@ -29,7 +29,9 @@ export type AvatarGroupProps = React.ComponentPropsWithRef<'div'> & {
  *   </AvatarGroup>
  *
  * A group named by its `aria-label`, so a screen reader hears the set before each name. Each
- * avatar wears a ring in the page colour, which keeps overlapping faces apart. The bubble is
+ * avatar wears a ring in the page colour, which keeps overlapping faces apart. The ring goes on
+ * every direct child, not only on an element marked as an avatar, so a face wrapped as a tooltip
+ * trigger, which takes the trigger's marks, is ringed the same. The bubble is
  * announced as "N more", not as a bare "+N".
  *
  * `max` counts direct children, so pass the avatars themselves — an array from a `map` — not
@@ -52,10 +54,7 @@ export function AvatarGroup({
     <div
       data-slot="avatar-group"
       role="group"
-      className={cn(
-        'flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-surface-base',
-        className,
-      )}
+      className={cn('flex -space-x-2 *:ring-2 *:ring-surface-base', className)}
       {...rest}
     >
       {shown}

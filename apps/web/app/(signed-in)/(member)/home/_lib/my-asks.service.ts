@@ -35,6 +35,7 @@ export const readMyAsks = cache(
       message: ask.message,
       messageTags: ask.tags,
       requesterName: ask.requester.name,
+      requesterPhotoUrl: ask.requester.photoUrl,
       requesterInactive: ask.requester.status === 'DEACTIVATED',
       askedAt: ask.createdAt,
       status: ask.status,

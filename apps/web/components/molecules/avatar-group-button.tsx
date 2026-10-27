@@ -1,18 +1,14 @@
 import { cva } from 'class-variance-authority';
 import { PlusIcon } from 'lucide-react';
-import {
-  Avatar,
-  AvatarFallback,
-  type AvatarProps,
-} from '@/components/atoms/avatar';
+import type { AvatarProps } from '@/components/atoms/avatar';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/atoms/tooltip';
 import { AvatarGroup } from '@/components/molecules/avatar-group';
+import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { cn } from '@/lib/cn.util';
-import { initials } from '@/lib/initials.util';
 
 const names = new Intl.ListFormat('en', { type: 'conjunction' });
 
@@ -42,6 +38,8 @@ const addIcon = cva('', {
 export type AvatarGroupPerson = {
   readonly id: string;
   readonly name: string;
+  /** Their photo, or `null` to show their initials. */
+  readonly photoUrl: string | null;
 };
 
 export type AvatarGroupButtonProps = Omit<
@@ -62,8 +60,10 @@ export type AvatarGroupButtonProps = Omit<
  * It is one button: pressing a face or the "+" does the same thing, usually open a dialog to
  * change who is chosen. With nobody chosen it is the "+" alone.
  *
- * Four faces show before the rest become one "+N". A face shows initials and says the full name on hover; the "+N" lists who it stands for. A
- * screen reader hears the label and then every name, from text kept for it alone.
+ * Four faces show before the rest become one "+N", drawn exactly as `AvatarGroup` draws them. A
+ * face is the person's photo, or their initials without one, and says the full name on hover;
+ * the "+N" lists who it stands for. A screen reader hears the label and then every name, from
+ * text kept for it alone.
  */
 export function AvatarGroupButton({
   people,
@@ -100,9 +100,11 @@ export function AvatarGroupButton({
           {people.map((person) => (
             <Tooltip key={person.id}>
               <TooltipTrigger asChild>
-                <Avatar size={size}>
-                  <AvatarFallback>{initials(person.name)}</AvatarFallback>
-                </Avatar>
+                <PhotoAvatar
+                  name={person.name}
+                  photoUrl={person.photoUrl}
+                  size={size}
+                />
               </TooltipTrigger>
               <TooltipContent>{person.name}</TooltipContent>
             </Tooltip>

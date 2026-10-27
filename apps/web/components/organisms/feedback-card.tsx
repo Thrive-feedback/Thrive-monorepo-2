@@ -1,9 +1,8 @@
-import { Avatar, AvatarFallback } from '@/components/atoms/avatar';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
+import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { calendarDay } from '@/lib/calendar-day.util';
 import { type FeedItem, REACTIONS } from '@/lib/feedback/feed-item.type';
-import { initials } from '@/lib/initials.util';
 import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
 import { ReactionBar } from './reaction-bar';
@@ -31,9 +30,11 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
   return (
     <article className="flex flex-col gap-3 py-5">
       <header className="flex items-center gap-3">
-        <Avatar size="md" aria-hidden="true">
-          <AvatarFallback>{initials(item.giverName ?? '')}</AvatarFallback>
-        </Avatar>
+        <PhotoAvatar
+          name={item.giverName ?? ''}
+          photoUrl={item.giverPhotoUrl}
+          size="md"
+        />
         <div className="flex min-w-0 flex-1 flex-col">
           <Text as="p" variant="subtitle-4" className="break-words">
             <PersonName

@@ -1,6 +1,10 @@
+import { preconnect } from 'react-dom';
 import styles from '@/components/organisms/glass.module.css';
 import { MemberNavbar } from '@/components/organisms/member-navbar';
 import { cn } from '@/lib/cn.util';
+
+/** Where Google serves the photos people signed in with. */
+const GOOGLE_PHOTOS_ORIGIN = 'https://lh3.googleusercontent.com';
 
 /**
  * The page shape of every page a Member uses: the Member navbar, then content. It is
@@ -16,6 +20,9 @@ import { cn } from '@/lib/cn.util';
  * shell knowing what it holds.
  */
 export function MemberShell({ children }: { children: React.ReactNode }) {
+  // Every signed-in page shows faces, so the connection to Google is opened while the page
+  // renders rather than when the first photo is asked for.
+  preconnect(GOOGLE_PHOTOS_ORIGIN);
   return (
     <div className="flex min-h-dvh flex-col">
       <MemberNavbar />
