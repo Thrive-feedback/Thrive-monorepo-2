@@ -108,7 +108,7 @@ describe('GiveFeedbackForm', () => {
     expect(giveFeedback).not.toHaveBeenCalled();
   });
 
-  it('is shared with only the Receiver unless the Giver chooses otherwise', async () => {
+  it('is shared with everyone in the Workspace unless the Giver chooses otherwise', async () => {
     const user = userEvent.setup();
     render(
       <GiveFeedbackForm
@@ -119,12 +119,14 @@ describe('GiveFeedbackForm', () => {
     );
 
     expect(audienceButton()).toHaveAccessibleName(
-      'Who else can read it: Only them',
+      'Who else can read it: Everyone in the Workspace',
     );
 
     await openAudience(user);
 
-    expect(screen.getByRole('radio', { name: 'Only them' })).toBeChecked();
+    expect(
+      screen.getByRole('radio', { name: 'Everyone in the Workspace' }),
+    ).toBeChecked();
   });
 
   it('asks who to share it with, leaving out the Receiver', async () => {
@@ -218,7 +220,7 @@ describe('GiveFeedbackForm', () => {
     expect(sentFormData()).toEqual({
       receiverAccountIds: [BEN],
       message: ['You kept it calm.'],
-      visibility: ['ONLY_ME'],
+      visibility: ['EVERYONE'],
     });
   });
 
@@ -266,5 +268,144 @@ describe('GiveFeedbackForm', () => {
     expect(screen.getByRole('textbox', { name: /Your feedback/ })).toHaveValue(
       'You kept it calm.',
     );
+  });
+
+  describe('when the Feedback message mentions a teammate', () => {
+    const NAMED = TEAMMATES.map((teammate) => ({
+      ...teammate,
+      slug: teammate.accountId === BEN ? 'ben' : 'cara',
+    }));
+
+    function renderNamed() {
+      render(
+        <GiveFeedbackForm
+          teammates={NAMED}
+          workspaceGoals={[]}
+          action={giveFeedback}
+        />,
+      );
+    }
+
+    function messageField() {
+      return screen.getByRole('textbox', { name: /Your feedback/ });
+    }
+
+    async function chooseAudience(
+      user: ReturnType<typeof userEvent.setup>,
+      name: string,
+    ) {
+      await user.click(screen.getByRole('radio', { name }));
+    }
+
+    it('leaves Everyone as it is', async () => {
+      const user = userEvent.setup();
+      renderNamed();
+      await pickReceivers(user, 'Ben Carter');
+
+      await user.type(messageField(), 'You and @cara kept it calm. ');
+
+      expect(audienceButton()).toHaveAccessibleName(
+        'Who else can read it: Everyone in the Workspace',
+      );
+    });
+
+    it('keeps them selected, and Only them closed, while they are mentioned', async () => {
+      const user = userEvent.setup();
+      renderNamed();
+      await pickReceivers(user, 'Ben Carter');
+      await user.type(messageField(), 'You and @cara kept it calm. ');
+
+      await openAudience(user);
+      await chooseAudience(user, 'Selected people');
+
+      expect(screen.getByRole('radio', { name: 'Only them' })).toBeDisabled();
+      expect(audienceButton()).toHaveAccessibleName(
+        'Who else can read it: Selected people · 1',
+      );
+      await user.click(peopleButton());
+      const cara = screen.getByRole('checkbox', { name: 'Cara Diaz' });
+      expect(cara).toBeChecked();
+      expect(cara).toBeDisabled();
+      expect(cara).toHaveAccessibleDescription(
+        expect.stringContaining('Mentioned in your message'),
+      );
+    });
+
+    it('moves Only them to Selected people, and unticks them when the mention goes', async () => {
+      const user = userEvent.setup();
+      renderNamed();
+      await pickReceivers(user, 'Ben Carter');
+      await openAudience(user);
+      await chooseAudience(user, 'Only them');
+      await user.keyboard('{Escape}');
+
+      await user.type(messageField(), 'You and @cara kept it calm. ');
+
+      expect(audienceButton()).toHaveAccessibleName(
+        'Who else can read it: Selected people · 1',
+      );
+      await openAudience(user);
+      expect(
+        screen.getByText(
+          /Changed to Selected people because you mentioned Cara Diaz\./,
+        ),
+      ).toBeInTheDocument();
+      await user.keyboard('{Escape}');
+
+      await user.clear(messageField());
+      await user.type(messageField(), 'You kept it calm.');
+
+      expect(audienceButton()).toHaveAccessibleName(
+        'Who else can read it: Selected people',
+      );
+    });
+
+    it('keeps somebody ticked by hand once the mention goes', async () => {
+      const user = userEvent.setup();
+      renderNamed();
+      await pickReceivers(user, 'Ben Carter');
+      await openAudience(user);
+      await chooseAudience(user, 'Selected people');
+      await tickAndDone(user, 'Cara Diaz');
+      await user.keyboard('{Escape}');
+      await user.type(messageField(), 'You and @cara kept it calm. ');
+
+      await user.clear(messageField());
+      await user.type(messageField(), 'You kept it calm.');
+      await user.click(screen.getByRole('button', { name: 'Send feedback' }));
+
+      expect(sentFormData()).toMatchObject({
+        visibility: ['SELECTED_PEOPLE'],
+        selectedAccountIds: [CARA],
+      });
+    });
+
+    it('leaves Only them open when it mentions whoever it is for', async () => {
+      const user = userEvent.setup();
+      renderNamed();
+      await pickReceivers(user, 'Ben Carter');
+      await user.type(messageField(), '@ben kept it calm. ');
+
+      await openAudience(user);
+
+      expect(screen.getByRole('radio', { name: 'Only them' })).toBeEnabled();
+    });
+
+    it('sends the people it mentions among those who may read it', async () => {
+      const user = userEvent.setup();
+      renderNamed();
+      await pickReceivers(user, 'Ben Carter');
+      await user.type(messageField(), 'You and @cara kept it calm. ');
+      await openAudience(user);
+      await chooseAudience(user, 'Selected people');
+      await user.keyboard('{Escape}');
+
+      await user.click(screen.getByRole('button', { name: 'Send feedback' }));
+
+      expect(sentFormData()).toMatchObject({
+        visibility: ['SELECTED_PEOPLE'],
+        selectedAccountIds: [CARA],
+      });
+    });
   });
 });

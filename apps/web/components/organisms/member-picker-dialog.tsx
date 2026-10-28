@@ -49,6 +49,8 @@ export type MemberPickerDialogProps = {
   onDone: (accountIds: readonly string[]) => void;
   /** It closed without Done — Cancel, the ×, Escape or a click outside — and nothing changed. */
   onCancel?: () => void;
+  /** Ticked and not to be unticked, each with the reason shown under their name. */
+  locked?: ReadonlyMap<string, string>;
 };
 
 /**
@@ -107,7 +109,7 @@ export function MemberPickerDialog({
 
 type MemberPickerBodyProps = Pick<
   MemberPickerDialogProps,
-  'teammates' | 'value' | 'title' | 'description' | 'onDone'
+  'teammates' | 'value' | 'title' | 'description' | 'onDone' | 'locked'
 >;
 
 function MemberPickerBody({
@@ -116,6 +118,7 @@ function MemberPickerBody({
   title,
   description,
   onDone,
+  locked,
 }: MemberPickerBodyProps) {
   const id = useId();
   const [draft, setDraft] = useState<readonly string[]>(value);
@@ -134,6 +137,9 @@ function MemberPickerBody({
   }
 
   function toggle(accountId: string, checked: boolean) {
+    if (locked?.has(accountId)) {
+      return;
+    }
     if (checked) {
       choose([accountId]);
     } else {
@@ -218,6 +224,11 @@ function MemberPickerBody({
           >
             {shown.map((teammate) => {
               const rowId = `${id}-${teammate.accountId}`;
+              const lockedBecause = locked?.get(teammate.accountId);
+              const describedBy = [
+                teammate.email !== teammate.name ? `${rowId}-email` : null,
+                lockedBecause ? `${rowId}-locked` : null,
+              ].filter((each) => each !== null);
               return (
                 <li key={teammate.accountId}>
                   <label
@@ -244,15 +255,24 @@ function MemberPickerBody({
                           {teammate.email}
                         </span>
                       )}
+                      {lockedBecause && (
+                        <span
+                          id={`${rowId}-locked`}
+                          className="truncate text-body-3 text-fg-secondary"
+                        >
+                          {lockedBecause}
+                        </span>
+                      )}
                     </span>
                     <Checkbox
                       id={rowId}
                       aria-labelledby={`${rowId}-name`}
                       aria-describedby={
-                        teammate.email !== teammate.name
-                          ? `${rowId}-email`
+                        describedBy.length > 0
+                          ? describedBy.join(' ')
                           : undefined
                       }
+                      disabled={lockedBecause !== undefined}
                       checked={chosen.has(teammate.accountId)}
                       onCheckedChange={(checked) =>
                         toggle(teammate.accountId, checked === true)

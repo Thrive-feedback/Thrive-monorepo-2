@@ -47,6 +47,8 @@ const SEND_ERRORS: Readonly<Record<string, string>> = {
   NO_PEOPLE_SELECTED: 'Pick at least one person to share it with.',
   SELECTED_PERSON_NOT_IN_WORKSPACE:
     'Someone you picked to share it with is no longer in your Workspace.',
+  MENTIONED_PERSON_LEFT_OUT:
+    'Everyone you mention must be able to read it. Share it with them, or with everyone.',
   FEEDBACK_MESSAGE_TOO_LONG: TOO_LONG,
 };
 

@@ -45,6 +45,8 @@ const SEND_ERRORS: Readonly<Record<string, string>> = {
   NO_PEOPLE_SELECTED: 'Pick at least one person to share it with.',
   SELECTED_PERSON_NOT_IN_WORKSPACE:
     'Someone you picked to share it with is no longer in your Workspace.',
+  MENTIONED_PERSON_LEFT_OUT:
+    'Everyone you mention must be able to read it. Share it with them, or with everyone.',
 };
 
 /** Where to go instead when the API says this step is not the person's to take. */

@@ -15,6 +15,7 @@ import type {
   GiveFeedbackState,
 } from '@/lib/feedback/give-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { useMentionedAudience } from '@/lib/feedback/use-mentioned-audience';
 import { ComposerLayout, ComposerToRow } from './composer-layout';
 import { feedbackTagTriggers } from './feedback-tag-triggers.util';
 import { MemberMultiPicker } from './member-multi-picker';
@@ -41,12 +42,13 @@ const VISIBILITIES = [
   { value: 'EVERYONE', label: 'Everyone in the Workspace' },
 ] as const;
 
-type Visibility = (typeof VISIBILITIES)[number]['value'];
-
 type FieldErrors = NonNullable<GiveFeedbackState['fieldErrors']>;
 
 /** As long as the API lets a Feedback message be. */
 const MAX_MESSAGE_LENGTH = 4000;
+
+/** What the people dialog says under someone a Mention keeps selected. */
+const MENTIONED = 'Mentioned in your message';
 
 /**
  * Giving Feedback without being asked — Offered Feedback. The Giver picks one or more Receivers
@@ -66,10 +68,13 @@ export function GiveFeedbackForm({
     readonly string[]
   >([]);
   const [message, setMessage] = useState('');
-  const [visibility, setVisibility] = useState<Visibility>('ONLY_ME');
-  const [selectedAccountIds, setSelectedAccountIds] = useState<
-    ReadonlySet<string>
-  >(new Set());
+  // Every Receiver reads it whatever is chosen, so mentioning them locks nobody in.
+  const audience = useMentionedAudience({
+    message,
+    teammates,
+    readsAnyway: receiverAccountIds,
+  });
+  const { visibility, selectedAccountIds } = audience;
   const [clientErrors, setClientErrors] = useState<FieldErrors>({});
   const [audienceOpen, setAudienceOpen] = useState(false);
   const audienceErrorId = useId();
@@ -94,7 +99,7 @@ export function GiveFeedbackForm({
   );
 
   function handleSelectedChange(accountIds: ReadonlySet<string>) {
-    setSelectedAccountIds(accountIds);
+    audience.select(accountIds);
     setClientErrors((current) => ({
       ...current,
       selectedAccountIds: undefined,
@@ -178,6 +183,7 @@ export function GiveFeedbackForm({
           value={message}
           triggers={tagTriggers}
           onChange={(event) => {
+            audience.noteMessage(event.target.value);
             setMessage(event.target.value);
             setClientErrors((current) => ({ ...current, message: undefined }));
           }}
@@ -191,20 +197,36 @@ export function GiveFeedbackForm({
           value={visibility}
           people={othersToShareWith}
           selectedAccountIds={selectedAccountIds}
-          helperText="This can't be changed after you send it."
+          helperText={
+            <>
+              {audience.notice ?? audience.lockedReason} This can&apos;t be
+              changed after you send it.
+            </>
+          }
           peopleDescription={`${names.format([...(receiverNames.length > 0 ? receiverNames : ['Whoever it is for']), 'you'])} can always read it.`}
           errorMessage={errors.selectedAccountIds}
           errorId={audienceErrorId}
           open={audienceOpen}
           onOpenChange={setAudienceOpen}
           onValueChange={(value) => {
-            setVisibility(value);
+            audience.choose(value);
             setClientErrors((current) => ({
               ...current,
               selectedAccountIds: undefined,
             }));
           }}
           onSelectedChange={handleSelectedChange}
+          disabledValues={
+            audience.onlyMeDisabled ? new Set(['ONLY_ME'] as const) : undefined
+          }
+          lockedPeople={
+            new Map(
+              [...audience.lockedAccountIds].map((accountId) => [
+                accountId,
+                MENTIONED,
+              ]),
+            )
+          }
         />
       }
       footerError={errors.selectedAccountIds}

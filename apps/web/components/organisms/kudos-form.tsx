@@ -10,9 +10,8 @@ import type {
   GiveKudosState,
 } from '@/lib/feedback/give-kudos-state.type';
 import { kudosLength, MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
+import { mentionedTeammates } from '@/lib/feedback/mentioned-teammates.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
-import { MENTION_RULE } from '@/lib/feedback/text-tag-rules.constant';
-import { segmentsOf, tagKeyOf } from '@/lib/tag-text.util';
 import {
   ComposerAudienceNote,
   ComposerLayout,
@@ -29,24 +28,6 @@ export type KudosFormProps = {
   /** Sends the Kudos: Home's server action, or a stand-in. */
   action: GiveKudosAction;
 };
-
-/** The teammates the message @mentions, once each, in the order they are first mentioned. */
-function mentionedTeammates(
-  message: string,
-  teammates: readonly Teammate[],
-): Teammate[] {
-  const bySlug = new Map(
-    teammates.flatMap((teammate) =>
-      teammate.slug === null ? [] : [[tagKeyOf(teammate.slug), teammate]],
-    ),
-  );
-  const found = new Map<string, Teammate>();
-  for (const segment of segmentsOf(message, [MENTION_RULE])) {
-    const teammate = segment.kind === 'tag' ? bySlug.get(segment.key) : null;
-    if (teammate) found.set(teammate.accountId, teammate);
-  }
-  return [...found.values()];
-}
 
 /**
  * Giving Kudos: one short message that @mentions everyone it is for (brain `ADR-0043`). Nobody is

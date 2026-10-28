@@ -16,6 +16,7 @@ import type {
   RequestFeedbackState,
 } from '@/lib/feedback/request-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { useMentionedAudience } from '@/lib/feedback/use-mentioned-audience';
 import {
   ComposerLayout,
   ComposerLayoutSkeleton,
@@ -54,6 +55,9 @@ const PICK_SOMEONE = 'Pick at least one person to ask.';
 const WRITE_A_MESSAGE = 'Write what you would like feedback on.';
 const PICK_SOMEONE_TO_SHARE_WITH = 'Pick at least one person to share it with.';
 
+/** What the people dialog says under someone a Mention keeps selected. */
+const MENTIONED = 'Mentioned in your message';
+
 /**
  * Asking one or more teammates for Feedback with a Request message (#30), and choosing who
  * besides the Requester reads what comes back — fixed once sent.
@@ -73,10 +77,13 @@ export function RequestFeedbackForm({
 }: RequestFeedbackFormProps) {
   const [giverAccountIds, setGiverAccountIds] = useState<readonly string[]>([]);
   const [message, setMessage] = useState('');
-  const [visibility, setVisibility] = useState<Visibility>('ONLY_ME');
-  const [selectedAccountIds, setSelectedAccountIds] = useState<
-    ReadonlySet<string>
-  >(new Set());
+  // The Givers asked read the request whatever is chosen, so mentioning them locks nobody in.
+  const audience = useMentionedAudience({
+    message,
+    teammates,
+    readsAnyway: giverAccountIds,
+  });
+  const { visibility, selectedAccountIds } = audience;
   const [clientErrors, setClientErrors] = useState<FieldErrors>({});
   const [audienceOpen, setAudienceOpen] = useState(false);
   const audienceErrorId = useId();
@@ -102,17 +109,18 @@ export function RequestFeedbackForm({
   }
 
   function handleMessageChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    audience.noteMessage(event.target.value);
     setMessage(event.target.value);
     setClientErrors((errors) => ({ ...errors, message: undefined }));
   }
 
   function handleVisibilityChange(value: Visibility) {
-    setVisibility(value);
+    audience.choose(value);
     setClientErrors((errors) => ({ ...errors, selectedAccountIds: undefined }));
   }
 
   function handleSelectedChange(accountIds: ReadonlySet<string>) {
-    setSelectedAccountIds(accountIds);
+    audience.select(accountIds);
     setClientErrors((errors) => ({ ...errors, selectedAccountIds: undefined }));
   }
 
@@ -190,6 +198,7 @@ export function RequestFeedbackForm({
           selectedAccountIds={selectedAccountIds}
           helperText={
             <>
+              {audience.notice ?? audience.lockedReason}{' '}
               {VISIBILITY_MEANS[visibility]} This can&apos;t be changed after
               you send it.
             </>
@@ -201,6 +210,17 @@ export function RequestFeedbackForm({
           onOpenChange={setAudienceOpen}
           onValueChange={handleVisibilityChange}
           onSelectedChange={handleSelectedChange}
+          disabledValues={
+            audience.onlyMeDisabled ? new Set(['ONLY_ME'] as const) : undefined
+          }
+          lockedPeople={
+            new Map(
+              [...audience.lockedAccountIds].map((accountId) => [
+                accountId,
+                MENTIONED,
+              ]),
+            )
+          }
         />
       }
       footerError={fieldErrors.selectedAccountIds}
