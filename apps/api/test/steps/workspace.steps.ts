@@ -121,19 +121,19 @@ Then(
   },
 );
 
-/** One person as a list shows them: a Member, or a giver, receiver or requester inside an item. */
+/** One person as a list shows them: a Member, or a giver, Receiver or requester inside an item. */
 type ListedPerson = { accountId?: string; photoUrl?: string | null };
 
 /**
  * The people one item of the last list names, whatever its shape: the item itself on the list of
- * Members, nested giver, receiver and requester objects, or a flat `giverAccountId` and
+ * Members, nested giver and requester objects and every Receiver, or a flat `giverAccountId` and
  * `giverPhotoUrl` pair.
  */
 function peopleIn(item: Record<string, unknown>): ListedPerson[] {
   return [
     item as ListedPerson,
     item.giver as ListedPerson,
-    item.receiver as ListedPerson,
+    ...((item.receivers as ListedPerson[] | undefined) ?? []),
     item.requester as ListedPerson,
     {
       accountId: item.giverAccountId as string | undefined,

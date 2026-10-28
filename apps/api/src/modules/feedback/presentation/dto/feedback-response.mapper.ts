@@ -33,11 +33,6 @@ export function toTagsResponse(tags: TagsView) {
  * lists that show the pieces a reader may see.
  */
 export function toFeedbackResponse(feedback: FeedbackView) {
-  // Every piece has at least one Receiver: the table refuses none, and Requested has exactly one.
-  const [firstReceiver] = feedback.receivers;
-  if (!firstReceiver) {
-    throw new Error(`Feedback ${feedback.id} has no Receiver.`);
-  }
   return {
     id: feedback.id,
     origin: feedback.origin,
@@ -48,7 +43,6 @@ export function toFeedbackResponse(feedback: FeedbackView) {
       photoUrl: feedback.giverPhotoUrl,
       status: feedback.giverStatus,
     },
-    receiver: toPersonResponse(firstReceiver),
     receivers: feedback.receivers.map(toPersonResponse),
     message: feedback.message,
     tags: toTagsResponse(feedback.tags),

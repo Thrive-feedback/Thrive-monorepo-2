@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { offerFeedbackRequestSchema, receiversOf } from './offer-feedback.dto';
+import { offerFeedbackRequestSchema } from './offer-feedback.dto';
 
 const BEN = '0199a0f0-0000-7000-8000-00000000000b';
 const CARA = '0199a0f0-0000-7000-8000-00000000000c';
@@ -12,27 +12,18 @@ describe('who a body gives Feedback to', () => {
       receiverAccountIds: [CARA, BEN],
     });
 
-    expect(receiversOf(body)).toEqual([CARA, BEN]);
+    expect(body.receiverAccountIds).toEqual([CARA, BEN]);
   });
 
-  it('still takes the one Receiver a page loaded before a deploy sends', () => {
-    const body = offerFeedbackRequestSchema.parse({
-      ...BODY,
-      receiverAccountId: BEN,
-    });
-
-    expect(receiversOf(body)).toEqual([BEN]);
-  });
-
-  it('refuses a body that names nobody, or names them both ways', () => {
-    expect(offerFeedbackRequestSchema.safeParse(BODY).success).toBe(false);
+  it('refuses the one-Receiver shape the route took before Feedback could have several', () => {
     expect(
-      offerFeedbackRequestSchema.safeParse({
-        ...BODY,
-        receiverAccountId: BEN,
-        receiverAccountIds: [CARA],
-      }).success,
+      offerFeedbackRequestSchema.safeParse({ ...BODY, receiverAccountId: BEN })
+        .success,
     ).toBe(false);
+  });
+
+  it('refuses a body that names nobody', () => {
+    expect(offerFeedbackRequestSchema.safeParse(BODY).success).toBe(false);
     expect(
       offerFeedbackRequestSchema.safeParse({ ...BODY, receiverAccountIds: [] })
         .success,

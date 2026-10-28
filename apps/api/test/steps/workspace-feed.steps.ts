@@ -5,8 +5,10 @@ import type { ThriveWorld } from '../support/world';
 interface FeedItem {
   readonly message: string;
   readonly giver: { readonly accountId: string; readonly status: string };
-  readonly receiver: { readonly accountId: string; readonly status: string };
-  readonly receivers: readonly { readonly accountId: string }[];
+  readonly receivers: readonly {
+    readonly accountId: string;
+    readonly status: string;
+  }[];
   readonly request: {
     readonly message: string;
     readonly requester: { readonly accountId: string };
@@ -77,13 +79,13 @@ Then(
       feedItems(this).map((feedback) => [
         feedback.message,
         feedback.giver.accountId,
-        feedback.receiver.accountId,
+        feedback.receivers.map((named) => named.accountId),
       ]),
       [
         [
           message,
           this.person(giver).accountId,
-          this.person(receiver).accountId,
+          [this.person(receiver).accountId],
         ],
       ],
     );
@@ -154,7 +156,7 @@ Then(
   function (this: ThriveWorld, _name: string, person: string, status: string) {
     const accountId = this.person(person).accountId;
     const shown = feedItems(this).flatMap((feedback) =>
-      [feedback.giver, feedback.receiver].filter(
+      [feedback.giver, ...feedback.receivers].filter(
         (named) => named.accountId === accountId,
       ),
     );

@@ -4535,11 +4535,6 @@
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
           },
-          "receiverAccountId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-          },
           "message": {
             "type": "string"
           },
@@ -4562,6 +4557,7 @@
           }
         },
         "required": [
+          "receiverAccountIds",
           "message",
           "visibility"
         ],
@@ -4817,41 +4813,6 @@
             ],
             "additionalProperties": false
           },
-          "receiver": {
-            "type": "object",
-            "properties": {
-              "accountId": {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-              },
-              "name": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "photoUrl": {
-                "type": "string",
-                "format": "uri",
-                "nullable": true
-              },
-              "status": {
-                "type": "string",
-                "enum": [
-                  "ACTIVE",
-                  "DEACTIVATED"
-                ]
-              }
-            },
-            "required": [
-              "accountId",
-              "name",
-              "photoUrl",
-              "status"
-            ],
-            "additionalProperties": false
-          },
           "receivers": {
             "type": "array",
             "minItems": 1,
@@ -4949,7 +4910,6 @@
           "origin",
           "feedbackRequestId",
           "giver",
-          "receiver",
           "receivers",
           "message",
           "tags",
@@ -4984,41 +4944,6 @@
                   "nullable": true
                 },
                 "giver": {
-                  "type": "object",
-                  "properties": {
-                    "accountId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "name": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    },
-                    "photoUrl": {
-                      "type": "string",
-                      "format": "uri",
-                      "nullable": true
-                    },
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "ACTIVE",
-                        "DEACTIVATED"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "accountId",
-                    "name",
-                    "photoUrl",
-                    "status"
-                  ],
-                  "additionalProperties": false
-                },
-                "receiver": {
                   "type": "object",
                   "properties": {
                     "accountId": {
@@ -5150,7 +5075,6 @@
                 "origin",
                 "feedbackRequestId",
                 "giver",
-                "receiver",
                 "receivers",
                 "message",
                 "tags",
@@ -5210,41 +5134,6 @@
                   "nullable": true
                 },
                 "giver": {
-                  "type": "object",
-                  "properties": {
-                    "accountId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "name": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    },
-                    "photoUrl": {
-                      "type": "string",
-                      "format": "uri",
-                      "nullable": true
-                    },
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "ACTIVE",
-                        "DEACTIVATED"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "accountId",
-                    "name",
-                    "photoUrl",
-                    "status"
-                  ],
-                  "additionalProperties": false
-                },
-                "receiver": {
                   "type": "object",
                   "properties": {
                     "accountId": {
@@ -5510,7 +5399,6 @@
                 "origin",
                 "feedbackRequestId",
                 "giver",
-                "receiver",
                 "receivers",
                 "message",
                 "tags",

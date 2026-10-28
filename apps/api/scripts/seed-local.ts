@@ -203,21 +203,21 @@ async function main(): Promise<void> {
   );
 
   await call(teammate, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
-    receiverAccountId: admin.accountId,
+    receiverAccountIds: [admin.accountId],
     message:
       'You kept the room with you when the demo broke, and the recap at the end landed. Keep doing that.',
     visibility: 'ONLY_ME',
   });
 
   await call(third, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
-    receiverAccountId: teammate.accountId,
+    receiverAccountIds: [teammate.accountId],
     message:
       'The second paragraph does the work now, and the rest got out of its way. Worth saying what it costs a bit earlier.',
     visibility: 'EVERYONE',
   });
 
   await call(teammate, 'POST', `/v1/workspaces/${workspaceId}/feedback`, {
-    receiverAccountId: third.accountId,
+    receiverAccountIds: [third.accountId],
     message:
       'Your onboarding notes answered every question I had in my first week. Writing them down instead of only explaining them is what made the difference.',
     visibility: 'SELECTED_PEOPLE',

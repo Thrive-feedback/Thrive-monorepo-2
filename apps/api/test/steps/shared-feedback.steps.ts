@@ -5,7 +5,7 @@ import type { ThriveWorld } from '../support/world';
 interface SharedFeedbackItem {
   readonly message: string;
   readonly giver: { readonly accountId: string };
-  readonly receiver: { readonly accountId: string };
+  readonly receivers: readonly { readonly accountId: string }[];
 }
 
 function sharedItems(world: ThriveWorld): SharedFeedbackItem[] {
@@ -42,13 +42,13 @@ Then(
       sharedItems(this).map((feedback) => [
         feedback.message,
         feedback.giver.accountId,
-        feedback.receiver.accountId,
+        feedback.receivers.map((named) => named.accountId),
       ]),
       [
         [
           message,
           this.person(giver).accountId,
-          this.person(receiver).accountId,
+          [this.person(receiver).accountId],
         ],
       ],
     );
