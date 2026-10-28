@@ -27,6 +27,7 @@ const FEEDBACK: FeedItem = {
   messageTags: NO_TEXT_TAGS,
   givenAt: '2026-10-13T03:00:00.000Z',
   reactions: {},
+  request: null,
 };
 
 async function renderDetail() {

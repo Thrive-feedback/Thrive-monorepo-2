@@ -18,6 +18,7 @@ function feedback(id: string, message: string, givenAt: string): FeedItem {
     messageTags: NO_TAGS,
     givenAt,
     reactions: {},
+    request: null,
   };
 }
 

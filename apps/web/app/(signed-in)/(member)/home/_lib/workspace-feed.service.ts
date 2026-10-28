@@ -42,6 +42,12 @@ export const readWorkspaceFeed = cache(
       givenAt: feedback.createdAt,
       // Reactions are #92; until then a card shows the four with nobody behind them.
       reactions: {},
+      request: feedback.request && {
+        message: feedback.request.message,
+        messageTags: feedback.request.tags,
+        requester: toFeedbackPerson(feedback.request.requester),
+        asked: feedback.request.asked.map(toFeedbackPerson),
+      },
     }));
   },
 );

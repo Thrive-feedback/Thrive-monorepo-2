@@ -1,3 +1,4 @@
+import { GlobeIcon } from 'lucide-react';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import type { AnswerAskAction } from '@/lib/feedback/answer-ask-state.type';
@@ -19,7 +20,9 @@ export type AnswerAskViewProps = {
 };
 
 /**
- * Where a Giver answers: who asked, what about, and one box. An Ask that has already been
+ * Where a Giver answers: who asked, what about, who will read the answer, and one box. An answer
+ * to a request shared with everyone goes on the Workspace feed, so that Giver is told before
+ * writing, in a notice rather than the quiet line (brain `ADR-0046`). An Ask that has already been
  * answered gets no box — the first answer is final, so offering one would only earn a refusal.
  *
  * An Ask that is not waiting for this person says so in place rather than turning the page into
@@ -47,11 +50,29 @@ export function AnswerAskView({
           <PersonName name={asker} inactive={ask.requesterInactive} /> asked:{' '}
           <FeedbackText text={ask.message} tags={ask.messageTags} />
         </Text>
-        <Text variant="body-3" tone="muted">
-          Only <PersonName name={asker} inactive={ask.requesterInactive} /> can
-          read what you write, and your name goes with it.
-        </Text>
+        {ask.onWorkspaceFeed ? null : (
+          <Text variant="body-3" tone="muted">
+            Only <PersonName name={asker} inactive={ask.requesterInactive} />{' '}
+            can read what you write, and your name goes with it.
+          </Text>
+        )}
       </div>
+      {ask.onWorkspaceFeed && (
+        <div className="flex items-start gap-2 rounded-container border border-border-muted bg-action-primary-surface p-3">
+          <GlobeIcon
+            aria-hidden="true"
+            className="mt-0.5 size-4 shrink-0 text-fg-accent"
+          />
+          <Text as="p" variant="body-3">
+            <span className="font-medium">
+              Your answer goes on the Workspace feed.
+            </span>{' '}
+            Everyone in the Workspace can read it, beside{' '}
+            <PersonName name={asker} inactive={ask.requesterInactive} />
+            ’s question and the names of everyone asked. Your name goes with it.
+          </Text>
+        </div>
+      )}
       {ask.status === 'PENDING' ? (
         <AnswerAskForm
           askId={ask.askId}

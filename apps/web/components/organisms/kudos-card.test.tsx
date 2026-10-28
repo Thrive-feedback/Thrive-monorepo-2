@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { KudosItem } from '@/lib/feedback/kudos-item.type';
 import { KudosCard } from './kudos-card';
@@ -25,14 +26,30 @@ function kudos(overrides: Partial<KudosItem> = {}): KudosItem {
 }
 
 describe('KudosCard', () => {
-  it('names who gave it and everyone it is for, marked as Kudos', () => {
+  it('names who gave it and everyone it is for, marked as Kudos by its badge', () => {
     render(<KudosCard item={kudos()} />);
 
-    expect(screen.getByRole('article')).toHaveTextContent(
-      'Ann Lee to Ben Carter, Cara Diaz and Dee Park',
-    );
-    expect(screen.getByText('Kudos')).toBeInTheDocument();
+    expect(screen.getByRole('banner')).toHaveTextContent(/^ALAnn Leeto/);
+    expect(
+      screen.getByRole('button', {
+        name: 'Ben Carter, Cara Diaz, and Dee Park. Show who it is for',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Kudos')).toHaveAttribute('data-slot', 'badge');
     expect(screen.getByText('@Ben')).toBeInTheDocument();
+  });
+
+  it('says in the dialog of several recipients that the Giver sent them all this Kudos', async () => {
+    const user = userEvent.setup();
+    render(<KudosCard item={kudos()} />);
+
+    await user.click(
+      screen.getByRole('button', { name: /Show who it is for/ }),
+    );
+
+    expect(
+      screen.getByRole('dialog', { name: 'For 3 people' }),
+    ).toHaveTextContent('Ann Lee sent this Kudos to all of them.');
   });
 
   it('shows somebody Deactivated as inactive, and somebody unnamed as a teammate', () => {
@@ -46,8 +63,8 @@ describe('KudosCard', () => {
       />,
     );
 
-    expect(screen.getByRole('article')).toHaveTextContent(
-      'A teammate to Ben Carter (inactive)',
+    expect(screen.getByRole('banner')).toHaveTextContent(
+      'A teammatetoBCBen Carter (inactive)',
     );
   });
 });

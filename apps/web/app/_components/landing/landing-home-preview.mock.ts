@@ -78,6 +78,7 @@ export const PREVIEW_WORKSPACE_FEED: readonly FeedItem[] = [
     messageTags: NO_TEXT_TAGS,
     givenAt: '2026-10-20T09:30:00.000Z',
     reactions: { '👏': ['Ploy Srisuk', 'Fern Somsak'], '❤️': ['Arm Wattana'] },
+    request: null,
   },
   {
     id: 'preview-feed-2',
@@ -91,6 +92,7 @@ export const PREVIEW_WORKSPACE_FEED: readonly FeedItem[] = [
     messageTags: NO_TEXT_TAGS,
     givenAt: '2026-10-19T04:15:00.000Z',
     reactions: { '💡': ['Arm Wattana'], '🙏': ['Ploy Srisuk'] },
+    request: null,
   },
 ];
 
@@ -107,6 +109,7 @@ export const PREVIEW_SHARED_WITH_ME: readonly FeedItem[] = [
     messageTags: NO_TEXT_TAGS,
     givenAt: '2026-10-20T07:45:00.000Z',
     reactions: {},
+    request: null,
   },
 ];
 

@@ -14,4 +14,9 @@ export type WaitingAsk = {
   /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
   readonly requesterInactive: boolean;
   readonly status: AskStatus;
+  /**
+   * The answer goes on the Workspace feed, because the Requester shared the request with
+   * everyone. The only thing the Giver is told about who reads it (brain `ADR-0046`).
+   */
+  readonly onWorkspaceFeed: boolean;
 };
