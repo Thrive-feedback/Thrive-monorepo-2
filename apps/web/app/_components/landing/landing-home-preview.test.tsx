@@ -60,7 +60,10 @@ describe('LandingHomePreview', () => {
     render(<LandingHomePreview />);
 
     expect(first('heading', 'Waiting for me')).toBeInTheDocument();
-    expect(screen.getAllByText(/asked you/).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByRole('button', { name: 'Answer Fern Somsak’s Ask' })
+        .length,
+    ).toBeGreaterThan(0);
   });
 
   it('counts a Reaction when it is pressed', async () => {
@@ -88,9 +91,7 @@ describe('LandingHomePreview', () => {
     const user = userEvent.setup();
     render(<LandingHomePreview />);
 
-    await user.click(
-      first('button', 'In our run-through just now, where did you get lost?'),
-    );
+    await user.click(first('button', 'Answer Fern Somsak’s Ask'));
     const dialog = screen.getByRole('dialog', { name: 'Give your feedback' });
     await user.type(
       within(dialog).getByRole('textbox', {

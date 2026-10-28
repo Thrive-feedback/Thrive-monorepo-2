@@ -1,5 +1,5 @@
 import { readReceivedFeedback } from '@/app/(signed-in)/(member)/home/_lib/received-feedback.service';
-import { ReceivedFeedbackListView } from '@/components/organisms/received-feedback-list-view';
+import { FeedbackFeed } from '@/components/organisms/feedback-feed';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 export type ReceivedFeedbackListProps = {
@@ -11,5 +11,10 @@ export async function ReceivedFeedbackList({
   membership,
 }: ReceivedFeedbackListProps) {
   const received = await readReceivedFeedback(membership);
-  return <ReceivedFeedbackListView items={received} />;
+  return (
+    <FeedbackFeed
+      items={received}
+      emptyMessage="No one has written you feedback yet. Ask a teammate with the form above."
+    />
+  );
 }

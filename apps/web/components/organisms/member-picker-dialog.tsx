@@ -15,13 +15,13 @@ import {
 } from '@/components/atoms/dialog';
 import { Input } from '@/components/atoms/input';
 import { Text } from '@/components/atoms/text';
-import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import {
   matchesSearch,
   searchWord,
   takeMentions,
 } from '@/lib/feedback/member-search.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { PersonChip } from './person-chip';
 
 /**
  * Where the list goes. A Workspace long enough to scroll keeps it one height while the search
@@ -224,27 +224,29 @@ function MemberPickerBody({
                     htmlFor={rowId}
                     className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-action-neutral-surface-hover"
                   >
-                    <PhotoAvatar
-                      name={teammate.name}
-                      photoUrl={teammate.photoUrl}
+                    <PersonChip
+                      person={{
+                        name: teammate.name,
+                        photoUrl: teammate.photoUrl,
+                        inactive: false,
+                        // The picker lists teammates; the person picking is never among them.
+                        isYou: false,
+                      }}
+                      unnamed={teammate.email}
+                      nameId={`${rowId}-name`}
+                      detail={
+                        teammate.email !== teammate.name ? (
+                          <span
+                            id={`${rowId}-email`}
+                            className="truncate text-body-3 text-fg-secondary"
+                          >
+                            {teammate.email}
+                          </span>
+                        ) : undefined
+                      }
                       size="lg"
+                      className="flex-1 text-body-1 text-fg-primary"
                     />
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span
-                        id={`${rowId}-name`}
-                        className="truncate text-body-1 text-fg-primary"
-                      >
-                        {teammate.name}
-                      </span>
-                      {teammate.email !== teammate.name && (
-                        <span
-                          id={`${rowId}-email`}
-                          className="truncate text-body-3 text-fg-secondary"
-                        >
-                          {teammate.email}
-                        </span>
-                      )}
-                    </span>
                     <Checkbox
                       id={rowId}
                       aria-labelledby={`${rowId}-name`}

@@ -37,6 +37,7 @@ export const readMyAsks = cache(
       requesterName: ask.requester.name,
       requesterPhotoUrl: ask.requester.photoUrl,
       requesterInactive: ask.requester.status === 'DEACTIVATED',
+      onWorkspaceFeed: ask.onWorkspaceFeed,
       askedAt: ask.createdAt,
       status: ask.status,
     }));

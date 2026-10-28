@@ -50,8 +50,10 @@ describe('reading the Feedback Requests I sent', () => {
             askId: 'ask-1',
             giverAccountId: 'account-ben',
             giverName: 'Ben Carter',
+            giverPhotoUrl: null,
             giverStatus: 'ACTIVE',
             status: 'PENDING',
+            answer: null,
           },
         ],
       },
@@ -66,12 +68,53 @@ describe('reading the Feedback Requests I sent', () => {
           {
             askId: 'ask-1',
             giverName: 'Ben Carter',
+            giverPhotoUrl: null,
             giverInactive: false,
             status: 'PENDING',
+            answer: null,
+          },
+        ],
+        readers: { value: 'ONLY_ME', selectedPeople: [] },
+      },
+    ]);
+  });
+
+  it('carries each answer, with its words and the day it came, so the card can show it', async () => {
+    apiHolds([
+      {
+        id: 'request-1',
+        message: 'my presentation skills',
+        visibility: { value: 'EVERYONE', selectedPeople: [] },
+        createdAt: '2026-10-11T03:00:00.000Z',
+        asks: [
+          {
+            askId: 'ask-1',
+            giverAccountId: 'account-ben',
+            giverName: 'Ben Carter',
+            giverPhotoUrl: 'https://lh3.googleusercontent.com/a/ben=s96-c',
+            giverStatus: 'ACTIVE',
+            status: 'ANSWERED',
+            answer: {
+              message: 'Open with the story.',
+              tags: { workspaceGoals: [], mentions: [] },
+              answeredAt: '2026-10-12T03:00:00.000Z',
+            },
           },
         ],
       },
     ]);
+
+    const [request] = await readSentRequests(MEMBERSHIP);
+
+    expect(request?.asks[0]).toMatchObject({
+      giverPhotoUrl: 'https://lh3.googleusercontent.com/a/ben=s96-c',
+      status: 'ANSWERED',
+      answer: {
+        message: 'Open with the story.',
+        answeredAt: '2026-10-12T03:00:00.000Z',
+      },
+    });
+    expect(request?.readers?.value).toBe('EVERYONE');
   });
 
   it('leaves a Giver unnamed while they have not introduced themselves', async () => {

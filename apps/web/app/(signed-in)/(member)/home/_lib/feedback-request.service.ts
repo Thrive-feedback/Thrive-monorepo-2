@@ -16,6 +16,8 @@ export type SentFeedbackRequest = {
     readonly askId: string;
     /** The Member asked, or `null` while they have not introduced themselves. */
     readonly giverName: string | null;
+    /** Their Google photo, or `null` when they have none. */
+    readonly giverPhotoUrl: string | null;
     /** Deactivated in this Workspace, so shown as inactive; their Ask stays. */
     readonly giverInactive: boolean;
     readonly status: 'PENDING' | 'ANSWERED' | 'EXPIRED';
@@ -73,6 +75,7 @@ export async function readFeedbackRequest(
       asks: request.asks.map((ask) => ({
         askId: ask.askId,
         giverName: ask.giverName,
+        giverPhotoUrl: ask.giverPhotoUrl,
         giverInactive: ask.giverStatus === 'DEACTIVATED',
         status: ask.status,
         answer: ask.answer && {

@@ -1,6 +1,5 @@
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
-import type { ReceivedFeedback } from '@/lib/feedback/received-feedback.type';
 import type { SentRequest } from '@/lib/feedback/sent-request.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
@@ -58,8 +57,25 @@ export const PREVIEW_TEAMMATES: readonly Teammate[] = [
 
 /** Somebody a preview card names, with no photo: the preview draws initials. */
 function named(name: string) {
-  return { name, photoUrl: null, inactive: false } as const;
+  return { name, photoUrl: null, inactive: false, isYou: false } as const;
 }
+
+/** Ploy, the visitor: named "you" wherever her own Home names her. */
+export const PREVIEW_YOU = {
+  name: 'Ploy Srisuk',
+  photoUrl: null,
+  inactive: false,
+  isYou: true,
+} as const;
+
+const PITCH_QUESTION =
+  'In today’s pitch, what’s one thing I should change before the next one?';
+const MEETINGS_QUESTION =
+  'I’m working on shorter meetings. Where did we lose time this morning?';
+const PITCH_ANSWER =
+  'When you opened with market size, the room went quiet. When you told Mai’s story, they leaned in. Next time, open with the story.';
+const MEETINGS_ANSWER =
+  'We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.';
 
 export const PREVIEW_WORKSPACE_FEED: readonly FeedItem[] = [
   {
@@ -67,11 +83,8 @@ export const PREVIEW_WORKSPACE_FEED: readonly FeedItem[] = [
     giverName: 'Dao Rattana',
     giverPhotoUrl: null,
     giverInactive: false,
-    receivers: [
-      named('Nok Chaiyo'),
-      named('Ploy Srisuk'),
-      named('Fern Somsak'),
-    ],
+    giverIsYou: false,
+    receivers: [named('Nok Chaiyo'), PREVIEW_YOU, named('Fern Somsak')],
     origin: 'OFFERED',
     message:
       'Your onboarding notes answered every question our new designer had. She shipped her first screen on day three. Thank you!',
@@ -85,14 +98,19 @@ export const PREVIEW_WORKSPACE_FEED: readonly FeedItem[] = [
     giverName: 'Nok Chaiyo',
     giverPhotoUrl: null,
     giverInactive: false,
-    receivers: [named('Ploy Srisuk')],
+    giverIsYou: false,
+    receivers: [PREVIEW_YOU],
     origin: 'REQUESTED',
-    message:
-      'We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.',
+    message: MEETINGS_ANSWER,
     messageTags: NO_TEXT_TAGS,
     givenAt: '2026-10-19T04:15:00.000Z',
     reactions: { '💡': ['Arm Wattana'], '🙏': ['Ploy Srisuk'] },
-    request: null,
+    request: {
+      message: MEETINGS_QUESTION,
+      messageTags: NO_TEXT_TAGS,
+      requester: PREVIEW_YOU,
+      asked: [named('Nok Chaiyo'), named('Fern Somsak')],
+    },
   },
 ];
 
@@ -102,6 +120,7 @@ export const PREVIEW_SHARED_WITH_ME: readonly FeedItem[] = [
     giverName: 'Arm Wattana',
     giverPhotoUrl: null,
     giverInactive: false,
+    giverIsYou: false,
     receivers: [named('Fern Somsak')],
     origin: 'REQUESTED',
     message:
@@ -109,46 +128,65 @@ export const PREVIEW_SHARED_WITH_ME: readonly FeedItem[] = [
     messageTags: NO_TEXT_TAGS,
     givenAt: '2026-10-20T07:45:00.000Z',
     reactions: {},
-    request: null,
+    request: {
+      message: 'Did my product demo make sense from where you sat?',
+      messageTags: NO_TEXT_TAGS,
+      requester: named('Fern Somsak'),
+      asked: [named('Arm Wattana')],
+    },
   },
 ];
 
 export const PREVIEW_SENT_REQUESTS: readonly SentRequest[] = [
   {
     id: 'preview-request-1',
-    message:
-      'In today’s pitch, what’s one thing I should change before the next one?',
+    message: PITCH_QUESTION,
     messageTags: NO_TEXT_TAGS,
     sentAt: '2026-10-20T03:10:00.000Z',
     asks: [
       {
         askId: 'preview-sent-ask-1',
         giverName: 'Arm Wattana',
+        giverPhotoUrl: null,
         giverInactive: false,
         status: 'ANSWERED',
+        answer: {
+          message: PITCH_ANSWER,
+          messageTags: NO_TEXT_TAGS,
+          answeredAt: '2026-10-20T03:40:00.000Z',
+        },
       },
     ],
+    readers: { value: 'ONLY_ME', selectedPeople: [] },
   },
   {
     id: 'preview-request-2',
-    message:
-      'I’m working on shorter meetings. Where did we lose time this morning?',
+    message: MEETINGS_QUESTION,
     messageTags: NO_TEXT_TAGS,
     sentAt: '2026-10-19T02:00:00.000Z',
     asks: [
       {
         askId: 'preview-sent-ask-2',
         giverName: 'Nok Chaiyo',
+        giverPhotoUrl: null,
         giverInactive: false,
         status: 'ANSWERED',
+        answer: {
+          message: MEETINGS_ANSWER,
+          messageTags: NO_TEXT_TAGS,
+          answeredAt: '2026-10-19T04:15:00.000Z',
+        },
       },
       {
         askId: 'preview-sent-ask-3',
         giverName: 'Fern Somsak',
+        giverPhotoUrl: null,
         giverInactive: false,
         status: 'PENDING',
+        answer: null,
       },
     ],
+    readers: { value: 'EVERYONE', selectedPeople: [] },
   },
 ];
 
@@ -160,46 +198,64 @@ export const PREVIEW_WAITING_ASKS: readonly MyAsk[] = [
     requesterName: 'Fern Somsak',
     requesterPhotoUrl: null,
     requesterInactive: false,
+    onWorkspaceFeed: false,
     askedAt: '2026-10-20T06:20:00.000Z',
     status: 'PENDING',
   },
 ];
 
-export const PREVIEW_RECEIVED: readonly ReceivedFeedback[] = [
+export const PREVIEW_RECEIVED: readonly FeedItem[] = [
   {
     id: 'preview-received-0',
-    offered: true,
     giverName: 'Dao Rattana',
     giverPhotoUrl: null,
     giverInactive: false,
-    otherReceivers: [named('Nok Chaiyo'), named('Fern Somsak')],
+    giverIsYou: false,
+    receivers: [PREVIEW_YOU, named('Nok Chaiyo'), named('Fern Somsak')],
+    origin: 'OFFERED',
     message:
       'Your onboarding notes answered every question our new designer had. She shipped her first screen on day three. Thank you!',
     messageTags: NO_TEXT_TAGS,
-    writtenAt: '2026-10-20T09:30:00.000Z',
+    givenAt: '2026-10-20T09:30:00.000Z',
+    reactions: {},
+    request: null,
   },
   {
     id: 'preview-received-1',
-    offered: false,
     giverName: 'Arm Wattana',
     giverPhotoUrl: null,
     giverInactive: false,
-    otherReceivers: [],
-    message:
-      'When you opened with market size, the room went quiet. When you told Mai’s story, they leaned in. Next time, open with the story.',
+    giverIsYou: false,
+    receivers: [PREVIEW_YOU],
+    origin: 'REQUESTED',
+    message: PITCH_ANSWER,
     messageTags: NO_TEXT_TAGS,
-    writtenAt: '2026-10-20T03:40:00.000Z',
+    givenAt: '2026-10-20T03:40:00.000Z',
+    reactions: {},
+    request: {
+      message: PITCH_QUESTION,
+      messageTags: NO_TEXT_TAGS,
+      requester: PREVIEW_YOU,
+      asked: [named('Arm Wattana')],
+    },
   },
   {
     id: 'preview-received-2',
-    offered: false,
     giverName: 'Nok Chaiyo',
     giverPhotoUrl: null,
     giverInactive: false,
-    otherReceivers: [],
-    message:
-      'We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.',
+    giverIsYou: false,
+    receivers: [PREVIEW_YOU],
+    origin: 'REQUESTED',
+    message: MEETINGS_ANSWER,
     messageTags: NO_TEXT_TAGS,
-    writtenAt: '2026-10-19T04:15:00.000Z',
+    givenAt: '2026-10-19T04:15:00.000Z',
+    reactions: {},
+    request: {
+      message: MEETINGS_QUESTION,
+      messageTags: NO_TEXT_TAGS,
+      requester: PREVIEW_YOU,
+      asked: [named('Nok Chaiyo'), named('Fern Somsak')],
+    },
   },
 ];

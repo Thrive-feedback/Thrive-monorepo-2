@@ -13,6 +13,11 @@ vi.mock('next/headers', () => ({
   headers: async () => new Headers({ cookie: 'thrive.session_token=abc' }),
 }));
 
+// Who is reading: Ann, who is neither person in these fixtures unless a test says otherwise.
+vi.mock('@/lib/session/session.service', () => ({
+  readViewerAccountId: async () => 'account-ann',
+}));
+
 const { readFeedback } = await import('./feedback.service');
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
@@ -73,7 +78,8 @@ describe('reading one piece of Feedback', () => {
       id: FEEDBACK_ID,
       giverName: 'Ann Lee',
       giverInactive: false,
-      receivers: [{ name: 'Ben Ooi', inactive: false }],
+      giverIsYou: false,
+      receivers: [{ name: 'Ben Ooi', inactive: false, isYou: false }],
       origin: 'REQUESTED',
       message: 'You ran the planning meeting well',
       messageTags: NO_TAGS,

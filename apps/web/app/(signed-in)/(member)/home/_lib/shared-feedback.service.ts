@@ -4,8 +4,9 @@ import { headers } from 'next/headers';
 import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
-import { toFeedbackPerson } from '@/lib/feedback/feedback-person.util';
+import { toFeedItem } from '@/lib/feedback/feed-item.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { readViewerAccountId } from '@/lib/session/session.service';
 
 /** As on the other tabs: one page covers a Workspace of 20–50 people. */
 const ONE_PAGE = { page: 1, pageSize: 100 };
@@ -20,6 +21,7 @@ const ONE_PAGE = { page: 1, pageSize: 100 };
 export const readSharedFeedback = cache(
   async (membership: CurrentMembership): Promise<FeedItem[]> => {
     const cookie = (await headers()).get('cookie') ?? undefined;
+    const viewerAccountId = await readViewerAccountId();
     const shared = unwrap(
       await apiClient().GET('/v1/workspaces/{workspaceId}/shared-feedback', {
         params: {
@@ -30,19 +32,8 @@ export const readSharedFeedback = cache(
         cache: 'no-store',
       }),
     );
-    return shared.items.map((feedback) => ({
-      id: feedback.id,
-      giverName: feedback.giver.name,
-      giverPhotoUrl: feedback.giver.photoUrl,
-      giverInactive: feedback.giver.status === 'DEACTIVATED',
-      receivers: feedback.receivers.map(toFeedbackPerson),
-      origin: feedback.origin,
-      message: feedback.message,
-      messageTags: feedback.tags,
-      givenAt: feedback.createdAt,
-      // Reactions are #92; until then a card shows the four with nobody behind them.
-      reactions: {},
-      request: null,
-    }));
+    return shared.items.map((feedback) =>
+      toFeedItem(feedback, viewerAccountId),
+    );
   },
 );

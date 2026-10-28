@@ -5,6 +5,7 @@ import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
 import type { KudosItem } from '@/lib/feedback/kudos-item.type';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { readViewerAccountId } from '@/lib/session/session.service';
 
 /** The first page, as large as the API allows, as the feed reads its Feedback today. */
 const FIRST_PAGE = { limit: 100 };
@@ -16,6 +17,7 @@ const FIRST_PAGE = { limit: 100 };
 export const readWorkspaceKudos = cache(
   async (membership: CurrentMembership): Promise<KudosItem[]> => {
     const cookie = (await headers()).get('cookie') ?? undefined;
+    const viewerAccountId = await readViewerAccountId();
     const kudos = unwrap(
       await apiClient().GET('/v1/workspaces/{workspaceId}/kudos', {
         params: {
@@ -31,10 +33,12 @@ export const readWorkspaceKudos = cache(
       giver: {
         name: each.giver.name,
         inactive: each.giver.status === 'DEACTIVATED',
+        isYou: each.giver.accountId === viewerAccountId,
       },
       recipients: each.recipients.map((recipient) => ({
         name: recipient.name,
         inactive: recipient.status === 'DEACTIVATED',
+        isYou: recipient.accountId === viewerAccountId,
       })),
       message: each.message,
       messageTags: each.tags,

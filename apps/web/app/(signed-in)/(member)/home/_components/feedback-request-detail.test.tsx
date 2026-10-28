@@ -39,6 +39,7 @@ function waitingRequest(
       {
         askId: 'ask-1',
         giverName: 'Ben Carter',
+        giverPhotoUrl: null,
         giverInactive: false,
         status: 'PENDING',
         answer: null,
@@ -58,6 +59,7 @@ describe('a sent Feedback Request, open over Home', () => {
         {
           askId: 'ask-1',
           giverName: 'Ben Carter',
+          giverPhotoUrl: null,
           giverInactive: false,
           status: 'PENDING',
           answer: null,
@@ -70,7 +72,8 @@ describe('a sent Feedback Request, open over Home', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'You asked Ben Carter: my sprint review talk',
+        // The face is hidden from the name; only the words are read.
+        name: /^You asked\s+Ben Carter\s*:\s*my sprint review talk$/,
       }),
     ).toBeInTheDocument();
     expect(
@@ -87,6 +90,7 @@ describe('a sent Feedback Request, open over Home', () => {
         {
           askId: 'ask-1',
           giverName: null,
+          giverPhotoUrl: null,
           giverInactive: false,
           status: 'ANSWERED',
           answer: null,
@@ -99,7 +103,7 @@ describe('a sent Feedback Request, open over Home', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'You asked a teammate: my sprint review talk',
+        name: /^You asked\s+a teammate\s*:\s*my sprint review talk$/,
       }),
     ).toBeInTheDocument();
     expect(screen.getByText('Now answered.')).toBeInTheDocument();
@@ -114,6 +118,7 @@ describe('a sent Feedback Request, open over Home', () => {
         {
           askId: 'ask-1',
           giverName: 'Ben Carter',
+          giverPhotoUrl: null,
           giverInactive: false,
           status: 'ANSWERED',
           answer: {
@@ -152,11 +157,9 @@ describe('a sent Feedback Request, open over Home', () => {
 
     await renderDetail();
 
-    expect(
-      screen.getByText(
-        'You and Cara Diaz and a teammate can read what they send back.',
-      ),
-    ).toBeInTheDocument();
+    expect(document.body).toHaveTextContent(
+      'You and Cara Diaz and a teammate can read what they send back.',
+    );
   });
 
   it('shows a Giver and a selected person who were Deactivated as inactive', async () => {

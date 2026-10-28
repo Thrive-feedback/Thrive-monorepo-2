@@ -6,6 +6,7 @@ import type { Teammate } from '@/lib/feedback/teammate.type';
 import type { WaitingAsk } from '@/lib/feedback/waiting-ask.type';
 import { AnswerAskForm, AnswerAskFormSkeleton } from './answer-ask-form';
 import { FeedbackText } from './feedback-text';
+import { PersonChip } from './person-chip';
 import { PersonName } from './person-name';
 
 export type AnswerAskViewProps = {
@@ -47,13 +48,24 @@ export function AnswerAskView({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <Text variant="subtitle-3" as="h3">
-          <PersonName name={asker} inactive={ask.requesterInactive} /> asked:{' '}
-          <FeedbackText text={ask.message} tags={ask.messageTags} />
+          <PersonChip
+            person={{
+              name: ask.requesterName,
+              photoUrl: ask.requesterPhotoUrl,
+              inactive: ask.requesterInactive,
+              isYou: false,
+            }}
+            unnamed="A teammate"
+            sentenceStart
+            className="align-middle"
+          />{' '}
+          asked: <FeedbackText text={ask.message} tags={ask.messageTags} />
         </Text>
         {ask.onWorkspaceFeed ? null : (
+          // Who else reads it is the Requester's choice, and the Giver is not told it
+          // (`ADR-0022` in the brain): only that it is never anonymous.
           <Text variant="body-3" tone="muted">
-            Only <PersonName name={asker} inactive={ask.requesterInactive} />{' '}
-            can read what you write, and your name goes with it.
+            Your name goes with what you write.
           </Text>
         )}
       </div>

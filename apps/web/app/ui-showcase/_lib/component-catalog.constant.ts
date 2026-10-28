@@ -71,10 +71,6 @@ import {
   MemberPickerDialogPreview,
 } from '@/app/ui-showcase/_components/entries/member-picker-dialog-entry';
 import {
-  PeopleStackEntry,
-  PeopleStackPreview,
-} from '@/app/ui-showcase/_components/entries/people-stack-entry';
-import {
   PhotoAvatarEntry,
   PhotoAvatarPreview,
 } from '@/app/ui-showcase/_components/entries/photo-avatar-entry';
@@ -405,13 +401,6 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'molecule',
     Preview: AvatarGroupButtonPreview,
     Entry: AvatarGroupButtonEntry,
-  },
-  {
-    slug: 'people-stack',
-    name: 'PeopleStack',
-    level: 'molecule',
-    Preview: PeopleStackPreview,
-    Entry: PeopleStackEntry,
   },
   {
     slug: 'photo-avatar',

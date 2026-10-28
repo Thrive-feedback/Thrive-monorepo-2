@@ -1,7 +1,7 @@
 import { LinkedAccountList } from '@/app/(signed-in)/(member)/settings/account/_components/linked-account-list';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import { PhotoAvatar } from '@/components/molecules/photo-avatar';
+import { PersonChip } from '@/components/organisms/person-chip';
 import { SignOutForm } from '@/components/organisms/sign-out-form';
 import type { MemberAccount } from '@/lib/session/session.service';
 import {
@@ -26,10 +26,20 @@ export function AccountSection({ session }: { session: MemberAccount }) {
 
   return (
     <section className="flex flex-col">
-      <div className="flex items-center gap-4 border-border-subtle border-b py-5">
-        <PhotoAvatar name={profile.displayName} photoUrl={session.photoUrl} />
+      <div className="border-border-subtle border-b py-5">
+        {/* The one place a person sees themself by name rather than as "you": this section is
+            their own Account, and the name is what it holds. */}
         <Text variant="subtitle-3" as="h3">
-          {profile.fullName}
+          <PersonChip
+            person={{
+              name: profile.fullName,
+              photoUrl: session.photoUrl,
+              inactive: false,
+              isYou: false,
+            }}
+            unnamed={profile.displayName}
+            size="lg"
+          />
         </Text>
       </div>
       <SettingValues

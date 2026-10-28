@@ -24,6 +24,7 @@ describe('toCurrentAccount', () => {
         needsRefresh: false,
       }),
     ).toEqual({
+      accountId: ANN_ACCOUNT_ID,
       email: 'ann@acme.test',
       name: 'Ann Lee',
       photoUrl: PHOTO,
@@ -44,6 +45,7 @@ describe('toCurrentAccount', () => {
         needsRefresh: false,
       }),
     ).toEqual({
+      accountId: ANN_ACCOUNT_ID,
       email: 'ann@acme.test',
       name: 'Ann Lee',
       photoUrl: null,

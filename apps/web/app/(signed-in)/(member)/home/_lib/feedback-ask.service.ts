@@ -36,6 +36,7 @@ export async function readFeedbackAsk(
       message: ask.message,
       messageTags: ask.tags,
       requesterName: ask.requester.name,
+      requesterPhotoUrl: ask.requester.photoUrl,
       requesterInactive: ask.requester.status === 'DEACTIVATED',
       status: ask.status,
       onWorkspaceFeed: ask.onWorkspaceFeed,

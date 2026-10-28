@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import type { FeedItem } from '@/lib/feedback/feed-item.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { ReceivedFeedbackList } from './received-feedback-list';
 
@@ -16,14 +17,32 @@ const MEMBERSHIP = {
   role: 'MEMBER',
 } as const;
 
-const ONE_PIECE = {
+const YOU = { name: 'Ann Lee', photoUrl: null, inactive: false, isYou: true };
+const person = (name: string) => ({
+  name,
+  photoUrl: null,
+  inactive: false,
+  isYou: false,
+});
+
+const AN_ANSWER: FeedItem = {
   id: 'fb-1',
-  offered: false,
   giverName: 'Ben Carter',
-  otherReceivers: [],
+  giverPhotoUrl: null,
+  giverInactive: false,
+  giverIsYou: false,
+  receivers: [YOU],
+  origin: 'REQUESTED',
   message: 'You open strongly and lose the room at the detail.',
   messageTags: NO_TEXT_TAGS,
-  writtenAt: '2026-10-11T03:00:00.000Z',
+  givenAt: '2026-10-11T03:00:00.000Z',
+  reactions: {},
+  request: {
+    message: 'How did the planning meeting go?',
+    messageTags: NO_TEXT_TAGS,
+    requester: YOU,
+    asked: [person('Ben Carter'), person('Cara Diaz')],
+  },
 };
 
 async function renderList() {
@@ -39,89 +58,68 @@ describe('ReceivedFeedbackList', () => {
     expect(readReceivedFeedback).toHaveBeenCalledWith(MEMBERSHIP);
   });
 
-  it('shows what was written, who wrote it, and when', async () => {
-    readReceivedFeedback.mockResolvedValue([ONE_PIECE]);
+  it('draws each piece as the feed does: who wrote it to you, the kind and the day', async () => {
+    readReceivedFeedback.mockResolvedValue([AN_ANSWER]);
 
     await renderList();
+
+    const card = screen.getByRole('article');
+    expect(within(card).getByText('Ben Carter')).toBeInTheDocument();
+    expect(within(card).getByText('you')).toBeInTheDocument();
+    expect(within(card).getByText('Requested')).toBeInTheDocument();
+    expect(within(card).getByText('11 Oct 2026')).toBeInTheDocument();
     expect(
-      screen.getByText('You open strongly and lose the room at the detail.', {
-        exact: false,
-      }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('article')).toHaveTextContent('Ben Carter to you');
-    expect(screen.getByText('11 Oct 2026')).toBeInTheDocument();
-    expect(
-      screen.getByText('You open strongly and lose the room at the detail.'),
+      within(card).getByText(
+        'You open strongly and lose the room at the detail.',
+      ),
     ).toBeInTheDocument();
   });
 
-  it('names everyone else it was written to, after the reader, with their faces', async () => {
+  it('says an answer responds to the reader’s own request, naming everyone they asked', async () => {
+    readReceivedFeedback.mockResolvedValue([AN_ANSWER]);
+
+    await renderList();
+
+    expect(screen.getByRole('article')).toHaveTextContent(
+      'In answer to your request to Ben Carter and Cara Diaz: How did the planning meeting go?',
+    );
+  });
+
+  it('names you first among several, and the others behind their faces', async () => {
     readReceivedFeedback.mockResolvedValue([
       {
-        ...ONE_PIECE,
-        offered: true,
-        otherReceivers: [
-          { name: 'Cara Diaz', photoUrl: null, inactive: false },
-          { name: 'Dan Ooi', photoUrl: null, inactive: true },
-        ],
+        ...AN_ANSWER,
+        origin: 'OFFERED',
+        receivers: [YOU, person('Cara Diaz'), person('Dan Ooi')],
+        request: null,
       },
     ]);
 
     await renderList();
 
-    expect(screen.getByRole('article')).toHaveTextContent(
-      'Ben Carter to you, Cara Diaz and Dan Ooi (inactive)',
-    );
-    expect(screen.getByText('CD')).toBeInTheDocument();
-    expect(screen.getByText('DO')).toBeInTheDocument();
-  });
-
-  it('shows a Giver who was Deactivated as inactive, and keeps what they wrote', async () => {
-    readReceivedFeedback.mockResolvedValue([
-      { ...ONE_PIECE, giverInactive: true },
-    ]);
-
-    await renderList();
-
-    expect(screen.getByText('Ben Carter (inactive)')).toBeInTheDocument();
+    const card = screen.getByRole('article');
+    expect(within(card).getByText('Offered')).toBeInTheDocument();
     expect(
-      screen.getByText('You open strongly and lose the room at the detail.'),
+      within(card).getByRole('button', {
+        name: 'Cara Diaz and Dan Ooi. Show who it is for',
+      }),
     ).toBeInTheDocument();
+    expect(card).not.toHaveTextContent('In answer to');
   });
 
-  it('marks Feedback given without being asked apart from an answer', async () => {
-    readReceivedFeedback.mockResolvedValue([
-      { ...ONE_PIECE, id: 'fb-2', message: 'the customer demo', offered: true },
-      ONE_PIECE,
-    ]);
+  it('lets the reader react, as on the feed', async () => {
+    readReceivedFeedback.mockResolvedValue([AN_ANSWER]);
 
     await renderList();
 
-    expect(screen.getAllByText(/^Offered ·/)).toHaveLength(1);
-    expect(screen.getAllByText(/^Requested ·/)).toHaveLength(1);
+    expect(
+      within(screen.getByRole('article')).getAllByRole('button', {
+        name: /, 0$/,
+      }),
+    ).toHaveLength(4);
   });
 
-  it('keeps the line breaks the Giver wrote', async () => {
-    readReceivedFeedback.mockResolvedValue([
-      { ...ONE_PIECE, message: 'First point.\n\nSecond point.' },
-    ]);
-
-    await renderList();
-
-    const body = screen.getByText(/First point\./);
-    expect(body).toHaveClass('whitespace-pre-wrap');
-    expect(body.textContent).toBe('First point.\n\nSecond point.');
-  });
-
-  it('calls the Giver a teammate while they have not introduced themselves', async () => {
-    readReceivedFeedback.mockResolvedValue([{ ...ONE_PIECE, giverName: null }]);
-
-    await renderList();
-
-    expect(screen.getByRole('article')).toHaveTextContent('A teammate to you');
-  });
-
-  it('says so when nobody has written anything', async () => {
+  it('says nobody has written yet, and how to ask', async () => {
     readReceivedFeedback.mockResolvedValue([]);
 
     await renderList();

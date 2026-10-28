@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
+import type { FeedbackPerson } from '@/lib/feedback/feedback-person.util';
 import { ROUTES } from '@/lib/routes.constant';
 import type {
   CurrentAccount,
@@ -96,6 +97,43 @@ const readActiveWorkspaceCount = cache(async (): Promise<number> => {
  */
 export async function readSession(): Promise<CurrentAccount | null> {
   return toCurrentAccount(await readCurrentSession());
+}
+
+/**
+ * The signed-in person's Account id, or `null` when nobody is signed in: which person on a list
+ * is "you". Read from the same request-cached session, so asking costs nothing more.
+ */
+export async function readViewerAccountId(): Promise<string | null> {
+  return (await readSession())?.accountId ?? null;
+}
+
+/**
+ * The signed-in person as a card shows them — their face, named "you" — or `null` when nobody is
+ * signed in. For the cards that name the reader where the API leaves them out: what was written
+ * to them, what they were asked, and what they asked.
+ */
+export async function readYou(): Promise<FeedbackPerson | null> {
+  const session = await readSession();
+  return (
+    session && {
+      name: session.profile?.fullName ?? session.name,
+      photoUrl: session.photoUrl,
+      inactive: false,
+      isYou: true,
+    }
+  );
+}
+
+/**
+ * `readYou`, for a screen drawn only for somebody signed in: the page already sent anybody else
+ * away, so finding nobody here is a bug, not a state to draw.
+ */
+export async function requireYou(): Promise<FeedbackPerson> {
+  const you = await readYou();
+  if (!you) {
+    throw new Error('A screen for a signed-in Member was drawn for nobody.');
+  }
+  return you;
 }
 
 /**
