@@ -294,15 +294,12 @@ describe('the gap between pressing the bell and seeing anything', () => {
       await screen.findByRole('button', { name: /Notifications/ }),
     );
 
-    // Rows at the height the real ones will be, so the panel does not resize as they arrive.
-    expect(
-      await screen.findByTestId('notification-skeleton'),
-    ).toBeInTheDocument();
+    // Announced as loading, with rows at the height the real ones will be so the panel does not
+    // resize as they arrive.
+    expect(await screen.findByRole('status')).toBeInTheDocument();
     resolveFirst([aNotification()]);
     await screen.findByText('Nut asked you for feedback');
-    expect(
-      screen.queryByTestId('notification-skeleton'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('still says it could not look when there is nothing to fall back on', async () => {
@@ -314,5 +311,72 @@ describe('the gap between pressing the bell and seeing anything', () => {
     expect(
       await screen.findByText(/couldn't load these just now/i),
     ).toBeInTheDocument();
+  });
+});
+
+describe('when answers come back out of order, or late', () => {
+  it('does not let a slow failed open wipe lines a later one painted', async () => {
+    let failSlowOpen: (items: BellNotification[] | null) => void = () => {};
+    listMyNotifications.mockReturnValueOnce(
+      new Promise<BellNotification[] | null>((resolve) => {
+        failSlowOpen = resolve;
+      }),
+    );
+    const user = await openTheBell();
+    await user.keyboard('{Escape}');
+
+    listMyNotifications.mockResolvedValue([aNotification()]);
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
+    await screen.findByText('Nut asked you for feedback');
+
+    // The first open finally gives up, after the second already painted. What somebody is
+    // reading is worth more than a message about a request they have forgotten about.
+    failSlowOpen(null);
+    await waitFor(() => {
+      expect(
+        screen.getByText('Nut asked you for feedback'),
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/couldn't load these/i)).not.toBeInTheDocument();
+  });
+
+  it('lets the newest answer win, not the slowest', async () => {
+    let finishFirst: (items: BellNotification[]) => void = () => {};
+    listMyNotifications.mockReturnValueOnce(
+      new Promise<BellNotification[]>((resolve) => {
+        finishFirst = resolve;
+      }),
+    );
+    const user = await openTheBell();
+    await user.keyboard('{Escape}');
+
+    listMyNotifications.mockResolvedValue([
+      aNotification({ actorName: 'Ploy' }),
+    ]);
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
+    await screen.findByText('Ploy asked you for feedback');
+
+    finishFirst([aNotification({ actorName: 'Stale' })]);
+    await waitFor(() => {
+      expect(screen.queryByText('Stale asked you for feedback')).toBeNull();
+    });
+    expect(screen.getByText('Ploy asked you for feedback')).toBeInTheDocument();
+  });
+
+  it('says it could not look when a reopen fails and there was nothing to keep', async () => {
+    // An empty bell and a bell that could not be read are different answers (#269), and an
+    // empty first open must not make the second one lie.
+    listMyNotifications.mockResolvedValue([]);
+    const user = await openTheBell();
+    await screen.findByText(/Nothing yet/);
+
+    await user.keyboard('{Escape}');
+    listMyNotifications.mockResolvedValue(null);
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
+
+    expect(
+      await screen.findByText(/couldn't load these just now/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Nothing yet/)).not.toBeInTheDocument();
   });
 });

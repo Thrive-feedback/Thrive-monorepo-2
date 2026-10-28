@@ -81,8 +81,8 @@ beforeEach(() => {
 
 /**
  * The browser cannot reach the API, so every one of these is a hop the person waits through
- * (#269). Reading the session as well as the membership is one more of them for a fact that is
- * then thrown away — design `0022` §4.3 found it for the poll; these three kept it.
+ * (#269). Reading the session as well as the membership is one more of them, for a fact that is
+ * then thrown away.
  */
 describe('what each action costs the person waiting', () => {
   it('lists notifications without reading the session as well', async () => {
@@ -122,11 +122,42 @@ describe('what each action costs the person waiting', () => {
   });
 });
 
+describe('when the session has expired', () => {
+  beforeEach(() => {
+    server.use(
+      http.get(`${TEST_API_BASE_URL}/v1/members/mine/current`, () =>
+        HttpResponse.json({ membership: null }),
+      ),
+      http.get(`${TEST_API_BASE_URL}/v1/sessions/current`, () =>
+        HttpResponse.json({ account: null }),
+      ),
+    );
+  });
+
+  it('sends them to sign in rather than telling them to try again forever', async () => {
+    // `readCurrentMembership` answers null for no Workspace and for no session alike. Somebody
+    // whose session has expired must not be left pressing a bell that can never work.
+    await expect(listMyNotifications()).rejects.toThrow(/NEXT_REDIRECT/);
+    await expect(markAllNotificationsRead()).rejects.toThrow(/NEXT_REDIRECT/);
+  });
+});
+
 describe('when the session is in no Workspace at all', () => {
   beforeEach(() => {
     server.use(
       http.get(`${TEST_API_BASE_URL}/v1/members/mine/current`, () =>
         HttpResponse.json({ membership: null }),
+      ),
+      // Signed in, just not in a Workspace — somebody between Workspaces, or just Deactivated.
+      http.get(`${TEST_API_BASE_URL}/v1/sessions/current`, () =>
+        HttpResponse.json({
+          account: {
+            accountId: '0199a0f0-0000-7000-8000-00000000000c',
+            email: 'ann@acme.test',
+            fullName: 'Ann Lee',
+            profile: null,
+          },
+        }),
       ),
     );
   });
