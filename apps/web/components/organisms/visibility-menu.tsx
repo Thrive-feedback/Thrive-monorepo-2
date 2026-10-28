@@ -30,6 +30,10 @@ export type VisibilityMenuProps<Value extends string> = {
   onOpenChange: (open: boolean) => void;
   onValueChange: (value: Value) => void;
   onSelectedChange: (accountIds: ReadonlySet<string>) => void;
+  /** Choices that cannot be taken now; the helper text says why. */
+  disabledValues?: ReadonlySet<Value>;
+  /** People selected who cannot be unselected, each with the reason the dialog shows. */
+  lockedPeople?: ReadonlyMap<string, string>;
 };
 
 /**
@@ -51,6 +55,8 @@ export function VisibilityMenu<Value extends string>({
   onOpenChange,
   onValueChange,
   onSelectedChange,
+  disabledValues,
+  lockedPeople,
 }: VisibilityMenuProps<Value>) {
   const contentId = useId();
   const peopleRef = useRef<HTMLButtonElement>(null);
@@ -107,6 +113,8 @@ export function VisibilityMenu<Value extends string>({
             errorId={errorId}
             onValueChange={onValueChange}
             onSelectedChange={onSelectedChange}
+            disabledValues={disabledValues}
+            lockedPeople={lockedPeople}
             ref={peopleRef}
           />
         </Popover.Content>

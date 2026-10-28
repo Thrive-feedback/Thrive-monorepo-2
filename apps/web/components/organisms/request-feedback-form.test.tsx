@@ -136,11 +136,11 @@ describe('RequestFeedbackForm', () => {
     expect(sentFormData()).toEqual({
       giverAccountIds: BEN,
       message: 'my sprint review talk',
-      visibility: 'ONLY_ME',
+      visibility: 'EVERYONE',
     });
   });
 
-  it('keeps the answers for the Requester alone unless they choose otherwise, and says so', async () => {
+  it('shares the answers with everyone in the Workspace unless the Requester chooses otherwise, and says so', async () => {
     const user = userEvent.setup();
     render(
       <RequestFeedbackForm
@@ -151,14 +151,18 @@ describe('RequestFeedbackForm', () => {
     );
 
     expect(audienceButton()).toHaveAccessibleName(
-      'Who else can read it: Only me',
+      'Who else can read it: Everyone in the Workspace',
     );
 
     await openAudience(user);
 
-    expect(screen.getByRole('radio', { name: 'Only me' })).toBeChecked();
     expect(
-      screen.getByText(/Only you will read what they send back\./),
+      screen.getByRole('radio', { name: 'Everyone in the Workspace' }),
+    ).toBeChecked();
+    expect(
+      screen.getByText(
+        /Everyone in your Workspace can read what they send back\./,
+      ),
     ).toBeInTheDocument();
   });
 

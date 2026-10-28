@@ -41,6 +41,10 @@ export type VisibilityPickerProps<Value extends string> = {
   onValueChange: (value: Value) => void;
   /** Done was pressed in the people dialog: everyone selected now. */
   onSelectedChange: (accountIds: ReadonlySet<string>) => void;
+  /** Choices that cannot be taken now; the helper text says why. */
+  disabledValues?: ReadonlySet<Value>;
+  /** People selected who cannot be unselected, each with the reason the dialog shows. */
+  lockedPeople?: ReadonlyMap<string, string>;
   /** The people button, so a form can move focus there when nobody is picked. */
   ref?: React.Ref<HTMLButtonElement>;
 };
@@ -65,6 +69,8 @@ export function VisibilityPicker<Value extends string>({
   errorId,
   onValueChange,
   onSelectedChange,
+  disabledValues,
+  lockedPeople,
   ref,
 }: VisibilityPickerProps<Value>) {
   const id = useId();
@@ -114,6 +120,7 @@ export function VisibilityPicker<Value extends string>({
               <RadioGroupItem
                 value={option.value}
                 id={`${id}-${option.value}`}
+                disabled={disabledValues?.has(option.value)}
               />
               <Label htmlFor={`${id}-${option.value}`}>{option.label}</Label>
             </div>
@@ -154,6 +161,7 @@ export function VisibilityPicker<Value extends string>({
         description={peopleDescription}
         open={peopleOpen}
         onOpenChange={handlePeopleOpenChange}
+        locked={lockedPeople}
         onDone={(accountIds) => {
           putBackIfNobody(accountIds);
           onSelectedChange(new Set(accountIds));
