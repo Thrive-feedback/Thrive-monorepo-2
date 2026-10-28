@@ -66,7 +66,12 @@ function setUp() {
     feedbackRequestQuery,
     new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { workspaceMembershipPort, accountSummaryPort, useCase };
+  return {
+    feedbackRequestQuery,
+    workspaceMembershipPort,
+    accountSummaryPort,
+    useCase,
+  };
 }
 
 describe('listing the Asks waiting for me', () => {
@@ -89,6 +94,41 @@ describe('listing the Asks waiting for me', () => {
       requesterName: 'Ana Silva',
       status: 'PENDING',
     });
+  });
+
+  it('says whether each answer goes on the Workspace feed, from its request alone', async () => {
+    const { feedbackRequestQuery, useCase } = setUp();
+    feedbackRequestQuery.rows.push({
+      id: '0199a0f0-0000-7000-8000-0000000000f3',
+      workspaceId: WORKSPACE_ID,
+      requesterAccountId: CARA,
+      message: 'the demo',
+      tags: NO_TAGS,
+      visibility: 'EVERYONE',
+      selectedAccountIds: [],
+      createdAt: new Date('2026-10-12T03:00:00.000Z'),
+      asks: [
+        {
+          askId: ANSWERED_ASK_FOR_BEN.replace('a3', 'a4'),
+          giverAccountId: BEN,
+          status: 'PENDING',
+        },
+      ],
+    });
+
+    const waiting = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      giverAccountId: BEN,
+      status: 'PENDING',
+      page: ONE_PAGE,
+    });
+
+    expect(
+      waiting.items.map((ask) => [ask.message, ask.onWorkspaceFeed]),
+    ).toEqual([
+      ['the demo', true],
+      ['my presentation skills', false],
+    ]);
   });
 
   it('shows a Requester who has since been Deactivated as inactive, and keeps the Ask', async () => {

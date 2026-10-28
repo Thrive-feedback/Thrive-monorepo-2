@@ -5,6 +5,7 @@ import {
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
+import { answeredRequestSchema } from './answered-request.dto';
 import { personSchema } from './person.dto';
 import { tagsSchema } from './tags.dto';
 
@@ -33,6 +34,8 @@ const sharedFeedbackSchema = z.object({
   /** What its Giver wrote was bound to when it was sent. */
   tags: tagsSchema,
   createdAt: z.iso.datetime({ offset: true }),
+  /** The request an answer responds to, or `null` for Feedback given without being asked. */
+  request: answeredRequestSchema.nullable(),
 });
 
 export const listSharedFeedbackResponseSchema = z.object({

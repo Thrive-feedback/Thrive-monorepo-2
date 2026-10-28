@@ -71,6 +71,7 @@ describe('storing Offered Feedback', () => {
         message: 'You kept the room with you.',
         tags: { workspaceGoals: [], mentions: [] },
         createdAt: expect.any(Date),
+        request: null,
       },
     ]);
   });

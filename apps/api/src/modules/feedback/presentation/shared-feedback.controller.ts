@@ -18,7 +18,10 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { ListSharedFeedbackUseCase } from '../application/use-cases/list-shared-feedback.use-case';
-import { toFeedbackResponse } from './dto/feedback-response.mapper';
+import {
+  toAnsweredRequestResponse,
+  toFeedbackResponse,
+} from './dto/feedback-response.mapper';
 import {
   ListSharedFeedbackQueryDto,
   ListSharedFeedbackResponseDto,
@@ -64,7 +67,10 @@ export class SharedFeedbackController {
       page,
     });
     return {
-      items: shared.items.map(toFeedbackResponse),
+      items: shared.items.map((feedback) => ({
+        ...toFeedbackResponse(feedback),
+        request: toAnsweredRequestResponse(feedback.request),
+      })),
       total: shared.total,
       page: page.page,
       pageSize: page.pageSize,

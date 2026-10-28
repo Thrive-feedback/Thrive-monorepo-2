@@ -94,7 +94,12 @@ function setUp() {
     feedbackRequestQuery,
     new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { workspaceMembershipPort, accountSummaryPort, useCase };
+  return {
+    feedbackRequestQuery,
+    workspaceMembershipPort,
+    accountSummaryPort,
+    useCase,
+  };
 }
 
 describe('listing the Feedback Requests I sent', () => {
@@ -113,6 +118,36 @@ describe('listing the Feedback Requests I sent', () => {
       'my presentation skills',
     ]);
     expect(sent.items[0]?.asks[0]?.giverName).toBe('Cara Diaz');
+  });
+
+  it('carries what each person answered, and nothing for an Ask still waiting', async () => {
+    const { feedbackRequestQuery, useCase } = setUp();
+    const answeredAt = new Date('2026-10-13T03:00:00.000Z');
+    feedbackRequestQuery.answers.push({
+      askId: '0199a0f0-0000-7000-8000-0000000000a2',
+      message: 'Keep leaving the last five minutes open.',
+      tags: NO_TAGS,
+      answeredAt,
+    });
+
+    const sent = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      requesterAccountId: ANA,
+      page: ONE_PAGE,
+    });
+
+    expect(
+      sent.items.map((request) => request.asks.map((ask) => ask.answer)),
+    ).toEqual([
+      [
+        {
+          message: 'Keep leaving the last five minutes open.',
+          tags: NO_TAGS,
+          answeredAt,
+        },
+      ],
+      [null],
+    ]);
   });
 
   it('shows a Giver who has since been Deactivated as inactive, and keeps their Ask', async () => {

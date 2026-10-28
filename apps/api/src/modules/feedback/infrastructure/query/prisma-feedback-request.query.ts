@@ -4,16 +4,16 @@ import {
   type AnsweredRequestRow,
   type FeedbackAnswerRow,
   type FeedbackAskPageRow,
-  type FeedbackAskRow,
   type FeedbackAskWithVisibilityRow,
   type FeedbackPageRow,
   type FeedbackRequestPageRow,
   FeedbackRequestQuery,
   type FeedbackRequestRow,
-  type FeedbackWithPeoplePageRow,
   type FeedbackWithPeopleRow,
+  type FeedbackWithRequestPageRow,
+  type FeedbackWithRequestRow,
   type FeedbackWithVisibilityRow,
-  type WorkspaceFeedPageRow,
+  type SentFeedbackRequestRow,
 } from '../../application/query-port/feedback-request.query-port';
 import type {
   PageRequest,
@@ -69,8 +69,30 @@ const REQUEST_FIELDS = {
   ...TAGS_FIELDS,
 } as const;
 
+/**
+ * A request as its Requester lists it: every Ask with the answer it collected, nested so a page
+ * is read in a fixed number of queries however many answers it holds.
+ */
+const SENT_REQUEST_FIELDS = {
+  ...REQUEST_FIELDS,
+  asks: {
+    orderBy: ASKS_IN_ORDER_ASKED,
+    select: {
+      ...ASK_FIELDS,
+      feedback: { select: { message: true, createdAt: true, ...TAGS_FIELDS } },
+    },
+  },
+} as const;
+
+/** An Ask's request, with the Visibility that decides whether the answer goes on the feed. */
 const REQUEST_OF_ASK = {
-  select: { id: true, message: true, requesterAccountId: true, ...TAGS_FIELDS },
+  select: {
+    id: true,
+    message: true,
+    requesterAccountId: true,
+    visibility: true,
+    ...TAGS_FIELDS,
+  },
 } as const;
 
 const FEEDBACK_WITH_PEOPLE_FIELDS = {
@@ -85,10 +107,11 @@ const FEEDBACK_WITH_PEOPLE_FIELDS = {
 } as const;
 
 /**
- * A feed piece and, through the Ask it answers, its request: the Request message and everyone
- * asked. Nested, so the page is read in a fixed number of queries however many answers it holds.
+ * A piece of Feedback and, through the Ask it answers, its request: the Request message and
+ * everyone asked. Nested, so a page is read in a fixed number of queries however many answers it
+ * holds.
  */
-const WORKSPACE_FEED_FIELDS = {
+const FEEDBACK_WITH_REQUEST_FIELDS = {
   ...FEEDBACK_WITH_PEOPLE_FIELDS,
   feedbackAsk: {
     select: {
@@ -176,14 +199,11 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         orderBy: NEWEST_FIRST,
         skip: skipFor(page),
         take: page.pageSize,
-        select: REQUEST_FIELDS,
+        select: SENT_REQUEST_FIELDS,
       }),
       client.feedbackRequest.count({ where }),
     ]);
-    return {
-      items: records.map(toFeedbackRequestRow),
-      total,
-    };
+    return { items: records.map(toSentFeedbackRequestRow), total };
   }
 
   async asksFor(
@@ -213,7 +233,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       }),
       client.feedbackAsk.count({ where }),
     ]);
-    return { items: records.map(toFeedbackAskRow), total };
+    return { items: records.map(toFeedbackAskWithVisibilityRow), total };
   }
 
   async receivedBy(
@@ -221,8 +241,6 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     receiverAccountId: string,
     page: PageRequest,
   ): Promise<FeedbackPageRow> {
-    // Through the Receivers, not `feedback.receiverAccountId`: that column holds only the first
-    // of several, and is kept for an older API mid-deploy (ADR 0061).
     const where = {
       workspaceId,
       receivers: { some: { accountId: receiverAccountId } },
@@ -234,39 +252,18 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         orderBy: NEWEST_FIRST,
         skip: skipFor(page),
         take: page.pageSize,
-        select: {
-          id: true,
-          origin: true,
-          feedbackRequestId: true,
-          giverAccountId: true,
-          receivers: RECEIVERS_IN_ORDER,
-          message: true,
-          createdAt: true,
-          ...TAGS_FIELDS,
-        },
+        select: FEEDBACK_WITH_REQUEST_FIELDS,
       }),
       client.feedback.count({ where }),
     ]);
-    return {
-      items: records.map((record) => ({
-        id: record.id,
-        origin: record.origin,
-        feedbackRequestId: record.feedbackRequestId,
-        giverAccountId: record.giverAccountId,
-        receiverAccountIds: accountIdsOf(record.receivers),
-        message: record.message,
-        tags: tagsOf(record),
-        createdAt: record.createdAt,
-      })),
-      total,
-    };
+    return { items: records.map(toFeedbackWithRequestRow), total };
   }
 
   async sharedWith(
     workspaceId: string,
     readerAccountId: string,
     page: PageRequest,
-  ): Promise<FeedbackWithPeoplePageRow> {
+  ): Promise<FeedbackWithRequestPageRow> {
     // The join alone would answer this — a selected person exists only for SELECTED_PEOPLE,
     // which the Visibility itself holds — and the value is matched anyway, so a row left behind
     // by any other choice is unreadable rather than shared.
@@ -282,17 +279,17 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         orderBy: NEWEST_FIRST,
         skip: skipFor(page),
         take: page.pageSize,
-        select: FEEDBACK_WITH_PEOPLE_FIELDS,
+        select: FEEDBACK_WITH_REQUEST_FIELDS,
       }),
       client.feedback.count({ where }),
     ]);
-    return { items: records.map(toFeedbackWithPeopleRow), total };
+    return { items: records.map(toFeedbackWithRequestRow), total };
   }
 
   async publicIn(
     workspaceId: string,
     page: PageRequest,
-  ): Promise<WorkspaceFeedPageRow> {
+  ): Promise<FeedbackWithRequestPageRow> {
     const where = { workspaceId, visibility: 'EVERYONE' } as const;
     const client = this.prismaTransactionContext.client;
     const [records, total] = await Promise.all([
@@ -301,19 +298,11 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         orderBy: NEWEST_FIRST,
         skip: skipFor(page),
         take: page.pageSize,
-        select: WORKSPACE_FEED_FIELDS,
+        select: FEEDBACK_WITH_REQUEST_FIELDS,
       }),
       client.feedback.count({ where }),
     ]);
-    return {
-      items: records.map((record) => ({
-        ...toFeedbackWithPeopleRow(record),
-        request: record.feedbackAsk
-          ? toAnsweredRequestRow(record.feedbackAsk.feedbackRequest)
-          : null,
-      })),
-      total,
-    };
+    return { items: records.map(toFeedbackWithRequestRow), total };
   }
 
   async feedbackInWorkspace(
@@ -373,21 +362,14 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
           id: true,
           status: true,
           createdAt: true,
-          feedbackRequest: {
-            select: { ...REQUEST_OF_ASK.select, visibility: true },
-          },
+          feedbackRequest: REQUEST_OF_ASK,
         },
       });
-    return record
-      ? {
-          ...toFeedbackAskRow(record),
-          visibility: record.feedbackRequest.visibility,
-        }
-      : null;
+    return record ? toFeedbackAskWithVisibilityRow(record) : null;
   }
 }
 
-function toFeedbackAskRow(record: {
+function toFeedbackAskWithVisibilityRow(record: {
   readonly id: string;
   readonly status: string;
   readonly createdAt: Date;
@@ -395,8 +377,9 @@ function toFeedbackAskRow(record: {
     readonly id: string;
     readonly message: string;
     readonly requesterAccountId: string;
+    readonly visibility: FeedbackAskWithVisibilityRow['visibility'];
   };
-}): FeedbackAskRow {
+}): FeedbackAskWithVisibilityRow {
   return {
     askId: record.id,
     feedbackRequestId: record.feedbackRequest.id,
@@ -405,6 +388,35 @@ function toFeedbackAskRow(record: {
     requesterAccountId: record.feedbackRequest.requesterAccountId,
     status: record.status,
     createdAt: record.createdAt,
+    visibility: record.feedbackRequest.visibility,
+  };
+}
+
+function toSentFeedbackRequestRow(
+  record: Omit<Parameters<typeof toFeedbackRequestRow>[0], 'asks'> & {
+    readonly asks: readonly {
+      readonly id: string;
+      readonly giverAccountId: string;
+      readonly status: string;
+      readonly feedback:
+        | (StoredTags & { readonly message: string; readonly createdAt: Date })
+        | null;
+    }[];
+  },
+): SentFeedbackRequestRow {
+  return {
+    ...toFeedbackRequestRow(record),
+    // Each Ask built from its own record, so its answer can never land on another Ask.
+    asks: record.asks.map((ask) => ({
+      askId: ask.id,
+      giverAccountId: ask.giverAccountId,
+      status: ask.status,
+      answer: ask.feedback && {
+        message: ask.feedback.message,
+        tags: tagsOf(ask.feedback),
+        answeredAt: ask.feedback.createdAt,
+      },
+    })),
   };
 }
 
@@ -478,6 +490,21 @@ function toAnsweredRequestRow(
     tags: tagsOf(record),
     requesterAccountId: record.requesterAccountId,
     askedAccountIds: record.asks.map((ask) => ask.giverAccountId),
+  };
+}
+
+function toFeedbackWithRequestRow(
+  record: Parameters<typeof toFeedbackWithPeopleRow>[0] & {
+    readonly feedbackAsk: {
+      readonly feedbackRequest: Parameters<typeof toAnsweredRequestRow>[0];
+    } | null;
+  },
+): FeedbackWithRequestRow {
+  return {
+    ...toFeedbackWithPeopleRow(record),
+    request: record.feedbackAsk
+      ? toAnsweredRequestRow(record.feedbackAsk.feedbackRequest)
+      : null,
   };
 }
 

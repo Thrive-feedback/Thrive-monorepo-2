@@ -127,6 +127,7 @@ describe('reading the Feedback shared with a Member', () => {
       message: 'the customer demo',
       tags: { workspaceGoals: [], mentions: [] },
       createdAt: expect.any(Date),
+      request: null,
     });
   });
 

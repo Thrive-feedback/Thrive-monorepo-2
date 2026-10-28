@@ -130,6 +130,7 @@ export class GetFeedbackRequestUseCase {
         giverAccountId: ask.giverAccountId,
         // A Giver's Account cascades away with them, so a missing one was deleted mid-read.
         giverName: people.nameOf(ask.giverAccountId),
+        giverPhotoUrl: people.photoOf(ask.giverAccountId),
         giverStatus: people.statusOf(ask.giverAccountId),
         status: AskStatus.of(ask.status).toString(),
         answer: answerFor(

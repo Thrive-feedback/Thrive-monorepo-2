@@ -62,13 +62,14 @@ export interface AskView {
   readonly giverAccountId: string;
   /** `null` while that Member has not introduced themselves. */
   readonly giverName: string | null;
+  /** `null` when that Member has no photo. */
+  readonly giverPhotoUrl: string | null;
   readonly giverStatus: PersonStatus;
   readonly status: AskStatusValue;
   /**
-   * What was written, or `null` — because the Ask is still waiting, because this caller may
-   * not read it, or because the view does not carry answers at all, as the list of sent
-   * requests does not. The Receiver reads every answer their request collected; a Giver reads
-   * their own and nobody else's.
+   * What was written, or `null` — because the Ask is still waiting, or because this caller may
+   * not read it. The Receiver reads every answer their request collected; a Giver reads their own
+   * and nobody else's.
    */
   readonly answer: AnswerView | null;
 }
@@ -118,15 +119,12 @@ export interface MyAskView {
   readonly requesterPhotoUrl: string | null;
   readonly requesterStatus: PersonStatus;
   readonly status: AskStatusValue;
-  readonly createdAt: Date;
-}
-
-/**
- * One Ask as the Member asked opens it to answer: everything the list shows, and whether the
- * answer goes on the Workspace feed — never who else may read it (`ADR-0022`).
- */
-export interface OpenedAskView extends MyAskView {
+  /**
+   * Whether the answer goes on the Workspace feed — never who else may read it (`ADR-0022`,
+   * `ADR-0046` in the brain).
+   */
   readonly onWorkspaceFeed: boolean;
+  readonly createdAt: Date;
 }
 
 /** The Asks waiting on one Member, newest first. */
@@ -159,6 +157,8 @@ export interface ReceivedFeedbackView {
   /** What its Giver's Feedback message names. */
   readonly tags: TagsView;
   readonly createdAt: Date;
+  /** The request it answers, or `null` for Feedback given without being asked. */
+  readonly request: AnsweredRequestView | null;
 }
 
 /**
@@ -196,7 +196,7 @@ export interface ReceivedFeedbackListView {
  * because the reader is neither of them.
  */
 export interface SharedFeedbackListView {
-  readonly items: readonly FeedbackView[];
+  readonly items: readonly FeedbackWithRequestView[];
   readonly total: number;
 }
 
@@ -210,8 +210,11 @@ export interface AnsweredRequestView {
   readonly asked: readonly PersonView[];
 }
 
-/** One piece on the Workspace feed: `request` is `null` for Feedback given without being asked. */
-export interface WorkspaceFeedItemView extends FeedbackView {
+/**
+ * One piece of Feedback with the request it answers, as the Workspace feed and Shared with me show
+ * it: `request` is `null` for Feedback given without being asked.
+ */
+export interface FeedbackWithRequestView extends FeedbackView {
   readonly request: AnsweredRequestView | null;
 }
 
@@ -220,6 +223,6 @@ export interface WorkspaceFeedItemView extends FeedbackView {
  * people: the reader is usually neither of them.
  */
 export interface WorkspaceFeedView {
-  readonly items: readonly WorkspaceFeedItemView[];
+  readonly items: readonly FeedbackWithRequestView[];
   readonly total: number;
 }

@@ -114,6 +114,7 @@ describe('reading one Feedback Request', () => {
           askId: ASK_ID,
           giverAccountId: GIVER,
           giverName: 'Ben Carter',
+          giverPhotoUrl: null,
           giverStatus: 'ACTIVE',
           status: 'PENDING',
           answer: null,

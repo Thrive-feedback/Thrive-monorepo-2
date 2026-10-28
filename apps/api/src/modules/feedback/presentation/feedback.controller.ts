@@ -24,6 +24,7 @@ import { GetFeedbackUseCase } from '../application/use-cases/get-feedback.use-ca
 import { ListReceivedFeedbackUseCase } from '../application/use-cases/list-received-feedback.use-case';
 import { OfferFeedbackUseCase } from '../application/use-cases/offer-feedback.use-case';
 import {
+  toAnsweredRequestResponse,
   toFeedbackResponse,
   toPersonResponse,
   toTagsResponse,
@@ -57,6 +58,7 @@ function toResponse(feedback: ReceivedFeedbackView) {
     message: feedback.message,
     tags: toTagsResponse(feedback.tags),
     createdAt: feedback.createdAt.toISOString(),
+    request: toAnsweredRequestResponse(feedback.request),
   };
 }
 

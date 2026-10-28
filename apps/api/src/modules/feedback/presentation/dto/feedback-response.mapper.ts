@@ -1,4 +1,5 @@
 import type {
+  AnsweredRequestView,
   FeedbackView,
   PersonView,
   TagsView,
@@ -25,6 +26,18 @@ export function toTagsResponse(tags: TagsView) {
       displayName: mention.displayName,
     })),
   };
+}
+
+/** The request an answer responds to, on the wire, or `null` for Feedback given unasked. */
+export function toAnsweredRequestResponse(request: AnsweredRequestView | null) {
+  return (
+    request && {
+      message: request.message,
+      tags: toTagsResponse(request.tags),
+      requester: toPersonResponse(request.requester),
+      asked: request.asked.map(toPersonResponse),
+    }
+  );
 }
 
 /**

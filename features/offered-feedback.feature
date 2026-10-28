@@ -16,6 +16,12 @@ Feature: Offered feedback
     Then Ben reads "You kept the room with you." from Ann, given without being asked
 
   @api
+  Scenario: Feedback given without being asked answers no request for the Member it was written to
+    Given Ann has given Ben Feedback: "You kept the room with you."
+    When Ben looks at the Feedback written to them
+    Then Ben reads in the Feedback written to them that "You kept the room with you." answers no request
+
+  @api
   Scenario: Giving Feedback asks nobody anything
     When Ann gives Ben Feedback: "You kept the room with you."
     Then no Feedback request or Ask was made between Ann and Ben

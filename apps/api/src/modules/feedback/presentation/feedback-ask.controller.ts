@@ -54,6 +54,7 @@ function toResponse(ask: MyAskView) {
       status: ask.requesterStatus,
     },
     status: ask.status,
+    onWorkspaceFeed: ask.onWorkspaceFeed,
     createdAt: ask.createdAt.toISOString(),
   };
 }
@@ -121,7 +122,7 @@ export class FeedbackAskController {
       giverAccountId: actor.accountId,
       askId: params.askId,
     });
-    return { ...toResponse(ask), onWorkspaceFeed: ask.onWorkspaceFeed };
+    return toResponse(ask);
   }
 
   @Post(':askId/answers')

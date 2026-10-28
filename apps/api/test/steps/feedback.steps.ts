@@ -539,6 +539,71 @@ Then(
   },
 );
 
+Then(
+  '{person} sees their answer to {person} {feedPlacement} on the Workspace feed',
+  function (
+    this: ThriveWorld,
+    name: string,
+    requester: string,
+    onWorkspaceFeed: boolean,
+  ) {
+    const response = lastSucceeded(
+      this,
+      `${name} listing what they were asked`,
+    );
+    const items: {
+      requester: { accountId: string };
+      onWorkspaceFeed: boolean;
+    }[] = response.body.items;
+    assert.deepEqual(
+      items
+        .filter(
+          (ask) => ask.requester.accountId === this.person(requester).accountId,
+        )
+        .map((ask) => ask.onWorkspaceFeed),
+      [onWorkspaceFeed],
+    );
+  },
+);
+
+/** One Ask of a request, as the list of requests sent shows it. */
+interface SentAsk {
+  readonly giverAccountId: string;
+  readonly status: string;
+  readonly answer: { readonly message: string } | null;
+}
+
+function sentAskOf(world: ThriveWorld, name: string, giver: string): SentAsk {
+  const response = lastSucceeded(
+    world,
+    `${name} listing the requests they sent`,
+  );
+  const asks: SentAsk[] = response.body.items.flatMap(
+    (request: { asks: SentAsk[] }) => request.asks,
+  );
+  const ask = asks.find(
+    (one) => one.giverAccountId === world.person(giver).accountId,
+  );
+  assert.ok(ask, `${name} did not ask ${giver}.`);
+  return ask;
+}
+
+Then(
+  '{person} reads {string} from {person} in the requests they have sent',
+  function (this: ThriveWorld, name: string, answer: string, giver: string) {
+    const ask = sentAskOf(this, name, giver);
+    assert.deepEqual([ask.status, ask.answer?.message], ['ANSWERED', answer]);
+  },
+);
+
+Then(
+  '{person} sees {person} has not answered yet in the requests they have sent',
+  function (this: ThriveWorld, name: string, giver: string) {
+    const ask = sentAskOf(this, name, giver);
+    assert.deepEqual([ask.status, ask.answer], ['PENDING', null]);
+  },
+);
+
 Given(
   '{person} has asked {people} for Feedback: {string}',
   async function (
