@@ -1,9 +1,11 @@
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { Injectable } from '@nestjs/common';
 import {
+  type AnsweredRequestRow,
   type FeedbackAnswerRow,
   type FeedbackAskPageRow,
   type FeedbackAskRow,
+  type FeedbackAskWithVisibilityRow,
   type FeedbackPageRow,
   type FeedbackRequestPageRow,
   FeedbackRequestQuery,
@@ -11,6 +13,7 @@ import {
   type FeedbackWithPeoplePageRow,
   type FeedbackWithPeopleRow,
   type FeedbackWithVisibilityRow,
+  type WorkspaceFeedPageRow,
 } from '../../application/query-port/feedback-request.query-port';
 import type {
   PageRequest,
@@ -79,6 +82,29 @@ const FEEDBACK_WITH_PEOPLE_FIELDS = {
   message: true,
   createdAt: true,
   ...TAGS_FIELDS,
+} as const;
+
+/**
+ * A feed piece and, through the Ask it answers, its request: the Request message and everyone
+ * asked. Nested, so the page is read in a fixed number of queries however many answers it holds.
+ */
+const WORKSPACE_FEED_FIELDS = {
+  ...FEEDBACK_WITH_PEOPLE_FIELDS,
+  feedbackAsk: {
+    select: {
+      feedbackRequest: {
+        select: {
+          message: true,
+          requesterAccountId: true,
+          asks: {
+            orderBy: ASKS_IN_ORDER_ASKED,
+            select: { giverAccountId: true },
+          },
+          ...TAGS_FIELDS,
+        },
+      },
+    },
+  },
 } as const;
 
 function skipFor(page: PageRequest): number {
@@ -266,7 +292,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
   async publicIn(
     workspaceId: string,
     page: PageRequest,
-  ): Promise<FeedbackWithPeoplePageRow> {
+  ): Promise<WorkspaceFeedPageRow> {
     const where = { workspaceId, visibility: 'EVERYONE' } as const;
     const client = this.prismaTransactionContext.client;
     const [records, total] = await Promise.all([
@@ -275,11 +301,19 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         orderBy: NEWEST_FIRST,
         skip: skipFor(page),
         take: page.pageSize,
-        select: FEEDBACK_WITH_PEOPLE_FIELDS,
+        select: WORKSPACE_FEED_FIELDS,
       }),
       client.feedback.count({ where }),
     ]);
-    return { items: records.map(toFeedbackWithPeopleRow), total };
+    return {
+      items: records.map((record) => ({
+        ...toFeedbackWithPeopleRow(record),
+        request: record.feedbackAsk
+          ? toAnsweredRequestRow(record.feedbackAsk.feedbackRequest)
+          : null,
+      })),
+      total,
+    };
   }
 
   async feedbackInWorkspace(
@@ -327,7 +361,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     workspaceId: string,
     giverAccountId: string,
     askId: string,
-  ): Promise<FeedbackAskRow | null> {
+  ): Promise<FeedbackAskWithVisibilityRow | null> {
     const record =
       await this.prismaTransactionContext.client.feedbackAsk.findFirst({
         where: {
@@ -339,10 +373,17 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
           id: true,
           status: true,
           createdAt: true,
-          feedbackRequest: REQUEST_OF_ASK,
+          feedbackRequest: {
+            select: { ...REQUEST_OF_ASK.select, visibility: true },
+          },
         },
       });
-    return record ? toFeedbackAskRow(record) : null;
+    return record
+      ? {
+          ...toFeedbackAskRow(record),
+          visibility: record.feedbackRequest.visibility,
+        }
+      : null;
   }
 }
 
@@ -422,6 +463,21 @@ function tagsOf(record: StoredTags): TagsView {
       slug: mention.slug,
       displayName: mention.displayName,
     })),
+  };
+}
+
+function toAnsweredRequestRow(
+  record: StoredTags & {
+    readonly message: string;
+    readonly requesterAccountId: string;
+    readonly asks: readonly { readonly giverAccountId: string }[];
+  },
+): AnsweredRequestRow {
+  return {
+    message: record.message,
+    tags: tagsOf(record),
+    requesterAccountId: record.requesterAccountId,
+    askedAccountIds: record.asks.map((ask) => ask.giverAccountId),
   };
 }
 

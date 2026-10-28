@@ -5,6 +5,7 @@ import {
   NO_TAGS,
 } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
+import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { PeopleService } from '../service/people.service';
 import { GetFeedbackAskUseCase } from './get-feedback-ask.use-case';
@@ -18,7 +19,7 @@ const BEN = 'account-ben';
 const CARA = 'account-cara';
 const CREATED_AT = new Date('2026-10-11T03:00:00.000Z');
 
-function setUp() {
+function setUp(visibility: VisibilityValue = 'ONLY_ME') {
   const feedbackRequestQuery = new FakeFeedbackRequestQuery();
   feedbackRequestQuery.rows.push({
     id: REQUEST_ID,
@@ -26,7 +27,7 @@ function setUp() {
     requesterAccountId: ANA,
     message: 'my presentation skills',
     tags: NO_TAGS,
-    visibility: 'ONLY_ME',
+    visibility,
     selectedAccountIds: [],
     createdAt: CREATED_AT,
     asks: [{ askId: ASK_FOR_BEN, giverAccountId: BEN, status: 'PENDING' }],
@@ -69,7 +70,32 @@ describe('reading one Ask waiting for me', () => {
       requesterStatus: 'ACTIVE',
       status: 'PENDING',
       createdAt: CREATED_AT,
+      onWorkspaceFeed: false,
     });
+  });
+
+  it('tells the Member asked that their answer goes on the Workspace feed when the request is shared with everyone', async () => {
+    const { useCase } = setUp('EVERYONE');
+
+    const ask = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      giverAccountId: BEN,
+      askId: ASK_FOR_BEN,
+    });
+
+    expect(ask.onWorkspaceFeed).toBe(true);
+  });
+
+  it('does not say the answer goes on the feed when the request is shared with selected people', async () => {
+    const { useCase } = setUp('SELECTED_PEOPLE');
+
+    const ask = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      giverAccountId: BEN,
+      askId: ASK_FOR_BEN,
+    });
+
+    expect(ask.onWorkspaceFeed).toBe(false);
   });
 
   it('shows a Requester who has since been Deactivated as inactive', async () => {

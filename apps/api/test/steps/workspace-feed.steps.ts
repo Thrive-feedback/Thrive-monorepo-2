@@ -7,6 +7,19 @@ interface FeedItem {
   readonly giver: { readonly accountId: string; readonly status: string };
   readonly receiver: { readonly accountId: string; readonly status: string };
   readonly receivers: readonly { readonly accountId: string }[];
+  readonly request: {
+    readonly message: string;
+    readonly requester: { readonly accountId: string };
+    readonly asked: readonly { readonly accountId: string }[];
+  } | null;
+}
+
+function feedItemSaying(world: ThriveWorld, message: string): FeedItem {
+  const item = feedItems(world).find(
+    (feedback) => feedback.message === message,
+  );
+  assert.ok(item, `"${message}" is not on the Workspace feed.`);
+  return item;
 }
 
 /** How a person is shown: `inactive` while they are Deactivated in the Workspace. */
@@ -74,6 +87,40 @@ Then(
         ],
       ],
     );
+  },
+);
+
+Then(
+  '{person} reads on the feed that {string} answers {person}, who asked {people}: {string}',
+  function (
+    this: ThriveWorld,
+    _name: string,
+    answer: string,
+    requester: string,
+    asked: string[],
+    question: string,
+  ) {
+    const { request } = feedItemSaying(this, answer);
+    assert.ok(request, `"${answer}" answers no request on the feed.`);
+    assert.deepEqual(
+      [
+        request.message,
+        request.requester.accountId,
+        request.asked.map((person) => person.accountId),
+      ],
+      [
+        question,
+        this.person(requester).accountId,
+        asked.map((name) => this.person(name).accountId),
+      ],
+    );
+  },
+);
+
+Then(
+  '{person} reads on the feed that {string} answers no request',
+  function (this: ThriveWorld, _name: string, message: string) {
+    assert.equal(feedItemSaying(this, message).request, null);
   },
 );
 

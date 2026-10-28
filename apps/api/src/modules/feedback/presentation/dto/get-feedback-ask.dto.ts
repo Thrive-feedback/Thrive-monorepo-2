@@ -34,7 +34,13 @@ export const feedbackAskSchema = z.object({
   createdAt: z.iso.datetime({ offset: true }),
 });
 
-export const getFeedbackAskResponseSchema = feedbackAskSchema;
+/**
+ * One Ask opened to answer. It says whether the answer goes on the Workspace feed, so the Giver
+ * knows before writing, and never who else may read it.
+ */
+export const getFeedbackAskResponseSchema = feedbackAskSchema.extend({
+  onWorkspaceFeed: z.boolean(),
+});
 export class GetFeedbackAskResponseDto extends createZodDto(
   getFeedbackAskResponseSchema,
 ) {}

@@ -121,6 +121,14 @@ export interface MyAskView {
   readonly createdAt: Date;
 }
 
+/**
+ * One Ask as the Member asked opens it to answer: everything the list shows, and whether the
+ * answer goes on the Workspace feed — never who else may read it (`ADR-0022`).
+ */
+export interface OpenedAskView extends MyAskView {
+  readonly onWorkspaceFeed: boolean;
+}
+
 /** The Asks waiting on one Member, newest first. */
 export interface MyAskListView {
   readonly items: readonly MyAskView[];
@@ -192,11 +200,26 @@ export interface SharedFeedbackListView {
   readonly total: number;
 }
 
+/** The request a piece of Requested Feedback answers, with everyone it names. */
+export interface AnsweredRequestView {
+  readonly message: string;
+  /** What the Request message was bound to when it was sent. */
+  readonly tags: TagsView;
+  readonly requester: PersonView;
+  /** Everyone the request asked, in the order they were asked, whatever became of their Ask. */
+  readonly asked: readonly PersonView[];
+}
+
+/** One piece on the Workspace feed: `request` is `null` for Feedback given without being asked. */
+export interface WorkspaceFeedItemView extends FeedbackView {
+  readonly request: AnsweredRequestView | null;
+}
+
 /**
  * The Feedback of a Workspace that every Member may read, newest first. Every piece names both
  * people: the reader is usually neither of them.
  */
 export interface WorkspaceFeedView {
-  readonly items: readonly FeedbackView[];
+  readonly items: readonly WorkspaceFeedItemView[];
   readonly total: number;
 }
