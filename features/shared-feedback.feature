@@ -22,6 +22,14 @@ Feature: Feedback shared with me
     Then Ann reads "You open strongly and keep everyone with you." from Ben to Cara
 
   @api
+  Scenario: An answer shared with a Member says what was asked and everyone who was asked
+    Given Dan is a Member of Ann's Workspace
+    And Cara has asked Ben and Dan for Feedback: "Running the planning meeting", shared with Ann
+    And Ben has answered "You open strongly and keep everyone with you."
+    When Ann looks at the Feedback shared with them
+    Then Ann reads in the Feedback shared with them that "You open strongly and keep everyone with you." answers Cara, who asked Ben and Dan: "Running the planning meeting"
+
+  @api
   Scenario Outline: Feedback nobody was selected for is shared with nobody
     Given Ben has given Cara Feedback: "You kept the room with you.", shared with <audience>
     When Ann looks at the Feedback shared with them

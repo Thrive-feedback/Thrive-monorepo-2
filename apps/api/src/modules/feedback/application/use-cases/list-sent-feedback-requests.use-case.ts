@@ -72,12 +72,12 @@ export class ListSentFeedbackRequestsUseCase {
             askId: ask.askId,
             giverAccountId: ask.giverAccountId,
             giverName: people.nameOf(ask.giverAccountId),
+            giverPhotoUrl: people.photoOf(ask.giverAccountId),
             giverStatus: people.statusOf(ask.giverAccountId),
             status: AskStatus.of(ask.status).toString(),
-            // The list says where each Ask stands, not what was written: a page of twenty
-            // requests would carry twenty answers nobody is reading yet. The Receiver opens one
-            // request to read its answers.
-            answer: null,
+            // Every answer here is the caller's to read: the request is theirs, and they are the
+            // Receiver of what it collected. The card shows them, so they come with the list.
+            answer: ask.answer,
           })),
           createdAt: request.createdAt,
         };

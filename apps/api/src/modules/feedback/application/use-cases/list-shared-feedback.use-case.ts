@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
+import {
+  accountIdsInRequest,
+  toAnsweredRequestView,
+} from '../service/answered-request.mapping';
 import { PeopleService } from '../service/people.service';
 import type {
   PageRequest,
@@ -46,6 +50,7 @@ export class ListSharedFeedbackUseCase {
       shared.items.flatMap((feedback) => [
         feedback.giverAccountId,
         ...feedback.receiverAccountIds,
+        ...accountIdsInRequest(feedback.request),
       ]),
     );
 
@@ -63,6 +68,7 @@ export class ListSharedFeedbackUseCase {
         message: feedback.message,
         tags: feedback.tags,
         createdAt: feedback.createdAt,
+        request: toAnsweredRequestView(feedback.request, people),
       })),
       total: shared.total,
     };

@@ -7,10 +7,9 @@ import type {
   FeedbackRequestPageRow,
   FeedbackRequestRow,
   FeedbackRow,
-  FeedbackWithPeoplePageRow,
   FeedbackWithPeopleRow,
+  FeedbackWithRequestPageRow,
   FeedbackWithVisibilityRow,
-  WorkspaceFeedPageRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import {
@@ -310,7 +309,24 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
           row.workspaceId === workspaceId &&
           row.requesterAccountId === requesterAccountId,
       )
-      .sort(newestFirst);
+      .sort(newestFirst)
+      .map((row) => ({
+        ...row,
+        // Every answer is the Requester's to read, as the real join hands them over.
+        asks: row.asks.map((ask) => {
+          const answer = this.answers.find((one) => one.askId === ask.askId);
+          return {
+            ...ask,
+            answer: answer
+              ? {
+                  message: answer.message,
+                  tags: answer.tags,
+                  answeredAt: answer.answeredAt,
+                }
+              : null,
+          };
+        }),
+      }));
     return { items: pageOf(sent, page), total: sent.length };
   }
 
@@ -348,7 +364,7 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     workspaceId: string,
     readerAccountId: string,
     page: PageRequest,
-  ): Promise<FeedbackWithPeoplePageRow> {
+  ): Promise<FeedbackWithRequestPageRow> {
     const shared = this.feedbackWithVisibility
       .filter(
         (row) =>
@@ -357,14 +373,17 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
           row.selectedAccountIds.includes(readerAccountId),
       )
       .sort(newestFirst)
-      .map(withoutVisibility);
+      .map((row) => ({
+        ...withoutVisibility(row),
+        request: this.answeredRequestOf(workspaceId, row.feedbackRequestId),
+      }));
     return { items: pageOf(shared, page), total: shared.length };
   }
 
   async publicIn(
     workspaceId: string,
     page: PageRequest,
-  ): Promise<WorkspaceFeedPageRow> {
+  ): Promise<FeedbackWithRequestPageRow> {
     const feed = this.feedbackWithVisibility
       .filter(
         (row) =>
@@ -378,7 +397,7 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     return { items: pageOf(feed, page), total: feed.length };
   }
 
-  /** The request an answer responds to, as the feed's join reads it through the Ask. */
+  /** The request an answer responds to, as the lists' join reads it through the Ask. */
   private answeredRequestOf(
     workspaceId: string,
     feedbackRequestId: string | null,
@@ -410,9 +429,9 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
 
   /**
    * The Feedback rows the test has written, as the `feedback` table holds them: addressed to
-   * one or more Members of one Workspace.
+   * one or more Members of one Workspace. The request an answer responds to is joined on read.
    */
-  readonly feedback: (FeedbackRow & {
+  readonly feedback: (Omit<FeedbackRow, 'request'> & {
     readonly workspaceId: string;
   })[] = [];
 
@@ -427,7 +446,11 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
           row.workspaceId === workspaceId &&
           row.receiverAccountIds.includes(receiverAccountId),
       )
-      .sort(newestFirst);
+      .sort(newestFirst)
+      .map(({ workspaceId: _workspace, ...row }) => ({
+        ...row,
+        request: this.answeredRequestOf(workspaceId, row.feedbackRequestId),
+      }));
     return { items: pageOf(received, page), total: received.length };
   }
 

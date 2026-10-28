@@ -5,6 +5,7 @@ import {
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
+import { answeredRequestSchema } from './answered-request.dto';
 import { personSchema } from './person.dto';
 import { tagsSchema } from './tags.dto';
 
@@ -19,16 +20,6 @@ export class ListWorkspaceFeedQueryDto extends createZodDto(
  * `@nestjs/swagger` reads nestjs-zod's `type: ['string', 'null']` as "array of"
  * (`docs/design/0016` §10).
  */
-const answeredRequestSchema = z.object({
-  /** The Request message. */
-  message: z.string(),
-  /** What the Request message was bound to when it was sent. */
-  tags: tagsSchema,
-  requester: personSchema,
-  /** Everyone the request asked, in the order they were asked, whatever became of their Ask. */
-  asked: z.array(personSchema).min(1),
-});
-
 const feedItemSchema = z.object({
   id: z.uuid(),
   /** `REQUESTED` answered an Ask; `OFFERED` was given without being asked. */

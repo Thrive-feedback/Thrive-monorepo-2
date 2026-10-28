@@ -3,6 +3,7 @@ import {
   AskStatus,
   type AskStatusValue,
 } from '../../domain/value-object/ask-status.vo';
+import { isEveryone } from '../../domain/value-object/visibility.vo';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
 import { PeopleService } from '../service/people.service';
 import type {
@@ -56,6 +57,7 @@ export class ListMyFeedbackAsksUseCase {
         requesterPhotoUrl: people.photoOf(ask.requesterAccountId),
         requesterStatus: people.statusOf(ask.requesterAccountId),
         status: AskStatus.of(ask.status).toString(),
+        onWorkspaceFeed: isEveryone(ask.visibility),
         createdAt: ask.createdAt,
       })),
       total: asks.total,

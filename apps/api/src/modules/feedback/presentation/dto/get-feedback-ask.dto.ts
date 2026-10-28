@@ -31,16 +31,16 @@ export const feedbackAskSchema = z.object({
   tags: tagsSchema,
   requester: requesterSchema,
   status: z.enum(ASK_STATUSES),
+  /**
+   * Whether the answer goes on the Workspace feed, so the Giver knows before writing — and never
+   * who else may read it (brain `ADR-0022`, `ADR-0046`).
+   */
+  onWorkspaceFeed: z.boolean(),
   createdAt: z.iso.datetime({ offset: true }),
 });
 
-/**
- * One Ask opened to answer. It says whether the answer goes on the Workspace feed, so the Giver
- * knows before writing, and never who else may read it.
- */
-export const getFeedbackAskResponseSchema = feedbackAskSchema.extend({
-  onWorkspaceFeed: z.boolean(),
-});
+/** One Ask opened to answer: the same shape the waiting list sends. */
+export const getFeedbackAskResponseSchema = feedbackAskSchema;
 export class GetFeedbackAskResponseDto extends createZodDto(
   getFeedbackAskResponseSchema,
 ) {}

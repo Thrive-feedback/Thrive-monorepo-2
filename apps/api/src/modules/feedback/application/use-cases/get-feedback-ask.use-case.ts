@@ -4,7 +4,7 @@ import { isEveryone } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
 import { PeopleService } from '../service/people.service';
-import type { OpenedAskView } from '../types/feedback-request.types';
+import type { MyAskView } from '../types/feedback-request.types';
 
 export interface GetFeedbackAskInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
@@ -26,7 +26,7 @@ export class GetFeedbackAskUseCase {
     private readonly peopleService: PeopleService,
   ) {}
 
-  async execute(input: GetFeedbackAskInput): Promise<OpenedAskView> {
+  async execute(input: GetFeedbackAskInput): Promise<MyAskView> {
     const ask = await this.feedbackRequestQuery.askFor(
       input.workspaceId,
       input.giverAccountId,

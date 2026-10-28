@@ -151,6 +151,51 @@ describe('reading the Feedback written to me', () => {
     ]);
   });
 
+  it('says which of my requests an answer responds to, and everyone that request asked', async () => {
+    const { feedbackRequestQuery, useCase } = setUp();
+    feedbackRequestQuery.rows.push({
+      id: '0199a0f0-0000-7000-8000-0000000000f1',
+      workspaceId: WORKSPACE_ID,
+      requesterAccountId: ANA,
+      message: 'my presentation skills',
+      tags: NO_TAGS,
+      visibility: 'ONLY_ME',
+      selectedAccountIds: [],
+      createdAt: new Date('2026-10-10T03:00:00.000Z'),
+      asks: [
+        {
+          askId: '0199a0f0-0000-7000-8000-0000000000a1',
+          giverAccountId: BEN,
+          status: 'ANSWERED',
+        },
+        {
+          askId: '0199a0f0-0000-7000-8000-0000000000a2',
+          giverAccountId: CARA,
+          status: 'PENDING',
+        },
+      ],
+    });
+
+    const received = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      receiverAccountId: ANA,
+      page: ONE_PAGE,
+    });
+
+    expect(received.items.map((feedback) => feedback.request)).toEqual([
+      null,
+      {
+        message: 'my presentation skills',
+        tags: NO_TAGS,
+        requester: expect.objectContaining({ accountId: ANA }),
+        asked: [
+          expect.objectContaining({ accountId: BEN, name: 'Ben Carter' }),
+          expect.objectContaining({ accountId: CARA, name: 'Cara Diaz' }),
+        ],
+      },
+    ]);
+  });
+
   it('leaves out Feedback written to another Member of my own Workspace', async () => {
     const { useCase } = setUp();
 

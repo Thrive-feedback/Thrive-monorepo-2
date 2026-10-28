@@ -23,6 +23,15 @@ Feature: Feedback requests
     Then Ann sees a request saying "Running the planning meeting" asking Ben
 
   @api
+  Scenario: A Member reads the answers on the requests they have sent
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting"
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When Ann looks at the requests they have sent
+    Then Ann reads "You open strongly and lose the room at the detail." from Ben in the requests they have sent
+    And Ann sees Cara has not answered yet in the requests they have sent
+
+  @api
   Scenario: A teammate sees what they have been asked
     Given Ann has asked Ben for Feedback: "Running the planning meeting"
     When Ben looks at what they have been asked
@@ -73,6 +82,17 @@ Feature: Feedback requests
     Given Ann has asked Ben for Feedback: "Running the planning meeting", shared with <audience>
     When Ben opens the Ask waiting for Ben
     Then Ben is told their answer <placement> on the Workspace feed
+
+    Examples:
+      | audience                  | placement   |
+      | everyone in the Workspace | goes        |
+      | nobody else               | does not go |
+
+  @api
+  Scenario Outline: Every Ask waiting says whether its answer goes on the Workspace feed
+    Given Ann has asked Ben for Feedback: "Running the planning meeting", shared with <audience>
+    When Ben looks at what they have been asked
+    Then Ben sees their answer to Ann <placement> on the Workspace feed
 
     Examples:
       | audience                  | placement   |
@@ -158,6 +178,14 @@ Feature: Feedback requests
     And Ben has answered "You open strongly and lose the room at the detail."
     When Ann looks at the Feedback written to them
     Then Ann reads "You open strongly and lose the room at the detail." from Ben
+
+  @api
+  Scenario: Feedback written to a Member says what they asked and everyone they asked
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting"
+    And Ben has answered "You open strongly and lose the room at the detail."
+    When Ann looks at the Feedback written to them
+    Then Ann reads in the Feedback written to them that "You open strongly and lose the room at the detail." answers Ann, who asked Ben and Cara: "Running the planning meeting"
 
   @api
   Scenario: A Member sees the Google photo of whoever wrote Feedback to them

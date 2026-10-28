@@ -23,8 +23,25 @@ export interface FeedbackRequestRow {
   readonly createdAt: Date;
 }
 
+/** One Ask of a request its Requester sent, with the answer once it is written. */
+export interface SentAskRow extends FeedbackRequestAskRow {
+  readonly answer: SentAnswerRow | null;
+}
+
+/** An answer as its Requester reads it in the list of what they sent. */
+export interface SentAnswerRow {
+  readonly message: string;
+  readonly tags: TagsView;
+  readonly answeredAt: Date;
+}
+
+/** One request its Requester sent, with every Ask and what came back. */
+export interface SentFeedbackRequestRow extends FeedbackRequestRow {
+  readonly asks: readonly SentAskRow[];
+}
+
 export interface FeedbackRequestPageRow {
-  readonly items: readonly FeedbackRequestRow[];
+  readonly items: readonly SentFeedbackRequestRow[];
   readonly total: number;
 }
 
@@ -49,7 +66,7 @@ export interface FeedbackAskWithVisibilityRow extends FeedbackAskRow {
 }
 
 export interface FeedbackAskPageRow {
-  readonly items: readonly FeedbackAskRow[];
+  readonly items: readonly FeedbackAskWithVisibilityRow[];
   readonly total: number;
 }
 
@@ -76,6 +93,8 @@ export interface FeedbackRow {
   /** What its Giver wrote is bound to. */
   readonly tags: TagsView;
   readonly createdAt: Date;
+  /** The request it answers, or `null` for Feedback given without being asked. */
+  readonly request: AnsweredRequestRow | null;
 }
 
 /**
@@ -128,7 +147,7 @@ export interface FeedbackWithPeoplePageRow {
   readonly total: number;
 }
 
-/** The request a piece of Requested Feedback answers, as the Workspace feed shows it. */
+/** The request a piece of Requested Feedback answers, as the lists that show the answer name it. */
 export interface AnsweredRequestRow {
   readonly message: string;
   /** What the Request message was bound to when it was sent. */
@@ -138,13 +157,16 @@ export interface AnsweredRequestRow {
   readonly askedAccountIds: readonly string[];
 }
 
-/** One piece of Feedback on the Workspace feed: `request` is `null` for Offered Feedback. */
-export interface WorkspaceFeedRow extends FeedbackWithPeopleRow {
+/**
+ * One piece of Feedback with the request it answers, as the Workspace feed and Shared with me
+ * show it: `request` is `null` for Offered Feedback.
+ */
+export interface FeedbackWithRequestRow extends FeedbackWithPeopleRow {
   readonly request: AnsweredRequestRow | null;
 }
 
-export interface WorkspaceFeedPageRow {
-  readonly items: readonly WorkspaceFeedRow[];
+export interface FeedbackWithRequestPageRow {
+  readonly items: readonly FeedbackWithRequestRow[];
   readonly total: number;
 }
 
@@ -159,16 +181,18 @@ export abstract class FeedbackRequestQuery {
   ): Promise<FeedbackRequestRow | null>;
 
   /**
-   * The answers written in one request, by Ask. Read on its own rather than joined onto every
-   * request: only the screen that opens one request shows them, and who may read which is the
-   * use case's to decide.
+   * The answers written in one request, by Ask. Read on its own: who may read which, when the
+   * request is opened, is the use case's to decide.
    */
   abstract answersInRequest(
     workspaceId: string,
     requestId: string,
   ): Promise<readonly FeedbackAnswerRow[]>;
 
-  /** The requests one Member sent in one Workspace, newest first. */
+  /**
+   * The requests one Member sent in one Workspace, newest first, each Ask with its answer once
+   * written. Every answer is the Requester's to read: they are its Receiver.
+   */
   abstract sentInWorkspace(
     workspaceId: string,
     requesterAccountId: string,
@@ -176,8 +200,9 @@ export abstract class FeedbackRequestQuery {
   ): Promise<FeedbackRequestPageRow>;
 
   /**
-   * The Asks addressed to one Member in one Workspace, newest first. The Giver is a required
-   * argument for the same reason the Workspace is: one Member's Asks are not another's.
+   * The Asks addressed to one Member in one Workspace, newest first, each with its request's
+   * Visibility. The Giver is a required argument for the same reason the Workspace is: one
+   * Member's Asks are not another's.
    */
   abstract asksFor(
     workspaceId: string,
@@ -210,7 +235,7 @@ export abstract class FeedbackRequestQuery {
     workspaceId: string,
     readerAccountId: string,
     page: PageRequest,
-  ): Promise<FeedbackWithPeoplePageRow>;
+  ): Promise<FeedbackWithRequestPageRow>;
 
   /**
    * The Feedback of one Workspace that every Member may read — Everyone and nothing else —
@@ -221,7 +246,7 @@ export abstract class FeedbackRequestQuery {
   abstract publicIn(
     workspaceId: string,
     page: PageRequest,
-  ): Promise<WorkspaceFeedPageRow>;
+  ): Promise<FeedbackWithRequestPageRow>;
 
   /**
    * One piece of Feedback of one Workspace, or `null`. Not scoped to a reader: who may read it

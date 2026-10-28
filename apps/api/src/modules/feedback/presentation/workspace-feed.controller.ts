@@ -18,9 +18,8 @@ import {
 import { ZodResponse } from 'nestjs-zod';
 import { ListWorkspaceFeedUseCase } from '../application/use-cases/list-workspace-feed.use-case';
 import {
+  toAnsweredRequestResponse,
   toFeedbackResponse,
-  toPersonResponse,
-  toTagsResponse,
 } from './dto/feedback-response.mapper';
 import {
   ListWorkspaceFeedQueryDto,
@@ -66,12 +65,7 @@ export class WorkspaceFeedController {
     return {
       items: feed.items.map((feedback) => ({
         ...toFeedbackResponse(feedback),
-        request: feedback.request && {
-          message: feedback.request.message,
-          tags: toTagsResponse(feedback.request.tags),
-          requester: toPersonResponse(feedback.request.requester),
-          asked: feedback.request.asked.map(toPersonResponse),
-        },
+        request: toAnsweredRequestResponse(feedback.request),
       })),
       total: feed.total,
       page: page.page,

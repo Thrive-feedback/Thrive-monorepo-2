@@ -190,3 +190,55 @@ describe('reading the Workspace feed', () => {
     expect(second.items.map((feedback) => feedback.id)).toEqual([olderPublic]);
   });
 });
+
+describe('reading the same answered request from the lists around the feed', () => {
+  it('gives the Requester the answer they received the request it responds to', async () => {
+    const workspaceId = uuidv7();
+    const answerId = await givenAnAnsweredRequest(workspaceId);
+
+    const received = await query.receivedBy(workspaceId, BEN, ONE_PAGE);
+
+    expect(
+      received.items.map((feedback) => [feedback.id, feedback.request]),
+    ).toEqual([
+      [
+        answerId,
+        {
+          message: 'the planning meeting',
+          tags: { workspaceGoals: [], mentions: [] },
+          requesterAccountId: BEN,
+          askedAccountIds: [CARA, DAN],
+        },
+      ],
+    ]);
+  });
+
+  it('lists the request its Requester sent with each Ask and the answer it collected', async () => {
+    const workspaceId = uuidv7();
+    await givenAnAnsweredRequest(workspaceId);
+
+    const sent = await query.sentInWorkspace(workspaceId, BEN, ONE_PAGE);
+
+    expect(
+      sent.items.flatMap((request) =>
+        request.asks.map((ask) => [
+          ask.giverAccountId,
+          ask.status,
+          ask.answer?.message ?? null,
+        ]),
+      ),
+    ).toEqual([
+      [CARA, 'ANSWERED', 'You kept everyone with you.'],
+      [DAN, 'PENDING', null],
+    ]);
+  });
+
+  it('tells the Member still asked the Visibility of the request their Ask belongs to', async () => {
+    const workspaceId = uuidv7();
+    await givenAnAnsweredRequest(workspaceId);
+
+    const waiting = await query.asksFor(workspaceId, DAN, 'PENDING', ONE_PAGE);
+
+    expect(waiting.items.map((ask) => ask.visibility)).toEqual(['EVERYONE']);
+  });
+});

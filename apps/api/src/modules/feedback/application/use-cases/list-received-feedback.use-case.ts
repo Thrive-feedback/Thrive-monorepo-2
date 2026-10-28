@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
+import {
+  accountIdsInRequest,
+  toAnsweredRequestView,
+} from '../service/answered-request.mapping';
 import { PeopleService } from '../service/people.service';
 import type {
   PageRequest,
@@ -39,8 +43,8 @@ export class ListReceivedFeedbackUseCase {
       input.receiverAccountId,
       input.page,
     );
-    // The reader knows it was written to them; the screen names who else it was for, so only
-    // they are looked up.
+    // The reader knows it was written to them; the screen names who else it was for and, for an
+    // answer, everyone their request asked, so only they are looked up.
     const othersOf = (receiverAccountIds: readonly string[]) =>
       receiverAccountIds.filter(
         (accountId) => accountId !== input.receiverAccountId,
@@ -50,6 +54,7 @@ export class ListReceivedFeedbackUseCase {
       received.items.flatMap((feedback) => [
         feedback.giverAccountId,
         ...othersOf(feedback.receiverAccountIds),
+        ...accountIdsInRequest(feedback.request),
       ]),
     );
 
@@ -69,6 +74,7 @@ export class ListReceivedFeedbackUseCase {
         message: feedback.message,
         tags: feedback.tags,
         createdAt: feedback.createdAt,
+        request: toAnsweredRequestView(feedback.request, people),
       })),
       total: received.total,
     };

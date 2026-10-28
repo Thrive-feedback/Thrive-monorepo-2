@@ -17,13 +17,12 @@ const askSchema = z.object({
   giverAccountId: z.uuid(),
   /** `null` while that Member has not introduced themselves. */
   giverName: z.string().nullable(),
+  /** Their Google photo, or `null` when they have none. */
+  giverPhotoUrl: z.url().nullable(),
   /** `DEACTIVATED` once the Giver was Deactivated in this Workspace; their Ask stays. */
   giverStatus: z.enum(PERSON_STATUSES),
   status: z.enum(ASK_STATUSES),
-  /**
-   * What was written, or `null`: the Ask is still waiting, the caller may not read it, or the
-   * route does not carry answers — the list of sent requests does not.
-   */
+  /** What was written, or `null`: the Ask is still waiting, or the caller may not read it. */
   answer: answerSchema.nullable(),
 });
 

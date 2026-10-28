@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
+import {
+  accountIdsInRequest,
+  toAnsweredRequestView,
+} from '../service/answered-request.mapping';
 import { PeopleService } from '../service/people.service';
 import type {
   PageRequest,
@@ -41,12 +45,7 @@ export class ListWorkspaceFeedUseCase {
       feed.items.flatMap((feedback) => [
         feedback.giverAccountId,
         ...feedback.receiverAccountIds,
-        ...(feedback.request
-          ? [
-              feedback.request.requesterAccountId,
-              ...feedback.request.askedAccountIds,
-            ]
-          : []),
+        ...accountIdsInRequest(feedback.request),
       ]),
     );
 
@@ -64,12 +63,7 @@ export class ListWorkspaceFeedUseCase {
         message: feedback.message,
         tags: feedback.tags,
         createdAt: feedback.createdAt,
-        request: feedback.request && {
-          message: feedback.request.message,
-          tags: feedback.request.tags,
-          requester: people.personOf(feedback.request.requesterAccountId),
-          asked: feedback.request.askedAccountIds.map(people.personOf),
-        },
+        request: toAnsweredRequestView(feedback.request, people),
       })),
       total: feed.total,
     };

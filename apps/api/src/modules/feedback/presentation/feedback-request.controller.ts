@@ -57,6 +57,7 @@ function toResponse(request: FeedbackRequestView) {
       askId: ask.askId,
       giverAccountId: ask.giverAccountId,
       giverName: ask.giverName,
+      giverPhotoUrl: ask.giverPhotoUrl,
       giverStatus: ask.giverStatus,
       status: ask.status,
       answer: ask.answer
