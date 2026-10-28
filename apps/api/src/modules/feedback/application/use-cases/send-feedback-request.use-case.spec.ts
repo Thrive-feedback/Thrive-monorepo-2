@@ -116,7 +116,10 @@ describe('a Requester asking a teammate for Feedback', () => {
     const { feedbackRequestRepository, useCase } = setUp();
 
     await useCase.execute(
-      request({ message: 'The launch with @cara #OWNERSHIP' }),
+      request({
+        message: 'The launch with @cara #OWNERSHIP',
+        visibility: 'EVERYONE',
+      }),
     );
 
     expect(feedbackRequestRepository.saved[0]).toMatchObject({

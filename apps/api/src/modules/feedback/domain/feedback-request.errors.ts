@@ -218,3 +218,17 @@ export class KudosNeedsARecipientError extends DomainError {
     super('A Kudos must @mention at least one other Member of the Workspace.');
   }
 }
+
+/**
+ * The text mentions somebody its Visibility would leave out. In a Request message or Offered
+ * Feedback, naming a Member means they can read it, so the writer chooses a Visibility that lets
+ * them in — Everyone, or Selected people with them in it.
+ */
+export class MentionedPersonLeftOutError extends DomainError {
+  readonly code = 'MENTIONED_PERSON_LEFT_OUT';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('Everyone the text mentions must be able to read it.');
+  }
+}

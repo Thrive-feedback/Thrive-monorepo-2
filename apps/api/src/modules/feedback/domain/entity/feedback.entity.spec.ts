@@ -3,6 +3,7 @@ import {
   CannotGiveYourselfFeedbackError,
   CannotSelectTheReceiverError,
   CannotSelectYourselfError,
+  MentionedPersonLeftOutError,
   NoReceiversError,
   ReceiverAlreadyNamedError,
 } from '../feedback-request.errors';
@@ -19,6 +20,7 @@ function offering(
     giver?: string;
     receivers?: string[];
     visibility?: Visibility;
+    mentions?: string[];
   } = {},
 ) {
   return {
@@ -28,7 +30,14 @@ function offering(
     receiverAccountIds: overrides.receivers ?? ['account-ben'],
     visibility: overrides.visibility ?? Visibility.onlyMe(),
     message: FeedbackMessage.of('You kept the room with you.'),
-    tags: BoundTags.none(),
+    tags: BoundTags.of({
+      workspaceGoals: [],
+      mentions: (overrides.mentions ?? []).map((accountId) => ({
+        accountId,
+        slug: accountId,
+        displayName: accountId,
+      })),
+    }),
   };
 }
 
@@ -126,5 +135,38 @@ describe('offering Feedback without being asked', () => {
         }),
       ),
     ).toThrow(CannotSelectTheReceiverError);
+  });
+
+  it('refuses leaving out a Member the message mentions', () => {
+    expect(() =>
+      Feedback.offer(offering({ mentions: ['account-cara'] })),
+    ).toThrow(MentionedPersonLeftOutError);
+    expect(() =>
+      Feedback.offer(
+        offering({
+          mentions: ['account-cara'],
+          visibility: selecting('account-dan'),
+        }),
+      ),
+    ).toThrow(MentionedPersonLeftOutError);
+  });
+
+  it('lets in a mentioned Member who is selected, or who reads it anyway', () => {
+    for (const details of [
+      offering({
+        mentions: ['account-cara'],
+        visibility: selecting('account-cara'),
+      }),
+      offering({
+        mentions: ['account-cara'],
+        visibility: Visibility.of({
+          value: 'EVERYONE',
+          selectedAccountIds: [],
+        }),
+      }),
+      offering({ mentions: ['account-ann', 'account-ben'] }),
+    ]) {
+      expect(() => Feedback.offer(details)).not.toThrow();
+    }
   });
 });

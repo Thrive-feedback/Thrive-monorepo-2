@@ -4,6 +4,7 @@ import {
   CannotAskYourselfError,
   CannotSelectYourselfError,
   GiverAlreadyAskedError,
+  MentionedPersonLeftOutError,
   NoGiversToAskError,
 } from '../feedback-request.errors';
 import { BoundTags } from '../value-object/bound-tags.vo';
@@ -34,6 +35,17 @@ function sending(
       { askId: ASK_ID, giverAccountId: 'account-ben' },
     ],
   };
+}
+
+function mentioning(...accountIds: string[]): BoundTags {
+  return BoundTags.of({
+    workspaceGoals: [],
+    mentions: accountIds.map((accountId) => ({
+      accountId,
+      slug: accountId,
+      displayName: accountId,
+    })),
+  });
 }
 
 describe('sending a Feedback Request', () => {
@@ -125,6 +137,20 @@ describe('sending a Feedback Request', () => {
     ).snapshot();
 
     expect(FeedbackRequest.restore(stored).snapshot()).toEqual(stored);
+  });
+
+  it('refuses leaving out a Member the Request message mentions', () => {
+    expect(() =>
+      FeedbackRequest.send(sending({ tags: mentioning('account-cara') })),
+    ).toThrow(MentionedPersonLeftOutError);
+  });
+
+  it('lets the Requester and the Givers asked be mentioned whatever the Visibility', () => {
+    expect(() =>
+      FeedbackRequest.send(
+        sending({ tags: mentioning('account-ann', 'account-ben') }),
+      ),
+    ).not.toThrow();
   });
 
   describe('answering an Ask', () => {

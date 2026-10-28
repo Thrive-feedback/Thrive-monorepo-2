@@ -94,7 +94,10 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
     const { feedbackRepository, useCase } = setUp();
 
     await useCase.execute(
-      offering({ message: 'The launch #Ownership. Thanks to @cara.' }),
+      offering({
+        message: 'The launch #Ownership. Thanks to @cara.',
+        visibility: 'EVERYONE',
+      }),
     );
 
     expect(feedbackRepository.saved[0]).toMatchObject({

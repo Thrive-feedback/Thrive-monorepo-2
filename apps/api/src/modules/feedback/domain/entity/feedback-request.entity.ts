@@ -2,6 +2,7 @@ import {
   CannotAskYourselfError,
   CannotSelectYourselfError,
   GiverAlreadyAskedError,
+  MentionedPersonLeftOutError,
   NoGiversToAskError,
 } from '../feedback-request.errors';
 import {
@@ -57,8 +58,9 @@ export class FeedbackRequest {
   /**
    * The Requester sends the request: a Request message, who besides them may read the answers, and one
    * Ask per Member asked. Every rule holds before it exists — at least one Giver, never the
-   * Requester, never the same Giver twice, and the Requester not among the people they select —
-   * so there is no half-built request to save.
+   * Requester, never the same Giver twice, the Requester not among the people they select, and
+   * everyone the Request message mentions able to read the answers — so there is no half-built
+   * request to save.
    */
   static send(details: {
     readonly id: string;
@@ -89,6 +91,19 @@ export class FeedbackRequest {
         throw new GiverAlreadyAskedError();
       }
       asked.add(giver.giverAccountId);
+    }
+    // The Requester and the Givers asked count as the Giver and the Receivers do for one piece
+    // of Feedback: they read the request whatever its Visibility, so naming them leaves nobody out.
+    const leavesOutAMention = details.tags.mentions().some(
+      (mention) =>
+        !details.visibility.letsRead({
+          readerAccountId: mention.accountId,
+          giverAccountId: details.requesterAccountId,
+          receiverAccountIds: [...asked],
+        }),
+    );
+    if (leavesOutAMention) {
+      throw new MentionedPersonLeftOutError();
     }
     return new FeedbackRequest(
       details.id,

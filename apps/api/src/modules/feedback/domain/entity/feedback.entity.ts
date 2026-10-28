@@ -2,6 +2,7 @@ import {
   CannotGiveYourselfFeedbackError,
   CannotSelectTheReceiverError,
   CannotSelectYourselfError,
+  MentionedPersonLeftOutError,
   NoReceiversError,
   ReceiverAlreadyNamedError,
 } from '../feedback-request.errors';
@@ -107,7 +108,8 @@ export class Feedback {
   /**
    * The Giver gives one or more Receivers Feedback without being asked. Every rule holds before
    * it exists: somebody to give it to, each of them once, never yourself, and nobody selected to
-   * read it is the Giver or a Receiver, who always read it. What the Visibility itself requires —
+   * read it is the Giver or a Receiver, who always read it, and everyone the message mentions
+   * may read it. What the Visibility itself requires —
    * somebody selected for Selected people, nobody for any other choice — the Visibility checked
    * when it was made.
    */
@@ -138,6 +140,17 @@ export class Feedback {
     }
     if (selected.some((accountId) => receivers.includes(accountId))) {
       throw new CannotSelectTheReceiverError();
+    }
+    const leavesOutAMention = details.tags.mentions().some(
+      (mention) =>
+        !details.visibility.letsRead({
+          readerAccountId: mention.accountId,
+          giverAccountId: details.giverAccountId,
+          receiverAccountIds: receivers,
+        }),
+    );
+    if (leavesOutAMention) {
+      throw new MentionedPersonLeftOutError();
     }
     return new Feedback(
       details.id,
