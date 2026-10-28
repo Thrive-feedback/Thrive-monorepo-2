@@ -16,7 +16,7 @@ const GOOGLE_PHOTOS_ORIGIN = 'https://lh3.googleusercontent.com';
  * The navbar is fixed rather than sticky, like the strips, so the frame stays in one piece when
  * the page bounces past its ends on a trackpad; the main region starts below it.
  *
- * The main region is a flex column so a page can centre itself with `m-auto` without the
+ * The main region holds a flex column so a page can centre itself with `m-auto` without the
  * shell knowing what it holds.
  */
 export function MemberShell({ children }: { children: React.ReactNode }) {
@@ -26,8 +26,13 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col">
       <MemberNavbar />
-      <main className="mt-18 flex flex-1 flex-col px-inset-container py-12">
-        {children}
+      {/* The strips lie over the page, so the inset is measured from inside them: the outer
+          padding is a strip's width, the inner one the container's inset. Otherwise, on a
+          phone, the content would come within a few pixels of the frame. */}
+      <main className="mt-18 flex flex-1 flex-col px-3 py-12">
+        <div className="flex flex-1 flex-col px-inset-container">
+          {children}
+        </div>
       </main>
       <div
         aria-hidden="true"
