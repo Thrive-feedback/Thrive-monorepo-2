@@ -14,7 +14,8 @@ export interface ListWorkspaceFeedInput {
 
 /**
  * A query: the Feedback of this Workspace that every Member may read — whatever a Requester or a
- * Giver set to Everyone — newest first, with both people named.
+ * Giver set to Everyone — newest first, with both people named, and an answer with the request it
+ * answers and everyone that request asked (`ADR-0046` in the brain).
  *
  * **It takes no account id, which is why the guard on its route is load-bearing.** Every other
  * read in this module is scoped to a person as well as a Workspace, and so refuses a stranger
@@ -40,6 +41,12 @@ export class ListWorkspaceFeedUseCase {
       feed.items.flatMap((feedback) => [
         feedback.giverAccountId,
         ...feedback.receiverAccountIds,
+        ...(feedback.request
+          ? [
+              feedback.request.requesterAccountId,
+              ...feedback.request.askedAccountIds,
+            ]
+          : []),
       ]),
     );
 
@@ -57,6 +64,12 @@ export class ListWorkspaceFeedUseCase {
         message: feedback.message,
         tags: feedback.tags,
         createdAt: feedback.createdAt,
+        request: feedback.request && {
+          message: feedback.request.message,
+          tags: feedback.request.tags,
+          requester: people.personOf(feedback.request.requesterAccountId),
+          asked: feedback.request.askedAccountIds.map(people.personOf),
+        },
       })),
       total: feed.total,
     };

@@ -503,6 +503,43 @@ Then(
 );
 
 Given(
+  '{person} has asked {people} for Feedback: {string}, shared with {sharedWith}',
+  async function (
+    this: ThriveWorld,
+    requester: string,
+    givers: string[],
+    message: string,
+    sharedWith: string,
+  ) {
+    this.succeeded(
+      await askForFeedback(
+        this,
+        requester,
+        givers,
+        message,
+        visibilityOf(this, sharedWith),
+      ),
+      `${requester} asking ${givers.join(' and ')} for Feedback, shared with ${sharedWith}`,
+    );
+  },
+);
+
+/** Whether an answer will be on the Workspace feed, in the words the feature file uses. */
+defineParameterType({
+  name: 'feedPlacement',
+  regexp: /goes|does not go/,
+  transformer: (placement: string) => placement === 'goes',
+});
+
+Then(
+  '{person} is told their answer {feedPlacement} on the Workspace feed',
+  function (this: ThriveWorld, name: string, onWorkspaceFeed: boolean) {
+    const response = lastSucceeded(this, `${name} opening the Ask`);
+    assert.equal(response.body.onWorkspaceFeed, onWorkspaceFeed);
+  },
+);
+
+Given(
   '{person} has asked {people} for Feedback: {string}',
   async function (
     this: ThriveWorld,

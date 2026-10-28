@@ -1129,6 +1129,7 @@ export interface components {
             status: "PENDING" | "ANSWERED" | "EXPIRED";
             /** Format: date-time */
             createdAt: string;
+            onWorkspaceFeed: boolean;
         };
         AnswerFeedbackAskRequestDto: {
             message: string;
@@ -1337,6 +1338,36 @@ export interface components {
                 };
                 /** Format: date-time */
                 createdAt: string;
+                request: {
+                    message: string;
+                    tags: {
+                        workspaceGoals: {
+                            name: string;
+                        }[];
+                        mentions: {
+                            slug: string;
+                            displayName: string;
+                        }[];
+                    };
+                    requester: {
+                        /** Format: uuid */
+                        accountId: string;
+                        name: string | null;
+                        /** Format: uri */
+                        photoUrl: string | null;
+                        /** @enum {string} */
+                        status: "ACTIVE" | "DEACTIVATED";
+                    };
+                    asked: {
+                        /** Format: uuid */
+                        accountId: string;
+                        name: string | null;
+                        /** Format: uri */
+                        photoUrl: string | null;
+                        /** @enum {string} */
+                        status: "ACTIVE" | "DEACTIVATED";
+                    }[];
+                } | null;
             }[];
             total: number;
             page: number;

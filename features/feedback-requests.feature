@@ -2,7 +2,9 @@ Feature: Feedback requests
   A Member asks one or more teammates for Feedback with a Request message. The request is read
   by the person who sent it and the people it asks, and by nobody else; each person asked sees
   only their own Ask, never who else was asked. The Feedback it
-  collects is also read by whoever the Requester chose to share it with.
+  collects is also read by whoever the Requester chose to share it with. When that is everyone
+  in the Workspace, the person asked is told before answering that their answer goes on the
+  Workspace feed, which names everyone the request asked beside it.
 
   Background:
     Given Ann owns a Workspace called "Acme"
@@ -65,6 +67,17 @@ Feature: Feedback requests
       | opener | who they are           |
       | Ben    | another Member         |
       | Ann    | the Requester who sent it |
+
+  @api
+  Scenario Outline: The person asked is told whether their answer goes on the Workspace feed
+    Given Ann has asked Ben for Feedback: "Running the planning meeting", shared with <audience>
+    When Ben opens the Ask waiting for Ben
+    Then Ben is told their answer <placement> on the Workspace feed
+
+    Examples:
+      | audience                  | placement   |
+      | everyone in the Workspace | goes        |
+      | nobody else               | does not go |
 
   @api
   Scenario: A teammate answers what they were asked, and the Member who asked reads it

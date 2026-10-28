@@ -1,5 +1,6 @@
 import type { FeedbackOrigin } from '../../domain/entity/feedback.entity';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
+import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
 import type { PageRequest, TagsView } from '../types/feedback-request.types';
 
 /** One Ask, as stored. Names are Identity's and are added above this port. */
@@ -37,6 +38,14 @@ export interface FeedbackAskRow {
   readonly requesterAccountId: string;
   readonly status: string;
   readonly createdAt: Date;
+}
+
+/**
+ * One Ask with the Visibility its request chose, as the Giver opening it reads it: enough to tell
+ * them whether their answer goes on the Workspace feed, and nothing about who else may read it.
+ */
+export interface FeedbackAskWithVisibilityRow extends FeedbackAskRow {
+  readonly visibility: VisibilityValue;
 }
 
 export interface FeedbackAskPageRow {
@@ -119,6 +128,26 @@ export interface FeedbackWithPeoplePageRow {
   readonly total: number;
 }
 
+/** The request a piece of Requested Feedback answers, as the Workspace feed shows it. */
+export interface AnsweredRequestRow {
+  readonly message: string;
+  /** What the Request message was bound to when it was sent. */
+  readonly tags: TagsView;
+  readonly requesterAccountId: string;
+  /** Everyone the request asked, in the order they were asked, whatever became of their Ask. */
+  readonly askedAccountIds: readonly string[];
+}
+
+/** One piece of Feedback on the Workspace feed: `request` is `null` for Offered Feedback. */
+export interface WorkspaceFeedRow extends FeedbackWithPeopleRow {
+  readonly request: AnsweredRequestRow | null;
+}
+
+export interface WorkspaceFeedPageRow {
+  readonly items: readonly WorkspaceFeedRow[];
+  readonly total: number;
+}
+
 export abstract class FeedbackRequestQuery {
   /**
    * One request of one Workspace with its Asks, or `null`. The Workspace is a required
@@ -192,7 +221,7 @@ export abstract class FeedbackRequestQuery {
   abstract publicIn(
     workspaceId: string,
     page: PageRequest,
-  ): Promise<FeedbackWithPeoplePageRow>;
+  ): Promise<WorkspaceFeedPageRow>;
 
   /**
    * One piece of Feedback of one Workspace, or `null`. Not scoped to a reader: who may read it
@@ -208,5 +237,5 @@ export abstract class FeedbackRequestQuery {
     workspaceId: string,
     giverAccountId: string,
     askId: string,
-  ): Promise<FeedbackAskRow | null>;
+  ): Promise<FeedbackAskWithVisibilityRow | null>;
 }

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { AskStatus } from '../../domain/value-object/ask-status.vo';
+import { isEveryone } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
 import { PeopleService } from '../service/people.service';
-import type { MyAskView } from '../types/feedback-request.types';
+import type { OpenedAskView } from '../types/feedback-request.types';
 
 export interface GetFeedbackAskInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
@@ -14,8 +15,8 @@ export interface GetFeedbackAskInput {
 }
 
 /**
- * A query: one Ask waiting on the caller — who asked, and about what — which is what the screen
- * that answers it shows. The Giver is part of the read, so an Ask addressed to somebody else is
+ * A query: one Ask waiting on the caller — who asked, about what, and whether the answer goes on
+ * the Workspace feed — which is what the screen that answers it shows. The Giver is part of the read, so an Ask addressed to somebody else is
  * not found rather than refused, and nobody learns it exists.
  */
 @Injectable()
@@ -25,7 +26,7 @@ export class GetFeedbackAskUseCase {
     private readonly peopleService: PeopleService,
   ) {}
 
-  async execute(input: GetFeedbackAskInput): Promise<MyAskView> {
+  async execute(input: GetFeedbackAskInput): Promise<OpenedAskView> {
     const ask = await this.feedbackRequestQuery.askFor(
       input.workspaceId,
       input.giverAccountId,
@@ -49,6 +50,7 @@ export class GetFeedbackAskUseCase {
       requesterStatus: people.statusOf(ask.requesterAccountId),
       status: AskStatus.of(ask.status).toString(),
       createdAt: ask.createdAt,
+      onWorkspaceFeed: isEveryone(ask.visibility),
     };
   }
 }

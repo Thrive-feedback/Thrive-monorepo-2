@@ -121,7 +121,7 @@ export class FeedbackAskController {
       giverAccountId: actor.accountId,
       askId: params.askId,
     });
-    return toResponse(ask);
+    return { ...toResponse(ask), onWorkspaceFeed: ask.onWorkspaceFeed };
   }
 
   @Post(':askId/answers')

@@ -84,6 +84,29 @@ function setUp() {
       selectedAccountIds: [],
     },
   );
+  // The request Cara's answer responds to: Ben asked Cara, then Ana, who has not answered.
+  feedbackRequestQuery.rows.push({
+    id: '0199a0f0-0000-7000-8000-0000000000f1',
+    workspaceId: WORKSPACE_ID,
+    requesterAccountId: BEN,
+    message: 'my presentation skills',
+    tags: NO_TAGS,
+    visibility: 'EVERYONE',
+    selectedAccountIds: [],
+    createdAt: new Date('2026-10-10T03:00:00.000Z'),
+    asks: [
+      {
+        askId: '0199a0f0-0000-7000-8000-0000000000a1',
+        giverAccountId: CARA,
+        status: 'ANSWERED',
+      },
+      {
+        askId: '0199a0f0-0000-7000-8000-0000000000a2',
+        giverAccountId: ANA,
+        status: 'PENDING',
+      },
+    ],
+  });
   const workspaceMembershipPort = new FakeWorkspaceMembershipPort();
   const accountSummaryPort = new FakeAccountSummaryPort();
   accountSummaryPort.summaries.push(
@@ -129,6 +152,52 @@ describe('reading the Workspace feed', () => {
     expect(feed.items[0]?.receivers.map((person) => person.name)).toEqual([
       'Cara Diaz',
     ]);
+  });
+
+  it('gives an answer the request it responds to, naming the Requester and everyone asked', async () => {
+    const { useCase } = setUp();
+
+    const feed = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      page: ONE_PAGE,
+    });
+
+    const answer = feed.items.find(
+      (feedback) => feedback.origin === 'REQUESTED',
+    );
+    expect(answer?.request).toEqual({
+      message: 'my presentation skills',
+      tags: NO_TAGS,
+      requester: {
+        accountId: BEN,
+        name: 'Ben Carter',
+        photoUrl: null,
+        status: 'ACTIVE',
+      },
+      asked: [
+        {
+          accountId: CARA,
+          name: 'Cara Diaz',
+          photoUrl: null,
+          status: 'ACTIVE',
+        },
+        { accountId: ANA, name: null, photoUrl: null, status: 'ACTIVE' },
+      ],
+    });
+  });
+
+  it('gives Feedback offered without being asked no request', async () => {
+    const { useCase } = setUp();
+
+    const feed = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      page: ONE_PAGE,
+    });
+
+    const offered = feed.items.find(
+      (feedback) => feedback.origin === 'OFFERED',
+    );
+    expect(offered?.request).toBeNull();
   });
 
   it('shows a person who has since been Deactivated as inactive, and keeps their Feedback on the feed', async () => {
@@ -210,13 +279,13 @@ describe('reading the Workspace feed', () => {
     expect(feed).toEqual({ items: [], total: 0 });
   });
 
-  it('names everybody on the page in one call, however many pieces it holds', async () => {
+  it('names everybody on the page in one call, everyone a request asked included', async () => {
     const { accountSummaryPort, useCase } = setUp();
 
     await useCase.execute({ workspaceId: WORKSPACE_ID, page: ONE_PAGE });
 
     expect(accountSummaryPort.calls).toHaveLength(1);
-    expect(accountSummaryPort.calls[0]).toEqual([BEN, CARA]);
+    expect(accountSummaryPort.calls[0]).toEqual([BEN, CARA, ANA]);
   });
 
   it('leaves somebody unnamed while they have not introduced themselves', async () => {

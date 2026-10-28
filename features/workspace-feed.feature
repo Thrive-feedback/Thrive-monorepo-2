@@ -65,6 +65,19 @@ Feature: The Workspace feed
     And Ann sees no photo for Cara
 
   @api
+  Scenario: An answer on the feed says what was asked and everyone who was asked
+    Given Cara has asked Ben and Ann for Feedback: "Running the planning meeting", shared with everyone in the Workspace
+    And Ben has answered "You open strongly and keep everyone with you."
+    When Ann looks at the Workspace feed
+    Then Ann reads on the feed that "You open strongly and keep everyone with you." answers Cara, who asked Ben and Ann: "Running the planning meeting"
+
+  @api
+  Scenario: Feedback given without being asked answers no request on the feed
+    Given Ben has given Cara Feedback: "You kept the room with you.", shared with everyone in the Workspace
+    When Ann looks at the Workspace feed
+    Then Ann reads on the feed that "You kept the room with you." answers no request
+
+  @api
   Scenario: Feedback given to several is on the feed once, naming everyone it is for
     Given Ann has given Ben and Cara Feedback: "You two kept the demo calm.", shared with everyone in the Workspace
     When Ann looks at the Workspace feed

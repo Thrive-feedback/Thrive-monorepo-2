@@ -1,7 +1,8 @@
 import type {
+  AnsweredRequestRow,
   FeedbackAnswerRow,
   FeedbackAskPageRow,
-  FeedbackAskRow,
+  FeedbackAskWithVisibilityRow,
   FeedbackPageRow,
   FeedbackRequestPageRow,
   FeedbackRequestRow,
@@ -9,6 +10,7 @@ import type {
   FeedbackWithPeoplePageRow,
   FeedbackWithPeopleRow,
   FeedbackWithVisibilityRow,
+  WorkspaceFeedPageRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import {
@@ -33,6 +35,10 @@ import { FeedbackRepository } from '@app/modules/feedback/domain/repository/feed
 import { FeedbackRequestRepository } from '@app/modules/feedback/domain/repository/feedback-request-repository.port';
 import { KudosRepository } from '@app/modules/feedback/domain/repository/kudos-repository.port';
 import type { AskStatusValue } from '@app/modules/feedback/domain/value-object/ask-status.vo';
+import {
+  VISIBILITIES,
+  type VisibilityValue,
+} from '@app/modules/feedback/domain/value-object/visibility.vo';
 import { type AccountBySlug, AccountBySlugPort } from '@app/modules/identity';
 import { WorkspaceMembershipPort } from '@app/modules/workspace';
 import {
@@ -358,22 +364,43 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
   async publicIn(
     workspaceId: string,
     page: PageRequest,
-  ): Promise<FeedbackWithPeoplePageRow> {
+  ): Promise<WorkspaceFeedPageRow> {
     const feed = this.feedbackWithVisibility
       .filter(
         (row) =>
           row.workspaceId === workspaceId && row.visibility === 'EVERYONE',
       )
       .sort(newestFirst)
-      .map(withoutVisibility);
+      .map((row) => ({
+        ...withoutVisibility(row),
+        request: this.answeredRequestOf(workspaceId, row.feedbackRequestId),
+      }));
     return { items: pageOf(feed, page), total: feed.length };
+  }
+
+  /** The request an answer responds to, as the feed's join reads it through the Ask. */
+  private answeredRequestOf(
+    workspaceId: string,
+    feedbackRequestId: string | null,
+  ): AnsweredRequestRow | null {
+    const request = this.rows.find(
+      (row) => row.id === feedbackRequestId && row.workspaceId === workspaceId,
+    );
+    return request
+      ? {
+          message: request.message,
+          tags: request.tags,
+          requesterAccountId: request.requesterAccountId,
+          askedAccountIds: request.asks.map((ask) => ask.giverAccountId),
+        }
+      : null;
   }
 
   async askFor(
     workspaceId: string,
     giverAccountId: string,
     askId: string,
-  ): Promise<FeedbackAskRow | null> {
+  ): Promise<FeedbackAskWithVisibilityRow | null> {
     return (
       this.asksOf(workspaceId).find(
         (ask) => ask.askId === askId && ask.giverAccountId === giverAccountId,
@@ -407,7 +434,7 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
   /** Every Ask of a Workspace, flattened out of the requests holding them, as the join does. */
   private asksOf(
     workspaceId: string,
-  ): (FeedbackAskRow & { readonly giverAccountId: string })[] {
+  ): (FeedbackAskWithVisibilityRow & { readonly giverAccountId: string })[] {
     return this.rows
       .filter((row) => row.workspaceId === workspaceId)
       .flatMap((row) =>
@@ -420,9 +447,19 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
           requesterAccountId: row.requesterAccountId,
           status: ask.status,
           createdAt: row.createdAt,
+          visibility: storedVisibility(row.visibility),
         })),
       );
   }
+}
+
+/** A request row's Visibility as the store's enum column holds it, which is one of the three. */
+function storedVisibility(raw: string): VisibilityValue {
+  const value = VISIBILITIES.find((visibility) => visibility === raw);
+  if (!value) {
+    throw new Error(`A request row holds an unknown Visibility: ${raw}.`);
+  }
+  return value;
 }
 
 /** Bound to nothing: text that named no Workspace Goal and nobody. */
