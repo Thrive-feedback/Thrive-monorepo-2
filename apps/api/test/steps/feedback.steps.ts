@@ -441,6 +441,14 @@ Then(
   },
 );
 
+Then(
+  '{person} is told everyone it mentions must be able to read it',
+  function (this: ThriveWorld, _name: string) {
+    assert.equal(this.lastResponse?.status, 400);
+    this.refusedWith('MENTIONED_PERSON_LEFT_OUT');
+  },
+);
+
 When(
   '{person} opens the Feedback {person} wrote',
   async function (this: ThriveWorld, name: string, _giver: string) {

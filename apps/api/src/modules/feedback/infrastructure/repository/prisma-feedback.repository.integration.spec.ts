@@ -110,7 +110,7 @@ describe('storing Offered Feedback', () => {
       offered(
         workspaceId,
         receiverAccountId,
-        Visibility.onlyMe(),
+        Visibility.of({ value: 'EVERYONE', selectedAccountIds: [] }),
         BoundTags.of({
           workspaceGoals: [{ workspaceGoalId: uuidv7(), name: 'ownership' }],
           mentions: [

@@ -96,7 +96,7 @@ describe('storing a Feedback Request', () => {
     const request = aRequest(
       workspaceId,
       uuidv7(),
-      Visibility.onlyMe(),
+      Visibility.of({ value: 'EVERYONE', selectedAccountIds: [] }),
       BoundTags.of({
         workspaceGoals: [{ workspaceGoalId: uuidv7(), name: 'ลูกค้ามาก่อน' }],
         mentions: [
