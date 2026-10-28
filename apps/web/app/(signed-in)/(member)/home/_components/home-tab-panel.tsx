@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import { FeedbackFeedSkeleton } from '@/components/organisms/feedback-feed';
-import { ReceivedFeedbackListViewSkeleton } from '@/components/organisms/received-feedback-list-view';
 import { SentRequestListViewSkeleton } from '@/components/organisms/sent-request-list-view';
 import { WaitingAskListViewSkeleton } from '@/components/organisms/waiting-ask-list-view';
 import type { HomeTab } from '@/lib/routes.constant';
@@ -22,7 +21,7 @@ const TAB_SKELETONS: Readonly<Record<HomeTab, React.ReactNode>> = {
   shared: <FeedbackFeedSkeleton />,
   'my-requests': <SentRequestListViewSkeleton />,
   waiting: <WaitingAskListViewSkeleton />,
-  received: <ReceivedFeedbackListViewSkeleton />,
+  received: <FeedbackFeedSkeleton />,
 };
 
 /**

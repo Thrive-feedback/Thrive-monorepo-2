@@ -2,6 +2,7 @@ import { readMyAsks } from '@/app/(signed-in)/(member)/home/_lib/my-asks.service
 import { WaitingAskListView } from '@/components/organisms/waiting-ask-list-view';
 import { ROUTES } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { requireYou } from '@/lib/session/session.service';
 
 export type WaitingAskListProps = {
   membership: CurrentMembership;
@@ -14,10 +15,11 @@ export async function WaitingAskList({
   membership,
   headingAs,
 }: WaitingAskListProps) {
-  const asks = await readMyAsks(membership);
+  const [asks, you] = await Promise.all([readMyAsks(membership), requireYou()]);
   return (
     <WaitingAskListView
       asks={asks}
+      you={you}
       askTarget={(askId) => ({ href: ROUTES.homeAsk(askId) })}
       headingAs={headingAs}
     />

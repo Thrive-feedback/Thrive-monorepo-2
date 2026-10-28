@@ -12,7 +12,10 @@ function feedback(id: string, message: string, givenAt: string): FeedItem {
     giverName: 'Ben Carter',
     giverPhotoUrl: null,
     giverInactive: false,
-    receivers: [{ name: 'Cara Diaz', photoUrl: null, inactive: false }],
+    giverIsYou: false,
+    receivers: [
+      { name: 'Cara Diaz', photoUrl: null, inactive: false, isYou: false },
+    ],
     origin: 'OFFERED',
     message,
     messageTags: NO_TAGS,
@@ -25,8 +28,8 @@ function feedback(id: string, message: string, givenAt: string): FeedItem {
 function kudos(id: string, message: string, givenAt: string): KudosItem {
   return {
     id,
-    giver: { name: 'Ann Lee', inactive: false },
-    recipients: [{ name: 'Ben Carter', inactive: false }],
+    giver: { name: 'Ann Lee', inactive: false, isYou: false },
+    recipients: [{ name: 'Ben Carter', inactive: false, isYou: false }],
     message,
     messageTags: NO_TAGS,
     givenAt,

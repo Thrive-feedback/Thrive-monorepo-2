@@ -9,6 +9,8 @@ export type CurrentProfile = {
 
 /** The signed-in Account, as the sign-in and register screens show it. */
 export type CurrentAccount = {
+  /** Who they are to the API: how a list knows which person in it is "you". */
+  readonly accountId: string;
   readonly email: string;
   /** The name Google gave, which pre-fills Introduce yourself. */
   readonly name: string;

@@ -6,6 +6,8 @@ export type PersonNameListProps = {
   people: readonly {
     readonly name: string | null;
     readonly inactive: boolean;
+    /** The signed-in person themself, named "you". */
+    readonly isYou?: boolean;
   }[];
   /** What to call somebody who has not introduced themselves yet, such as "a teammate". */
   unnamed: string;
@@ -32,7 +34,11 @@ export function PersonNameList({ people, unnamed }: PersonNameListProps) {
           {separatorBefore(index, people.length)}
         </span>
       )}
-      <PersonName name={person.name ?? unnamed} inactive={person.inactive} />
+      <PersonName
+        name={person.name ?? unnamed}
+        inactive={person.inactive}
+        isYou={person.isYou}
+      />
     </Fragment>
   ));
 }

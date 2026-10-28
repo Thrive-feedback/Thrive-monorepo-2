@@ -42,9 +42,22 @@ export const readSentRequests = cache(
       asks: request.asks.map((ask) => ({
         askId: ask.askId,
         giverName: ask.giverName,
+        giverPhotoUrl: ask.giverPhotoUrl,
         giverInactive: ask.giverStatus === 'DEACTIVATED',
         status: ask.status,
+        answer: ask.answer && {
+          message: ask.answer.message,
+          messageTags: ask.answer.tags,
+          answeredAt: ask.answer.answeredAt,
+        },
       })),
+      readers: request.visibility && {
+        value: request.visibility.value,
+        selectedPeople: request.visibility.selectedPeople.map((person) => ({
+          name: person.name,
+          inactive: person.status === 'DEACTIVATED',
+        })),
+      },
     }));
   },
 );

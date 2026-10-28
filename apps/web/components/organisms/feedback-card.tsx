@@ -37,7 +37,8 @@ const UNNAMED = 'a teammate';
 /**
  * What an answer responds to, after it: who asked, everyone they asked — names only, never who
  * did or did not answer — and the Request message. The answer stays the card's main text, read
- * first (`ADR-0039`, `ADR-0046` in the brain).
+ * first (`ADR-0039`, `ADR-0046` in the brain). When the person reading asked, it is their own
+ * request: "In answer to your request to …".
  */
 function InAnswerTo({ request }: { request: AnsweredRequest }) {
   return (
@@ -47,12 +48,22 @@ function InAnswerTo({ request }: { request: AnsweredRequest }) {
       tone="muted"
       className="break-words border-border-muted border-t border-dashed pt-3"
     >
-      In answer to{' '}
-      <PersonName
-        name={request.requester.name ?? UNNAMED}
-        inactive={request.requester.inactive}
-      />
-      , who asked <PersonNameList people={request.asked} unnamed={UNNAMED} />:{' '}
+      {request.requester.isYou ? (
+        <>
+          In answer to your request to{' '}
+          <PersonNameList people={request.asked} unnamed={UNNAMED} />:{' '}
+        </>
+      ) : (
+        <>
+          In answer to{' '}
+          <PersonName
+            name={request.requester.name ?? UNNAMED}
+            inactive={request.requester.inactive}
+          />
+          , who asked{' '}
+          <PersonNameList people={request.asked} unnamed={UNNAMED} />:{' '}
+        </>
+      )}
       <span className="text-fg-primary">
         <FeedbackText text={request.message} tags={request.messageTags} />
       </span>
@@ -65,7 +76,8 @@ function InAnswerTo({ request }: { request: AnsweredRequest }) {
  * it was asked for and the day, in the corner, the Feedback message, and the Reactions. The
  * message is the card's main text: there is no headline above it (`ADR-0039` in the brain).
  *
- * An answer on the Workspace feed also says what it answers, under the message (`ADR-0046`).
+ * An answer also says what it answers, under the message, on every list that shows it
+ * (`ADR-0046`, `ADR-0048`). The person reading is "you" wherever they appear.
  */
 export function FeedbackCard({ item }: FeedbackCardProps) {
   return (
@@ -76,6 +88,7 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
             name: item.giverName,
             photoUrl: item.giverPhotoUrl,
             inactive: item.giverInactive,
+            isYou: item.giverIsYou,
           }}
           receivers={item.receivers}
           kind="Feedback"

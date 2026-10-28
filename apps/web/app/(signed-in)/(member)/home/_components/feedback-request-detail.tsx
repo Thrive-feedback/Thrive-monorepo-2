@@ -1,12 +1,12 @@
-import type { ReactNode } from 'react';
 import {
   readFeedbackRequest,
   type SentFeedbackRequest,
 } from '@/app/(signed-in)/(member)/home/_lib/feedback-request.service';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
+import { AnswerReaders } from '@/components/organisms/answer-readers';
 import { FeedbackText } from '@/components/organisms/feedback-text';
-import { PersonName } from '@/components/organisms/person-name';
+import { PersonChip } from '@/components/organisms/person-chip';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 export type FeedbackRequestDetailProps = {
@@ -22,50 +22,6 @@ const ASK_STATUS_WORDS: Readonly<
   ANSWERED: 'answered',
   EXPIRED: 'expired without an answer',
 };
-
-const names = new Intl.ListFormat('en', { type: 'conjunction' });
-
-/** The people selected, as one list — "Ann, Ben and Cara" — each shown as inactive if they are. */
-function selectedPeopleList(
-  people: NonNullable<SentFeedbackRequest['visibility']>['selectedPeople'],
-): ReactNode {
-  let next = 0;
-  return names
-    .formatToParts(people.map((_, index) => String(index)))
-    .map((part) => {
-      if (part.type === 'literal') {
-        return part.value;
-      }
-      const index = next++;
-      const person = people[index];
-      return (
-        <PersonName
-          key={index}
-          name={person?.name ?? 'a teammate'}
-          inactive={person?.inactive}
-        />
-      );
-    });
-}
-
-/** Who reads what comes back, in the words the form used when the request was sent. */
-function whoReadsTheAnswers(
-  visibility: NonNullable<SentFeedbackRequest['visibility']>,
-): ReactNode {
-  switch (visibility.value) {
-    case 'ONLY_ME':
-      return 'Only you can read what they send back.';
-    case 'EVERYONE':
-      return 'Everyone in your Workspace can read what they send back.';
-    case 'SELECTED_PEOPLE':
-      return (
-        <>
-          You and {selectedPeopleList(visibility.selectedPeople)} can read what
-          they send back.
-        </>
-      );
-  }
-}
 
 /**
  * One request the person sent, and the place they read what came back. It is read from what
@@ -96,9 +52,15 @@ export async function FeedbackRequestDetail({
             <div className="flex flex-col gap-1">
               <Text variant="subtitle-3" as="h3">
                 You asked{' '}
-                <PersonName
-                  name={ask.giverName ?? 'a teammate'}
-                  inactive={ask.giverInactive}
+                <PersonChip
+                  person={{
+                    name: ask.giverName,
+                    photoUrl: ask.giverPhotoUrl,
+                    inactive: ask.giverInactive,
+                    isYou: false,
+                  }}
+                  unnamed="a teammate"
+                  className="align-middle"
                 />
                 :{' '}
                 <FeedbackText
@@ -123,11 +85,7 @@ export async function FeedbackRequestDetail({
           </li>
         ))}
       </ul>
-      {request.visibility && (
-        <Text variant="body-3" tone="muted">
-          {whoReadsTheAnswers(request.visibility)}
-        </Text>
-      )}
+      {request.visibility && <AnswerReaders readers={request.visibility} />}
     </div>
   );
 }

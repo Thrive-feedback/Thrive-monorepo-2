@@ -14,6 +14,11 @@ export type MyAsk = {
   readonly requesterPhotoUrl: string | null;
   /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
   readonly requesterInactive: boolean;
+  /**
+   * The answer goes on the Workspace feed, which the Giver is told before writing — never who
+   * else reads it (`ADR-0022`, `ADR-0046` in the brain).
+   */
+  readonly onWorkspaceFeed: boolean;
   /** ISO 8601, formatted where it is shown. */
   readonly askedAt: string;
   readonly status: AskStatus;

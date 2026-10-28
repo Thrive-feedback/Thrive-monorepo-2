@@ -3,20 +3,19 @@ import { useId } from 'react';
 import { Badge } from '@/components/atoms/badge';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import { PhotoAvatar } from '@/components/molecules/photo-avatar';
-import { calendarDay } from '@/lib/calendar-day.util';
+import type { FeedbackPerson } from '@/lib/feedback/feedback-person.util';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
-import { ActivityRow, ActivityRowSkeleton } from './activity-row';
-import { FeedbackText } from './feedback-text';
-import { PersonName } from './person-name';
+import { AskCard, AskCardSkeleton } from './ask-card';
 
 /** Enough rows to fill the first screen, without promising how many will come. */
 const PLACEHOLDERS = ['first', 'second'] as const;
 
 export type WaitingAskListViewProps = {
   asks: readonly MyAsk[];
-  /** Where an Ask's Request message leads: to the place it is answered. */
+  /** The person reading, the one asked: named "you" on every card. */
+  you: FeedbackPerson;
+  /** Where an Ask's "Answer" leads: to the place it is answered. */
   askTarget: (askId: string) => NavTarget;
   /** The heading's level, which depends on the page around it. */
   headingAs?: 'h2' | 'h3';
@@ -25,10 +24,12 @@ export type WaitingAskListViewProps = {
 /**
  * Every Ask waiting on the person — who asked, about what, and when — under a heading that says
  * how many. It sits above the history tabs on Home, always in view, because it is the one list
- * where somebody is waiting on the person reading it. Each row opens the Ask to answer.
+ * where somebody is waiting on the person reading it. Each is an `AskCard`, whose "Answer" opens
+ * the Ask.
  */
 export function WaitingAskListView({
   asks,
+  you,
   askTarget,
   headingAs = 'h2',
 }: WaitingAskListViewProps) {
@@ -60,32 +61,7 @@ export function WaitingAskListView({
         <ul className="flex flex-col divide-y divide-border-muted">
           {asks.map((ask) => (
             <li key={ask.askId}>
-              <ActivityRow
-                lead={
-                  <PhotoAvatar
-                    name={ask.requesterName ?? ''}
-                    photoUrl={ask.requesterPhotoUrl}
-                    size="md"
-                  />
-                }
-                title={
-                  <>
-                    <PersonName
-                      name={ask.requesterName ?? 'A teammate'}
-                      inactive={ask.requesterInactive}
-                    />
-                    <span className="text-fg-secondary"> asked you</span>
-                  </>
-                }
-                meta={
-                  <time dateTime={ask.askedAt}>{calendarDay(ask.askedAt)}</time>
-                }
-                message={
-                  <FeedbackText text={ask.message} tags={ask.messageTags} />
-                }
-                target={askTarget(ask.askId)}
-                actionLabel="Answer"
-              />
+              <AskCard ask={ask} you={you} target={askTarget(ask.askId)} />
             </li>
           ))}
         </ul>
@@ -101,7 +77,7 @@ export function WaitingAskListViewSkeleton() {
       <Skeleton className="w-1/3 text-subtitle-3" />
       <div className="flex flex-col divide-y divide-border-muted">
         {PLACEHOLDERS.map((placeholder) => (
-          <ActivityRowSkeleton key={placeholder} />
+          <AskCardSkeleton key={placeholder} />
         ))}
       </div>
     </div>

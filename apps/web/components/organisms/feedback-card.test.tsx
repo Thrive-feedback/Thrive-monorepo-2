@@ -6,13 +6,19 @@ import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { photosWill } from '@/lib/test/photos-will';
 import { FeedbackCard } from './feedback-card';
 
-const CARA = { name: 'Cara Diaz', photoUrl: null, inactive: false };
+const CARA = {
+  name: 'Cara Diaz',
+  photoUrl: null,
+  inactive: false,
+  isYou: false,
+};
 
 const OFFERED: FeedItem = {
   id: 'fb-1',
   giverName: 'Ben Carter',
   giverPhotoUrl: null,
   giverInactive: false,
+  giverIsYou: false,
   receivers: [CARA],
   origin: 'OFFERED',
   message: 'You kept the room with you.\nThe recap landed.',
@@ -31,18 +37,18 @@ const ANSWER: FeedItem = {
     messageTags: NO_TEXT_TAGS,
     requester: CARA,
     asked: [
-      { name: 'Ben Carter', photoUrl: null, inactive: false },
-      { name: 'Dan Ooi', photoUrl: null, inactive: true },
+      { name: 'Ben Carter', photoUrl: null, inactive: false, isYou: false },
+      { name: 'Dan Ooi', photoUrl: null, inactive: true, isYou: false },
     ],
   },
 };
 
 const SEVERAL = [
   CARA,
-  { name: 'Ann Lee', photoUrl: null, inactive: false },
-  { name: 'Dan Ooi', photoUrl: null, inactive: true },
-  { name: 'Eve Ng', photoUrl: null, inactive: false },
-  { name: 'Fon Pak', photoUrl: null, inactive: false },
+  { name: 'Ann Lee', photoUrl: null, inactive: false, isYou: false },
+  { name: 'Dan Ooi', photoUrl: null, inactive: true, isYou: false },
+  { name: 'Eve Ng', photoUrl: null, inactive: false, isYou: false },
+  { name: 'Fon Pak', photoUrl: null, inactive: false, isYou: false },
 ];
 
 afterEach(() => {
@@ -164,6 +170,54 @@ describe('FeedbackCard', () => {
     );
   });
 
+  it('says "your request" when the person reading asked, and names them "you" among those asked', () => {
+    render(
+      <FeedbackCard
+        item={{
+          ...ANSWER,
+          request: ANSWER.request && {
+            ...ANSWER.request,
+            requester: { ...CARA, isYou: true },
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText(/^In answer to/)).toHaveTextContent(
+      'In answer to your request to Ben Carter and Dan Ooi (inactive): Running the planning meeting',
+    );
+  });
+
+  it('names the person reading "You" when they gave it, and "you" first among several Receivers', () => {
+    render(
+      <FeedbackCard
+        item={{
+          ...OFFERED,
+          giverIsYou: true,
+          receivers: [
+            { ...CARA, isYou: true },
+            {
+              name: 'Ben Carter',
+              photoUrl: null,
+              inactive: false,
+              isYou: false,
+            },
+            { name: 'Dan Ooi', photoUrl: null, inactive: false, isYou: false },
+          ],
+        }}
+      />,
+    );
+
+    const card = screen.getByRole('article');
+    expect(within(card).getByText('You')).toBeInTheDocument();
+    expect(within(card).getByText('you')).toBeInTheDocument();
+    expect(
+      within(card).getByRole('button', {
+        name: 'Ben Carter and Dan Ooi. Show who it is for',
+      }),
+    ).toBeInTheDocument();
+  });
+
   it('keeps the answer the main text, before what it responds to', () => {
     render(<FeedbackCard item={ANSWER} />);
 
@@ -205,7 +259,8 @@ describe('FeedbackCard', () => {
         item={{
           ...OFFERED,
           giverInactive: true,
-          receivers: [{ ...CARA, inactive: true }],
+          giverIsYou: false,
+          receivers: [{ ...CARA, inactive: true, isYou: false }],
         }}
       />,
     );

@@ -6,7 +6,6 @@ import type { AnswerAskViewProps } from '@/components/organisms/answer-ask-view'
 import { FeedbackComposer } from '@/components/organisms/feedback-composer';
 import { FeedbackFeed } from '@/components/organisms/feedback-feed';
 import type { HomeDialogProps } from '@/components/organisms/home-dialog';
-import { ReceivedFeedbackListView } from '@/components/organisms/received-feedback-list-view';
 import { SentRequestListView } from '@/components/organisms/sent-request-list-view';
 import { WaitingAskListView } from '@/components/organisms/waiting-ask-list-view';
 import { HomeView } from '@/components/templates/home-view';
@@ -14,7 +13,10 @@ import type { AnswerAskAction } from '@/lib/feedback/answer-ask-state.type';
 import type { GiveFeedbackAction } from '@/lib/feedback/give-feedback-state.type';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { RequestFeedbackAction } from '@/lib/feedback/request-feedback-state.type';
-import type { SentRequest } from '@/lib/feedback/sent-request.type';
+import type {
+  SentRequest,
+  SentRequestReaders,
+} from '@/lib/feedback/sent-request.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { preloadable } from '@/lib/preloadable.util';
 import type { HomeTab } from '@/lib/routes.constant';
@@ -29,6 +31,7 @@ import {
   PREVIEW_WORKSPACE_FEED,
   PREVIEW_WORKSPACE_GOALS,
   PREVIEW_WORKSPACE_NAME,
+  PREVIEW_YOU,
 } from './landing-home-preview.mock';
 import { scrollTabsIntoColumn } from './landing-preview-scroll.util';
 
@@ -58,6 +61,14 @@ function AnswerDialog({
       <AnswerAskView {...view} />
     </HomeDialog>
   );
+}
+
+/** Who reads the answers, as the composer's Visibility picker chose; Only me when it chose none. */
+function readersChosen(formData: FormData): SentRequestReaders['value'] {
+  const chosen = formData.get('visibility');
+  return chosen === 'EVERYONE' || chosen === 'SELECTED_PEOPLE'
+    ? chosen
+    : 'ONLY_ME';
 }
 
 /**
@@ -127,9 +138,12 @@ export function LandingHomePreview({
       asks: givers.map((giver) => ({
         askId: `preview-sent-ask-${composerKey}-${giver.accountId}`,
         giverName: giver.name,
+        giverPhotoUrl: giver.photoUrl,
         giverInactive: false,
         status: 'PENDING',
+        answer: null,
       })),
+      readers: { value: readersChosen(formData), selectedPeople: [] },
     };
     setSentRequests((current) => [sent, ...current]);
     setTab('my-requests');
@@ -172,16 +186,24 @@ export function LandingHomePreview({
           />
         );
       case 'my-requests':
-        return <SentRequestListView requests={sentRequests} />;
+        return (
+          <SentRequestListView requests={sentRequests} you={PREVIEW_YOU} />
+        );
       case 'waiting':
         return (
           <WaitingAskListView
             asks={waitingAsks}
+            you={PREVIEW_YOU}
             askTarget={(askId) => ({ onSelect: () => setOpenAskId(askId) })}
           />
         );
       case 'received':
-        return <ReceivedFeedbackListView items={PREVIEW_RECEIVED} />;
+        return (
+          <FeedbackFeed
+            items={PREVIEW_RECEIVED}
+            emptyMessage="No one has written you feedback yet. Ask a teammate with the form above."
+          />
+        );
     }
   }
 
@@ -214,6 +236,7 @@ export function LandingHomePreview({
               <WaitingAskListView
                 // As on Home, only what is still to answer is waiting.
                 asks={waitingAsks.filter((ask) => ask.status === 'PENDING')}
+                you={PREVIEW_YOU}
                 askTarget={(askId) => ({ onSelect: () => setOpenAskId(askId) })}
                 headingAs={headingAs}
               />

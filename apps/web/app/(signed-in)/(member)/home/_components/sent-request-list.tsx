@@ -1,7 +1,7 @@
 import { readSentRequests } from '@/app/(signed-in)/(member)/home/_lib/sent-requests.service';
 import { SentRequestListView } from '@/components/organisms/sent-request-list-view';
-import { ROUTES } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { requireYou } from '@/lib/session/session.service';
 
 export type SentRequestListProps = {
   membership: CurrentMembership;
@@ -12,11 +12,9 @@ export type SentRequestListProps = {
  * in flight. Each Request message opens its request in a dialog over My requests, named in the address.
  */
 export async function SentRequestList({ membership }: SentRequestListProps) {
-  const requests = await readSentRequests(membership);
-  return (
-    <SentRequestListView
-      requests={requests}
-      requestTarget={(requestId) => ({ href: ROUTES.homeRequest(requestId) })}
-    />
-  );
+  const [requests, you] = await Promise.all([
+    readSentRequests(membership),
+    requireYou(),
+  ]);
+  return <SentRequestListView requests={requests} you={you} />;
 }

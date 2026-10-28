@@ -21,7 +21,10 @@ const FEEDBACK: FeedItem = {
   giverName: 'Ann Lee',
   giverPhotoUrl: null,
   giverInactive: false,
-  receivers: [{ name: 'Ben Ooi', photoUrl: null, inactive: false }],
+  giverIsYou: false,
+  receivers: [
+    { name: 'Ben Ooi', photoUrl: null, inactive: false, isYou: false },
+  ],
   origin: 'OFFERED',
   message: 'You ran the planning meeting well',
   messageTags: NO_TEXT_TAGS,

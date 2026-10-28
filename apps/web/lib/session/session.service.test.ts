@@ -47,7 +47,12 @@ const ACME = {
   workspace: { id: '0199a0f0-0000-7000-8000-0000000000w1', name: 'Acme Corp' },
   role: 'ADMIN' as const,
 };
-const ANN = { email: 'ann@acme.test', name: 'Ann Lee', photoUrl: null };
+const ANN = {
+  accountId: 'account-ann',
+  email: 'ann@acme.test',
+  name: 'Ann Lee',
+  photoUrl: null,
+};
 const TO_GLOBEX = {
   invitationId: '0199a0f0-0000-7000-8000-000000000001',
   workspace: {
@@ -69,6 +74,7 @@ function answerSignedInAs(profile: typeof ANN_PROFILE | null) {
     http.get(CURRENT_SESSION, () =>
       HttpResponse.json({
         account: {
+          accountId: 'account-ann',
           email: 'ann@acme.test',
           name: 'Ann Lee',
           photoUrl: null,
@@ -147,6 +153,7 @@ describe('readSession', () => {
         seen.push(request);
         return HttpResponse.json({
           account: {
+            accountId: 'account-ann',
             email: 'ann@acme.test',
             name: 'Ann Lee',
             photoUrl: null,
@@ -158,6 +165,7 @@ describe('readSession', () => {
     );
 
     expect(await readSession()).toEqual({
+      accountId: 'account-ann',
       email: 'ann@acme.test',
       name: 'Ann Lee',
       photoUrl: null,
@@ -208,6 +216,7 @@ describe('readSession', () => {
       http.get(CURRENT_SESSION, () =>
         HttpResponse.json({
           account: {
+            accountId: 'account-ann',
             email: 'ann@acme.test',
             name: 'Ann Lee',
             photoUrl: null,

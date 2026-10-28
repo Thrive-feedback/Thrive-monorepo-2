@@ -14,6 +14,11 @@ vi.mock('next/headers', () => ({
   headers: async () => new Headers({ cookie: 'thrive.session_token=abc' }),
 }));
 
+// Who is reading: Ann, who is neither person in these fixtures unless a test says otherwise.
+vi.mock('@/lib/session/session.service', () => ({
+  readViewerAccountId: async () => 'account-ann',
+}));
+
 const { readSharedFeedback } = await import('./shared-feedback.service');
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
@@ -68,7 +73,8 @@ describe('reading the Feedback shared with me', () => {
         giverName: 'Ben Carter',
         giverPhotoUrl: 'https://lh3.googleusercontent.com/a/account-ben=s96-c',
         giverInactive: false,
-        receivers: [{ name: 'Cara Diaz', inactive: false }],
+        giverIsYou: false,
+        receivers: [{ name: 'Cara Diaz', inactive: false, isYou: false }],
         origin: 'OFFERED',
         message: 'You kept the room with you.',
         givenAt: '2026-10-12T03:00:00.000Z',

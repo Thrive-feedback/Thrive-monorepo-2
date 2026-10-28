@@ -6,6 +6,8 @@ export type KudosPerson = {
   readonly name: string | null;
   /** Deactivated in this Workspace, so shown as inactive; the Kudos stays. */
   readonly inactive: boolean;
+  /** The signed-in person themself, whom the card names "you". */
+  readonly isYou: boolean;
 };
 
 /** One Kudos as a feed card shows it. Every Member of the Workspace reads it. */

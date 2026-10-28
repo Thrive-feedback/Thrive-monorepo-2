@@ -11,7 +11,7 @@ export const REACTIONS = [
 
 export type ReactionEmoji = (typeof REACTIONS)[number]['emoji'];
 
-/** The request a piece of Requested Feedback answers, as the Workspace feed shows it. */
+/** The request a piece of Requested Feedback answers, as every list that shows the answer names it. */
 export type AnsweredRequest = {
   /** The Request message, as the Requester wrote it. */
   readonly message: string;
@@ -31,6 +31,8 @@ export type FeedItem = {
   readonly giverPhotoUrl: string | null;
   /** Deactivated in this Workspace, so shown as inactive; what they wrote stays. */
   readonly giverInactive: boolean;
+  /** The Giver is the person reading, whom the card names "you". */
+  readonly giverIsYou: boolean;
   /** Everyone it is for, in the order the Giver chose them — one or more (brain `ADR-0044`). */
   readonly receivers: readonly FeedbackPerson[];
   /** Requested answers an Ask; Offered was given without being asked. */
@@ -45,8 +47,8 @@ export type FeedItem = {
     Partial<Record<ReactionEmoji, readonly string[]>>
   >;
   /**
-   * The request an answer responds to. Only the Workspace feed reads it (brain `ADR-0046`); every
-   * other list, and all Offered Feedback, has `null`.
+   * The request an answer responds to, on every list that shows the answer (brain `ADR-0046`, `ADR-0048`);
+   * `null` for Offered Feedback, and where one piece is opened on its own.
    */
   readonly request: AnsweredRequest | null;
 };

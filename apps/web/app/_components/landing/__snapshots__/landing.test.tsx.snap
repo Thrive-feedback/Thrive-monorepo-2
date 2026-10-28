@@ -467,39 +467,74 @@ exports[`Landing > renders the same page 1`] = `
                           >
                             <li>
                               <article
-                                class="relative flex flex-col gap-3 py-5"
+                                class="flex flex-col gap-3 py-5"
                               >
                                 <header
-                                  class="flex items-center gap-3"
+                                  class="flex items-start justify-between gap-3"
                                 >
-                                  <span
-                                    aria-hidden="true"
-                                    class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                    data-slot="avatar"
+                                  <p
+                                    class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
+                                    data-slot="text"
                                   >
                                     <span
-                                      class="flex size-full items-center justify-center font-medium"
-                                      data-slot="avatar-fallback"
+                                      class="inline-flex min-w-0 max-w-full items-center gap-1.5"
                                     >
-                                      FS
-                                    </span>
-                                  </span>
-                                  <div
-                                    class="flex min-w-0 flex-1 flex-col"
-                                  >
-                                    <p
-                                      class="text-subtitle-4 break-words"
-                                      data-slot="text"
-                                    >
-                                      Fern Somsak
                                       <span
-                                        class="text-fg-secondary"
+                                        aria-hidden="true"
+                                        class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                        data-slot="avatar"
                                       >
-                                         asked you
+                                        <span
+                                          class="flex size-full items-center justify-center font-medium"
+                                          data-slot="avatar-fallback"
+                                        >
+                                          FS
+                                        </span>
                                       </span>
-                                    </p>
+                                      <span
+                                        class="min-w-0 break-words"
+                                      >
+                                        Fern Somsak
+                                      </span>
+                                    </span>
+                                    <span
+                                      class="text-fg-secondary"
+                                    >
+                                      to
+                                    </span>
+                                    <span
+                                      class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                    >
+                                      <span
+                                        aria-hidden="true"
+                                        class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                        data-slot="avatar"
+                                      >
+                                        <span
+                                          class="flex size-full items-center justify-center font-medium"
+                                          data-slot="avatar-fallback"
+                                        >
+                                          PS
+                                        </span>
+                                      </span>
+                                      <span
+                                        class="min-w-0 break-words"
+                                      >
+                                        you
+                                      </span>
+                                    </span>
+                                  </p>
+                                  <div
+                                    class="flex shrink-0 flex-col items-end gap-0.5"
+                                  >
+                                    <span
+                                      class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border border-transparent px-2.5 py-0.5 text-tag bg-action-neutral-surface-hover text-fg-primary"
+                                      data-slot="badge"
+                                    >
+                                      Ask
+                                    </span>
                                     <p
-                                      class="text-body-3 text-fg-secondary"
+                                      class="text-body-3 text-fg-secondary whitespace-nowrap"
                                       data-slot="text"
                                     >
                                       <time
@@ -509,41 +544,29 @@ exports[`Landing > renders the same page 1`] = `
                                       </time>
                                     </p>
                                   </div>
-                                  <span
-                                    aria-hidden="true"
-                                    class="flex shrink-0 items-center gap-0.5 text-button-sm text-fg-accent"
-                                  >
-                                    Answer
-                                    <svg
-                                      aria-hidden="true"
-                                      class="lucide lucide-chevron-right size-4"
-                                      fill="none"
-                                      height="24"
-                                      stroke="currentColor"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      viewBox="0 0 24 24"
-                                      width="24"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path
-                                        d="m9 18 6-6-6-6"
-                                      />
-                                    </svg>
-                                  </span>
                                 </header>
                                 <p
-                                  class="text-body-1 whitespace-pre-wrap break-words"
+                                  class="text-body-1 whitespace-pre-line break-words"
                                   data-slot="text"
                                 >
+                                  In our run-through just now, where did you get lost?
+                                </p>
+                                <div
+                                  class="flex flex-wrap items-center justify-between gap-3"
+                                >
+                                  <span />
                                   <button
-                                    class="rounded-element underline-offset-4 hover:underline cursor-pointer text-left font-normal text-fg-primary after:absolute after:inset-0"
+                                    class="font-medium underline-offset-4 hover:underline text-left inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover px-3 py-2 text-button-sm leading-5"
                                     type="button"
                                   >
-                                    In our run-through just now, where did you get lost?
+                                    Answer
+                                    <span
+                                      class="sr-only"
+                                    >
+                                       Fern Somsak’s Ask
+                                    </span>
                                   </button>
-                                </p>
+                                </div>
                               </article>
                             </li>
                           </ul>
@@ -634,10 +657,36 @@ exports[`Landing > renders the same page 1`] = `
                                       >
                                         to
                                       </span>
+                                      <span
+                                        class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                      >
+                                        <span
+                                          aria-hidden="true"
+                                          class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                          data-slot="avatar"
+                                        >
+                                          <span
+                                            class="flex size-full items-center justify-center font-medium"
+                                            data-slot="avatar-fallback"
+                                          >
+                                            PS
+                                          </span>
+                                        </span>
+                                        <span
+                                          class="min-w-0 break-words"
+                                        >
+                                          you
+                                        </span>
+                                      </span>
+                                      <span
+                                        class="text-fg-secondary"
+                                      >
+                                        and
+                                      </span>
                                       <button
                                         aria-expanded="false"
                                         aria-haspopup="dialog"
-                                        class="-m-0.5 inline-flex cursor-pointer rounded-full p-0.5 transition-colors hover:bg-action-neutral-surface-hover"
+                                        class="inline-flex cursor-pointer rounded-full transition-colors hover:bg-action-neutral-surface-hover -m-0.5 p-0.5"
                                         data-slot="dialog-trigger"
                                         data-state="closed"
                                         type="button"
@@ -669,18 +718,6 @@ exports[`Landing > renders the same page 1`] = `
                                               class="flex size-full items-center justify-center font-medium"
                                               data-slot="avatar-fallback"
                                             >
-                                              PS
-                                            </span>
-                                          </span>
-                                          <span
-                                            aria-hidden="true"
-                                            class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
-                                            data-slot="avatar"
-                                          >
-                                            <span
-                                              class="flex size-full items-center justify-center font-medium"
-                                              data-slot="avatar-fallback"
-                                            >
                                               FS
                                             </span>
                                           </span>
@@ -688,7 +725,7 @@ exports[`Landing > renders the same page 1`] = `
                                         <span
                                           class="sr-only"
                                         >
-                                          Nok Chaiyo, Ploy Srisuk, and Fern Somsak. Show who it is for
+                                          Nok Chaiyo and Fern Somsak. Show who it is for
                                         </span>
                                       </button>
                                     </div>
@@ -859,7 +896,7 @@ exports[`Landing > renders the same page 1`] = `
                                         <span
                                           class="min-w-0 break-words"
                                         >
-                                          Ploy Srisuk
+                                          you
                                         </span>
                                       </span>
                                     </div>
@@ -889,6 +926,27 @@ exports[`Landing > renders the same page 1`] = `
                                     data-slot="text"
                                   >
                                     We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.
+                                  </p>
+                                  <p
+                                    class="text-body-3 text-fg-secondary break-words border-border-muted border-t border-dashed pt-3"
+                                    data-slot="text"
+                                  >
+                                    In answer to your request to
+                                     
+                                    Nok Chaiyo
+                                    <span
+                                      class="text-fg-secondary"
+                                    >
+                                       and 
+                                    </span>
+                                    Fern Somsak
+                                    :
+                                     
+                                    <span
+                                      class="text-fg-primary"
+                                    >
+                                      I’m working on shorter meetings. Where did we lose time this morning?
+                                    </span>
                                   </p>
                                   <ul
                                     aria-label="Reactions"
@@ -1068,10 +1126,36 @@ exports[`Landing > renders the same page 1`] = `
                                               >
                                                 to
                                               </span>
+                                              <span
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
+                                                >
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    PS
+                                                  </span>
+                                                </span>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  you
+                                                </span>
+                                              </span>
+                                              <span
+                                                class="text-fg-secondary"
+                                              >
+                                                and
+                                              </span>
                                               <button
                                                 aria-expanded="false"
                                                 aria-haspopup="dialog"
-                                                class="-m-0.5 inline-flex cursor-pointer rounded-full p-0.5 transition-colors hover:bg-action-neutral-surface-hover"
+                                                class="inline-flex cursor-pointer rounded-full transition-colors hover:bg-action-neutral-surface-hover -m-0.5 p-0.5"
                                                 data-slot="dialog-trigger"
                                                 data-state="closed"
                                                 type="button"
@@ -1103,18 +1187,6 @@ exports[`Landing > renders the same page 1`] = `
                                                       class="flex size-full items-center justify-center font-medium"
                                                       data-slot="avatar-fallback"
                                                     >
-                                                      PS
-                                                    </span>
-                                                  </span>
-                                                  <span
-                                                    aria-hidden="true"
-                                                    class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
-                                                    data-slot="avatar"
-                                                  >
-                                                    <span
-                                                      class="flex size-full items-center justify-center font-medium"
-                                                      data-slot="avatar-fallback"
-                                                    >
                                                       FS
                                                     </span>
                                                   </span>
@@ -1122,7 +1194,7 @@ exports[`Landing > renders the same page 1`] = `
                                                 <span
                                                   class="sr-only"
                                                 >
-                                                  Nok Chaiyo, Ploy Srisuk, and Fern Somsak. Show who it is for
+                                                  Nok Chaiyo and Fern Somsak. Show who it is for
                                                 </span>
                                               </button>
                                             </div>
@@ -1293,7 +1365,7 @@ exports[`Landing > renders the same page 1`] = `
                                                 <span
                                                   class="min-w-0 break-words"
                                                 >
-                                                  Ploy Srisuk
+                                                  you
                                                 </span>
                                               </span>
                                             </div>
@@ -1323,6 +1395,27 @@ exports[`Landing > renders the same page 1`] = `
                                             data-slot="text"
                                           >
                                             We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.
+                                          </p>
+                                          <p
+                                            class="text-body-3 text-fg-secondary break-words border-border-muted border-t border-dashed pt-3"
+                                            data-slot="text"
+                                          >
+                                            In answer to your request to
+                                             
+                                            Nok Chaiyo
+                                            <span
+                                              class="text-fg-secondary"
+                                            >
+                                               and 
+                                            </span>
+                                            Fern Somsak
+                                            :
+                                             
+                                            <span
+                                              class="text-fg-primary"
+                                            >
+                                              I’m working on shorter meetings. Where did we lose time this morning?
+                                            </span>
                                           </p>
                                           <ul
                                             aria-label="Reactions"
@@ -1624,39 +1717,74 @@ exports[`Landing > renders the same page 1`] = `
                                     >
                                       <li>
                                         <article
-                                          class="relative flex flex-col gap-3 py-5"
+                                          class="flex flex-col gap-3 py-5"
                                         >
                                           <header
-                                            class="flex items-center gap-3"
+                                            class="flex items-start justify-between gap-3"
                                           >
-                                            <span
-                                              aria-hidden="true"
-                                              class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                              data-slot="avatar"
+                                            <p
+                                              class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
+                                              data-slot="text"
                                             >
                                               <span
-                                                class="flex size-full items-center justify-center font-medium"
-                                                data-slot="avatar-fallback"
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
                                               >
-                                                FS
-                                              </span>
-                                            </span>
-                                            <div
-                                              class="flex min-w-0 flex-1 flex-col"
-                                            >
-                                              <p
-                                                class="text-subtitle-4 break-words"
-                                                data-slot="text"
-                                              >
-                                                Fern Somsak
                                                 <span
-                                                  class="text-fg-secondary"
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
                                                 >
-                                                   asked you
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    FS
+                                                  </span>
                                                 </span>
-                                              </p>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  Fern Somsak
+                                                </span>
+                                              </span>
+                                              <span
+                                                class="text-fg-secondary"
+                                              >
+                                                to
+                                              </span>
+                                              <span
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
+                                                >
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    PS
+                                                  </span>
+                                                </span>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  you
+                                                </span>
+                                              </span>
+                                            </p>
+                                            <div
+                                              class="flex shrink-0 flex-col items-end gap-0.5"
+                                            >
+                                              <span
+                                                class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border border-transparent px-2.5 py-0.5 text-tag bg-action-neutral-surface-hover text-fg-primary"
+                                                data-slot="badge"
+                                              >
+                                                Ask
+                                              </span>
                                               <p
-                                                class="text-body-3 text-fg-secondary"
+                                                class="text-body-3 text-fg-secondary whitespace-nowrap"
                                                 data-slot="text"
                                               >
                                                 <time
@@ -1666,41 +1794,29 @@ exports[`Landing > renders the same page 1`] = `
                                                 </time>
                                               </p>
                                             </div>
-                                            <span
-                                              aria-hidden="true"
-                                              class="flex shrink-0 items-center gap-0.5 text-button-sm text-fg-accent"
-                                            >
-                                              Answer
-                                              <svg
-                                                aria-hidden="true"
-                                                class="lucide lucide-chevron-right size-4"
-                                                fill="none"
-                                                height="24"
-                                                stroke="currentColor"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                viewBox="0 0 24 24"
-                                                width="24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                              >
-                                                <path
-                                                  d="m9 18 6-6-6-6"
-                                                />
-                                              </svg>
-                                            </span>
                                           </header>
                                           <p
-                                            class="text-body-1 whitespace-pre-wrap break-words"
+                                            class="text-body-1 whitespace-pre-line break-words"
                                             data-slot="text"
                                           >
+                                            In our run-through just now, where did you get lost?
+                                          </p>
+                                          <div
+                                            class="flex flex-wrap items-center justify-between gap-3"
+                                          >
+                                            <span />
                                             <button
-                                              class="rounded-element underline-offset-4 hover:underline cursor-pointer text-left font-normal text-fg-primary after:absolute after:inset-0"
+                                              class="font-medium underline-offset-4 hover:underline text-left inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover px-3 py-2 text-button-sm leading-5"
                                               type="button"
                                             >
-                                              In our run-through just now, where did you get lost?
+                                              Answer
+                                              <span
+                                                class="sr-only"
+                                              >
+                                                 Fern Somsak’s Ask
+                                              </span>
                                             </button>
-                                          </p>
+                                          </div>
                                         </article>
                                       </li>
                                     </ul>
@@ -1748,224 +1864,607 @@ exports[`Landing > renders the same page 1`] = `
                                       />
                                     </div>
                                   </nav>
-                                  <ul
-                                    class="flex flex-col divide-y divide-border-muted"
+                                  <div
+                                    class="flex flex-col gap-4"
                                   >
-                                    <li>
-                                      <article
-                                        class="relative flex flex-col gap-3 py-5"
-                                      >
-                                        <header
-                                          class="flex items-center gap-3"
+                                    <ul
+                                      class="flex flex-col divide-y divide-border-muted"
+                                    >
+                                      <li>
+                                        <article
+                                          class="flex flex-col gap-3 py-5"
                                         >
-                                          <span
-                                            aria-hidden="true"
-                                            class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                            data-slot="avatar"
+                                          <header
+                                            class="flex items-start justify-between gap-3"
                                           >
-                                            <span
-                                              class="flex size-full items-center justify-center font-medium"
-                                              data-slot="avatar-fallback"
-                                            >
-                                              DR
-                                            </span>
-                                          </span>
-                                          <div
-                                            class="flex min-w-0 flex-1 flex-col"
-                                          >
-                                            <p
-                                              class="text-subtitle-4 break-words"
+                                            <div
+                                              class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
                                               data-slot="text"
                                             >
-                                              Dao Rattana
+                                              <span
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
+                                                >
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    DR
+                                                  </span>
+                                                </span>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  Dao Rattana
+                                                </span>
+                                              </span>
                                               <span
                                                 class="text-fg-secondary"
                                               >
-                                                 to 
+                                                to
                                               </span>
-                                              you
+                                              <span
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
+                                                >
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    PS
+                                                  </span>
+                                                </span>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  you
+                                                </span>
+                                              </span>
                                               <span
                                                 class="text-fg-secondary"
                                               >
-                                                , 
+                                                and
                                               </span>
-                                              Nok Chaiyo
+                                              <button
+                                                aria-expanded="false"
+                                                aria-haspopup="dialog"
+                                                class="inline-flex cursor-pointer rounded-full transition-colors hover:bg-action-neutral-surface-hover -m-0.5 p-0.5"
+                                                data-slot="dialog-trigger"
+                                                data-state="closed"
+                                                type="button"
+                                              >
+                                                <div
+                                                  aria-hidden="true"
+                                                  class="flex *:ring-2 *:ring-surface-base -space-x-1"
+                                                  data-slot="avatar-group"
+                                                  role="group"
+                                                >
+                                                  <span
+                                                    aria-hidden="true"
+                                                    class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                    data-slot="avatar"
+                                                  >
+                                                    <span
+                                                      class="flex size-full items-center justify-center font-medium"
+                                                      data-slot="avatar-fallback"
+                                                    >
+                                                      NC
+                                                    </span>
+                                                  </span>
+                                                  <span
+                                                    aria-hidden="true"
+                                                    class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                    data-slot="avatar"
+                                                  >
+                                                    <span
+                                                      class="flex size-full items-center justify-center font-medium"
+                                                      data-slot="avatar-fallback"
+                                                    >
+                                                      FS
+                                                    </span>
+                                                  </span>
+                                                </div>
+                                                <span
+                                                  class="sr-only"
+                                                >
+                                                  Nok Chaiyo and Fern Somsak. Show who it is for
+                                                </span>
+                                              </button>
+                                            </div>
+                                            <div
+                                              class="flex shrink-0 flex-col items-end gap-0.5"
+                                            >
+                                              <span
+                                                class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border border-transparent px-2.5 py-0.5 text-tag bg-action-secondary-surface-hover text-action-secondary-fg"
+                                                data-slot="badge"
+                                              >
+                                                Offered
+                                              </span>
+                                              <p
+                                                class="text-body-3 text-fg-secondary whitespace-nowrap"
+                                                data-slot="text"
+                                              >
+                                                <time
+                                                  datetime="2026-10-20T09:30:00.000Z"
+                                                >
+                                                  20 Oct 2026
+                                                </time>
+                                              </p>
+                                            </div>
+                                          </header>
+                                          <p
+                                            class="text-body-1 whitespace-pre-line break-words"
+                                            data-slot="text"
+                                          >
+                                            Your onboarding notes answered every question our new designer had. She shipped her first screen on day three. Thank you!
+                                          </p>
+                                          <ul
+                                            aria-label="Reactions"
+                                            class="flex flex-wrap gap-2"
+                                          >
+                                            <li>
+                                              <button
+                                                aria-label="Clap, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  👏
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                            <li>
+                                              <button
+                                                aria-label="Heart, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  ❤️
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                            <li>
+                                              <button
+                                                aria-label="Idea, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  💡
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                            <li>
+                                              <button
+                                                aria-label="Thanks, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  🙏
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                          </ul>
+                                        </article>
+                                      </li>
+                                      <li>
+                                        <article
+                                          class="flex flex-col gap-3 py-5"
+                                        >
+                                          <header
+                                            class="flex items-start justify-between gap-3"
+                                          >
+                                            <div
+                                              class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
+                                              data-slot="text"
+                                            >
+                                              <span
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
+                                                >
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    AW
+                                                  </span>
+                                                </span>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  Arm Wattana
+                                                </span>
+                                              </span>
                                               <span
                                                 class="text-fg-secondary"
                                               >
-                                                 and 
+                                                to
                                               </span>
-                                              Fern Somsak
-                                            </p>
-                                            <p
-                                              class="text-body-3 text-fg-secondary"
-                                              data-slot="text"
-                                            >
-                                              Offered
-                                               ·
-                                               
-                                              <time
-                                                datetime="2026-10-20T09:30:00.000Z"
+                                              <span
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
                                               >
-                                                20 Oct 2026
-                                              </time>
-                                            </p>
-                                          </div>
-                                          <div
-                                            aria-hidden="true"
-                                            class="flex -space-x-2 *:ring-2 *:ring-surface-base shrink-0"
-                                            data-slot="avatar-group"
-                                            role="group"
-                                          >
-                                            <span
-                                              aria-hidden="true"
-                                              class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                              data-slot="avatar"
+                                                <span
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
+                                                >
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    PS
+                                                  </span>
+                                                </span>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  you
+                                                </span>
+                                              </span>
+                                            </div>
+                                            <div
+                                              class="flex shrink-0 flex-col items-end gap-0.5"
                                             >
                                               <span
-                                                class="flex size-full items-center justify-center font-medium"
-                                                data-slot="avatar-fallback"
+                                                class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border px-2.5 py-0.5 text-tag border-border-default text-fg-primary"
+                                                data-slot="badge"
                                               >
-                                                NC
+                                                Requested
                                               </span>
-                                            </span>
-                                            <span
-                                              aria-hidden="true"
-                                              class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                              data-slot="avatar"
-                                            >
-                                              <span
-                                                class="flex size-full items-center justify-center font-medium"
-                                                data-slot="avatar-fallback"
+                                              <p
+                                                class="text-body-3 text-fg-secondary whitespace-nowrap"
+                                                data-slot="text"
                                               >
-                                                FS
-                                              </span>
-                                            </span>
-                                          </div>
-                                        </header>
-                                        <p
-                                          class="text-body-1 whitespace-pre-wrap break-words"
-                                          data-slot="text"
-                                        >
-                                          Your onboarding notes answered every question our new designer had. She shipped her first screen on day three. Thank you!
-                                        </p>
-                                      </article>
-                                    </li>
-                                    <li>
-                                      <article
-                                        class="relative flex flex-col gap-3 py-5"
-                                      >
-                                        <header
-                                          class="flex items-center gap-3"
-                                        >
-                                          <span
-                                            aria-hidden="true"
-                                            class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                            data-slot="avatar"
+                                                <time
+                                                  datetime="2026-10-20T03:40:00.000Z"
+                                                >
+                                                  20 Oct 2026
+                                                </time>
+                                              </p>
+                                            </div>
+                                          </header>
+                                          <p
+                                            class="text-body-1 whitespace-pre-line break-words"
+                                            data-slot="text"
                                           >
+                                            When you opened with market size, the room went quiet. When you told Mai’s story, they leaned in. Next time, open with the story.
+                                          </p>
+                                          <p
+                                            class="text-body-3 text-fg-secondary break-words border-border-muted border-t border-dashed pt-3"
+                                            data-slot="text"
+                                          >
+                                            In answer to your request to
+                                             
+                                            Arm Wattana
+                                            :
+                                             
                                             <span
-                                              class="flex size-full items-center justify-center font-medium"
-                                              data-slot="avatar-fallback"
+                                              class="text-fg-primary"
                                             >
-                                              AW
+                                              In today’s pitch, what’s one thing I should change before the next one?
                                             </span>
-                                          </span>
-                                          <div
-                                            class="flex min-w-0 flex-1 flex-col"
+                                          </p>
+                                          <ul
+                                            aria-label="Reactions"
+                                            class="flex flex-wrap gap-2"
                                           >
-                                            <p
-                                              class="text-subtitle-4 break-words"
+                                            <li>
+                                              <button
+                                                aria-label="Clap, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  👏
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                            <li>
+                                              <button
+                                                aria-label="Heart, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  ❤️
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                            <li>
+                                              <button
+                                                aria-label="Idea, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  💡
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                            <li>
+                                              <button
+                                                aria-label="Thanks, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  🙏
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                          </ul>
+                                        </article>
+                                      </li>
+                                      <li>
+                                        <article
+                                          class="flex flex-col gap-3 py-5"
+                                        >
+                                          <header
+                                            class="flex items-start justify-between gap-3"
+                                          >
+                                            <div
+                                              class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
                                               data-slot="text"
                                             >
-                                              Arm Wattana
+                                              <span
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
+                                                >
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    NC
+                                                  </span>
+                                                </span>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  Nok Chaiyo
+                                                </span>
+                                              </span>
                                               <span
                                                 class="text-fg-secondary"
                                               >
-                                                 to 
+                                                to
                                               </span>
-                                              you
-                                            </p>
-                                            <p
-                                              class="text-body-3 text-fg-secondary"
-                                              data-slot="text"
-                                            >
-                                              Requested
-                                               ·
-                                               
-                                              <time
-                                                datetime="2026-10-20T03:40:00.000Z"
-                                              >
-                                                20 Oct 2026
-                                              </time>
-                                            </p>
-                                          </div>
-                                        </header>
-                                        <p
-                                          class="text-body-1 whitespace-pre-wrap break-words"
-                                          data-slot="text"
-                                        >
-                                          When you opened with market size, the room went quiet. When you told Mai’s story, they leaned in. Next time, open with the story.
-                                        </p>
-                                      </article>
-                                    </li>
-                                    <li>
-                                      <article
-                                        class="relative flex flex-col gap-3 py-5"
-                                      >
-                                        <header
-                                          class="flex items-center gap-3"
-                                        >
-                                          <span
-                                            aria-hidden="true"
-                                            class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                            data-slot="avatar"
-                                          >
-                                            <span
-                                              class="flex size-full items-center justify-center font-medium"
-                                              data-slot="avatar-fallback"
-                                            >
-                                              NC
-                                            </span>
-                                          </span>
-                                          <div
-                                            class="flex min-w-0 flex-1 flex-col"
-                                          >
-                                            <p
-                                              class="text-subtitle-4 break-words"
-                                              data-slot="text"
-                                            >
-                                              Nok Chaiyo
                                               <span
-                                                class="text-fg-secondary"
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
                                               >
-                                                 to 
+                                                <span
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
+                                                >
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    PS
+                                                  </span>
+                                                </span>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  you
+                                                </span>
                                               </span>
-                                              you
-                                            </p>
-                                            <p
-                                              class="text-body-3 text-fg-secondary"
-                                              data-slot="text"
+                                            </div>
+                                            <div
+                                              class="flex shrink-0 flex-col items-end gap-0.5"
                                             >
-                                              Requested
-                                               ·
-                                               
-                                              <time
-                                                datetime="2026-10-19T04:15:00.000Z"
+                                              <span
+                                                class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border px-2.5 py-0.5 text-tag border-border-default text-fg-primary"
+                                                data-slot="badge"
                                               >
-                                                19 Oct 2026
-                                              </time>
-                                            </p>
-                                          </div>
-                                        </header>
-                                        <p
-                                          class="text-body-1 whitespace-pre-wrap break-words"
-                                          data-slot="text"
-                                        >
-                                          We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.
-                                        </p>
-                                      </article>
-                                    </li>
-                                  </ul>
+                                                Requested
+                                              </span>
+                                              <p
+                                                class="text-body-3 text-fg-secondary whitespace-nowrap"
+                                                data-slot="text"
+                                              >
+                                                <time
+                                                  datetime="2026-10-19T04:15:00.000Z"
+                                                >
+                                                  19 Oct 2026
+                                                </time>
+                                              </p>
+                                            </div>
+                                          </header>
+                                          <p
+                                            class="text-body-1 whitespace-pre-line break-words"
+                                            data-slot="text"
+                                          >
+                                            We spent 20 minutes on a ticket nobody had read. Next time, share the board the day before.
+                                          </p>
+                                          <p
+                                            class="text-body-3 text-fg-secondary break-words border-border-muted border-t border-dashed pt-3"
+                                            data-slot="text"
+                                          >
+                                            In answer to your request to
+                                             
+                                            Nok Chaiyo
+                                            <span
+                                              class="text-fg-secondary"
+                                            >
+                                               and 
+                                            </span>
+                                            Fern Somsak
+                                            :
+                                             
+                                            <span
+                                              class="text-fg-primary"
+                                            >
+                                              I’m working on shorter meetings. Where did we lose time this morning?
+                                            </span>
+                                          </p>
+                                          <ul
+                                            aria-label="Reactions"
+                                            class="flex flex-wrap gap-2"
+                                          >
+                                            <li>
+                                              <button
+                                                aria-label="Clap, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  👏
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                            <li>
+                                              <button
+                                                aria-label="Heart, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  ❤️
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                            <li>
+                                              <button
+                                                aria-label="Idea, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  💡
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                            <li>
+                                              <button
+                                                aria-label="Thanks, 0"
+                                                aria-pressed="false"
+                                                class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-body-3 border-transparent text-fg-secondary hover:bg-action-neutral-surface-hover"
+                                                type="button"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  🙏
+                                                </span>
+                                                <span
+                                                  aria-hidden="true"
+                                                >
+                                                  0
+                                                </span>
+                                              </button>
+                                            </li>
+                                          </ul>
+                                        </article>
+                                      </li>
+                                    </ul>
+                                  </div>
                                 </div>
                               </div>
                             </div>

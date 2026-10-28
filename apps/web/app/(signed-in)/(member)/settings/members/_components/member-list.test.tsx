@@ -52,7 +52,7 @@ describe('MemberList', () => {
 
     expect(
       screen.getAllByRole('listitem').map((item) => item.textContent),
-    ).toEqual(['B— (you)ben@acme.testMember', 'AAnnann@acme.testAdmin']);
+    ).toEqual(['BYouben@acme.testMember', 'AAnnann@acme.testAdmin']);
     expect(screen.queryByRole('combobox')).toBeNull();
     expect(readMembers).toHaveBeenCalledWith(membership);
     expect(readMembers).toHaveBeenCalledWith(membership, 'DEACTIVATED');

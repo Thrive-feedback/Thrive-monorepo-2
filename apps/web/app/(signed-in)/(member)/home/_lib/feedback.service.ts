@@ -3,8 +3,9 @@ import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { apiClient } from '@/lib/api-client.service';
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
-import { toFeedbackPerson } from '@/lib/feedback/feedback-person.util';
+import { toFeedItem } from '@/lib/feedback/feed-item.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { readViewerAccountId } from '@/lib/session/session.service';
 
 /**
  * One piece of Feedback, or `null` when this Workspace has none with that id the caller may
@@ -19,6 +20,7 @@ export async function readFeedback(
   feedbackId: string,
 ): Promise<FeedItem | null> {
   const cookie = (await headers()).get('cookie') ?? undefined;
+  const viewerAccountId = await readViewerAccountId();
   try {
     const feedback = unwrap(
       await apiClient().GET(
@@ -32,20 +34,7 @@ export async function readFeedback(
         },
       ),
     );
-    return {
-      id: feedback.id,
-      giverName: feedback.giver.name,
-      giverPhotoUrl: feedback.giver.photoUrl,
-      giverInactive: feedback.giver.status === 'DEACTIVATED',
-      receivers: feedback.receivers.map(toFeedbackPerson),
-      origin: feedback.origin,
-      message: feedback.message,
-      messageTags: feedback.tags,
-      givenAt: feedback.createdAt,
-      // Reactions are #92; until then a card shows the four with nobody behind them.
-      reactions: {},
-      request: null,
-    };
+    return toFeedItem(feedback, viewerAccountId);
   } catch (error) {
     if (
       error instanceof ApiError &&

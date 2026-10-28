@@ -44,6 +44,7 @@ const WAITING: WaitingAsk = {
   message: 'Running the planning meeting',
   messageTags: NO_TEXT_TAGS,
   requesterName: 'Ann Lee',
+  requesterPhotoUrl: null,
   requesterInactive: false,
   status: 'PENDING',
   onWorkspaceFeed: false,
@@ -74,18 +75,19 @@ describe('an Ask, open over Home to be answered', () => {
       screen.getByText('Your answer goes on the Workspace feed.'),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText(/Only Ann Lee can read what you write/),
+      screen.queryByText('Your name goes with what you write.'),
     ).toBeNull();
   });
 
-  it('says only the Requester reads it when the answer is not going on the feed', async () => {
+  it('says nothing about who reads it when the answer is not going on the feed, only that it is signed', async () => {
     readFeedbackAsk.mockResolvedValue(WAITING);
 
     await renderDetail();
 
     expect(
-      screen.getByText(/Only Ann Lee can read what you write/),
+      screen.getByText('Your name goes with what you write.'),
     ).toBeInTheDocument();
+    expect(screen.queryByText(/can read/)).toBeNull();
     expect(
       screen.queryByText('Your answer goes on the Workspace feed.'),
     ).toBeNull();

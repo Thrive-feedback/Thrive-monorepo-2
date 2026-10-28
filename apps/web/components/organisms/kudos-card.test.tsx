@@ -9,11 +9,11 @@ const NO_TAGS = { workspaceGoals: [], mentions: [] };
 function kudos(overrides: Partial<KudosItem> = {}): KudosItem {
   return {
     id: 'kudos-1',
-    giver: { name: 'Ann Lee', inactive: false },
+    giver: { name: 'Ann Lee', inactive: false, isYou: false },
     recipients: [
-      { name: 'Ben Carter', inactive: false },
-      { name: 'Cara Diaz', inactive: false },
-      { name: 'Dee Park', inactive: false },
+      { name: 'Ben Carter', inactive: false, isYou: false },
+      { name: 'Cara Diaz', inactive: false, isYou: false },
+      { name: 'Dee Park', inactive: false, isYou: false },
     ],
     message: '@ben carried the launch.',
     messageTags: {
@@ -56,8 +56,8 @@ describe('KudosCard', () => {
     render(
       <KudosCard
         item={kudos({
-          giver: { name: null, inactive: false },
-          recipients: [{ name: 'Ben Carter', inactive: true }],
+          giver: { name: null, inactive: false, isYou: false },
+          recipients: [{ name: 'Ben Carter', inactive: true, isYou: false }],
           messageTags: NO_TAGS,
         })}
       />,
