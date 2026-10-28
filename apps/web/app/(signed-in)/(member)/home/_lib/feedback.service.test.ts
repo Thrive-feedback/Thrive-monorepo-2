@@ -40,7 +40,6 @@ const FEEDBACK_AS_STORED = {
     name: 'Ann Lee' as string | null,
     status: 'ACTIVE',
   },
-  receiver: RECEIVER_AS_STORED,
   receivers: [RECEIVER_AS_STORED],
   message: 'You ran the planning meeting well',
   tags: NO_TAGS,

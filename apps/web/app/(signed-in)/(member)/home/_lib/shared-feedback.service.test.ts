@@ -32,7 +32,6 @@ const ONE_PIECE = {
     status: 'ACTIVE',
     photoUrl: 'https://lh3.googleusercontent.com/a/account-ben=s96-c',
   },
-  receiver: { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
   receivers: [
     { accountId: 'account-cara', name: 'Cara Diaz', status: 'ACTIVE' },
   ],

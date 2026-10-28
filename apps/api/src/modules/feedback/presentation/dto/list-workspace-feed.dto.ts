@@ -36,8 +36,6 @@ const feedItemSchema = z.object({
   /** The request it answers, or `null` for Feedback given without being asked. */
   feedbackRequestId: z.uuid().nullable(),
   giver: personSchema,
-  /** Deprecated: the first of `receivers`, kept for clients built before Feedback could have several. */
-  receiver: personSchema,
   /** Everyone it is for, in the order the Giver chose them: one for Requested Feedback. */
   receivers: z.array(personSchema).min(1),
   /** The Feedback message. */

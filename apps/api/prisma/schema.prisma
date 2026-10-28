@@ -266,9 +266,6 @@ model Feedback {
   feedbackAsk       FeedbackAsk?             @relation(fields: [feedbackAskId], references: [id], onDelete: Cascade)
   /// The Account of the Member who wrote it. No foreign key.
   giverAccountId    String
-  /// The first of its Receivers, kept only while an older API may still read it during a deploy
-  /// (ADR 0061, BE_15 R5): every read goes through `receivers`. Dropped in its own change.
-  receiverAccountId String
   /// Who besides the Giver and the Receiver may read it, with the people in selectedPeople.
   /// The Giver's choice for Offered Feedback, the request's copied for Requested. Never changes.
   visibility        Visibility
@@ -283,12 +280,10 @@ model Feedback {
   workspaceGoals    FeedbackWorkspaceGoal[]
   mentions          FeedbackMention[]
 
-  /// For "the Feedback I received", newest first (#26).
-  @@index([workspaceId, receiverAccountId, createdAt])
   /// For "the Feedback I gave" (#27).
   @@index([workspaceId, giverAccountId, createdAt])
-  /// For the Workspace feed (#90): everything set to Everyone, newest first. The two indexes
-  /// above lead with a person, which that read does not filter on.
+  /// For the Workspace feed (#90): everything set to Everyone, newest first. The index
+  /// above leads with a person, which that read does not filter on.
   @@index([workspaceId, visibility, createdAt])
   /// For one request's answers (#24): every piece it collected. Without it, that read walks the
   /// Workspace's Feedback.

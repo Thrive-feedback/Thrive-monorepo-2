@@ -21,9 +21,6 @@ export function toFeedbackRecord(
     feedbackRequestId: snapshot.feedbackRequestId,
     feedbackAskId: snapshot.feedbackAskId,
     giverAccountId: snapshot.giverAccountId,
-    // Only an older API reads this column, mid-deploy (ADR 0061): every Receiver is in
-    // `feedback_receiver`, and a piece always has at least one.
-    receiverAccountId: snapshot.receiverAccountIds[0] ?? '',
     visibility: snapshot.visibility as FeedbackRecord['visibility'],
     message: snapshot.message,
   };

@@ -36,7 +36,6 @@ import {
 import {
   OfferFeedbackRequestDto,
   OfferFeedbackResponseDto,
-  receiversOf,
 } from './dto/offer-feedback.dto';
 import {
   FeedbackPathParamsDto,
@@ -102,7 +101,7 @@ export class FeedbackController {
     const given = await this.offerFeedbackUseCase.execute({
       workspaceId: params.workspaceId,
       giverAccountId: actor.accountId,
-      receiverAccountIds: receiversOf(body),
+      receiverAccountIds: body.receiverAccountIds,
       message: body.message,
       visibility: body.visibility,
       selectedAccountIds: body.selectedAccountIds ?? [],

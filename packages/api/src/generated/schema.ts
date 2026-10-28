@@ -1139,9 +1139,7 @@ export interface components {
             feedbackId: string;
         };
         OfferFeedbackRequestDto: {
-            receiverAccountIds?: string[];
-            /** Format: uuid */
-            receiverAccountId?: string;
+            receiverAccountIds: string[];
             message: string;
             /** @enum {string} */
             visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
@@ -1208,15 +1206,6 @@ export interface components {
                 /** @enum {string} */
                 status: "ACTIVE" | "DEACTIVATED";
             };
-            receiver: {
-                /** Format: uuid */
-                accountId: string;
-                name: string | null;
-                /** Format: uri */
-                photoUrl: string | null;
-                /** @enum {string} */
-                status: "ACTIVE" | "DEACTIVATED";
-            };
             receivers: {
                 /** Format: uuid */
                 accountId: string;
@@ -1248,15 +1237,6 @@ export interface components {
                 /** Format: uuid */
                 feedbackRequestId: string | null;
                 giver: {
-                    /** Format: uuid */
-                    accountId: string;
-                    name: string | null;
-                    /** Format: uri */
-                    photoUrl: string | null;
-                    /** @enum {string} */
-                    status: "ACTIVE" | "DEACTIVATED";
-                };
-                receiver: {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
@@ -1300,15 +1280,6 @@ export interface components {
                 /** Format: uuid */
                 feedbackRequestId: string | null;
                 giver: {
-                    /** Format: uuid */
-                    accountId: string;
-                    name: string | null;
-                    /** Format: uri */
-                    photoUrl: string | null;
-                    /** @enum {string} */
-                    status: "ACTIVE" | "DEACTIVATED";
-                };
-                receiver: {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
