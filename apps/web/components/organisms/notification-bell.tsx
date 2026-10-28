@@ -20,7 +20,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '@/lib/notifications/notification-actions.service';
-import { NotificationRow } from './notification-row';
+import { NotificationRow, NotificationRowSkeleton } from './notification-row';
 
 /**
  * How often the count is asked for again while somebody is looking at the page. A minute is
@@ -32,12 +32,20 @@ const POLL_INTERVAL_MS = 60_000;
 /** Past this the number stops being read and starts being a shape, and it breaks the badge. */
 const MOST_SHOWN = 99;
 
+/** Enough rows to fill the panel while the real ones are on their way. */
+const SKELETON_ROWS = 3;
+
 const NOTHING_YET =
   'Nothing yet. When somebody asks you for feedback, answers you, or writes to you, it shows up here.';
 
 const COULD_NOT_LOAD =
   "We couldn't load these just now. Try again in a moment.";
 
+/**
+ * `loading` is only ever the **first** open. After that the panel has lines, and they are almost
+ * always still right — so it shows them and refreshes behind, rather than emptying itself and
+ * making somebody wait again for what they were already reading (#269).
+ */
 type PanelState = 'loading' | 'ready' | 'failed';
 
 function bellLabel(unreadCount: number): string {
@@ -102,10 +110,19 @@ export function NotificationBell() {
     if (!isOpening) {
       return;
     }
-    setPanelState('loading');
+    // Only the first open has nothing to show. Every one after it keeps what it had on screen
+    // while the refresh happens behind, so reopening is instant.
+    const hasLines = panelState === 'ready';
+    if (!hasLines) {
+      setPanelState('loading');
+    }
     void listMyNotifications().then((items) => {
       if (items === null) {
-        setPanelState('failed');
+        // A refresh that failed is not worth replacing lines somebody is already reading. With
+        // nothing to fall back on it is worth saying, because "nothing yet" means something else.
+        if (!hasLines) {
+          setPanelState('failed');
+        }
         return;
       }
       setNotifications(items);
@@ -177,9 +194,13 @@ export function NotificationBell() {
         </div>
         <DropdownMenuSeparator />
         {panelState === 'loading' && (
-          <Text variant="body-2" tone="muted" className="px-2 py-3">
-            Loading…
-          </Text>
+          <div data-testid="notification-skeleton" aria-busy="true">
+            <span className="sr-only">Loading your notifications</span>
+            {Array.from({ length: SKELETON_ROWS }, (_, row) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: placeholders, with nothing to key on
+              <NotificationRowSkeleton key={row} />
+            ))}
+          </div>
         )}
         {panelState === 'failed' && (
           <Text variant="body-2" tone="muted" className="px-2 py-3">

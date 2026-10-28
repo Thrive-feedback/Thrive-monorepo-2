@@ -242,3 +242,77 @@ describe('NotificationBell, over time', () => {
     visibility.mockRestore();
   });
 });
+
+describe('the gap between pressing the bell and seeing anything', () => {
+  it('keeps the lines it already had when it is opened again', async () => {
+    listMyNotifications.mockResolvedValue([aNotification()]);
+    const user = await openTheBell();
+    await screen.findByText('Nut asked you for feedback');
+
+    // Closed and opened again. The lines it had are almost always still right, so they stay on
+    // screen while the refresh happens behind them.
+    await user.keyboard('{Escape}');
+    let resolveRefresh: (items: BellNotification[]) => void = () => {};
+    listMyNotifications.mockReturnValue(
+      new Promise<BellNotification[]>((resolve) => {
+        resolveRefresh = resolve;
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
+
+    expect(screen.getByText('Nut asked you for feedback')).toBeInTheDocument();
+    expect(screen.queryByText('Loading…')).not.toBeInTheDocument();
+    resolveRefresh([aNotification()]);
+  });
+
+  it('leaves the lines alone when a refresh behind them fails', async () => {
+    listMyNotifications.mockResolvedValue([aNotification()]);
+    const user = await openTheBell();
+    await screen.findByText('Nut asked you for feedback');
+
+    await user.keyboard('{Escape}');
+    listMyNotifications.mockResolvedValue(null);
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
+
+    // A failed refresh is not worth replacing what somebody is already reading.
+    await waitFor(() => {
+      expect(listMyNotifications).toHaveBeenCalledTimes(2);
+    });
+    expect(screen.getByText('Nut asked you for feedback')).toBeInTheDocument();
+  });
+
+  it('shows a skeleton the shape of the rows on the very first open', async () => {
+    let resolveFirst: (items: BellNotification[]) => void = () => {};
+    listMyNotifications.mockReturnValue(
+      new Promise<BellNotification[]>((resolve) => {
+        resolveFirst = resolve;
+      }),
+    );
+    const user = userEvent.setup();
+    render(<NotificationBell />);
+    await user.click(
+      await screen.findByRole('button', { name: /Notifications/ }),
+    );
+
+    // Rows at the height the real ones will be, so the panel does not resize as they arrive.
+    expect(
+      await screen.findByTestId('notification-skeleton'),
+    ).toBeInTheDocument();
+    resolveFirst([aNotification()]);
+    await screen.findByText('Nut asked you for feedback');
+    expect(
+      screen.queryByTestId('notification-skeleton'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('still says it could not look when there is nothing to fall back on', async () => {
+    listMyNotifications.mockResolvedValue(null);
+
+    await openTheBell();
+
+    // "Nothing yet" and "we could not look" are different answers, and this is the second.
+    expect(
+      await screen.findByText(/couldn't load these just now/i),
+    ).toBeInTheDocument();
+  });
+});

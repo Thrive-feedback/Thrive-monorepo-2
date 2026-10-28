@@ -4,10 +4,7 @@ import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
-import {
-  readCurrentMembership,
-  requireMember,
-} from '@/lib/session/session.service';
+import { readCurrentMembership } from '@/lib/session/session.service';
 import type { BellNotification } from './notification.type';
 
 /**
@@ -26,19 +23,17 @@ async function forwardedCookie(): Promise<string | undefined> {
  * The Workspace to ask about: the one this session is in, read from the session on the server.
  * Nothing the browser sends names a Workspace, so there is no request a person could shape that
  * counts somebody else's, or another Workspace's.
+ *
+ * **`readCurrentMembership`, never `requireMember`.** `requireMember` reads the session as well,
+ * which is a second API call for a fact every one of these throws away — and because the browser
+ * cannot reach the API, each of those is a hop the person is waiting through. Design `0022` §4.3
+ * found this for the poll and fixed it there; the list and the two mark-read actions were written
+ * in the same change and kept it. Three calls per open, where two will do (#269).
+ *
+ * `null` when there is no Workspace, which every caller treats as "nothing to say": a bell drawn
+ * for somebody between Workspaces is not an error.
  */
-async function currentWorkspaceId(): Promise<string> {
-  const { membership } = await requireMember();
-  return membership.workspace.id;
-}
-
-/**
- * The same, for the poll, which runs every minute per open tab and needs only the Workspace.
- * `requireMember` would also read the session — a second API call a minute for a fact this
- * throws away. `null` when there is no Workspace to count in, which the bell treats exactly as
- * it treats a failed poll: keep the number it had and say nothing.
- */
-async function workspaceIdForPoll(): Promise<string | null> {
+async function currentWorkspaceId(): Promise<string | null> {
   return (await readCurrentMembership())?.workspace.id ?? null;
 }
 
@@ -50,7 +45,7 @@ async function workspaceIdForPoll(): Promise<string | null> {
  * poll that failed is not worth telling anybody about, and the next one is a minute away.
  */
 export async function countUnreadNotifications(): Promise<number | null> {
-  const workspaceId = await workspaceIdForPoll();
+  const workspaceId = await currentWorkspaceId();
   if (workspaceId === null) {
     return null;
   }
@@ -83,6 +78,9 @@ export async function listMyNotifications(): Promise<
   readonly BellNotification[] | null
 > {
   const workspaceId = await currentWorkspaceId();
+  if (workspaceId === null) {
+    return null;
+  }
   const cookie = await forwardedCookie();
   try {
     const page = unwrap(
@@ -125,6 +123,9 @@ export async function markNotificationRead(id: string): Promise<void> {
     return;
   }
   const workspaceId = await currentWorkspaceId();
+  if (workspaceId === null) {
+    return;
+  }
   const cookie = await forwardedCookie();
   try {
     // Answered 204 with no body, so there is nothing to unwrap; a refusal throws.
@@ -150,6 +151,9 @@ export async function markNotificationRead(id: string): Promise<void> {
  */
 export async function markAllNotificationsRead(): Promise<boolean> {
   const workspaceId = await currentWorkspaceId();
+  if (workspaceId === null) {
+    return false;
+  }
   const cookie = await forwardedCookie();
   try {
     await apiClient().POST('/v1/workspaces/{workspaceId}/notifications/read', {
