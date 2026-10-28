@@ -2,6 +2,7 @@
 
 import NextLink from 'next/link';
 import { DropdownMenuItem } from '@/components/atoms/dropdown-menu';
+import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
 import type { BellNotification } from '@/lib/notifications/notification.type';
@@ -52,5 +53,22 @@ export function NotificationRow({
         {!notification.isRead && <span className="sr-only">Unread</span>}
       </NextLink>
     </DropdownMenuItem>
+  );
+}
+
+/**
+ * One line's shape while it is being fetched, at the height the real row will be — so the panel
+ * fills rather than resizing as the lines arrive. A dot, a sentence and a time, exactly as
+ * {@link NotificationRow} draws them.
+ */
+export function NotificationRowSkeleton() {
+  return (
+    <div className="flex items-start gap-3 px-2 py-1.5">
+      <span aria-hidden="true" className="mt-1.5 size-2 shrink-0" />
+      <span className="flex min-w-0 grow flex-col gap-0.5">
+        <Skeleton className="w-3/4 text-body-2" />
+        <Skeleton className="w-1/4 text-caption" />
+      </span>
+    </div>
   );
 }
