@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
@@ -18,7 +19,31 @@ const OFFERED: FeedItem = {
   messageTags: NO_TEXT_TAGS,
   givenAt: '2026-10-12T03:00:00.000Z',
   reactions: { '👏': ['Ann Lee'] },
+  request: null,
 };
+
+const ANSWER: FeedItem = {
+  ...OFFERED,
+  origin: 'REQUESTED',
+  message: 'You open strongly and keep everyone with you.',
+  request: {
+    message: 'Running the planning meeting',
+    messageTags: NO_TEXT_TAGS,
+    requester: CARA,
+    asked: [
+      { name: 'Ben Carter', photoUrl: null, inactive: false },
+      { name: 'Dan Ooi', photoUrl: null, inactive: true },
+    ],
+  },
+};
+
+const SEVERAL = [
+  CARA,
+  { name: 'Ann Lee', photoUrl: null, inactive: false },
+  { name: 'Dan Ooi', photoUrl: null, inactive: true },
+  { name: 'Eve Ng', photoUrl: null, inactive: false },
+  { name: 'Fon Pak', photoUrl: null, inactive: false },
+];
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -58,30 +83,61 @@ describe('FeedbackCard', () => {
     ).toBeInTheDocument();
   });
 
-  it('names everyone it is for, and closes with their faces as one stack', () => {
-    render(
-      <FeedbackCard
-        item={{
-          ...OFFERED,
-          receivers: [
-            CARA,
-            { name: 'Ann Lee', photoUrl: null, inactive: false },
-            { name: 'Dan Ooi', photoUrl: null, inactive: true },
-            { name: 'Eve Ng', photoUrl: null, inactive: false },
-            { name: 'Fon Pak', photoUrl: null, inactive: false },
-          ],
-        }}
-      />,
-    );
+  it('opens with the Giver and the one Receiver, each beside their face', () => {
+    render(<FeedbackCard item={OFFERED} />);
 
-    expect(screen.getByText(/^Ben Carter/)).toHaveTextContent(
-      'Ben Carter to Cara Diaz, Ann Lee, Dan Ooi (inactive), Eve Ng and Fon Pak',
+    expect(screen.getByRole('banner')).toHaveTextContent(
+      'BCBen CartertoCDCara Diaz',
     );
+    expect(
+      screen.queryByRole('button', { name: /Show who it is for/ }),
+    ).toBeNull();
+  });
+
+  it('folds several Receivers into a stack of faces that names them all to a screen reader', () => {
+    render(<FeedbackCard item={{ ...OFFERED, receivers: SEVERAL }} />);
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Cara Diaz, Ann Lee, Dan Ooi (inactive), Eve Ng, and Fon Pak. Show who it is for',
+      }),
+    ).toBeInTheDocument();
     for (const initials of ['CD', 'AL', 'DO', 'EN']) {
       expect(screen.getByText(initials)).toBeInTheDocument();
     }
     expect(screen.queryByText('FP')).not.toBeInTheDocument();
     expect(screen.getByText('+1')).toBeInTheDocument();
+  });
+
+  it('lists every Receiver, face and name, in a dialog opened from the stack, and gives focus back on close', async () => {
+    const user = userEvent.setup();
+    render(<FeedbackCard item={{ ...OFFERED, receivers: SEVERAL }} />);
+    const stack = screen.getByRole('button', { name: /Show who it is for/ });
+
+    await user.click(stack);
+
+    const dialog = screen.getByRole('dialog', { name: 'For 5 people' });
+    expect(
+      within(dialog).getByText(
+        'Ben Carter gave this Feedback to all of them. Each of them sees who else it was for.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog)
+        .getAllByRole('listitem')
+        .map((row) => row.textContent),
+    ).toEqual([
+      'CDCara Diaz',
+      'ALAnn Lee',
+      'DODan Ooi (inactive)',
+      'ENEve Ng',
+      'FPFon Pak',
+    ]);
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(stack).toHaveFocus();
   });
 
   it('keeps the line breaks the writer typed', () => {
@@ -92,12 +148,37 @@ describe('FeedbackCard', () => {
     );
   });
 
-  it('tells Feedback given without being asked from an answer', () => {
+  it('tells Feedback given without being asked from an answer by its badge', () => {
     render(<FeedbackCard item={OFFERED} />);
-    expect(screen.getByText(/Offered/)).toBeInTheDocument();
+    expect(screen.getByText('Offered')).toHaveAttribute('data-slot', 'badge');
 
-    render(<FeedbackCard item={{ ...OFFERED, origin: 'REQUESTED' }} />);
-    expect(screen.getByText(/Requested/)).toBeInTheDocument();
+    render(<FeedbackCard item={ANSWER} />);
+    expect(screen.getByText('Requested')).toHaveAttribute('data-slot', 'badge');
+  });
+
+  it('says what an answer responds to: who asked, everyone they asked, and the question', () => {
+    render(<FeedbackCard item={ANSWER} />);
+
+    expect(screen.getByText(/^In answer to/)).toHaveTextContent(
+      'In answer to Cara Diaz, who asked Ben Carter and Dan Ooi (inactive): Running the planning meeting',
+    );
+  });
+
+  it('keeps the answer the main text, before what it responds to', () => {
+    render(<FeedbackCard item={ANSWER} />);
+
+    const answer = screen.getByText(/You open strongly/);
+    const inAnswerTo = screen.getByText(/^In answer to/);
+    expect(
+      answer.compareDocumentPosition(inAnswerTo) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('says nothing about a request on Feedback given without being asked', () => {
+    render(<FeedbackCard item={OFFERED} />);
+
+    expect(screen.queryByText(/In answer to/)).toBeNull();
   });
 
   it('calls a Giver with no Profile a teammate, rather than showing a gap', () => {

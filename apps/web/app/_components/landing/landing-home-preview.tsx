@@ -237,6 +237,7 @@ export function LandingHomePreview({
             ask={{
               ...openAsk,
               feedbackRequestId: `${openAsk.askId}-request`,
+              onWorkspaceFeed: false,
             }}
             teammates={PREVIEW_TEAMMATES}
             workspaceGoals={PREVIEW_WORKSPACE_GOALS}

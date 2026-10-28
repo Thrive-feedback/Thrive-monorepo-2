@@ -44,6 +44,7 @@ export async function readFeedback(
       givenAt: feedback.createdAt,
       // Reactions are #92; until then a card shows the four with nobody behind them.
       reactions: {},
+      request: null,
     };
   } catch (error) {
     if (

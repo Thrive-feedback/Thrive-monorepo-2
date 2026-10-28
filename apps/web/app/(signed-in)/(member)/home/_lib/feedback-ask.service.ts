@@ -38,6 +38,7 @@ export async function readFeedbackAsk(
       requesterName: ask.requester.name,
       requesterInactive: ask.requester.status === 'DEACTIVATED',
       status: ask.status,
+      onWorkspaceFeed: ask.onWorkspaceFeed,
     };
   } catch (error) {
     if (

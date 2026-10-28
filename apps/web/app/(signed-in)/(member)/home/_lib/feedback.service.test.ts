@@ -80,6 +80,7 @@ describe('reading one piece of Feedback', () => {
       messageTags: NO_TAGS,
       givenAt: '2026-10-13T03:00:00.000Z',
       reactions: {},
+      request: null,
     });
   });
 

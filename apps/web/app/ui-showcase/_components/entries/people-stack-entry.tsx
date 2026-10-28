@@ -4,9 +4,6 @@ import {
 } from '@/app/ui-showcase/_components/showcase-entry';
 import { standInPhoto } from '@/app/ui-showcase/_lib/stand-in-photo.util';
 import { PeopleStack } from '@/components/molecules/people-stack';
-import { FeedbackCard } from '@/components/organisms/feedback-card';
-import type { FeedItem } from '@/lib/feedback/feed-item.type';
-import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 
 /** Made-up people: the showcase reaches no Workspace, and draws no real face. */
 const PEOPLE = [
@@ -29,20 +26,6 @@ const PEOPLE = [
   { name: 'Som Ruang', photoUrl: null, inactive: false },
 ];
 
-const FOR_SEVERAL: FeedItem = {
-  id: 'showcase-feedback',
-  giverName: 'Ben Boon',
-  giverPhotoUrl: standInPhoto('#7dd3fc', '#0369a1'),
-  giverInactive: false,
-  receivers: PEOPLE.slice(0, 3),
-  origin: 'OFFERED',
-  message:
-    'You three kept the demo calm when the build broke. Keep running the dry run the day before.',
-  messageTags: NO_TEXT_TAGS,
-  givenAt: '2026-10-27T03:00:00.000Z',
-  reactions: { '👏': ['Pim Prasert'] },
-};
-
 export function PeopleStackEntry() {
   return (
     <ShowcaseEntry
@@ -51,8 +34,8 @@ export function PeopleStackEntry() {
       origin="thrive"
       source="components/molecules/people-stack.tsx — composes AvatarGroup, PhotoAvatar"
       summary="Several people's faces as one overlapping stack, beside the names it stands for."
-      useFor="Everyone a piece of Feedback is for, closing a feed card or a My Activity row."
-      avoidFor="Choosing people. Use AvatarGroupButton, which draws the same stack as a button."
+      useFor="Everyone else a piece of Feedback is for, beside their names on a row of Feedback for me."
+      avoidFor="Choosing people, which is AvatarGroupButton. A feed card's Receivers, which is PeopleDialogButton: there the stack stands in for the names and opens them."
       usage={`import { PeopleStack } from '@/components/molecules/people-stack';
 
 <PeopleStack people={item.receivers} />`}
@@ -67,8 +50,7 @@ export function PeopleStackEntry() {
           name: 'size',
           type: "'sm' | 'md' | 'lg'",
           defaultValue: "'md'",
-          description:
-            'The size of each face and of the "+N". The default matches the face that leads a feed card.',
+          description: 'The size of each face and of the "+N".',
         },
       ]}
       accessibility={[
@@ -84,11 +66,6 @@ export function PeopleStackEntry() {
       </StateCell>
       <StateCell label="More than four">
         <PeopleStack people={PEOPLE} />
-      </StateCell>
-      <StateCell label="Closing a feed card for several people">
-        <div className="w-full max-w-md">
-          <FeedbackCard item={FOR_SEVERAL} />
-        </div>
       </StateCell>
     </ShowcaseEntry>
   );

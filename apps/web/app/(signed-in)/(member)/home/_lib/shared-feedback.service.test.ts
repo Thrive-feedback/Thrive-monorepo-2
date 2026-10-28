@@ -74,6 +74,7 @@ describe('reading the Feedback shared with me', () => {
         message: 'You kept the room with you.',
         givenAt: '2026-10-12T03:00:00.000Z',
         reactions: {},
+        request: null,
       },
     ]);
   });

@@ -46,6 +46,7 @@ const WAITING: WaitingAsk = {
   requesterName: 'Ann Lee',
   requesterInactive: false,
   status: 'PENDING',
+  onWorkspaceFeed: false,
 };
 
 describe('an Ask, open over Home to be answered', () => {
@@ -62,6 +63,32 @@ describe('an Ask, open over Home to be answered', () => {
     expect(
       screen.getByRole('textbox', { name: /What would you tell Ann Lee\?/ }),
     ).toBeInTheDocument();
+  });
+
+  it('tells the Giver, before they write, that an answer shared with everyone goes on the Workspace feed', async () => {
+    readFeedbackAsk.mockResolvedValue({ ...WAITING, onWorkspaceFeed: true });
+
+    await renderDetail();
+
+    expect(
+      screen.getByText('Your answer goes on the Workspace feed.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Only Ann Lee can read what you write/),
+    ).toBeNull();
+  });
+
+  it('says only the Requester reads it when the answer is not going on the feed', async () => {
+    readFeedbackAsk.mockResolvedValue(WAITING);
+
+    await renderDetail();
+
+    expect(
+      screen.getByText(/Only Ann Lee can read what you write/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Your answer goes on the Workspace feed.'),
+    ).toBeNull();
   });
 
   it('offers no box once the Ask has been answered, because the first answer is final', async () => {

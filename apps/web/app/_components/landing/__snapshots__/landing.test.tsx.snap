@@ -602,103 +602,115 @@ exports[`Landing > renders the same page 1`] = `
                                   class="flex flex-col gap-3 py-5"
                                 >
                                   <header
-                                    class="flex items-center gap-3"
+                                    class="flex items-start justify-between gap-3"
                                   >
-                                    <span
-                                      aria-hidden="true"
-                                      class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                      data-slot="avatar"
+                                    <div
+                                      class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
+                                      data-slot="text"
                                     >
                                       <span
-                                        class="flex size-full items-center justify-center font-medium"
-                                        data-slot="avatar-fallback"
+                                        class="inline-flex min-w-0 max-w-full items-center gap-1.5"
                                       >
-                                        DR
+                                        <span
+                                          aria-hidden="true"
+                                          class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                          data-slot="avatar"
+                                        >
+                                          <span
+                                            class="flex size-full items-center justify-center font-medium"
+                                            data-slot="avatar-fallback"
+                                          >
+                                            DR
+                                          </span>
+                                        </span>
+                                        <span
+                                          class="min-w-0 break-words"
+                                        >
+                                          Dao Rattana
+                                        </span>
                                       </span>
-                                    </span>
-                                    <div
-                                      class="flex min-w-0 flex-1 flex-col"
-                                    >
-                                      <p
-                                        class="text-subtitle-4 break-words"
-                                        data-slot="text"
+                                      <span
+                                        class="text-fg-secondary"
                                       >
-                                        Dao Rattana
-                                        <span
-                                          class="text-fg-secondary"
+                                        to
+                                      </span>
+                                      <button
+                                        aria-expanded="false"
+                                        aria-haspopup="dialog"
+                                        class="-m-0.5 inline-flex cursor-pointer rounded-full p-0.5 transition-colors hover:bg-action-neutral-surface-hover"
+                                        data-slot="dialog-trigger"
+                                        data-state="closed"
+                                        type="button"
+                                      >
+                                        <div
+                                          aria-hidden="true"
+                                          class="flex *:ring-2 *:ring-surface-base -space-x-1"
+                                          data-slot="avatar-group"
+                                          role="group"
                                         >
-                                           to 
-                                        </span>
-                                        Nok Chaiyo
+                                          <span
+                                            aria-hidden="true"
+                                            class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                            data-slot="avatar"
+                                          >
+                                            <span
+                                              class="flex size-full items-center justify-center font-medium"
+                                              data-slot="avatar-fallback"
+                                            >
+                                              NC
+                                            </span>
+                                          </span>
+                                          <span
+                                            aria-hidden="true"
+                                            class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                            data-slot="avatar"
+                                          >
+                                            <span
+                                              class="flex size-full items-center justify-center font-medium"
+                                              data-slot="avatar-fallback"
+                                            >
+                                              PS
+                                            </span>
+                                          </span>
+                                          <span
+                                            aria-hidden="true"
+                                            class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                            data-slot="avatar"
+                                          >
+                                            <span
+                                              class="flex size-full items-center justify-center font-medium"
+                                              data-slot="avatar-fallback"
+                                            >
+                                              FS
+                                            </span>
+                                          </span>
+                                        </div>
                                         <span
-                                          class="text-fg-secondary"
+                                          class="sr-only"
                                         >
-                                          , 
+                                          Nok Chaiyo, Ploy Srisuk, and Fern Somsak. Show who it is for
                                         </span>
-                                        Ploy Srisuk
-                                        <span
-                                          class="text-fg-secondary"
-                                        >
-                                           and 
-                                        </span>
-                                        Fern Somsak
-                                      </p>
-                                      <p
-                                        class="text-body-3 text-fg-secondary"
-                                        data-slot="text"
+                                      </button>
+                                    </div>
+                                    <div
+                                      class="flex shrink-0 flex-col items-end gap-0.5"
+                                    >
+                                      <span
+                                        class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border border-transparent px-2.5 py-0.5 text-tag bg-action-secondary-surface-hover text-action-secondary-fg"
+                                        data-slot="badge"
                                       >
                                         Offered
-                                         ·
-                                         
+                                      </span>
+                                      <p
+                                        class="text-body-3 text-fg-secondary whitespace-nowrap"
+                                        data-slot="text"
+                                      >
                                         <time
                                           datetime="2026-10-20T09:30:00.000Z"
                                         >
                                           20 Oct 2026
                                         </time>
                                       </p>
-                                    </div>
-                                    <div
-                                      aria-hidden="true"
-                                      class="flex -space-x-2 *:ring-2 *:ring-surface-base shrink-0"
-                                      data-slot="avatar-group"
-                                      role="group"
-                                    >
-                                      <span
-                                        aria-hidden="true"
-                                        class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                        data-slot="avatar"
-                                      >
-                                        <span
-                                          class="flex size-full items-center justify-center font-medium"
-                                          data-slot="avatar-fallback"
-                                        >
-                                          NC
-                                        </span>
-                                      </span>
-                                      <span
-                                        aria-hidden="true"
-                                        class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                        data-slot="avatar"
-                                      >
-                                        <span
-                                          class="flex size-full items-center justify-center font-medium"
-                                          data-slot="avatar-fallback"
-                                        >
-                                          PS
-                                        </span>
-                                      </span>
-                                      <span
-                                        aria-hidden="true"
-                                        class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                        data-slot="avatar"
-                                      >
-                                        <span
-                                          class="flex size-full items-center justify-center font-medium"
-                                          data-slot="avatar-fallback"
-                                        >
-                                          FS
-                                        </span>
-                                      </span>
                                     </div>
                                   </header>
                                   <p
@@ -797,67 +809,79 @@ exports[`Landing > renders the same page 1`] = `
                                   class="flex flex-col gap-3 py-5"
                                 >
                                   <header
-                                    class="flex items-center gap-3"
+                                    class="flex items-start justify-between gap-3"
                                   >
-                                    <span
-                                      aria-hidden="true"
-                                      class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                      data-slot="avatar"
+                                    <div
+                                      class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
+                                      data-slot="text"
                                     >
                                       <span
-                                        class="flex size-full items-center justify-center font-medium"
-                                        data-slot="avatar-fallback"
+                                        class="inline-flex min-w-0 max-w-full items-center gap-1.5"
                                       >
-                                        NC
-                                      </span>
-                                    </span>
-                                    <div
-                                      class="flex min-w-0 flex-1 flex-col"
-                                    >
-                                      <p
-                                        class="text-subtitle-4 break-words"
-                                        data-slot="text"
-                                      >
-                                        Nok Chaiyo
                                         <span
-                                          class="text-fg-secondary"
+                                          aria-hidden="true"
+                                          class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                          data-slot="avatar"
                                         >
-                                           to 
+                                          <span
+                                            class="flex size-full items-center justify-center font-medium"
+                                            data-slot="avatar-fallback"
+                                          >
+                                            NC
+                                          </span>
                                         </span>
-                                        Ploy Srisuk
-                                      </p>
-                                      <p
-                                        class="text-body-3 text-fg-secondary"
-                                        data-slot="text"
+                                        <span
+                                          class="min-w-0 break-words"
+                                        >
+                                          Nok Chaiyo
+                                        </span>
+                                      </span>
+                                      <span
+                                        class="text-fg-secondary"
+                                      >
+                                        to
+                                      </span>
+                                      <span
+                                        class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                      >
+                                        <span
+                                          aria-hidden="true"
+                                          class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                          data-slot="avatar"
+                                        >
+                                          <span
+                                            class="flex size-full items-center justify-center font-medium"
+                                            data-slot="avatar-fallback"
+                                          >
+                                            PS
+                                          </span>
+                                        </span>
+                                        <span
+                                          class="min-w-0 break-words"
+                                        >
+                                          Ploy Srisuk
+                                        </span>
+                                      </span>
+                                    </div>
+                                    <div
+                                      class="flex shrink-0 flex-col items-end gap-0.5"
+                                    >
+                                      <span
+                                        class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border px-2.5 py-0.5 text-tag border-border-default text-fg-primary"
+                                        data-slot="badge"
                                       >
                                         Requested
-                                         ·
-                                         
+                                      </span>
+                                      <p
+                                        class="text-body-3 text-fg-secondary whitespace-nowrap"
+                                        data-slot="text"
+                                      >
                                         <time
                                           datetime="2026-10-19T04:15:00.000Z"
                                         >
                                           19 Oct 2026
                                         </time>
                                       </p>
-                                    </div>
-                                    <div
-                                      aria-hidden="true"
-                                      class="flex -space-x-2 *:ring-2 *:ring-surface-base shrink-0"
-                                      data-slot="avatar-group"
-                                      role="group"
-                                    >
-                                      <span
-                                        aria-hidden="true"
-                                        class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                        data-slot="avatar"
-                                      >
-                                        <span
-                                          class="flex size-full items-center justify-center font-medium"
-                                          data-slot="avatar-fallback"
-                                        >
-                                          PS
-                                        </span>
-                                      </span>
                                     </div>
                                   </header>
                                   <p
@@ -961,13 +985,13 @@ exports[`Landing > renders the same page 1`] = `
                         <div
                           data-group="true"
                           data-slot="resizable-panel-group"
-                          id="_r_6_"
+                          id="_r_9_"
                           style="height: 100%; width: 100%; overflow: hidden; display: flex; flex-direction: row; flex-wrap: nowrap;"
                         >
                           <div
                             data-panel="true"
                             data-slot="resizable-panel"
-                            id="_r_7_"
+                            id="_r_a_"
                             style="min-height: 0; max-height: 100%; height: auto; min-width: 0; max-width: 100%; width: auto; border-width: 0px; padding: 0px; margin: 0px; display: flex; flex-basis: 0px; overflow: visible; flex-shrink: 1; flex-grow: 50;"
                           >
                             <div
@@ -1012,103 +1036,115 @@ exports[`Landing > renders the same page 1`] = `
                                           class="flex flex-col gap-3 py-5"
                                         >
                                           <header
-                                            class="flex items-center gap-3"
+                                            class="flex items-start justify-between gap-3"
                                           >
-                                            <span
-                                              aria-hidden="true"
-                                              class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                              data-slot="avatar"
+                                            <div
+                                              class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
+                                              data-slot="text"
                                             >
                                               <span
-                                                class="flex size-full items-center justify-center font-medium"
-                                                data-slot="avatar-fallback"
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
                                               >
-                                                DR
+                                                <span
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
+                                                >
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    DR
+                                                  </span>
+                                                </span>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  Dao Rattana
+                                                </span>
                                               </span>
-                                            </span>
-                                            <div
-                                              class="flex min-w-0 flex-1 flex-col"
-                                            >
-                                              <p
-                                                class="text-subtitle-4 break-words"
-                                                data-slot="text"
+                                              <span
+                                                class="text-fg-secondary"
                                               >
-                                                Dao Rattana
-                                                <span
-                                                  class="text-fg-secondary"
+                                                to
+                                              </span>
+                                              <button
+                                                aria-expanded="false"
+                                                aria-haspopup="dialog"
+                                                class="-m-0.5 inline-flex cursor-pointer rounded-full p-0.5 transition-colors hover:bg-action-neutral-surface-hover"
+                                                data-slot="dialog-trigger"
+                                                data-state="closed"
+                                                type="button"
+                                              >
+                                                <div
+                                                  aria-hidden="true"
+                                                  class="flex *:ring-2 *:ring-surface-base -space-x-1"
+                                                  data-slot="avatar-group"
+                                                  role="group"
                                                 >
-                                                   to 
-                                                </span>
-                                                Nok Chaiyo
+                                                  <span
+                                                    aria-hidden="true"
+                                                    class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                    data-slot="avatar"
+                                                  >
+                                                    <span
+                                                      class="flex size-full items-center justify-center font-medium"
+                                                      data-slot="avatar-fallback"
+                                                    >
+                                                      NC
+                                                    </span>
+                                                  </span>
+                                                  <span
+                                                    aria-hidden="true"
+                                                    class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                    data-slot="avatar"
+                                                  >
+                                                    <span
+                                                      class="flex size-full items-center justify-center font-medium"
+                                                      data-slot="avatar-fallback"
+                                                    >
+                                                      PS
+                                                    </span>
+                                                  </span>
+                                                  <span
+                                                    aria-hidden="true"
+                                                    class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                    data-slot="avatar"
+                                                  >
+                                                    <span
+                                                      class="flex size-full items-center justify-center font-medium"
+                                                      data-slot="avatar-fallback"
+                                                    >
+                                                      FS
+                                                    </span>
+                                                  </span>
+                                                </div>
                                                 <span
-                                                  class="text-fg-secondary"
+                                                  class="sr-only"
                                                 >
-                                                  , 
+                                                  Nok Chaiyo, Ploy Srisuk, and Fern Somsak. Show who it is for
                                                 </span>
-                                                Ploy Srisuk
-                                                <span
-                                                  class="text-fg-secondary"
-                                                >
-                                                   and 
-                                                </span>
-                                                Fern Somsak
-                                              </p>
-                                              <p
-                                                class="text-body-3 text-fg-secondary"
-                                                data-slot="text"
+                                              </button>
+                                            </div>
+                                            <div
+                                              class="flex shrink-0 flex-col items-end gap-0.5"
+                                            >
+                                              <span
+                                                class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border border-transparent px-2.5 py-0.5 text-tag bg-action-secondary-surface-hover text-action-secondary-fg"
+                                                data-slot="badge"
                                               >
                                                 Offered
-                                                 ·
-                                                 
+                                              </span>
+                                              <p
+                                                class="text-body-3 text-fg-secondary whitespace-nowrap"
+                                                data-slot="text"
+                                              >
                                                 <time
                                                   datetime="2026-10-20T09:30:00.000Z"
                                                 >
                                                   20 Oct 2026
                                                 </time>
                                               </p>
-                                            </div>
-                                            <div
-                                              aria-hidden="true"
-                                              class="flex -space-x-2 *:ring-2 *:ring-surface-base shrink-0"
-                                              data-slot="avatar-group"
-                                              role="group"
-                                            >
-                                              <span
-                                                aria-hidden="true"
-                                                class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                                data-slot="avatar"
-                                              >
-                                                <span
-                                                  class="flex size-full items-center justify-center font-medium"
-                                                  data-slot="avatar-fallback"
-                                                >
-                                                  NC
-                                                </span>
-                                              </span>
-                                              <span
-                                                aria-hidden="true"
-                                                class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                                data-slot="avatar"
-                                              >
-                                                <span
-                                                  class="flex size-full items-center justify-center font-medium"
-                                                  data-slot="avatar-fallback"
-                                                >
-                                                  PS
-                                                </span>
-                                              </span>
-                                              <span
-                                                aria-hidden="true"
-                                                class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                                data-slot="avatar"
-                                              >
-                                                <span
-                                                  class="flex size-full items-center justify-center font-medium"
-                                                  data-slot="avatar-fallback"
-                                                >
-                                                  FS
-                                                </span>
-                                              </span>
                                             </div>
                                           </header>
                                           <p
@@ -1207,67 +1243,79 @@ exports[`Landing > renders the same page 1`] = `
                                           class="flex flex-col gap-3 py-5"
                                         >
                                           <header
-                                            class="flex items-center gap-3"
+                                            class="flex items-start justify-between gap-3"
                                           >
-                                            <span
-                                              aria-hidden="true"
-                                              class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                              data-slot="avatar"
+                                            <div
+                                              class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
+                                              data-slot="text"
                                             >
                                               <span
-                                                class="flex size-full items-center justify-center font-medium"
-                                                data-slot="avatar-fallback"
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
                                               >
-                                                NC
-                                              </span>
-                                            </span>
-                                            <div
-                                              class="flex min-w-0 flex-1 flex-col"
-                                            >
-                                              <p
-                                                class="text-subtitle-4 break-words"
-                                                data-slot="text"
-                                              >
-                                                Nok Chaiyo
                                                 <span
-                                                  class="text-fg-secondary"
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
                                                 >
-                                                   to 
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    NC
+                                                  </span>
                                                 </span>
-                                                Ploy Srisuk
-                                              </p>
-                                              <p
-                                                class="text-body-3 text-fg-secondary"
-                                                data-slot="text"
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  Nok Chaiyo
+                                                </span>
+                                              </span>
+                                              <span
+                                                class="text-fg-secondary"
+                                              >
+                                                to
+                                              </span>
+                                              <span
+                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                              >
+                                                <span
+                                                  aria-hidden="true"
+                                                  class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
+                                                  data-slot="avatar"
+                                                >
+                                                  <span
+                                                    class="flex size-full items-center justify-center font-medium"
+                                                    data-slot="avatar-fallback"
+                                                  >
+                                                    PS
+                                                  </span>
+                                                </span>
+                                                <span
+                                                  class="min-w-0 break-words"
+                                                >
+                                                  Ploy Srisuk
+                                                </span>
+                                              </span>
+                                            </div>
+                                            <div
+                                              class="flex shrink-0 flex-col items-end gap-0.5"
+                                            >
+                                              <span
+                                                class="inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-chip border px-2.5 py-0.5 text-tag border-border-default text-fg-primary"
+                                                data-slot="badge"
                                               >
                                                 Requested
-                                                 ·
-                                                 
+                                              </span>
+                                              <p
+                                                class="text-body-3 text-fg-secondary whitespace-nowrap"
+                                                data-slot="text"
+                                              >
                                                 <time
                                                   datetime="2026-10-19T04:15:00.000Z"
                                                 >
                                                   19 Oct 2026
                                                 </time>
                                               </p>
-                                            </div>
-                                            <div
-                                              aria-hidden="true"
-                                              class="flex -space-x-2 *:ring-2 *:ring-surface-base shrink-0"
-                                              data-slot="avatar-group"
-                                              role="group"
-                                            >
-                                              <span
-                                                aria-hidden="true"
-                                                class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-8 text-body-2 rounded-full"
-                                                data-slot="avatar"
-                                              >
-                                                <span
-                                                  class="flex size-full items-center justify-center font-medium"
-                                                  data-slot="avatar-fallback"
-                                                >
-                                                  PS
-                                                </span>
-                                              </span>
                                             </div>
                                           </header>
                                           <p
@@ -1368,7 +1416,7 @@ exports[`Landing > renders the same page 1`] = `
                             </div>
                           </div>
                           <div
-                            aria-controls="_r_7_"
+                            aria-controls="_r_a_"
                             aria-label="Resize Workspace feed"
                             aria-orientation="vertical"
                             aria-valuemax="100"
@@ -1377,7 +1425,7 @@ exports[`Landing > renders the same page 1`] = `
                             class="relative flex w-px items-center justify-center bg-border-muted after:absolute after:inset-y-0 after:left-1/2 after:w-2 after:-translate-x-1/2 hover:bg-action-primary aria-[orientation=horizontal]:h-px aria-[orientation=horizontal]:w-full aria-[orientation=horizontal]:after:inset-x-0 aria-[orientation=horizontal]:after:top-1/2 aria-[orientation=horizontal]:after:left-0 aria-[orientation=horizontal]:after:h-2 aria-[orientation=horizontal]:after:w-full aria-[orientation=horizontal]:after:translate-x-0 aria-[orientation=horizontal]:after:-translate-y-1/2 aria-[orientation=horizontal]:*:rotate-90"
                             data-separator="inactive"
                             data-slot="resizable-handle"
-                            id="_r_8_"
+                            id="_r_e_"
                             role="separator"
                             style="flex-basis: auto; flex-grow: 0; flex-shrink: 0;"
                             tabindex="0"
@@ -1434,7 +1482,7 @@ exports[`Landing > renders the same page 1`] = `
                           <div
                             data-panel="true"
                             data-slot="resizable-panel"
-                            id="_r_9_"
+                            id="_r_f_"
                             style="min-height: 0; max-height: 100%; height: auto; min-width: 0; max-width: 100%; width: auto; border-width: 0px; padding: 0px; margin: 0px; display: flex; flex-basis: 0px; overflow: visible; flex-shrink: 1; flex-grow: 50;"
                           >
                             <div
@@ -1551,7 +1599,7 @@ exports[`Landing > renders the same page 1`] = `
                                   class="mt-6"
                                 >
                                   <section
-                                    aria-labelledby="_r_a_"
+                                    aria-labelledby="_r_g_"
                                     class="flex flex-col gap-1"
                                   >
                                     <div
@@ -1560,7 +1608,7 @@ exports[`Landing > renders the same page 1`] = `
                                       <h3
                                         class="text-subtitle-3"
                                         data-slot="text"
-                                        id="_r_a_"
+                                        id="_r_g_"
                                       >
                                         Waiting for me
                                       </h3>

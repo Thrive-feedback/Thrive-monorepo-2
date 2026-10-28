@@ -11,6 +11,17 @@ export const REACTIONS = [
 
 export type ReactionEmoji = (typeof REACTIONS)[number]['emoji'];
 
+/** The request a piece of Requested Feedback answers, as the Workspace feed shows it. */
+export type AnsweredRequest = {
+  /** The Request message, as the Requester wrote it. */
+  readonly message: string;
+  /** What the Request message was bound to. */
+  readonly messageTags: TextTags;
+  readonly requester: FeedbackPerson;
+  /** Everyone the request asked, in the order they were asked — never who did or did not answer. */
+  readonly asked: readonly FeedbackPerson[];
+};
+
 /** One piece of Feedback as a feed card shows it. */
 export type FeedItem = {
   readonly id: string;
@@ -33,4 +44,9 @@ export type FeedItem = {
   readonly reactions: Readonly<
     Partial<Record<ReactionEmoji, readonly string[]>>
   >;
+  /**
+   * The request an answer responds to. Only the Workspace feed reads it (brain `ADR-0046`); every
+   * other list, and all Offered Feedback, has `null`.
+   */
+  readonly request: AnsweredRequest | null;
 };
