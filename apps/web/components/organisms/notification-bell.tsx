@@ -1,7 +1,7 @@
 'use client';
 
 import { BellIcon } from 'lucide-react';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { Badge } from '@/components/atoms/badge';
 import { Button } from '@/components/atoms/button';
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
+import { SkeletonRegion } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import type { BellNotification } from '@/lib/notifications/notification.type';
 import {
@@ -33,7 +34,7 @@ const POLL_INTERVAL_MS = 60_000;
 const MOST_SHOWN = 99;
 
 /** Enough rows to fill the panel while the real ones are on their way. */
-const SKELETON_ROWS = 3;
+const PLACEHOLDER_ROWS = ['first', 'second', 'third'] as const;
 
 const NOTHING_YET =
   'Nothing yet. When somebody asks you for feedback, answers you, or writes to you, it shows up here.';
@@ -42,9 +43,9 @@ const COULD_NOT_LOAD =
   "We couldn't load these just now. Try again in a moment.";
 
 /**
- * `loading` is only ever the **first** open. After that the panel has lines, and they are almost
- * always still right — so it shows them and refreshes behind, rather than emptying itself and
- * making somebody wait again for what they were already reading (#269).
+ * `loading` is only ever an open with nothing to show. Once the panel has lines they are almost
+ * always still right, so it shows them and refreshes behind rather than emptying itself and
+ * making somebody wait again for what they are already reading (#269).
  */
 type PanelState = 'loading' | 'ready' | 'failed';
 
@@ -74,6 +75,18 @@ export function NotificationBell() {
   >([]);
   const [panelState, setPanelState] = useState<PanelState>('loading');
   const [, startMarkingAll] = useTransition();
+  /**
+   * Which open each answer belongs to. Somebody who opens the bell twice in quick succession has
+   * two reads in flight, and only the newest may paint — otherwise a slow first answer overwrites
+   * a fresher second one, or reports a failure about a request they have forgotten about.
+   */
+  const latestOpen = useRef(0);
+  /**
+   * How many lines are on screen, readable from an answer that arrives later. The panel state
+   * cannot stand in for this: a successful read of an empty bell is `ready` with nothing in it,
+   * and a refresh that then fails has to say so rather than keep claiming there is nothing yet.
+   */
+  const linesOnScreen = useRef(0);
 
   useEffect(() => {
     let isCurrent = true;
@@ -106,27 +119,35 @@ export function NotificationBell() {
     };
   }, []);
 
+  function showLines(items: readonly BellNotification[]) {
+    linesOnScreen.current = items.length;
+    setNotifications(items);
+    setPanelState('ready');
+  }
+
   function handleOpenChange(isOpening: boolean) {
     if (!isOpening) {
       return;
     }
-    // Only the first open has nothing to show. Every one after it keeps what it had on screen
-    // while the refresh happens behind, so reopening is instant.
-    const hasLines = panelState === 'ready';
-    if (!hasLines) {
+    latestOpen.current += 1;
+    const open = latestOpen.current;
+    // An open with lines already on it keeps them and refreshes behind, so reopening is instant.
+    if (linesOnScreen.current === 0) {
       setPanelState('loading');
     }
     void listMyNotifications().then((items) => {
+      if (open !== latestOpen.current) {
+        return;
+      }
       if (items === null) {
         // A refresh that failed is not worth replacing lines somebody is already reading. With
         // nothing to fall back on it is worth saying, because "nothing yet" means something else.
-        if (!hasLines) {
+        if (linesOnScreen.current === 0) {
           setPanelState('failed');
         }
         return;
       }
-      setNotifications(items);
-      setPanelState('ready');
+      showLines(items);
     });
   }
 
@@ -194,13 +215,11 @@ export function NotificationBell() {
         </div>
         <DropdownMenuSeparator />
         {panelState === 'loading' && (
-          <div data-testid="notification-skeleton" aria-busy="true">
-            <span className="sr-only">Loading your notifications</span>
-            {Array.from({ length: SKELETON_ROWS }, (_, row) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: placeholders, with nothing to key on
+          <SkeletonRegion>
+            {PLACEHOLDER_ROWS.map((row) => (
               <NotificationRowSkeleton key={row} />
             ))}
-          </div>
+          </SkeletonRegion>
         )}
         {panelState === 'failed' && (
           <Text variant="body-2" tone="muted" className="px-2 py-3">

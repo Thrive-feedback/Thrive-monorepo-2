@@ -59,11 +59,11 @@ export function NotificationRow({
 /**
  * One line's shape while it is being fetched, at the height the real row will be — so the panel
  * fills rather than resizing as the lines arrive. A dot, a sentence and a time, exactly as
- * {@link NotificationRow} draws them.
+ * {@link NotificationRow} draws them, and the padding of the menu item it stands in for.
  */
 export function NotificationRowSkeleton() {
   return (
-    <div className="flex items-start gap-3 px-2 py-1.5">
+    <div className="flex items-start gap-3 px-2 py-2">
       <span aria-hidden="true" className="mt-1.5 size-2 shrink-0" />
       <span className="flex min-w-0 grow flex-col gap-0.5">
         <Skeleton className="w-3/4 text-body-2" />

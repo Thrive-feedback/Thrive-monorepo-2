@@ -2,9 +2,14 @@
 
 import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
-import { readCurrentMembership } from '@/lib/session/session.service';
+import { ROUTES } from '@/lib/routes.constant';
+import {
+  readCurrentMembership,
+  readSession,
+} from '@/lib/session/session.service';
 import type { BellNotification } from './notification.type';
 
 /**
@@ -26,15 +31,25 @@ async function forwardedCookie(): Promise<string | undefined> {
  *
  * **`readCurrentMembership`, never `requireMember`.** `requireMember` reads the session as well,
  * which is a second API call for a fact every one of these throws away — and because the browser
- * cannot reach the API, each of those is a hop the person is waiting through. Design `0022` §4.3
- * found this for the poll and fixed it there; the list and the two mark-read actions were written
- * in the same change and kept it. Three calls per open, where two will do (#269).
+ * cannot reach the API, each of those is a hop the person waits through. Design `0022` §4.3 sizes
+ * what a poll costs on the same grounds.
  *
- * `null` when there is no Workspace, which every caller treats as "nothing to say": a bell drawn
- * for somebody between Workspaces is not an error.
+ * `null` means there is no Workspace to ask about, which every caller treats as "nothing to say":
+ * a bell drawn for somebody between Workspaces is not an error.
  */
 async function currentWorkspaceId(): Promise<string | null> {
-  return (await readCurrentMembership())?.workspace.id ?? null;
+  const membership = await readCurrentMembership();
+  if (membership) {
+    return membership.workspace.id;
+  }
+  // `readCurrentMembership` answers `null` for two different things: a session in no Workspace,
+  // and no session at all. Only the second is worth sending somebody somewhere, and telling them
+  // apart costs a read nobody pays on the ordinary path — somebody whose session has expired is
+  // sent to sign in rather than told to try again in a moment, forever.
+  if (!(await readSession())) {
+    redirect(ROUTES.signIn);
+  }
+  return null;
 }
 
 /**
