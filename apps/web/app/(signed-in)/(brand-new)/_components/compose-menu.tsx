@@ -17,25 +17,31 @@ import type { Teammate } from '@/lib/feedback/teammate.type';
 const CHOICES: readonly {
   title: string;
   description: string;
-  /** Whether it opens the postcard; Kudos is not built yet. */
-  opensPostcard: boolean;
+  /** The postcard it opens; none, and it is not built yet. */
+  card: 'give' | 'ask' | null;
 }[] = [
   {
     title: 'Ask for feedback',
     description: 'Ask teammates what they think.',
-    opensPostcard: true,
+    card: 'ask',
   },
   {
     title: 'Give feedback',
     description: "Tell a teammate what you've seen.",
-    opensPostcard: true,
+    card: 'give',
   },
   {
     title: 'Give kudos',
     description: 'Say well done in a few words.',
-    opensPostcard: false,
+    card: null,
   },
 ];
+
+/** What a sent card is called in the toast that says it went. */
+const SENT: Readonly<Record<'give' | 'ask', string>> = {
+  give: 'Feedback sent.',
+  ask: 'Request sent.',
+};
 
 export type ComposeMenuProps = {
   /** Who a postcard can be for. */
@@ -44,20 +50,21 @@ export type ComposeMenuProps = {
 };
 
 /**
- * "+": the three things to write, each with a line on what it is for. Asking for or giving
- * feedback opens the postcard in front of the page, titled by the choice; asking has no card of
- * its own yet, so it is written on the same one. Kudos is not built yet, so choosing it only
- * closes the menu.
+ * "+": the three things to write, each with a line on what it is for. Asking for feedback opens
+ * the request postcard in front of the page, and giving it the Feedback one, each titled by the
+ * choice. Kudos is not built yet, so choosing it only closes the menu.
  */
 export function ComposeMenu({ teammates, writer }: ComposeMenuProps) {
-  const [title, setTitle] = useState('Give feedback');
+  const [choice, setChoice] = useState<{ title: string; card: 'give' | 'ask' }>(
+    { title: 'Give feedback', card: 'give' },
+  );
   const [isOpen, setIsOpen] = useState(false);
   const plusRef = useRef<HTMLButtonElement>(null);
   const isOpeningPostcard = useRef(false);
 
-  function handleChoose(choice: string) {
+  function handleChoose(title: string, card: 'give' | 'ask') {
     isOpeningPostcard.current = true;
-    setTitle(choice);
+    setChoice({ title, card });
     setIsOpen(true);
   }
 
@@ -72,7 +79,7 @@ export function ComposeMenu({ teammates, writer }: ComposeMenuProps) {
 
   // Nothing is sent yet: the card has flown off, and the toast says this is a first look.
   function handleSend() {
-    toast.success('Feedback sent.', {
+    toast.success(SENT[choice.card], {
       description: 'This is a first look: nothing left this page.',
     });
   }
@@ -100,13 +107,13 @@ export function ComposeMenu({ teammates, writer }: ComposeMenuProps) {
           className="w-72"
           onCloseAutoFocus={handleMenuCloseAutoFocus}
         >
-          {CHOICES.map(({ title: choice, description, opensPostcard }) => (
+          {CHOICES.map(({ title, description, card }) => (
             <DropdownMenuItem
-              key={choice}
+              key={title}
               className="flex-col items-start gap-0.5 px-3 py-2.5"
-              onSelect={opensPostcard ? () => handleChoose(choice) : undefined}
+              onSelect={card ? () => handleChoose(title, card) : undefined}
             >
-              <span className="text-fg-primary text-subtitle-4">{choice}</span>
+              <span className="text-fg-primary text-subtitle-4">{title}</span>
               <span className="text-body-3 text-fg-secondary">
                 {description}
               </span>
@@ -115,7 +122,8 @@ export function ComposeMenu({ teammates, writer }: ComposeMenuProps) {
         </DropdownMenuContent>
       </DropdownMenu>
       <PostcardDialog
-        title={title}
+        kind={choice.card}
+        title={choice.title}
         teammates={teammates}
         writer={writer}
         open={isOpen}

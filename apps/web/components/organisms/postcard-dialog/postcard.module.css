@@ -107,10 +107,14 @@
   --postcard-leading: var(--type-h4-leading);
 }
 
-/* `local` makes the lines scroll with the text inside the field. */
-.ruled {
+/* The message's chosen size, on any element that sets text. */
+.sized {
   font-size: var(--postcard-size);
   line-height: var(--postcard-leading);
+}
+
+/* Writing lines, spaced by the size's line height. `local` makes them scroll with the text. */
+.ruled {
   background-image: repeating-linear-gradient(
     to bottom,
     transparent 0 calc(var(--postcard-leading) - var(--space-unit) * 0.25),

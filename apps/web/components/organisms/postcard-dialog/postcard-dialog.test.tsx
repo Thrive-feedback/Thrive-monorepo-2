@@ -8,7 +8,13 @@ import {
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { Teammate } from '@/lib/feedback/teammate.type';
-import { PostcardDialog, type PostcardDialogProps } from './postcard-dialog';
+import {
+  type PostcardAnsweringProps,
+  PostcardDialog,
+  type PostcardDialogProps,
+} from './postcard-dialog';
+import type { PostcardAsk } from './postcard-draft.type';
+import { DEFAULT_TEXT_STYLE } from './postcard-style.constant';
 
 const TEAMMATES: readonly Teammate[] = [
   {
@@ -29,7 +35,20 @@ const TEAMMATES: readonly Teammate[] = [
   },
 ];
 
-function dialog(props: Partial<PostcardDialogProps> = {}) {
+const ASK: PostcardAsk = {
+  requester: { name: 'Mali Sombat', photoUrl: null },
+  message: 'How did the demo land for you?',
+  tone: 'sage',
+  textStyle: DEFAULT_TEXT_STYLE,
+};
+
+/** The props of a card being written, given or asked: everything but an answer's. */
+type WritingDialogProps = Extract<
+  PostcardDialogProps,
+  { teammates: readonly Teammate[] }
+>;
+
+function dialog(props: Partial<WritingDialogProps> = {}) {
   return (
     <PostcardDialog
       title="Give feedback"
@@ -41,6 +60,35 @@ function dialog(props: Partial<PostcardDialogProps> = {}) {
       {...props}
     />
   );
+}
+
+function answerDialog(onSend: PostcardAnsweringProps['onSend'] = vi.fn()) {
+  return (
+    <PostcardDialog
+      kind="answer"
+      title="Answer"
+      ask={ASK}
+      writer={{ name: 'Ann', photoUrl: null }}
+      open
+      onOpenChange={vi.fn()}
+      onSend={onSend}
+    />
+  );
+}
+
+/** Turns the card to its front: two halves, each ending with the end of its animation. */
+async function turnToFront(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(
+    screen.getByRole('button', { name: 'Turn over to the front, the picture' }),
+  );
+  const card = screen.getByRole('region', {
+    name: 'Back of the postcard',
+  }).parentElement;
+  if (!card) {
+    throw new Error('The postcard has no card around its sides.');
+  }
+  fireEvent.animationEnd(card);
+  fireEvent.animationEnd(card);
 }
 
 const message = () => screen.getByRole('textbox', { name: 'Your feedback' });
@@ -255,6 +303,157 @@ describe('PostcardDialog', () => {
       screen.getByRole('button', {
         name: 'Turn over to the back, the message',
       }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('PostcardDialog, the front', () => {
+  it('offers Templates and Stamps on the front, neither ready yet', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await turnToFront(user);
+
+    const tools = screen.getByRole('group', { name: 'Front tools' });
+    expect(
+      within(tools)
+        .getAllByRole('button')
+        .map((tool) => [tool.textContent, tool.getAttribute('aria-disabled')]),
+    ).toEqual([
+      ['Templates', 'true'],
+      ['Stamps (0/3)', 'true'],
+    ]);
+  });
+});
+
+describe('PostcardDialog, asking for feedback', () => {
+  it('halves the back: the request on the left, the right left for the answers', () => {
+    render(dialog({ kind: 'ask', title: 'Ask for feedback' }));
+
+    expect(
+      screen.getByRole('button', { name: /^Choose who to ask/ }),
+    ).toHaveFocus();
+    expect(
+      screen.getByRole('textbox', { name: 'Your request' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('textbox')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: /Send request/ })).toBeDisabled();
+  });
+
+  it('offers the same tools as giving, and every font', async () => {
+    const user = userEvent.setup();
+    render(dialog({ kind: 'ask', title: 'Ask for feedback' }));
+
+    const tools = screen.getByRole('group', { name: 'Postcard tools' });
+    expect(
+      within(tools).getByRole('button', { name: /^Stamps/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(tools).getByRole('button', { name: /^Paper Tone/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(tools).getByRole('button', {
+        name: /^Who else can read it.*Only me/,
+      }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('textbox', { name: 'Your request' }));
+    await user.click(screen.getByRole('button', { name: /Modern font/ }));
+
+    expect(
+      screen.getAllByRole('menuitemradio').map((font) => font.textContent),
+    ).toEqual([
+      'ModernClean and friendly',
+      'ClassicLike a letter',
+      'SignatureHandwritten',
+    ]);
+  });
+
+  it('hands over who is asked and the request', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(
+      dialog({
+        kind: 'ask',
+        title: 'Ask for feedback',
+        defaultRecipientAccountIds: ['mali'],
+        onSend,
+      }),
+    );
+
+    await user.type(
+      screen.getByRole('textbox', { name: 'Your request' }),
+      'How did the demo land?',
+    );
+    await user.click(screen.getByRole('button', { name: /Send request/ }));
+
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recipientAccountIds: ['mali'],
+        message: 'How did the demo land?',
+        visibility: 'ONLY_ME',
+      }),
+    );
+  });
+});
+
+describe('PostcardDialog, answering an Ask', () => {
+  it('shows the Ask read-only on the left and the answer to write on the right', () => {
+    render(answerDialog());
+
+    expect(screen.getByText('Mali Sombat')).toBeInTheDocument();
+    expect(
+      screen.getByText('How did the demo land for you?'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Ann')).toBeInTheDocument();
+    expect(screen.getAllByRole('textbox')).toHaveLength(1);
+    expect(screen.getByRole('textbox', { name: 'Your answer' })).toHaveFocus();
+  });
+
+  it("offers only stamps: the paper and who reads it are the Requester's", async () => {
+    const user = userEvent.setup();
+    render(answerDialog());
+
+    // It opens with the cursor in the answer, so the text tools are up until Escape.
+    await user.keyboard('{Escape}');
+
+    const tools = screen.getByRole('group', { name: 'Postcard tools' });
+    expect(
+      within(tools)
+        .getAllByRole('button')
+        .map((tool) => tool.textContent),
+    ).toEqual(['Stamps (0/3)']);
+  });
+
+  it('hands over the answer and how it looks', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(answerDialog(onSend));
+
+    expect(screen.getByRole('button', { name: /Send answer/ })).toBeDisabled();
+
+    await user.type(
+      screen.getByRole('textbox', { name: 'Your answer' }),
+      'Clear and calm.',
+    );
+    await user.click(screen.getByRole('button', { name: /Send answer/ }));
+
+    expect(onSend).toHaveBeenCalledWith({
+      message: 'Clear and calm.',
+      textStyle: DEFAULT_TEXT_STYLE,
+    });
+  });
+
+  it("says the front is the Requester's and cannot be changed", async () => {
+    const user = userEvent.setup();
+    render(answerDialog());
+
+    await turnToFront(user);
+
+    expect(
+      screen.getByText(
+        "The front is Mali Sombat's picture. You can look, not change it.",
+      ),
     ).toBeInTheDocument();
   });
 });

@@ -13,9 +13,25 @@ import {
 /** As long as the API lets a Feedback message be. */
 const MAX_MESSAGE_LENGTH = 4000;
 
+/** The classes that set a message in its chosen font, size, alignment and ink. */
+export function messageClassName(textStyle: PostcardTextStyle) {
+  return cn(
+    styles.sized,
+    POSTCARD_SIZES[textStyle.sizeStep]?.className,
+    POSTCARD_FONTS[textStyle.font].className,
+    POSTCARD_ALIGNS[textStyle.align],
+    POSTCARD_INKS[textStyle.ink].textClassName,
+  );
+}
+
 export type PostcardMessageProps = {
   message: string;
   textStyle: PostcardTextStyle;
+  /** The field's name for a screen reader; the card shows no label for it. */
+  label: string;
+  placeholder: string;
+  /** Writing lines under the text, as on a letter; printed stationery has none. */
+  isRuled?: boolean;
   ref?: React.Ref<HTMLTextAreaElement>;
   onMessageChange: (message: string) => void;
   /** The cursor went into the message, or it was clicked, so the text tools can take the bar. */
@@ -23,13 +39,16 @@ export type PostcardMessageProps = {
 };
 
 /**
- * The message on the postcard's back, on ruled lines, set in the writer's chosen font, size,
- * alignment and ink. It keeps its size and scrolls inside the card rather than growing with
- * what is typed, so a keystroke never lays the dialog out again.
+ * The message being written on the postcard, set in the writer's chosen font, size, alignment
+ * and ink. It keeps its size and scrolls inside the card rather than growing with what is
+ * typed, so a keystroke never lays the dialog out again.
  */
 export function PostcardMessage({
   message,
   textStyle,
+  label,
+  placeholder,
+  isRuled = true,
   ref,
   onMessageChange,
   onMessageFocus,
@@ -39,24 +58,21 @@ export function PostcardMessage({
   return (
     <>
       <label htmlFor={messageId} className="sr-only">
-        Your feedback
+        {label}
       </label>
       <Textarea
         ref={ref}
         id={messageId}
         value={message}
         maxLength={MAX_MESSAGE_LENGTH}
-        placeholder="Share what you've seen: what went well, and what could go differently next time."
+        placeholder={placeholder}
         onChange={(event) => onMessageChange(event.target.value)}
         onFocus={onMessageFocus}
         onPointerDown={onMessageFocus}
         className={cn(
           'field-sizing-fixed min-h-40 flex-1 resize-none rounded-none border-0 bg-transparent px-0 py-0 md:min-h-0',
-          styles.ruled,
-          POSTCARD_SIZES[textStyle.sizeStep]?.className,
-          POSTCARD_FONTS[textStyle.font].className,
-          POSTCARD_ALIGNS[textStyle.align],
-          POSTCARD_INKS[textStyle.ink].textClassName,
+          isRuled && styles.ruled,
+          messageClassName(textStyle),
         )}
       />
     </>
