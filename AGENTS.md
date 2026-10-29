@@ -26,6 +26,8 @@ What is true regardless of the project:
   repository, that is where the why, the domain language and the product decisions are kept.
   Read what `PROJECT.md` routes you to before naming anything in the domain; never restate its
   facts here. Code and stack decisions stay in this repository, as ADRs under `docs/adr/`.
+  If `PROJECT.md` also names a design workspace, read the spec of a screen there before you
+  build or change it; it decides how the product looks and flows, never what it does.
 
 ---
 

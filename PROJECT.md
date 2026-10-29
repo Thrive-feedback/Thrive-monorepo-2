@@ -62,6 +62,32 @@ What flows back:
 - **A stack fact** is a row in §4 here. The brain's `STATE.md` points at this file rather than
   repeating it.
 
+**The design workspace** is where Thrive's UX/UI is specified: user flows, one spec per screen
+(every state, Thai and English copy, mobile and desktop), low-fidelity HTML wireframes with a
+clickable prototype, Figma prompts and checklists, and a log of design decisions (`D-xxx`) and open
+questions (`Q-xxx`). It holds no code. It reads the brain and never edits it. The finished visual
+design lives in Figma and reaches this repository as tokens (`FE_03`).
+
+|                    |                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| **Repository**     | `Thrive-feedback/Thrive-design`                                                         |
+| **Local checkout** | wherever each person cloned `Thrive-design` — not fixed. If you cannot find it, ask where it is |
+| **Its rules**      | its own `AGENTS.md`. It belongs to the designer: read it in place, never edit it unasked  |
+
+| Before you…                                          | Read, in the design workspace                                         |
+| ---------------------------------------------------- | --------------------------------------------------------------------- |
+| build or change a screen in `apps/web`               | `02-screen-specs/README.md` (the screen index), then that screen's spec. Where a wireframe and its spec disagree, the spec wins |
+| need to see a layout or an interaction               | `02-screen-specs/wireframes/` — `index.html` lists them, `prototype-v01.html` is the whole app clickable. Layout and copy only: colour, type and components come from `packages/tokens` and `apps/web/components/`, never from the wireframe's own classes |
+| follow how a person moves between screens            | `01-flows/`, one file per Epic ID from the brain's `domain-map.md`   |
+| rely on a rule a spec cites as `D-xxx`               | `00-context/decisions-and-questions.md`                               |
+
+The brain decides what the product does; the design workspace decides how it looks and flows. A
+`D-xxx` is a design decision, not a product decision: where one contradicts an accepted brain ADR, or
+sets behaviour no ADR covers, do not build it on its own authority — say so and ask. The workspace
+keeps its known conflicts with the brain as `Q-xxx` questions in that same file. Copy it marks
+`Draft` — most of the Thai — is not final. A gap found while building goes to the designer, not into
+their files.
+
 **A previous implementation exists and is being retired.** `Thrive-feedback/thrive-monorepo` — a Go
 API and Next.js web app, dormant since 2026-05-31 — is read as a specification, never ported. The
 feature-by-feature account is `research/2026-09-26-legacy-thrive-monorepo-as-built.md` in the brain.
