@@ -11,6 +11,13 @@ import { NotificationBell } from './notification-bell';
 import { SessionRefresher } from './session-refresher';
 import { SettingsLink } from './settings-link';
 
+export type MemberNavbarProps = {
+  /** Where the logo leads a signed-in person. */
+  homeHref?: string;
+  /** Drawn right after the logo. */
+  children?: React.ReactNode;
+};
+
 /**
  * The navbar of every page a Member uses: the logo, leading Home, on the left; Settings and the
  * person's avatar on the right. The colour mode is chosen in Settings, so there is no switch
@@ -18,12 +25,19 @@ import { SettingsLink } from './settings-link';
  * The bell is beside Settings, and only for somebody signed in: it asks the server what is
  * waiting for them, and there is nothing waiting for nobody.
  * This is where a session due a refresh gets one on a Member's pages.
+ *
+ * The new Home, built beside Home, passes its own `homeHref` for the logo, and the Workspace the
+ * person is in as `children`, drawn right after the logo.
  */
-export async function MemberNavbar() {
+export async function MemberNavbar({
+  homeHref = ROUTES.home,
+  children,
+}: MemberNavbarProps = {}) {
   const [session, needsRefresh] = await Promise.all([
     readSession(),
     readSessionNeedsRefresh(),
   ]);
+  const logo = <NavbarLogo href={session ? homeHref : ROUTES.landing} />;
 
   return (
     <header
@@ -34,7 +48,14 @@ export async function MemberNavbar() {
         styles.framed,
       )}
     >
-      <NavbarLogo href={session ? ROUTES.home : ROUTES.landing} />
+      {children ? (
+        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+          {logo}
+          {children}
+        </div>
+      ) : (
+        logo
+      )}
       {needsRefresh && <SessionRefresher />}
       <div className="flex items-center gap-gap-nav">
         {session && (

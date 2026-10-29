@@ -101,4 +101,18 @@ describe('MemberNavbar', () => {
 
     expect(screen.queryByText('session refresher')).toBeNull();
   });
+  it('leads the logo to the Home it is given, with what it is given right after it', async () => {
+    readSession.mockResolvedValue(ANN);
+
+    render(
+      await MemberNavbar({
+        homeHref: '/brand-new-home',
+        children: <span>Acme</span>,
+      }),
+    );
+
+    const logo = screen.getByRole('link', { name: 'Thrive' });
+    expect(logo).toHaveAttribute('href', '/brand-new-home');
+    expect(logo.nextElementSibling).toHaveTextContent('Acme');
+  });
 });

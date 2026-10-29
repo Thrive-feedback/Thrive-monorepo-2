@@ -22,6 +22,7 @@ import {
 import { Text } from '@/components/atoms/text';
 import { WorkspaceTile } from '@/components/molecules/workspace-tile';
 import { CreateWorkspaceForm } from '@/components/organisms/create-workspace-form';
+import { cn } from '@/lib/cn.util';
 import type {
   MyWorkspace,
   MyWorkspaces,
@@ -30,6 +31,7 @@ import {
   createAnotherWorkspace,
   switchWorkspace,
 } from '@/lib/workspace/workspace-switch-actions.service';
+import styles from './workspace-selector.module.css';
 
 export type WorkspaceSelectorProps = {
   /** The Workspace this browser's session is in. */
@@ -55,14 +57,17 @@ export function WorkspaceSelector({
   const [isSwitching, startSwitching] = useTransition();
   const others = workspaces.active.filter(({ id }) => id !== current.id);
 
-  // Set in the display face and the primary colour, a little larger than the wordmark, so
-  // "Thrive × Acme" reads as one line; a step smaller on a phone, where the bell, Settings and
-  // the avatar share the bar.
+  // Set in the display face and the primary colour, on the wordmark's baseline, so "Thrive ×
+  // Acme" reads as one line: on a phone at the size the bar has room for beside the bell, Settings
+  // and the avatar, and from `sm` up a little larger than the wordmark.
   const identity = (
     <Text
       as="span"
-      variant="display-4"
-      className="max-w-36 truncate text-action-primary max-sm:text-subtitle-display-2 sm:max-w-80"
+      variant="subtitle-display-2"
+      className={cn(
+        'max-w-36 truncate text-action-primary sm:max-w-80 sm:text-display-4',
+        styles.onLogoBaseline,
+      )}
     >
       {current.name}
     </Text>
@@ -87,12 +92,12 @@ export function WorkspaceSelector({
             meanwhile, so the name never moves. */}
         <DropdownMenuTrigger
           aria-label={`Workspace: ${current.name}. Switch Workspace`}
-          className="group flex min-w-0 items-center gap-2 rounded-button border border-transparent py-0.5 ps-2 pe-1.5 text-fg-primary transition-[border-color,background-color] duration-200 ease-out hover:border-border-default hover:delay-150 focus-visible:border-border-default data-[state=open]:border-border-default data-[state=open]:bg-action-neutral-surface motion-reduce:transition-none"
+          className="group flex min-w-0 items-center gap-2 rounded-button border border-transparent py-0.5 ps-2 pe-1.5 text-fg-primary transition-colors hover:border-border-default hover:delay-150 focus-visible:border-border-default data-[state=open]:border-border-default data-[state=open]:bg-action-neutral-surface motion-reduce:transition-none"
         >
           {identity}
           <ChevronDownIcon
             aria-hidden="true"
-            className="size-4 shrink-0 text-fg-secondary opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-hover:delay-150 group-focus-visible:opacity-100 group-data-[state=open]:opacity-100 motion-reduce:transition-none"
+            className="size-4 shrink-0 text-fg-secondary opacity-0 transition-opacity group-hover:opacity-100 group-hover:delay-150 group-focus-visible:opacity-100 group-data-[state=open]:opacity-100 motion-reduce:transition-none"
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-72">
