@@ -11,7 +11,7 @@ import type { Teammate } from '@/lib/feedback/teammate.type';
 import {
   type PostcardAnsweringProps,
   PostcardDialog,
-  type PostcardDialogProps,
+  type PostcardWritingProps,
 } from './postcard-dialog';
 import type { PostcardAsk } from './postcard-draft.type';
 import { DEFAULT_TEXT_STYLE } from './postcard-style.constant';
@@ -42,13 +42,15 @@ const ASK: PostcardAsk = {
   textStyle: DEFAULT_TEXT_STYLE,
 };
 
-/** The props of a card being written, given or asked: everything but an answer's. */
-type WritingDialogProps = Extract<
-  PostcardDialogProps,
-  { teammates: readonly Teammate[] }
->;
-
-function dialog(props: Partial<WritingDialogProps> = {}) {
+function dialog(
+  props: Partial<
+    PostcardWritingProps & {
+      title: string;
+      open: boolean;
+      onOpenChange: (open: boolean) => void;
+    }
+  > = {},
+) {
   return (
     <PostcardDialog
       title="Give feedback"
@@ -423,6 +425,16 @@ describe('PostcardDialog, answering an Ask', () => {
         .getAllByRole('button')
         .map((tool) => tool.textContent),
     ).toEqual(['Stamps (0/3)']);
+  });
+
+  it('leaves Done on Stamps, the only tool, rather than losing the cursor', async () => {
+    const user = userEvent.setup();
+    render(answerDialog());
+
+    await user.click(screen.getByRole('textbox', { name: 'Your answer' }));
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+
+    expect(screen.getByRole('button', { name: /^Stamps/ })).toHaveFocus();
   });
 
   it('hands over the answer and how it looks', async () => {

@@ -1,3 +1,4 @@
+import { StampIcon } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -56,5 +57,15 @@ export function PostcardSoonTool({ soon, children }: PostcardSoonToolProps) {
       </TooltipTrigger>
       <TooltipContent>{soon}</TooltipContent>
     </Tooltip>
+  );
+}
+
+/** Stamps, on the back and on the front alike: shown where they will be, not working yet. */
+export function PostcardStampsTool() {
+  return (
+    <PostcardSoonTool soon="Stamps are coming soon.">
+      <StampIcon aria-hidden="true" className="size-4.5" />
+      <span className="max-sm:sr-only">Stamps </span>(0/3)
+    </PostcardSoonTool>
   );
 }

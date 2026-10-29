@@ -71,13 +71,13 @@ export function KudosForm({
       to={
         <ComposerToRow>
           {recipients.length === 0 ? (
-            <Text as="p" variant="body-2" tone="muted" className="pt-2.5">
+            <Text as="p" variant="body-2" tone="muted" className="pt-1.5">
               Mention who it&apos;s for with @
             </Text>
           ) : (
             <ul
               aria-label="Who it's for"
-              className="flex flex-wrap gap-1.5 pt-2"
+              className="flex flex-wrap gap-1.5 pt-0.5"
             >
               {recipients.map((teammate) => (
                 <li key={teammate.accountId}>

@@ -1,4 +1,4 @@
-import { ChevronDownIcon, PaletteIcon, StampIcon } from 'lucide-react';
+import { ChevronDownIcon, PaletteIcon } from 'lucide-react';
 import { memo, useState } from 'react';
 import {
   DropdownMenu,
@@ -20,7 +20,7 @@ import {
   type PaperTone,
 } from './postcard-style.constant';
 import {
-  PostcardSoonTool,
+  PostcardStampsTool,
   PostcardToolButton,
   PostcardToolDivider,
 } from './postcard-tool-button';
@@ -116,10 +116,7 @@ export const PostcardToolbar = memo(function PostcardToolbar({
   const writing = kind === 'answer' ? null : kind;
   return (
     <>
-      <PostcardSoonTool soon="Stamps are coming soon.">
-        <StampIcon aria-hidden="true" className="size-4.5" />
-        <span className="max-sm:sr-only">Stamps </span>(0/3)
-      </PostcardSoonTool>
+      <PostcardStampsTool />
       {writing && (
         <>
           <PostcardToolDivider />

@@ -32,6 +32,15 @@ async function choose(user: ReturnType<typeof userEvent.setup>, name: RegExp) {
   await user.click(screen.getByRole('menuitem', { name }));
 }
 
+/** Chooses a card to write; its code arrives on demand, so this waits for the card itself. */
+async function openPostcard(
+  user: ReturnType<typeof userEvent.setup>,
+  name: RegExp,
+) {
+  await choose(user, name);
+  return screen.findByRole('dialog');
+}
+
 describe('ComposeMenu', () => {
   it('offers the three things to write, each saying what it is for', async () => {
     const user = userEvent.setup();
@@ -52,7 +61,7 @@ describe('ComposeMenu', () => {
     const user = userEvent.setup();
     draw();
 
-    await choose(user, /Give feedback/);
+    await openPostcard(user, /Give feedback/);
 
     const dialog = screen.getByRole('dialog', { name: 'Give feedback' });
     expect(within(dialog).getByText('Ann')).toBeInTheDocument();
@@ -65,7 +74,7 @@ describe('ComposeMenu', () => {
     const user = userEvent.setup();
     draw();
 
-    await choose(user, /Ask for feedback/);
+    await openPostcard(user, /Ask for feedback/);
 
     const dialog = screen.getByRole('dialog', { name: 'Ask for feedback' });
     expect(
@@ -77,7 +86,7 @@ describe('ComposeMenu', () => {
     const user = userEvent.setup();
     draw();
 
-    await choose(user, /Give feedback/);
+    await openPostcard(user, /Give feedback/);
     await user.click(screen.getByRole('button', { name: 'Close' }));
     await user.click(screen.getByRole('button', { name: 'Close' }));
 
@@ -91,7 +100,7 @@ describe('ComposeMenu', () => {
     const user = userEvent.setup();
     draw();
 
-    await choose(user, /Give feedback/);
+    await openPostcard(user, /Give feedback/);
     await user.click(
       screen.getByRole('button', { name: /^Choose who it's for/ }),
     );
