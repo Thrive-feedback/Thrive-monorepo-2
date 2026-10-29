@@ -1,0 +1,21 @@
+/*
+ * A toast rises in through a slight blur, and leaves faster than it came — transitions.dev's toast
+ * open/close on top of sonner's own movement. Sonner owns the position and its timing in its own
+ * stylesheet, so its selector is repeated here to outrank it; that is why this is CSS. Sonner
+ * already drops every transition under reduced motion.
+ */
+.toast[data-sonner-toast] {
+  filter: blur(var(--motion-blur-small));
+  transition-property: transform, opacity, height, box-shadow, filter;
+  transition-duration: var(--motion-duration-medium);
+  transition-timing-function: var(--motion-ease-smooth-out);
+}
+
+.toast[data-sonner-toast][data-mounted='true'] {
+  filter: none;
+}
+
+.toast[data-sonner-toast][data-removed='true'] {
+  filter: blur(var(--motion-blur-small));
+  transition-duration: var(--motion-duration-fast);
+}

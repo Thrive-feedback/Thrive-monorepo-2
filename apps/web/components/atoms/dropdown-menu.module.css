@@ -1,0 +1,8 @@
+/*
+ * The menu grows from the corner of its trigger, wherever Radix placed it. Radix measures that
+ * corner and hands it over as a variable; a measured origin has no utility, which is why this is
+ * CSS.
+ */
+.content {
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+}

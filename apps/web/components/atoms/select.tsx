@@ -54,7 +54,7 @@ export function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        'flex w-full cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-input border border-border-strong bg-surface-base px-3 py-2.5 text-body-1 disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-fg-secondary aria-invalid:border-status-error-border data-placeholder:text-fg-disabled',
+        'flex w-full cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-input border border-border-strong bg-surface-base px-3 py-2.5 text-body-1 transition-colors disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-fg-secondary aria-invalid:border-status-error-border data-placeholder:text-fg-disabled',
         className,
       )}
       {...rest}
@@ -86,7 +86,7 @@ export function SelectContent({
         sideOffset={sideOffset}
         avoidCollisions={false}
         className={cn(
-          'relative z-50 overflow-hidden rounded-control border border-border-muted bg-surface-base text-fg-primary shadow-med',
+          'relative z-50 overflow-hidden rounded-control border border-border-muted bg-surface-base text-fg-primary shadow-med motion-safe:data-[state=closed]:animate-menu-exit motion-safe:data-[state=open]:animate-menu-enter',
           styles.content,
           className,
         )}
@@ -123,7 +123,7 @@ export function SelectItem({ className, children, ...rest }: SelectItemProps) {
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-container py-2.5 pr-9 pl-3 text-body-2 outline-hidden data-disabled:pointer-events-none data-highlighted:bg-action-neutral-surface-hover data-[state=checked]:text-action-primary data-disabled:text-fg-disabled',
+        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-container py-2.5 pr-9 pl-3 text-body-2 outline-hidden transition-colors data-disabled:pointer-events-none data-highlighted:bg-action-neutral-surface-hover data-[state=checked]:text-action-primary data-disabled:text-fg-disabled',
         className,
       )}
       {...rest}

@@ -54,7 +54,7 @@ export function TooltipContent({
         data-slot="tooltip-content"
         sideOffset={sideOffset}
         className={cn(
-          'z-50 w-fit max-w-64 text-balance rounded-container bg-action-neutral px-3 py-1.5 text-body-3 text-fg-on-neutral motion-safe:data-[state=closed]:animate-exit motion-safe:data-[state=delayed-open]:animate-enter motion-safe:data-[state=instant-open]:animate-enter',
+          'z-50 w-fit max-w-64 text-balance rounded-container bg-action-neutral px-3 py-1.5 text-body-3 text-fg-on-neutral motion-safe:data-[state=closed]:animate-tooltip-exit motion-safe:data-[state=delayed-open]:animate-tooltip-enter motion-safe:data-[state=instant-open]:animate-tooltip-enter',
           className,
         )}
         {...rest}

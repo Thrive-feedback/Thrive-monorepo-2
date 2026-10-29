@@ -57,7 +57,7 @@ export function TabsTrigger({ className, ...rest }: TabsTriggerProps) {
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        '-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-button-sm text-fg-secondary hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary',
+        '-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-button-sm text-fg-secondary transition-colors duration-fast ease-smooth-out hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary',
         className,
       )}
       {...rest}

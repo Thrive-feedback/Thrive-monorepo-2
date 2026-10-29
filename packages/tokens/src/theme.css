@@ -101,10 +101,22 @@
   --shadow-med: var(--elevation-med);
   --shadow-high: var(--elevation-high);
 
+  --default-transition-duration: var(--motion-duration-quick);
+  --default-transition-timing-function: var(--motion-ease-out);
+  --ease-smooth-out: var(--motion-ease-smooth-out);
+  --ease-in-out: var(--motion-ease-in-out);
+  --ease-out: var(--motion-ease-out);
+  --ease-linear: var(--motion-ease-linear);
+  --ease-bounce: var(--motion-ease-bounce);
+
   --animate-spin: spin var(--motion-spin);
   --animate-pulse: pulse var(--motion-pulse);
   --animate-enter: enter var(--motion-enter);
   --animate-exit: exit var(--motion-exit);
+  --animate-menu-enter: menu-enter var(--motion-enter);
+  --animate-menu-exit: menu-exit var(--motion-exit);
+  --animate-tooltip-enter: tooltip-enter var(--motion-tooltip-enter);
+  --animate-tooltip-exit: tooltip-exit var(--motion-tooltip-exit);
 
   @keyframes spin {
     to {
@@ -121,14 +133,42 @@
   @keyframes enter {
     from {
       opacity: 0;
-      scale: 0.96;
+      scale: var(--motion-scale-large);
     }
   }
 
   @keyframes exit {
     to {
       opacity: 0;
-      scale: 0.96;
+      scale: var(--motion-scale-large);
+    }
+  }
+
+  @keyframes menu-enter {
+    from {
+      opacity: 0;
+      scale: var(--motion-scale-medium);
+    }
+  }
+
+  @keyframes menu-exit {
+    to {
+      opacity: 0;
+      scale: var(--motion-scale-tiny);
+    }
+  }
+
+  @keyframes tooltip-enter {
+    from {
+      opacity: 0;
+      scale: var(--motion-scale-small);
+    }
+  }
+
+  @keyframes tooltip-exit {
+    to {
+      opacity: 0;
+      scale: var(--motion-scale-small);
     }
   }
 
@@ -385,4 +425,24 @@
   --breakpoint-lg: 64rem;
   --breakpoint-xl: 80rem;
   --breakpoint-2xl: 96rem;
+}
+
+@utility duration-quick {
+  --tw-duration: var(--motion-duration-quick);
+  transition-duration: var(--motion-duration-quick);
+}
+
+@utility duration-fast {
+  --tw-duration: var(--motion-duration-fast);
+  transition-duration: var(--motion-duration-fast);
+}
+
+@utility duration-medium {
+  --tw-duration: var(--motion-duration-medium);
+  transition-duration: var(--motion-duration-medium);
+}
+
+@utility duration-slow {
+  --tw-duration: var(--motion-duration-slow);
+  transition-duration: var(--motion-duration-slow);
 }

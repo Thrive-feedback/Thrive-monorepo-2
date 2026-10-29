@@ -1,0 +1,24 @@
+/*
+ * The tick draws itself in as the box fills, and wipes back out when it empties —
+ * transitions.dev's checkbox check. Drawing a stroke has no utility, which is why this is CSS.
+ *
+ * 24 is longer than the tick's path in the icon's 24-unit box, so the dash hides it whole; it is
+ * the icon's geometry, not a design value.
+ */
+.tick path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset var(--motion-duration-quick)
+    var(--motion-ease-smooth-out);
+}
+
+.indicator[data-state='checked'] .tick path {
+  stroke-dashoffset: 0;
+  transition-duration: var(--motion-duration-medium);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tick path {
+    transition: none;
+  }
+}

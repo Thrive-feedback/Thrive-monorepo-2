@@ -5,7 +5,7 @@ import { Toggle as TogglePrimitive } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
 
 const toggleVariants = cva(
-  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button text-button-sm text-fg-secondary enabled:hover:bg-action-neutral-surface-hover enabled:hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=on]:bg-action-primary-surface-hover data-[state=on]:text-action-primary',
+  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button text-button-sm text-fg-secondary transition-colors enabled:hover:bg-action-neutral-surface-hover enabled:hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=on]:bg-action-primary-surface-hover data-[state=on]:text-action-primary',
   {
     variants: {
       variant: {

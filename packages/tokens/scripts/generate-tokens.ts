@@ -507,10 +507,25 @@ function theme(): string {
     lines.push(`--shadow-${level.id}: var(--elevation-${level.id});`);
   }
   lines.push('');
+  // Without these, `--*: initial` leaves every `transition-*` utility at zero seconds.
+  lines.push('--default-transition-duration: var(--motion-duration-quick);');
+  lines.push('--default-transition-timing-function: var(--motion-ease-out);');
+  for (const ease of MOTION_EASES) {
+    lines.push(`--ease-${ease}: var(--motion-ease-${ease});`);
+  }
+  lines.push('');
   lines.push('--animate-spin: spin var(--motion-spin);');
   lines.push('--animate-pulse: pulse var(--motion-pulse);');
   lines.push('--animate-enter: enter var(--motion-enter);');
   lines.push('--animate-exit: exit var(--motion-exit);');
+  lines.push('--animate-menu-enter: menu-enter var(--motion-enter);');
+  lines.push('--animate-menu-exit: menu-exit var(--motion-exit);');
+  lines.push(
+    '--animate-tooltip-enter: tooltip-enter var(--motion-tooltip-enter);',
+  );
+  lines.push(
+    '--animate-tooltip-exit: tooltip-exit var(--motion-tooltip-exit);',
+  );
   lines.push('');
   lines.push(
     '@keyframes spin {',
@@ -522,25 +537,19 @@ function theme(): string {
   lines.push('');
   lines.push('@keyframes pulse {', '  50% {', '    opacity: 0.5;', '  }', '}');
   lines.push('');
-  // `scale`, not `transform`, so an element centred with a translate keeps its position.
-  lines.push(
-    '@keyframes enter {',
-    '  from {',
-    '    opacity: 0;',
-    '    scale: 0.96;',
-    '  }',
-    '}',
-  );
-  lines.push('');
-  lines.push(
-    '@keyframes exit {',
-    '  to {',
-    '    opacity: 0;',
-    '    scale: 0.96;',
-    '  }',
-    '}',
-  );
-  lines.push('');
+  // `scale`, not `transform`, so an element centred with a translate keeps its position. Each
+  // surface starts from its own step of the scale: a dialog furthest, a menu leaving nearest.
+  for (const [name, edge, scale] of OVERLAY_KEYFRAMES) {
+    lines.push(
+      `@keyframes ${name} {`,
+      `  ${edge} {`,
+      '    opacity: 0;',
+      `    scale: var(--motion-scale-${scale});`,
+      '  }',
+      '}',
+      '',
+    );
+  }
   for (const name of Object.values(FONT_FAMILY_NAMES)) {
     lines.push(`--font-${name}: var(--family-${name});`);
   }
@@ -583,7 +592,37 @@ function theme(): string {
 
   return `${header(
     "Layer 3 of 3 — the Tailwind theme. `--*: initial` drops Tailwind's defaults, so every utility that exists is token-backed (`FE_04` R1); `inline` makes utilities resolve to `var(--…)`, so a theme mode repaints them without regenerating anything.",
-  )}\n\n@theme inline {\n${lines.map((l) => (l ? `  ${l}` : '')).join('\n')}\n}\n`;
+  )}\n\n@theme inline {\n${lines.map((l) => (l ? `  ${l}` : '')).join('\n')}\n}\n${durationUtilities()}`;
+}
+
+const MOTION_EASES = [
+  'smooth-out',
+  'in-out',
+  'out',
+  'linear',
+  'bounce',
+] as const;
+const MOTION_DURATIONS = ['quick', 'fast', 'medium', 'slow'] as const;
+const OVERLAY_KEYFRAMES = [
+  ['enter', 'from', 'large'],
+  ['exit', 'to', 'large'],
+  ['menu-enter', 'from', 'medium'],
+  ['menu-exit', 'to', 'tiny'],
+  ['tooltip-enter', 'from', 'small'],
+  ['tooltip-exit', 'to', 'small'],
+] as const;
+
+/**
+ * Tailwind has no theme namespace for a duration — `duration-*` takes only a number — so each
+ * step of the motion scale a transition may take is its own utility, still token-backed
+ * (`FE_04` R1). It sets `--tw-duration` as Tailwind's own `duration-*` does, so it composes with
+ * `transition-*`.
+ */
+function durationUtilities(): string {
+  return MOTION_DURATIONS.map(
+    (step) =>
+      `\n@utility duration-${step} {\n  --tw-duration: var(--motion-duration-${step});\n  transition-duration: var(--motion-duration-${step});\n}\n`,
+  ).join('');
 }
 
 // ---------------------------------------------------------------------------------------------

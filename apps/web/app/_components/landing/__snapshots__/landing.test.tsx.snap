@@ -84,7 +84,7 @@ exports[`Landing > renders the same page 1`] = `
         <button
           aria-label="Dark theme"
           aria-pressed="false"
-          class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary bg-action-neutral-surface size-9 rounded-full text-action-primary enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover aria-pressed:text-action-secondary aria-pressed:enabled:active:bg-action-secondary-surface-hover aria-pressed:enabled:hover:bg-action-secondary-surface-hover"
+          class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary bg-action-neutral-surface size-9 rounded-full text-action-primary enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover aria-pressed:text-action-secondary aria-pressed:enabled:active:bg-action-secondary-surface-hover aria-pressed:enabled:hover:bg-action-secondary-surface-hover"
           data-slot="button"
           type="button"
         >
@@ -107,7 +107,7 @@ exports[`Landing > renders the same page 1`] = `
           </svg>
         </button>
         <a
-          class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface-hover px-3 py-2 text-button-sm leading-5"
+          class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface-hover px-3 py-2 text-button-sm leading-5"
           data-slot="button"
           href="/signin"
         >
@@ -189,14 +189,14 @@ exports[`Landing > renders the same page 1`] = `
               class="flex flex-col items-center gap-x-6 gap-y-4 sm:flex-row"
             >
               <a
-                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover px-5.5 py-3.5 text-button-md leading-5"
+                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover px-5.5 py-3.5 text-button-md leading-5"
                 data-slot="button"
                 href="/signin"
               >
                 Get started
               </a>
               <a
-                class="rounded-element font-medium text-fg-accent underline-offset-4 hover:underline"
+                class="rounded-element font-medium text-fg-accent underline-offset-4 transition-colors hover:underline"
                 href="#tour"
               >
                 See it in action
@@ -256,7 +256,7 @@ exports[`Landing > renders the same page 1`] = `
                 <button
                   aria-controls="radix-_r_0_-content-my-requests"
                   aria-selected="false"
-                  class="-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-fg-secondary hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary text-button-md"
+                  class="-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-fg-secondary transition-colors duration-fast ease-smooth-out hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary text-button-md"
                   data-orientation="horizontal"
                   data-radix-collection-item=""
                   data-slot="tabs-trigger"
@@ -271,7 +271,7 @@ exports[`Landing > renders the same page 1`] = `
                 <button
                   aria-controls="radix-_r_0_-content-waiting"
                   aria-selected="false"
-                  class="-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-fg-secondary hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary text-button-md"
+                  class="-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-fg-secondary transition-colors duration-fast ease-smooth-out hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary text-button-md"
                   data-orientation="horizontal"
                   data-radix-collection-item=""
                   data-slot="tabs-trigger"
@@ -286,7 +286,7 @@ exports[`Landing > renders the same page 1`] = `
                 <button
                   aria-controls="radix-_r_0_-content-workspace"
                   aria-selected="true"
-                  class="-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-fg-secondary hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary text-button-md"
+                  class="-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-fg-secondary transition-colors duration-fast ease-smooth-out hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary text-button-md"
                   data-orientation="horizontal"
                   data-radix-collection-item=""
                   data-slot="tabs-trigger"
@@ -301,7 +301,7 @@ exports[`Landing > renders the same page 1`] = `
                 <button
                   aria-controls="radix-_r_0_-content-received"
                   aria-selected="false"
-                  class="-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-fg-secondary hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary text-button-md"
+                  class="-mb-px inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-element border-transparent border-b-3 px-3 py-2 text-fg-secondary transition-colors duration-fast ease-smooth-out hover:text-fg-primary disabled:cursor-not-allowed disabled:text-fg-disabled data-[state=active]:border-action-primary data-[state=active]:text-fg-primary text-button-md"
                   data-orientation="horizontal"
                   data-radix-collection-item=""
                   data-slot="tabs-trigger"
@@ -538,7 +538,7 @@ exports[`Landing > renders the same page 1`] = `
                                   data-slot="text"
                                 >
                                   <button
-                                    class="rounded-element underline-offset-4 hover:underline cursor-pointer text-left font-normal text-fg-primary after:absolute after:inset-0"
+                                    class="rounded-element underline-offset-4 transition-colors hover:underline cursor-pointer text-left font-normal text-fg-primary after:absolute after:inset-0"
                                     type="button"
                                   >
                                     In our run-through just now, where did you get lost?
@@ -1695,7 +1695,7 @@ exports[`Landing > renders the same page 1`] = `
                                             data-slot="text"
                                           >
                                             <button
-                                              class="rounded-element underline-offset-4 hover:underline cursor-pointer text-left font-normal text-fg-primary after:absolute after:inset-0"
+                                              class="rounded-element underline-offset-4 transition-colors hover:underline cursor-pointer text-left font-normal text-fg-primary after:absolute after:inset-0"
                                               type="button"
                                             >
                                               In our run-through just now, where did you get lost?
@@ -2659,7 +2659,7 @@ exports[`Landing > renders the same page 1`] = `
             class="flex flex-col items-center gap-3"
           >
             <a
-              class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover px-5.5 py-3.5 text-button-md leading-5"
+              class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-subtle disabled:text-fg-secondary bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover px-5.5 py-3.5 text-button-md leading-5"
               data-slot="button"
               href="/signin"
             >
