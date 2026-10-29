@@ -1,0 +1,11 @@
+/*
+ * "Thrive × Acme" stands on one line, and the wordmark stays centred in the navbar, so the name
+ * moves to it. Centred, the name's baseline sits 0.39em below the bar's middle, from the display
+ * face's ascent and descent, at whatever size a breakpoint sets it. The wordmark's letters stand
+ * on y = 96.26 of its 102-unit artwork, at its height (`Logo`'s `h-6`), so they are that far
+ * below the middle; the name moves by the difference. Arithmetic on the artwork's numbers and
+ * the face's metrics, which no utility expresses.
+ */
+.onLogoBaseline {
+  translate: 0 calc(var(--spacing) * 6 * (96.2632 / 102 - 0.5) - 0.39em);
+}
