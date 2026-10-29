@@ -1,6 +1,7 @@
 'use client';
 
 import { PlusIcon } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/atoms/button';
@@ -10,7 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
-import { PostcardDialog } from '@/components/organisms/postcard-dialog/postcard-dialog';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 
@@ -37,6 +37,25 @@ const CHOICES: readonly {
   },
 ];
 
+/**
+ * The postcard is the heaviest thing on the page and nobody needs it until they choose to write,
+ * so its code arrives on its own, warmed as soon as the menu opens.
+ */
+const PostcardDialog = dynamic(
+  () =>
+    import('@/components/organisms/postcard-dialog/postcard-dialog').then(
+      (postcard) => postcard.PostcardDialog,
+    ),
+  { ssr: false },
+);
+
+/** Fetches the postcard's code ahead of a choice; a failed fetch is retried when it is drawn. */
+function warmPostcardDialog() {
+  import('@/components/organisms/postcard-dialog/postcard-dialog').catch(
+    () => {},
+  );
+}
+
 /** What a sent card is called in the toast that says it went. */
 const SENT: Readonly<Record<'give' | 'ask', string>> = {
   give: 'Feedback sent.',
@@ -59,11 +78,15 @@ export function ComposeMenu({ teammates, writer }: ComposeMenuProps) {
     { title: 'Give feedback', card: 'give' },
   );
   const [isOpen, setIsOpen] = useState(false);
+  // Mounted from the first card on, so it is not drawn before anyone writes, and stays for its
+  // closing motion after.
+  const [hasOpenedPostcard, setHasOpenedPostcard] = useState(false);
   const plusRef = useRef<HTMLButtonElement>(null);
   const isOpeningPostcard = useRef(false);
 
   function handleChoose(title: string, card: 'give' | 'ask') {
     isOpeningPostcard.current = true;
+    setHasOpenedPostcard(true);
     setChoice({ title, card });
     setIsOpen(true);
   }
@@ -93,7 +116,13 @@ export function ComposeMenu({ teammates, writer }: ComposeMenuProps) {
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu
+        onOpenChange={(isMenuOpen) => {
+          if (isMenuOpen) {
+            warmPostcardDialog();
+          }
+        }}
+      >
         {/* The trigger rounds whatever it wraps into a pill; this is a full-width bar, so it keeps
             the button's own corners, the same as the sidebar's items below it. */}
         <DropdownMenuTrigger asChild className="rounded-button">
@@ -121,16 +150,18 @@ export function ComposeMenu({ teammates, writer }: ComposeMenuProps) {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      <PostcardDialog
-        kind={choice.card}
-        title={choice.title}
-        teammates={teammates}
-        writer={writer}
-        open={isOpen}
-        onOpenChange={setIsOpen}
-        onSend={handleSend}
-        onCloseAutoFocus={handlePostcardCloseAutoFocus}
-      />
+      {hasOpenedPostcard && (
+        <PostcardDialog
+          kind={choice.card}
+          title={choice.title}
+          teammates={teammates}
+          writer={writer}
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          onSend={handleSend}
+          onCloseAutoFocus={handlePostcardCloseAutoFocus}
+        />
+      )}
     </>
   );
 }

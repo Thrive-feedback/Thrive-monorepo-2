@@ -73,14 +73,15 @@ export type ComposerToRowProps = {
 
 /**
  * "To", then whoever it goes to, as an address line reads. The word is for the eye only: the
- * control beside it carries the full question for a screen reader.
+ * control beside it carries the full question for a screen reader. "To" sits on the middle of a
+ * face in the stack of people beside it, so whatever fills the row lines up on the same centre.
  */
 export function ComposerToRow({ children }: ComposerToRowProps) {
   return (
     <div className="flex items-start gap-3">
       <span
         aria-hidden="true"
-        className="w-6 shrink-0 pt-3 text-body-2 text-fg-secondary"
+        className="w-6 shrink-0 pt-1.5 text-body-2 text-fg-secondary"
       >
         To
       </span>
@@ -110,7 +111,7 @@ export function ComposerLayoutSkeleton() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <Skeleton className="w-6 text-body-2" />
-        <Skeleton shape="control" className="h-11.5 flex-1 rounded-input" />
+        <Skeleton shape="control" className="h-8 flex-1 rounded-input" />
       </div>
       <Skeleton shape="control" className="h-20 rounded-input" />
       <div className="flex items-center justify-between border-border-subtle border-t pt-4">

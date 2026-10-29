@@ -414,7 +414,7 @@ exports[`Landing > renders the same page 1`] = `
                                   />
                                   <div
                                     aria-hidden="true"
-                                    class="bg-surface-skeleton motion-safe:animate-pulse w-full h-11.5 flex-1 rounded-input"
+                                    class="bg-surface-skeleton motion-safe:animate-pulse w-full h-8 flex-1 rounded-input"
                                     data-slot="skeleton"
                                   />
                                 </div>
@@ -1568,7 +1568,7 @@ exports[`Landing > renders the same page 1`] = `
                                           />
                                           <div
                                             aria-hidden="true"
-                                            class="bg-surface-skeleton motion-safe:animate-pulse w-full h-11.5 flex-1 rounded-input"
+                                            class="bg-surface-skeleton motion-safe:animate-pulse w-full h-8 flex-1 rounded-input"
                                             data-slot="skeleton"
                                           />
                                         </div>

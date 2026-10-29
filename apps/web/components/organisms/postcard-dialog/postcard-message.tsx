@@ -3,6 +3,7 @@ import { Textarea } from '@/components/atoms/textarea';
 import { cn } from '@/lib/cn.util';
 import styles from './postcard.module.css';
 import {
+  DEFAULT_SIZE_STEP,
   POSTCARD_ALIGNS,
   POSTCARD_FONTS,
   POSTCARD_INKS,
@@ -13,11 +14,15 @@ import {
 /** As long as the API lets a Feedback message be. */
 const MAX_MESSAGE_LENGTH = 4000;
 
-/** The classes that set a message in its chosen font, size, alignment and ink. */
+/**
+ * The classes that set a message in its chosen font, size, alignment and ink. A size step the
+ * scale does not have, as a caller's Ask might carry, falls back to the usual size.
+ */
 export function messageClassName(textStyle: PostcardTextStyle) {
   return cn(
     styles.sized,
-    POSTCARD_SIZES[textStyle.sizeStep]?.className,
+    (POSTCARD_SIZES[textStyle.sizeStep] ?? POSTCARD_SIZES[DEFAULT_SIZE_STEP])
+      ?.className,
     POSTCARD_FONTS[textStyle.font].className,
     POSTCARD_ALIGNS[textStyle.align],
     POSTCARD_INKS[textStyle.ink].textClassName,

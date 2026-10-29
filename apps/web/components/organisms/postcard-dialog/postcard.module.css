@@ -20,9 +20,13 @@
   }
 }
 
-/* The turn's two halves take the exit and enter steps, so the card leaves fast and lands softly. */
+/*
+ * The first half turns at an even pace on the quick step, so the card reaches edge-on still
+ * moving rather than hanging there; the second lands softly on the enter step.
+ */
 .turnOut {
-  animation: turn-out var(--motion-exit) forwards;
+  animation: turn-out var(--motion-duration-quick) var(--motion-ease-linear)
+    forwards;
 }
 
 .turnIn {

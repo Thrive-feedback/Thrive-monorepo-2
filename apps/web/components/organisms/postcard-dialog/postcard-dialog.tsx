@@ -7,11 +7,10 @@ import type {
   PostcardAnswer,
   PostcardAsk,
   PostcardDraft,
+  PostcardKind,
   PostcardWriter,
 } from './postcard-draft.type';
-import { type PostcardCard, PostcardEditor } from './postcard-editor';
-
-const NOBODY: readonly string[] = [];
+import { NOBODY, type PostcardCard, PostcardEditor } from './postcard-editor';
 
 type PostcardDialogCommonProps = {
   /** What is being written, above the card: "Give feedback", "Ask for feedback", "Answer". */
@@ -29,7 +28,7 @@ type PostcardDialogCommonProps = {
 
 /** Writing Feedback unasked (`give`, the default) or a Feedback Request (`ask`). */
 export type PostcardWritingProps = {
-  kind?: 'give' | 'ask';
+  kind?: Exclude<PostcardKind, 'answer'>;
   /** Who it can be for, and who else can be chosen to read it: the Workspace but the writer. */
   teammates: readonly Teammate[];
   /** Who it is for, or who is asked, as it opens, such as the Member whose page it was opened from. */
@@ -83,19 +82,21 @@ export function PostcardDialog(props: PostcardDialogProps) {
 
   // A new opening gets a new editor, so its state starts blank. Counted while rendering rather
   // than in an effect, so the first frame of an opening is already the blank card.
-  const [opening, setOpening] = useState(0);
+  const [openings, setOpenings] = useState(0);
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
-      setOpening((count) => count + 1);
+      setOpenings((count) => count + 1);
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      {/* A new opening, or a different card, gets a new editor: each starts blank and keeps one
+          kind for its life. */}
       <PostcardEditor
-        key={opening}
+        key={`${openings}:${card.kind}`}
         title={title}
         writer={writer}
         card={card}
