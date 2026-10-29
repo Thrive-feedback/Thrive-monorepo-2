@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn.util';
 
 /** Exported so an in-place action can look like a link without being one. */
 export const link = cva(
-  'rounded-element font-medium text-fg-accent underline-offset-4',
+  'rounded-element font-medium text-fg-accent underline-offset-4 transition-colors',
   {
     variants: {
       underline: {

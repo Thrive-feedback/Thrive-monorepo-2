@@ -439,7 +439,7 @@ export function TokenGallery() {
 
       <Section
         title="Motion"
-        description="The two loops the loading indicators need, and the way an overlay arrives and leaves. Everything but the spinner stops under reduced motion."
+        description="transitions.dev's motion scale: the two loops the loading indicators need, the way each overlay arrives and leaves, and the durations and easings a state change takes. Everything but the spinner stops under reduced motion."
       >
         <Swatch name="animate-spin" usage="Spinner, Button loading">
           <Spinner className="size-6 text-fg-accent" />
@@ -452,10 +452,50 @@ export function TokenGallery() {
         </Swatch>
         <Swatch
           name="motion-safe:animate-enter / animate-exit"
-          usage="Dialog and Tooltip opening and closing"
+          usage="Dialog opening and closing"
         >
           <span className="text-body-2 text-fg-secondary">
             Open a Dialog to see it
+          </span>
+        </Swatch>
+        <Swatch
+          name="motion-safe:animate-menu-enter / animate-menu-exit"
+          usage="DropdownMenu and Select, growing from the trigger"
+        >
+          <span className="text-body-2 text-fg-secondary">
+            Open a Select to see it
+          </span>
+        </Swatch>
+        <Swatch
+          name="motion-safe:animate-tooltip-enter / animate-tooltip-exit"
+          usage="Tooltip"
+        >
+          <span className="text-body-2 text-fg-secondary">
+            Hover a Tooltip trigger to see it
+          </span>
+        </Swatch>
+        <Swatch
+          name="transition-colors"
+          usage="Hover and press on Button, Link, Toggle, menu items — 150ms ease-out by default"
+        >
+          <span className="rounded-button bg-action-neutral-surface px-3 py-1.5 text-body-2 transition-colors hover:bg-action-primary-surface-hover">
+            Hover me
+          </span>
+        </Swatch>
+        <Swatch
+          name="duration-quick / fast / medium / slow"
+          usage="150 / 250 / 350 / 400ms — Tabs take fast, the Switch thumb medium"
+        >
+          <span className="text-body-2 text-fg-secondary">
+            With any transition-*
+          </span>
+        </Swatch>
+        <Swatch
+          name="ease-smooth-out / in-out / out / linear / bounce"
+          usage="Overlays and position changes smooth-out; the Switch thumb bounce"
+        >
+          <span className="text-body-2 text-fg-secondary">
+            With any transition-*
           </span>
         </Swatch>
       </Section>

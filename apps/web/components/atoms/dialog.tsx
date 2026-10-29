@@ -86,7 +86,7 @@ export function DialogContent({
           <DialogPrimitive.Close
             data-slot="dialog-close"
             aria-label="Close"
-            className="absolute top-4 right-4 cursor-pointer rounded-full p-1 text-fg-secondary hover:bg-action-neutral-surface-hover hover:text-fg-primary"
+            className="absolute top-4 right-4 cursor-pointer rounded-full p-1 text-fg-secondary transition-colors hover:bg-action-neutral-surface-hover hover:text-fg-primary"
           >
             <XIcon aria-hidden="true" className="size-5" />
           </DialogPrimitive.Close>

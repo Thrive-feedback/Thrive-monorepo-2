@@ -3,17 +3,41 @@
  * package is generated from `source/thrive.blueprint.json` (ADR 0028), and each value here is a
  * request to design to add it there (`FE_03` R6, R9) — not a place to add more.
  *
- * Motion, a stroke width for the focus ring, two content widths, a monospace family, the
+ * Motion (transitions.dev's scale, until design owns one), a stroke width for the focus ring, two content widths, a monospace family, the
  * wordmark's colour in each theme, and the blur behind a dialog or under a glass bar are what
  * today's screens use that the blueprint does not describe.
  */
 :root {
+  /* The motion scale, taken from transitions.dev's motion tokens: every duration, easing and
+     scale a component moves by is one of these, named for its step rather than its use. */
+  --motion-duration-stagger: 40ms;
+  --motion-duration-micro: 80ms;
+  --motion-duration-quick: 150ms;
+  --motion-duration-fast: 250ms;
+  --motion-duration-medium: 350ms;
+  --motion-duration-slow: 400ms;
+  --motion-duration-very-slow: 500ms;
+  --motion-ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-in-out: ease-in-out;
+  --motion-ease-out: ease-out;
+  --motion-ease-linear: linear;
+  --motion-ease-bounce: cubic-bezier(0.34, 1.36, 0.64, 1);
+  /* How small a surface starts before it grows in: a dialog most, a menu closing least. */
+  --motion-scale-large: 0.96;
+  --motion-scale-medium: 0.97;
+  --motion-scale-small: 0.98;
+  --motion-scale-tiny: 0.99;
+  --motion-blur-small: 2px;
+
   /* A spinner turns; a placeholder breathes while its content loads. */
-  --motion-spin: 1000ms linear infinite;
-  --motion-pulse: 2000ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  /* An overlay — a dialog, a tooltip — fades and grows in, and leaves a little faster. */
-  --motion-enter: 150ms cubic-bezier(0, 0, 0.2, 1);
-  --motion-exit: 100ms cubic-bezier(0.4, 0, 1, 1);
+  --motion-spin: 1000ms var(--motion-ease-linear) infinite;
+  --motion-pulse: 1000ms var(--motion-ease-in-out) infinite;
+  /* An overlay — a dialog, a menu — grows in, and leaves faster than it came. */
+  --motion-enter: var(--motion-duration-fast) var(--motion-ease-smooth-out);
+  --motion-exit: var(--motion-duration-quick) var(--motion-ease-smooth-out);
+  /* A tooltip appears quickly and is gone almost at once. */
+  --motion-tooltip-enter: var(--motion-duration-quick) var(--motion-ease-out);
+  --motion-tooltip-exit: var(--motion-duration-micro) var(--motion-ease-out);
 
   /* How much the page blurs behind a dialog, and blurs and gains colour under a glass bar such
      as the navbar. */

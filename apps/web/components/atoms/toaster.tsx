@@ -9,6 +9,8 @@ import {
   XIcon,
 } from 'lucide-react';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
+import { cn } from '@/lib/cn.util';
+import styles from './toaster.module.css';
 
 export type { ToasterProps };
 
@@ -41,8 +43,10 @@ export function Toaster(props: ToasterProps) {
       toastOptions={{
         unstyled: true,
         classNames: {
-          toast:
+          toast: cn(
             'flex w-full items-start gap-3 rounded-control border p-4 text-fg-primary shadow-med',
+            styles.toast,
+          ),
           title: 'text-subtitle-4',
           description: 'text-body-2 text-fg-secondary',
           // Sonner joins `toast` with the type's classes rather than merging them, so the
@@ -64,7 +68,7 @@ export function Toaster(props: ToasterProps) {
           actionButton:
             'ms-auto rounded-button bg-action-primary px-3 py-1.5 text-button-sm text-fg-on-action',
           closeButton:
-            'order-last ms-auto shrink-0 cursor-pointer rounded-full p-1 text-fg-secondary hover:bg-surface-subtle hover:text-fg-primary',
+            'order-last ms-auto shrink-0 cursor-pointer rounded-full p-1 text-fg-secondary transition-colors hover:bg-surface-subtle hover:text-fg-primary',
           cancelButton:
             'rounded-button border border-border-default px-3 py-1.5 text-button-sm',
         },
