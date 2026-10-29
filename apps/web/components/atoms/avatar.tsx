@@ -19,7 +19,7 @@ const avatar = cva(
         square: 'rounded-none',
       },
     },
-    defaultVariants: { size: 'lg', shape: 'circle' },
+    defaultVariants: { size: 'md', shape: 'circle' },
   },
 );
 

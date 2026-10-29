@@ -17,7 +17,7 @@ export function AvatarEntry() {
       avoidFor="Logos or decorative images. Use next/image."
       usage={`import { Avatar, AvatarFallback, AvatarImage } from '@/components/atoms/avatar';
 
-<Avatar size="md">
+<Avatar>
   <AvatarImage src={member.photoUrl} alt={member.displayName} />
   <AvatarFallback>{initials(member.displayName)}</AvatarFallback>
 </Avatar>`}
@@ -25,7 +25,7 @@ export function AvatarEntry() {
         {
           name: 'size',
           type: "'sm' | 'md' | 'lg'",
-          defaultValue: "'lg'",
+          defaultValue: "'md'",
           description: '24, 32 or 40 px.',
         },
         {

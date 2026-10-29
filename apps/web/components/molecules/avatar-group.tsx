@@ -23,8 +23,8 @@ export type AvatarGroupProps = React.ComponentPropsWithRef<'div'> & {
 /**
  * People as one overlapping stack: the reviewers of a request, the members of a team.
  *
- *   <AvatarGroup aria-label="Reviewers" max={3} size="md">
- *     <Avatar size="md"><AvatarImage src={…} alt="Pepper Potts" /><AvatarFallback>PP</AvatarFallback></Avatar>
+ *   <AvatarGroup aria-label="Reviewers" max={3}>
+ *     <Avatar><AvatarImage src={…} alt="Pepper Potts" /><AvatarFallback>PP</AvatarFallback></Avatar>
  *     …
  *   </AvatarGroup>
  *
@@ -39,7 +39,7 @@ export type AvatarGroupProps = React.ComponentPropsWithRef<'div'> & {
  */
 export function AvatarGroup({
   max,
-  size = 'lg',
+  size = 'md',
   moreTooltip,
   className,
   children,

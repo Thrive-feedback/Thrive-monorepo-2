@@ -60,7 +60,7 @@ import { AvatarGroupButton } from '@/components/molecules/avatar-group-button';
         {
           name: 'size',
           type: "'sm' | 'md' | 'lg'",
-          defaultValue: "'lg'",
+          defaultValue: "'md'",
           description: 'The size of each face and of the "+".',
         },
         {
@@ -104,7 +104,5 @@ import { AvatarGroupButton } from '@/components/molecules/avatar-group-button';
 }
 
 export function AvatarGroupButtonPreview() {
-  return (
-    <AvatarGroupButton people={PEOPLE} label="Choose who to ask" size="md" />
-  );
+  return <AvatarGroupButton people={PEOPLE} label="Choose who to ask" />;
 }
