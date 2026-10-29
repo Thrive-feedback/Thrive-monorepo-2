@@ -30,9 +30,9 @@ export function AvatarGroupEntry() {
       usage={`import { Avatar, AvatarFallback, AvatarImage } from '@/components/atoms/avatar';
 import { AvatarGroup } from '@/components/molecules/avatar-group';
 
-<AvatarGroup aria-label="Reviewers" max={3} size="md">
+<AvatarGroup aria-label="Reviewers" max={3}>
   {reviewers.map((person) => (
-    <Avatar key={person.id} size="md">
+    <Avatar key={person.id}>
       <AvatarImage src={person.photoUrl} alt={person.name} />
       <AvatarFallback>{person.initials}</AvatarFallback>
     </Avatar>
@@ -53,7 +53,7 @@ import { AvatarGroup } from '@/components/molecules/avatar-group';
         {
           name: 'size',
           type: "'sm' | 'md' | 'lg'",
-          defaultValue: "'lg'",
+          defaultValue: "'md'",
           description: "The bubble's size. Match the avatars you pass in.",
         },
         {
@@ -93,7 +93,7 @@ import { AvatarGroup } from '@/components/molecules/avatar-group';
 
 export function AvatarGroupPreview() {
   return (
-    <AvatarGroup aria-label="Members" max={3} size="md">
+    <AvatarGroup aria-label="Members" max={3}>
       {people(5, 'md')}
     </AvatarGroup>
   );

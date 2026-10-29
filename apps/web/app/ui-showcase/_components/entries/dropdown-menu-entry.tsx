@@ -41,7 +41,7 @@ export function DropdownMenuEntry() {
 
 <DropdownMenu>
   <DropdownMenuTrigger aria-label="Account">
-    <Avatar size="md"><AvatarFallback>AB</AvatarFallback></Avatar>
+    <Avatar><AvatarFallback>AB</AvatarFallback></Avatar>
   </DropdownMenuTrigger>
   <DropdownMenuContent>
     <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
@@ -98,7 +98,7 @@ export function DropdownMenuEntry() {
 
 export function DropdownMenuPreview() {
   return (
-    <Avatar size="md">
+    <Avatar>
       <AvatarFallback>AB</AvatarFallback>
     </Avatar>
   );

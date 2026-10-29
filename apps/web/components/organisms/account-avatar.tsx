@@ -31,7 +31,7 @@ export function AccountAvatar({ name, email, photoUrl }: AccountAvatarProps) {
           aria-label={`Account: ${name}`}
           className="rounded-full"
         >
-          <PhotoAvatar name={name} photoUrl={photoUrl} size="md" />
+          <PhotoAvatar name={name} photoUrl={photoUrl} />
         </NextLink>
       </TooltipTrigger>
       <TooltipContent>{email}</TooltipContent>

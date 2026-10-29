@@ -35,7 +35,7 @@ export function PhotoAvatarEntry() {
         {
           name: 'size',
           type: "'sm' | 'md' | 'lg'",
-          defaultValue: "'lg'",
+          defaultValue: "'md'",
           description: '24, 32 or 40 px.',
         },
       ]}
@@ -60,5 +60,5 @@ export function PhotoAvatarEntry() {
 }
 
 export function PhotoAvatarPreview() {
-  return <PhotoAvatar name="Tony Stark" photoUrl={null} size="md" />;
+  return <PhotoAvatar name="Tony Stark" photoUrl={null} />;
 }

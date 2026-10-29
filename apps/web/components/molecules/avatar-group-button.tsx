@@ -68,7 +68,7 @@ export type AvatarGroupButtonProps = Omit<
 export function AvatarGroupButton({
   people,
   label,
-  size = 'lg',
+  size = 'md',
   invalid = false,
   className,
   ...rest
