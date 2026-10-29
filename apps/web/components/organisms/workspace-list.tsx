@@ -1,9 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { CheckIcon, ChevronRightIcon } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/atoms/avatar';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
-import { initials } from '@/lib/initials.util';
+import { WorkspaceTile } from '@/components/molecules/workspace-tile';
 import type { MyWorkspaces } from '@/lib/workspace/my-workspace.type';
 
 export type WorkspaceListProps = {
@@ -82,30 +81,6 @@ export function WorkspaceList({
         </li>
       ))}
     </ul>
-  );
-}
-
-const workspaceTile = cva('', {
-  variants: {
-    tone: {
-      current: 'bg-action-primary text-fg-on-action',
-      choice: 'bg-action-primary-surface text-action-primary',
-      inactive: 'bg-surface-subtle text-fg-secondary',
-    },
-  },
-});
-
-/** The Workspace's initials, as a rounded tile; the name beside it is what is read out. */
-function WorkspaceTile({
-  name,
-  tone,
-}: { name: string } & Required<VariantProps<typeof workspaceTile>>) {
-  return (
-    <Avatar size="md" shape="rounded" aria-hidden="true" className="shrink-0">
-      <AvatarFallback className={workspaceTile({ tone })}>
-        {initials(name)}
-      </AvatarFallback>
-    </Avatar>
   );
 }
 

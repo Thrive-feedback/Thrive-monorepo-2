@@ -1,11 +1,14 @@
 /*
- * The split fills the window below the navbar, so the page itself never scrolls: each column
- * scrolls on its own and the forms stay in view while the feed moves. It reaches 8 steps into
- * the main region's padding (`py-12`) at each end, so only 4 steps of it are left. Its height is
- * the window less `MemberShell`'s navbar offset (`mt-18`) and what is left of that padding, top
- * and bottom: a subtraction no utility expresses without an arbitrary value.
+ * The split fills the window below the navbar and Home's banner, so the page itself never
+ * scrolls: each column scrolls on its own and the forms stay in view while the feed moves. The
+ * banner reaches 8 steps into the main region's padding (`py-12`) at the top and the split as
+ * many at the bottom, so only 4 steps of it are left at each end. Its height is the window less
+ * `MemberShell`'s navbar offset (`mt-18`), what is left of that padding, top and bottom, the
+ * banner (`h-14`) and the gap below it: a subtraction no utility expresses without an arbitrary
+ * value.
  */
 .split {
-  margin-block: calc(var(--spacing) * -8);
-  height: calc(100dvh - var(--spacing) * 26);
+  margin-top: calc(var(--spacing) * 4);
+  margin-bottom: calc(var(--spacing) * -8);
+  height: calc(100dvh - var(--spacing) * 44);
 }

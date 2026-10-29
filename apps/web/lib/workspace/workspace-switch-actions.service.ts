@@ -17,6 +17,17 @@ import type { CreateWorkspaceState } from '@/lib/workspace/create-workspace-stat
 
 const WorkspaceId = z.uuid();
 
+const Landing = z.enum(['home', 'brandNewHome']);
+
+/** Which Home a switch lands on: the one in use, or the new one being built beside it. */
+export type SwitchLanding = z.infer<typeof Landing>;
+
+/** Each Home a switch can land on, saying once that it switched. */
+const LANDINGS: Readonly<Record<SwitchLanding, string>> = {
+  home: ROUTES.homeOpened,
+  brandNewHome: ROUTES.brandNewHomeOpened,
+};
+
 /** What to say when the API refused a switch, by its error code. */
 const SWITCH_ERRORS: Readonly<Record<string, string>> = {
   WORKSPACE_NOT_FOUND: "You're no longer in that Workspace.",
@@ -39,14 +50,17 @@ function drawEverythingAgain() {
 
 /**
  * Puts this browser's session in one of the person's Workspaces — chosen after sign-in, or
- * switched to from Settings — and opens its Home, every page drawn afresh, saying once that it
- * switched. Other devices stay where they are. The API checks they are in it. Answers only when it could not switch.
+ * switched to from Settings or the new Home's navbar — and opens the Home named by `landing`,
+ * every page drawn afresh, saying once that it switched. Other devices stay where they are. The
+ * API checks they are in it. Answers only when it could not switch.
  */
 export async function switchWorkspace(
   workspaceId: string,
+  landing: SwitchLanding = 'home',
 ): Promise<SwitchWorkspaceResult> {
   const id = WorkspaceId.safeParse(workspaceId);
-  if (!id.success) {
+  const destination = Landing.safeParse(landing);
+  if (!id.success || !destination.success) {
     return { ok: false, message: COULD_NOT_SWITCH };
   }
   const cookie = (await headers()).get('cookie') ?? undefined;
@@ -68,7 +82,7 @@ export async function switchWorkspace(
   }
   drawEverythingAgain();
   // Outside the `try`: `redirect` works by throwing, and the catch above would swallow it.
-  redirect(ROUTES.homeOpened);
+  redirect(LANDINGS[destination.data]);
 }
 
 /**

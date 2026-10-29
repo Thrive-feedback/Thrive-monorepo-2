@@ -57,4 +57,54 @@ describe('SideNav', () => {
       'page',
     );
   });
+
+  it('draws an item with nowhere to go yet as a button marked unavailable, in its place', () => {
+    render(
+      <SideNav
+        label="Main"
+        items={[...ITEMS, { label: 'Later', Icon: UsersIcon }]}
+        currentHref="/a"
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Later' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    expect(screen.getAllByRole('listitem').at(-1)).toHaveTextContent('Later');
+  });
+
+  it('shows a count beside an item, and nothing at zero', () => {
+    render(
+      <SideNav
+        label="Main"
+        items={[
+          { href: '/a', label: 'Waiting', Icon: HouseIcon, count: 3 },
+          { href: '/b', label: 'Done', Icon: PaletteIcon, count: 0 },
+        ]}
+        currentHref="/a"
+      />,
+    );
+
+    expect(screen.getByRole('link', { name: 'Waiting 3' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Done' })).toBeVisible();
+  });
+
+  it('labels the items that follow a heading', () => {
+    render(
+      <SideNav
+        label="Main"
+        items={[
+          { href: '/a', label: 'First', Icon: HouseIcon },
+          { heading: 'Mine' },
+          { href: '/b', label: 'Second', Icon: PaletteIcon },
+        ]}
+        currentHref="/a"
+      />,
+    );
+
+    expect(
+      screen.getAllByRole('listitem').map((item) => item.textContent),
+    ).toEqual(['First', 'Mine', 'Second']);
+  });
 });

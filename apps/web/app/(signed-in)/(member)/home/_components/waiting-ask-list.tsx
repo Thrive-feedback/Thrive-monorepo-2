@@ -1,5 +1,5 @@
-import { readMyAsks } from '@/app/(signed-in)/(member)/home/_lib/my-asks.service';
 import { WaitingAskListView } from '@/components/organisms/waiting-ask-list-view';
+import { readMyAsks } from '@/lib/feedback/my-asks.service';
 import { ROUTES } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 

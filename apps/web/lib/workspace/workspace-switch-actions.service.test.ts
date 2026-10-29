@@ -59,6 +59,35 @@ describe('switching Workspace', () => {
     expect(revalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 
+  it('opens the new Home instead when it was switched from there', async () => {
+    server.use(
+      http.post(SWITCH, () => new HttpResponse(null, { status: 204 })),
+    );
+
+    await expect(switchWorkspace(GLOBEX_ID, 'brandNewHome')).rejects.toThrow(
+      'redirect:/brand-new-home?opened=1',
+    );
+  });
+
+  it('sends nothing for a Home it does not know, since anyone can call an action', async () => {
+    const seen: Request[] = [];
+    server.use(
+      http.post(SWITCH, ({ request }) => {
+        seen.push(request);
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    expect(
+      // @ts-expect-error a browser can send any string, whatever the type says
+      await switchWorkspace(GLOBEX_ID, 'https://elsewhere.test'),
+    ).toEqual({
+      ok: false,
+      message: "We couldn't switch Workspace. Please try again.",
+    });
+    expect(seen).toEqual([]);
+  });
+
   it('says so when the person is no longer in that Workspace', async () => {
     server.use(http.post(SWITCH, () => refusal('WORKSPACE_NOT_FOUND', 404)));
 
