@@ -118,6 +118,18 @@ describe('Home', () => {
     ).toBeInTheDocument();
   });
 
+  it('offers the new Home to every Member, with no way to close the offer', async () => {
+    requireMember.mockResolvedValue(ANN);
+
+    render(await open());
+
+    const banner = screen.getByRole('complementary', { name: 'The new Home' });
+    expect(
+      within(banner).getByRole('link', { name: 'Try the new Home' }),
+    ).toHaveAttribute('href', ROUTES.brandNewHome);
+    expect(within(banner).queryByRole('button')).toBeNull();
+  });
+
   it('shows the Workspace feed beside the forms on a wide screen, with a handle to resize it', async () => {
     requireMember.mockResolvedValue(ANN);
 

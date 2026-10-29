@@ -25,14 +25,20 @@ import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 
 /** What `/settings` shows on a wide screen, so it is also the section marked there. */
-const ACCOUNT: SideNavItem = {
+/** A section of Settings: always a page, so always somewhere to go. */
+type SettingsSection = SideNavItem & {
+  readonly href: string;
+  readonly children?: readonly SettingsSection[];
+};
+
+const ACCOUNT: SettingsSection = {
   href: ROUTES.settings.account,
   label: 'Account',
   Icon: CircleUserRoundIcon,
 };
 
 /** The sections, in menu order: what belongs to the Workspace sits under it. */
-const SECTIONS: readonly SideNavItem[] = [
+const SECTIONS: readonly SettingsSection[] = [
   ACCOUNT,
   {
     href: ROUTES.settings.workspace,
@@ -47,7 +53,9 @@ const SECTIONS: readonly SideNavItem[] = [
 ];
 
 /** Every section, folders and what they hold alike, to find the one a path opens. */
-function flatten(items: readonly SideNavItem[]): readonly SideNavItem[] {
+function flatten(
+  items: readonly SettingsSection[],
+): readonly SettingsSection[] {
   return items.flatMap((item) => [item, ...flatten(item.children ?? [])]);
 }
 

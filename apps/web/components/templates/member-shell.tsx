@@ -19,13 +19,20 @@ const GOOGLE_PHOTOS_ORIGIN = 'https://lh3.googleusercontent.com';
  * The main region holds a flex column so a page can centre itself with `m-auto` without the
  * shell knowing what it holds.
  */
-export function MemberShell({ children }: { children: React.ReactNode }) {
+export function MemberShell({
+  navbar = <MemberNavbar />,
+  children,
+}: {
+  /** The bar across the top; the new Home brings its own while it is built beside the old one. */
+  navbar?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   // Every signed-in page shows faces, so the connection to Google is opened while the page
   // renders rather than when the first photo is asked for.
   preconnect(GOOGLE_PHOTOS_ORIGIN);
   return (
     <div className="flex min-h-dvh flex-col">
-      <MemberNavbar />
+      {navbar}
       {/* The strips lie over the page, so the inset is measured from inside them: the outer
           padding is a strip's width, the inner one the container's inset. Otherwise, on a
           phone, the content would come within a few pixels of the frame. */}

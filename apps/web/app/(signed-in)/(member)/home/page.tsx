@@ -20,6 +20,7 @@ import {
 import styles from './_components/home-split.module.css';
 import { HomeTabPanel } from './_components/home-tab-panel';
 import { InvitationNotices } from './_components/invitation-notices';
+import { NewHomeBanner } from './_components/new-home-banner';
 import { WaitingAskList } from './_components/waiting-ask-list';
 import { WorkspaceFeed } from './_components/workspace-feed';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
@@ -137,6 +138,7 @@ export default async function Home({ searchParams }: HomeProps) {
           then={ROUTES.homeTab(tab)}
         />
       )}
+      <NewHomeBanner />
       <HomeView
         workspaceName={session.membership.workspace.name}
         notices={

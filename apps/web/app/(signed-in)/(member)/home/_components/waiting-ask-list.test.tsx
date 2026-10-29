@@ -4,7 +4,7 @@ import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { WaitingAskList } from './waiting-ask-list';
 
 const readMyAsks = vi.fn();
-vi.mock('@/app/(signed-in)/(member)/home/_lib/my-asks.service', () => ({
+vi.mock('@/lib/feedback/my-asks.service', () => ({
   readMyAsks: (...args: unknown[]) => readMyAsks(...args),
 }));
 
