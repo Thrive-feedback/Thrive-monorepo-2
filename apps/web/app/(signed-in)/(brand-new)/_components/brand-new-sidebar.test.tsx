@@ -6,14 +6,26 @@ import { BrandNewSidebar } from './brand-new-sidebar';
 const MEMBERSHIP = { workspace: { id: 'w-1', name: 'Acme' }, role: 'MEMBER' };
 
 vi.mock('@/lib/session/session.service', () => ({
-  requireMember: async () => ({ membership: MEMBERSHIP }),
+  requireMember: async () => ({
+    membership: MEMBERSHIP,
+    email: 'ann@acme.test',
+    name: 'Ann Lee',
+    photoUrl: null,
+    profile: { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' },
+  }),
 }));
 const readMyAsks = vi.fn();
 vi.mock('@/lib/feedback/my-asks.service', () => ({
   readMyAsks: (membership: unknown) => readMyAsks(membership),
 }));
+const readTeammates = vi.fn();
+vi.mock('@/lib/feedback/teammates.service', () => ({
+  readTeammates: (membership: unknown, ownEmail: string) =>
+    readTeammates(membership, ownEmail),
+}));
 
 async function draw(waiting: number) {
+  readTeammates.mockResolvedValue([]);
   readMyAsks.mockResolvedValue(
     Array.from({ length: waiting }, (_, index) => ({ askId: `a-${index}` })),
   );
@@ -73,5 +85,11 @@ describe('BrandNewSidebar', () => {
     expect(
       screen.getByRole('button', { name: 'Write something' }),
     ).toBeVisible();
+  });
+
+  it('reads who a postcard can be for: the Workspace without the person', async () => {
+    await draw(0);
+
+    expect(readTeammates).toHaveBeenLastCalledWith(MEMBERSHIP, 'ann@acme.test');
   });
 });
