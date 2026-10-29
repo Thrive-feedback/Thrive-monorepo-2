@@ -32,3 +32,22 @@ export type PostcardDraft = {
   readonly tone: PaperTone;
   readonly textStyle: PostcardTextStyle;
 };
+
+/** Which card: Feedback given unasked, a Feedback Request, or the answer to one Ask. */
+export type PostcardKind = 'give' | 'ask' | 'answer';
+
+/** The Ask being answered, as its Requester wrote it: shown read-only on the left half. */
+export type PostcardAsk = {
+  readonly requester: PostcardWriter;
+  /** The Request message. */
+  readonly message: string;
+  /** The Requester's paper, which the answer is written on too. */
+  readonly tone: PaperTone;
+  readonly textStyle: PostcardTextStyle;
+};
+
+/** Everything on an answer when Send answer is pressed: the Feedback message and how it looks. */
+export type PostcardAnswer = {
+  readonly message: string;
+  readonly textStyle: PostcardTextStyle;
+};

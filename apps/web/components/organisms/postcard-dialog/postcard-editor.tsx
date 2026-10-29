@@ -17,13 +17,22 @@ import { chosenPeople } from '@/lib/feedback/chosen-people.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { Postcard, type PostcardSide } from './postcard';
 import styles from './postcard.module.css';
-import { PostcardAddress } from './postcard-address';
+import { PostcardAddress, PostcardFrom } from './postcard-address';
+import { PostcardCoverToolbar } from './postcard-cover-toolbar';
 import type {
+  PostcardAnswer,
+  PostcardAsk,
   PostcardDraft,
+  PostcardKind,
   PostcardVisibility,
   PostcardWriter,
 } from './postcard-draft.type';
 import { PostcardMessage } from './postcard-message';
+import {
+  PostcardAnswerPlaceholder,
+  PostcardAskReadOnly,
+  PostcardSplitBack,
+} from './postcard-split-back';
 import {
   DEFAULT_TEXT_STYLE,
   type PaperTone,
@@ -43,13 +52,78 @@ function applyChange(draft: PostcardDraft, change: DraftChange): PostcardDraft {
     : { ...draft, ...change.fields };
 }
 
-function blankDraft(recipientAccountIds: readonly string[]): PostcardDraft {
+/** Which card is written, with what only that card needs. */
+export type PostcardCard =
+  | {
+      kind: 'give' | 'ask';
+      teammates: readonly Teammate[];
+      /** Who it is for as it opens. Read once: the card owns it from then on. */
+      defaultRecipientAccountIds: readonly string[];
+      onSend: (postcard: PostcardDraft) => void;
+    }
+  | {
+      kind: 'answer';
+      ask: PostcardAsk;
+      onSend: (answer: PostcardAnswer) => void;
+    };
+
+const NO_TEAMMATES: readonly Teammate[] = [];
+
+/** What the bar is called to a screen reader, for whichever tools it holds. */
+const BAR_LABELS = {
+  text: 'Text style',
+  cover: 'Front tools',
+  card: 'Postcard tools',
+} as const;
+const NOBODY: readonly string[] = [];
+
+/** The words each card uses, so the three read as one family. */
+const COPY: Readonly<
+  Record<
+    PostcardKind,
+    {
+      send: string;
+      messageLabel: string;
+      placeholder: string;
+      status: string;
+      lost: string;
+    }
+  >
+> = {
+  give: {
+    send: 'Seal & Send',
+    messageLabel: 'Your feedback',
+    placeholder:
+      "Share what you've seen: what went well, and what could go differently next time.",
+    status: 'Turn the card over to see the front.',
+    lost: 'What you wrote, and who it was for, will be lost.',
+  },
+  ask: {
+    send: 'Send request',
+    messageLabel: 'Your request',
+    placeholder:
+      'What would you like advice on? Think of something you can do differently next time.',
+    status: 'Write your request on the left; their answers go on the right.',
+    lost: 'What you wrote, and who you asked, will be lost.',
+  },
+  answer: {
+    send: 'Send answer',
+    messageLabel: 'Your answer',
+    placeholder:
+      "Share what you've seen and what could go differently next time.",
+    status: 'Write your answer on the right. The left is their request.',
+    lost: 'Your answer will be lost.',
+  },
+};
+
+function blankDraft(card: PostcardCard): PostcardDraft {
   return {
-    recipientAccountIds,
+    recipientAccountIds:
+      card.kind === 'answer' ? NOBODY : card.defaultRecipientAccountIds,
     message: '',
     visibility: 'ONLY_ME',
     selectedAccountIds: new Set(),
-    tone: 'cream',
+    tone: card.kind === 'answer' ? card.ask.tone : 'cream',
     textStyle: DEFAULT_TEXT_STYLE,
   };
 }
@@ -70,7 +144,10 @@ function selectedReaders(draft: PostcardDraft): ReadonlySet<string> {
   );
 }
 
-function isReady(draft: PostcardDraft) {
+function isReady(kind: PostcardKind, draft: PostcardDraft) {
+  if (kind === 'answer') {
+    return draft.message.trim() !== '';
+  }
   return (
     draft.recipientAccountIds.length > 0 &&
     draft.message.trim() !== '' &&
@@ -94,19 +171,17 @@ function isSameList(one: readonly string[], other: readonly string[]) {
 
 export type PostcardEditorProps = {
   title: string;
-  teammates: readonly Teammate[];
   writer: PostcardWriter;
-  /** Who it is for as it opens. Read once: the card owns it from then on. */
-  defaultRecipientAccountIds: readonly string[];
-  onSend: (postcard: PostcardDraft) => void;
+  card: PostcardCard;
   /** The writer chose to leave, or the card has been sent: the dialog should close. */
   onClose: () => void;
   onCloseAutoFocus?: (event: Event) => void;
 };
 
 /**
- * One opening of `PostcardDialog`: its content and everything written on it. Mounted afresh for
- * each opening, so nothing carries from one card to the next and nothing has to be reset.
+ * One opening of `PostcardDialog`: its content and everything written on it, for whichever card
+ * it is — given, asked or answered. Mounted afresh for each opening, so nothing carries from one
+ * card to the next and nothing has to be reset.
  *
  * Every change goes through one stable `change`, and the parts that typing does not touch — the
  * address, the cover and both bars — are memoised and handed stable callbacks, so a keystroke
@@ -114,19 +189,20 @@ export type PostcardEditorProps = {
  */
 export function PostcardEditor({
   title,
-  teammates,
   writer,
-  defaultRecipientAccountIds,
-  onSend,
+  card,
   onClose,
   onCloseAutoFocus,
 }: PostcardEditorProps) {
-  const [draft, change] = useReducer(
-    applyChange,
-    defaultRecipientAccountIds,
-    blankDraft,
-  );
-  const [openingRecipients] = useState(defaultRecipientAccountIds);
+  const [draft, change] = useReducer(applyChange, card, blankDraft);
+  // The card is read once, as it opens: it owns its draft from then on.
+  const [opening] = useState(card);
+  const { kind } = opening;
+  const copy = COPY[kind];
+  const teammates =
+    opening.kind === 'answer' ? NO_TEAMMATES : opening.teammates;
+  const openingRecipients =
+    opening.kind === 'answer' ? NOBODY : opening.defaultRecipientAccountIds;
   const [side, setSide] = useState<PostcardSide>('back');
   const [isEditingText, setIsEditingText] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -248,7 +324,7 @@ export function PostcardEditor({
   function handleOpenAutoFocus(event: Event) {
     openerRef.current = focusedControl();
     const target =
-      draft.recipientAccountIds.length === 0
+      kind !== 'answer' && draft.recipientAccountIds.length === 0
         ? contentRef.current?.querySelector('section:not([inert]) button')
         : messageRef.current;
     if (target instanceof HTMLElement) {
@@ -293,7 +369,11 @@ export function PostcardEditor({
   // settled: ended, or cut short, as when reduced motion is switched on mid-way. With reduced
   // motion there is no flight, and it closes at once.
   function handleSend() {
-    onSend({ ...draft, selectedAccountIds: selectedReaders(draft) });
+    if (opening.kind === 'answer') {
+      opening.onSend({ message: draft.message, textStyle: draft.textStyle });
+    } else {
+      opening.onSend({ ...draft, selectedAccountIds: selectedReaders(draft) });
+    }
     // The card goes inert as it flies, which would drop focus from Send onto the page; the
     // dialog itself holds it until the opener gets it back. It is a container, not a control,
     // so it draws no focus ring while it does.
@@ -313,11 +393,15 @@ export function PostcardEditor({
     );
   }
 
-  const status = isEditingText
-    ? 'Pick a style for your words. Done or Esc when you have finished.'
-    : side === 'front'
-      ? 'The front: every card has this picture for now. Turn it over to write.'
-      : 'Turn the card over to see the front.';
+  // The bar holds the text's tools while the message is styled, the front's while the front shows,
+  // and the card's own otherwise.
+  const bar = isEditingText ? 'text' : side === 'front' ? 'cover' : 'card';
+  const status = {
+    text: 'Pick a style for your words. Done or Esc when you have finished.',
+    cover:
+      'The front: choosing its picture is coming soon. Turn it over to write.',
+    card: copy.status,
+  }[bar];
 
   return (
     // The whole screen is the dialog, so a card taller than the window scrolls rather than being
@@ -367,21 +451,89 @@ export function PostcardEditor({
           </Button>
           <div ref={cardRef} className={cn(isSending && styles.sendAway)}>
             <Postcard side={side} tone={draft.tone}>
-              <div className="flex min-h-0 flex-1 flex-col gap-4 px-5 pt-5 pb-5 md:px-8 md:pt-7 md:pb-7">
-                <PostcardAddress
-                  writer={writer}
-                  teammates={teammates}
-                  recipientAccountIds={draft.recipientAccountIds}
-                  onRecipientsChange={handleRecipientsChange}
+              {opening.kind === 'answer' ? (
+                <PostcardSplitBack
+                  ask={<PostcardAskReadOnly ask={opening.ask} />}
+                  answer={
+                    <>
+                      <PostcardFrom writer={writer} />
+                      <PostcardMessage
+                        ref={messageRef}
+                        message={draft.message}
+                        textStyle={draft.textStyle}
+                        label={copy.messageLabel}
+                        placeholder={copy.placeholder}
+                        isRuled={true}
+                        onMessageChange={handleMessageChange}
+                        onMessageFocus={handleMessageFocus}
+                      />
+                    </>
+                  }
                 />
-                <PostcardMessage
-                  ref={messageRef}
-                  message={draft.message}
-                  textStyle={draft.textStyle}
-                  onMessageChange={handleMessageChange}
-                  onMessageFocus={handleMessageFocus}
+              ) : opening.kind === 'ask' ? (
+                <PostcardSplitBack
+                  ask={
+                    <>
+                      <PostcardAddress
+                        writer={writer}
+                        teammates={teammates}
+                        recipientAccountIds={draft.recipientAccountIds}
+                        recipientsLabel={
+                          kind === 'ask'
+                            ? 'Choose who to ask'
+                            : "Choose who it's for"
+                        }
+                        recipientsDescription={
+                          kind === 'ask'
+                            ? 'They each answer in their own words.'
+                            : 'They can always read it.'
+                        }
+                        onRecipientsChange={handleRecipientsChange}
+                      />
+                      <PostcardMessage
+                        ref={messageRef}
+                        message={draft.message}
+                        textStyle={draft.textStyle}
+                        label={copy.messageLabel}
+                        placeholder={copy.placeholder}
+                        isRuled={false}
+                        onMessageChange={handleMessageChange}
+                        onMessageFocus={handleMessageFocus}
+                      />
+                    </>
+                  }
+                  answer={<PostcardAnswerPlaceholder />}
                 />
-              </div>
+              ) : (
+                <div className="flex min-h-0 flex-1 flex-col gap-4 px-5 pt-5 pb-5 md:px-8 md:pt-7 md:pb-7">
+                  <PostcardAddress
+                    writer={writer}
+                    teammates={teammates}
+                    recipientAccountIds={draft.recipientAccountIds}
+                    recipientsLabel={
+                      kind === 'ask'
+                        ? 'Choose who to ask'
+                        : "Choose who it's for"
+                    }
+                    recipientsDescription={
+                      kind === 'ask'
+                        ? 'They each answer in their own words.'
+                        : 'They can always read it.'
+                    }
+                    onRecipientsChange={handleRecipientsChange}
+                  />
+                  <PostcardMessage
+                    ref={messageRef}
+                    message={draft.message}
+                    textStyle={draft.textStyle}
+                    label={copy.messageLabel}
+                    placeholder={copy.placeholder}
+                    isRuled={true}
+                    onMessageChange={handleMessageChange}
+                    onMessageFocus={handleMessageFocus}
+                  />
+                </div>
+              )}
             </Postcard>
           </div>
         </div>
@@ -399,23 +551,32 @@ export function PostcardEditor({
           <div
             ref={toolbarRef}
             role="group"
-            aria-label={isEditingText ? 'Text style' : 'Postcard tools'}
+            aria-label={BAR_LABELS[bar]}
             onFocus={(event) => event.stopPropagation()}
             onMouseDown={handleToolbarMouseDown}
             className="flex max-w-full items-center rounded-control border border-border-muted bg-surface-raised p-1.5 shadow-high"
           >
             <div
-              key={isEditingText ? 'text' : 'tools'}
+              key={bar}
               className="flex flex-wrap items-center justify-center gap-0.5 motion-safe:animate-enter"
             >
-              {isEditingText ? (
+              {bar === 'text' ? (
                 <PostcardTextToolbar
                   textStyle={draft.textStyle}
                   onTextStyleChange={handleTextStyleChange}
                   onDone={handleDone}
                 />
+              ) : bar === 'cover' ? (
+                <PostcardCoverToolbar
+                  ownerName={
+                    opening.kind === 'answer'
+                      ? opening.ask.requester.name
+                      : undefined
+                  }
+                />
               ) : (
                 <PostcardToolbar
+                  kind={kind}
                   tone={draft.tone}
                   visibility={draft.visibility}
                   people={people}
@@ -430,11 +591,11 @@ export function PostcardEditor({
           </div>
           <Button
             variant="primary"
-            disabled={isSending || !isReady(draft)}
+            disabled={isSending || !isReady(kind, draft)}
             onClick={handleSend}
             className="h-auto shrink-0 rounded-control shadow-high"
           >
-            Seal &amp; Send
+            {copy.send}
             <ArrowRightIcon aria-hidden="true" className="size-4.5" />
           </Button>
         </div>
@@ -448,9 +609,7 @@ export function PostcardEditor({
           <DialogHeader>
             <DialogTitle>Close without sending?</DialogTitle>
             <DialogDescription>
-              {hasWritten
-                ? 'What you wrote, and who it was for, will be lost.'
-                : 'Nothing on this card will be kept.'}
+              {hasWritten ? copy.lost : 'Nothing on this card will be kept.'}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

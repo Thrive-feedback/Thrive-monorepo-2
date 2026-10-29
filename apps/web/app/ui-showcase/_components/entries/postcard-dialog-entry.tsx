@@ -29,6 +29,19 @@ export function PostcardDialogEntry() {
 />`}
       props={[
         {
+          name: 'kind',
+          type: "'give' | 'ask' | 'answer'",
+          defaultValue: "'give'",
+          description:
+            'Which card. give: one full back. ask: the back halved, the Request message written on the left under From and To, the right left for the answers. answer: the Ask read-only on the left, the answer written on the right.',
+        },
+        {
+          name: 'ask',
+          type: '{ requester, message, tone, textStyle }',
+          description:
+            'answer only: the Ask being answered, as its Requester wrote it. The answer is written on its paper.',
+        },
+        {
           name: 'title',
           type: 'string',
           description: 'What is being written, above the card.',
@@ -59,9 +72,9 @@ export function PostcardDialogEntry() {
         },
         {
           name: 'onSend',
-          type: '(postcard: PostcardDraft) => void',
+          type: '(postcard: PostcardDraft) => void · answer: (answer: PostcardAnswer) => void',
           description:
-            'Seal & Send was pressed: who it is for, the message, who else can read it, the paper and the text style, handed over at the press. The dialog sends nothing itself, and closes itself once the card has flown off.',
+            'Send was pressed, handed over at the press: give and ask hand over who it is for (or who is asked), the message, who else can read it, the paper and the text style; answer hands over the answer and its style. The dialog sends nothing itself, and closes itself once the card has flown off.',
         },
         {
           name: 'onCloseAutoFocus',
@@ -78,6 +91,18 @@ export function PostcardDialogEntry() {
         'With reduced motion the card turns and flies off at once.',
       ]}
     >
+      <StateCell
+        label="Ask for feedback"
+        hint="The back halved: the request on the left, the right left for the answers."
+      >
+        <PostcardDialogDemo kind="ask" title="Ask for feedback" />
+      </StateCell>
+      <StateCell
+        label="Answer an Ask"
+        hint="Mali's request read-only on the left, the answer written on the right."
+      >
+        <PostcardDialogDemo kind="answer" title="Answer" />
+      </StateCell>
       <StateCell label="Give feedback" hint="A blank card on its back.">
         <PostcardDialogDemo title="Give feedback" />
       </StateCell>

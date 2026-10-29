@@ -61,14 +61,15 @@ describe('ComposeMenu', () => {
     ).toHaveFocus();
   });
 
-  it('opens the same postcard to ask for feedback, under its own title', async () => {
+  it('opens the request postcard to ask for feedback', async () => {
     const user = userEvent.setup();
     draw();
 
     await choose(user, /Ask for feedback/);
 
+    const dialog = screen.getByRole('dialog', { name: 'Ask for feedback' });
     expect(
-      screen.getByRole('dialog', { name: 'Ask for feedback' }),
+      within(dialog).getByRole('textbox', { name: 'Your request' }),
     ).toBeInTheDocument();
   });
 
