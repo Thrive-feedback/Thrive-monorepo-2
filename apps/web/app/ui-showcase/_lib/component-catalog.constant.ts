@@ -79,6 +79,10 @@ import {
   PhotoAvatarPreview,
 } from '@/app/ui-showcase/_components/entries/photo-avatar-entry';
 import {
+  PostcardDialogEntry,
+  PostcardDialogPreview,
+} from '@/app/ui-showcase/_components/entries/postcard-dialog-entry';
+import {
   RadioGroupEntry,
   RadioGroupPreview,
 } from '@/app/ui-showcase/_components/entries/radio-group-entry';
@@ -434,5 +438,12 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'organism',
     Preview: MemberPickerDialogPreview,
     Entry: MemberPickerDialogEntry,
+  },
+  {
+    slug: 'postcard-dialog',
+    name: 'PostcardDialog',
+    level: 'organism',
+    Preview: PostcardDialogPreview,
+    Entry: PostcardDialogEntry,
   },
 ];

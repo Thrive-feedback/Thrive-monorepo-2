@@ -107,6 +107,21 @@ export function DropdownMenuItem({
   );
 }
 
+/** The look shared by the items that are on or off: checkbox and radio. */
+const SELECTABLE_ITEM =
+  'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element py-2 pr-9 pl-2 text-body-2 outline-hidden data-disabled:pointer-events-none data-highlighted:bg-action-primary-surface data-[state=checked]:text-action-primary data-disabled:text-fg-secondary';
+
+/** The tick at the end of an item that is on. */
+function SelectedTick() {
+  return (
+    <span className="absolute right-2 flex size-4 items-center justify-center">
+      <DropdownMenuPrimitive.ItemIndicator>
+        <CheckIcon className="size-4 text-fg-accent" />
+      </DropdownMenuPrimitive.ItemIndicator>
+    </span>
+  );
+}
+
 export type DropdownMenuCheckboxItemProps = React.ComponentPropsWithRef<
   typeof DropdownMenuPrimitive.CheckboxItem
 >;
@@ -124,23 +139,52 @@ export function DropdownMenuCheckboxItem({
   return (
     <DropdownMenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
-      className={cn(
-        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element py-2 pr-9 pl-2 text-body-2 outline-hidden data-disabled:pointer-events-none data-highlighted:bg-action-primary-surface data-[state=checked]:text-action-primary data-disabled:text-fg-secondary',
-        className,
-      )}
+      className={cn(SELECTABLE_ITEM, className)}
       onSelect={(event) => {
         event.preventDefault();
         onSelect?.(event);
       }}
       {...rest}
     >
-      <span className="absolute right-2 flex size-4 items-center justify-center">
-        <DropdownMenuPrimitive.ItemIndicator>
-          <CheckIcon className="size-4 text-fg-accent" />
-        </DropdownMenuPrimitive.ItemIndicator>
-      </span>
+      <SelectedTick />
       {children}
     </DropdownMenuPrimitive.CheckboxItem>
+  );
+}
+
+export type DropdownMenuRadioGroupProps = React.ComponentPropsWithRef<
+  typeof DropdownMenuPrimitive.RadioGroup
+>;
+
+/** The items that pick one thing: a screen reader hears them as choices, one of which is on. */
+export function DropdownMenuRadioGroup(props: DropdownMenuRadioGroupProps) {
+  return (
+    <DropdownMenuPrimitive.RadioGroup
+      data-slot="dropdown-menu-radio-group"
+      {...props}
+    />
+  );
+}
+
+export type DropdownMenuRadioItemProps = React.ComponentPropsWithRef<
+  typeof DropdownMenuPrimitive.RadioItem
+>;
+
+/** One of the choices in a `DropdownMenuRadioGroup`, ticked when it is the one chosen. */
+export function DropdownMenuRadioItem({
+  className,
+  children,
+  ...rest
+}: DropdownMenuRadioItemProps) {
+  return (
+    <DropdownMenuPrimitive.RadioItem
+      data-slot="dropdown-menu-radio-item"
+      className={cn(SELECTABLE_ITEM, className)}
+      {...rest}
+    >
+      <SelectedTick />
+      {children}
+    </DropdownMenuPrimitive.RadioItem>
   );
 }
 

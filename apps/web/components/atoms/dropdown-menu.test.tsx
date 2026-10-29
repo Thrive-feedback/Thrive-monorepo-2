@@ -6,6 +6,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './dropdown-menu';
@@ -86,5 +88,37 @@ describe('DropdownMenuCheckboxItem', () => {
 
     expect(onCheckedChange).toHaveBeenCalledWith(true);
     expect(screen.getByRole('menu')).toBeInTheDocument();
+  });
+
+  it('picks one of a group, says which is chosen, and closes', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="Paper">Paper</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuRadioGroup value="cream" onValueChange={onValueChange}>
+            <DropdownMenuRadioItem value="cream">Cream</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="sage">
+              Soft Sage
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Paper' }));
+
+    expect(
+      screen.getByRole('menuitemradio', { name: 'Cream' }),
+    ).toHaveAttribute('aria-checked', 'true');
+    expect(
+      screen.getByRole('menuitemradio', { name: 'Soft Sage' }),
+    ).toHaveAttribute('aria-checked', 'false');
+
+    await user.click(screen.getByRole('menuitemradio', { name: 'Soft Sage' }));
+
+    expect(onValueChange).toHaveBeenCalledWith('sage');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });
