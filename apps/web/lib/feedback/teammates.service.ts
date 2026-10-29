@@ -10,8 +10,8 @@ import type { CurrentMembership } from '@/lib/session/current-account.type';
 const ONE_PAGE = { page: 1, pageSize: 100 };
 
 /**
- * Everyone in the person's Workspace but themselves, oldest Member first. Not cached across requests — `cache` only shares one call between the two layouts
- * Home draws: who is
+ * Everyone in the person's Workspace but themselves, oldest Member first. Not cached across
+ * requests — `cache` only shares one call between the parts of one page that need it: who is
  * in changes the moment someone accepts an Invitation, and one person's teammates must never
  * be served to another. Themselves is found by email, because that is what the session carries.
  */

@@ -10,7 +10,7 @@ const readFeedbackAsk = vi.fn<() => Promise<WaitingAsk | null>>();
 vi.mock('@/app/(signed-in)/(member)/home/_lib/feedback-ask.service', () => ({
   readFeedbackAsk: () => readFeedbackAsk(),
 }));
-vi.mock('@/app/(signed-in)/(member)/home/_lib/teammates.service', () => ({
+vi.mock('@/lib/feedback/teammates.service', () => ({
   readTeammates: async () => [],
 }));
 vi.mock(
