@@ -1,5 +1,5 @@
 import { Text } from '@/components/atoms/text';
-import { PhotoAvatar } from '@/components/molecules/photo-avatar';
+import { AvatarName } from '@/components/molecules/avatar-name';
 import { type GroupPerson, PeopleDialogButton } from './people-dialog-button';
 import { PersonName } from './person-name';
 
@@ -24,16 +24,14 @@ function FaceAndName({
   unnamed: string;
 }) {
   return (
-    <span className="inline-flex min-w-0 max-w-full items-center gap-1.5">
-      <PhotoAvatar
-        name={person.name ?? ''}
-        photoUrl={person.photoUrl}
-        size="sm"
-      />
-      <span className="min-w-0 break-words">
-        <PersonName name={person.name ?? unnamed} inactive={person.inactive} />
-      </span>
-    </span>
+    <AvatarName
+      name={person.name ?? ''}
+      photoUrl={person.photoUrl}
+      size="sm"
+      className="align-middle"
+    >
+      <PersonName name={person.name ?? unnamed} inactive={person.inactive} />
+    </AvatarName>
   );
 }
 

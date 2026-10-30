@@ -1,28 +1,31 @@
 import { LockIcon } from 'lucide-react';
 import { memo } from 'react';
-import { PostcardStampPicker } from './postcard-stamp-picker';
+import { PostcardStickerPicker } from './postcard-sticker-picker';
 import { PostcardTemplatePicker } from './postcard-template-picker';
 import { PostcardToolDivider } from './postcard-tool-button';
 
 export type PostcardCoverToolbarProps = {
   /** The picture on the front: a key from `POSTCARD_TEMPLATES`. */
   templateKey: string;
-  /** How many stamps the card carries already, on both sides. */
-  stampCount: number;
+  /** How many stickers the card carries already, on both sides. */
+  stickerCount: number;
+  /** Who else can read it, last on the bar. */
+  children?: React.ReactNode;
   onTemplateChange: (templateKey: string) => void;
-  /** Adds a stamp to the front, which is the side showing. */
-  onAddStamp: (stampKey: string) => void;
+  /** Adds a sticker to the front, which is the side showing. */
+  onAddSticker: (stickerKey: string) => void;
 };
 
 /**
- * The postcard's floating bar while its front is showing: a picture from the templates, and
- * stamps for the front. Memoised: nothing typed changes it.
+ * The postcard's floating bar while its front is showing: a picture from the templates, stickers
+ * for the front, and who else can read it.
  */
-export const PostcardCoverToolbar = memo(function PostcardCoverToolbar({
+export function PostcardCoverToolbar({
   templateKey,
-  stampCount,
+  stickerCount,
+  children,
   onTemplateChange,
-  onAddStamp,
+  onAddSticker,
 }: PostcardCoverToolbarProps) {
   return (
     <>
@@ -31,10 +34,12 @@ export const PostcardCoverToolbar = memo(function PostcardCoverToolbar({
         onTemplateChange={onTemplateChange}
       />
       <PostcardToolDivider />
-      <PostcardStampPicker count={stampCount} onAddStamp={onAddStamp} />
+      <PostcardStickerPicker count={stickerCount} onAddSticker={onAddSticker} />
+      <PostcardToolDivider />
+      {children}
     </>
   );
-});
+}
 
 export type PostcardCoverNoteProps = {
   /** Whose front it is: the Requester's. */

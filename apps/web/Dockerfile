@@ -38,7 +38,7 @@ COPY --from=pruner /repo/out/full/ ./
 ARG API_BASE_URL
 ENV API_BASE_URL=${API_BASE_URL}
 
-# The Supabase project the postcard's templates and stamps are read from (ADRs 0063, 0064).
+# The Supabase project the postcard's templates, stamps and stickers are read from (ADRs 0063, 0064, 0068).
 # Written into the browser's code and into which host the image optimizer may fetch from, so it
 # is a build argument too. Public: the buckets are public, and the browser sees the host in every
 # picture.

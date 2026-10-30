@@ -14,8 +14,8 @@ export type PhotoAvatarProps = AvatarProps & {
 };
 
 /**
- * Someone's photo, or their initials. Always drawn beside their name, which already says who it
- * is, so it is hidden from screen readers rather than announced twice. The photo is fetched
+ * Someone's photo, or their initials. `AvatarName` draws it beside their name. Their name is always
+ * nearby and already says who it is, so it is hidden from screen readers rather than announced twice. The photo is fetched
  * without a referrer, so the page it sits on is not sent to whoever hosts it.
  *
  * The photo is the link Google gave at sign-in, already small (`=s96-c`, a few kilobytes) and

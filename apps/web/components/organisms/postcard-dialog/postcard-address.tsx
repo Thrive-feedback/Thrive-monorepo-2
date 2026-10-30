@@ -1,6 +1,7 @@
 import { memo } from 'react';
-import { PhotoAvatar } from '@/components/molecules/photo-avatar';
+import { AvatarName } from '@/components/molecules/avatar-name';
 import { MemberMultiPicker } from '@/components/organisms/member-multi-picker';
+import { cn } from '@/lib/cn.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import type { PostcardWriter } from './postcard-draft.type';
 
@@ -13,11 +14,10 @@ export const PostcardFrom = memo(function PostcardFrom({
   writer,
 }: PostcardFromProps) {
   return (
-    <p className="flex items-center gap-2 text-body-2 text-fg-secondary">
+    <div className="flex items-center gap-2 text-body-2 text-fg-secondary">
       From
-      <PhotoAvatar name={writer.name} photoUrl={writer.photoUrl} />
-      <span className="text-fg-primary text-subtitle-4">{writer.name}</span>
-    </p>
+      <AvatarName name={writer.name} photoUrl={writer.photoUrl} />
+    </div>
   );
 });
 
@@ -31,6 +31,8 @@ export type PostcardAddressProps = {
   /** Under the picker's title: what the people chosen will do, or who always reads it. */
   recipientsDescription: string;
   onRecipientsChange: (accountIds: readonly string[]) => void;
+  /** How far the line keeps clear of the stamp, which differs by the layout of the back. */
+  className?: string;
 };
 
 /**
@@ -44,9 +46,12 @@ export const PostcardAddress = memo(function PostcardAddress({
   recipientsLabel,
   recipientsDescription,
   onRecipientsChange,
+  className,
 }: PostcardAddressProps) {
   return (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+    <div
+      className={cn('flex flex-wrap items-center gap-x-6 gap-y-2', className)}
+    >
       <PostcardFrom writer={writer} />
       <div className="flex items-center gap-2 text-body-2 text-fg-secondary">
         {/* For the eye: the button after it names what it chooses for a screen reader. */}

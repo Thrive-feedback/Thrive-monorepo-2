@@ -55,9 +55,6 @@ const PICK_SOMEONE = 'Pick at least one person to ask.';
 const WRITE_A_MESSAGE = 'Write what you would like feedback on.';
 const PICK_SOMEONE_TO_SHARE_WITH = 'Pick at least one person to share it with.';
 
-/** What the people dialog says under someone a Mention keeps selected. */
-const MENTIONED = 'Mentioned in your message';
-
 /**
  * Asking one or more teammates for Feedback with a Request message (#30), and choosing who
  * besides the Requester reads what comes back — fixed once sent.
@@ -213,14 +210,7 @@ export function RequestFeedbackForm({
           disabledValues={
             audience.onlyMeDisabled ? new Set(['ONLY_ME'] as const) : undefined
           }
-          lockedPeople={
-            new Map(
-              [...audience.lockedAccountIds].map((accountId) => [
-                accountId,
-                MENTIONED,
-              ]),
-            )
-          }
+          lockedPeople={audience.lockedPeople}
         />
       }
       footerError={fieldErrors.selectedAccountIds}

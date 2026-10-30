@@ -56,4 +56,50 @@ describe('cutToMessageLength', () => {
 
     expect(cut).toBe(THAI_CLUSTER.repeat(MAX_MESSAGE_LENGTH));
   });
+
+  it('never splits an emoji', () => {
+    const family = '👩‍👩‍👧';
+
+    expect(cutToMessageLength(family.repeat(MAX_MESSAGE_LENGTH + 1))).toBe(
+      family.repeat(MAX_MESSAGE_LENGTH),
+    );
+  });
+
+  it('keeps what comes after the cursor, and cuts what was just put in', () => {
+    const written = 'b'.repeat(MAX_MESSAGE_LENGTH - 2);
+    const pasted = 'x'.repeat(5);
+
+    expect(cutToMessageLength(pasted + written, pasted.length)).toBe(
+      `xx${written}`,
+    );
+  });
+
+  it('puts in nothing when the message was already at the limit', () => {
+    const written = 'b'.repeat(MAX_MESSAGE_LENGTH);
+
+    expect(
+      cutToMessageLength(
+        `aa${written.slice(0, 500)}x${written.slice(500)}`,
+        503,
+      ),
+    ).toBe(
+      `aa${written.slice(0, MAX_MESSAGE_LENGTH - 2 - 500)}${written.slice(500)}`,
+    );
+  });
+
+  it('does not count the spaces before the message against it', () => {
+    const indent = '\n'.repeat(10);
+    const letters = 'a'.repeat(MAX_MESSAGE_LENGTH);
+
+    expect(cutToMessageLength(`${indent}${letters}b`)).toBe(indent + letters);
+  });
+
+  it('does not count the spaces after the message against it', () => {
+    const tail = ` ${'\n'.repeat(10)}`;
+    const letters = 'a'.repeat(MAX_MESSAGE_LENGTH);
+
+    expect(
+      cutToMessageLength(`${letters}b${tail}`, MAX_MESSAGE_LENGTH + 1),
+    ).toBe(letters + tail);
+  });
 });

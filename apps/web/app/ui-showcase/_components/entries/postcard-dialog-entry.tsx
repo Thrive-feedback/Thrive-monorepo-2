@@ -13,7 +13,7 @@ export function PostcardDialogEntry() {
       level="organism"
       origin="thrive"
       source="components/organisms/postcard-dialog/postcard-dialog.tsx — Dialog + MemberMultiPicker + VisibilityMenu + DropdownMenu on a card that turns over"
-      summary="Feedback written on a landscape postcard in front of the page: the message on the back under who it is from and who it is for, a picture on the front, and a bar of tools beside Seal & Send that holds the text's tools while the message is written."
+      summary="Feedback written on a landscape postcard in front of the page: the message on the back under who it is from and who it is for, a picture on the front, and a bar of tools beside Send feedback that holds the text's tools while the message is written."
       useFor="Giving Feedback from anywhere: Home's + menu, a Member's page with them already chosen, a reply to something in the Feed."
       avoidFor="Reading Feedback that was sent; use FeedbackCard. Kudos, which has its own small card."
       usage={`import { PostcardDialog } from '@/components/organisms/postcard-dialog/postcard-dialog';
@@ -37,9 +37,9 @@ export function PostcardDialogEntry() {
         },
         {
           name: 'ask',
-          type: '{ requester, message, tone, textStyle }',
+          type: '{ requester, templateKey, stickers, stampKey, message, tone, textStyle }',
           description:
-            'answer only: the Ask being answered, as its Requester wrote it. The answer is written on its paper.',
+            'answer only: the Ask being answered, as its Requester wrote it. It is one card, so its picture, stickers and stamp show, and none of them can be changed.',
         },
         {
           name: 'title',
@@ -50,7 +50,13 @@ export function PostcardDialogEntry() {
           name: 'teammates',
           type: 'Teammate[]',
           description:
-            'Who it can be for, and who else can be chosen to read it: the Workspace but the writer.',
+            'Who `@` offers, and on a card that chooses, who it can be for and who else can read it: the Workspace but the writer.',
+        },
+        {
+          name: 'workspaceGoals',
+          type: 'string[]',
+          description:
+            "The Workspace's active Workspace Goals, by name, offered on `#`.",
         },
         {
           name: 'writer',
@@ -68,13 +74,13 @@ export function PostcardDialogEntry() {
           name: 'open / onOpenChange',
           type: 'boolean / (open: boolean) => void',
           description:
-            'Whether it is open. Each opening is a blank card. It closes itself after Seal & Send and after a confirmed Close.',
+            'Whether it is open. Each opening is a blank card. It closes itself after Send and after a confirmed Close.',
         },
         {
           name: 'onSend',
-          type: '(postcard: PostcardDraft) => void · answer: (answer: PostcardAnswer) => void',
+          type: '(postcard: PostcardDraft) => Promise<boolean> · answer: (answer: PostcardAnswer) => Promise<boolean>',
           description:
-            'Send was pressed, handed over at the press: give and ask hand over who it is for (or who is asked), the message, who else can read it, the paper and the text style; answer hands over the answer and its style. The dialog sends nothing itself: it postmarks the card on its first stamp, flies it off by airmail, and closes itself once it has gone.',
+            "Send was pressed, handed over at the press: give and ask hand over who it is for (or who is asked), the message, who else can read it, the stickers, the stamp, the paper and the text style; answer hands over the answer, its stickers and its style. The dialog sends nothing itself. Resolve true once it has gone: it postmarks the card in its top-right corner, flies it off by airmail and closes itself. Resolve false and the card stays open as it was; saying why is the caller's.",
         },
         {
           name: 'onCloseAutoFocus',

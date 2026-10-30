@@ -1,5 +1,6 @@
 'use client';
 
+import { cva } from 'class-variance-authority';
 import { useRef } from 'react';
 import {
   Textarea,
@@ -18,7 +19,24 @@ export type AutocompleteTextareaProps = Omit<TextareaProps, 'value'> & {
   value: string;
   /** The kinds of tag it completes, each with what it can be completed to. */
   triggers: readonly AutocompleteTrigger[];
+  /** Fills the height of a flex column and scrolls inside it, rather than growing with the text. */
+  fill?: boolean;
+  /**
+   * Classes for the drawn text alone, such as its colour: the box itself stays transparent, so
+   * that the tags can be coloured under it.
+   */
+  textClassName?: string;
 };
+
+const frame = cva('flex w-full flex-col', {
+  variants: { fill: { true: 'min-h-0 flex-1', false: '' } },
+  defaultVariants: { fill: false },
+});
+
+const layers = cva('grid', {
+  variants: { fill: { true: 'min-h-0 flex-1 grid-rows-1', false: '' } },
+  defaultVariants: { fill: false },
+});
 
 /**
  * A `Textarea` that completes tags as they are typed — `#` and a name, say — offering what each
@@ -31,6 +49,8 @@ export type AutocompleteTextareaProps = Omit<TextareaProps, 'value'> & {
 export function AutocompleteTextarea({
   value,
   triggers,
+  fill = false,
+  textClassName,
   ref,
   className,
   onChange,
@@ -50,7 +70,7 @@ export function AutocompleteTextarea({
   const { ref: fieldRef, ...fieldProps } = autocomplete.fieldProps;
 
   return (
-    <div className="flex w-full flex-col">
+    <div className={frame({ fill })}>
       {autocomplete.open && autocomplete.trigger && (
         <TagSuggestions
           id={autocomplete.listId}
@@ -62,7 +82,7 @@ export function AutocompleteTextarea({
           onPick={autocomplete.pick}
         />
       )}
-      <div className="grid">
+      <div className={layers({ fill })}>
         <div
           ref={backdropRef}
           aria-hidden="true"
@@ -71,6 +91,7 @@ export function AutocompleteTextarea({
             textareaVariants(),
             'col-start-1 row-start-1 block overflow-hidden whitespace-pre-wrap break-words border-transparent',
             className,
+            textClassName,
           )}
         >
           <TagHighlights text={value} triggers={triggers} />

@@ -13,10 +13,9 @@ vi.mock('@/app/(signed-in)/(member)/home/_lib/feedback-ask.service', () => ({
 vi.mock('@/lib/feedback/teammates.service', () => ({
   readTeammates: async () => [],
 }));
-vi.mock(
-  '@/app/(signed-in)/(member)/home/_lib/workspace-goal-names.service',
-  () => ({ readWorkspaceGoalNames: async () => ['ownership'] }),
-);
+vi.mock('@/lib/feedback/workspace-goal-names.service', () => ({
+  readWorkspaceGoalNames: async () => ['ownership'],
+}));
 vi.mock(
   '@/app/(signed-in)/(member)/home/_lib/answer-ask-actions.service',
   () => ({

@@ -23,7 +23,7 @@ export type PostcardTemplatePickerProps = {
 
 /**
  * Templates, on the front's bar: a drawer of every picture the front can show, which behaves as
- * Stamps does. A picture pressed goes on the front and the drawer closes; a press anywhere
+ * Stickers does. A picture pressed goes on the front and the drawer closes; a press anywhere
  * outside it puts it away, and since it does not hold the page, that press reaches the page too.
  * From the keyboard the arrow keys try each picture on the front as they move, which leaves the
  * drawer open so the pictures can be compared; Space keeps the one chosen and closes it.

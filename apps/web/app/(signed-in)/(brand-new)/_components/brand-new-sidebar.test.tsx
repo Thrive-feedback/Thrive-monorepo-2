@@ -18,6 +18,9 @@ vi.mock(
   '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service',
   () => ({ sendPostcardFeedback: vi.fn(), sendPostcardRequest: vi.fn() }),
 );
+vi.mock('@/lib/feedback/workspace-goal-names.service', () => ({
+  readWorkspaceGoalNames: async () => [],
+}));
 const readMyAsks = vi.fn();
 vi.mock('@/lib/feedback/my-asks.service', () => ({
   readMyAsks: (membership: unknown) => readMyAsks(membership),

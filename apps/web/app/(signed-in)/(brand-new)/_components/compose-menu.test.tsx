@@ -1,7 +1,11 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { toast } from 'sonner';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SentPostcardInput } from '@/app/(signed-in)/(brand-new)/_lib/sent-postcard.schema';
 import { Toaster } from '@/components/atoms/toaster';
+import { POSTCARD_STAMPS } from '@/components/organisms/postcard-dialog/postcard-stamp.constant';
+import { POSTCARD_STICKERS } from '@/components/organisms/postcard-dialog/postcard-sticker.constant';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { ComposeMenu } from './compose-menu';
 
@@ -26,6 +30,14 @@ const TEAMMATES: readonly Teammate[] = [
     slug: 'mali',
     displayName: 'Mali',
   },
+  {
+    accountId: 'krit',
+    name: 'Krit Chan',
+    email: 'krit@acme.test',
+    photoUrl: null,
+    slug: 'krit',
+    displayName: 'Krit',
+  },
 ];
 
 const WRITER = { name: 'Ann', photoUrl: null };
@@ -36,6 +48,7 @@ function draw() {
       <ComposeMenu
         workspaceId={WORKSPACE_ID}
         teammates={TEAMMATES}
+        workspaceGoals={[]}
         writer={WRITER}
       />
       <Toaster />
@@ -54,7 +67,7 @@ async function openPostcard(
   name: RegExp,
 ) {
   await choose(user, name);
-  return screen.findByRole('dialog');
+  return screen.findByRole('dialog', {}, { timeout: 5000 });
 }
 
 /** Addresses a card to Mali and writes on it, up to the moment of sending. */
@@ -71,11 +84,17 @@ async function writeTo(
     screen.getByRole('textbox', { name: label }),
     'Thank you for the demo.',
   );
+  await user.click(screen.getByRole('button', { name: 'Done' }));
 }
 
 beforeEach(() => {
   sendPostcardFeedback.mockReset().mockResolvedValue({});
   sendPostcardRequest.mockReset().mockResolvedValue({});
+});
+
+// Sonner keeps its toasts between renders, so one test's would still show in the next.
+afterEach(() => {
+  toast.dismiss();
 });
 
 describe('ComposeMenu', () => {
@@ -139,7 +158,7 @@ describe('ComposeMenu', () => {
 
     await openPostcard(user, /Give feedback/);
     await writeTo(user, 'Your feedback');
-    await user.click(screen.getByRole('button', { name: /Seal & Send/ }));
+    await user.click(screen.getByRole('button', { name: /^Send feedback/ }));
 
     expect(await screen.findByText('Feedback sent.')).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
@@ -148,15 +167,103 @@ describe('ComposeMenu', () => {
       expect.objectContaining({
         recipientAccountIds: ['mali'],
         message: 'Thank you for the demo.',
-        visibility: 'ONLY_ME',
+        visibility: 'EVERYONE',
         selectedAccountIds: [],
         look: expect.objectContaining({
           tone: 'cream',
-          stamps: [],
+          stickers: [],
+          stampKey: null,
           textStyle: expect.objectContaining({ font: 'modern' }),
         }),
       }),
     );
+  });
+
+  it('sends a card the server accepts, with its sticker, stamp and Selected people', async () => {
+    const [sticker] = POSTCARD_STICKERS;
+    const [stamp] = POSTCARD_STAMPS;
+    const user = userEvent.setup();
+    draw();
+
+    await openPostcard(user, /Give feedback/);
+    await writeTo(user, 'Your feedback');
+    await user.click(screen.getByRole('button', { name: /^Stickers \(/ }));
+    await user.click(
+      screen.getByRole('button', { name: `Add the ${sticker?.alt} sticker` }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Stamp' }));
+    await user.click(
+      await screen.findByRole('button', {
+        name: `Use the ${stamp?.alt} stamp`,
+      }),
+    );
+    await user.click(
+      screen.getByRole('button', { name: /^Who else can read it/ }),
+    );
+    await user.click(screen.getByRole('radio', { name: /Selected people/ }));
+    await user.click(screen.getByRole('checkbox', { name: /Krit Chan/ }));
+    await user.click(screen.getByRole('button', { name: /^Done/ }));
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: /^Send feedback/ }));
+
+    await waitFor(() => expect(sendPostcardFeedback).toHaveBeenCalled());
+    const [, sent] = sendPostcardFeedback.mock.calls[0] ?? [];
+    expect(SentPostcardInput.shape.look.safeParse(sent.look).success).toBe(
+      true,
+    );
+    expect(sent).toMatchObject({
+      visibility: 'SELECTED_PEOPLE',
+      selectedAccountIds: ['krit'],
+      look: { stampKey: stamp?.key },
+    });
+    expect(sent.look.stickers).toEqual([
+      {
+        stickerKey: sticker?.key,
+        side: 'back',
+        x: 50,
+        y: 50,
+        scale: 1,
+        rotation: 0,
+      },
+    ]);
+  });
+
+  it('gives focus back to "+" once a sent card has flown', async () => {
+    const user = userEvent.setup();
+    draw();
+
+    await openPostcard(user, /Give feedback/);
+    await writeTo(user, 'Your feedback');
+    await user.click(screen.getByRole('button', { name: /^Send feedback/ }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(
+      screen.getByRole('button', { name: 'Write something' }),
+    ).toHaveFocus();
+  });
+
+  it('says no send failed when the session has gone and the page moves on', async () => {
+    sendPostcardFeedback.mockRejectedValue(
+      Object.assign(new Error('NEXT_REDIRECT'), {
+        digest: 'NEXT_REDIRECT;replace;/signin;307;',
+      }),
+    );
+    const user = userEvent.setup();
+    draw();
+
+    await openPostcard(user, /Give feedback/);
+    await writeTo(user, 'Your feedback');
+    await user.click(screen.getByRole('button', { name: /^Send feedback/ }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /^Send feedback/ }),
+      ).toBeEnabled(),
+    );
+    expect(
+      screen.queryByText("We couldn't send your postcard. Please try again."),
+    ).toBeNull();
+    expect(screen.queryByText('Feedback sent.')).toBeNull();
   });
 
   it('sends a request as a request, then says it went', async () => {
@@ -181,7 +288,7 @@ describe('ComposeMenu', () => {
 
     await openPostcard(user, /Give feedback/);
     await writeTo(user, 'Your feedback');
-    await user.click(screen.getByRole('button', { name: /Seal & Send/ }));
+    await user.click(screen.getByRole('button', { name: /^Send feedback/ }));
 
     expect(
       await screen.findByText(
@@ -191,7 +298,9 @@ describe('ComposeMenu', () => {
     expect(screen.getByRole('textbox', { name: 'Your feedback' })).toHaveValue(
       'Thank you for the demo.',
     );
-    expect(screen.getByRole('button', { name: /Seal & Send/ })).toBeEnabled();
+    expect(
+      screen.getByRole('button', { name: /^Send feedback/ }),
+    ).toBeEnabled();
   });
 
   it('keeps the card when the send cannot reach the server', async () => {
@@ -201,7 +310,7 @@ describe('ComposeMenu', () => {
 
     await openPostcard(user, /Give feedback/);
     await writeTo(user, 'Your feedback');
-    await user.click(screen.getByRole('button', { name: /Seal & Send/ }));
+    await user.click(screen.getByRole('button', { name: /^Send feedback/ }));
 
     expect(
       await screen.findByText(
@@ -211,7 +320,9 @@ describe('ComposeMenu', () => {
     expect(screen.getByRole('textbox', { name: 'Your feedback' })).toHaveValue(
       'Thank you for the demo.',
     );
-    expect(screen.getByRole('button', { name: /Seal & Send/ })).toBeEnabled();
+    expect(
+      screen.getByRole('button', { name: /^Send feedback/ }),
+    ).toBeEnabled();
   });
 
   it('only closes when Give kudos is chosen, since it is not built yet', async () => {

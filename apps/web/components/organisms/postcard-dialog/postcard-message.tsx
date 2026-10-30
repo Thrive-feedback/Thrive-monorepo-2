@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
-import { Textarea } from '@/components/atoms/textarea';
+import { AutocompleteTextarea } from '@/components/molecules/autocomplete-textarea';
+import type { AutocompleteTrigger } from '@/components/molecules/use-tag-autocomplete';
 import { cn } from '@/lib/cn.util';
 import {
   cutToMessageLength,
@@ -17,16 +18,23 @@ import {
 } from './postcard-style.constant';
 
 /**
- * The classes that set a message in its chosen font, size, alignment and ink. A size step the
- * scale does not have, as a caller's Ask might carry, falls back to the usual size.
+ * The classes that set a message in its chosen font, size and alignment. A size step the scale
+ * does not have, as a caller's Ask might carry, falls back to the usual size.
  */
-export function messageClassName(textStyle: PostcardTextStyle) {
+function metricsClassName(textStyle: PostcardTextStyle) {
   return cn(
     styles.sized,
     (POSTCARD_SIZES[textStyle.sizeStep] ?? POSTCARD_SIZES[DEFAULT_SIZE_STEP])
       ?.className,
     POSTCARD_FONTS[textStyle.font].className,
     POSTCARD_ALIGNS[textStyle.align],
+  );
+}
+
+/** The classes that set a message as its writer chose: all of the above, in their chosen ink. */
+export function messageClassName(textStyle: PostcardTextStyle) {
+  return cn(
+    metricsClassName(textStyle),
     POSTCARD_INKS[textStyle.ink].textClassName,
   );
 }
@@ -34,6 +42,8 @@ export function messageClassName(textStyle: PostcardTextStyle) {
 export type PostcardMessageProps = {
   message: string;
   textStyle: PostcardTextStyle;
+  /** The tags it completes as they are typed: `@` for teammates, `#` for Workspace Goals. */
+  triggers: readonly AutocompleteTrigger[];
   /** The field's name for a screen reader; the card shows no label for it. */
   label: string;
   placeholder: string;
@@ -47,13 +57,15 @@ export type PostcardMessageProps = {
 
 /**
  * The message being written on the postcard, set in the writer's chosen font, size, alignment
- * and ink. It keeps its size and scrolls inside the card rather than growing with what is
- * typed, so a keystroke never lays the dialog out again. How much has been written shows under
- * it while it has the cursor, in a row kept for it, for the same reason.
+ * and ink, completing `@` and `#` as they are typed, as the composer on Home does. It keeps its
+ * size and scrolls inside the card rather than growing with what is typed, so a keystroke never
+ * lays the dialog out again. How much has been written shows under it while it has the cursor,
+ * in a row kept for it, for the same reason.
  */
 export function PostcardMessage({
   message,
   textStyle,
+  triggers,
   label,
   placeholder,
   isRuled = true,
@@ -70,28 +82,46 @@ export function PostcardMessage({
     onMessageFocus();
   }
 
+  // What is cut goes from the field itself as well as from the state: left to React, the shorter
+  // value would be written back over it and the cursor thrown to the end of the message.
+  function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    const field = event.currentTarget;
+    const cursor = field.selectionStart;
+    const kept = cutToMessageLength(field.value, cursor);
+    if (kept !== field.value) {
+      const cursorAfterCut = cursor - (field.value.length - kept.length);
+      field.value = kept;
+      field.setSelectionRange(cursorAfterCut, cursorAfterCut);
+    }
+    onMessageChange(kept);
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-1">
       <label htmlFor={messageId} className="sr-only">
         {label}
       </label>
-      <Textarea
+      <AutocompleteTextarea
         ref={ref}
+        fill
         id={messageId}
         value={message}
+        triggers={triggers}
         aria-describedby={limitId}
         placeholder={placeholder}
-        onChange={(event) =>
-          onMessageChange(cutToMessageLength(event.target.value))
-        }
+        onChange={handleChange}
         onFocus={handleFocus}
         onBlur={() => setHasCursor(false)}
         onPointerDown={onMessageFocus}
         className={cn(
-          'field-sizing-fixed min-h-40 flex-1 resize-none rounded-none border-0 bg-transparent px-0 py-0 md:min-h-0',
+          // The paper is the field: the cursor and the text tools show it is being written in.
+          'field-sizing-fixed min-h-40 resize-none rounded-none border-0 bg-transparent px-0 py-0 focus-visible:outline-hidden md:min-h-0',
           styles.message,
+          metricsClassName(textStyle),
+        )}
+        textClassName={cn(
+          POSTCARD_INKS[textStyle.ink].textClassName,
           isRuled && styles.ruled,
-          messageClassName(textStyle),
         )}
       />
       <span id={limitId} className="sr-only">

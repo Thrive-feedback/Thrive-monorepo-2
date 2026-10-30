@@ -2,6 +2,7 @@
 
 import { PlusIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { unstable_rethrow } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -75,8 +76,10 @@ const COULD_NOT_SEND = "We couldn't send your postcard. Please try again.";
 export type ComposeMenuProps = {
   /** The Workspace the page was drawn for, which a card is sent to. */
   workspaceId: string;
-  /** Who a postcard can be for. */
+  /** Who a postcard can be for, and who `@` offers on it. */
   teammates: readonly Teammate[];
+  /** The Workspace's active Workspace Goals, by name, offered on `#`. */
+  workspaceGoals: readonly string[];
   writer: PostcardWriter;
 };
 
@@ -89,6 +92,7 @@ export type ComposeMenuProps = {
 export function ComposeMenu({
   workspaceId,
   teammates,
+  workspaceGoals,
   writer,
 }: ComposeMenuProps) {
   const [choice, setChoice] = useState<{ title: string; card: 'give' | 'ask' }>(
@@ -128,7 +132,9 @@ export function ComposeMenu({
         toast.error(formError);
         return false;
       }
-    } catch {
+    } catch (error) {
+      // Being signed out rejects the action with a redirect, which is not a send that failed.
+      unstable_rethrow(error);
       toast.error(COULD_NOT_SEND);
       return false;
     }
@@ -184,6 +190,7 @@ export function ComposeMenu({
           kind={choice.card}
           title={choice.title}
           teammates={teammates}
+          workspaceGoals={workspaceGoals}
           writer={writer}
           open={isOpen}
           onOpenChange={setIsOpen}

@@ -166,6 +166,15 @@ describe('giving a teammate Feedback without being asked', () => {
     );
   });
 
+  it('takes 1,000 Thai characters, which are far longer in code units', async () => {
+    const received = apiAccepts();
+
+    const { state } = await send(form({ message: 'ที่'.repeat(1000) }));
+
+    expect(state?.formError).toBeUndefined();
+    expect(received.body).toBeDefined();
+  });
+
   it('refuses selected people with nobody picked', async () => {
     const { state } = await send(form({ visibility: 'SELECTED_PEOPLE' }));
 

@@ -4,6 +4,9 @@ import type { Teammate } from '@/lib/feedback/teammate.type';
 
 const names = new Intl.ListFormat('en', { type: 'conjunction' });
 
+/** What the people dialog says under someone a Mention keeps selected. */
+const MENTIONED = 'Mentioned in your message';
+
 /** The Visibility values the hook has to tell apart; the forms name the rest of theirs. */
 type AudienceValue = 'ONLY_ME' | 'SELECTED_PEOPLE' | 'EVERYONE';
 
@@ -56,6 +59,10 @@ export function useMentionedAudience({
     visibility,
     selectedAccountIds,
     lockedAccountIds,
+    /** Those people, each with the reason the people dialog shows for keeping them selected. */
+    lockedPeople: new Map(
+      [...lockedAccountIds].map((accountId) => [accountId, MENTIONED]),
+    ) as ReadonlyMap<string, string>,
     /** Only me, while somebody mentioned would be left out by it. */
     onlyMeDisabled: outsiders.length > 0,
     /** Why the choice moved to Selected people by itself, while that is still the choice. */

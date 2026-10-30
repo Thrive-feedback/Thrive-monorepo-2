@@ -13,11 +13,33 @@ const WRITER = { name: 'Ann', photoUrl: null };
 /** A made-up Ask from Mali: the showcase reaches no Workspace. */
 const SAMPLE_ASK: PostcardAsk = {
   requester: { name: 'Mali Sombat', photoUrl: null },
+  templateKey: 'system/postcard_template_2',
+  stampKey: 'system/stamp-02-ocean',
+  stickers: [
+    {
+      stickerKey: 'system/sticker-03-love',
+      side: 'back',
+      x: 30,
+      y: 78,
+      scale: 1,
+      rotation: -10,
+    },
+    {
+      stickerKey: 'system/sticker-09-star',
+      side: 'front',
+      x: 20,
+      y: 25,
+      scale: 1.2,
+      rotation: 12,
+    },
+  ],
   message:
     'How did the demo land for you?\nI rushed the pricing slide — was it still clear what each plan includes?',
   tone: 'sage',
   textStyle: { ...DEFAULT_TEXT_STYLE, font: 'classic' },
 };
+
+const SAMPLE_WORKSPACE_GOALS = ['Ownership', 'CustomerFirst'];
 
 /** "Mali Sombat, Krit Chan and Ann Lee": the names as a sentence says them, no Oxford comma. */
 const NAMES = new Intl.ListFormat('en-GB', {
@@ -47,7 +69,14 @@ export function PostcardDialogDemo({
   defaultRecipientAccountIds,
 }: PostcardDialogDemoProps) {
   const [open, setOpen] = useState(false);
-  const common = { title, writer: WRITER, open, onOpenChange: setOpen };
+  const common = {
+    title,
+    writer: WRITER,
+    teammates: LETTER_TEAMMATES,
+    workspaceGoals: SAMPLE_WORKSPACE_GOALS,
+    open,
+    onOpenChange: setOpen,
+  };
 
   return (
     <>
@@ -68,7 +97,6 @@ export function PostcardDialogDemo({
         <PostcardDialog
           {...common}
           kind={kind}
-          teammates={LETTER_TEAMMATES}
           defaultRecipientAccountIds={defaultRecipientAccountIds}
           onSend={async (postcard) => {
             toastSent(

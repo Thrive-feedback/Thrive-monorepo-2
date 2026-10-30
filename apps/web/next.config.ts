@@ -3,6 +3,7 @@ import type { NextConfig } from 'next';
 import { apiBaseUrl } from './lib/api-base-url.util';
 import {
   POSTCARD_STAMP_PATH,
+  POSTCARD_STICKER_PATH,
   POSTCARD_TEMPLATE_PATH,
   postcardStorageHost,
 } from './lib/postcard-storage.util';
@@ -25,19 +26,21 @@ const nextConfig: NextConfig = {
   // its own directory, and the trace must be able to reach them.
   outputFileTracingRoot: join(import.meta.dirname, '../..'),
   allowedDevOrigins: ['http://localhost:3000'],
-  // The postcard's templates and stamps are fetched by this server and handed to the browser
-  // resized, so the browser still talks to this app alone (ADRs 0063, 0064). Nothing else may be
-  // fetched this way.
+  // The postcard's templates, stamps and stickers are fetched by this server and handed to the
+  // browser resized, so the browser still talks to this app alone (ADRs 0063, 0064, 0068). Nothing
+  // else may be fetched this way.
   images: {
-    remotePatterns: [POSTCARD_TEMPLATE_PATH, POSTCARD_STAMP_PATH].map(
-      (path) => ({
-        protocol: 'https',
-        hostname: postcardStorageHost(),
-        port: '',
-        pathname: `${path}**`,
-        search: '',
-      }),
-    ),
+    remotePatterns: [
+      POSTCARD_TEMPLATE_PATH,
+      POSTCARD_STAMP_PATH,
+      POSTCARD_STICKER_PATH,
+    ].map((path) => ({
+      protocol: 'https',
+      hostname: postcardStorageHost(),
+      port: '',
+      pathname: `${path}**`,
+      search: '',
+    })),
   },
   // Settings took in the Profile page; old links and bookmarks land on its section.
   async redirects() {

@@ -1,9 +1,9 @@
 import { giveFeedback } from '@/app/(signed-in)/(member)/home/_lib/give-feedback-actions.service';
 import { giveKudos } from '@/app/(signed-in)/(member)/home/_lib/give-kudos-actions.service';
 import { requestFeedback } from '@/app/(signed-in)/(member)/home/_lib/request-feedback-actions.service';
-import { readWorkspaceGoalNames } from '@/app/(signed-in)/(member)/home/_lib/workspace-goal-names.service';
 import { FeedbackComposer } from '@/components/organisms/feedback-composer';
 import { readTeammates } from '@/lib/feedback/teammates.service';
+import { readWorkspaceGoalNames } from '@/lib/feedback/workspace-goal-names.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 export type FeedbackComposerCardProps = {

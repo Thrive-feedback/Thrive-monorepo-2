@@ -14,10 +14,14 @@ export type PostcardProps = {
   tone: PaperTone;
   /** The picture on the front: a key from `POSTCARD_TEMPLATES`. */
   templateKey: string;
-  /** What is stuck on each side, above everything else on it, writing included. */
-  stamps: Readonly<Record<PostcardSide, React.ReactNode>>;
+  /** The stickers on each side, above everything else on it, writing included. */
+  stickers: Readonly<Record<PostcardSide, React.ReactNode>>;
+  /** The stamp, or the box printed for one, in the corner of the back, clear of the writing. */
+  stamp: React.ReactNode;
   /** What is written on the back. */
   children: React.ReactNode;
+  /** The card has finished turning over. */
+  onTurned?: () => void;
 };
 
 /**
@@ -29,8 +33,10 @@ export function Postcard({
   side,
   tone,
   templateKey,
-  stamps,
+  stickers,
+  stamp,
   children,
+  onTurned,
 }: PostcardProps) {
   const [shownSide, setShownSide] = useState(side);
   const [phase, setPhase] = useState<'still' | 'out' | 'in'>('still');
@@ -49,6 +55,10 @@ export function Postcard({
       setPhase('in');
     } else {
       setPhase('still');
+      // Told to turn again before this turn ended: that one has yet to start.
+      if (side === shownSide) {
+        onTurned?.();
+      }
     }
   }
 
@@ -78,7 +88,7 @@ export function Postcard({
           className={classNameFor('front')}
         >
           <PostcardCover templateKey={templateKey} />
-          {stamps.front}
+          {stickers.front}
         </section>
         <section
           aria-label="Back of the postcard"
@@ -87,7 +97,8 @@ export function Postcard({
           className={classNameFor('back')}
         >
           {children}
-          {stamps.back}
+          {stamp}
+          {stickers.back}
         </section>
       </div>
     </div>

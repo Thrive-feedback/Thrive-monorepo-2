@@ -38,11 +38,11 @@ const INKS = [
 const SIDES = [
   'front',
   'back',
-] as const satisfies readonly PostcardLook['stamps'][number]['side'][];
+] as const satisfies readonly PostcardLook['stickers'][number]['side'][];
 
 /**
  * The shape the API's own schema accepts, so the browser is never the first to check it. The
- * ranges of a stamp and the keys of the pictures are the API's to hold.
+ * ranges of a sticker and the keys of the pictures are the API's to hold.
  */
 export const SentPostcardInput = z
   .object({
@@ -59,9 +59,9 @@ export const SentPostcardInput = z
         align: z.enum(ALIGNS),
         ink: z.enum(INKS),
       }),
-      stamps: z.array(
+      stickers: z.array(
         z.strictObject({
-          stampKey: z.string().min(1),
+          stickerKey: z.string().min(1),
           side: z.enum(SIDES),
           x: z.number(),
           y: z.number(),
@@ -69,6 +69,7 @@ export const SentPostcardInput = z
           rotation: z.number(),
         }),
       ),
+      stampKey: z.string().min(1).nullable(),
     }),
   })
   .refine(
