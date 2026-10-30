@@ -1,9 +1,3 @@
-import { StampIcon } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/atoms/tooltip';
 import { cn } from '@/lib/cn.util';
 
 export type PostcardToolButtonProps = React.ComponentPropsWithRef<'button'>;
@@ -36,36 +30,5 @@ export function PostcardToolDivider() {
       aria-hidden="true"
       className="mx-0.5 h-6 w-px shrink-0 bg-border-muted max-sm:hidden"
     />
-  );
-}
-
-export type PostcardSoonToolProps = {
-  /** What the tool will do, said on hover and focus. */
-  soon: string;
-  children: React.ReactNode;
-};
-
-/**
- * A tool the bar shows where it will be, before it works: reachable, so its tooltip can say it
- * is coming, but marked as not available.
- */
-export function PostcardSoonTool({ soon, children }: PostcardSoonToolProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <PostcardToolButton aria-disabled="true">{children}</PostcardToolButton>
-      </TooltipTrigger>
-      <TooltipContent>{soon}</TooltipContent>
-    </Tooltip>
-  );
-}
-
-/** Stamps, on the back and on the front alike: shown where they will be, not working yet. */
-export function PostcardStampsTool() {
-  return (
-    <PostcardSoonTool soon="Stamps are coming soon.">
-      <StampIcon aria-hidden="true" className="size-4.5" />
-      <span className="max-sm:sr-only">Stamps </span>(0/3)
-    </PostcardSoonTool>
   );
 }

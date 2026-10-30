@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import { memo, useState } from 'react';
+import { memo } from 'react';
+import { PostcardPicture } from './postcard-picture';
 import { postcardTemplate } from './postcard-template.constant';
 
 export type PostcardCoverProps = {
@@ -16,25 +16,15 @@ export const PostcardCover = memo(function PostcardCover({
   templateKey,
 }: PostcardCoverProps) {
   const template = postcardTemplate(templateKey);
-  // The picture that failed, not a flag, so choosing another tries again.
-  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
   return (
     <div className="absolute inset-2 overflow-hidden rounded-inner border border-border-muted md:inset-3">
-      {failedSrc === template.src ? (
-        <p className="flex size-full items-center justify-center p-6 text-center text-body-3 text-fg-secondary">
-          {template.alt}
-        </p>
-      ) : (
-        <Image
-          src={template.src}
-          alt={template.alt}
-          fill
-          sizes="(min-width: 48rem) 42rem, 100vw"
-          className="object-cover"
-          onError={() => setFailedSrc(template.src)}
-        />
-      )}
+      <PostcardPicture
+        picture={template}
+        alt={template.alt}
+        sizes="(min-width: 48rem) 42rem, 100vw"
+        fallbackClassName="p-6 text-body-3"
+      />
     </div>
   );
 });

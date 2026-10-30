@@ -10,6 +10,25 @@ export type PostcardVisibility =
   | typeof SELECTED_PEOPLE
   | 'EVERYONE';
 
+/** The two sides of a postcard: the picture on the front, the message on the back. */
+export type PostcardSide = 'front' | 'back';
+
+/**
+ * A stamp stuck on one side of a card. Its centre is held as a share of that side's width and
+ * height, so it stays put as the card grows; `scale` is against the stamp's usual size and
+ * `rotation` is in degrees.
+ */
+export type PlacedPostcardStamp = {
+  readonly id: string;
+  /** Which stamp: a key from `POSTCARD_STAMPS`. */
+  readonly stampKey: string;
+  readonly side: PostcardSide;
+  readonly x: number;
+  readonly y: number;
+  readonly scale: number;
+  readonly rotation: number;
+};
+
 /** Who is writing, as the card signs it. */
 export type PostcardWriter = {
   readonly name: string;
@@ -32,6 +51,8 @@ export type PostcardDraft = {
   readonly selectedAccountIds: ReadonlySet<string>;
   /** The picture on the front: a key from `POSTCARD_TEMPLATES`. */
   readonly templateKey: string;
+  /** Up to `MAX_STAMPS`, on either side. */
+  readonly stamps: readonly PlacedPostcardStamp[];
   readonly tone: PaperTone;
   readonly textStyle: PostcardTextStyle;
 };
@@ -49,8 +70,12 @@ export type PostcardAsk = {
   readonly textStyle: PostcardTextStyle;
 };
 
-/** Everything on an answer when Send answer is pressed: the Feedback message and how it looks. */
+/**
+ * Everything on an answer when Send answer is pressed: the Feedback message and how it looks,
+ * stamps included. The front is the Requester's, so an answer's stamps are all on the back.
+ */
 export type PostcardAnswer = {
   readonly message: string;
+  readonly stamps: readonly PlacedPostcardStamp[];
   readonly textStyle: PostcardTextStyle;
 };

@@ -1,5 +1,12 @@
 import { ArrowRightIcon, Rotate3dIcon, XIcon } from 'lucide-react';
-import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { flushSync } from 'react-dom';
 import { Button } from '@/components/atoms/button';
 import {
@@ -15,7 +22,7 @@ import { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
 import { cn } from '@/lib/cn.util';
 import { chosenPeople } from '@/lib/feedback/chosen-people.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
-import { Postcard, type PostcardSide } from './postcard';
+import { Postcard } from './postcard';
 import styles from './postcard.module.css';
 import { PostcardAddress, PostcardFrom } from './postcard-address';
 import {
@@ -23,10 +30,12 @@ import {
   PostcardCoverToolbar,
 } from './postcard-cover-toolbar';
 import type {
+  PlacedPostcardStamp,
   PostcardAnswer,
   PostcardAsk,
   PostcardDraft,
   PostcardKind,
+  PostcardSide,
   PostcardVisibility,
   PostcardWriter,
 } from './postcard-draft.type';
@@ -36,6 +45,8 @@ import {
   PostcardAskReadOnly,
   PostcardSplitBack,
 } from './postcard-split-back';
+import { PostcardStamp, type PostcardStampChange } from './postcard-stamp';
+import { MAX_STAMPS } from './postcard-stamp.constant';
 import {
   DEFAULT_TEXT_STYLE,
   type PaperTone,
@@ -48,15 +59,78 @@ import {
 import { PostcardTextToolbar } from './postcard-text-toolbar';
 import { PostcardToolbar } from './postcard-toolbar';
 
-/** One change to the card: some of its fields, or a part of the text's style. */
+/** One change to the card: some of its fields, a part of the text's style, or one stamp. */
 type DraftChange =
-  | { kind: 'card'; fields: Partial<Omit<PostcardDraft, 'textStyle'>> }
-  | { kind: 'style'; fields: Partial<PostcardTextStyle> };
+  | {
+      kind: 'card';
+      fields: Partial<Omit<PostcardDraft, 'textStyle' | 'stamps'>>;
+    }
+  | { kind: 'style'; fields: Partial<PostcardTextStyle> }
+  | { kind: 'addStamp'; id: string; stampKey: string; side: PostcardSide }
+  | { kind: 'changeStamp'; id: string; fields: PostcardStampChange }
+  | { kind: 'removeStamp'; id: string };
+
+/** How far each stamp already on a side moves a new one off the centre, in % of the side. */
+const STAMP_OFFSET = 6;
+
+/** A turn in degrees, as the same turn between -180 (left out) and 180. */
+function normalTurn(degrees: number) {
+  const turned = ((degrees % 360) + 360) % 360;
+  return turned > 180 ? turned - 360 : turned;
+}
 
 function applyChange(draft: PostcardDraft, change: DraftChange): PostcardDraft {
-  return change.kind === 'style'
-    ? { ...draft, textStyle: { ...draft.textStyle, ...change.fields } }
-    : { ...draft, ...change.fields };
+  switch (change.kind) {
+    case 'style':
+      return { ...draft, textStyle: { ...draft.textStyle, ...change.fields } };
+    case 'card':
+      return { ...draft, ...change.fields };
+    case 'addStamp': {
+      if (draft.stamps.length >= MAX_STAMPS) {
+        return draft;
+      }
+      // Centred, so it can be moved straight away; each one already there pushes the next down
+      // and right, and a step another stamp still sits on is passed over, so none lands hidden
+      // under another, even after one has come off.
+      const onSide = draft.stamps.filter((stamp) => stamp.side === change.side);
+      let offset = onSide.length * STAMP_OFFSET;
+      while (
+        onSide.some(
+          (stamp) => stamp.x === 50 + offset && stamp.y === 50 + offset,
+        )
+      ) {
+        offset += STAMP_OFFSET;
+      }
+      const stamp: PlacedPostcardStamp = {
+        id: change.id,
+        stampKey: change.stampKey,
+        side: change.side,
+        x: 50 + offset,
+        y: 50 + offset,
+        scale: 1,
+        rotation: 0,
+      };
+      return { ...draft, stamps: [...draft.stamps, stamp] };
+    }
+    case 'changeStamp': {
+      // However many times it is turned, the turn handed on is the one it shows.
+      const fields =
+        change.fields.rotation === undefined
+          ? change.fields
+          : { ...change.fields, rotation: normalTurn(change.fields.rotation) };
+      return {
+        ...draft,
+        stamps: draft.stamps.map((stamp) =>
+          stamp.id === change.id ? { ...stamp, ...fields } : stamp,
+        ),
+      };
+    }
+    case 'removeStamp':
+      return {
+        ...draft,
+        stamps: draft.stamps.filter((stamp) => stamp.id !== change.id),
+      };
+  }
 }
 
 /** Which card is written, with what only that card needs. */
@@ -75,6 +149,7 @@ export type PostcardCard =
     };
 
 const NO_TEAMMATES: readonly Teammate[] = [];
+const NO_STAMPS: readonly PlacedPostcardStamp[] = [];
 
 /** What the bar is called to a screen reader, for whichever tools it holds. */
 const BAR_LABELS = {
@@ -160,6 +235,7 @@ function blankDraft(card: PostcardCard): PostcardDraft {
     // every answer shows the first, the same for whoever opens it.
     templateKey:
       card.kind === 'answer' ? POSTCARD_TEMPLATES[0].key : randomTemplateKey(),
+    stamps: NO_STAMPS,
     tone: card.kind === 'answer' ? card.ask.tone : 'cream',
     textStyle: DEFAULT_TEXT_STYLE,
   };
@@ -245,6 +321,8 @@ export function PostcardEditor({
   const [isEditingText, setIsEditingText] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isConfirmingClose, setIsConfirmingClose] = useState(false);
+  const [selectedStampId, setSelectedStampId] = useState<string | null>(null);
+  const stampsAddedRef = useRef(0);
   const contentRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -305,6 +383,50 @@ export function PostcardEditor({
   );
   const handleMessageFocus = useCallback(() => setIsEditingText(true), []);
 
+  // A new stamp goes on the side showing, selected, so it can be moved straight away. The bar
+  // refuses a fourth; were one to get through, it would select nothing.
+  const handleAddStamp = useCallback(
+    (stampKey: string) => {
+      stampsAddedRef.current += 1;
+      const id = `stamp-${stampsAddedRef.current}`;
+      change({ kind: 'addStamp', id, stampKey, side });
+      setSelectedStampId(id);
+    },
+    [side],
+  );
+  const handleChangeStamp = useCallback(
+    (id: string, fields: PostcardStampChange) =>
+      change({ kind: 'changeStamp', id, fields }),
+    [],
+  );
+  // A stamp taken off takes the cursor with it, so it goes to Stamps, where another can be added.
+  const handleRemoveStamp = useCallback((id: string) => {
+    change({ kind: 'removeStamp', id });
+    setSelectedStampId((current) => (current === id ? null : current));
+    toolbarRef.current
+      ?.querySelector<HTMLElement>('[data-stamps-tool]')
+      ?.focus();
+  }, []);
+
+  // A press anywhere but a stamp or the Stamps drawer lets go of the stamp that was selected.
+  // Listened for only while one is: the editor stays mounted after the card closes.
+  useEffect(() => {
+    if (selectedStampId === null) {
+      return;
+    }
+    function handlePointerDown(event: PointerEvent) {
+      if (
+        event.target instanceof Element &&
+        event.target.closest('[data-stamp], [data-stamp-panel]')
+      ) {
+        return;
+      }
+      setSelectedStampId(null);
+    }
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [selectedStampId]);
+
   // Done takes the text tools away, so the cursor goes to the first of the usual tools that
   // works, or, where none works yet, as on an answer, to the first one, rather than being lost
   // with them.
@@ -321,7 +443,8 @@ export function PostcardEditor({
   const hasWritten =
     draft.message.trim() !== '' ||
     !isSameList(draft.recipientAccountIds, openingRecipients) ||
-    selectedReaders(draft).size > 0;
+    selectedReaders(draft).size > 0 ||
+    draft.stamps.length > 0;
 
   function askToClose() {
     if (isSending) {
@@ -333,6 +456,7 @@ export function PostcardEditor({
 
   function handleFlip() {
     setIsEditingText(false);
+    setSelectedStampId(null);
     setSide((current) => (current === 'back' ? 'front' : 'back'));
   }
 
@@ -403,9 +527,12 @@ export function PostcardEditor({
     back?.focus();
   }
 
+  // Leaving lets go of any stamp too, so its page-wide listener goes with the card; the editor
+  // stays mounted after the card closes.
   function handleDiscard() {
     isLeavingRef.current = true;
     setIsConfirmingClose(false);
+    setSelectedStampId(null);
     onClose();
   }
 
@@ -415,7 +542,11 @@ export function PostcardEditor({
   // motion there is no flight, and it closes at once.
   function handleSend() {
     if (card.kind === 'answer') {
-      card.onSend({ message: draft.message, textStyle: draft.textStyle });
+      card.onSend({
+        message: draft.message,
+        stamps: draft.stamps,
+        textStyle: draft.textStyle,
+      });
     } else {
       card.onSend({ ...draft, selectedAccountIds: selectedReaders(draft) });
     }
@@ -425,6 +556,7 @@ export function PostcardEditor({
     contentRef.current?.focus();
     flushSync(() => {
       setIsEditingText(false);
+      setSelectedStampId(null);
       setIsSending(true);
     });
     const flight = cardRef.current?.getAnimations?.() ?? [];
@@ -471,6 +603,22 @@ export function PostcardEditor({
       onRecipientsChange={handleRecipientsChange}
     />
   );
+  // Each side's stamps, drawn on that side above the writing.
+  function stampsOn(stampSide: PostcardSide) {
+    return draft.stamps
+      .filter((stamp) => stamp.side === stampSide)
+      .map((stamp) => (
+        <PostcardStamp
+          key={stamp.id}
+          stamp={stamp}
+          isSelected={stamp.id === selectedStampId}
+          onSelect={setSelectedStampId}
+          onChange={handleChangeStamp}
+          onRemove={handleRemoveStamp}
+        />
+      ));
+  }
+
   let back: React.ReactNode;
   if (card.kind === 'answer') {
     back = (
@@ -556,6 +704,7 @@ export function PostcardEditor({
               side={side}
               tone={draft.tone}
               templateKey={draft.templateKey}
+              stamps={{ front: stampsOn('front'), back: stampsOn('back') }}
             >
               {back}
             </Postcard>
@@ -598,7 +747,9 @@ export function PostcardEditor({
                 ) : (
                   <PostcardCoverToolbar
                     templateKey={draft.templateKey}
+                    stampCount={draft.stamps.length}
                     onTemplateChange={handleTemplateChange}
+                    onAddStamp={handleAddStamp}
                   />
                 )
               ) : (
@@ -609,9 +760,11 @@ export function PostcardEditor({
                   people={people}
                   selectedAccountIds={draft.selectedAccountIds}
                   recipientNames={recipientNames}
+                  stampCount={draft.stamps.length}
                   onToneChange={handleToneChange}
                   onVisibilityChange={handleVisibilityChange}
                   onSelectedChange={handleSelectedChange}
+                  onAddStamp={handleAddStamp}
                 />
               )}
             </div>

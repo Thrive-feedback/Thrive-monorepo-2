@@ -2,9 +2,10 @@ import { join } from 'node:path';
 import type { NextConfig } from 'next';
 import { apiBaseUrl } from './lib/api-base-url.util';
 import {
+  POSTCARD_STAMP_PATH,
   POSTCARD_TEMPLATE_PATH,
-  postcardTemplateHost,
-} from './lib/postcard-template-origin.util';
+  postcardStorageHost,
+} from './lib/postcard-storage.util';
 
 /**
  * The browser only ever talks to this app (ADR 0027). Google's sign-in callback is the one
@@ -12,7 +13,7 @@ import {
  * else; every other API call goes through the generated client from the server.
  *
  * The destination is written into the build, so a missing `API_BASE_URL` fails the build
- * rather than shipping a callback that goes nowhere; so is the postcard templates' host, for
+ * rather than shipping a callback that goes nowhere; so is the postcard pictures' host, for
  * the same reason.
  */
 const nextConfig: NextConfig = {
@@ -24,18 +25,19 @@ const nextConfig: NextConfig = {
   // its own directory, and the trace must be able to reach them.
   outputFileTracingRoot: join(import.meta.dirname, '../..'),
   allowedDevOrigins: ['http://localhost:3000'],
-  // The postcard templates are fetched by this server and handed to the browser resized, so the
-  // browser still talks to this app alone (ADR 0063). Nothing else may be fetched this way.
+  // The postcard's templates and stamps are fetched by this server and handed to the browser
+  // resized, so the browser still talks to this app alone (ADRs 0063, 0064). Nothing else may be
+  // fetched this way.
   images: {
-    remotePatterns: [
-      {
+    remotePatterns: [POSTCARD_TEMPLATE_PATH, POSTCARD_STAMP_PATH].map(
+      (path) => ({
         protocol: 'https',
-        hostname: postcardTemplateHost(),
+        hostname: postcardStorageHost(),
         port: '',
-        pathname: `${POSTCARD_TEMPLATE_PATH}**`,
+        pathname: `${path}**`,
         search: '',
-      },
-    ],
+      }),
+    ),
   },
   // Settings took in the Profile page; old links and bookmarks land on its section.
   async redirects() {

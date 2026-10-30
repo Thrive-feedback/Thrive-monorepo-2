@@ -21,6 +21,10 @@ import styles from './drawer.module.css';
  *
  * Radix traps focus inside while it is open, closes it on Escape or a press outside, and gives
  * focus back to the trigger. The title names the drawer, so every drawer needs one.
+ *
+ * `modal={false}` leaves the page in reach while it is open: focus is not held, and the page is
+ * not hidden from assistive technology. A press on the page still closes it, and reaches what was
+ * pressed, so one press both puts the drawer away and starts the next thing.
  */
 
 export type DrawerProps = React.ComponentProps<typeof DialogPrimitive.Root>;

@@ -47,9 +47,9 @@ env:
   # The web app reaches the API over the project's private network. Written into the web
   # image at build time, because the callback rewrite is part of the build.
   API_BASE_URL: http://thrive-api.railway.internal:3000
-  # The Supabase project the postcard templates are read from (ADR 0063). Written into the web
-  # image at build time, because the browser's code and the image optimizer both carry it.
-  NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST: rygqsihgowwdtakedrxl.supabase.co
+  # The Supabase project the postcard's templates and stamps are read from (ADRs 0063, 0064).
+  # Written into the web image at build time: the browser's code and the image optimizer carry it.
+  NEXT_PUBLIC_POSTCARD_STORAGE_HOST: rygqsihgowwdtakedrxl.supabase.co
 
 jobs:
   # Which commit is going out. Resolved once so the tag that is built, the tag that is
@@ -131,7 +131,7 @@ jobs:
           # ignores them.
           build-args: |
             API_BASE_URL=${{ env.API_BASE_URL }}
-            NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST=${{ env.NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST }}
+            NEXT_PUBLIC_POSTCARD_STORAGE_HOST=${{ env.NEXT_PUBLIC_POSTCARD_STORAGE_HOST }}
           cache-from: type=gha,scope=${{ matrix.app }}
           # Layer blobs are keyed by digest across scopes, so the api and web jobs can race to
           # reserve the same one and the loser fails with "failed to reserve cache". The cache

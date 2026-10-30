@@ -45,8 +45,11 @@
   --glass-blur: 1.25rem;
   --glass-saturate: 1.8;
 
-  /* Focus, from one ring on every interactive element (`FE_06` R5). */
-  --focus-ring-width: 0.125rem;
+  /* Focus, from one ring on every interactive element (`FE_06` R5). A hairline, chosen as the
+     softer look over a fainter colour: the colour's contrast is kept, though at 2.5:1 in light
+     and 1.6:1 in dark the ring already misses AA's 3:1, so a focus-ring colour that reaches it
+     is a request to design too. */
+  --focus-ring-width: 0.0625rem;
   --focus-ring-offset: 0.125rem;
 
   --measure-2xl: 42rem;

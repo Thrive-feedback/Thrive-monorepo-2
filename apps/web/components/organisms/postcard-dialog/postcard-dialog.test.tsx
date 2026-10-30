@@ -14,6 +14,7 @@ import {
   type PostcardWritingProps,
 } from './postcard-dialog';
 import type { PostcardAsk } from './postcard-draft.type';
+import { POSTCARD_STAMPS } from './postcard-stamp.constant';
 import { DEFAULT_TEXT_STYLE } from './postcard-style.constant';
 import { POSTCARD_TEMPLATES } from './postcard-template.constant';
 
@@ -103,6 +104,28 @@ function templateAt(index: number) {
   return template;
 }
 
+/** Stamps, on whichever bar is showing, with its count. */
+const stampsTool = () => screen.getByRole('button', { name: /^Stamps \(/ });
+
+/** Adds a stamp from the Stamps drawer, opening it first if it is closed. */
+async function addStamp(
+  user: ReturnType<typeof userEvent.setup>,
+  name: string,
+) {
+  if (!screen.queryByRole('dialog', { name: 'Stamps' })) {
+    await user.click(stampsTool());
+  }
+  await user.click(
+    within(screen.getByRole('dialog', { name: 'Stamps' })).getByRole('button', {
+      name: `Add the ${name} stamp`,
+    }),
+  );
+}
+
+/** A side of the card, looked for past anything that hides it from assistive technology. */
+const sideOfCard = (name: 'Front' | 'Back') =>
+  screen.getByRole('region', { name: `${name} of the postcard`, hidden: true });
+
 const message = () => screen.getByRole('textbox', { name: 'Your feedback' });
 const send = () => screen.getByRole('button', { name: /Seal & Send/ });
 
@@ -154,6 +177,7 @@ describe('PostcardDialog', () => {
       visibility: 'ONLY_ME',
       selectedAccountIds: new Set(),
       templateKey: 'system/postcard_template_3',
+      stamps: [],
       tone: 'cream',
       textStyle: {
         font: 'modern',
@@ -224,9 +248,7 @@ describe('PostcardDialog', () => {
     expect(
       screen.getByRole('group', { name: 'Postcard tools' }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /^Paper Tone.*Cream/ }),
-    ).toHaveFocus();
+    expect(stampsTool()).toHaveFocus();
   });
 
   it('asks before closing, and Keep writing puts the cursor back', async () => {
@@ -334,7 +356,7 @@ describe('PostcardDialog, the front', () => {
       }),
     ).getByRole('img', { hidden: true });
 
-  it('offers Templates, and Stamps, which is not ready yet', async () => {
+  it('offers Templates and Stamps', async () => {
     const user = userEvent.setup();
     render(dialog());
 
@@ -347,7 +369,7 @@ describe('PostcardDialog, the front', () => {
         .map((tool) => [tool.textContent, tool.getAttribute('aria-disabled')]),
     ).toEqual([
       ['Templates', null],
-      ['Stamps (0/3)', 'true'],
+      ['Stamps (0/3)', null],
     ]);
   });
 
@@ -361,7 +383,7 @@ describe('PostcardDialog, the front', () => {
     expect(frontPicture()).toHaveAccessibleName(templateAt(3).alt);
   });
 
-  it('puts the picture chosen in Templates on the front at once, and stays open', async () => {
+  it('puts the picture pressed in Templates on the front, and closes', async () => {
     const user = userEvent.setup();
     vi.spyOn(Math, 'random').mockReturnValue(0);
     render(dialog());
@@ -383,12 +405,119 @@ describe('PostcardDialog, the front', () => {
     );
 
     expect(
-      within(drawer).getByRole('radio', { name: templateAt(2).alt }),
+      screen.queryByRole('dialog', { name: 'Templates' }),
+    ).not.toBeInTheDocument();
+    expect(frontPicture()).toHaveAccessibleName(templateAt(2).alt);
+
+    await user.click(screen.getByRole('button', { name: 'Templates' }));
+    expect(
+      within(screen.getByRole('dialog', { name: 'Templates' })).getByRole(
+        'radio',
+        { name: templateAt(2).alt },
+      ),
     ).toBeChecked();
+  });
+
+  it('tries each picture on the front as the arrow keys move, and keeps Templates open', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    render(dialog());
+
+    await turnToFront(user);
+    await user.click(screen.getByRole('button', { name: 'Templates' }));
+    // Held, as a person's key is while focus moves: Radix chooses on an arrow only then.
+    await user.keyboard('{ArrowRight>}');
+    await waitFor(() =>
+      expect(frontPicture()).toHaveAccessibleName(templateAt(1).alt),
+    );
+    await user.keyboard('{/ArrowRight}');
     expect(
       screen.getByRole('dialog', { name: 'Templates' }),
     ).toBeInTheDocument();
+
+    await user.keyboard(' ');
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Templates' }),
+    ).not.toBeInTheDocument();
+    expect(frontPicture()).toHaveAccessibleName(templateAt(1).alt);
+  });
+
+  it('keeps a picture reached with End and chosen with Space, and closes', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    render(dialog());
+
+    await turnToFront(user);
+    await user.click(screen.getByRole('button', { name: 'Templates' }));
+    await user.keyboard('{End}');
+    await waitFor(() =>
+      expect(
+        screen.getByRole('radio', { name: templateAt(3).alt }),
+      ).toHaveFocus(),
+    );
+    await user.keyboard(' ');
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Templates' }),
+    ).not.toBeInTheDocument();
+    expect(frontPicture()).toHaveAccessibleName(templateAt(3).alt);
+  });
+
+  it('closes Templates on a choice made by assistive technology, which presses no key', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    render(dialog());
+
+    await turnToFront(user);
+    await user.click(screen.getByRole('button', { name: 'Templates' }));
+    // A screen reader's activation is a click with no pointer and no key behind it.
+    fireEvent.click(screen.getByRole('radio', { name: templateAt(2).alt }));
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Templates' }),
+    ).not.toBeInTheDocument();
     expect(frontPicture()).toHaveAccessibleName(templateAt(2).alt);
+  });
+
+  it('still closes Templates on a choice after an arrow was let go with the drawer shut', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    render(dialog());
+
+    await turnToFront(user);
+    const templates = screen.getByRole('button', { name: 'Templates' });
+    await user.click(templates);
+    await user.keyboard('{ArrowRight>}{Escape}{/ArrowRight}');
+    await user.click(templates);
+    await user.click(screen.getByRole('radio', { name: templateAt(3).alt }));
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Templates' }),
+    ).not.toBeInTheDocument();
+    expect(frontPicture()).toHaveAccessibleName(templateAt(3).alt);
+  });
+
+  it('closes Templates on a press outside it, and the press still reaches the card', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await turnToFront(user);
+    await user.click(screen.getByRole('button', { name: 'Templates' }));
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Turn over to the back, the message',
+      }),
+    );
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Templates' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: 'Turn over to the front, the picture',
+      }),
+    ).toBeInTheDocument();
   });
 
   it('closes only Templates on Escape, and gives the cursor back to it', async () => {
@@ -432,6 +561,319 @@ describe('PostcardDialog, the front', () => {
     expect(onSend).toHaveBeenCalledWith(
       expect.objectContaining({ templateKey: POSTCARD_TEMPLATES[0].key }),
     );
+  });
+});
+
+describe('PostcardDialog, stamps', () => {
+  it('offers every stamp', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await user.click(stampsTool());
+
+    const drawer = screen.getByRole('dialog', { name: 'Stamps' });
+    expect(
+      within(drawer)
+        .getAllByRole('button', { name: /^Add the/ })
+        .map((button) => button.getAttribute('aria-label')),
+    ).toEqual(POSTCARD_STAMPS.map((stamp) => `Add the ${stamp.alt} stamp`));
+  });
+
+  it('puts a stamp on the side showing, selected, and counts it on both sides', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
+    await user.type(message(), 'Thank you.');
+    await user.keyboard('{Escape}');
+
+    await addStamp(user, 'Ocean');
+
+    const onBack = within(sideOfCard('Back')).getByRole('button', {
+      name: 'Ocean stamp',
+      hidden: true,
+    });
+    expect(onBack).toHaveAttribute('aria-pressed', 'true');
+    expect(stampsTool()).toHaveTextContent('Stamps (1/3)');
+
+    await turnToFront(user);
+    expect(stampsTool()).toHaveTextContent('Stamps (1/3)');
+    expect(
+      within(sideOfCard('Front')).queryByRole('button', {
+        name: 'Ocean stamp',
+      }),
+    ).toBeNull();
+
+    await addStamp(user, 'Night');
+    await user.click(send());
+
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stamps: [
+          expect.objectContaining({
+            stampKey: 'system/stamp-02-ocean',
+            side: 'back',
+            x: 50,
+            y: 50,
+            scale: 1,
+            rotation: 0,
+          }),
+          expect.objectContaining({
+            stampKey: 'system/stamp-03-night',
+            side: 'front',
+          }),
+        ],
+      }),
+    );
+  });
+
+  it('takes the same stamp more than once, and no more than three', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await addStamp(user, 'Balloon');
+    await addStamp(user, 'Balloon');
+    await addStamp(user, 'Balloon');
+    await addStamp(user, 'Mountains');
+
+    expect(
+      screen.getAllByRole('button', { name: 'Balloon stamp', hidden: true }),
+    ).toHaveLength(3);
+    expect(
+      screen.queryByRole('button', { name: 'Mountains stamp', hidden: true }),
+    ).toBeNull();
+    const drawer = screen.getByRole('dialog', { name: 'Stamps' });
+    expect(
+      within(drawer).getByRole('button', { name: 'Add the Mountains stamp' }),
+    ).toHaveAttribute('aria-disabled', 'true');
+    expect(
+      within(drawer).getByText(
+        'Three is the most. Take one off to add another.',
+      ),
+    ).toBeInTheDocument();
+    expect(stampsTool()).toHaveTextContent('Stamps (3/3)');
+  });
+
+  it('moves, sizes and turns the selected stamp from the keyboard', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
+    await user.type(message(), 'Thank you.');
+    await user.keyboard('{Escape}');
+    await addStamp(user, 'Botanical');
+
+    await user.click(
+      screen.getByRole('button', { name: 'Botanical stamp', hidden: true }),
+    );
+    await user.keyboard('{ArrowRight}{ArrowDown}{Shift>}{ArrowRight}{/Shift}');
+    await user.keyboard('++-');
+    await user.keyboard(']]][[');
+    await user.click(send());
+
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stamps: [expect.objectContaining({ x: 62, y: 52, rotation: 30 })],
+      }),
+    );
+    const [{ stamps }] = onSend.mock.calls[0] ?? [{ stamps: [] }];
+    expect(stamps[0]?.scale).toBeCloseTo(1.1);
+  });
+
+  it('takes a stamp off with Delete, and gives the cursor to Stamps', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await addStamp(user, 'Night');
+
+    await user.click(
+      screen.getByRole('button', { name: 'Night stamp', hidden: true }),
+    );
+    await user.keyboard('{Delete}');
+
+    expect(
+      screen.queryByRole('button', { name: 'Night stamp', hidden: true }),
+    ).toBeNull();
+    expect(stampsTool()).toHaveTextContent('Stamps (0/3)');
+    expect(stampsTool()).toHaveFocus();
+  });
+
+  it('closes only Stamps on Escape, and gives the cursor back to it', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(dialog({ onOpenChange }));
+
+    await user.click(stampsTool());
+    await user.keyboard('{Escape}');
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Stamps' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('dialog', { name: 'Close without sending?' }),
+    ).not.toBeInTheDocument();
+    expect(stampsTool()).toHaveFocus();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('closes Stamps once a stamp is added', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await addStamp(user, 'Mountains');
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Stamps' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Mountains stamp' }),
+    ).toBeInTheDocument();
+  });
+
+  it('closes Stamps on a press outside it, and the press still reaches the card', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await user.click(stampsTool());
+    expect(screen.getByRole('dialog', { name: 'Stamps' })).toBeInTheDocument();
+
+    await user.click(message());
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Stamps' }),
+    ).not.toBeInTheDocument();
+    expect(message()).toHaveFocus();
+  });
+
+  it('closes an open Stamps when a stamp is pressed, and selects it', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await addStamp(user, 'Ocean');
+    await addStamp(user, 'Night');
+    await user.click(stampsTool());
+
+    await user.click(
+      screen.getByRole('button', { name: 'Ocean stamp', hidden: true }),
+    );
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Stamps' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ocean stamp' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Night stamp' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
+  it('lets go of the selected stamp on a press anywhere else', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await addStamp(user, 'Balloon');
+    const stamp = screen.getByRole('button', { name: 'Balloon stamp' });
+    expect(stamp).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(message());
+
+    expect(stamp).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('lets go of the selected stamp when the card is turned over', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await addStamp(user, 'Balloon');
+
+    await turnToFront(user);
+
+    expect(
+      screen.getByRole('button', { name: 'Balloon stamp', hidden: true }),
+    ).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('takes a stamp off with its ×, and gives the cursor to Stamps', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await addStamp(user, 'Mountains');
+
+    await user.click(
+      screen.getByRole('button', { name: 'Remove the Mountains stamp' }),
+    );
+
+    expect(
+      screen.queryByRole('button', { name: 'Mountains stamp', hidden: true }),
+    ).toBeNull();
+    expect(stampsTool()).toHaveTextContent('Stamps (0/3)');
+    expect(stampsTool()).toHaveFocus();
+  });
+
+  it('never lands a new stamp on one already there, even after one comes off', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
+    await user.type(message(), 'Thank you.');
+    await user.keyboard('{Escape}');
+    await addStamp(user, 'Mountains');
+    await addStamp(user, 'Ocean');
+    await user.click(screen.getByRole('button', { name: 'Mountains stamp' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Remove the Mountains stamp' }),
+    );
+
+    await addStamp(user, 'Night');
+    await user.click(send());
+
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stamps: [
+          expect.objectContaining({ stampKey: 'system/stamp-02-ocean', x: 56 }),
+          expect.objectContaining({ stampKey: 'system/stamp-03-night', x: 62 }),
+        ],
+      }),
+    );
+  });
+
+  it('hands over a turn as the one it shows, however far it was turned', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
+    await user.type(message(), 'Thank you.');
+    await user.keyboard('{Escape}');
+    await addStamp(user, 'Night');
+
+    await user.click(screen.getByRole('button', { name: 'Night stamp' }));
+    // Thirteen quarter-steps of 15 degrees: 195, which is -165.
+    await user.keyboard(']]]]]]]]]]]]]');
+    await user.click(send());
+
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stamps: [expect.objectContaining({ rotation: -165 })],
+      }),
+    );
+  });
+
+  it('says which stamp it is when its picture will not load, and can still be sent', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
+    await user.type(message(), 'Thank you.');
+    await user.keyboard('{Escape}');
+    await addStamp(user, 'Ocean');
+
+    const stamp = screen.getByRole('button', {
+      name: 'Ocean stamp',
+      hidden: true,
+    });
+    const picture = stamp.querySelector('img');
+    if (!picture) {
+      throw new Error('The stamp has no picture.');
+    }
+    fireEvent.error(picture);
+
+    expect(stamp.querySelector('img')).toBeNull();
+    expect(within(stamp).getByText('Ocean')).toBeInTheDocument();
+
+    await user.click(send());
+    expect(onSend).toHaveBeenCalled();
   });
 });
 
@@ -559,8 +1001,34 @@ describe('PostcardDialog, answering an Ask', () => {
 
     expect(onSend).toHaveBeenCalledWith({
       message: 'Clear and calm.',
+      stamps: [],
       textStyle: DEFAULT_TEXT_STYLE,
     });
+  });
+
+  it('takes stamps on the back only, and hands them over with the answer', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(answerDialog(onSend));
+    await user.type(
+      screen.getByRole('textbox', { name: 'Your answer' }),
+      'Clear and calm.',
+    );
+    await user.keyboard('{Escape}');
+
+    await addStamp(user, 'Mountains');
+    await user.click(screen.getByRole('button', { name: /Send answer/ }));
+
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stamps: [
+          expect.objectContaining({
+            stampKey: 'system/stamp-01-mountains',
+            side: 'back',
+          }),
+        ],
+      }),
+    );
   });
 
   it("says the front is the Requester's and cannot be changed", async () => {
@@ -576,6 +1044,9 @@ describe('PostcardDialog, answering an Ask', () => {
     ).toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Templates' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^Stamps/ }),
     ).not.toBeInTheDocument();
   });
 

@@ -46,15 +46,17 @@
 
 /*
  * Postcard stock: the chosen tone, a fine grid of dots, and the high elevation so the card lifts
- * off the dimmed page. The tokens have no paper tones; each is the nearest warm status surface,
- * so it follows the theme. Two layered backgrounds have no utility.
+ * off the dimmed page. The dots are a whisper of the text colour, so they sit as faintly on dark
+ * paper as on light; the border tokens are far stronger in dark than in light. Two layered
+ * backgrounds have no utility.
  */
 .paper {
   background-color: var(--surface-raised);
   background-image:
     radial-gradient(
       circle,
-      var(--border-subtle) calc(var(--space-unit) * 0.25),
+      color-mix(in oklch, var(--fg-primary) 4%, transparent)
+        calc(var(--space-unit) * 0.25),
       transparent calc(var(--space-unit) * 0.375)
     ),
     linear-gradient(var(--paper-tone) 0 0);
@@ -64,16 +66,29 @@
   box-shadow: var(--elevation-high);
 }
 
+/*
+ * The tones. The tokens have no paper tones, and their status surfaces are now too faint to tell
+ * apart, so each is a tenth of a status colour's border step over the raised surface: a warm
+ * tint that follows the theme.
+ */
 .cream {
-  --paper-tone: var(--status-warning-surface);
+  --paper-tone: color-mix(
+    in oklch,
+    var(--status-warning-border) 10%,
+    transparent
+  );
 }
 
 .sage {
-  --paper-tone: var(--status-success-surface);
+  --paper-tone: color-mix(
+    in oklch,
+    var(--status-success-border) 10%,
+    transparent
+  );
 }
 
 .blush {
-  --paper-tone: var(--status-error-surface);
+  --paper-tone: color-mix(in oklch, var(--status-error-border) 8%, transparent);
 }
 
 /* A tone's swatch in the menu and on its button: the same tint, without the dots. */
@@ -140,4 +155,41 @@
   .sendAway {
     animation: send-away var(--motion-exit) forwards;
   }
+}
+
+/*
+ * A postage stamp's perforated edge: a row of round bites along every side, cut by a mask of
+ * repeating circles, with the middle kept whole. The same edge as the letter's stamps; a mask has
+ * no utility. Its paper is the plainest surface there is, white in light, and is told apart from
+ * what lies behind it by `.stampLift`, not by being greyed.
+ */
+.stamp {
+  --bite: calc(var(--space-unit) * 1.25);
+
+  background-color: var(--surface-base);
+  padding: calc(var(--bite) * 2);
+  mask:
+    radial-gradient(var(--bite), transparent 98%, black) round
+    calc(var(--bite) * -1.5) calc(var(--bite) * -1.5) / calc(var(--bite) * 3)
+    calc(var(--bite) * 3),
+    linear-gradient(black 0 0) no-repeat 50% / calc(100% - var(--bite) * 3)
+    calc(100% - var(--bite) * 3);
+}
+
+/*
+ * A stamp is a piece of paper lying on the card, so it casts a shadow, and the shadow is what draws
+ * its perforated edge against a surface as pale as itself: the drawer, or cream paper. It is a
+ * filter on the stamp's wrapper, so it follows the bites; a box shadow would be a square, and the
+ * mask would cut it away anyway. The tokens' elevation is a box shadow, so this is the low step's
+ * shape on the spacing scale, cast twice in the scrim's dark veil (twice its 5% is the low step's
+ * 10%), which deepens in dark mode as elevation does.
+ */
+.stampLift {
+  --lift-near: 0 calc(var(--space-unit) * 0.25) calc(var(--space-unit) * 0.25)
+    var(--surface-scrim);
+  --lift-far: 0 calc(var(--space-unit) * 0.5) calc(var(--space-unit) * 1.5)
+    var(--surface-scrim);
+
+  filter: drop-shadow(var(--lift-near)) drop-shadow(var(--lift-near))
+    drop-shadow(var(--lift-far)) drop-shadow(var(--lift-far));
 }
