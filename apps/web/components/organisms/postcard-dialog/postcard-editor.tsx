@@ -41,6 +41,10 @@ import {
   type PaperTone,
   type PostcardTextStyle,
 } from './postcard-style.constant';
+import {
+  POSTCARD_TEMPLATES,
+  randomTemplateKey,
+} from './postcard-template.constant';
 import { PostcardTextToolbar } from './postcard-text-toolbar';
 import { PostcardToolbar } from './postcard-toolbar';
 
@@ -103,7 +107,7 @@ const COPY: Readonly<
       "Share what you've seen: what went well, and what could go differently next time.",
     status: 'Turn the card over to see the front.',
     coverStatus:
-      'The front: choosing its picture is coming soon. Turn it over to write.',
+      'The front: choose its picture from Templates. Turn it over to write.',
     lost: 'What you wrote, and who it was for, will be lost.',
   },
   ask: {
@@ -113,7 +117,7 @@ const COPY: Readonly<
       'What would you like advice on? Think of something you can do differently next time.',
     status: 'Write your request on the left; their answers go on the right.',
     coverStatus:
-      'The front: choosing its picture is coming soon. Turn it over to write.',
+      'The front: choose its picture from Templates. Turn it over to write.',
     lost: 'What you wrote, and who you asked, will be lost.',
   },
   answer: {
@@ -152,6 +156,10 @@ function blankDraft(card: PostcardCard): PostcardDraft {
     message: '',
     visibility: 'ONLY_ME',
     selectedAccountIds: new Set(),
+    // A new card opens on any picture; an answer's is the Requester's, which is not kept yet, so
+    // every answer shows the first, the same for whoever opens it.
+    templateKey:
+      card.kind === 'answer' ? POSTCARD_TEMPLATES[0].key : randomTemplateKey(),
     tone: card.kind === 'answer' ? card.ask.tone : 'cream',
     textStyle: DEFAULT_TEXT_STYLE,
   };
@@ -271,6 +279,10 @@ export function PostcardEditor({
   );
   const handleMessageChange = useCallback(
     (message: string) => change({ kind: 'card', fields: { message } }),
+    [],
+  );
+  const handleTemplateChange = useCallback(
+    (templateKey: string) => change({ kind: 'card', fields: { templateKey } }),
     [],
   );
   const handleToneChange = useCallback(
@@ -540,7 +552,11 @@ export function PostcardEditor({
             </span>
           </Button>
           <div ref={cardRef} className={cn(isSending && styles.sendAway)}>
-            <Postcard side={side} tone={draft.tone}>
+            <Postcard
+              side={side}
+              tone={draft.tone}
+              templateKey={draft.templateKey}
+            >
               {back}
             </Postcard>
           </div>
@@ -580,7 +596,10 @@ export function PostcardEditor({
                 card.kind === 'answer' ? (
                   <PostcardCoverNote ownerName={card.ask.requester.name} />
                 ) : (
-                  <PostcardCoverToolbar />
+                  <PostcardCoverToolbar
+                    templateKey={draft.templateKey}
+                    onTemplateChange={handleTemplateChange}
+                  />
                 )
               ) : (
                 <PostcardToolbar
