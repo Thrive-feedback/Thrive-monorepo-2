@@ -4,8 +4,8 @@ import { afterAll, afterEach, beforeAll } from 'vitest';
 import { server } from './msw-server';
 
 // Next writes this into the build; tests have no build, so they get a fixed host of their own.
-// It is set before any test file is imported, because the template catalog reads it then.
-process.env.NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST ??= 'templates.thrive.test';
+// It is set before any test file is imported, because the template and stamp catalogs read it then.
+process.env.NEXT_PUBLIC_POSTCARD_STORAGE_HOST ??= 'storage.thrive.test';
 
 // Test globals are off, so Testing Library cannot register its own cleanup; without this,
 // one test's rendered tree leaks into the next.

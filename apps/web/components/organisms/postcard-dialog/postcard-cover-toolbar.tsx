@@ -1,24 +1,28 @@
 import { LockIcon } from 'lucide-react';
 import { memo } from 'react';
-import {
-  PostcardTemplatePicker,
-  type PostcardTemplatePickerProps,
-} from './postcard-template-picker';
-import {
-  PostcardStampsTool,
-  PostcardToolDivider,
-} from './postcard-tool-button';
+import { PostcardStampPicker } from './postcard-stamp-picker';
+import { PostcardTemplatePicker } from './postcard-template-picker';
+import { PostcardToolDivider } from './postcard-tool-button';
 
-export type PostcardCoverToolbarProps = PostcardTemplatePickerProps;
+export type PostcardCoverToolbarProps = {
+  /** The picture on the front: a key from `POSTCARD_TEMPLATES`. */
+  templateKey: string;
+  /** How many stamps the card carries already, on both sides. */
+  stampCount: number;
+  onTemplateChange: (templateKey: string) => void;
+  /** Adds a stamp to the front, which is the side showing. */
+  onAddStamp: (stampKey: string) => void;
+};
 
 /**
  * The postcard's floating bar while its front is showing: a picture from the templates, and
- * stamps, which do not work yet and are shown where they will be. Memoised: nothing typed
- * changes it.
+ * stamps for the front. Memoised: nothing typed changes it.
  */
 export const PostcardCoverToolbar = memo(function PostcardCoverToolbar({
   templateKey,
+  stampCount,
   onTemplateChange,
+  onAddStamp,
 }: PostcardCoverToolbarProps) {
   return (
     <>
@@ -27,7 +31,7 @@ export const PostcardCoverToolbar = memo(function PostcardCoverToolbar({
         onTemplateChange={onTemplateChange}
       />
       <PostcardToolDivider />
-      <PostcardStampsTool />
+      <PostcardStampPicker count={stampCount} onAddStamp={onAddStamp} />
     </>
   );
 });

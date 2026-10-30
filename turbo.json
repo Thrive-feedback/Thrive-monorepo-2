@@ -8,7 +8,7 @@
       "dependsOn": ["db:generate"],
       "env": [
         "API_BASE_URL",
-        "NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST",
+        "NEXT_PUBLIC_POSTCARD_STORAGE_HOST",
         "NODE_ENV",
         "PORT"
       ]
@@ -18,7 +18,7 @@
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"],
       "env": [
         "API_BASE_URL",
-        "NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST",
+        "NEXT_PUBLIC_POSTCARD_STORAGE_HOST",
         "NODE_ENV",
         "PORT"
       ]
@@ -35,7 +35,7 @@
       "dependsOn": ["db:generate"],
       "env": [
         "API_BASE_URL",
-        "NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST",
+        "NEXT_PUBLIC_POSTCARD_STORAGE_HOST",
         "NODE_ENV",
         "PORT"
       ]

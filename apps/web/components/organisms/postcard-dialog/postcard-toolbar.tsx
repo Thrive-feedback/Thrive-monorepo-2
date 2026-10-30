@@ -14,13 +14,13 @@ import { cn } from '@/lib/cn.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import styles from './postcard.module.css';
 import type { PostcardKind, PostcardVisibility } from './postcard-draft.type';
+import { PostcardStampPicker } from './postcard-stamp-picker';
 import {
   PAPER_TONE_KEYS,
   PAPER_TONES,
   type PaperTone,
 } from './postcard-style.constant';
 import {
-  PostcardStampsTool,
   PostcardToolButton,
   PostcardToolDivider,
 } from './postcard-tool-button';
@@ -87,17 +87,21 @@ export type PostcardToolbarProps = {
   selectedAccountIds: ReadonlySet<string>;
   /** Who the postcard is for, by name: they always read it, and the choices say so. */
   recipientNames: readonly string[];
+  /** How many stamps the card carries already, on both sides. */
+  stampCount: number;
   onToneChange: (tone: PaperTone) => void;
   onVisibilityChange: (visibility: PostcardVisibility) => void;
   onSelectedChange: (accountIds: ReadonlySet<string>) => void;
+  /** Adds a stamp to the back, which is the side showing. */
+  onAddStamp: (stampKey: string) => void;
 };
 
 /**
- * The postcard's floating bar while nothing on it is being styled: Stamps, which are not ready,
- * the paper the card is printed on, and who else can read it. Giving and asking offer all three;
- * an answer offers only stamps, since it is written on the Requester's paper and the person
- * answering is never told who reads it. On a phone the tools
- * keep their icons and drop their words. Memoised: typing the message changes none of its props.
+ * The postcard's floating bar while nothing on it is being styled: stamps for the back, the paper
+ * the card is printed on, and who else can read it. Giving and asking offer all three; an answer
+ * offers only stamps, since it is written on the Requester's paper and the person answering is
+ * never told who reads it. On a phone the tools keep their icons and drop their words. Memoised:
+ * typing the message changes none of its props.
  */
 export const PostcardToolbar = memo(function PostcardToolbar({
   kind,
@@ -106,9 +110,11 @@ export const PostcardToolbar = memo(function PostcardToolbar({
   people,
   selectedAccountIds,
   recipientNames,
+  stampCount,
   onToneChange,
   onVisibilityChange,
   onSelectedChange,
+  onAddStamp,
 }: PostcardToolbarProps) {
   const [isVisibilityOpen, setIsVisibilityOpen] = useState(false);
 
@@ -116,7 +122,7 @@ export const PostcardToolbar = memo(function PostcardToolbar({
   const writing = kind === 'answer' ? null : kind;
   return (
     <>
-      <PostcardStampsTool />
+      <PostcardStampPicker count={stampCount} onAddStamp={onAddStamp} />
       {writing && (
         <>
           <PostcardToolDivider />

@@ -31,8 +31,8 @@ chooses which are shown.**
 - The browser never fetches Supabase. `next/image` fetches the file on the web server, resizes
   and caches it, and serves it from `/_next/image`. `images.remotePatterns` in
   `apps/web/next.config.ts` allows exactly that host and path, both taken from
-  `apps/web/lib/postcard-template-origin.util.ts`.
-- **The host is the variable `NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST`**, the project's host name
+  `apps/web/lib/postcard-storage.util.ts`.
+- **The host is the variable `NEXT_PUBLIC_POSTCARD_STORAGE_HOST`**, the project's host name
   alone (`rygqsihgowwdtakedrxl.supabase.co`). The path is code: it is the bucket's layout, the
   same in every project. The variable is public because the catalog builds each picture's address
   in the browser. That gives nothing away: the bucket is public, and the host already shows in
@@ -65,6 +65,11 @@ open.
 - The host is written into the build, not read at run time. Moving the files to another
   Supabase project means changing the variable in `deploy.yml` and rebuilding; setting it on
   Railway does nothing. Another provider would also change the path, and is a code change.
+- `apps/web/lib/postcard-storage.util.ts` reads the environment and is in the browser's code,
+  through the catalogs. That is the one deliberate exception to `FE_08` R5 ("keep anything that
+  reads the environment out of the client graph"): the value is a `NEXT_PUBLIC_` one, written
+  into the build, public by nature, and checked by the build before it is used. A secret, or a
+  value read at run time, still never goes there.
 - The web image now carries two addresses from its build, `API_BASE_URL` and this host, and
   `turbo.json`, `pr.yml` and the test setup each give it a value.
 - The front needs the network. Locally that means the internet: compose has no storage. A

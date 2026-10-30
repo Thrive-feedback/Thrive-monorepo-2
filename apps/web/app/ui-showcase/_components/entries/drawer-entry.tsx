@@ -45,6 +45,13 @@ export function DrawerEntry() {
           description: 'On Drawer: open or closed, controlled or uncontrolled.',
         },
         {
+          name: 'modal',
+          type: 'boolean',
+          defaultValue: 'true',
+          description:
+            'On Drawer: false leaves the page in reach while it is open. A press on the page closes it and still reaches the page.',
+        },
+        {
           name: 'onOpenChange',
           type: '(open: boolean) => void',
           description: 'On Drawer: called when it opens or closes.',
@@ -61,6 +68,7 @@ export function DrawerEntry() {
         'Announced as a dialog named by its title and described by its description.',
         'Focus moves inside on open and cannot leave until it closes.',
         'Escape, the × or a press outside closes it, and focus returns to the trigger.',
+        'Not modal, focus is not held and the page is not hidden; a press on the page closes it and still reaches the page.',
         'Rises into place, unless the person asked for reduced motion.',
       ]}
     >
@@ -79,6 +87,21 @@ export function DrawerEntry() {
             <DrawerClose asChild>
               <Button variant="primary">Done</Button>
             </DrawerClose>
+          </DrawerContent>
+        </Drawer>
+      </StateCell>
+      <StateCell label="Not modal">
+        <Drawer modal={false}>
+          <DrawerTrigger asChild>
+            <Button>Open beside the page</Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Stamps</DrawerTitle>
+              <DrawerDescription>
+                The page stays in reach while this is open.
+              </DrawerDescription>
+            </DrawerHeader>
           </DrawerContent>
         </Drawer>
       </StateCell>
