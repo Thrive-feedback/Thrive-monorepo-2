@@ -13,6 +13,7 @@ import styles from './postcard.module.css';
 import { PostcardPicture } from './postcard-picture';
 import { MAX_STAMPS, POSTCARD_STAMPS } from './postcard-stamp.constant';
 import { PostcardToolButton } from './postcard-tool-button';
+import { usePostcardDrawerContainer } from './use-postcard-drawer-container';
 
 export type PostcardStampPickerProps = {
   /** How many stamps the card carries already, on both sides. */
@@ -33,6 +34,7 @@ export function PostcardStampPicker({
   onAddStamp,
 }: PostcardStampPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const container = usePostcardDrawerContainer();
   const isFull = count >= MAX_STAMPS;
 
   function handleAdd(stampKey: string) {
@@ -51,7 +53,7 @@ export function PostcardStampPicker({
           <span className="max-sm:sr-only">Stamps </span>({count}/{MAX_STAMPS})
         </PostcardToolButton>
       </DrawerTrigger>
-      <DrawerContent data-stamp-panel>
+      <DrawerContent container={container} data-stamp-panel>
         <DrawerHeader>
           <DrawerTitle>Stamps</DrawerTitle>
           <DrawerDescription>

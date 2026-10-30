@@ -1,28 +1,50 @@
 /*
- * The drawer rises into place on the enter step and sinks away on the exit step, from whichever
- * edge it sits at. The motion tokens have no slide, and an animation's keyframes have no
- * utility, which is why this is CSS. Without motion it simply appears.
+ * The drawer follows a finger while it is swiped, and slides in from and back out to its edge.
+ * Base UI says how far it has been swiped, and how hard it was let go, through CSS variables, and
+ * a transform built from them has no utility, which is why this is CSS. Every duration and easing
+ * is a motion token; without motion it simply appears and goes.
  */
-@keyframes drawer-enter {
-  from {
-    opacity: 0;
-    translate: 0 calc(var(--space-unit) * 6);
-  }
+.popup {
+  /* Just past its edge: the sheet sits on the bottom, the panel 4 steps in from the right. */
+  --closed-down: translate3d(0, calc(100% + var(--space-unit) * 0.5), 0);
+  --closed-right: translate3d(calc(100% + var(--space-unit) * 4.5), 0, 0);
+
+  transform: translate3d(
+    var(--drawer-swipe-movement-x, 0px),
+    var(--drawer-swipe-movement-y, 0px),
+    0
+  );
+  transition: transform var(--motion-enter);
 }
 
-@keyframes drawer-exit {
-  to {
-    opacity: 0;
-    translate: 0 calc(var(--space-unit) * 6);
-  }
+.popup[data-swipe-direction='down'][data-starting-style],
+.popup[data-swipe-direction='down'][data-ending-style] {
+  transform: var(--closed-down);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .content[data-state='open'] {
-    animation: drawer-enter var(--motion-enter);
-  }
+.popup[data-swipe-direction='right'][data-starting-style],
+.popup[data-swipe-direction='right'][data-ending-style] {
+  transform: var(--closed-right);
+}
 
-  .content[data-state='closed'] {
-    animation: drawer-exit var(--motion-exit);
+/* Let go, it leaves on the exit step, quicker the harder it was flung. */
+.popup[data-ending-style] {
+  transition: transform var(--motion-exit);
+  transition-duration: calc(
+    var(--motion-duration-quick) *
+    var(--drawer-swipe-strength, 1)
+  );
+}
+
+/* Under a finger it moves with the finger, never behind it. */
+.popup[data-swiping] {
+  transition-duration: 0s;
+}
+
+/* As specific as the leaving rule above, or that rule would still slide it out. */
+@media (prefers-reduced-motion: reduce) {
+  .popup,
+  .popup[data-ending-style] {
+    transition-duration: 0s;
   }
 }

@@ -343,6 +343,22 @@ describe('PostcardDialog', () => {
   });
 });
 
+/**
+ * Opens Templates and waits for the cursor to reach the picture chosen, as a person's next key
+ * would: the drawer moves focus into itself a frame after it opens.
+ */
+async function openTemplatesForKeys(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: 'Templates' }));
+  await waitFor(() =>
+    expect(
+      within(screen.getByRole('dialog', { name: 'Templates' })).getByRole(
+        'radio',
+        { checked: true },
+      ),
+    ).toHaveFocus(),
+  );
+}
+
 describe('PostcardDialog, the front', () => {
   /**
    * The picture the front shows. While Templates is open the page behind it is hidden from
@@ -424,7 +440,7 @@ describe('PostcardDialog, the front', () => {
     render(dialog());
 
     await turnToFront(user);
-    await user.click(screen.getByRole('button', { name: 'Templates' }));
+    await openTemplatesForKeys(user);
     // Held, as a person's key is while focus moves: Radix chooses on an arrow only then.
     await user.keyboard('{ArrowRight>}');
     await waitFor(() =>
@@ -449,7 +465,7 @@ describe('PostcardDialog, the front', () => {
     render(dialog());
 
     await turnToFront(user);
-    await user.click(screen.getByRole('button', { name: 'Templates' }));
+    await openTemplatesForKeys(user);
     await user.keyboard('{End}');
     await waitFor(() =>
       expect(
@@ -487,7 +503,7 @@ describe('PostcardDialog, the front', () => {
 
     await turnToFront(user);
     const templates = screen.getByRole('button', { name: 'Templates' });
-    await user.click(templates);
+    await openTemplatesForKeys(user);
     await user.keyboard('{ArrowRight>}{Escape}{/ArrowRight}');
     await user.click(templates);
     await user.click(screen.getByRole('radio', { name: templateAt(3).alt }));
@@ -496,6 +512,21 @@ describe('PostcardDialog, the front', () => {
       screen.queryByRole('dialog', { name: 'Templates' }),
     ).not.toBeInTheDocument();
     expect(frontPicture()).toHaveAccessibleName(templateAt(3).alt);
+  });
+
+  it('closes Templates as a mouse press on the card goes down, not when it is let go', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    render(dialog());
+
+    await turnToFront(user);
+    await user.click(screen.getByRole('button', { name: 'Templates' }));
+    await user.pointer({ keys: '[MouseLeft>]', target: frontPicture() });
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Templates' }),
+    ).not.toBeInTheDocument();
+    await user.pointer({ keys: '[/MouseLeft]' });
   });
 
   it('closes Templates on a press outside it, and the press still reaches the card', async () => {

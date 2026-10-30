@@ -18,9 +18,9 @@ export function DrawerEntry() {
     <ShowcaseEntry
       name="Drawer"
       level="atom"
-      origin="thrive"
+      origin="shadcn"
       source="components/atoms/drawer.tsx — Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose"
-      summary="A panel of choices from the edge of the screen: up from the bottom on a phone, in from the right from md. The page behind stays undimmed."
+      summary="A panel of choices from the edge of the screen, on shadcn's Base UI drawer (ADR 0066): a bottom sheet on a phone, swiped down to close, with a handle; a panel on the right from md, swiped right. The page behind stays undimmed."
       useFor="Choosing something whose effect shows on the page behind as it is chosen: a postcard's picture."
       avoidFor="A decision that must be finished before going on. Use a Dialog."
       usage={`import {
@@ -57,6 +57,12 @@ export function DrawerEntry() {
           description: 'On Drawer: called when it opens or closes.',
         },
         {
+          name: 'container',
+          type: 'HTMLElement | RefObject<HTMLElement>',
+          description:
+            "On DrawerContent: where it is rendered; the end of the page if not given. Inside a Radix modal it must be that modal's content (ADR 0066).",
+        },
+        {
           name: 'asChild',
           type: 'boolean',
           defaultValue: 'false',
@@ -67,9 +73,9 @@ export function DrawerEntry() {
       accessibility={[
         'Announced as a dialog named by its title and described by its description.',
         'Focus moves inside on open and cannot leave until it closes.',
-        'Escape, the × or a press outside closes it, and focus returns to the trigger.',
+        'Escape, the ×, a swipe toward its edge or a press outside closes it, and focus returns to the trigger.',
         'Not modal, focus is not held and the page is not hidden; a press on the page closes it and still reaches the page.',
-        'Rises into place, unless the person asked for reduced motion.',
+        'Slides in from its edge and back out, unless the person asked for reduced motion.',
       ]}
     >
       <StateCell label="Choices">
