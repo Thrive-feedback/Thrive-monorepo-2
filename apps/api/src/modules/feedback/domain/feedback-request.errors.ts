@@ -132,6 +132,16 @@ export class FeedbackMessageTooLongError extends DomainError {
   }
 }
 
+/** The request body's schema holds the closed choices; this is what it cannot say on its own. */
+export class PostcardInvalidError extends DomainError {
+  readonly code = 'POSTCARD_INVALID';
+  readonly category = 'validation' as const;
+
+  constructor() {
+    super('A postcard must name its pictures and fit on the card.');
+  }
+}
+
 /** The Giver is never the Receiver: Feedback is for somebody else. */
 export class CannotGiveYourselfFeedbackError extends DomainError {
   readonly code = 'CANNOT_GIVE_YOURSELF_FEEDBACK';

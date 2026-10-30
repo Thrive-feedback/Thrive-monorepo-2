@@ -3,7 +3,7 @@ import { Visibility } from '../../domain/value-object/visibility.vo';
 import { FeedbackNotFoundError } from '../feedback-request.errors';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
 import { PeopleService } from '../service/people.service';
-import type { FeedbackView } from '../types/feedback-request.types';
+import type { OpenedFeedbackView } from '../types/feedback-request.types';
 
 export interface GetFeedbackInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
@@ -28,7 +28,7 @@ export class GetFeedbackUseCase {
     private readonly peopleService: PeopleService,
   ) {}
 
-  async execute(input: GetFeedbackInput): Promise<FeedbackView> {
+  async execute(input: GetFeedbackInput): Promise<OpenedFeedbackView> {
     const row = await this.feedbackRequestQuery.feedbackInWorkspace(
       input.workspaceId,
       input.feedbackId,
@@ -64,6 +64,7 @@ export class GetFeedbackUseCase {
       giverStatus: people.statusOf(row.giverAccountId),
       receivers: row.receiverAccountIds.map(people.personOf),
       message: row.message,
+      postcard: row.postcard,
       tags: row.tags,
       createdAt: row.createdAt,
     };

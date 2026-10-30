@@ -20,6 +20,7 @@ import type {
   TagsView,
 } from '../../application/types/feedback-request.types';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
+import { toPostcardSnapshot } from '../mapper/postcard.mapper';
 
 /** Oldest first inside one request: the order the Members were asked in. */
 const ASKS_IN_ORDER_ASKED = [{ createdAt: 'asc' }, { id: 'asc' }] satisfies {
@@ -62,6 +63,7 @@ const REQUEST_FIELDS = {
   id: true,
   requesterAccountId: true,
   message: true,
+  postcard: true,
   visibility: true,
   createdAt: true,
   asks: { orderBy: ASKS_IN_ORDER_ASKED, select: ASK_FIELDS },
@@ -332,6 +334,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
           giverAccountId: true,
           receivers: RECEIVERS_IN_ORDER,
           message: true,
+          postcard: true,
           createdAt: true,
           visibility: true,
           selectedPeople: SELECTED_PEOPLE_IN_ORDER,
@@ -348,6 +351,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       giverAccountId: record.giverAccountId,
       receiverAccountIds: accountIdsOf(record.receivers),
       message: record.message,
+      postcard: toPostcardSnapshot(record.postcard),
       tags: tagsOf(record),
       createdAt: record.createdAt,
       visibility: record.visibility,
@@ -413,6 +417,7 @@ function toFeedbackRequestRow(
     readonly id: string;
     readonly requesterAccountId: string;
     readonly message: string;
+    readonly postcard: unknown;
     readonly visibility: string;
     readonly createdAt: Date;
     readonly asks: readonly {
@@ -427,6 +432,7 @@ function toFeedbackRequestRow(
     id: record.id,
     requesterAccountId: record.requesterAccountId,
     message: record.message,
+    postcard: toPostcardSnapshot(record.postcard),
     tags: tagsOf(record),
     visibility: record.visibility,
     selectedAccountIds: record.selectedPeople.map((person) => person.accountId),

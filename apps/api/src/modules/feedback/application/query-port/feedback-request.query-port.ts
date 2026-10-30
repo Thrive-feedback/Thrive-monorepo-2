@@ -1,5 +1,6 @@
 import type { FeedbackOrigin } from '../../domain/entity/feedback.entity';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
+import type { PostcardSnapshot } from '../../domain/value-object/postcard.vo';
 import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
 import type { PageRequest, TagsView } from '../types/feedback-request.types';
 
@@ -16,6 +17,7 @@ export interface FeedbackRequestRow {
   /** The Member who asked. Read so the use case can refuse everybody else. */
   readonly requesterAccountId: string;
   readonly message: string;
+  readonly postcard: PostcardSnapshot | null;
   readonly tags: TagsView;
   readonly visibility: string;
   readonly selectedAccountIds: readonly string[];
@@ -91,6 +93,7 @@ export interface FeedbackWithVisibilityRow {
   /** Everyone it is for, in the order the Giver chose them: one for Requested Feedback. */
   readonly receiverAccountIds: readonly string[];
   readonly message: string;
+  readonly postcard: PostcardSnapshot | null;
   /** What its Giver wrote is bound to. */
   readonly tags: TagsView;
   readonly createdAt: Date;

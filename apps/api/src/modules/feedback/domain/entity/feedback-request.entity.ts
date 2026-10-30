@@ -11,6 +11,7 @@ import {
   type BoundWorkspaceGoal,
 } from '../value-object/bound-tags.vo';
 import type { FeedbackMessage } from '../value-object/feedback-message.vo';
+import { Postcard, type PostcardSnapshot } from '../value-object/postcard.vo';
 import { RequestMessage } from '../value-object/request-message.vo';
 import { Visibility } from '../value-object/visibility.vo';
 import { Feedback } from './feedback.entity';
@@ -21,6 +22,8 @@ export interface FeedbackRequestSnapshot {
   readonly workspaceId: string;
   readonly requesterAccountId: string;
   readonly message: string;
+  /** How it looks, or `null` for a request not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
   readonly visibility: string;
   /** The Members the Requester selected; empty unless the Visibility is Selected people. */
   readonly selectedAccountIds: readonly string[];
@@ -53,6 +56,7 @@ export class FeedbackRequest {
     private readonly visibility: Visibility,
     private readonly tags: BoundTags,
     private asks: readonly FeedbackAsk[],
+    private readonly postcard: Postcard | null,
   ) {}
 
   /**
@@ -71,6 +75,8 @@ export class FeedbackRequest {
     /** What the Request message names. */
     readonly tags: BoundTags;
     readonly givers: readonly GiverToAsk[];
+    /** How it looks, when it was written on a postcard. */
+    readonly postcard?: Postcard | null;
   }): FeedbackRequest {
     if (details.givers.length === 0) {
       throw new NoGiversToAskError();
@@ -118,6 +124,7 @@ export class FeedbackRequest {
           giverAccountId: giver.giverAccountId,
         }),
       ),
+      details.postcard ?? null,
     );
   }
 
@@ -143,6 +150,7 @@ export class FeedbackRequest {
       }),
       BoundTags.of(snapshot),
       snapshot.asks.map((ask) => FeedbackAsk.restore(ask)),
+      snapshot.postcard && Postcard.restore(snapshot.postcard),
     );
   }
 
@@ -192,6 +200,7 @@ export class FeedbackRequest {
       workspaceId: this.workspaceId,
       requesterAccountId: this.requesterAccountId,
       message: this.message.toString(),
+      postcard: this.postcard?.snapshot() ?? null,
       visibility: this.visibility.toString(),
       selectedAccountIds: this.visibility.selectedAccountIds(),
       workspaceGoals: this.tags.workspaceGoals(),

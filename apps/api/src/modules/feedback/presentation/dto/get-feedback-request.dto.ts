@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
 import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
+import { postcardSchema } from './postcard.dto';
 import { tagsSchema } from './tags.dto';
 
 const answerSchema = z.object({
@@ -51,6 +52,8 @@ export const feedbackRequestSchema = z.object({
   id: z.uuid(),
   /** The Request message. */
   message: z.string(),
+  /** How it looks, or `null` when it was not written on a postcard. */
+  postcard: postcardSchema.nullable(),
   /** What the Request message was bound to when it was sent; highlight these and nothing else. */
   tags: tagsSchema,
   /** `null` when the caller is a Giver, who is not told who else reads their answer. */

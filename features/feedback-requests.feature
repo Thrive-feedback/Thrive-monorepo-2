@@ -238,6 +238,17 @@ Feature: Feedback requests
     Then Ann sees it is shared with Cara
 
   @api
+  Scenario: A request written on a postcard is read on that postcard
+    Given Ann has asked Ben for Feedback on a postcard: "Running the planning meeting"
+    When Ben opens Ann's Feedback request
+    Then Ben sees the postcard it was written on
+
+  @api
+  Scenario: A request's postcard carries three stamps at most
+    When Ann asks Ben for Feedback on a postcard with four stamps: "Running the planning meeting"
+    Then Ann is told the postcard cannot be sent
+
+  @api
   Scenario: The Giver is not told who else reads their answer
     Given Cara is a Member of Ann's Workspace
     And Ann has asked Ben for Feedback: "Running the planning meeting", shared with Cara

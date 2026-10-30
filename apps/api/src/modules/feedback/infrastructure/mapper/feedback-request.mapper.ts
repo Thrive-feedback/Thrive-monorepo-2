@@ -6,6 +6,7 @@ import type {
   FeedbackRequestWorkspaceGoal as FeedbackRequestWorkspaceGoalRecord,
 } from '@app/infrastructure/database/generated/client';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
+import { toPostcardRecord, toPostcardSnapshot } from './postcard.mapper';
 
 /** The only place that knows both the stored rows and the FeedbackRequest aggregate. */
 
@@ -22,6 +23,7 @@ export function toFeedbackRequest(record: StoredRequest): FeedbackRequest {
     workspaceId: record.workspaceId,
     requesterAccountId: record.requesterAccountId,
     message: record.message,
+    postcard: toPostcardSnapshot(record.postcard),
     visibility: record.visibility,
     selectedAccountIds: record.selectedPeople.map((person) => person.accountId),
     workspaceGoals: record.workspaceGoals.map((workspaceGoal) => ({
@@ -44,8 +46,9 @@ export function toFeedbackRequest(record: StoredRequest): FeedbackRequest {
 /** The audit timestamps are the database's to set. */
 export function toFeedbackRequestRecord(request: FeedbackRequest): Omit<
   FeedbackRequestRecord,
-  'createdAt' | 'updatedAt'
+  'createdAt' | 'updatedAt' | 'postcard'
 > & {
+  readonly postcard: ReturnType<typeof toPostcardRecord>;
   readonly asks: readonly Omit<
     FeedbackAskRecord,
     'createdAt' | 'updatedAt' | 'feedbackRequestId'
@@ -69,6 +72,7 @@ export function toFeedbackRequestRecord(request: FeedbackRequest): Omit<
     workspaceId: snapshot.workspaceId,
     requesterAccountId: snapshot.requesterAccountId,
     message: snapshot.message,
+    postcard: toPostcardRecord(snapshot.postcard),
     visibility: snapshot.visibility as FeedbackRequestRecord['visibility'],
     asks: snapshot.asks.map((ask) => ({
       id: ask.id,

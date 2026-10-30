@@ -56,6 +56,7 @@ export class ListSentFeedbackRequestsUseCase {
         return {
           id: request.id,
           message: request.message,
+          postcard: request.postcard,
           tags: request.tags,
           // Every request listed is the caller's own, so they are always told who reads it.
           visibility: {

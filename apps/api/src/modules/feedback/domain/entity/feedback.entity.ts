@@ -12,6 +12,7 @@ import type {
   BoundWorkspaceGoal,
 } from '../value-object/bound-tags.vo';
 import type { FeedbackMessage } from '../value-object/feedback-message.vo';
+import type { Postcard, PostcardSnapshot } from '../value-object/postcard.vo';
 import type {
   Visibility,
   VisibilityValue,
@@ -37,6 +38,8 @@ export interface FeedbackSnapshot {
   /** The Members selected to read it; empty unless the Visibility is Selected people. */
   readonly selectedAccountIds: readonly string[];
   readonly message: string;
+  /** How it looks, or `null` for Feedback not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
   /** What its Giver's Feedback message is bound to. */
   readonly workspaceGoals: readonly BoundWorkspaceGoal[];
   readonly mentions: readonly BoundMention[];
@@ -75,6 +78,7 @@ export class Feedback {
     private readonly visibility: Visibility,
     private readonly message: FeedbackMessage,
     private readonly tags: BoundTags,
+    private readonly postcard: Postcard | null,
   ) {}
 
   /** Only the Feedback Request calls this, which is why it takes everything already decided. */
@@ -102,6 +106,7 @@ export class Feedback {
       details.visibility,
       details.message,
       details.tags,
+      null,
     );
   }
 
@@ -123,6 +128,8 @@ export class Feedback {
     readonly message: FeedbackMessage;
     /** What the Feedback message names. */
     readonly tags: BoundTags;
+    /** How it looks, when it was written on a postcard. */
+    readonly postcard?: Postcard | null;
   }): Feedback {
     const receivers = details.receiverAccountIds;
     if (receivers.length === 0) {
@@ -161,6 +168,7 @@ export class Feedback {
       details.visibility,
       details.message,
       details.tags,
+      details.postcard ?? null,
     );
   }
 
@@ -176,6 +184,7 @@ export class Feedback {
       visibility: this.visibility.toString(),
       selectedAccountIds: this.visibility.selectedAccountIds(),
       message: this.message.toString(),
+      postcard: this.postcard?.snapshot() ?? null,
       workspaceGoals: this.tags.workspaceGoals(),
       mentions: this.tags.mentions(),
     };

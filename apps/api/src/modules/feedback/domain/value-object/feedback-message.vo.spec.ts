@@ -25,9 +25,9 @@ describe('an answer', () => {
   });
 
   it('is refused when it is longer than one answer', () => {
-    expect(() => FeedbackMessage.of('a'.repeat(4001))).toThrow(
-      FeedbackMessageTooLongError,
-    );
+    expect(() =>
+      FeedbackMessage.of('a'.repeat(FeedbackMessage.MAX_LENGTH + 1)),
+    ).toThrow(FeedbackMessageTooLongError);
   });
 
   it('counts a Thai cluster as the one character a reader sees', () => {

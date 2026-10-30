@@ -10,12 +10,13 @@ const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
  * Questions and no ratings (`ADR-0022`). Surrounding whitespace goes; the whitespace inside does
  * not, because where somebody put their paragraphs is part of what they wrote.
  *
- * The glossary names no length. 4,000 is this release's reading of "one answer" — roughly four
- * screens of writing — accepted as an engineering reading on 2026-10-12 and still the product's
- * to overturn. The column is `text`, so raising it costs no migration.
+ * 1,000 is the product's limit on what fits a postcard, the same for a Feedback message and a
+ * Request message. It counts what a reader sees as one character, so Thai marks do not use it up.
+ * It binds what is written from now on: rows stored under the earlier 4,000 are still read.
+ * The column is `text`, so changing it costs no migration.
  */
 export class FeedbackMessage {
-  static readonly MAX_LENGTH = 4000;
+  static readonly MAX_LENGTH = 1000;
 
   private constructor(private readonly value: string) {}
 

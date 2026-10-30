@@ -5,6 +5,10 @@ import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable, Logger } from '@nestjs/common';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import { FeedbackRequestRepository } from '../../domain/repository/feedback-request-repository.port';
+import {
+  Postcard,
+  type PostcardSnapshot,
+} from '../../domain/value-object/postcard.vo';
 import { RequestMessage } from '../../domain/value-object/request-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import {
@@ -23,6 +27,8 @@ export interface SendFeedbackRequestInput {
   readonly visibility: string;
   /** The Members picked when the Visibility is Selected people. */
   readonly selectedAccountIds: readonly string[];
+  /** How it looks, when it was written on a postcard. */
+  readonly postcard?: PostcardSnapshot | undefined;
 }
 
 export interface SendFeedbackRequestResult {
@@ -57,6 +63,7 @@ export class SendFeedbackRequestUseCase {
       value: input.visibility,
       selectedAccountIds: input.selectedAccountIds,
     });
+    const postcard = input.postcard ? Postcard.of(input.postcard) : null;
 
     const members = new Set(
       await this.workspaceMembershipPort.membersAmong({
@@ -88,6 +95,7 @@ export class SendFeedbackRequestUseCase {
         askId: this.idGenerator.next(),
         giverAccountId,
       })),
+      postcard,
     });
 
     await this.unitOfWork.run(() =>

@@ -11,7 +11,9 @@ import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   CannotGiveYourselfFeedbackError,
   FeedbackMessageEmptyError,
+  PostcardInvalidError,
 } from '../../domain/feedback-request.errors';
+import type { PostcardSnapshot } from '../../domain/value-object/postcard.vo';
 import {
   ReceiverNotInWorkspaceError,
   SelectedPersonNotInWorkspaceError,
@@ -84,10 +86,48 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         message: 'You kept the room with you.\n\nKeep the recap.',
+        postcard: null,
         workspaceGoals: [],
         mentions: [],
       },
     ]);
+  });
+
+  it('keeps the postcard it was written on', async () => {
+    const { feedbackRepository, useCase } = setUp();
+    const postcard: PostcardSnapshot = {
+      templateKey: 'system/postcard_template_2',
+      tone: 'sage',
+      textStyle: { font: 'classic', sizeStep: 2, align: 'left', ink: 'navy' },
+      stamps: [],
+    };
+
+    await useCase.execute(offering({ postcard }));
+
+    expect(feedbackRepository.saved[0]?.postcard).toEqual(postcard);
+  });
+
+  it('refuses a postcard that does not fit and stores nothing', async () => {
+    const { feedbackRepository, useCase } = setUp();
+
+    await expect(
+      useCase.execute(
+        offering({
+          postcard: {
+            templateKey: 'not a picture',
+            tone: 'sage',
+            textStyle: {
+              font: 'classic',
+              sizeStep: 2,
+              align: 'left',
+              ink: 'navy',
+            },
+            stamps: [],
+          },
+        }),
+      ),
+    ).rejects.toThrow(PostcardInvalidError);
+    expect(feedbackRepository.saved).toEqual([]);
   });
 
   it('binds what its Feedback message names', async () => {

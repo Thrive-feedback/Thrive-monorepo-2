@@ -953,6 +953,29 @@ export interface components {
             /** @enum {string} */
             visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
             selectedAccountIds?: string[];
+            postcard?: {
+                templateKey: string;
+                /** @enum {string} */
+                tone: "cream" | "sage" | "blush";
+                textStyle: {
+                    /** @enum {string} */
+                    font: "modern" | "classic" | "signature";
+                    sizeStep: number;
+                    /** @enum {string} */
+                    align: "left" | "center" | "right";
+                    /** @enum {string} */
+                    ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                };
+                stamps: {
+                    stampKey: string;
+                    /** @enum {string} */
+                    side: "front" | "back";
+                    x: number;
+                    y: number;
+                    scale: number;
+                    rotation: number;
+                }[];
+            };
         };
         SendFeedbackRequestResponseDto_Output: {
             /** Format: uuid */
@@ -963,6 +986,29 @@ export interface components {
                 /** Format: uuid */
                 id: string;
                 message: string;
+                postcard: {
+                    templateKey: string;
+                    /** @enum {string} */
+                    tone: "cream" | "sage" | "blush";
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                    };
+                    stamps: {
+                        stampKey: string;
+                        /** @enum {string} */
+                        side: "front" | "back";
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                } | null;
                 tags: {
                     workspaceGoals: {
                         name: string;
@@ -1019,6 +1065,29 @@ export interface components {
             /** Format: uuid */
             id: string;
             message: string;
+            postcard: {
+                templateKey: string;
+                /** @enum {string} */
+                tone: "cream" | "sage" | "blush";
+                textStyle: {
+                    /** @enum {string} */
+                    font: "modern" | "classic" | "signature";
+                    sizeStep: number;
+                    /** @enum {string} */
+                    align: "left" | "center" | "right";
+                    /** @enum {string} */
+                    ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                };
+                stamps: {
+                    stampKey: string;
+                    /** @enum {string} */
+                    side: "front" | "back";
+                    x: number;
+                    y: number;
+                    scale: number;
+                    rotation: number;
+                }[];
+            } | null;
             tags: {
                 workspaceGoals: {
                     name: string;
@@ -1144,6 +1213,29 @@ export interface components {
             /** @enum {string} */
             visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
             selectedAccountIds?: string[];
+            postcard?: {
+                templateKey: string;
+                /** @enum {string} */
+                tone: "cream" | "sage" | "blush";
+                textStyle: {
+                    /** @enum {string} */
+                    font: "modern" | "classic" | "signature";
+                    sizeStep: number;
+                    /** @enum {string} */
+                    align: "left" | "center" | "right";
+                    /** @enum {string} */
+                    ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                };
+                stamps: {
+                    stampKey: string;
+                    /** @enum {string} */
+                    side: "front" | "back";
+                    x: number;
+                    y: number;
+                    scale: number;
+                    rotation: number;
+                }[];
+            };
         };
         OfferFeedbackResponseDto_Output: {
             /** Format: uuid */
@@ -1216,6 +1308,29 @@ export interface components {
                 status: "ACTIVE" | "DEACTIVATED";
             }[];
             message: string;
+            postcard: {
+                templateKey: string;
+                /** @enum {string} */
+                tone: "cream" | "sage" | "blush";
+                textStyle: {
+                    /** @enum {string} */
+                    font: "modern" | "classic" | "signature";
+                    sizeStep: number;
+                    /** @enum {string} */
+                    align: "left" | "center" | "right";
+                    /** @enum {string} */
+                    ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                };
+                stamps: {
+                    stampKey: string;
+                    /** @enum {string} */
+                    side: "front" | "back";
+                    x: number;
+                    y: number;
+                    scale: number;
+                    rotation: number;
+                }[];
+            } | null;
             tags: {
                 workspaceGoals: {
                     name: string;
@@ -2402,7 +2517,7 @@ export interface operations {
                     "application/json": components["schemas"]["SendFeedbackRequestResponseDto_Output"];
                 };
             };
-            /** @description REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE */
+            /** @description REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, POSTCARD_INVALID, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2683,7 +2798,7 @@ export interface operations {
                     "application/json": components["schemas"]["OfferFeedbackResponseDto_Output"];
                 };
             };
-            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE */
+            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, POSTCARD_INVALID, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE */
             400: {
                 headers: {
                     [name: string]: unknown;

@@ -26,6 +26,7 @@ import { OfferFeedbackUseCase } from '../application/use-cases/offer-feedback.us
 import {
   toFeedbackResponse,
   toPersonResponse,
+  toPostcardResponse,
   toTagsResponse,
 } from './dto/feedback-response.mapper';
 import { GetFeedbackResponseDto } from './dto/get-feedback.dto';
@@ -89,7 +90,7 @@ export class FeedbackController {
   @ZodResponse({ status: HttpStatus.CREATED, type: OfferFeedbackResponseDto })
   @ApiBadRequestResponse({
     description:
-      'REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE',
+      'REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, POSTCARD_INVALID, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE',
   })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
   @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
@@ -105,6 +106,7 @@ export class FeedbackController {
       message: body.message,
       visibility: body.visibility,
       selectedAccountIds: body.selectedAccountIds ?? [],
+      postcard: body.postcard,
     });
     return { id: given.id };
   }
@@ -156,12 +158,14 @@ export class FeedbackController {
     @CurrentActor() actor: Actor,
     @Param() params: FeedbackPathParamsDto,
   ) {
-    return toFeedbackResponse(
-      await this.getFeedbackUseCase.execute({
-        workspaceId: params.workspaceId,
-        readerAccountId: actor.accountId,
-        feedbackId: params.feedbackId,
-      }),
-    );
+    const feedback = await this.getFeedbackUseCase.execute({
+      workspaceId: params.workspaceId,
+      readerAccountId: actor.accountId,
+      feedbackId: params.feedbackId,
+    });
+    return {
+      ...toFeedbackResponse(feedback),
+      postcard: toPostcardResponse(feedback.postcard),
+    };
   }
 }

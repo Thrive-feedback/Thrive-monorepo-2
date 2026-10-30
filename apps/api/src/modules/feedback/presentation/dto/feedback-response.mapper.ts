@@ -3,6 +3,7 @@ import type {
   PersonView,
   TagsView,
 } from '../../application/types/feedback-request.types';
+import type { PostcardSnapshot } from '../../domain/value-object/postcard.vo';
 
 /** One person a piece of Feedback names, on the wire. */
 export function toPersonResponse(person: PersonView) {
@@ -25,6 +26,30 @@ export function toTagsResponse(tags: TagsView) {
       displayName: mention.displayName,
     })),
   };
+}
+
+/** How a card looks, on the wire. `null` for what was not written on a postcard. */
+export function toPostcardResponse(postcard: PostcardSnapshot | null) {
+  return (
+    postcard && {
+      templateKey: postcard.templateKey,
+      tone: postcard.tone,
+      textStyle: {
+        font: postcard.textStyle.font,
+        sizeStep: postcard.textStyle.sizeStep,
+        align: postcard.textStyle.align,
+        ink: postcard.textStyle.ink,
+      },
+      stamps: postcard.stamps.map((stamp) => ({
+        stampKey: stamp.stampKey,
+        side: stamp.side,
+        x: stamp.x,
+        y: stamp.y,
+        scale: stamp.scale,
+        rotation: stamp.rotation,
+      })),
+    }
+  );
 }
 
 /**
