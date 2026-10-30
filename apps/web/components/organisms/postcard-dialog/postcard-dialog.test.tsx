@@ -131,6 +131,15 @@ const sideOfCard = (name: 'Front' | 'Back') =>
 const message = () => screen.getByRole('textbox', { name: 'Your feedback' });
 const send = () => screen.getByRole('button', { name: /Seal & Send/ });
 
+/** Drawn once the send has been answered, so it is waited for. */
+function postmark() {
+  return waitFor(() => {
+    const mark = document.querySelector('[data-postmark]');
+    expect(mark).toBeInTheDocument();
+    return mark;
+  });
+}
+
 /** A send the API has not answered yet: `resolve` is the answer arriving. */
 function aSendInFlight() {
   let resolve: (hasGone: boolean) => void = () => {};
@@ -860,7 +869,7 @@ describe('PostcardDialog, stamps', () => {
     expect(stamps[0]?.scale).toBeCloseTo(1.1);
   });
 
-  it('postmarks a stamped card as it is sent, then closes', async () => {
+  it('postmarks a stamped card in its top-right corner, not on the stamp, then closes', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
     render(dialog({ defaultRecipientAccountIds: ['mali'], onOpenChange }));
@@ -871,10 +880,18 @@ describe('PostcardDialog, stamps', () => {
     await user.click(send());
 
     // Decoration, hidden from screen readers, so it is found by its mark rather than a role.
-    await waitFor(() =>
-      expect(document.querySelector('[data-postmark]')).toBeInTheDocument(),
-    );
+    expect(await postmark()).toHaveStyle({ left: '90%', top: '15%' });
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+  });
+
+  it('postmarks a card with no stamp in the same corner', async () => {
+    const user = userEvent.setup();
+    render(dialog({ defaultRecipientAccountIds: ['mali'] }));
+    await user.type(message(), 'Thank you.');
+
+    await user.click(send());
+
+    expect(await postmark()).toHaveStyle({ left: '90%', top: '15%' });
   });
 
   it('takes a stamp off with Delete, and gives the cursor to Stamps', async () => {

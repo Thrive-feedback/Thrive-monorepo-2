@@ -4,7 +4,6 @@ import {
   curvePath,
   parseDuration,
   parseEasing,
-  postmarkPoint,
   readMotionSteps,
   sampleCurve,
 } from './postcard-flight.util';
@@ -72,41 +71,6 @@ describe('readMotionSteps', () => {
     expect(steps.duration.verySlow).toBe(0);
     expect(steps.ease.inOut).toBe('linear');
     expect(steps.pressScale).toBe(1);
-  });
-});
-
-describe('postmarkPoint', () => {
-  afterEach(() => {
-    document.body.replaceChildren();
-  });
-
-  function cardWith(markup: string) {
-    const card = document.createElement('div');
-    card.innerHTML = markup;
-    document.body.append(card);
-    return card;
-  }
-
-  it('comes down in the corner a stamp is put in when the side showing has none', () => {
-    const card = cardWith(
-      '<section></section><section inert><div data-stamp></div></section>',
-    );
-
-    expect(postmarkPoint(card)).toEqual({ x: 90, y: 15 });
-  });
-
-  it('comes down on the first stamp on the side showing', () => {
-    const card = cardWith(
-      '<section><div data-stamp></div><div data-stamp></div></section>',
-    );
-    const [first] = card.querySelectorAll('[data-stamp]');
-    // jsdom lays nothing out, so the card and its stamp are given their places.
-    card.getBoundingClientRect = () => new DOMRect(0, 0, 200, 100);
-    if (first) {
-      first.getBoundingClientRect = () => new DOMRect(150, 10, 40, 40);
-    }
-
-    expect(postmarkPoint(card)).toEqual({ x: 85, y: 30 });
   });
 });
 
