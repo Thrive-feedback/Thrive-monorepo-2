@@ -21,7 +21,6 @@ export const KUDOS_TRIGGERS: readonly AutocompleteTrigger[] = [
             {
               value: slug,
               label: displayName ?? name,
-              detail: `@${slug}`,
               keywords: [displayName ?? name, name, slug],
             },
           ],

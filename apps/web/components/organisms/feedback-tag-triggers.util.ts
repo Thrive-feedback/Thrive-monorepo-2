@@ -39,7 +39,6 @@ export function feedbackTagTriggers(
               {
                 value: slug,
                 label: displayName ?? name,
-                detail: `@${slug}`,
                 keywords: [displayName ?? name, name, slug],
               },
             ],
