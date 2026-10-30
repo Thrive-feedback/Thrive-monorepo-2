@@ -34,14 +34,14 @@ export function TagSuggestions({
       id={id}
       role="listbox"
       aria-label={trigger.label}
-      className="mb-2 flex flex-wrap gap-1.5 motion-safe:animate-enter"
+      className="mb-3 flex flex-wrap gap-1 motion-safe:animate-enter"
     >
       {suggestions.map((option, index) => (
         <Badge
           key={option.value}
           asChild
           tone={index === active ? 'brand' : 'outline'}
-          className="cursor-pointer gap-1.5 px-3 py-1 text-body-3"
+          className="cursor-pointer"
         >
           {/* The keyboard picks from the field, which keeps focus: arrows move, Enter or Tab picks. */}
           {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above */}
@@ -54,10 +54,7 @@ export function TagSuggestions({
             onMouseEnter={() => onActiveChange(index)}
             onClick={() => onPick(option)}
           >
-            <span>{option.label}</span>
-            {option.detail && (
-              <span className="text-fg-secondary">{option.detail}</span>
-            )}
+            {option.label}
           </div>
         </Badge>
       ))}

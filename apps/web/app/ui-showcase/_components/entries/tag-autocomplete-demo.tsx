@@ -29,13 +29,11 @@ export const DEMO_TRIGGERS: readonly AutocompleteTrigger[] = [
       {
         value: 'nok',
         label: 'Nok',
-        detail: '@nok',
         keywords: ['Nok', 'Nok Chaiyo', 'nok'],
       },
       {
         value: 'somchai.k',
         label: 'สมชาย',
-        detail: '@somchai.k',
         keywords: ['สมชาย', 'Somchai Kaewmanee', 'somchai.k'],
       },
     ],

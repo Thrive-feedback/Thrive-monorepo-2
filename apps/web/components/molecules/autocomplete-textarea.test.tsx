@@ -28,13 +28,11 @@ const TEAMMATES: AutocompleteTrigger = {
     {
       value: 'somchai.k',
       label: 'Somchai',
-      detail: '@somchai.k',
       keywords: ['Somchai', 'Somchai Kaewmanee', 'somchai.k'],
     },
     {
       value: 'ann',
       label: 'Ann',
-      detail: '@ann',
       keywords: ['Ann', 'Ann Lee', 'ann'],
     },
   ],
@@ -203,7 +201,7 @@ describe('AutocompleteTextarea', () => {
 
     await user.type(field(), 'with @somch');
 
-    expect(suggestionNames('Teammates')).toEqual(['Somchai@somchai.k']);
+    expect(suggestionNames('Teammates')).toEqual(['Somchai']);
 
     await user.keyboard('{Enter}');
 
