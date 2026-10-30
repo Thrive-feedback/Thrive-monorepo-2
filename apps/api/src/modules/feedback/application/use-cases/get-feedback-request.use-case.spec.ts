@@ -25,6 +25,7 @@ function setUp() {
     workspaceId: WORKSPACE_ID,
     requesterAccountId: REQUESTER,
     message: 'my presentation skills',
+    postcard: null,
     tags: NO_TAGS,
     visibility: 'ONLY_ME',
     selectedAccountIds: [],
@@ -107,6 +108,7 @@ describe('reading one Feedback Request', () => {
     expect(found).toEqual({
       id: REQUEST_ID,
       message: 'my presentation skills',
+      postcard: null,
       tags: NO_TAGS,
       visibility: { value: 'ONLY_ME', selectedPeople: [] },
       asks: [

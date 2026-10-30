@@ -56,6 +56,7 @@ describe('sending a Feedback Request', () => {
       id: REQUEST_ID,
       requesterAccountId: 'account-ann',
       message: 'my presentation skills',
+      postcard: null,
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       asks: [{ id: ASK_ID, giverAccountId: 'account-ben', status: 'PENDING' }],
@@ -179,6 +180,7 @@ describe('sending a Feedback Request', () => {
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         message: 'You lose the room at the detail.',
+        postcard: null,
         workspaceGoals: [],
         mentions: [],
       });

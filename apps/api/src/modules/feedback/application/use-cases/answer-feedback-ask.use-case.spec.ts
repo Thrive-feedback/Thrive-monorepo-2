@@ -89,6 +89,7 @@ describe('a Giver answering an Ask', () => {
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         message: WRITTEN,
+        postcard: null,
         workspaceGoals: [],
         mentions: [],
       },

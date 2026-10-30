@@ -16,6 +16,18 @@ Feature: Offered feedback
     Then Ben reads "You kept the room with you." from Ann, given without being asked
 
   @api
+  Scenario: Feedback written on a postcard is read on that postcard
+    Given Ann has given Ben Feedback on a postcard: "You kept the room with you."
+    When Ben opens the Feedback Ann wrote
+    Then Ben sees the postcard it was written on
+
+  @api
+  Scenario: A postcard carries three stamps at most
+    When Ann gives Ben Feedback on a postcard with four stamps: "You kept the room with you."
+    Then Ann is told the postcard cannot be sent
+    And Ben has been given no Feedback
+
+  @api
   Scenario: Giving Feedback asks nobody anything
     When Ann gives Ben Feedback: "You kept the room with you."
     Then no Feedback request or Ask was made between Ann and Ben

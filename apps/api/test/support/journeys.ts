@@ -201,6 +201,7 @@ export async function giveFeedback(
   receivers: string | readonly string[],
   message: string,
   visibility: VisibilityChosen = { visibility: 'ONLY_ME' },
+  postcard?: unknown,
 ): Promise<ApiResponse> {
   const workspaceId = world.workspaceOf(giver);
   const forWhom = typeof receivers === 'string' ? [receivers] : receivers;
@@ -214,6 +215,7 @@ export async function giveFeedback(
       ),
       message: await withSlugs(world, message),
       ...visibility,
+      postcard,
     },
   );
   if (response.status === 201) {
@@ -228,6 +230,7 @@ export async function askForFeedback(
   givers: string | readonly string[],
   message: string,
   visibility: VisibilityChosen = { visibility: 'ONLY_ME' },
+  postcard?: unknown,
 ): Promise<ApiResponse> {
   const workspaceId = world.workspaceOf(requester);
   const asked = typeof givers === 'string' ? [givers] : givers;
@@ -239,6 +242,7 @@ export async function askForFeedback(
       message: await withSlugs(world, message),
       giverAccountIds: asked.map((giver) => world.person(giver).accountId),
       ...visibility,
+      postcard,
     },
   );
   if (response.status === 201) {

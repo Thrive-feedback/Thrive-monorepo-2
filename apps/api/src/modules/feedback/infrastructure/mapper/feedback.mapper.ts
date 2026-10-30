@@ -6,13 +6,14 @@ import type {
   FeedbackWorkspaceGoal as FeedbackWorkspaceGoalRecord,
 } from '@app/infrastructure/database/generated/client';
 import type { Feedback } from '../../domain/entity/feedback.entity';
+import { toPostcardRecord } from './postcard.mapper';
 
 /** The only place that knows both the stored rows and the Feedback entity. */
 
-/** The audit timestamps are the database's to set. */
+/** The audit timestamps are the database's to set, and the postcard is written beside these. */
 export function toFeedbackRecord(
   feedback: Feedback,
-): Omit<FeedbackRecord, 'createdAt' | 'updatedAt'> {
+): Omit<FeedbackRecord, 'createdAt' | 'updatedAt' | 'postcard'> {
   const snapshot = feedback.snapshot();
   return {
     id: snapshot.id,
@@ -74,6 +75,7 @@ function toFeedbackMentionRecords(
 export function toFeedbackCreateData(feedback: Feedback) {
   return {
     ...toFeedbackRecord(feedback),
+    postcard: toPostcardRecord(feedback.snapshot().postcard),
     receivers: { create: toFeedbackReceiverRecords(feedback) },
     selectedPeople: { create: toFeedbackSelectedPersonRecords(feedback) },
     workspaceGoals: { create: toFeedbackWorkspaceGoalRecords(feedback) },

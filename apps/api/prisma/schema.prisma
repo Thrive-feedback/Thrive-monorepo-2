@@ -204,6 +204,8 @@ model FeedbackRequest {
   requesterAccountId String
   /// What the Requester wrote when asking (glossary: Request message).
   message            String
+  /// How it looks, written on a postcard, or null when it was not (ADR 0067).
+  postcard           Json?
   /// Who besides the Giver and the Requester reads what it collects. Fixed once sent. The
   /// default only fills rows written before the Requester could choose.
   visibility         Visibility                      @default(ONLY_ME)
@@ -272,6 +274,8 @@ model Feedback {
   /// What the Giver wrote (glossary: Feedback message). A Requested answer carries only its own,
   /// never the request's Request message (brain `ADR-0039`, ADR 0054).
   message           String
+  /// How it looks, written on a postcard, or null when it was not (ADR 0067).
+  postcard          Json?
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
   /// Everyone it is for (brain `ADR-0044`): one for Requested Feedback, one or more for Offered.

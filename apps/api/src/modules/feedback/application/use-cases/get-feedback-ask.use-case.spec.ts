@@ -26,6 +26,7 @@ function setUp(visibility: VisibilityValue = 'ONLY_ME') {
     workspaceId: WORKSPACE_ID,
     requesterAccountId: ANA,
     message: 'my presentation skills',
+    postcard: null,
     tags: NO_TAGS,
     visibility,
     selectedAccountIds: [],

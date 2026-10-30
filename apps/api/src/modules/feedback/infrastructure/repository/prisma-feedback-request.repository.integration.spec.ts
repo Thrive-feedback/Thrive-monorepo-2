@@ -7,6 +7,7 @@ import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import { AskAlreadyAnsweredError } from '../../domain/feedback-request.errors';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
 import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
+import { Postcard } from '../../domain/value-object/postcard.vo';
 import { RequestMessage } from '../../domain/value-object/request-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { PrismaFeedbackRequestQuery } from '../query/prisma-feedback-request.query';
@@ -65,6 +66,49 @@ describe('storing a Feedback Request', () => {
       request.snapshot().id,
     );
     expect(found?.snapshot()).toEqual(request.snapshot());
+  });
+
+  it('saves the postcard it was written on and reads it back equal', async () => {
+    const workspaceId = uuidv7();
+    const id = uuidv7();
+    written.push(id);
+    const request = FeedbackRequest.send({
+      id,
+      workspaceId,
+      requesterAccountId: uuidv7(),
+      message: RequestMessage.of('How was the demo?\n\nBe honest.'),
+      visibility: Visibility.onlyMe(),
+      tags: BoundTags.none(),
+      givers: [{ askId: uuidv7(), giverAccountId: uuidv7() }],
+      postcard: Postcard.of({
+        templateKey: 'system/postcard_template_3',
+        tone: 'blush',
+        textStyle: {
+          font: 'signature',
+          sizeStep: 1,
+          align: 'right',
+          ink: 'plum',
+        },
+        stamps: [
+          {
+            stampKey: 'system/stamp-05-balloon',
+            side: 'back',
+            x: 20,
+            y: 80,
+            scale: 0.75,
+            rotation: 45,
+          },
+        ],
+      }),
+    });
+
+    await repository.save(request);
+
+    const found = await repository.findInWorkspace(workspaceId, id);
+    expect(found?.snapshot()).toEqual(request.snapshot());
+    const row = await query.requestInWorkspace(workspaceId, id);
+    expect(row?.postcard).toEqual(request.snapshot().postcard);
+    expect(row?.message).toBe('How was the demo?\n\nBe honest.');
   });
 
   it('saves one Ask for every Member asked and reads them all back', async () => {
@@ -156,6 +200,7 @@ describe('storing a Feedback Request', () => {
       workspaceId,
       requesterAccountId: uuidv7(),
       message: 'my presentation skills',
+      postcard: null,
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       workspaceGoals: [],

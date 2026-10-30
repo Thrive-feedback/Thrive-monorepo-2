@@ -4,8 +4,7 @@ import { Injectable } from '@nestjs/common';
 
 /**
  * A Request message is quoted in a chat message, so it is trimmed to something that reads as one
- * line rather than as a wall. It is capped at 200 characters when it is written, so this only
- * bites the longest ones.
+ * line rather than as a wall: it can hold paragraphs, and the link leads to the whole of it.
  */
 const QUOTED_LENGTH = 120;
 

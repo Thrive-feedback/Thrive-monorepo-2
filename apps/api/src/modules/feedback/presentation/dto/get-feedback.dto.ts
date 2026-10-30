@@ -2,6 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
 import { personSchema } from './person.dto';
+import { postcardSchema } from './postcard.dto';
 import { tagsSchema } from './tags.dto';
 
 /** A Member a piece of Feedback names, with the name they introduced themselves by. */
@@ -22,6 +23,8 @@ export const getFeedbackResponseSchema = z.object({
   receivers: z.array(personSchema).min(1),
   /** The Feedback message. */
   message: z.string(),
+  /** How it looks, or `null` when it was not written on a postcard. */
+  postcard: postcardSchema.nullable(),
   /** What its Giver wrote was bound to when it was sent. */
   tags: tagsSchema,
   createdAt: z.iso.datetime({ offset: true }),

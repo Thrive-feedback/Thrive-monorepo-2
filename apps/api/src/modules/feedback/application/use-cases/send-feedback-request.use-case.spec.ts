@@ -9,8 +9,10 @@ import { FakePersonNotifier } from '@test/support/notifications.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   CannotAskYourselfError,
+  PostcardInvalidError,
   RequestMessageEmptyError,
 } from '../../domain/feedback-request.errors';
+import type { PostcardSnapshot } from '../../domain/value-object/postcard.vo';
 import {
   GiverNotInWorkspaceError,
   SelectedPersonNotInWorkspaceError,
@@ -30,12 +32,13 @@ function request(
     giverAccountIds: string[];
     visibility: string;
     selectedAccountIds: string[];
+    postcard: PostcardSnapshot;
   }> = {},
 ) {
   return {
     workspaceId: WORKSPACE_ID,
     requesterAccountId: ANN,
-    message: '  my presentation   skills ',
+    message: '  my presentation skills ',
     giverAccountIds: [BEN],
     visibility: 'ONLY_ME',
     selectedAccountIds: [],
@@ -83,6 +86,7 @@ describe('a Requester asking a teammate for Feedback', () => {
         workspaceId: WORKSPACE_ID,
         requesterAccountId: ANN,
         message: 'my presentation skills',
+        postcard: null,
         visibility: 'ONLY_ME',
         selectedAccountIds: [],
         workspaceGoals: [],
@@ -90,6 +94,43 @@ describe('a Requester asking a teammate for Feedback', () => {
         asks: [{ id: ASK_ID, giverAccountId: BEN, status: 'PENDING' }],
       },
     ]);
+  });
+
+  it('keeps the postcard it was written on', async () => {
+    const { feedbackRequestRepository, useCase } = setUp();
+    const postcard: PostcardSnapshot = {
+      templateKey: 'system/postcard_template_2',
+      tone: 'blush',
+      textStyle: { font: 'modern', sizeStep: 2, align: 'left', ink: 'ink' },
+      stamps: [],
+    };
+
+    await useCase.execute(request({ postcard }));
+
+    expect(feedbackRequestRepository.saved[0]?.postcard).toEqual(postcard);
+  });
+
+  it('refuses a postcard that does not fit and stores nothing', async () => {
+    const { feedbackRequestRepository, useCase } = setUp();
+
+    await expect(
+      useCase.execute(
+        request({
+          postcard: {
+            templateKey: 'not a picture',
+            tone: 'blush',
+            textStyle: {
+              font: 'modern',
+              sizeStep: 2,
+              align: 'left',
+              ink: 'ink',
+            },
+            stamps: [],
+          },
+        }),
+      ),
+    ).rejects.toThrow(PostcardInvalidError);
+    expect(feedbackRequestRepository.saved).toEqual([]);
   });
 
   it('opens one Ask for every Member asked, in one request', async () => {

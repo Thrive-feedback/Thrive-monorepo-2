@@ -33,6 +33,7 @@ function setUp(
     giverAccountId: GIVER,
     receiverAccountIds: [RECEIVER],
     message: 'You open strongly and lose the room at the detail.',
+    postcard: null,
     tags: NO_TAGS,
     createdAt: CREATED_AT,
     visibility,
@@ -102,6 +103,7 @@ describe('reading one piece of Feedback', () => {
         },
       ],
       message: 'You open strongly and lose the room at the detail.',
+      postcard: null,
       tags: NO_TAGS,
       createdAt: CREATED_AT,
     });

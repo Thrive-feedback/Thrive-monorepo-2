@@ -7,6 +7,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Feedback } from '../../domain/entity/feedback.entity';
 import { FeedbackRepository } from '../../domain/repository/feedback-repository.port';
 import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
+import {
+  Postcard,
+  type PostcardSnapshot,
+} from '../../domain/value-object/postcard.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import {
   ReceiverNotInWorkspaceError,
@@ -26,6 +30,8 @@ export interface OfferFeedbackInput {
   readonly visibility: string;
   /** The Members picked when the Visibility is Selected people. */
   readonly selectedAccountIds: readonly string[];
+  /** How it looks, when it was written on a postcard. */
+  readonly postcard?: PostcardSnapshot | undefined;
 }
 
 export interface OfferFeedbackResult {
@@ -63,6 +69,7 @@ export class OfferFeedbackUseCase {
       value: input.visibility,
       selectedAccountIds: input.selectedAccountIds,
     });
+    const postcard = input.postcard ? Postcard.of(input.postcard) : null;
 
     const members = new Set(
       await this.workspaceMembershipPort.membersAmong({
@@ -93,6 +100,7 @@ export class OfferFeedbackUseCase {
       visibility,
       message,
       tags,
+      postcard,
     });
 
     await this.unitOfWork.run(() => this.feedbackRepository.save(feedback));

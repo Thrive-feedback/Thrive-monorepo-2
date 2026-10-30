@@ -1,5 +1,6 @@
 import type { FeedbackOrigin } from '../../domain/entity/feedback.entity';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
+import type { PostcardSnapshot } from '../../domain/value-object/postcard.vo';
 import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
 
 /** What a collection route asks for. Declared here, not borrowed from another module. */
@@ -92,6 +93,8 @@ export interface VisibilityView {
 export interface FeedbackRequestView {
   readonly id: string;
   readonly message: string;
+  /** How it looks, or `null` when it was not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
   readonly tags: TagsView;
   /** `null` when the caller is a Giver, who is not told who else reads it (`ADR-0022`). */
   readonly visibility: VisibilityView | null;
@@ -183,6 +186,12 @@ export interface FeedbackView {
   /** What its Giver's Feedback message names. */
   readonly tags: TagsView;
   readonly createdAt: Date;
+}
+
+/** One piece of Feedback opened on its own, with the card it was written on. */
+export interface OpenedFeedbackView extends FeedbackView {
+  /** How it looks, or `null` when it was not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
 }
 
 /** The Feedback written to one Member, newest first. */

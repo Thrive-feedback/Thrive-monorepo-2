@@ -1,6 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
+import { postcardSchema } from './postcard.dto';
 
 /**
  * More than a Workspace Thrive is sold to holds (20–50 people), so a real choice always fits
@@ -14,7 +15,7 @@ const MAX_SELECTED_PEOPLE = 50;
  * selected people, and how many, to the Visibility — each with its own code.
  */
 export const sendFeedbackRequestRequestSchema = z.strictObject({
-  /** The Request message the people asked read. Up to 200 characters once spaces are collapsed. */
+  /** The Request message the people asked read. Up to 1,000 characters once trimmed. */
   message: z.string(),
   /**
    * The Accounts of the Members being asked, one Ask each. Each must be a Member of this
@@ -26,6 +27,8 @@ export const sendFeedbackRequestRequestSchema = z.strictObject({
   visibility: z.enum(VISIBILITIES),
   /** The Members who may read the answers. Only with `SELECTED_PEOPLE`, and then at least one. */
   selectedAccountIds: z.array(z.uuid()).max(MAX_SELECTED_PEOPLE).optional(),
+  /** How it looks, when it was written on a postcard. */
+  postcard: postcardSchema.optional(),
 });
 export class SendFeedbackRequestRequestDto extends createZodDto(
   sendFeedbackRequestRequestSchema,

@@ -63,6 +63,7 @@ describe('offering Feedback without being asked', () => {
       visibility: 'ONLY_ME',
       selectedAccountIds: [],
       message: 'You kept the room with you.',
+      postcard: null,
       workspaceGoals: [],
       mentions: [],
     });

@@ -7,7 +7,7 @@ import { z } from 'zod';
  * (`ADR-0022`).
  */
 export const answerFeedbackAskRequestSchema = z.strictObject({
-  /** The Feedback message. Up to 4,000 characters once trimmed. */
+  /** The Feedback message. Up to 1,000 characters once trimmed. */
   message: z.string(),
 });
 export class AnswerFeedbackAskRequestDto extends createZodDto(

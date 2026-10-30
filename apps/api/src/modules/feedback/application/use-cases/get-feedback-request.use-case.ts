@@ -112,6 +112,7 @@ export class GetFeedbackRequestUseCase {
     return {
       id: row.id,
       message: row.message,
+      postcard: row.postcard,
       tags: row.tags,
       visibility: isRequester
         ? {

@@ -23,7 +23,10 @@ import type { FeedbackRequestView } from '../application/types/feedback-request.
 import { GetFeedbackRequestUseCase } from '../application/use-cases/get-feedback-request.use-case';
 import { ListSentFeedbackRequestsUseCase } from '../application/use-cases/list-sent-feedback-requests.use-case';
 import { SendFeedbackRequestUseCase } from '../application/use-cases/send-feedback-request.use-case';
-import { toTagsResponse } from './dto/feedback-response.mapper';
+import {
+  toPostcardResponse,
+  toTagsResponse,
+} from './dto/feedback-response.mapper';
 import { GetFeedbackRequestResponseDto } from './dto/get-feedback-request.dto';
 import {
   ListSentFeedbackRequestsQueryDto,
@@ -44,6 +47,7 @@ function toResponse(request: FeedbackRequestView) {
   return {
     id: request.id,
     message: request.message,
+    postcard: toPostcardResponse(request.postcard),
     tags: toTagsResponse(request.tags),
     visibility: request.visibility && {
       value: request.visibility.value,
@@ -97,7 +101,7 @@ export class FeedbackRequestController {
   })
   @ApiBadRequestResponse({
     description:
-      'REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE',
+      'REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, POSTCARD_INVALID, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE',
   })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
   @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
@@ -113,6 +117,7 @@ export class FeedbackRequestController {
       giverAccountIds: body.giverAccountIds,
       visibility: body.visibility,
       selectedAccountIds: body.selectedAccountIds ?? [],
+      postcard: body.postcard,
     });
     return { id: sent.id };
   }

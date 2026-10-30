@@ -1095,7 +1095,7 @@
             }
           },
           "400": {
-            "description": "REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE"
+            "description": "REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, POSTCARD_INVALID, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE"
           },
           "401": {
             "description": "NOT_SIGNED_IN"
@@ -1504,7 +1504,7 @@
             }
           },
           "400": {
-            "description": "REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE"
+            "description": "REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, POSTCARD_INVALID, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE"
           },
           "401": {
             "description": "NOT_SIGNED_IN"
@@ -3701,6 +3701,109 @@
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
+          },
+          "postcard": {
+            "type": "object",
+            "properties": {
+              "templateKey": {
+                "type": "string"
+              },
+              "tone": {
+                "type": "string",
+                "enum": [
+                  "cream",
+                  "sage",
+                  "blush"
+                ]
+              },
+              "textStyle": {
+                "type": "object",
+                "properties": {
+                  "font": {
+                    "type": "string",
+                    "enum": [
+                      "modern",
+                      "classic",
+                      "signature"
+                    ]
+                  },
+                  "sizeStep": {
+                    "type": "number"
+                  },
+                  "align": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "center",
+                      "right"
+                    ]
+                  },
+                  "ink": {
+                    "type": "string",
+                    "enum": [
+                      "ink",
+                      "navy",
+                      "forest",
+                      "plum",
+                      "brick"
+                    ]
+                  }
+                },
+                "required": [
+                  "font",
+                  "sizeStep",
+                  "align",
+                  "ink"
+                ],
+                "additionalProperties": false
+              },
+              "stamps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stampKey": {
+                      "type": "string"
+                    },
+                    "side": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "back"
+                      ]
+                    },
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    },
+                    "scale": {
+                      "type": "number"
+                    },
+                    "rotation": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "stampKey",
+                    "side",
+                    "x",
+                    "y",
+                    "scale",
+                    "rotation"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "templateKey",
+              "tone",
+              "textStyle",
+              "stamps"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -3739,6 +3842,110 @@
                 },
                 "message": {
                   "type": "string"
+                },
+                "postcard": {
+                  "type": "object",
+                  "properties": {
+                    "templateKey": {
+                      "type": "string"
+                    },
+                    "tone": {
+                      "type": "string",
+                      "enum": [
+                        "cream",
+                        "sage",
+                        "blush"
+                      ]
+                    },
+                    "textStyle": {
+                      "type": "object",
+                      "properties": {
+                        "font": {
+                          "type": "string",
+                          "enum": [
+                            "modern",
+                            "classic",
+                            "signature"
+                          ]
+                        },
+                        "sizeStep": {
+                          "type": "number"
+                        },
+                        "align": {
+                          "type": "string",
+                          "enum": [
+                            "left",
+                            "center",
+                            "right"
+                          ]
+                        },
+                        "ink": {
+                          "type": "string",
+                          "enum": [
+                            "ink",
+                            "navy",
+                            "forest",
+                            "plum",
+                            "brick"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "font",
+                        "sizeStep",
+                        "align",
+                        "ink"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "stamps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "stampKey": {
+                            "type": "string"
+                          },
+                          "side": {
+                            "type": "string",
+                            "enum": [
+                              "front",
+                              "back"
+                            ]
+                          },
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          },
+                          "scale": {
+                            "type": "number"
+                          },
+                          "rotation": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "stampKey",
+                          "side",
+                          "x",
+                          "y",
+                          "scale",
+                          "rotation"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "templateKey",
+                    "tone",
+                    "textStyle",
+                    "stamps"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
                 },
                 "tags": {
                   "type": "object",
@@ -3956,6 +4163,7 @@
               "required": [
                 "id",
                 "message",
+                "postcard",
                 "tags",
                 "visibility",
                 "asks",
@@ -3998,6 +4206,110 @@
           },
           "message": {
             "type": "string"
+          },
+          "postcard": {
+            "type": "object",
+            "properties": {
+              "templateKey": {
+                "type": "string"
+              },
+              "tone": {
+                "type": "string",
+                "enum": [
+                  "cream",
+                  "sage",
+                  "blush"
+                ]
+              },
+              "textStyle": {
+                "type": "object",
+                "properties": {
+                  "font": {
+                    "type": "string",
+                    "enum": [
+                      "modern",
+                      "classic",
+                      "signature"
+                    ]
+                  },
+                  "sizeStep": {
+                    "type": "number"
+                  },
+                  "align": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "center",
+                      "right"
+                    ]
+                  },
+                  "ink": {
+                    "type": "string",
+                    "enum": [
+                      "ink",
+                      "navy",
+                      "forest",
+                      "plum",
+                      "brick"
+                    ]
+                  }
+                },
+                "required": [
+                  "font",
+                  "sizeStep",
+                  "align",
+                  "ink"
+                ],
+                "additionalProperties": false
+              },
+              "stamps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stampKey": {
+                      "type": "string"
+                    },
+                    "side": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "back"
+                      ]
+                    },
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    },
+                    "scale": {
+                      "type": "number"
+                    },
+                    "rotation": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "stampKey",
+                    "side",
+                    "x",
+                    "y",
+                    "scale",
+                    "rotation"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "templateKey",
+              "tone",
+              "textStyle",
+              "stamps"
+            ],
+            "additionalProperties": false,
+            "nullable": true
           },
           "tags": {
             "type": "object",
@@ -4215,6 +4527,7 @@
         "required": [
           "id",
           "message",
+          "postcard",
           "tags",
           "visibility",
           "asks",
@@ -4554,6 +4867,109 @@
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
+          },
+          "postcard": {
+            "type": "object",
+            "properties": {
+              "templateKey": {
+                "type": "string"
+              },
+              "tone": {
+                "type": "string",
+                "enum": [
+                  "cream",
+                  "sage",
+                  "blush"
+                ]
+              },
+              "textStyle": {
+                "type": "object",
+                "properties": {
+                  "font": {
+                    "type": "string",
+                    "enum": [
+                      "modern",
+                      "classic",
+                      "signature"
+                    ]
+                  },
+                  "sizeStep": {
+                    "type": "number"
+                  },
+                  "align": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "center",
+                      "right"
+                    ]
+                  },
+                  "ink": {
+                    "type": "string",
+                    "enum": [
+                      "ink",
+                      "navy",
+                      "forest",
+                      "plum",
+                      "brick"
+                    ]
+                  }
+                },
+                "required": [
+                  "font",
+                  "sizeStep",
+                  "align",
+                  "ink"
+                ],
+                "additionalProperties": false
+              },
+              "stamps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stampKey": {
+                      "type": "string"
+                    },
+                    "side": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "back"
+                      ]
+                    },
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    },
+                    "scale": {
+                      "type": "number"
+                    },
+                    "rotation": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "stampKey",
+                    "side",
+                    "x",
+                    "y",
+                    "scale",
+                    "rotation"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "templateKey",
+              "tone",
+              "textStyle",
+              "stamps"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -4855,6 +5271,110 @@
           "message": {
             "type": "string"
           },
+          "postcard": {
+            "type": "object",
+            "properties": {
+              "templateKey": {
+                "type": "string"
+              },
+              "tone": {
+                "type": "string",
+                "enum": [
+                  "cream",
+                  "sage",
+                  "blush"
+                ]
+              },
+              "textStyle": {
+                "type": "object",
+                "properties": {
+                  "font": {
+                    "type": "string",
+                    "enum": [
+                      "modern",
+                      "classic",
+                      "signature"
+                    ]
+                  },
+                  "sizeStep": {
+                    "type": "number"
+                  },
+                  "align": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "center",
+                      "right"
+                    ]
+                  },
+                  "ink": {
+                    "type": "string",
+                    "enum": [
+                      "ink",
+                      "navy",
+                      "forest",
+                      "plum",
+                      "brick"
+                    ]
+                  }
+                },
+                "required": [
+                  "font",
+                  "sizeStep",
+                  "align",
+                  "ink"
+                ],
+                "additionalProperties": false
+              },
+              "stamps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stampKey": {
+                      "type": "string"
+                    },
+                    "side": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "back"
+                      ]
+                    },
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    },
+                    "scale": {
+                      "type": "number"
+                    },
+                    "rotation": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "stampKey",
+                    "side",
+                    "x",
+                    "y",
+                    "scale",
+                    "rotation"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "templateKey",
+              "tone",
+              "textStyle",
+              "stamps"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
           "tags": {
             "type": "object",
             "properties": {
@@ -4912,6 +5432,7 @@
           "giver",
           "receivers",
           "message",
+          "postcard",
           "tags",
           "createdAt"
         ],
