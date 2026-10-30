@@ -7,6 +7,8 @@ export type AutocompleteOption = {
   readonly value: string;
   /** What the suggestion reads as. */
   readonly label: string;
+  /** A quieter second line of the suggestion, if any. */
+  readonly detail?: string;
   /** What typing after the character is matched against, besides nothing at all. */
   readonly keywords: readonly string[];
 };
