@@ -8,8 +8,8 @@ import {
   type Curve,
   centerWithin,
   curvePath,
+  POSTMARK_CORNER,
   type Point,
-  postmarkPoint,
   readMotionSteps,
   sampleCurve,
 } from './postcard-flight.util';
@@ -21,11 +21,12 @@ const FLIGHT_POINTS = 24;
 const LEAVING_SCALE = 0.001;
 
 /**
- * Sending a postcard by airmail: a postmark comes down on its stamp, the card gives under it, then
- * flies off in an arc past the top-right of the screen, a contrail drawn on behind it.
+ * Sending a postcard by airmail: a postmark comes down on its top-right corner, the card gives
+ * under it, then flies off in an arc past the top-right of the screen, a contrail drawn on behind
+ * it.
  *
- * `prepare` measures where the postmark lands and the course the card will take, and is called
- * in the same commit that marks the card as sent, so both are drawn before `fly` moves them.
+ * `prepare` places the postmark and measures the course the card will take, and is called in the
+ * same commit that marks the card as sent, so both are drawn before `fly` moves them.
  * With reduced motion there is neither postmark nor flight, and `fly` settles at once.
  */
 export function usePostcardFlight() {
@@ -57,7 +58,7 @@ export function usePostcardFlight() {
     ];
     courseRef.current = course;
     setContrail(curvePath(course));
-    setPostmarkAt(postmarkPoint(card));
+    setPostmarkAt(POSTMARK_CORNER);
   }
 
   async function fly() {

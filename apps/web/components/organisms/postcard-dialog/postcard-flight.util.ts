@@ -29,8 +29,8 @@ const KEYWORD_EASINGS: Readonly<Record<string, Easing>> = {
   'ease-in-out': 'easeInOut',
 };
 
-/** Where the postmark lands on a side with no stamp: the corner a stamp is put in, in %. */
-const STAMP_CORNER: Point = { x: 90, y: 15 };
+/** Where the postmark lands on every card, stamped or not: its top-right corner, in %. */
+export const POSTMARK_CORNER: Point = { x: 90, y: 15 };
 
 /** `250ms` or `0.25s` in seconds; anything unreadable is 0, so the step happens at once. */
 export function parseDuration(value: string): number {
@@ -103,20 +103,6 @@ export function centerWithin(origin: Element, element: Element): Point {
     x: inner.left - outer.left + inner.width / 2,
     y: inner.top - outer.top + inner.height / 2,
   };
-}
-
-/**
- * Where the postmark comes down, in % of the card: on the first stamp on the side showing, or in
- * the corner a stamp is put in when that side has none. The side turned away is inert.
- */
-export function postmarkPoint(card: Element): Point {
-  const stamp = card.querySelector('section:not([inert]) [data-stamp]');
-  const { width, height } = card.getBoundingClientRect();
-  if (!stamp || width === 0 || height === 0) {
-    return STAMP_CORNER;
-  }
-  const centre = centerWithin(card, stamp);
-  return { x: (centre.x / width) * 100, y: (centre.y / height) * 100 };
 }
 
 /**
