@@ -13,6 +13,7 @@ import { RadioGroup } from '@/components/atoms/radio-group';
 import { PostcardPicture } from './postcard-picture';
 import { POSTCARD_TEMPLATES } from './postcard-template.constant';
 import { PostcardToolButton } from './postcard-tool-button';
+import { usePostcardDrawerContainer } from './use-postcard-drawer-container';
 
 export type PostcardTemplatePickerProps = {
   /** The picture on the front: a key from `POSTCARD_TEMPLATES`. */
@@ -32,8 +33,9 @@ export function PostcardTemplatePicker({
   onTemplateChange,
 }: PostcardTemplatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  // Whether an arrow key is down. Radix chooses on an arrow by clicking the next picture itself,
-  // after the key went down; that click only tries the picture, so it must not close the drawer.
+  const container = usePostcardDrawerContainer();
+  // Whether an arrow key is down. A picture the arrows reach is chosen as it takes focus, which
+  // only tries it on the front, so that choice must not close the drawer.
   const isArrowingRef = useRef(false);
 
   return (
@@ -54,7 +56,7 @@ export function PostcardTemplatePicker({
           <span className="max-sm:sr-only">Templates</span>
         </PostcardToolButton>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent container={container}>
         <DrawerHeader>
           <DrawerTitle>Templates</DrawerTitle>
           <DrawerDescription>
@@ -86,6 +88,15 @@ export function PostcardTemplatePicker({
               key={template.key}
               value={template.key}
               aria-label={template.alt}
+              // The arrows choose as they move. Radix does this itself, from a listener on the
+              // document that the drawer's popup can keep arrow keys from (it stops their
+              // propagation; ADR 0066), so the picker chooses here too; where Radix also does,
+              // it chooses the same picture.
+              onFocus={() => {
+                if (isArrowingRef.current) {
+                  onTemplateChange(template.key);
+                }
+              }}
               // Any click that chooses closes: a press, Space, or a screen reader's activation,
               // in the same click, so the choice is made before the drawer goes.
               onClick={() => {

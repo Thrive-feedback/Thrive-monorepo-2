@@ -59,6 +59,7 @@ import {
 } from './postcard-template.constant';
 import { PostcardTextToolbar } from './postcard-text-toolbar';
 import { PostcardToolbar } from './postcard-toolbar';
+import { PostcardDrawerContainer } from './use-postcard-drawer-container';
 import { usePostcardFlight } from './use-postcard-flight';
 
 /** One change to the card: some of its fields, a part of the text's style, or one stamp. */
@@ -491,6 +492,12 @@ export function PostcardEditor({
   // Escape while styling leaves the text tools; otherwise it asks before closing, like Close.
   function handleEscapeKeyDown(event: KeyboardEvent) {
     event.preventDefault();
+    // An open drawer takes Escape for itself: Radix hears it first, and would ask to close the card.
+    if (
+      contentRef.current?.querySelector('[data-slot="drawer-popup"][data-open]')
+    ) {
+      return;
+    }
     if (isEditingText) {
       setIsEditingText(false);
     } else {
@@ -667,173 +674,176 @@ export function PostcardEditor({
 
   return (
     // The whole screen is the dialog, so a card taller than the window scrolls rather than being
-    // cut off. Nothing outside it can close it: every way out asks first.
-    <DialogContent
-      ref={contentRef}
-      hasCloseButton={false}
-      aria-describedby={undefined}
-      onOpenAutoFocus={handleOpenAutoFocus}
-      onCloseAutoFocus={handleCloseAutoFocus}
-      onEscapeKeyDown={handleEscapeKeyDown}
-      onInteractOutside={(event) => event.preventDefault()}
-      onFocus={handleFocus}
-      className="inset-0 top-0 mx-0 max-h-none max-w-none translate-y-0 gap-0 overflow-y-auto overflow-x-hidden rounded-none border-0 bg-transparent p-4 shadow-none focus-visible:outline-hidden md:p-8"
-    >
-      {/* Under everything, so the card flies over its own contrail; it scrolls with the card. The
-          card leaves past the right edge, which hides rather than scrolls. */}
-      <PostcardContrail ref={flight.contrailRef} course={flight.contrail} />
-      {/* Wider than the card, so the text tools fit on one line beside Seal & Send. A card that
-          has been sent is inert while it flies off, so nothing edits what has gone. */}
-      <div
-        inert={isSending}
-        className="mx-auto my-auto flex w-full max-w-5xl flex-col items-center gap-4"
+    // cut off. Nothing outside it can close it: every way out asks first. Its drawers are rendered
+    // inside it (ADR 0066), and it has no transform, so their sheet stays fixed to the window.
+    <PostcardDrawerContainer value={contentRef}>
+      <DialogContent
+        ref={contentRef}
+        hasCloseButton={false}
+        aria-describedby={undefined}
+        onOpenAutoFocus={handleOpenAutoFocus}
+        onCloseAutoFocus={handleCloseAutoFocus}
+        onEscapeKeyDown={handleEscapeKeyDown}
+        onInteractOutside={(event) => event.preventDefault()}
+        onFocus={handleFocus}
+        className="translate-none inset-0 top-0 mx-0 max-h-none max-w-none gap-0 overflow-y-auto overflow-x-hidden rounded-none border-0 bg-transparent p-4 shadow-none focus-visible:outline-hidden md:p-8"
       >
+        {/* Under everything, so the card flies over its own contrail; it scrolls with the card. The
+          card leaves past the right edge, which hides rather than scrolls. */}
+        <PostcardContrail ref={flight.contrailRef} course={flight.contrail} />
+        {/* Wider than the card, so the text tools fit on one line beside Seal & Send. A card that
+          has been sent is inert while it flies off, so nothing edits what has gone. */}
         <div
-          className={cn(
-            'flex w-full max-w-2xl items-center gap-2',
-            isSending && SENT_AWAY,
-          )}
+          inert={isSending}
+          className="mx-auto my-auto flex w-full max-w-5xl flex-col items-center gap-4"
         >
-          <DialogTitle className="flex-1 text-subtitle-display-1">
-            {title}
-          </DialogTitle>
-          <Button variant="secondary" size="icon" onClick={askToClose}>
-            <XIcon aria-hidden="true" className="size-5" />
-            <span className="sr-only">Close</span>
-          </Button>
-        </div>
-
-        {/* Beside the card where there is room, so it never covers the writing; above it on a
-            narrow screen. */}
-        <div className="relative flex w-full max-w-2xl flex-col gap-3">
-          <Button
-            variant="secondary"
-            size="icon"
-            onClick={handleFlip}
+          <div
             className={cn(
-              'self-end shadow-med lg:absolute lg:top-1/2 lg:left-full lg:ml-6 lg:-translate-y-1/2',
+              'flex w-full max-w-2xl items-center gap-2',
               isSending && SENT_AWAY,
             )}
           >
-            <Rotate3dIcon aria-hidden="true" className="size-4.5" />
-            <span className="sr-only">
-              {side === 'back'
-                ? 'Turn over to the front, the picture'
-                : 'Turn over to the back, the message'}
-            </span>
-          </Button>
-          <div ref={flight.cardRef} className="relative">
-            <Postcard
-              side={side}
-              tone={draft.tone}
-              templateKey={draft.templateKey}
-              stamps={{ front: stampsOn('front'), back: stampsOn('back') }}
-            >
-              {back}
-            </Postcard>
-            {flight.postmarkAt && <PostcardPostmark at={flight.postmarkAt} />}
+            <DialogTitle className="flex-1 text-subtitle-display-1">
+              {title}
+            </DialogTitle>
+            <Button variant="secondary" size="icon" onClick={askToClose}>
+              <XIcon aria-hidden="true" className="size-5" />
+              <span className="sr-only">Close</span>
+            </Button>
           </div>
-        </div>
 
-        <p
-          aria-live="polite"
-          className={cn(
-            'max-w-2xl text-center text-body-3 text-fg-secondary',
-            isSending && SENT_AWAY,
-          )}
-        >
-          {status}
-        </p>
-
-        <div
-          className={cn(
-            'flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch sm:justify-center',
-            isSending && SENT_AWAY,
-          )}
-        >
-          {/* The bar's own focus, its menus' included, keeps the text tools up. */}
-          {/* biome-ignore lint/a11y/useSemanticElements: `<fieldset>` groups form fields under a legend; a row of tools is a plain named group. */}
-          <div
-            ref={toolbarRef}
-            role="group"
-            aria-label={
-              bar === 'cover' && kind === 'answer' ? 'Front' : BAR_LABELS[bar]
-            }
-            onFocus={(event) => event.stopPropagation()}
-            onMouseDown={handleToolbarMouseDown}
-            className="flex max-w-full items-center rounded-control border border-border-muted bg-surface-raised p-1.5 shadow-high"
-          >
-            <div
-              key={bar}
-              className="flex flex-wrap items-center justify-center gap-0.5 motion-safe:animate-enter"
-            >
-              {bar === 'text' ? (
-                <PostcardTextToolbar
-                  textStyle={draft.textStyle}
-                  onTextStyleChange={handleTextStyleChange}
-                  onDone={handleDone}
-                />
-              ) : bar === 'cover' ? (
-                card.kind === 'answer' ? (
-                  <PostcardCoverNote ownerName={card.ask.requester.name} />
-                ) : (
-                  <PostcardCoverToolbar
-                    templateKey={draft.templateKey}
-                    stampCount={draft.stamps.length}
-                    onTemplateChange={handleTemplateChange}
-                    onAddStamp={handleAddStamp}
-                  />
-                )
-              ) : (
-                <PostcardToolbar
-                  kind={kind}
-                  tone={draft.tone}
-                  visibility={draft.visibility}
-                  people={people}
-                  selectedAccountIds={draft.selectedAccountIds}
-                  recipientNames={recipientNames}
-                  stampCount={draft.stamps.length}
-                  onToneChange={handleToneChange}
-                  onVisibilityChange={handleVisibilityChange}
-                  onSelectedChange={handleSelectedChange}
-                  onAddStamp={handleAddStamp}
-                />
+          {/* Beside the card where there is room, so it never covers the writing; above it on a
+            narrow screen. */}
+          <div className="relative flex w-full max-w-2xl flex-col gap-3">
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={handleFlip}
+              className={cn(
+                'self-end shadow-med lg:absolute lg:top-1/2 lg:left-full lg:ml-6 lg:-translate-y-1/2',
+                isSending && SENT_AWAY,
               )}
+            >
+              <Rotate3dIcon aria-hidden="true" className="size-4.5" />
+              <span className="sr-only">
+                {side === 'back'
+                  ? 'Turn over to the front, the picture'
+                  : 'Turn over to the back, the message'}
+              </span>
+            </Button>
+            <div ref={flight.cardRef} className="relative">
+              <Postcard
+                side={side}
+                tone={draft.tone}
+                templateKey={draft.templateKey}
+                stamps={{ front: stampsOn('front'), back: stampsOn('back') }}
+              >
+                {back}
+              </Postcard>
+              {flight.postmarkAt && <PostcardPostmark at={flight.postmarkAt} />}
             </div>
           </div>
-          <Button
-            variant="primary"
-            disabled={isSending || !isReady(kind, draft)}
-            onClick={handleSend}
-            className="h-auto shrink-0 rounded-control shadow-high"
-          >
-            {copy.send}
-            <ArrowRightIcon aria-hidden="true" className="size-4.5" />
-          </Button>
-        </div>
-      </div>
 
-      <Dialog open={isConfirmingClose} onOpenChange={setIsConfirmingClose}>
-        <DialogContent
-          hasCloseButton={false}
-          onCloseAutoFocus={handleConfirmCloseAutoFocus}
-        >
-          <DialogHeader>
-            <DialogTitle>Close without sending?</DialogTitle>
-            <DialogDescription>
-              {hasWritten ? copy.lost : 'Nothing on this card will be kept.'}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button>Keep writing</Button>
-            </DialogClose>
-            <Button variant="danger" onClick={handleDiscard}>
-              {hasWritten ? 'Discard' : 'Close'}
+          <p
+            aria-live="polite"
+            className={cn(
+              'max-w-2xl text-center text-body-3 text-fg-secondary',
+              isSending && SENT_AWAY,
+            )}
+          >
+            {status}
+          </p>
+
+          <div
+            className={cn(
+              'flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch sm:justify-center',
+              isSending && SENT_AWAY,
+            )}
+          >
+            {/* The bar's own focus, its menus' included, keeps the text tools up. */}
+            {/* biome-ignore lint/a11y/useSemanticElements: `<fieldset>` groups form fields under a legend; a row of tools is a plain named group. */}
+            <div
+              ref={toolbarRef}
+              role="group"
+              aria-label={
+                bar === 'cover' && kind === 'answer' ? 'Front' : BAR_LABELS[bar]
+              }
+              onFocus={(event) => event.stopPropagation()}
+              onMouseDown={handleToolbarMouseDown}
+              className="flex max-w-full items-center rounded-control border border-border-muted bg-surface-raised p-1.5 shadow-high"
+            >
+              <div
+                key={bar}
+                className="flex flex-wrap items-center justify-center gap-0.5 motion-safe:animate-enter"
+              >
+                {bar === 'text' ? (
+                  <PostcardTextToolbar
+                    textStyle={draft.textStyle}
+                    onTextStyleChange={handleTextStyleChange}
+                    onDone={handleDone}
+                  />
+                ) : bar === 'cover' ? (
+                  card.kind === 'answer' ? (
+                    <PostcardCoverNote ownerName={card.ask.requester.name} />
+                  ) : (
+                    <PostcardCoverToolbar
+                      templateKey={draft.templateKey}
+                      stampCount={draft.stamps.length}
+                      onTemplateChange={handleTemplateChange}
+                      onAddStamp={handleAddStamp}
+                    />
+                  )
+                ) : (
+                  <PostcardToolbar
+                    kind={kind}
+                    tone={draft.tone}
+                    visibility={draft.visibility}
+                    people={people}
+                    selectedAccountIds={draft.selectedAccountIds}
+                    recipientNames={recipientNames}
+                    stampCount={draft.stamps.length}
+                    onToneChange={handleToneChange}
+                    onVisibilityChange={handleVisibilityChange}
+                    onSelectedChange={handleSelectedChange}
+                    onAddStamp={handleAddStamp}
+                  />
+                )}
+              </div>
+            </div>
+            <Button
+              variant="primary"
+              disabled={isSending || !isReady(kind, draft)}
+              onClick={handleSend}
+              className="h-auto shrink-0 rounded-control shadow-high"
+            >
+              {copy.send}
+              <ArrowRightIcon aria-hidden="true" className="size-4.5" />
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </DialogContent>
+          </div>
+        </div>
+
+        <Dialog open={isConfirmingClose} onOpenChange={setIsConfirmingClose}>
+          <DialogContent
+            hasCloseButton={false}
+            onCloseAutoFocus={handleConfirmCloseAutoFocus}
+          >
+            <DialogHeader>
+              <DialogTitle>Close without sending?</DialogTitle>
+              <DialogDescription>
+                {hasWritten ? copy.lost : 'Nothing on this card will be kept.'}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button>Keep writing</Button>
+              </DialogClose>
+              <Button variant="danger" onClick={handleDiscard}>
+                {hasWritten ? 'Discard' : 'Close'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </DialogContent>
+    </PostcardDrawerContainer>
   );
 }
