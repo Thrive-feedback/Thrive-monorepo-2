@@ -133,6 +133,15 @@
 }
 
 /* Writing lines, spaced by the size's line height. `local` makes them scroll with the text. */
+/*
+ * A long message scrolls inside the card. The bar stays thin and takes the colour of the writing
+ * lines, so it reads as part of the paper rather than as a control on it.
+ */
+.message {
+  scrollbar-color: var(--border-muted) transparent;
+  scrollbar-width: thin;
+}
+
 .ruled {
   background-image: repeating-linear-gradient(
     to bottom,

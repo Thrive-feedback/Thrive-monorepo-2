@@ -151,12 +151,12 @@ export type PostcardCard =
       teammates: readonly Teammate[];
       /** Who it is for as it opens. Read once: the card owns it from then on. */
       defaultRecipientAccountIds: readonly string[];
-      onSend: (postcard: PostcardDraft) => void;
+      onSend: (postcard: PostcardDraft) => Promise<boolean>;
     }
   | {
       kind: 'answer';
       ask: PostcardAsk;
-      onSend: (answer: PostcardAnswer) => void;
+      onSend: (answer: PostcardAnswer) => Promise<boolean>;
     };
 
 const NO_TEAMMATES: readonly Teammate[] = [];
@@ -242,8 +242,8 @@ function blankDraft(card: PostcardCard): PostcardDraft {
     message: '',
     visibility: 'ONLY_ME',
     selectedAccountIds: new Set(),
-    // A new card opens on any picture; an answer's is the Requester's, which is not kept yet, so
-    // every answer shows the first, the same for whoever opens it.
+    // A new card opens on any picture; an answer's is the Requester's, which is not handed to it
+    // yet, so every answer shows the first, the same for whoever opens it.
     templateKey:
       card.kind === 'answer' ? POSTCARD_TEMPLATES[0].key : randomTemplateKey(),
     stamps: NO_STAMPS,
@@ -330,6 +330,8 @@ export function PostcardEditor({
   );
   const [side, setSide] = useState<PostcardSide>('back');
   const [isEditingText, setIsEditingText] = useState(false);
+  // Waiting to hear whether the card went. It has not gone yet, so nothing has left the screen.
+  const [isPosting, setIsPosting] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isConfirmingClose, setIsConfirmingClose] = useState(false);
   const [selectedStampId, setSelectedStampId] = useState<string | null>(null);
@@ -337,6 +339,7 @@ export function PostcardEditor({
   const contentRef = useRef<HTMLDivElement>(null);
   const flight = usePostcardFlight();
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const sendRef = useRef<HTMLButtonElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
   // Where focus goes back to: the control that opened the card, and the one that asked to close
   // it. Neither is a `DialogTrigger`, so Radix would otherwise leave focus on the page itself.
@@ -458,7 +461,7 @@ export function PostcardEditor({
     draft.stamps.length > 0;
 
   function askToClose() {
-    if (isSending) {
+    if (isPosting || isSending) {
       return;
     }
     askedToCloseFromRef.current = focusedControl();
@@ -553,32 +556,44 @@ export function PostcardEditor({
     onClose();
   }
 
-  // The card is handed over at the press, so sending never waits on an animation (a tab in the
-  // background may not run one). It is then postmarked and flown off by airmail, and the dialog
-  // closes once the flight has settled: ended, cut short or failed. With reduced motion there is
-  // no flight, and it closes at once.
-  function handleSend() {
-    if (card.kind === 'answer') {
-      card.onSend({
-        message: draft.message,
-        stamps: draft.stamps,
-        textStyle: draft.textStyle,
-      });
-    } else {
-      card.onSend({ ...draft, selectedAccountIds: selectedReaders(draft) });
-    }
-    // The card goes inert as it flies, which would drop focus from Send onto the page; the
-    // dialog itself holds it until the opener gets it back. It is a container, not a control,
-    // so it draws no focus ring while it does.
+  function handOver() {
+    return card.kind === 'answer'
+      ? card.onSend({
+          message: draft.message,
+          stamps: draft.stamps,
+          textStyle: draft.textStyle,
+        })
+      : card.onSend({ ...draft, selectedAccountIds: selectedReaders(draft) });
+  }
+
+  // The card flies only once it has gone, so a send that fails leaves the writer with everything
+  // they wrote, the cursor back on Send and the caller saying why. It is then postmarked and flown
+  // off by airmail, and the dialog closes once the flight has settled: ended, cut short or failed.
+  // With reduced motion there is no flight, and it closes at once.
+  async function handleSend() {
+    // The card goes inert from here on, which would drop focus from Send onto the page; the
+    // dialog itself holds it until Send or the opener gets it back. It is a container, not a
+    // control, so it draws no focus ring while it does.
     contentRef.current?.focus();
+    setIsPosting(true);
+    const hasGone = await handOver().catch(() => false);
+    // Only if this card is still on the page: one closed and opened again meanwhile is a new card.
+    if (!flight.cardRef.current?.isConnected) {
+      return;
+    }
+    if (!hasGone) {
+      flushSync(() => setIsPosting(false));
+      sendRef.current?.focus();
+      return;
+    }
     // The postmark and the contrail are drawn in the same commit, so the flight finds them.
     flushSync(() => {
       setIsEditingText(false);
       setSelectedStampId(null);
+      setIsPosting(false);
       setIsSending(true);
       flight.prepare();
     });
-    // Only if this card is still on the page: one closed and opened again meanwhile is a new card.
     void flight
       .fly()
       .catch(() => undefined)
@@ -694,7 +709,7 @@ export function PostcardEditor({
         {/* Wider than the card, so the text tools fit on one line beside Seal & Send. A card that
           has been sent is inert while it flies off, so nothing edits what has gone. */}
         <div
-          inert={isSending}
+          inert={isPosting || isSending}
           className="mx-auto my-auto flex w-full max-w-5xl flex-col items-center gap-4"
         >
           <div
@@ -812,6 +827,8 @@ export function PostcardEditor({
             </div>
             <Button
               variant="primary"
+              ref={sendRef}
+              loading={isPosting}
               disabled={isSending || !isReady(kind, draft)}
               onClick={handleSend}
               className="h-auto shrink-0 rounded-control shadow-high"

@@ -1,0 +1,78 @@
+import { z } from 'zod';
+import { isWithinMessageLength } from '@/lib/feedback/message-length.util';
+import type { PostcardLook, SentPostcard } from './sent-postcard.type';
+
+/** Every value the contract accepts; `satisfies` fails the build if a list drifts from it. */
+const VISIBILITIES = [
+  'ONLY_ME',
+  'SELECTED_PEOPLE',
+  'EVERYONE',
+] as const satisfies readonly SentPostcard['visibility'][];
+
+const TONES = [
+  'cream',
+  'sage',
+  'blush',
+] as const satisfies readonly PostcardLook['tone'][];
+
+const FONTS = [
+  'modern',
+  'classic',
+  'signature',
+] as const satisfies readonly PostcardLook['textStyle']['font'][];
+
+const ALIGNS = [
+  'left',
+  'center',
+  'right',
+] as const satisfies readonly PostcardLook['textStyle']['align'][];
+
+const INKS = [
+  'ink',
+  'navy',
+  'forest',
+  'plum',
+  'brick',
+] as const satisfies readonly PostcardLook['textStyle']['ink'][];
+
+const SIDES = [
+  'front',
+  'back',
+] as const satisfies readonly PostcardLook['stamps'][number]['side'][];
+
+/**
+ * The shape the API's own schema accepts, so the browser is never the first to check it. The
+ * ranges of a stamp and the keys of the pictures are the API's to hold.
+ */
+export const SentPostcardInput = z
+  .object({
+    recipientAccountIds: z.array(z.uuid()).min(1),
+    message: z.string().trim().min(1).refine(isWithinMessageLength),
+    visibility: z.enum(VISIBILITIES),
+    selectedAccountIds: z.array(z.uuid()),
+    look: z.strictObject({
+      templateKey: z.string().min(1),
+      tone: z.enum(TONES),
+      textStyle: z.strictObject({
+        font: z.enum(FONTS),
+        sizeStep: z.number(),
+        align: z.enum(ALIGNS),
+        ink: z.enum(INKS),
+      }),
+      stamps: z.array(
+        z.strictObject({
+          stampKey: z.string().min(1),
+          side: z.enum(SIDES),
+          x: z.number(),
+          y: z.number(),
+          scale: z.number(),
+          rotation: z.number(),
+        }),
+      ),
+    }),
+  })
+  .refine(
+    (input) =>
+      input.visibility !== 'SELECTED_PEOPLE' ||
+      input.selectedAccountIds.length > 0,
+  );

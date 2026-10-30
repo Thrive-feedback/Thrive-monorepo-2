@@ -60,13 +60,15 @@ function dialog(
       writer={{ name: 'Ann', photoUrl: null }}
       open
       onOpenChange={vi.fn()}
-      onSend={vi.fn()}
+      onSend={vi.fn().mockResolvedValue(true)}
       {...props}
     />
   );
 }
 
-function answerDialog(onSend: PostcardAnsweringProps['onSend'] = vi.fn()) {
+function answerDialog(
+  onSend: PostcardAnsweringProps['onSend'] = vi.fn().mockResolvedValue(true),
+) {
   return (
     <PostcardDialog
       kind="answer"
@@ -129,6 +131,15 @@ const sideOfCard = (name: 'Front' | 'Back') =>
 const message = () => screen.getByRole('textbox', { name: 'Your feedback' });
 const send = () => screen.getByRole('button', { name: /Seal & Send/ });
 
+/** A send the API has not answered yet: `resolve` is the answer arriving. */
+function aSendInFlight() {
+  let resolve: (hasGone: boolean) => void = () => {};
+  const promise = new Promise<boolean>((settle) => {
+    resolve = settle;
+  });
+  return { promise, resolve };
+}
+
 async function chooseMali(user: ReturnType<typeof userEvent.setup>) {
   await user.click(
     screen.getByRole('button', { name: /^Choose who it's for/ }),
@@ -161,7 +172,7 @@ describe('PostcardDialog', () => {
 
   it('hands over who it is for, the message and how it looks, then closes', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     const onOpenChange = vi.fn();
     // The third of four templates.
     vi.spyOn(Math, 'random').mockReturnValue(0.6);
@@ -189,6 +200,146 @@ describe('PostcardDialog', () => {
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 
+  it('stays put with Send busy until it has gone, then closes', async () => {
+    const user = userEvent.setup();
+    const { promise, resolve } = aSendInFlight();
+    const onOpenChange = vi.fn();
+    render(
+      dialog({
+        defaultRecipientAccountIds: ['mali'],
+        onSend: () => promise,
+        onOpenChange,
+      }),
+    );
+
+    await user.type(message(), 'Thank you for the demo.');
+    await user.click(send());
+
+    expect(send()).toHaveAttribute('aria-busy', 'true');
+    expect(message()).toHaveValue('Thank you for the demo.');
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    resolve(true);
+
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+  });
+
+  it('does not ask about closing while it waits to hear', async () => {
+    const user = userEvent.setup();
+    const { promise, resolve } = aSendInFlight();
+    render(
+      dialog({ defaultRecipientAccountIds: ['mali'], onSend: () => promise }),
+    );
+
+    await user.type(message(), 'Thank you for the demo.');
+    await user.click(send());
+    await user.keyboard('{Escape}');
+
+    expect(
+      screen.queryByRole('heading', { name: 'Close without sending?' }),
+    ).toBeNull();
+
+    resolve(false);
+    await waitFor(() => expect(send()).toHaveFocus());
+  });
+
+  it('keeps everything written when it did not go, with the cursor on Send', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      dialog({
+        defaultRecipientAccountIds: ['mali'],
+        onSend: async () => false,
+        onOpenChange,
+      }),
+    );
+
+    await user.type(message(), 'Thank you for the demo.');
+    await user.click(send());
+
+    await waitFor(() => expect(send()).toHaveFocus());
+    expect(send()).not.toHaveAttribute('aria-busy');
+    expect(message()).toHaveValue('Thank you for the demo.');
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('can be sent again after a send that did not go', async () => {
+    const user = userEvent.setup();
+    const onSend = vi
+      .fn()
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    const onOpenChange = vi.fn();
+    render(
+      dialog({
+        defaultRecipientAccountIds: ['mali'],
+        onSend,
+        onOpenChange,
+      }),
+    );
+
+    await user.type(message(), 'Thank you for the demo.');
+    await user.click(send());
+    await waitFor(() => expect(send()).toHaveFocus());
+    await user.click(send());
+
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+    expect(onSend).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows how much is written only while the message has the cursor', async () => {
+    const user = userEvent.setup();
+    render(dialog({ defaultRecipientAccountIds: ['mali'] }));
+
+    expect(message()).toHaveFocus();
+    await user.type(message(), 'Hi');
+    expect(screen.getByText('2/1000')).toBeVisible();
+
+    await user.tab();
+
+    expect(screen.getByText('2/1000')).not.toBeVisible();
+  });
+
+  it('keeps the count in the page when the message loses the cursor', async () => {
+    const user = userEvent.setup();
+    render(dialog({ defaultRecipientAccountIds: ['mali'] }));
+    await user.type(message(), 'Hi');
+    const count = screen.getByText('2/1000');
+
+    await user.tab();
+
+    // Taken out instead, it sets off the dialog's focus trap in a browser, where focus is on
+    // nothing for a moment, and the text tools close under the press that was reaching them.
+    expect(count).toBeInTheDocument();
+  });
+
+  it('counts a Thai cluster as one character', async () => {
+    const user = userEvent.setup();
+    render(dialog({ defaultRecipientAccountIds: ['mali'] }));
+
+    await user.click(message());
+    await user.paste('ที่ที่');
+
+    expect(screen.getByText('2/1000')).toBeInTheDocument();
+  });
+
+  it('stops the message at 1,000 characters', async () => {
+    const user = userEvent.setup();
+    render(dialog({ defaultRecipientAccountIds: ['mali'] }));
+
+    await user.click(message());
+    await user.paste('a'.repeat(1005));
+
+    expect(message()).toHaveValue('a'.repeat(1000));
+    expect(screen.getByText('1000/1000')).toBeInTheDocument();
+  });
+
+  it('says the limit to a screen reader, without reading out every keystroke', () => {
+    render(dialog({ defaultRecipientAccountIds: ['mali'] }));
+
+    expect(message()).toHaveAccessibleDescription('Up to 1,000 characters.');
+  });
+
   it('waits for somebody to send it to and something to say', async () => {
     const user = userEvent.setup();
     render(dialog());
@@ -202,7 +353,7 @@ describe('PostcardDialog', () => {
 
   it('prints it on the paper chosen and hands over who else may read it', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
 
     await user.type(message(), 'Thank you.');
@@ -573,7 +724,7 @@ describe('PostcardDialog, the front', () => {
 
   it('says what the picture shows when it will not load, and can still be sent', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     vi.spyOn(Math, 'random').mockReturnValue(0);
     render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
 
@@ -612,7 +763,7 @@ describe('PostcardDialog, stamps', () => {
 
   it('puts a stamp on the side showing, selected, and counts it on both sides', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
     await user.type(message(), 'Thank you.');
     await user.keyboard('{Escape}');
@@ -686,7 +837,7 @@ describe('PostcardDialog, stamps', () => {
 
   it('moves, sizes and turns the selected stamp from the keyboard', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
     await user.type(message(), 'Thank you.');
     await user.keyboard('{Escape}');
@@ -720,7 +871,9 @@ describe('PostcardDialog, stamps', () => {
     await user.click(send());
 
     // Decoration, hidden from screen readers, so it is found by its mark rather than a role.
-    expect(document.querySelector('[data-postmark]')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(document.querySelector('[data-postmark]')).toBeInTheDocument(),
+    );
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 
@@ -853,7 +1006,7 @@ describe('PostcardDialog, stamps', () => {
 
   it('never lands a new stamp on one already there, even after one comes off', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
     await user.type(message(), 'Thank you.');
     await user.keyboard('{Escape}');
@@ -879,7 +1032,7 @@ describe('PostcardDialog, stamps', () => {
 
   it('hands over a turn as the one it shows, however far it was turned', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
     await user.type(message(), 'Thank you.');
     await user.keyboard('{Escape}');
@@ -899,7 +1052,7 @@ describe('PostcardDialog, stamps', () => {
 
   it('says which stamp it is when its picture will not load, and can still be sent', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
     await user.type(message(), 'Thank you.');
     await user.keyboard('{Escape}');
@@ -968,7 +1121,7 @@ describe('PostcardDialog, asking for feedback', () => {
 
   it('hands over who is asked and the request', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     render(
       dialog({
         kind: 'ask',
@@ -1034,7 +1187,7 @@ describe('PostcardDialog, answering an Ask', () => {
 
   it('hands over the answer and how it looks', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     render(answerDialog(onSend));
 
     expect(screen.getByRole('button', { name: /Send answer/ })).toBeDisabled();
@@ -1054,7 +1207,7 @@ describe('PostcardDialog, answering an Ask', () => {
 
   it('takes stamps on the back only, and hands them over with the answer', async () => {
     const user = userEvent.setup();
-    const onSend = vi.fn();
+    const onSend = vi.fn().mockResolvedValue(true);
     render(answerDialog(onSend));
     await user.type(
       screen.getByRole('textbox', { name: 'Your answer' }),

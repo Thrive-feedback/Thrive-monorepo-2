@@ -14,6 +14,10 @@ import type {
   GiveFeedbackAction,
   GiveFeedbackState,
 } from '@/lib/feedback/give-feedback-state.type';
+import {
+  isWithinMessageLength,
+  MAX_MESSAGE_LENGTH,
+} from '@/lib/feedback/message-length.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { useMentionedAudience } from '@/lib/feedback/use-mentioned-audience';
 import { ComposerLayout, ComposerToRow } from './composer-layout';
@@ -43,9 +47,6 @@ const VISIBILITIES = [
 ] as const;
 
 type FieldErrors = NonNullable<GiveFeedbackState['fieldErrors']>;
-
-/** As long as the API lets a Feedback message be. */
-const MAX_MESSAGE_LENGTH = 4000;
 
 /** What the people dialog says under someone a Mention keeps selected. */
 const MENTIONED = 'Mentioned in your message';
@@ -117,8 +118,8 @@ export function GiveFeedbackForm({
       message:
         message.trim() === ''
           ? 'Write your feedback.'
-          : message.trim().length > MAX_MESSAGE_LENGTH
-            ? `Keep it under ${MAX_MESSAGE_LENGTH} characters.`
+          : !isWithinMessageLength(message)
+            ? `Keep it under ${MAX_MESSAGE_LENGTH.toLocaleString('en-GB')} characters.`
             : undefined,
       selectedAccountIds:
         visibility === SELECTED_PEOPLE && selectedOthers.length === 0

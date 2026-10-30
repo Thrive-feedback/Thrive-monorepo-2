@@ -4,6 +4,11 @@ import { PlusIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import {
+  sendPostcardFeedback,
+  sendPostcardRequest,
+} from '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service';
+import { toSentPostcard } from '@/app/(signed-in)/(brand-new)/_lib/sent-postcard.util';
 import { Button } from '@/components/atoms/button';
 import {
   DropdownMenu,
@@ -11,7 +16,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
-import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
+import type {
+  PostcardDraft,
+  PostcardWriter,
+} from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 
 const CHOICES: readonly {
@@ -62,7 +70,11 @@ const SENT: Readonly<Record<'give' | 'ask', string>> = {
   ask: 'Request sent.',
 };
 
+const COULD_NOT_SEND = "We couldn't send your postcard. Please try again.";
+
 export type ComposeMenuProps = {
+  /** The Workspace the page was drawn for, which a card is sent to. */
+  workspaceId: string;
   /** Who a postcard can be for. */
   teammates: readonly Teammate[];
   writer: PostcardWriter;
@@ -71,9 +83,14 @@ export type ComposeMenuProps = {
 /**
  * "+": the three things to write, each with a line on what it is for. Asking for feedback opens
  * the request postcard in front of the page, and giving it the Feedback one, each titled by the
- * choice. Kudos is not built yet, so choosing it only closes the menu.
+ * choice, and either is sent to the API with the card itself. Kudos is not built yet, so choosing
+ * it only closes the menu.
  */
-export function ComposeMenu({ teammates, writer }: ComposeMenuProps) {
+export function ComposeMenu({
+  workspaceId,
+  teammates,
+  writer,
+}: ComposeMenuProps) {
   const [choice, setChoice] = useState<{ title: string; card: 'give' | 'ask' }>(
     { title: 'Give feedback', card: 'give' },
   );
@@ -100,11 +117,23 @@ export function ComposeMenu({ teammates, writer }: ComposeMenuProps) {
     }
   }
 
-  // Nothing is sent yet: the card has flown off, and the toast says this is a first look.
-  function handleSend() {
-    toast.success(SENT[choice.card], {
-      description: 'This is a first look: nothing left this page.',
-    });
+  // Whether it went decides what the card does next: a card that went flies off, and one that did
+  // not stays open with everything on it.
+  async function handleSend(postcard: PostcardDraft) {
+    const send =
+      choice.card === 'give' ? sendPostcardFeedback : sendPostcardRequest;
+    try {
+      const { formError } = await send(workspaceId, toSentPostcard(postcard));
+      if (formError) {
+        toast.error(formError);
+        return false;
+      }
+    } catch {
+      toast.error(COULD_NOT_SEND);
+      return false;
+    }
+    toast.success(SENT[choice.card]);
+    return true;
   }
 
   // The postcard opens from the menu rather than from a `DialogTrigger`, and the menu item is

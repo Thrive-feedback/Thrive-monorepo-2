@@ -14,6 +14,10 @@ vi.mock('@/lib/session/session.service', () => ({
     profile: { fullName: 'Ann Lee', displayName: 'Ann', slug: 'ann' },
   }),
 }));
+vi.mock(
+  '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service',
+  () => ({ sendPostcardFeedback: vi.fn(), sendPostcardRequest: vi.fn() }),
+);
 const readMyAsks = vi.fn();
 vi.mock('@/lib/feedback/my-asks.service', () => ({
   readMyAsks: (membership: unknown) => readMyAsks(membership),

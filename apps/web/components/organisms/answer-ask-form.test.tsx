@@ -101,9 +101,9 @@ describe('AnswerAskForm', () => {
     );
 
     await user.click(answerBox());
-    await user.paste('a'.repeat(3501));
+    await user.paste('a'.repeat(901));
 
-    expect(answerBox()).toHaveAccessibleDescription('499 characters left.');
+    expect(answerBox()).toHaveAccessibleDescription('99 characters left.');
   });
 
   it('asks the person nothing about who asked when they have no name yet', () => {

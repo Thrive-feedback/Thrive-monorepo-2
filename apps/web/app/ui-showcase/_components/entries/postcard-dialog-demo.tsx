@@ -59,7 +59,10 @@ export function PostcardDialogDemo({
           {...common}
           kind="answer"
           ask={SAMPLE_ASK}
-          onSend={() => toastSent([SAMPLE_ASK.requester.name])}
+          onSend={async () => {
+            toastSent([SAMPLE_ASK.requester.name]);
+            return true;
+          }}
         />
       ) : (
         <PostcardDialog
@@ -67,13 +70,14 @@ export function PostcardDialogDemo({
           kind={kind}
           teammates={LETTER_TEAMMATES}
           defaultRecipientAccountIds={defaultRecipientAccountIds}
-          onSend={(postcard) =>
+          onSend={async (postcard) => {
             toastSent(
               LETTER_TEAMMATES.filter((teammate) =>
                 postcard.recipientAccountIds.includes(teammate.accountId),
               ).map((teammate) => teammate.name),
-            )
-          }
+            );
+            return true;
+          }}
         />
       )}
     </>

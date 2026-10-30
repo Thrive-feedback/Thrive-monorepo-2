@@ -159,10 +159,10 @@ describe('giving a teammate Feedback without being asked', () => {
   });
 
   it('says an over-long feedback is too long, rather than missing', async () => {
-    const { state } = await send(form({ message: 'a'.repeat(4001) }));
+    const { state } = await send(form({ message: 'a'.repeat(1001) }));
 
     expect(state?.fieldErrors?.message).toBe(
-      'Your feedback is too long. Keep it under 4000 characters.',
+      'Your feedback is too long. Keep it under 1,000 characters.',
     );
   });
 

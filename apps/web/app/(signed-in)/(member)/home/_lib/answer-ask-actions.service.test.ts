@@ -99,10 +99,10 @@ describe('answering an Ask', () => {
     const state = await answerAsk(
       WORKSPACE_ID,
       {},
-      answering('a'.repeat(4001)),
+      answering('a'.repeat(1001)),
     );
 
-    expect(state.fieldErrors?.message).toContain('4,000');
+    expect(state.fieldErrors?.message).toContain('1,000');
     expect(sentBody).toBeUndefined();
   });
 
