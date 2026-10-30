@@ -74,7 +74,7 @@ export function PostcardDialogEntry() {
           name: 'onSend',
           type: '(postcard: PostcardDraft) => void · answer: (answer: PostcardAnswer) => void',
           description:
-            'Send was pressed, handed over at the press: give and ask hand over who it is for (or who is asked), the message, who else can read it, the paper and the text style; answer hands over the answer and its style. The dialog sends nothing itself, and closes itself once the card has flown off.',
+            'Send was pressed, handed over at the press: give and ask hand over who it is for (or who is asked), the message, who else can read it, the paper and the text style; answer hands over the answer and its style. The dialog sends nothing itself: it postmarks the card on its first stamp, flies it off by airmail, and closes itself once it has gone.',
         },
         {
           name: 'onCloseAutoFocus',
@@ -88,7 +88,7 @@ export function PostcardDialogEntry() {
         'The side turned away is inert and hidden from screen readers. Turn over is named for the side it turns to.',
         'The bar is a group named for what it holds: Postcard tools, or Text style while the message is written. Escape first leaves the text tools, then asks before closing; Close always asks.',
         'Paper Tone, Visibility, the font and the ink say their current choice to a screen reader even where the screen shows only a swatch.',
-        'With reduced motion the card turns and flies off at once.',
+        'The postmark and the contrail are decoration, hidden from screen readers. With reduced motion the card turns at once, and Send closes it at once, with no postmark or flight.',
       ]}
     >
       <StateCell

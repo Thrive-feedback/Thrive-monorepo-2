@@ -19,6 +19,17 @@ const SAMPLE_ASK: PostcardAsk = {
   textStyle: { ...DEFAULT_TEXT_STYLE, font: 'classic' },
 };
 
+/** "Mali Sombat, Krit Chan and Ann Lee": the names as a sentence says them, no Oxford comma. */
+const NAMES = new Intl.ListFormat('en-GB', {
+  style: 'long',
+  type: 'conjunction',
+});
+
+/** Says who the card went to, as the real app would once it has been sent. */
+function toastSent(names: readonly string[]) {
+  toast.success(`Sent to ${NAMES.format(names)} successfully.`);
+}
+
 export type PostcardDialogDemoProps = {
   /** What the button opening it says, which is also the dialog's title. */
   title: string;
@@ -48,11 +59,7 @@ export function PostcardDialogDemo({
           {...common}
           kind="answer"
           ask={SAMPLE_ASK}
-          onSend={(answer) =>
-            toast.success('Send answer pressed.', {
-              description: `${answer.message.length} characters, in ${answer.textStyle.font}.`,
-            })
-          }
+          onSend={() => toastSent([SAMPLE_ASK.requester.name])}
         />
       ) : (
         <PostcardDialog
@@ -61,9 +68,11 @@ export function PostcardDialogDemo({
           teammates={LETTER_TEAMMATES}
           defaultRecipientAccountIds={defaultRecipientAccountIds}
           onSend={(postcard) =>
-            toast.success('Send pressed.', {
-              description: `For ${postcard.recipientAccountIds.length} ${postcard.recipientAccountIds.length === 1 ? 'person' : 'people'}, ${postcard.message.length} characters, on ${postcard.tone} paper.`,
-            })
+            toastSent(
+              LETTER_TEAMMATES.filter((teammate) =>
+                postcard.recipientAccountIds.includes(teammate.accountId),
+              ).map((teammate) => teammate.name),
+            )
           }
         />
       )}
