@@ -1,6 +1,6 @@
 /**
  * Where the postcard's pictures are: Supabase Storage's public buckets, one for the templates on
- * the front (ADR 0063) and one for the stamps (ADR 0064), in the same project. Shared by the
+ * the front (ADR 0063), one for the stamps (ADR 0064) and one for the stickers (ADR 0068), in the same project. Shared by the
  * build, which lets `next/image` fetch from exactly here, and by the catalogs, which name each
  * file under it, so the two can never disagree.
  *
@@ -33,6 +33,10 @@ export const POSTCARD_TEMPLATE_PATH =
 export const POSTCARD_STAMP_PATH =
   '/storage/v1/object/public/postcard_stamp/system/';
 
+/** The folder of Thrive's own stickers, the same for every Workspace and in every project. */
+export const POSTCARD_STICKER_PATH =
+  '/storage/v1/object/public/postcard_sticker/system/';
+
 /** One of Thrive's own pictures: where it is, the key a saved card names it by, and what it shows. */
 export type StoredPicture = {
   /** `system/` and the file's name without its extension. Saved cards will name it, so a key is never reused for another picture. */
@@ -44,7 +48,7 @@ export type StoredPicture = {
 
 /**
  * A picture in one of the folders above, as the catalogs list it. The one place the key is made,
- * so templates and stamps can never name their pictures two different ways.
+ * so templates, stamps and stickers can never name their pictures two different ways.
  */
 export function storedPicture(
   path: string,

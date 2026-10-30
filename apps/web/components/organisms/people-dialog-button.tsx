@@ -10,6 +10,7 @@ import {
 } from '@/components/atoms/dialog';
 import { Text } from '@/components/atoms/text';
 import { AvatarGroup } from '@/components/molecules/avatar-group';
+import { AvatarName } from '@/components/molecules/avatar-name';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { PersonName } from './person-name';
 
@@ -91,22 +92,19 @@ export function PeopleDialogButton({
         <ul className="flex flex-col gap-3">
           {people.map((person, index) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: as for the faces above
-            <li key={index} className="flex min-w-0 items-center gap-3">
-              <PhotoAvatar
+            <li key={index}>
+              <AvatarName
                 name={person.name ?? ''}
                 photoUrl={person.photoUrl}
-                size="md"
-              />
-              <Text
-                as="span"
-                variant="subtitle-4"
-                className="min-w-0 break-words"
+                className="flex"
               >
-                <PersonName
-                  name={person.name ?? unnamed}
-                  inactive={person.inactive}
-                />
-              </Text>
+                <Text as="span" variant="subtitle-4">
+                  <PersonName
+                    name={person.name ?? unnamed}
+                    inactive={person.inactive}
+                  />
+                </Text>
+              </AvatarName>
             </li>
           ))}
         </ul>

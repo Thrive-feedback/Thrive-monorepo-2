@@ -1,8 +1,8 @@
 import { answerAsk } from '@/app/(signed-in)/(member)/home/_lib/answer-ask-actions.service';
 import { readFeedbackAsk } from '@/app/(signed-in)/(member)/home/_lib/feedback-ask.service';
-import { readWorkspaceGoalNames } from '@/app/(signed-in)/(member)/home/_lib/workspace-goal-names.service';
 import { AnswerAskView } from '@/components/organisms/answer-ask-view';
 import { readTeammates } from '@/lib/feedback/teammates.service';
+import { readWorkspaceGoalNames } from '@/lib/feedback/workspace-goal-names.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 export type AnswerAskDetailProps = {

@@ -8,7 +8,7 @@ import {
 } from '@/app/(signed-in)/(member)/settings/members/_lib/member-role-access.util';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import { PhotoAvatar } from '@/components/molecules/photo-avatar';
+import { AvatarName } from '@/components/molecules/avatar-name';
 import { PersonName } from '@/components/organisms/person-name';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { ROLE_NAMES } from '@/lib/session/role-names.constant';
@@ -118,25 +118,27 @@ function MemberRow({
 }: MemberRowProps) {
   return (
     <li className="flex flex-wrap items-center gap-x-3 gap-y-2 border-border-subtle border-b py-3 last:border-b-0">
-      <PhotoAvatar
+      <AvatarName
         name={member.name ?? member.email}
         photoUrl={member.photoUrl}
         size="sm"
-      />
-      <div className="flex min-w-0 flex-1 basis-48 flex-col">
-        <Text as="span" variant="subtitle-4">
-          <PersonName name={member.name ?? '—'} inactive={inactive} />
-          {isSelf && (
-            <Text as="span" variant="body-2" tone="muted">
-              {' '}
-              (you)
-            </Text>
-          )}
-        </Text>
-        <Text as="span" variant="body-3" tone="muted" className="break-all">
-          {member.email}
-        </Text>
-      </div>
+        className="flex flex-1 basis-48"
+      >
+        <div className="flex flex-col">
+          <Text as="span" variant="subtitle-4">
+            <PersonName name={member.name ?? '—'} inactive={inactive} />
+            {isSelf && (
+              <Text as="span" variant="body-2" tone="muted">
+                {' '}
+                (you)
+              </Text>
+            )}
+          </Text>
+          <Text as="span" variant="body-3" tone="muted" className="break-all">
+            {member.email}
+          </Text>
+        </div>
+      </AvatarName>
       <div className="ml-auto flex shrink-0 items-center gap-2">{children}</div>
     </li>
   );

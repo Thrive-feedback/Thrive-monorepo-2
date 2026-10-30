@@ -103,7 +103,7 @@ export function DrawerEntry() {
           </DrawerTrigger>
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle>Stamps</DrawerTitle>
+              <DrawerTitle>Stickers</DrawerTitle>
               <DrawerDescription>
                 The page stays in reach while this is open.
               </DrawerDescription>

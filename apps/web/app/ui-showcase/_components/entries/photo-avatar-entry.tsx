@@ -15,7 +15,7 @@ export function PhotoAvatarEntry() {
       origin="thrive"
       source="components/molecules/photo-avatar.tsx — composes Avatar"
       summary="Someone's photo, or their initials when there is none or it will not load."
-      useFor="Showing a person beside their name: the navbar, Settings, the Members list."
+      useFor="A person's face on its own: a stack of faces, the navbar, the start of a row. Beside their name, use AvatarName."
       avoidFor="Where the face stands alone, with no name beside it. Compose Avatar with an alt instead."
       usage={`import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 

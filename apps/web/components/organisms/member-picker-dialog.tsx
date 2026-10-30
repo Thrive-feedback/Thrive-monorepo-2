@@ -15,7 +15,7 @@ import {
 } from '@/components/atoms/dialog';
 import { Input } from '@/components/atoms/input';
 import { Text } from '@/components/atoms/text';
-import { PhotoAvatar } from '@/components/molecules/photo-avatar';
+import { AvatarName } from '@/components/molecules/avatar-name';
 import {
   matchesSearch,
   searchWord,
@@ -235,35 +235,37 @@ function MemberPickerBody({
                     htmlFor={rowId}
                     className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-action-neutral-surface-hover"
                   >
-                    <PhotoAvatar
+                    <AvatarName
                       name={teammate.name}
                       photoUrl={teammate.photoUrl}
                       size="lg"
-                    />
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span
-                        id={`${rowId}-name`}
-                        className="truncate text-body-1 text-fg-primary"
-                      >
-                        {teammate.name}
+                      className="flex flex-1"
+                    >
+                      <span className="flex flex-col">
+                        <span
+                          id={`${rowId}-name`}
+                          className="truncate text-body-1 text-fg-primary"
+                        >
+                          {teammate.name}
+                        </span>
+                        {teammate.email !== teammate.name && (
+                          <span
+                            id={`${rowId}-email`}
+                            className="truncate text-body-3 text-fg-secondary"
+                          >
+                            {teammate.email}
+                          </span>
+                        )}
+                        {lockedBecause && (
+                          <span
+                            id={`${rowId}-locked`}
+                            className="truncate text-body-3 text-fg-secondary"
+                          >
+                            {lockedBecause}
+                          </span>
+                        )}
                       </span>
-                      {teammate.email !== teammate.name && (
-                        <span
-                          id={`${rowId}-email`}
-                          className="truncate text-body-3 text-fg-secondary"
-                        >
-                          {teammate.email}
-                        </span>
-                      )}
-                      {lockedBecause && (
-                        <span
-                          id={`${rowId}-locked`}
-                          className="truncate text-body-3 text-fg-secondary"
-                        >
-                          {lockedBecause}
-                        </span>
-                      )}
-                    </span>
+                    </AvatarName>
                     <Checkbox
                       id={rowId}
                       aria-labelledby={`${rowId}-name`}

@@ -14,7 +14,7 @@ export type PostcardPictureProps = {
 };
 
 /**
- * A template or a stamp, cropped to fill the box it is in. A picture that will not load leaves
+ * A template, a stamp or a sticker, cropped to fill the box it is in. A picture that will not load leaves
  * its name in its place, so nothing on the card or in a drawer is an empty square.
  */
 export function PostcardPicture({

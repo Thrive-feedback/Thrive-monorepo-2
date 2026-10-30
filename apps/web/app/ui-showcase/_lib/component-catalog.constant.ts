@@ -19,6 +19,10 @@ import {
   AvatarGroupPreview,
 } from '@/app/ui-showcase/_components/entries/avatar-group-entry';
 import {
+  AvatarNameEntry,
+  AvatarNamePreview,
+} from '@/app/ui-showcase/_components/entries/avatar-name-entry';
+import {
   BadgeEntry,
   BadgePreview,
 } from '@/app/ui-showcase/_components/entries/badge-entry';
@@ -427,6 +431,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'molecule',
     Preview: PeopleStackPreview,
     Entry: PeopleStackEntry,
+  },
+  {
+    slug: 'avatar-name',
+    name: 'AvatarName',
+    level: 'molecule',
+    Preview: AvatarNamePreview,
+    Entry: AvatarNameEntry,
   },
   {
     slug: 'photo-avatar',

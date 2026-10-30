@@ -17,11 +17,26 @@ export function isWithinMessageLength(message: string): boolean {
 }
 
 /**
- * The message, stopped at the limit. A field's `maxLength` counts code units, which would stop
- * Thai long before the API does and could split a cluster, so a field cuts with this instead.
+ * The message, stopped at the limit, as a field's `maxLength` would stop it: what comes after the
+ * cursor stays and only what was just put in before it is cut, so nothing already written is lost.
+ * `maxLength` itself counts code units, which would stop Thai long before the API does and could
+ * split a cluster, so a field cuts with this instead. Spaces at either end cost nothing, as they
+ * do at the API.
  */
-export function cutToMessageLength(message: string): string {
-  return isWithinMessageLength(message)
-    ? message
-    : charactersOf(message).slice(0, MAX_MESSAGE_LENGTH).join('');
+export function cutToMessageLength(
+  message: string,
+  cursor = message.length,
+): string {
+  if (isWithinMessageLength(message)) {
+    return message;
+  }
+  const before = message.slice(0, cursor);
+  const after = message.slice(cursor);
+  const indent = before.length - before.trimStart().length;
+  const room = Math.max(
+    0,
+    MAX_MESSAGE_LENGTH - charactersOf(after.trimEnd()).length,
+  );
+  const kept = charactersOf(before.slice(indent)).slice(0, room).join('');
+  return before.slice(0, indent) + kept + after;
 }

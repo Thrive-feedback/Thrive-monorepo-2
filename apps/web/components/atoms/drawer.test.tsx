@@ -74,17 +74,17 @@ describe('Drawer', () => {
 });
 
 describe('Drawer, not modal', () => {
-  function StampsDrawer({ onPageClick }: { onPageClick: () => void }) {
+  function StickersDrawer({ onPageClick }: { onPageClick: () => void }) {
     return (
       <>
         <button type="button" onClick={onPageClick}>
           On the page
         </button>
         <Drawer modal={false}>
-          <DrawerTrigger>Stamps</DrawerTrigger>
+          <DrawerTrigger>Stickers</DrawerTrigger>
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle>Stamps</DrawerTitle>
+              <DrawerTitle>Stickers</DrawerTitle>
               <DrawerDescription>Add one to your card.</DrawerDescription>
             </DrawerHeader>
           </DrawerContent>
@@ -96,9 +96,9 @@ describe('Drawer, not modal', () => {
   it('leaves the page in reach, and a press there both closes it and reaches the page', async () => {
     const user = userEvent.setup();
     const onPageClick = vi.fn();
-    render(<StampsDrawer onPageClick={onPageClick} />);
+    render(<StickersDrawer onPageClick={onPageClick} />);
 
-    await user.click(screen.getByRole('button', { name: 'Stamps' }));
+    await user.click(screen.getByRole('button', { name: 'Stickers' }));
     expect(
       screen.getByRole('button', { name: 'On the page' }),
     ).toBeInTheDocument();
@@ -110,8 +110,8 @@ describe('Drawer, not modal', () => {
 
   it('still closes on Escape and gives focus back to the trigger', async () => {
     const user = userEvent.setup();
-    render(<StampsDrawer onPageClick={vi.fn()} />);
-    const trigger = screen.getByRole('button', { name: 'Stamps' });
+    render(<StickersDrawer onPageClick={vi.fn()} />);
+    const trigger = screen.getByRole('button', { name: 'Stickers' });
 
     await user.click(trigger);
     await user.keyboard('{Escape}');
@@ -166,15 +166,15 @@ describe('Drawer, by width', () => {
 });
 
 describe('Drawer, not modal, pressed', () => {
-  function StampsDrawer() {
+  function StickersDrawer() {
     return (
       <>
         <p>On the page</p>
         <Drawer modal={false}>
-          <DrawerTrigger>Stamps</DrawerTrigger>
+          <DrawerTrigger>Stickers</DrawerTrigger>
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle>Stamps</DrawerTitle>
+              <DrawerTitle>Stickers</DrawerTitle>
               <DrawerDescription>Add one to your card.</DrawerDescription>
             </DrawerHeader>
           </DrawerContent>
@@ -185,9 +185,9 @@ describe('Drawer, not modal, pressed', () => {
 
   it('closes as a mouse press on the page goes down, not when it is let go', async () => {
     const user = userEvent.setup();
-    render(<StampsDrawer />);
+    render(<StickersDrawer />);
 
-    await user.click(screen.getByRole('button', { name: 'Stamps' }));
+    await user.click(screen.getByRole('button', { name: 'Stickers' }));
     await user.pointer({
       keys: '[MouseLeft>]',
       target: screen.getByText('On the page'),
@@ -199,25 +199,29 @@ describe('Drawer, not modal, pressed', () => {
 
   it('stays open the moment a finger lands on the page, leaving touch to Base UI', async () => {
     const user = userEvent.setup();
-    render(<StampsDrawer />);
+    render(<StickersDrawer />);
 
-    await user.click(screen.getByRole('button', { name: 'Stamps' }));
+    await user.click(screen.getByRole('button', { name: 'Stickers' }));
     await user.pointer({
       keys: '[TouchA>]',
       target: screen.getByText('On the page'),
     });
 
-    expect(screen.getByRole('dialog', { name: 'Stamps' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('dialog', { name: 'Stickers' }),
+    ).toBeInTheDocument();
     await user.pointer({ keys: '[/TouchA]' });
   });
 
   it('closes on a press of its own trigger, rather than opening again', async () => {
     const user = userEvent.setup();
-    render(<StampsDrawer />);
-    const trigger = screen.getByRole('button', { name: 'Stamps' });
+    render(<StickersDrawer />);
+    const trigger = screen.getByRole('button', { name: 'Stickers' });
 
     await user.click(trigger);
-    expect(screen.getByRole('dialog', { name: 'Stamps' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('dialog', { name: 'Stickers' }),
+    ).toBeInTheDocument();
     await user.click(trigger);
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

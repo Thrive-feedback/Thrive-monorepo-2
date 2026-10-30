@@ -1,7 +1,7 @@
 import { LinkedAccountList } from '@/app/(signed-in)/(member)/settings/account/_components/linked-account-list';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import { PhotoAvatar } from '@/components/molecules/photo-avatar';
+import { AvatarName } from '@/components/molecules/avatar-name';
 import { SignOutForm } from '@/components/organisms/sign-out-form';
 import type { MemberAccount } from '@/lib/session/session.service';
 import {
@@ -26,12 +26,15 @@ export function AccountSection({ session }: { session: MemberAccount }) {
 
   return (
     <section className="flex flex-col">
-      <div className="flex items-center gap-4 border-border-subtle border-b py-5">
-        <PhotoAvatar name={profile.displayName} photoUrl={session.photoUrl} />
+      <AvatarName
+        name={profile.displayName}
+        photoUrl={session.photoUrl}
+        className="flex border-border-subtle border-b py-5"
+      >
         <Text variant="subtitle-3" as="h3">
           {profile.fullName}
         </Text>
-      </div>
+      </AvatarName>
       <SettingValues
         rows={[
           { label: DISPLAY_NAME, value: profile.displayName },

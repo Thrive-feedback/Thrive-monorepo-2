@@ -1,5 +1,4 @@
-import { StampIcon } from 'lucide-react';
-import { useState } from 'react';
+import { CheckIcon } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -11,69 +10,63 @@ import {
 import { cn } from '@/lib/cn.util';
 import styles from './postcard.module.css';
 import { PostcardPicture } from './postcard-picture';
-import { MAX_STAMPS, POSTCARD_STAMPS } from './postcard-stamp.constant';
+import { POSTCARD_STAMPS } from './postcard-stamp.constant';
+import { PostcardStampIcon } from './postcard-stamp-icon';
 import { PostcardToolButton } from './postcard-tool-button';
 import { usePostcardDrawerContainer } from './use-postcard-drawer-container';
 
 export type PostcardStampPickerProps = {
-  /** How many stamps the card carries already, on both sides. */
-  count: number;
-  onAddStamp: (stampKey: string) => void;
+  /** The stamp on the card, or `null` for none. */
+  stampKey: string | null;
+  isOpen: boolean;
+  onStampChange: (stampKey: string) => void;
+  onOpenChange: (isOpen: boolean) => void;
 };
 
 /**
- * Stamps, on either side's bar, with how many the card carries: a drawer of every stamp to add to
- * the side showing, which behaves as Templates does. A stamp pressed goes on the card and the
- * drawer closes, so it can be placed at once. A press anywhere outside it puts it away, and since
- * it does not hold the page, that same press reaches the card: pressing a stamp to move it closes
- * the drawer and starts the move. With three on the card, no more can be added until one comes
- * off.
+ * Stamp, on the back's bar only: a drawer of every stamp, which behaves as Stickers does. A card
+ * carries one, so pressing another swaps it, and the drawer closes. The one on the card is marked.
  */
 export function PostcardStampPicker({
-  count,
-  onAddStamp,
+  stampKey,
+  isOpen,
+  onStampChange,
+  onOpenChange,
 }: PostcardStampPickerProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const container = usePostcardDrawerContainer();
-  const isFull = count >= MAX_STAMPS;
 
-  function handleAdd(stampKey: string) {
-    if (isFull) {
-      return;
-    }
-    onAddStamp(stampKey);
-    setIsOpen(false);
+  function handleChoose(key: string) {
+    onStampChange(key);
+    onOpenChange(false);
   }
 
   return (
-    <Drawer modal={false} open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer modal={false} open={isOpen} onOpenChange={onOpenChange}>
       <DrawerTrigger asChild>
-        <PostcardToolButton data-stamps-tool>
-          <StampIcon aria-hidden="true" className="size-4.5" />
-          <span className="max-sm:sr-only">Stamps </span>({count}/{MAX_STAMPS})
+        <PostcardToolButton data-stamp-tool>
+          <PostcardStampIcon className="h-4.5 w-auto" />
+          <span className="max-sm:sr-only">Stamp</span>
         </PostcardToolButton>
       </DrawerTrigger>
       <DrawerContent container={container} data-stamp-panel>
         <DrawerHeader>
-          <DrawerTitle>Stamps</DrawerTitle>
+          <DrawerTitle>Stamp</DrawerTitle>
           <DrawerDescription>
-            Up to three on your card, on either side. A stamp goes on the side
-            showing; drag it where you like.
+            One for your card, in the corner of the back. Choose another to swap
+            it.
           </DrawerDescription>
         </DrawerHeader>
         <ul className="grid grid-cols-3 gap-3">
           {POSTCARD_STAMPS.map((stamp) => (
             <li key={stamp.key}>
-              {/* Not `disabled` when full: the one just pressed keeps the cursor rather than
-                  dropping it on the page. */}
               <button
                 type="button"
-                aria-label={`Add the ${stamp.alt} stamp`}
-                aria-disabled={isFull}
-                onClick={() => handleAdd(stamp.key)}
-                className="block w-full cursor-pointer rounded-element p-1 hover:bg-action-neutral-surface-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent"
+                aria-label={`Use the ${stamp.alt} stamp`}
+                aria-pressed={stamp.key === stampKey}
+                onClick={() => handleChoose(stamp.key)}
+                className="relative block w-full cursor-pointer rounded-element p-1 hover:bg-action-neutral-surface-hover aria-pressed:bg-action-neutral-surface-hover"
               >
-                <span className={cn('block', styles.stampLift)}>
+                <span className={cn('block', styles.lift)}>
                   <span className={cn('block aspect-square', styles.stamp)}>
                     <span className="relative block size-full overflow-hidden border border-border-strong">
                       <PostcardPicture
@@ -85,13 +78,15 @@ export function PostcardStampPicker({
                     </span>
                   </span>
                 </span>
+                {stamp.key === stampKey && (
+                  <span className="absolute top-0 right-0 flex size-6 items-center justify-center rounded-full bg-action-primary text-fg-on-action shadow-med">
+                    <CheckIcon aria-hidden="true" className="size-4" />
+                  </span>
+                )}
               </button>
             </li>
           ))}
         </ul>
-        <p aria-live="polite" className="text-body-3 text-fg-secondary">
-          {isFull ? 'Three is the most. Take one off to add another.' : ''}
-        </p>
       </DrawerContent>
     </Drawer>
   );

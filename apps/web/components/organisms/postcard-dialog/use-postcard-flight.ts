@@ -8,8 +8,6 @@ import {
   type Curve,
   centerWithin,
   curvePath,
-  POSTMARK_CORNER,
-  type Point,
   readMotionSteps,
   sampleCurve,
 } from './postcard-flight.util';
@@ -33,7 +31,7 @@ export function usePostcardFlight() {
   const [cardRef, animate] = useAnimate<HTMLDivElement>();
   const contrailRef = useRef<SVGSVGElement>(null);
   const reduceMotion = useReducedMotion() === true;
-  const [postmarkAt, setPostmarkAt] = useState<Point | null>(null);
+  const [isPostmarked, setIsPostmarked] = useState(false);
   const [contrail, setContrail] = useState<string | null>(null);
   const courseRef = useRef<Curve | null>(null);
 
@@ -58,7 +56,7 @@ export function usePostcardFlight() {
     ];
     courseRef.current = course;
     setContrail(curvePath(course));
-    setPostmarkAt(POSTMARK_CORNER);
+    setIsPostmarked(true);
   }
 
   async function fly() {
@@ -111,5 +109,5 @@ export function usePostcardFlight() {
     ]);
   }
 
-  return { cardRef, contrailRef, postmarkAt, contrail, prepare, fly };
+  return { cardRef, contrailRef, isPostmarked, contrail, prepare, fly };
 }

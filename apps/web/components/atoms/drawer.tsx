@@ -167,7 +167,7 @@ export function DrawerContent({
   const { side, modal, actionsRef } = useDrawerSetting();
 
   // Base UI closes a non-modal drawer when a mouse press outside is let go; this closes it as the
-  // press goes down, so pressing a stamp to move it puts the drawer away and starts the move. Only
+  // press goes down, so pressing a sticker to move it puts the drawer away and starts the move. Only
   // while it is open: the listener comes and goes with the popup. Left to Base UI: the trigger of
   // the open drawer, which opens and closes it, and a finger: Base UI closes on a tap, or once a
   // finger outside moves more than 10px (a scroll of the page counts), never the moment it lands.

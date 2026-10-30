@@ -7,8 +7,6 @@ export type AutocompleteOption = {
   readonly value: string;
   /** What the suggestion reads as. */
   readonly label: string;
-  /** A quieter second line of the suggestion, if any. */
-  readonly detail?: string;
   /** What typing after the character is matched against, besides nothing at all. */
   readonly keywords: readonly string[];
 };
@@ -56,11 +54,13 @@ function suggestionsFor(
 
 /**
  * Writes `next` into the field the way typing would, so the field's own `onChange` hears it and a
- * controlled value follows. Setting `value` directly would be overwritten on the next render.
+ * controlled value follows. Setting `value` directly would be overwritten on the next render. The
+ * caret is in place before it hears, so a field that limits its text knows what was just put in.
  */
-function writeAsTyped(field: TextField, next: string): void {
+function writeAsTyped(field: TextField, next: string, caret: number): void {
   const prototype = Object.getPrototypeOf(field) as object;
   Object.getOwnPropertyDescriptor(prototype, 'value')?.set?.call(field, next);
+  field.setSelectionRange(caret, caret);
   field.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
@@ -128,13 +128,12 @@ export function useTagAutocomplete<E extends TextField>(
     const written = `${typedTrigger.char}${option.value}${spacer}`;
     const next =
       value.slice(0, typedTrigger.start) + written + value.slice(caret);
-    const after = typedTrigger.start + written.length;
-    writeAsTyped(field, next);
+    writeAsTyped(field, next, typedTrigger.start + written.length);
     field.focus();
-    field.setSelectionRange(after, after);
+    const after = field.selectionStart ?? field.value.length;
     // A caret moved by script is not scrolled to, so a one-line field would hide what was just
     // written. At the end of the text, the end is where to look.
-    if (after === next.length) {
+    if (after === field.value.length) {
       field.scrollLeft = field.scrollWidth;
     }
     setCaret(after);
@@ -151,10 +150,11 @@ export function useTagAutocomplete<E extends TextField>(
     'aria-controls': open ? listId : undefined,
     'aria-activedescendant': open ? optionId(active) : undefined,
     onChange(event: React.ChangeEvent<E>) {
+      // First, so a field that limits its text has put the caret where it stays.
+      handlers.onChange?.(event);
       followCaret(event.currentTarget);
       setActiveIndex(0);
       setDismissed(null);
-      handlers.onChange?.(event);
     },
     onSelect(event: React.SyntheticEvent<E>) {
       followCaret(event.currentTarget);

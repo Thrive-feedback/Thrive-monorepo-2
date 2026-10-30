@@ -45,7 +45,10 @@ export const PostcardAskReadOnly = memo(function PostcardAskReadOnly({
 }: PostcardAskReadOnlyProps) {
   return (
     <>
-      <PostcardFrom writer={ask.requester} />
+      {/* On a phone this half is on top, so the stamp's corner is here. */}
+      <div className="min-h-18.5 pe-21 md:min-h-0 md:pe-0">
+        <PostcardFrom writer={ask.requester} />
+      </div>
       <p
         className={cn(
           'min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap',
@@ -60,7 +63,8 @@ export const PostcardAskReadOnly = memo(function PostcardAskReadOnly({
 
 /**
  * The right half while a request is written: lines where the answers will be written, and a
- * faint line saying so. Nothing here can be reached; it shows the asker what the card becomes.
+ * faint line saying so, below the stamp in that half's corner. Nothing here can be reached; it
+ * shows the asker what the card becomes.
  */
 export const PostcardAnswerPlaceholder = memo(
   function PostcardAnswerPlaceholder() {
@@ -68,7 +72,7 @@ export const PostcardAnswerPlaceholder = memo(
       <div
         aria-hidden="true"
         className={cn(
-          'flex-1',
+          'flex-1 md:mt-21.5',
           styles.ruled,
           messageClassName(HINT_STYLE),
           'text-fg-disabled italic',

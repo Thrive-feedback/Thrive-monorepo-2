@@ -6,17 +6,23 @@ import type { Teammate } from '@/lib/feedback/teammate.type';
 import type {
   PostcardAnswer,
   PostcardAsk,
+  PostcardCard,
   PostcardDraft,
   PostcardKind,
   PostcardWriter,
 } from './postcard-draft.type';
-import { NOBODY, type PostcardCard, PostcardEditor } from './postcard-editor';
+import { NOBODY } from './postcard-draft.util';
+import { PostcardEditor } from './postcard-editor';
 
 type PostcardDialogCommonProps = {
   /** What is being written, above the card: "Give feedback", "Ask for feedback", "Answer". */
   title: string;
   /** Who writes it: after "From" on the card, or on the answer's half. */
   writer: PostcardWriter;
+  /** Who `@` offers, and for a card that chooses, who it can be for: the Workspace but the writer. */
+  teammates: readonly Teammate[];
+  /** The Workspace's active Workspace Goals, by name, offered on `#`. */
+  workspaceGoals: readonly string[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /**
@@ -29,13 +35,11 @@ type PostcardDialogCommonProps = {
 /** Writing Feedback unasked (`give`, the default) or a Feedback Request (`ask`). */
 export type PostcardWritingProps = {
   kind?: Exclude<PostcardKind, 'answer'>;
-  /** Who it can be for, and who else can be chosen to read it: the Workspace but the writer. */
-  teammates: readonly Teammate[];
   /** Who it is for, or who is asked, as it opens, such as the Member whose page it was opened from. */
   defaultRecipientAccountIds?: readonly string[];
   /**
-   * Send was pressed: everything on the card, handed over at the press. The dialog sends nothing
-   * itself. Resolve `true` once it has gone: the card then flies off and the dialog closes itself,
+   * Send was pressed: everything on the card, handed over once its back is showing. The dialog
+   * sends nothing itself. Resolve `true` once it has gone: the card then flies off and the dialog closes itself,
    * so do not close it here. Resolve `false` if it has not: the card stays open as it was, and
    * saying why is the caller's.
    */
@@ -69,13 +73,28 @@ export type PostcardDialogProps = PostcardDialogCommonProps &
  * always asks first, and nothing outside the card closes it.
  */
 export function PostcardDialog(props: PostcardDialogProps) {
-  const { title, writer, open, onOpenChange, onCloseAutoFocus } = props;
+  const {
+    title,
+    writer,
+    teammates,
+    workspaceGoals,
+    open,
+    onOpenChange,
+    onCloseAutoFocus,
+  } = props;
   const card: PostcardCard =
     props.kind === 'answer'
-      ? { kind: 'answer', ask: props.ask, onSend: props.onSend }
+      ? {
+          kind: 'answer',
+          teammates,
+          workspaceGoals,
+          ask: props.ask,
+          onSend: props.onSend,
+        }
       : {
           kind: props.kind ?? 'give',
-          teammates: props.teammates,
+          teammates,
+          workspaceGoals,
           defaultRecipientAccountIds:
             props.defaultRecipientAccountIds ?? NOBODY,
           onSend: props.onSend,

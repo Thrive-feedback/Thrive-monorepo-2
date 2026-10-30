@@ -48,9 +48,6 @@ const VISIBILITIES = [
 
 type FieldErrors = NonNullable<GiveFeedbackState['fieldErrors']>;
 
-/** What the people dialog says under someone a Mention keeps selected. */
-const MENTIONED = 'Mentioned in your message';
-
 /**
  * Giving Feedback without being asked — Offered Feedback. The Giver picks one or more Receivers
  * from the stack of faces — one piece of Feedback they all receive, each seeing the others (brain
@@ -220,14 +217,7 @@ export function GiveFeedbackForm({
           disabledValues={
             audience.onlyMeDisabled ? new Set(['ONLY_ME'] as const) : undefined
           }
-          lockedPeople={
-            new Map(
-              [...audience.lockedAccountIds].map((accountId) => [
-                accountId,
-                MENTIONED,
-              ]),
-            )
-          }
+          lockedPeople={audience.lockedPeople}
         />
       }
       footerError={errors.selectedAccountIds}

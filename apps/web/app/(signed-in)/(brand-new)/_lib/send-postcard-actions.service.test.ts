@@ -50,9 +50,9 @@ const LOOK: SentPostcard['look'] = {
   templateKey: 'system/postcard_template_2',
   tone: 'sage',
   textStyle: { font: 'classic', sizeStep: 3, align: 'center', ink: 'navy' },
-  stamps: [
+  stickers: [
     {
-      stampKey: 'system/stamp-02-ocean',
+      stickerKey: 'system/sticker-01-thumbs-up',
       side: 'front',
       x: 62.5,
       y: 40,
@@ -60,6 +60,7 @@ const LOOK: SentPostcard['look'] = {
       rotation: -8,
     },
   ],
+  stampKey: 'system/stamp-02-ocean',
 };
 
 function aCard(overrides: Partial<SentPostcard> = {}): SentPostcard {
@@ -170,6 +171,55 @@ describe('sending a postcard of Feedback', () => {
     expect(received.body).toBeUndefined();
   });
 
+  it('sends nothing for a message of nothing but spaces', async () => {
+    const received = apiAccepts(FEEDBACK);
+
+    const result = await sendPostcardFeedback(
+      WORKSPACE_ID,
+      aCard({ message: '  \n  ' }),
+    );
+
+    expect(result.formError).toBeDefined();
+    expect(received.body).toBeUndefined();
+  });
+
+  it('takes 1,000 Thai characters, which are far longer in code units', async () => {
+    const received = apiAccepts(FEEDBACK);
+
+    const result = await sendPostcardFeedback(
+      WORKSPACE_ID,
+      aCard({ message: 'ที่'.repeat(1000) }),
+    );
+
+    expect(result).toEqual({});
+    expect(received.body).toBeDefined();
+  });
+
+  it('leaves the writer on their card when the API cannot be reached', async () => {
+    server.use(http.post(FEEDBACK, () => HttpResponse.error()));
+
+    const result = await sendPostcardFeedback(WORKSPACE_ID, aCard());
+
+    expect(result.formError).toBe(
+      "We couldn't send your feedback. Please try again.",
+    );
+  });
+
+  it('lets a fault that is not a refusal through, for the card to report', async () => {
+    server.use(
+      http.post(
+        FEEDBACK,
+        () =>
+          new HttpResponse('not json', {
+            status: 201,
+            headers: { 'content-type': 'application/json' },
+          }),
+      ),
+    );
+
+    await expect(sendPostcardFeedback(WORKSPACE_ID, aCard())).rejects.toThrow();
+  });
+
   it('takes the person to sign in once their session has gone', async () => {
     apiRefuses(FEEDBACK, 'NOT_SIGNED_IN', 401);
 
@@ -200,6 +250,42 @@ describe('sending a postcard asking for Feedback', () => {
       visibility: 'ONLY_ME',
       postcard: LOOK,
     });
+  });
+
+  it('names who else reads it under Selected people', async () => {
+    const received = apiAccepts(REQUESTS);
+
+    await sendPostcardRequest(
+      WORKSPACE_ID,
+      aCard({ visibility: 'SELECTED_PEOPLE', selectedAccountIds: [CARA] }),
+    );
+
+    expect(received.body).toMatchObject({
+      visibility: 'SELECTED_PEOPLE',
+      selectedAccountIds: [CARA],
+    });
+  });
+
+  it('sends nothing for a message of nothing but spaces', async () => {
+    const received = apiAccepts(REQUESTS);
+
+    const result = await sendPostcardRequest(
+      WORKSPACE_ID,
+      aCard({ message: '  \n  ' }),
+    );
+
+    expect(result.formError).toBeDefined();
+    expect(received.body).toBeUndefined();
+  });
+
+  it('leaves the writer on their card when the API cannot be reached', async () => {
+    server.use(http.post(REQUESTS, () => HttpResponse.error()));
+
+    const result = await sendPostcardRequest(WORKSPACE_ID, aCard());
+
+    expect(result.formError).toBe(
+      "We couldn't send your request. Please try again.",
+    );
   });
 
   it('says what went wrong when the API refuses it', async () => {

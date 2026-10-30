@@ -608,8 +608,8 @@ exports[`Landing > renders the same page 1`] = `
                                       class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
                                       data-slot="text"
                                     >
-                                      <span
-                                        class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                      <div
+                                        class="inline-flex min-w-0 max-w-full items-center gap-2 align-middle"
                                       >
                                         <span
                                           aria-hidden="true"
@@ -623,12 +623,12 @@ exports[`Landing > renders the same page 1`] = `
                                             DR
                                           </span>
                                         </span>
-                                        <span
-                                          class="min-w-0 break-words"
+                                        <div
+                                          class="min-w-0 flex-1 break-words"
                                         >
                                           Dao Rattana
-                                        </span>
-                                      </span>
+                                        </div>
+                                      </div>
                                       <span
                                         class="text-fg-secondary"
                                       >
@@ -815,8 +815,8 @@ exports[`Landing > renders the same page 1`] = `
                                       class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
                                       data-slot="text"
                                     >
-                                      <span
-                                        class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                      <div
+                                        class="inline-flex min-w-0 max-w-full items-center gap-2 align-middle"
                                       >
                                         <span
                                           aria-hidden="true"
@@ -830,19 +830,19 @@ exports[`Landing > renders the same page 1`] = `
                                             NC
                                           </span>
                                         </span>
-                                        <span
-                                          class="min-w-0 break-words"
+                                        <div
+                                          class="min-w-0 flex-1 break-words"
                                         >
                                           Nok Chaiyo
-                                        </span>
-                                      </span>
+                                        </div>
+                                      </div>
                                       <span
                                         class="text-fg-secondary"
                                       >
                                         to
                                       </span>
-                                      <span
-                                        class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                      <div
+                                        class="inline-flex min-w-0 max-w-full items-center gap-2 align-middle"
                                       >
                                         <span
                                           aria-hidden="true"
@@ -856,12 +856,12 @@ exports[`Landing > renders the same page 1`] = `
                                             PS
                                           </span>
                                         </span>
-                                        <span
-                                          class="min-w-0 break-words"
+                                        <div
+                                          class="min-w-0 flex-1 break-words"
                                         >
                                           Ploy Srisuk
-                                        </span>
-                                      </span>
+                                        </div>
+                                      </div>
                                     </div>
                                     <div
                                       class="flex shrink-0 flex-col items-end gap-0.5"
@@ -1042,8 +1042,8 @@ exports[`Landing > renders the same page 1`] = `
                                               class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
                                               data-slot="text"
                                             >
-                                              <span
-                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                              <div
+                                                class="inline-flex min-w-0 max-w-full items-center gap-2 align-middle"
                                               >
                                                 <span
                                                   aria-hidden="true"
@@ -1057,12 +1057,12 @@ exports[`Landing > renders the same page 1`] = `
                                                     DR
                                                   </span>
                                                 </span>
-                                                <span
-                                                  class="min-w-0 break-words"
+                                                <div
+                                                  class="min-w-0 flex-1 break-words"
                                                 >
                                                   Dao Rattana
-                                                </span>
-                                              </span>
+                                                </div>
+                                              </div>
                                               <span
                                                 class="text-fg-secondary"
                                               >
@@ -1249,8 +1249,8 @@ exports[`Landing > renders the same page 1`] = `
                                               class="text-subtitle-4 flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
                                               data-slot="text"
                                             >
-                                              <span
-                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                              <div
+                                                class="inline-flex min-w-0 max-w-full items-center gap-2 align-middle"
                                               >
                                                 <span
                                                   aria-hidden="true"
@@ -1264,19 +1264,19 @@ exports[`Landing > renders the same page 1`] = `
                                                     NC
                                                   </span>
                                                 </span>
-                                                <span
-                                                  class="min-w-0 break-words"
+                                                <div
+                                                  class="min-w-0 flex-1 break-words"
                                                 >
                                                   Nok Chaiyo
-                                                </span>
-                                              </span>
+                                                </div>
+                                              </div>
                                               <span
                                                 class="text-fg-secondary"
                                               >
                                                 to
                                               </span>
-                                              <span
-                                                class="inline-flex min-w-0 max-w-full items-center gap-1.5"
+                                              <div
+                                                class="inline-flex min-w-0 max-w-full items-center gap-2 align-middle"
                                               >
                                                 <span
                                                   aria-hidden="true"
@@ -1290,12 +1290,12 @@ exports[`Landing > renders the same page 1`] = `
                                                     PS
                                                   </span>
                                                 </span>
-                                                <span
-                                                  class="min-w-0 break-words"
+                                                <div
+                                                  class="min-w-0 flex-1 break-words"
                                                 >
                                                   Ploy Srisuk
-                                                </span>
-                                              </span>
+                                                </div>
+                                              </div>
                                             </div>
                                             <div
                                               class="flex shrink-0 flex-col items-end gap-0.5"

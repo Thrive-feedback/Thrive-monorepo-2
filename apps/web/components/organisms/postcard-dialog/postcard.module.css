@@ -132,16 +132,18 @@
   line-height: var(--postcard-leading);
 }
 
-/* Writing lines, spaced by the size's line height. `local` makes them scroll with the text. */
 /*
  * A long message scrolls inside the card. The bar stays thin and takes the colour of the writing
- * lines, so it reads as part of the paper rather than as a control on it.
+ * lines, so it reads as part of the paper rather than as a control on it. Its room is kept on the
+ * text drawn under the box too, or the two would wrap their lines differently.
  */
 .message {
   scrollbar-color: var(--border-muted) transparent;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
 }
 
+/* Writing lines, spaced by the size's line height. `local` makes them scroll with the text. */
 .ruled {
   background-image: repeating-linear-gradient(
     to bottom,
@@ -180,15 +182,15 @@
 
 /*
  * A postage stamp's perforated edge: a row of round bites along every side, cut by a mask of
- * repeating circles, with the middle kept whole. The same edge as the letter's stamps; a mask has
+ * repeating circles, with the middle kept whole. Finer than the letter's stamps; a mask has
  * no utility. Its paper is the plainest surface there is, white in light, and is told apart from
- * what lies behind it by `.stampLift`, not by being greyed.
+ * what lies behind it by `.lift`, not by being greyed.
  */
 .stamp {
-  --bite: calc(var(--space-unit) * 1.25);
+  --bite: calc(var(--space-unit) * 0.75);
 
   background-color: var(--surface-base);
-  padding: calc(var(--bite) * 2);
+  padding: calc(var(--bite) * 2.5);
   mask:
     radial-gradient(var(--bite), transparent 98%, black) round
     calc(var(--bite) * -1.5) calc(var(--bite) * -1.5) / calc(var(--bite) * 3)
@@ -198,14 +200,14 @@
 }
 
 /*
- * A stamp is a piece of paper lying on the card, so it casts a shadow, and the shadow is what draws
+ * A stamp or a sticker is a piece of paper lying on the card, so it casts a shadow, and the shadow is what draws
  * its perforated edge against a surface as pale as itself: the drawer, or cream paper. It is a
  * filter on the stamp's wrapper, so it follows the bites; a box shadow would be a square, and the
  * mask would cut it away anyway. The tokens' elevation is a box shadow, so this is the low step's
  * shape on the spacing scale, cast twice in the scrim's dark veil (twice its 5% is the low step's
  * 10%), which deepens in dark mode as elevation does.
  */
-.stampLift {
+.lift {
   --lift-near: 0 calc(var(--space-unit) * 0.25) calc(var(--space-unit) * 0.25)
     var(--surface-scrim);
   --lift-far: 0 calc(var(--space-unit) * 0.5) calc(var(--space-unit) * 1.5)
