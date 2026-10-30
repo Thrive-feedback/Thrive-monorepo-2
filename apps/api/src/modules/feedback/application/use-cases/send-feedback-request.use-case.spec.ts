@@ -102,7 +102,8 @@ describe('a Requester asking a teammate for Feedback', () => {
       templateKey: 'system/postcard_template_2',
       tone: 'blush',
       textStyle: { font: 'modern', sizeStep: 2, align: 'left', ink: 'ink' },
-      stamps: [],
+      stickers: [],
+      stampKey: null,
     };
 
     await useCase.execute(request({ postcard }));
@@ -125,7 +126,8 @@ describe('a Requester asking a teammate for Feedback', () => {
               align: 'left',
               ink: 'ink',
             },
-            stamps: [],
+            stickers: [],
+            stampKey: null,
           },
         }),
       ),

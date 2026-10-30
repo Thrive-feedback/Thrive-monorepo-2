@@ -40,14 +40,15 @@ export function toPostcardResponse(postcard: PostcardSnapshot | null) {
         align: postcard.textStyle.align,
         ink: postcard.textStyle.ink,
       },
-      stamps: postcard.stamps.map((stamp) => ({
-        stampKey: stamp.stampKey,
-        side: stamp.side,
-        x: stamp.x,
-        y: stamp.y,
-        scale: stamp.scale,
-        rotation: stamp.rotation,
+      stickers: postcard.stickers.map((sticker) => ({
+        stickerKey: sticker.stickerKey,
+        side: sticker.side,
+        x: sticker.x,
+        y: sticker.y,
+        scale: sticker.scale,
+        rotation: sticker.rotation,
       })),
+      stampKey: postcard.stampKey,
     }
   );
 }

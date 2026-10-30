@@ -3,8 +3,8 @@ import { Given, Then, When } from '@cucumber/cucumber';
 import { askForFeedback, giveFeedback } from '../support/journeys';
 import type { ThriveWorld } from '../support/world';
 
-const STAMP = {
-  stampKey: 'system/stamp-02-ocean',
+const STICKER = {
+  stickerKey: 'system/sticker-01-thumbs-up',
   side: 'front',
   x: 62.5,
   y: 40,
@@ -16,11 +16,14 @@ const A_POSTCARD = {
   templateKey: 'system/postcard_template_2',
   tone: 'sage',
   textStyle: { font: 'classic', sizeStep: 3, align: 'center', ink: 'navy' },
-  stamps: [
-    STAMP,
-    { ...STAMP, side: 'back', stampKey: 'system/stamp-03-night' },
+  stickers: [
+    STICKER,
+    { ...STICKER, side: 'back', stickerKey: 'system/sticker-09-star' },
   ],
+  stampKey: 'system/stamp-02-ocean',
 };
+
+const FOUR_STICKERS = [STICKER, STICKER, STICKER, STICKER];
 
 Given(
   '{person} has given {person} Feedback on a postcard: {string}',
@@ -60,7 +63,7 @@ Given(
 );
 
 When(
-  '{person} gives {person} Feedback on a postcard with four stamps: {string}',
+  '{person} gives {person} Feedback on a postcard with four stickers: {string}',
   async function (
     this: ThriveWorld,
     giver: string,
@@ -69,13 +72,13 @@ When(
   ) {
     await giveFeedback(this, giver, receiver, message, undefined, {
       ...A_POSTCARD,
-      stamps: [STAMP, STAMP, STAMP, STAMP],
+      stickers: FOUR_STICKERS,
     });
   },
 );
 
 When(
-  '{person} asks {person} for Feedback on a postcard with four stamps: {string}',
+  '{person} asks {person} for Feedback on a postcard with four stickers: {string}',
   async function (
     this: ThriveWorld,
     requester: string,
@@ -84,7 +87,7 @@ When(
   ) {
     await askForFeedback(this, requester, giver, message, undefined, {
       ...A_POSTCARD,
-      stamps: [STAMP, STAMP, STAMP, STAMP],
+      stickers: FOUR_STICKERS,
     });
   },
 );
