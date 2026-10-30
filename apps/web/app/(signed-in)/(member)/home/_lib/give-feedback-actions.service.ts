@@ -6,6 +6,11 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import type { GiveFeedbackState } from '@/lib/feedback/give-feedback-state.type';
+import { isWithinMessageLength } from '@/lib/feedback/message-length.util';
+import {
+  FEEDBACK_TOO_LONG,
+  GIVE_FEEDBACK_ERRORS,
+} from '@/lib/feedback/send-feedback-errors.constant';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMemberOf } from '@/lib/session/session.service';
 
@@ -19,16 +24,11 @@ const VISIBILITIES = [
   'EVERYONE',
 ] as const satisfies readonly Visibility[];
 
-/** As long as the API lets a Feedback message be. */
-const MAX_MESSAGE_LENGTH = 4000;
-
-const TOO_LONG = `Your feedback is too long. Keep it under ${MAX_MESSAGE_LENGTH} characters.`;
-
 /** The shape the API's own schema accepts, so the browser is never the first to check it. */
 const GiveFeedbackInput = z
   .object({
     receiverAccountIds: z.array(z.uuid()).min(1),
-    message: z.string().trim().min(1).max(MAX_MESSAGE_LENGTH),
+    message: z.string().trim().min(1).refine(isWithinMessageLength),
     visibility: z.enum(VISIBILITIES),
     selectedAccountIds: z.array(z.uuid()),
   })
@@ -38,19 +38,6 @@ const GiveFeedbackInput = z
       input.selectedAccountIds.length > 0,
     { path: ['selectedAccountIds'] },
   );
-
-/** What to say when the API refused it, by its error code. */
-const SEND_ERRORS: Readonly<Record<string, string>> = {
-  RECEIVER_NOT_IN_WORKSPACE:
-    'Someone you picked it for is no longer in your Workspace.',
-  CANNOT_GIVE_YOURSELF_FEEDBACK: "You can't give yourself Feedback.",
-  NO_PEOPLE_SELECTED: 'Pick at least one person to share it with.',
-  SELECTED_PERSON_NOT_IN_WORKSPACE:
-    'Someone you picked to share it with is no longer in your Workspace.',
-  MENTIONED_PERSON_LEFT_OUT:
-    'Everyone you mention must be able to read it. Share it with them, or with everyone.',
-  FEEDBACK_MESSAGE_TOO_LONG: TOO_LONG,
-};
 
 /** Where to go instead when the API says this step is not the person's to take. */
 const ELSEWHERE: Readonly<Record<string, string>> = {
@@ -84,7 +71,7 @@ export async function giveFeedback(
   if (!input.success) {
     const { fieldErrors } = z.flattenError(input.error);
     const messageTooLong = input.error.issues.some(
-      (issue) => issue.path[0] === 'message' && issue.code === 'too_big',
+      (issue) => issue.path[0] === 'message' && issue.code === 'custom',
     );
     return {
       fieldErrors: {
@@ -92,7 +79,7 @@ export async function giveFeedback(
           ? 'Pick who it is for.'
           : undefined,
         message: messageTooLong
-          ? TOO_LONG
+          ? FEEDBACK_TOO_LONG
           : fieldErrors.message
             ? 'Write your feedback.'
             : undefined,
@@ -130,7 +117,7 @@ export async function giveFeedback(
     if (!(error instanceof ApiError)) {
       throw error;
     }
-    const sendError = SEND_ERRORS[error.code];
+    const sendError = GIVE_FEEDBACK_ERRORS[error.code];
     if (sendError) {
       return { formError: sendError };
     }

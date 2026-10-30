@@ -5,7 +5,12 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
+import { isWithinMessageLength } from '@/lib/feedback/message-length.util';
 import type { RequestFeedbackState } from '@/lib/feedback/request-feedback-state.type';
+import {
+  REQUEST_FEEDBACK_ERRORS,
+  REQUEST_TOO_LONG,
+} from '@/lib/feedback/send-feedback-errors.constant';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMemberOf } from '@/lib/session/session.service';
 
@@ -23,7 +28,7 @@ const VISIBILITIES = [
 const RequestFeedbackInput = z
   .object({
     giverAccountIds: z.array(z.uuid()).min(1),
-    message: z.string().trim().min(1),
+    message: z.string().trim().min(1).refine(isWithinMessageLength),
     visibility: z.enum(VISIBILITIES),
     selectedAccountIds: z.array(z.uuid()),
   })
@@ -33,21 +38,6 @@ const RequestFeedbackInput = z
       input.selectedAccountIds.length > 0,
     { path: ['selectedAccountIds'] },
   );
-
-/** What to say when the API refused the send, by its error code. */
-const SEND_ERRORS: Readonly<Record<string, string>> = {
-  GIVER_NOT_IN_WORKSPACE:
-    'Someone you picked to ask is no longer in your Workspace.',
-  CANNOT_ASK_YOURSELF: "You can't ask yourself for Feedback.",
-  GIVER_ALREADY_ASKED: 'You picked the same teammate twice.',
-  REQUEST_MESSAGE_TOO_LONG:
-    'That request is too long. Try saying it more briefly.',
-  NO_PEOPLE_SELECTED: 'Pick at least one person to share it with.',
-  SELECTED_PERSON_NOT_IN_WORKSPACE:
-    'Someone you picked to share it with is no longer in your Workspace.',
-  MENTIONED_PERSON_LEFT_OUT:
-    'Everyone you mention must be able to read it. Share it with them, or with everyone.',
-};
 
 /** Where to go instead when the API says this step is not the person's to take. */
 const ELSEWHERE: Readonly<Record<string, string>> = {
@@ -80,14 +70,19 @@ export async function requestFeedback(
   });
   if (!input.success) {
     const { fieldErrors } = z.flattenError(input.error);
+    const messageTooLong = input.error.issues.some(
+      (issue) => issue.path[0] === 'message' && issue.code === 'custom',
+    );
     return {
       fieldErrors: {
         giverAccountIds: fieldErrors.giverAccountIds
           ? 'Pick at least one person to ask.'
           : undefined,
-        message: fieldErrors.message
-          ? 'Write what you would like feedback on.'
-          : undefined,
+        message: messageTooLong
+          ? REQUEST_TOO_LONG
+          : fieldErrors.message
+            ? 'Write what you would like feedback on.'
+            : undefined,
         selectedAccountIds: fieldErrors.selectedAccountIds
           ? 'Pick at least one person to share it with.'
           : undefined,
@@ -122,7 +117,7 @@ export async function requestFeedback(
     if (!(error instanceof ApiError)) {
       throw error;
     }
-    const sendError = SEND_ERRORS[error.code];
+    const sendError = REQUEST_FEEDBACK_ERRORS[error.code];
     if (sendError) {
       return { formError: sendError };
     }

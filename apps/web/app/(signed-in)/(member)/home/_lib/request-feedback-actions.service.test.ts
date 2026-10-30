@@ -128,6 +128,14 @@ describe('asking a teammate for Feedback', () => {
     });
   });
 
+  it('says an over-long request is too long, rather than missing', async () => {
+    const { state } = await send(form({ message: 'a'.repeat(1001) }));
+
+    expect(state?.fieldErrors?.message).toBe(
+      'That request is too long. Keep it under 1,000 characters.',
+    );
+  });
+
   it('sends who besides the Requester may read the answers', async () => {
     const received = apiAccepts();
 

@@ -12,6 +12,10 @@ import type {
   AnswerAskAction,
   AnswerAskState,
 } from '@/lib/feedback/answer-ask-state.type';
+import {
+  MAX_MESSAGE_LENGTH,
+  messageLength,
+} from '@/lib/feedback/message-length.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { feedbackTagTriggers } from './feedback-tag-triggers.util';
 
@@ -27,9 +31,8 @@ export type AnswerAskFormProps = {
   action: AnswerAskAction;
 };
 
-const MAX_ANSWER_LENGTH = 4000;
 /** Far enough in that the count is news, close enough that it still helps. */
-const COUNT_FROM = 3500;
+const COUNT_FROM = 900;
 const WRITE_SOMETHING = 'Write your answer before sending it.';
 
 /**
@@ -56,7 +59,8 @@ export function AnswerAskForm({
   const messageRef = useRef<HTMLTextAreaElement>(null);
 
   const errorMessage = clientError ?? state.fieldErrors?.message;
-  const remaining = MAX_ANSWER_LENGTH - message.length;
+  const written = messageLength(message);
+  const remaining = MAX_MESSAGE_LENGTH - written;
 
   function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
     setMessage(event.target.value);
@@ -89,7 +93,7 @@ export function AnswerAskForm({
         onChange={handleChange}
         errorMessage={errorMessage}
         helperText={
-          message.length > COUNT_FROM
+          written > COUNT_FROM
             ? `${remaining.toLocaleString('en-GB')} characters left.`
             : 'They see your name with your answer. Say what you would say in person.'
         }

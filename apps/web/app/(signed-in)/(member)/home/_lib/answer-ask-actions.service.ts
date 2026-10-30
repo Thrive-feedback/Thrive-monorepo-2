@@ -6,18 +6,21 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import type { AnswerAskState } from '@/lib/feedback/answer-ask-state.type';
+import {
+  isWithinMessageLength,
+  MAX_MESSAGE_LENGTH,
+} from '@/lib/feedback/message-length.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMemberOf } from '@/lib/session/session.service';
 
 /** What the API's own schema accepts, so the browser is never the first to check it. */
-const MAX_ANSWER_LENGTH = 4000;
 const AnswerAskInput = z.object({
   askId: z.uuid(),
-  message: z.string().trim().min(1).max(MAX_ANSWER_LENGTH),
+  message: z.string().trim().min(1).refine(isWithinMessageLength),
 });
 
 const WRITE_SOMETHING = 'Write your answer before sending it.';
-const TOO_LONG = `That answer is longer than ${MAX_ANSWER_LENGTH.toLocaleString('en-GB')} characters. Try saying it more briefly.`;
+const TOO_LONG = `That answer is longer than ${MAX_MESSAGE_LENGTH.toLocaleString('en-GB')} characters. Try saying it more briefly.`;
 const COULD_NOT_SEND = "We couldn't send your answer. Please try again.";
 
 /** What to say when the API refused the answer, by its error code. */
@@ -61,7 +64,7 @@ export async function answerAsk(
     return {
       fieldErrors: {
         message: fieldErrors.message
-          ? tooLong.trim().length > MAX_ANSWER_LENGTH
+          ? !isWithinMessageLength(tooLong)
             ? TOO_LONG
             : WRITE_SOMETHING
           : undefined,

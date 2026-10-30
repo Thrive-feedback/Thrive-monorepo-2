@@ -35,10 +35,11 @@ export type PostcardWritingProps = {
   defaultRecipientAccountIds?: readonly string[];
   /**
    * Send was pressed: everything on the card, handed over at the press. The dialog sends nothing
-   * itself; the card then flies off and the dialog closes itself, so do not close it here.
-   * Showing a failure is the caller's: by then the card has gone.
+   * itself. Resolve `true` once it has gone: the card then flies off and the dialog closes itself,
+   * so do not close it here. Resolve `false` if it has not: the card stays open as it was, and
+   * saying why is the caller's.
    */
-  onSend: (postcard: PostcardDraft) => void;
+  onSend: (postcard: PostcardDraft) => Promise<boolean>;
 };
 
 /** Answering one Ask: the Request message is on the left half, the answer is written on the right. */
@@ -47,7 +48,7 @@ export type PostcardAnsweringProps = {
   /** The Ask being answered, as its Requester wrote it. */
   ask: PostcardAsk;
   /** Send answer was pressed: the answer, handed over at the press, as `onSend` above. */
-  onSend: (answer: PostcardAnswer) => void;
+  onSend: (answer: PostcardAnswer) => Promise<boolean>;
 };
 
 export type PostcardDialogProps = PostcardDialogCommonProps &

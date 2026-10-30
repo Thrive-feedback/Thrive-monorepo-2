@@ -42,6 +42,7 @@ export async function BrandNewSidebar() {
   return (
     <div className="flex flex-col gap-4">
       <ComposeMenu
+        workspaceId={membership.workspace.id}
         teammates={teammates}
         writer={{
           name: session.profile.displayName,
