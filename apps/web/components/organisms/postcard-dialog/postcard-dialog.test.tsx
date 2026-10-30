@@ -678,6 +678,21 @@ describe('PostcardDialog, stamps', () => {
     expect(stamps[0]?.scale).toBeCloseTo(1.1);
   });
 
+  it('postmarks a stamped card as it is sent, then closes', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(dialog({ defaultRecipientAccountIds: ['mali'], onOpenChange }));
+    await user.type(message(), 'Thank you.');
+    await user.keyboard('{Escape}');
+    await addStamp(user, 'Ocean');
+
+    await user.click(send());
+
+    // Decoration, hidden from screen readers, so it is found by its mark rather than a role.
+    expect(document.querySelector('[data-postmark]')).toBeInTheDocument();
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+  });
+
   it('takes a stamp off with Delete, and gives the cursor to Stamps', async () => {
     const user = userEvent.setup();
     render(dialog());

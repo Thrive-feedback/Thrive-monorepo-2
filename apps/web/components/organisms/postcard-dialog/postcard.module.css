@@ -143,18 +143,30 @@
   background-attachment: local;
 }
 
-@keyframes send-away {
-  to {
-    opacity: 0;
-    translate: 0 calc(var(--space-unit) * -24);
-  }
+/*
+ * Sending by airmail (`use-postcard-flight.ts`): the contrail the card leaves, dashed, and the
+ * mask that draws it on. A mask shows what lies under its white, so that stroke is an
+ * instruction, not a colour. SVG strokes have no utility.
+ */
+.contrail {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: calc(var(--space-unit) * 0.5);
+  stroke-dasharray: calc(var(--space-unit) * 1.5) calc(var(--space-unit) * 1.5);
+  stroke-linecap: round;
 }
 
-/* Sending: the card rises off the stage on the exit step, as if posted. */
-@media (prefers-reduced-motion: no-preference) {
-  .sendAway {
-    animation: send-away var(--motion-exit) forwards;
-  }
+.contrailMask {
+  fill: none;
+  stroke: white;
+  stroke-width: calc(var(--space-unit) * 3);
+}
+
+/* The postmark's rings and cancelling waves, in the ink of its text colour. */
+.postmarkInk {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: calc(var(--space-unit) * 0.5);
 }
 
 /*

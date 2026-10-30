@@ -23,8 +23,8 @@ import { cn } from '@/lib/cn.util';
 import { chosenPeople } from '@/lib/feedback/chosen-people.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { Postcard } from './postcard';
-import styles from './postcard.module.css';
 import { PostcardAddress, PostcardFrom } from './postcard-address';
+import { PostcardContrail } from './postcard-contrail';
 import {
   PostcardCoverNote,
   PostcardCoverToolbar,
@@ -40,6 +40,7 @@ import type {
   PostcardWriter,
 } from './postcard-draft.type';
 import { PostcardMessage } from './postcard-message';
+import { PostcardPostmark } from './postcard-postmark';
 import {
   PostcardAnswerPlaceholder,
   PostcardAskReadOnly,
@@ -58,6 +59,7 @@ import {
 } from './postcard-template.constant';
 import { PostcardTextToolbar } from './postcard-text-toolbar';
 import { PostcardToolbar } from './postcard-toolbar';
+import { usePostcardFlight } from './use-postcard-flight';
 
 /** One change to the card: some of its fields, a part of the text's style, or one stamp. */
 type DraftChange =
@@ -134,6 +136,14 @@ function applyChange(draft: PostcardDraft, change: DraftChange): PostcardDraft {
 }
 
 /** Which card is written, with what only that card needs. */
+
+/**
+ * Everything around the card as it is sent: the title, Close, Turn over, the status and the bar
+ * fade on the fast step, so only the card is left to be postmarked and flown off.
+ */
+const SENT_AWAY =
+  'opacity-0 transition-opacity duration-fast ease-smooth-out motion-reduce:transition-none';
+
 export type PostcardCard =
   | {
       kind: Exclude<PostcardKind, 'answer'>;
@@ -324,7 +334,7 @@ export function PostcardEditor({
   const [selectedStampId, setSelectedStampId] = useState<string | null>(null);
   const stampsAddedRef = useRef(0);
   const contentRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const flight = usePostcardFlight();
   const toolbarRef = useRef<HTMLDivElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
   // Where focus goes back to: the control that opened the card, and the one that asked to close
@@ -537,9 +547,9 @@ export function PostcardEditor({
   }
 
   // The card is handed over at the press, so sending never waits on an animation (a tab in the
-  // background may not run one). It then flies off, and the dialog closes once the flight has
-  // settled: ended, or cut short, as when reduced motion is switched on mid-way. With reduced
-  // motion there is no flight, and it closes at once.
+  // background may not run one). It is then postmarked and flown off by airmail, and the dialog
+  // closes once the flight has settled: ended, cut short or failed. With reduced motion there is
+  // no flight, and it closes at once.
   function handleSend() {
     if (card.kind === 'answer') {
       card.onSend({
@@ -554,20 +564,22 @@ export function PostcardEditor({
     // dialog itself holds it until the opener gets it back. It is a container, not a control,
     // so it draws no focus ring while it does.
     contentRef.current?.focus();
+    // The postmark and the contrail are drawn in the same commit, so the flight finds them.
     flushSync(() => {
       setIsEditingText(false);
       setSelectedStampId(null);
       setIsSending(true);
+      flight.prepare();
     });
-    const flight = cardRef.current?.getAnimations?.() ?? [];
     // Only if this card is still on the page: one closed and opened again meanwhile is a new card.
-    void Promise.allSettled(flight.map((animation) => animation.finished)).then(
-      () => {
-        if (cardRef.current?.isConnected) {
+    void flight
+      .fly()
+      .catch(() => undefined)
+      .then(() => {
+        if (flight.cardRef.current?.isConnected) {
           onClose();
         }
-      },
-    );
+      });
   }
 
   // The bar holds the text's tools while the message is styled, the front's while the front shows,
@@ -665,15 +677,23 @@ export function PostcardEditor({
       onEscapeKeyDown={handleEscapeKeyDown}
       onInteractOutside={(event) => event.preventDefault()}
       onFocus={handleFocus}
-      className="inset-0 top-0 mx-0 max-h-none max-w-none translate-y-0 gap-0 overflow-y-auto rounded-none border-0 bg-transparent p-4 shadow-none focus-visible:outline-hidden md:p-8"
+      className="inset-0 top-0 mx-0 max-h-none max-w-none translate-y-0 gap-0 overflow-y-auto overflow-x-hidden rounded-none border-0 bg-transparent p-4 shadow-none focus-visible:outline-hidden md:p-8"
     >
+      {/* Under everything, so the card flies over its own contrail; it scrolls with the card. The
+          card leaves past the right edge, which hides rather than scrolls. */}
+      <PostcardContrail ref={flight.contrailRef} course={flight.contrail} />
       {/* Wider than the card, so the text tools fit on one line beside Seal & Send. A card that
           has been sent is inert while it flies off, so nothing edits what has gone. */}
       <div
         inert={isSending}
         className="mx-auto my-auto flex w-full max-w-5xl flex-col items-center gap-4"
       >
-        <div className="flex w-full max-w-2xl items-center gap-2">
+        <div
+          className={cn(
+            'flex w-full max-w-2xl items-center gap-2',
+            isSending && SENT_AWAY,
+          )}
+        >
           <DialogTitle className="flex-1 text-subtitle-display-1">
             {title}
           </DialogTitle>
@@ -690,7 +710,10 @@ export function PostcardEditor({
             variant="secondary"
             size="icon"
             onClick={handleFlip}
-            className="self-end shadow-med lg:absolute lg:top-1/2 lg:left-full lg:ml-6 lg:-translate-y-1/2"
+            className={cn(
+              'self-end shadow-med lg:absolute lg:top-1/2 lg:left-full lg:ml-6 lg:-translate-y-1/2',
+              isSending && SENT_AWAY,
+            )}
           >
             <Rotate3dIcon aria-hidden="true" className="size-4.5" />
             <span className="sr-only">
@@ -699,7 +722,7 @@ export function PostcardEditor({
                 : 'Turn over to the back, the message'}
             </span>
           </Button>
-          <div ref={cardRef} className={cn(isSending && styles.sendAway)}>
+          <div ref={flight.cardRef} className="relative">
             <Postcard
               side={side}
               tone={draft.tone}
@@ -708,17 +731,26 @@ export function PostcardEditor({
             >
               {back}
             </Postcard>
+            {flight.postmarkAt && <PostcardPostmark at={flight.postmarkAt} />}
           </div>
         </div>
 
         <p
           aria-live="polite"
-          className="max-w-2xl text-center text-body-3 text-fg-secondary"
+          className={cn(
+            'max-w-2xl text-center text-body-3 text-fg-secondary',
+            isSending && SENT_AWAY,
+          )}
         >
           {status}
         </p>
 
-        <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch sm:justify-center">
+        <div
+          className={cn(
+            'flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch sm:justify-center',
+            isSending && SENT_AWAY,
+          )}
+        >
           {/* The bar's own focus, its menus' included, keeps the text tools up. */}
           {/* biome-ignore lint/a11y/useSemanticElements: `<fieldset>` groups form fields under a legend; a row of tools is a plain named group. */}
           <div
