@@ -966,8 +966,8 @@ export interface components {
                     /** @enum {string} */
                     ink: "ink" | "navy" | "forest" | "plum" | "brick";
                 };
-                stamps: {
-                    stampKey: string;
+                stickers: {
+                    stickerKey: string;
                     /** @enum {string} */
                     side: "front" | "back";
                     x: number;
@@ -975,6 +975,7 @@ export interface components {
                     scale: number;
                     rotation: number;
                 }[];
+                stampKey: string | null;
             };
         };
         SendFeedbackRequestResponseDto_Output: {
@@ -999,8 +1000,8 @@ export interface components {
                         /** @enum {string} */
                         ink: "ink" | "navy" | "forest" | "plum" | "brick";
                     };
-                    stamps: {
-                        stampKey: string;
+                    stickers: {
+                        stickerKey: string;
                         /** @enum {string} */
                         side: "front" | "back";
                         x: number;
@@ -1008,6 +1009,7 @@ export interface components {
                         scale: number;
                         rotation: number;
                     }[];
+                    stampKey: string | null;
                 } | null;
                 tags: {
                     workspaceGoals: {
@@ -1078,8 +1080,8 @@ export interface components {
                     /** @enum {string} */
                     ink: "ink" | "navy" | "forest" | "plum" | "brick";
                 };
-                stamps: {
-                    stampKey: string;
+                stickers: {
+                    stickerKey: string;
                     /** @enum {string} */
                     side: "front" | "back";
                     x: number;
@@ -1087,6 +1089,7 @@ export interface components {
                     scale: number;
                     rotation: number;
                 }[];
+                stampKey: string | null;
             } | null;
             tags: {
                 workspaceGoals: {
@@ -1226,8 +1229,8 @@ export interface components {
                     /** @enum {string} */
                     ink: "ink" | "navy" | "forest" | "plum" | "brick";
                 };
-                stamps: {
-                    stampKey: string;
+                stickers: {
+                    stickerKey: string;
                     /** @enum {string} */
                     side: "front" | "back";
                     x: number;
@@ -1235,6 +1238,7 @@ export interface components {
                     scale: number;
                     rotation: number;
                 }[];
+                stampKey: string | null;
             };
         };
         OfferFeedbackResponseDto_Output: {
@@ -1321,8 +1325,8 @@ export interface components {
                     /** @enum {string} */
                     ink: "ink" | "navy" | "forest" | "plum" | "brick";
                 };
-                stamps: {
-                    stampKey: string;
+                stickers: {
+                    stickerKey: string;
                     /** @enum {string} */
                     side: "front" | "back";
                     x: number;
@@ -1330,6 +1334,7 @@ export interface components {
                     scale: number;
                     rotation: number;
                 }[];
+                stampKey: string | null;
             } | null;
             tags: {
                 workspaceGoals: {

@@ -3757,12 +3757,12 @@
                 ],
                 "additionalProperties": false
               },
-              "stamps": {
+              "stickers": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "stampKey": {
+                    "stickerKey": {
                       "type": "string"
                     },
                     "side": {
@@ -3786,7 +3786,7 @@
                     }
                   },
                   "required": [
-                    "stampKey",
+                    "stickerKey",
                     "side",
                     "x",
                     "y",
@@ -3795,13 +3795,20 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "stampKey": {
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             },
             "required": [
               "templateKey",
               "tone",
               "textStyle",
-              "stamps"
+              "stickers",
+              "stampKey"
             ],
             "additionalProperties": false
           }
@@ -3898,12 +3905,12 @@
                       ],
                       "additionalProperties": false
                     },
-                    "stamps": {
+                    "stickers": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "stampKey": {
+                          "stickerKey": {
                             "type": "string"
                           },
                           "side": {
@@ -3927,7 +3934,7 @@
                           }
                         },
                         "required": [
-                          "stampKey",
+                          "stickerKey",
                           "side",
                           "x",
                           "y",
@@ -3936,13 +3943,20 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "stampKey": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
                     }
                   },
                   "required": [
                     "templateKey",
                     "tone",
                     "textStyle",
-                    "stamps"
+                    "stickers",
+                    "stampKey"
                   ],
                   "additionalProperties": false,
                   "nullable": true
@@ -4262,12 +4276,12 @@
                 ],
                 "additionalProperties": false
               },
-              "stamps": {
+              "stickers": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "stampKey": {
+                    "stickerKey": {
                       "type": "string"
                     },
                     "side": {
@@ -4291,7 +4305,7 @@
                     }
                   },
                   "required": [
-                    "stampKey",
+                    "stickerKey",
                     "side",
                     "x",
                     "y",
@@ -4300,13 +4314,20 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "stampKey": {
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             },
             "required": [
               "templateKey",
               "tone",
               "textStyle",
-              "stamps"
+              "stickers",
+              "stampKey"
             ],
             "additionalProperties": false,
             "nullable": true
@@ -4923,12 +4944,12 @@
                 ],
                 "additionalProperties": false
               },
-              "stamps": {
+              "stickers": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "stampKey": {
+                    "stickerKey": {
                       "type": "string"
                     },
                     "side": {
@@ -4952,7 +4973,7 @@
                     }
                   },
                   "required": [
-                    "stampKey",
+                    "stickerKey",
                     "side",
                     "x",
                     "y",
@@ -4961,13 +4982,20 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "stampKey": {
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             },
             "required": [
               "templateKey",
               "tone",
               "textStyle",
-              "stamps"
+              "stickers",
+              "stampKey"
             ],
             "additionalProperties": false
           }
@@ -5326,12 +5354,12 @@
                 ],
                 "additionalProperties": false
               },
-              "stamps": {
+              "stickers": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "stampKey": {
+                    "stickerKey": {
                       "type": "string"
                     },
                     "side": {
@@ -5355,7 +5383,7 @@
                     }
                   },
                   "required": [
-                    "stampKey",
+                    "stickerKey",
                     "side",
                     "x",
                     "y",
@@ -5364,13 +5392,20 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "stampKey": {
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             },
             "required": [
               "templateKey",
               "tone",
               "textStyle",
-              "stamps"
+              "stickers",
+              "stampKey"
             ],
             "additionalProperties": false,
             "nullable": true

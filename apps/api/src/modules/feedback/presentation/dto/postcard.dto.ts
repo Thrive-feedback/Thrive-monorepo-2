@@ -23,19 +23,24 @@ export const postcardSchema = z.strictObject({
     align: z.enum(POSTCARD_ALIGNS),
     ink: z.enum(POSTCARD_INKS),
   }),
-  /** Up to three, oldest first: a later stamp sits on an earlier one. */
-  stamps: z.array(
+  /** Up to three, oldest first: a later sticker sits on an earlier one. */
+  stickers: z.array(
     z.strictObject({
-      /** A key from the web app's stamp catalog. */
-      stampKey: z.string(),
+      /** A key from the web app's sticker catalog. */
+      stickerKey: z.string(),
       side: z.enum(POSTCARD_SIDES),
-      /** The stamp's centre, as a percentage of that side's width and height. */
+      /** The sticker's centre, as a percentage of that side's width and height. */
       x: z.number(),
       y: z.number(),
-      /** Against the stamp's usual size, 0.5 to 2.5. */
+      /** Against the sticker's usual size, 0.5 to 2.5. */
       scale: z.number(),
       /** In degrees, -180 to 180. */
       rotation: z.number(),
     }),
   ),
+  /**
+   * The card's one stamp, a key from the web app's stamp catalog, or `null` for none. It is always
+   * upright in the top-right corner of the back.
+   */
+  stampKey: z.string().nullable(),
 });

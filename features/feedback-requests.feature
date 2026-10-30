@@ -244,8 +244,8 @@ Feature: Feedback requests
     Then Ben sees the postcard it was written on
 
   @api
-  Scenario: A request's postcard carries three stamps at most
-    When Ann asks Ben for Feedback on a postcard with four stamps: "Running the planning meeting"
+  Scenario: A request's postcard carries three stickers at most
+    When Ann asks Ben for Feedback on a postcard with four stickers: "Running the planning meeting"
     Then Ann is told the postcard cannot be sent
 
   @api

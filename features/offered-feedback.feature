@@ -22,8 +22,8 @@ Feature: Offered feedback
     Then Ben sees the postcard it was written on
 
   @api
-  Scenario: A postcard carries three stamps at most
-    When Ann gives Ben Feedback on a postcard with four stamps: "You kept the room with you."
+  Scenario: A postcard carries three stickers at most
+    When Ann gives Ben Feedback on a postcard with four stickers: "You kept the room with you."
     Then Ann is told the postcard cannot be sent
     And Ben has been given no Feedback
 

@@ -99,7 +99,8 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
       templateKey: 'system/postcard_template_2',
       tone: 'sage',
       textStyle: { font: 'classic', sizeStep: 2, align: 'left', ink: 'navy' },
-      stamps: [],
+      stickers: [],
+      stampKey: null,
     };
 
     await useCase.execute(offering({ postcard }));
@@ -122,7 +123,8 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
               align: 'left',
               ink: 'navy',
             },
-            stamps: [],
+            stickers: [],
+            stampKey: null,
           },
         }),
       ),

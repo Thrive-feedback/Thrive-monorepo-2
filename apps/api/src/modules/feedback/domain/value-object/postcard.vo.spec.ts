@@ -3,11 +3,11 @@ import { PostcardInvalidError } from '../feedback-request.errors';
 import {
   Postcard,
   type PostcardSnapshot,
-  type PostcardStampSnapshot,
+  type PostcardStickerSnapshot,
 } from './postcard.vo';
 
-const STAMP: PostcardStampSnapshot = {
-  stampKey: 'system/stamp-02-ocean',
+const STICKER: PostcardStickerSnapshot = {
+  stickerKey: 'system/sticker-01-thumbs-up',
   side: 'front',
   x: 62,
   y: 40,
@@ -19,7 +19,8 @@ const CARD: PostcardSnapshot = {
   templateKey: 'system/postcard_template_2',
   tone: 'sage',
   textStyle: { font: 'classic', sizeStep: 2, align: 'left', ink: 'navy' },
-  stamps: [STAMP],
+  stickers: [STICKER],
+  stampKey: 'system/stamp-02-ocean',
 };
 
 describe('a postcard', () => {
@@ -27,22 +28,31 @@ describe('a postcard', () => {
     expect(Postcard.of(CARD).snapshot()).toEqual(CARD);
   });
 
-  it('takes a card with no stamps', () => {
-    const card = { ...CARD, stamps: [] };
+  it('takes a card with no stickers and no stamp', () => {
+    const card = { ...CARD, stickers: [], stampKey: null };
 
     expect(Postcard.of(card).snapshot()).toEqual(card);
   });
 
-  it('takes a stamp on any edge of the card, at its smallest and most turned', () => {
-    const stamp = { ...STAMP, x: 0, y: 100, scale: 0.5, rotation: 180 };
+  it('takes a sticker on any edge of the card, at its smallest and most turned', () => {
+    const sticker = { ...STICKER, x: 0, y: 100, scale: 0.5, rotation: 180 };
 
-    expect(() => Postcard.of({ ...CARD, stamps: [stamp] })).not.toThrow();
+    expect(() => Postcard.of({ ...CARD, stickers: [sticker] })).not.toThrow();
   });
 
-  it('is refused with a fourth stamp, because a card carries three', () => {
+  it('is refused with a fourth sticker, because a card carries three', () => {
     expect(() =>
-      Postcard.of({ ...CARD, stamps: [STAMP, STAMP, STAMP, STAMP] }),
+      Postcard.of({
+        ...CARD,
+        stickers: [STICKER, STICKER, STICKER, STICKER],
+      }),
     ).toThrow(PostcardInvalidError);
+  });
+
+  it('is refused when its stamp key is not a picture key', () => {
+    expect(() => Postcard.of({ ...CARD, stampKey: 'ocean.png' })).toThrow(
+      PostcardInvalidError,
+    );
   });
 
   it('is refused when its template key is not a picture key', () => {
@@ -51,27 +61,30 @@ describe('a postcard', () => {
     ).toThrow(PostcardInvalidError);
   });
 
-  it('is refused when a stamp key is not a picture key', () => {
+  it('is refused when a sticker key is not a picture key', () => {
     expect(() =>
-      Postcard.of({ ...CARD, stamps: [{ ...STAMP, stampKey: 'ocean.png' }] }),
+      Postcard.of({
+        ...CARD,
+        stickers: [{ ...STICKER, stickerKey: 'heart.png' }],
+      }),
     ).toThrow(PostcardInvalidError);
   });
 
-  it('is refused when a stamp sits off the card', () => {
+  it('is refused when a sticker sits off the card', () => {
     expect(() =>
-      Postcard.of({ ...CARD, stamps: [{ ...STAMP, x: 100.5 }] }),
+      Postcard.of({ ...CARD, stickers: [{ ...STICKER, x: 100.5 }] }),
     ).toThrow(PostcardInvalidError);
   });
 
-  it('is refused when a stamp is smaller than the card can show', () => {
+  it('is refused when a sticker is smaller than the card can show', () => {
     expect(() =>
-      Postcard.of({ ...CARD, stamps: [{ ...STAMP, scale: 0.4 }] }),
+      Postcard.of({ ...CARD, stickers: [{ ...STICKER, scale: 0.4 }] }),
     ).toThrow(PostcardInvalidError);
   });
 
-  it('is refused when a stamp is turned past a half turn', () => {
+  it('is refused when a sticker is turned past a half turn', () => {
     expect(() =>
-      Postcard.of({ ...CARD, stamps: [{ ...STAMP, rotation: 181 }] }),
+      Postcard.of({ ...CARD, stickers: [{ ...STICKER, rotation: 181 }] }),
     ).toThrow(PostcardInvalidError);
   });
 
@@ -92,7 +105,10 @@ describe('a postcard', () => {
   });
 
   it('is read back even if it would no longer be accepted', () => {
-    const stored = { ...CARD, stamps: [STAMP, STAMP, STAMP, STAMP] };
+    const stored = {
+      ...CARD,
+      stickers: [STICKER, STICKER, STICKER, STICKER],
+    };
 
     expect(Postcard.restore(stored).snapshot()).toEqual(stored);
   });

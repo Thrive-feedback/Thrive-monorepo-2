@@ -55,9 +55,9 @@ describe('storing Offered Feedback', () => {
       templateKey: 'system/postcard_template_2',
       tone: 'sage',
       textStyle: { font: 'classic', sizeStep: 3, align: 'center', ink: 'navy' },
-      stamps: [
+      stickers: [
         {
-          stampKey: 'system/stamp-02-ocean',
+          stickerKey: 'system/sticker-01-thumbs-up',
           side: 'front',
           x: 62.5,
           y: 40,
@@ -65,6 +65,7 @@ describe('storing Offered Feedback', () => {
           rotation: -8,
         },
       ],
+      stampKey: 'system/stamp-02-ocean',
     } as const;
     const id = uuidv7();
     written.push(id);

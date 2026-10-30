@@ -22,9 +22,9 @@ const storedPostcardSchema = z.object({
     align: z.enum(POSTCARD_ALIGNS),
     ink: z.enum(POSTCARD_INKS),
   }),
-  stamps: z.array(
+  stickers: z.array(
     z.object({
-      stampKey: z.string(),
+      stickerKey: z.string(),
       side: z.enum(POSTCARD_SIDES),
       x: z.number(),
       y: z.number(),
@@ -32,6 +32,7 @@ const storedPostcardSchema = z.object({
       rotation: z.number(),
     }),
   ),
+  stampKey: z.string().nullable(),
 });
 
 /** Prisma tells a stored `null` from an absent one, so a card that is not there is `DbNull`. */

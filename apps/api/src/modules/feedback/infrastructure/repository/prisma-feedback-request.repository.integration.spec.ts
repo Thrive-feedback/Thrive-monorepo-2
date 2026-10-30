@@ -89,9 +89,9 @@ describe('storing a Feedback Request', () => {
           align: 'right',
           ink: 'plum',
         },
-        stamps: [
+        stickers: [
           {
-            stampKey: 'system/stamp-05-balloon',
+            stickerKey: 'system/sticker-10-rainbow',
             side: 'back',
             x: 20,
             y: 80,
@@ -99,6 +99,7 @@ describe('storing a Feedback Request', () => {
             rotation: 45,
           },
         ],
+        stampKey: null,
       }),
     });
 
