@@ -5,7 +5,8 @@
 #
 # Built from the repository root:
 #
-#   docker build -f apps/web/Dockerfile --build-arg API_BASE_URL=http://localhost:3000 -t thrive-web .
+#   docker build -f apps/web/Dockerfile --build-arg API_BASE_URL=http://localhost:3000 \
+#     --build-arg NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST=rygqsihgowwdtakedrxl.supabase.co -t thrive-web .
 #
 # Size budget: 360 MB. Most of it is the Node base image; the application's own traced
 # server and static assets are about 65 MB. A change past 360 MB needs a reason stated in
@@ -36,6 +37,12 @@ COPY --from=pruner /repo/out/full/ ./
 # secret: it names a private host that no browser can resolve.
 ARG API_BASE_URL
 ENV API_BASE_URL=${API_BASE_URL}
+
+# The Supabase project the postcard templates are read from (ADR 0063). Written into the
+# browser's code and into which host the image optimizer may fetch from, so it is a build
+# argument too. Public: the bucket is public, and the browser sees the host in every picture.
+ARG NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST
+ENV NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST=${NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST}
 
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN bun run --cwd apps/web build

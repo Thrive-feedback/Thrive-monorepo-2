@@ -47,6 +47,10 @@ import {
   DialogPreview,
 } from '@/app/ui-showcase/_components/entries/dialog-entry';
 import {
+  DrawerEntry,
+  DrawerPreview,
+} from '@/app/ui-showcase/_components/entries/drawer-entry';
+import {
   DropdownMenuEntry,
   DropdownMenuPreview,
 } from '@/app/ui-showcase/_components/entries/dropdown-menu-entry';
@@ -297,6 +301,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'atom',
     Preview: DialogPreview,
     Entry: DialogEntry,
+  },
+  {
+    slug: 'drawer',
+    name: 'Drawer',
+    level: 'atom',
+    Preview: DrawerPreview,
+    Entry: DrawerEntry,
   },
   {
     slug: 'tooltip',

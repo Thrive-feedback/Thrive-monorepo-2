@@ -1,22 +1,31 @@
-import { ImageIcon, LockIcon } from 'lucide-react';
+import { LockIcon } from 'lucide-react';
 import { memo } from 'react';
 import {
-  PostcardSoonTool,
+  PostcardTemplatePicker,
+  type PostcardTemplatePickerProps,
+} from './postcard-template-picker';
+import {
   PostcardStampsTool,
   PostcardToolDivider,
 } from './postcard-tool-button';
 
+export type PostcardCoverToolbarProps = PostcardTemplatePickerProps;
+
 /**
  * The postcard's floating bar while its front is showing: a picture from the templates, and
- * stamps. Neither works yet; each is shown where it will be. Memoised: nothing typed changes it.
+ * stamps, which do not work yet and are shown where they will be. Memoised: nothing typed
+ * changes it.
  */
-export const PostcardCoverToolbar = memo(function PostcardCoverToolbar() {
+export const PostcardCoverToolbar = memo(function PostcardCoverToolbar({
+  templateKey,
+  onTemplateChange,
+}: PostcardCoverToolbarProps) {
   return (
     <>
-      <PostcardSoonTool soon="Templates are coming soon.">
-        <ImageIcon aria-hidden="true" className="size-4.5" />
-        <span className="max-sm:sr-only">Templates</span>
-      </PostcardSoonTool>
+      <PostcardTemplatePicker
+        templateKey={templateKey}
+        onTemplateChange={onTemplateChange}
+      />
       <PostcardToolDivider />
       <PostcardStampsTool />
     </>

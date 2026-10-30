@@ -6,12 +6,22 @@
       "cache": false,
       "persistent": true,
       "dependsOn": ["db:generate"],
-      "env": ["API_BASE_URL", "NODE_ENV", "PORT"]
+      "env": [
+        "API_BASE_URL",
+        "NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST",
+        "NODE_ENV",
+        "PORT"
+      ]
     },
     "build": {
       "dependsOn": ["^build", "db:generate"],
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"],
-      "env": ["API_BASE_URL", "NODE_ENV", "PORT"]
+      "env": [
+        "API_BASE_URL",
+        "NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST",
+        "NODE_ENV",
+        "PORT"
+      ]
     },
     "tokens:generate": {
       "cache": false
@@ -23,7 +33,12 @@
     "lint": {},
     "test": {
       "dependsOn": ["db:generate"],
-      "env": ["API_BASE_URL", "NODE_ENV", "PORT"]
+      "env": [
+        "API_BASE_URL",
+        "NEXT_PUBLIC_POSTCARD_TEMPLATE_HOST",
+        "NODE_ENV",
+        "PORT"
+      ]
     },
     "check-types": {
       "dependsOn": ["^build", "db:generate"]

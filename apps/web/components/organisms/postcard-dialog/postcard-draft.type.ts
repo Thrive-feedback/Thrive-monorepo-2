@@ -18,7 +18,8 @@ export type PostcardWriter = {
 
 /**
  * Everything on a postcard when Seal & Send is pressed. The Feedback itself is who it is for,
- * the message and who else can read it; the paper and the text's style are how it looks.
+ * the message and who else can read it; the picture, the paper and the text's style are how it
+ * looks.
  */
 export type PostcardDraft = {
   readonly recipientAccountIds: readonly string[];
@@ -29,6 +30,8 @@ export type PostcardDraft = {
    * and never a Receiver; while writing, the picker keeps its list so switching back restores it.
    */
   readonly selectedAccountIds: ReadonlySet<string>;
+  /** The picture on the front: a key from `POSTCARD_TEMPLATES`. */
+  readonly templateKey: string;
   readonly tone: PaperTone;
   readonly textStyle: PostcardTextStyle;
 };

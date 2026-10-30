@@ -15,6 +15,7 @@ import {
 } from './postcard-dialog';
 import type { PostcardAsk } from './postcard-draft.type';
 import { DEFAULT_TEXT_STYLE } from './postcard-style.constant';
+import { POSTCARD_TEMPLATES } from './postcard-template.constant';
 
 const TEAMMATES: readonly Teammate[] = [
   {
@@ -93,6 +94,15 @@ async function turnToFront(user: ReturnType<typeof userEvent.setup>) {
   fireEvent.animationEnd(card);
 }
 
+/** A template from the catalog by its place, failing the test if there is no such template. */
+function templateAt(index: number) {
+  const template = POSTCARD_TEMPLATES[index];
+  if (!template) {
+    throw new Error(`The catalog has no template ${index + 1}.`);
+  }
+  return template;
+}
+
 const message = () => screen.getByRole('textbox', { name: 'Your feedback' });
 const send = () => screen.getByRole('button', { name: /Seal & Send/ });
 
@@ -130,6 +140,8 @@ describe('PostcardDialog', () => {
     const user = userEvent.setup();
     const onSend = vi.fn();
     const onOpenChange = vi.fn();
+    // The third of four templates.
+    vi.spyOn(Math, 'random').mockReturnValue(0.6);
     render(dialog({ onSend, onOpenChange }));
 
     await chooseMali(user);
@@ -141,6 +153,7 @@ describe('PostcardDialog', () => {
       message: 'Thank you for the demo.',
       visibility: 'ONLY_ME',
       selectedAccountIds: new Set(),
+      templateKey: 'system/postcard_template_3',
       tone: 'cream',
       textStyle: {
         font: 'modern',
@@ -276,6 +289,7 @@ describe('PostcardDialog', () => {
 
   it('turns over to the picture on the front, and back', async () => {
     const user = userEvent.setup();
+    vi.spyOn(Math, 'random').mockReturnValue(0);
     render(dialog());
 
     await user.click(
@@ -294,9 +308,7 @@ describe('PostcardDialog', () => {
     fireEvent.animationEnd(card);
 
     expect(
-      screen.getByRole('img', {
-        name: /A sun rising over rolling green hills/,
-      }),
+      screen.getByRole('img', { name: POSTCARD_TEMPLATES[0].alt }),
     ).toBeVisible();
     expect(
       screen.queryByRole('region', { name: 'Back of the postcard' }),
@@ -310,7 +322,19 @@ describe('PostcardDialog', () => {
 });
 
 describe('PostcardDialog, the front', () => {
-  it('offers Templates and Stamps on the front, neither ready yet', async () => {
+  /**
+   * The picture the front shows. While Templates is open the page behind it is hidden from
+   * assistive technology, so this looks past that; the drawer's checked radio is what is heard.
+   */
+  const frontPicture = () =>
+    within(
+      screen.getByRole('region', {
+        name: 'Front of the postcard',
+        hidden: true,
+      }),
+    ).getByRole('img', { hidden: true });
+
+  it('offers Templates, and Stamps, which is not ready yet', async () => {
     const user = userEvent.setup();
     render(dialog());
 
@@ -322,9 +346,92 @@ describe('PostcardDialog, the front', () => {
         .getAllByRole('button')
         .map((tool) => [tool.textContent, tool.getAttribute('aria-disabled')]),
     ).toEqual([
-      ['Templates', 'true'],
+      ['Templates', null],
       ['Stamps (0/3)', 'true'],
     ]);
+  });
+
+  it('opens on a picture chosen at random', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    render(dialog());
+
+    await turnToFront(user);
+
+    expect(frontPicture()).toHaveAccessibleName(templateAt(3).alt);
+  });
+
+  it('puts the picture chosen in Templates on the front at once, and stays open', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    render(dialog());
+
+    await turnToFront(user);
+    await user.click(screen.getByRole('button', { name: 'Templates' }));
+
+    const drawer = screen.getByRole('dialog', { name: 'Templates' });
+    const pictures = within(drawer).getAllByRole('radio');
+    expect(
+      pictures.map((picture) => picture.getAttribute('aria-label')),
+    ).toEqual(POSTCARD_TEMPLATES.map((template) => template.alt));
+    expect(
+      within(drawer).getByRole('radio', { name: POSTCARD_TEMPLATES[0].alt }),
+    ).toBeChecked();
+
+    await user.click(
+      within(drawer).getByRole('radio', { name: templateAt(2).alt }),
+    );
+
+    expect(
+      within(drawer).getByRole('radio', { name: templateAt(2).alt }),
+    ).toBeChecked();
+    expect(
+      screen.getByRole('dialog', { name: 'Templates' }),
+    ).toBeInTheDocument();
+    expect(frontPicture()).toHaveAccessibleName(templateAt(2).alt);
+  });
+
+  it('closes only Templates on Escape, and gives the cursor back to it', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(dialog({ onOpenChange }));
+
+    await turnToFront(user);
+    const templates = screen.getByRole('button', { name: 'Templates' });
+    await user.click(templates);
+    await user.keyboard('{Escape}');
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Templates' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('dialog', { name: 'Close without sending?' }),
+    ).not.toBeInTheDocument();
+    expect(templates).toHaveFocus();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('says what the picture shows when it will not load, and can still be sent', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
+
+    await user.type(message(), 'Thank you.');
+    await user.keyboard('{Escape}');
+    await turnToFront(user);
+    fireEvent.error(frontPicture());
+
+    const front = screen.getByRole('region', { name: 'Front of the postcard' });
+    expect(within(front).queryByRole('img')).toBeNull();
+    expect(
+      within(front).getByText(POSTCARD_TEMPLATES[0].alt),
+    ).toBeInTheDocument();
+
+    await user.click(send());
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({ templateKey: POSTCARD_TEMPLATES[0].key }),
+    );
   });
 });
 
@@ -467,5 +574,22 @@ describe('PostcardDialog, answering an Ask', () => {
         "The front is Mali Sombat's picture. You can look, not change it.",
       ),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Templates' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows the first picture on the front, whoever opens it', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    render(answerDialog());
+
+    await turnToFront(user);
+
+    expect(
+      within(
+        screen.getByRole('region', { name: 'Front of the postcard' }),
+      ).getByRole('img'),
+    ).toHaveAccessibleName(POSTCARD_TEMPLATES[0].alt);
   });
 });

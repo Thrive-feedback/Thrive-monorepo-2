@@ -14,6 +14,8 @@ export type PostcardProps = {
   /** The side to show. A change turns the card over to it. */
   side: PostcardSide;
   tone: PaperTone;
+  /** The picture on the front: a key from `POSTCARD_TEMPLATES`. */
+  templateKey: string;
   /** What is written on the back. */
   children: React.ReactNode;
 };
@@ -23,7 +25,7 @@ export type PostcardProps = {
  * place, so the card keeps its size as it turns; the side not showing is hidden and inert, so
  * only the side showing can be reached.
  */
-export function Postcard({ side, tone, children }: PostcardProps) {
+export function Postcard({ side, tone, templateKey, children }: PostcardProps) {
   const [shownSide, setShownSide] = useState(side);
   const [phase, setPhase] = useState<'still' | 'out' | 'in'>('still');
 
@@ -69,7 +71,7 @@ export function Postcard({ side, tone, children }: PostcardProps) {
           inert={shownSide !== 'front'}
           className={classNameFor('front')}
         >
-          <PostcardCover />
+          <PostcardCover templateKey={templateKey} />
         </section>
         <section
           aria-label="Back of the postcard"
