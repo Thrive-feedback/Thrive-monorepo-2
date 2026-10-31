@@ -45,6 +45,7 @@ import {
   BAR_LABELS,
   COPY,
   POSTCARD_BAR,
+  POSTCARD_CARD_ACTIONS,
   POSTCARD_CARD_COLUMN,
   POSTCARD_PAGE,
   POSTCARD_SCREEN,
@@ -52,6 +53,7 @@ import {
   STAMP_ID,
 } from './postcard-editor.constant';
 import { focusedControl } from './postcard-focus.util';
+import { PostcardHideButton } from './postcard-hide-button';
 import { PostcardMessage } from './postcard-message';
 import { PostcardPostmark } from './postcard-postmark';
 import {
@@ -96,8 +98,8 @@ export type PostcardEditorProps = {
  *
  * Every change goes through one stable `change`, and the parts that typing does not touch — the
  * address, the front, the stamp, the stickers and the text tools — are memoised and handed stable
- * callbacks, so a keystroke redraws only this shell, the card's two faces, the message, the usual
- * bar and Send. A sticker dragged redraws none of this: it hands on where it ended.
+ * callbacks, so a keystroke redraws only this shell, the card's two faces, the message and the bar
+ * showing. A sticker dragged redraws none of this: it hands on where it ended.
  */
 export function PostcardEditor({
   title,
@@ -122,6 +124,7 @@ export function PostcardEditor({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Held here because the Stamp tool and the printed box both open it.
   const [isStampPickerOpen, setIsStampPickerOpen] = useState(false);
+  const [areStickersHidden, setAreStickersHidden] = useState(false);
   const stickersAddedRef = useRef(0);
   const contentRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -228,14 +231,16 @@ export function PostcardEditor({
     setIsStampPickerOpen(false);
   }, []);
 
-  // A new sticker goes on the side showing, selected, so it can be moved straight away. The bar
-  // refuses a fourth; were one to get through, it would select nothing.
+  // A new sticker goes on the side showing, selected, so it can be moved straight away, which takes
+  // the others being on show too. The bar refuses a fourth; were one to get through, it would select
+  // nothing.
   const handleAddSticker = useCallback(
     (stickerKey: string) => {
       stickersAddedRef.current += 1;
       const id = `sticker-${stickersAddedRef.current}`;
       change({ kind: 'addSticker', id, stickerKey, side });
       setSelectedId(id);
+      setAreStickersHidden(false);
     },
     [side],
   );
@@ -330,6 +335,19 @@ export function PostcardEditor({
     turnOver();
   }
 
+  // A key press reaches none of the listeners that let go of a selected sticker, and it would stay
+  // selected out of sight.
+  function handleHideStickers() {
+    setAreStickersHidden((current) => !current);
+    setSelectedId(null);
+  }
+
+  // The stickers go with the card whether they are showing or not, so the card that flies shows them.
+  function handleSend() {
+    setAreStickersHidden(false);
+    void send();
+  }
+
   // The cursor anywhere but the message or the bar leaves the text tools; the bar stops its own
   // focus, menus included, from getting here.
   function handleFocus(event: React.FocusEvent) {
@@ -412,7 +430,7 @@ export function PostcardEditor({
     onClose();
   }
 
-  // On the bar of either side, so who can read it is never a turn away.
+  // Beside Send on either side, so who can read it is never a turn away from sending.
   const visibilityTool = card.kind !== 'answer' && (
     <PostcardVisibilityTool
       kind={card.kind}
@@ -464,6 +482,10 @@ export function PostcardEditor({
       )
     );
   }
+
+  const hasStickers =
+    draft.stickers.length > 0 ||
+    (card.kind === 'answer' && card.ask.stickers.length > 0);
 
   // Each side's stickers, drawn on that side above the writing.
   function stickersOn(stickerSide: PostcardSide) {
@@ -525,12 +547,19 @@ export function PostcardEditor({
           />
 
           <div className={POSTCARD_CARD_COLUMN}>
-            <PostcardTurnButton
-              side={side}
-              turnToBackHint="Turn over to write on the back"
-              onClick={handleFlip}
-              className={cn(isFlying && SENT_AWAY)}
-            />
+            <div className={cn(POSTCARD_CARD_ACTIONS, isFlying && SENT_AWAY)}>
+              <PostcardTurnButton
+                side={side}
+                turnToBackHint="Turn over to write on the back"
+                onClick={handleFlip}
+              />
+              <PostcardHideButton
+                isHidden={areStickersHidden}
+                what="stickers"
+                disabled={!hasStickers}
+                onClick={handleHideStickers}
+              />
+            </div>
             <div ref={flight.cardRef} className="relative">
               <Postcard
                 side={side}
@@ -541,6 +570,7 @@ export function PostcardEditor({
                   front: [theirStickersOn('front'), stickersOn('front')],
                   back: [theirStickersOn('back'), stickersOn('back')],
                 }}
+                areStickersHidden={areStickersHidden}
                 stamp={stamp}
               >
                 <PostcardBack
@@ -602,9 +632,7 @@ export function PostcardEditor({
                       stickerCount={draft.stickers.length}
                       onTemplateChange={handleTemplateChange}
                       onAddSticker={handleAddSticker}
-                    >
-                      {visibilityTool}
-                    </PostcardCoverToolbar>
+                    />
                   )
                 ) : (
                   <PostcardToolbar
@@ -617,27 +645,34 @@ export function PostcardEditor({
                     onAddSticker={handleAddSticker}
                     onStampChange={handleStampChange}
                     onStampPickerOpenChange={setIsStampPickerOpen}
-                  >
-                    {visibilityTool}
-                  </PostcardToolbar>
+                  />
                 )}
               </div>
             </div>
-            <Button
-              variant="primary"
-              ref={sendRef}
-              loading={sendStatus === 'posting'}
-              disabled={
-                isFlying ||
-                isEditingText ||
-                !isReady(kind, draft, audience.visibility, selectedReaders)
-              }
-              onClick={send}
-              className="h-auto shrink-0 rounded-control shadow-high"
-            >
-              {copy.send}
-              <ArrowRightIcon aria-hidden="true" className="size-4.5" />
-            </Button>
+            {bar !== 'text' && (
+              <div
+                className={cn(
+                  POSTCARD_BAR,
+                  'flex-wrap justify-center gap-1.5 motion-safe:animate-enter',
+                )}
+              >
+                {visibilityTool}
+                <Button
+                  variant="primary"
+                  ref={sendRef}
+                  loading={sendStatus === 'posting'}
+                  disabled={
+                    isFlying ||
+                    !isReady(kind, draft, audience.visibility, selectedReaders)
+                  }
+                  onClick={handleSend}
+                  className="min-h-11"
+                >
+                  {copy.send}
+                  <ArrowRightIcon aria-hidden="true" className="size-4.5" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 

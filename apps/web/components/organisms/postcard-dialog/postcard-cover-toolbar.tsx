@@ -9,21 +9,18 @@ export type PostcardCoverToolbarProps = {
   templateKey: string;
   /** How many stickers the card carries already, on both sides. */
   stickerCount: number;
-  /** Who else can read it, last on the bar. */
-  children?: React.ReactNode;
   onTemplateChange: (templateKey: string) => void;
   /** Adds a sticker to the front, which is the side showing. */
   onAddSticker: (stickerKey: string) => void;
 };
 
 /**
- * The postcard's floating bar while its front is showing: a picture from the templates, stickers
- * for the front, and who else can read it.
+ * The postcard's floating bar while its front is showing: a picture from the templates, and
+ * stickers for the front.
  */
 export function PostcardCoverToolbar({
   templateKey,
   stickerCount,
-  children,
   onTemplateChange,
   onAddSticker,
 }: PostcardCoverToolbarProps) {
@@ -35,8 +32,6 @@ export function PostcardCoverToolbar({
       />
       <PostcardToolDivider />
       <PostcardStickerPicker count={stickerCount} onAddSticker={onAddSticker} />
-      <PostcardToolDivider />
-      {children}
     </>
   );
 }
