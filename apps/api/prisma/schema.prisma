@@ -393,6 +393,8 @@ model Kudos {
   giverAccountId String
   /// What the Giver wrote, up to 280 characters.
   message        String
+  /// How it looks, written on a card, or null when it was not (ADR 0073).
+  card           Json?
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
   recipients     KudosRecipient[]

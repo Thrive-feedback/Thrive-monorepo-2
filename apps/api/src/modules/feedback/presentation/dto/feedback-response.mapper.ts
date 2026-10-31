@@ -4,6 +4,7 @@ import type {
   PersonView,
   TagsView,
 } from '../../application/types/feedback-request.types';
+import type { KudosCardSnapshot } from '../../domain/value-object/kudos-card.vo';
 import type {
   AnswerPostcardSnapshot,
   PostcardSnapshot,
@@ -67,6 +68,28 @@ export function toPostcardResponse(postcard: PostcardSnapshot | null) {
       templateKey: postcard.templateKey,
       tone: postcard.tone,
       stampKey: postcard.stampKey,
+    }
+  );
+}
+
+/** How a Kudos card looks, on the wire. `null` for a Kudos not written on a card. */
+export function toKudosCardResponse(card: KudosCardSnapshot | null) {
+  return (
+    card && {
+      templateKey: card.templateKey,
+      textStyle: {
+        font: card.textStyle.font,
+        sizeStep: card.textStyle.sizeStep,
+        align: card.textStyle.align,
+        ink: card.textStyle.ink,
+      },
+      stickers: card.stickers.map((sticker) => ({
+        stickerKey: sticker.stickerKey,
+        x: sticker.x,
+        y: sticker.y,
+        scale: sticker.scale,
+        rotation: sticker.rotation,
+      })),
     }
   );
 }

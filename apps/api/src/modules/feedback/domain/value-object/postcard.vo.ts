@@ -71,7 +71,7 @@ function isWithin(value: number, min: number, max: number) {
   return value >= min && value <= max;
 }
 
-function isValidSticker(sticker: PostcardStickerSnapshot) {
+function isValidSticker(sticker: Omit<PostcardStickerSnapshot, 'side'>) {
   return (
     PICTURE_KEY.test(sticker.stickerKey) &&
     isWithin(sticker.x, 0, 100) &&
@@ -81,7 +81,11 @@ function isValidSticker(sticker: PostcardStickerSnapshot) {
   );
 }
 
-function hasValidWriting(details: AnswerPostcardSnapshot) {
+/** The limits on a card's words and stickers, shared with the Kudos card (ADR 0073). */
+export function hasValidWriting(details: {
+  readonly textStyle: { readonly sizeStep: number };
+  readonly stickers: readonly Omit<PostcardStickerSnapshot, 'side'>[];
+}) {
   return (
     Number.isInteger(details.textStyle.sizeStep) &&
     isWithin(details.textStyle.sizeStep, 0, MAX_SIZE_STEP) &&

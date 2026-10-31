@@ -1,3 +1,4 @@
+import type { KudosCardSnapshot } from '../../domain/value-object/kudos-card.vo';
 import type { TagsView } from '../types/feedback-request.types';
 import type { CursorPageRequest } from '../types/kudos.types';
 
@@ -8,6 +9,8 @@ export interface KudosRow {
   readonly recipientAccountIds: readonly string[];
   readonly message: string;
   readonly tags: TagsView;
+  /** How it looks, or `null` when it was not written on a card. */
+  readonly card: KudosCardSnapshot | null;
   readonly createdAt: Date;
 }
 

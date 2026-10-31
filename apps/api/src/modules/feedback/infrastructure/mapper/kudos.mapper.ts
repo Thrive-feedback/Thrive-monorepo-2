@@ -4,20 +4,62 @@ import type {
   Kudos as KudosRecord,
   KudosWorkspaceGoal as KudosWorkspaceGoalRecord,
 } from '@app/infrastructure/database/generated/client';
+import { Prisma } from '@app/infrastructure/database/generated/client';
+import { z } from 'zod';
 import type { Kudos } from '../../domain/entity/kudos.entity';
+import {
+  KUDOS_INKS,
+  type KudosCardSnapshot,
+} from '../../domain/value-object/kudos-card.vo';
+import {
+  POSTCARD_ALIGNS,
+  POSTCARD_FONTS,
+} from '../../domain/value-object/postcard.vo';
 
 /** The only place that knows both the stored rows and the Kudos entity. */
 
+/**
+ * The stored shape, read back without the value's limits: a card was valid when it was sent, and a
+ * limit changed later must not stop its Kudos being read (ADR 0073).
+ */
+const storedKudosCardSchema = z.object({
+  templateKey: z.string(),
+  textStyle: z.object({
+    font: z.enum(POSTCARD_FONTS),
+    sizeStep: z.number(),
+    align: z.enum(POSTCARD_ALIGNS),
+    ink: z.enum(KUDOS_INKS),
+  }),
+  stickers: z.array(
+    z.object({
+      stickerKey: z.string(),
+      x: z.number(),
+      y: z.number(),
+      scale: z.number(),
+      rotation: z.number(),
+    }),
+  ),
+});
+
+export function toKudosCardSnapshot(stored: unknown): KudosCardSnapshot | null {
+  return stored === null ? null : storedKudosCardSchema.parse(stored);
+}
+
 /** The audit timestamps are the database's to set. */
-export function toKudosRecord(
-  kudos: Kudos,
-): Omit<KudosRecord, 'createdAt' | 'updatedAt'> {
+export function toKudosRecord(kudos: Kudos): Omit<
+  KudosRecord,
+  'createdAt' | 'updatedAt' | 'card'
+> & {
+  /** Prisma tells a stored `null` from an absent one, so a card that is not there is `DbNull`. */
+  readonly card: KudosCardSnapshot | typeof Prisma.DbNull;
+} {
   const snapshot = kudos.snapshot();
   return {
     id: snapshot.id,
     workspaceId: snapshot.workspaceId,
     giverAccountId: snapshot.giverAccountId,
     message: snapshot.message,
+    card: snapshot.card ?? Prisma.DbNull,
   };
 }
 

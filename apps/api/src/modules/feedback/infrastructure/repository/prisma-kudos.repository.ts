@@ -19,7 +19,7 @@ export class PrismaKudosRepository extends KudosRepository {
   }
 
   async save(kudos: Kudos): Promise<void> {
-    // One statement, so a Kudos is never stored for nobody, nor without what it names.
+    // One statement, so a Kudos is never stored without what it names.
     await this.prismaTransactionContext.client.kudos.create({
       data: {
         ...toKudosRecord(kudos),

@@ -48,6 +48,7 @@ export class ListWorkspaceKudosUseCase {
         recipients: kudos.recipientAccountIds.map(person),
         message: kudos.message,
         tags: kudos.tags,
+        card: kudos.card,
         createdAt: kudos.createdAt,
       })),
       nextAfterId: page.hasMore ? (page.items.at(-1)?.id ?? null) : null,

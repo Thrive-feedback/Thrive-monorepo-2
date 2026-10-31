@@ -22,7 +22,10 @@ import {
 import { ZodResponse } from 'nestjs-zod';
 import { GiveKudosUseCase } from '../application/use-cases/give-kudos.use-case';
 import { ListWorkspaceKudosUseCase } from '../application/use-cases/list-workspace-kudos.use-case';
-import { toTagsResponse } from './dto/feedback-response.mapper';
+import {
+  toKudosCardResponse,
+  toTagsResponse,
+} from './dto/feedback-response.mapper';
 import {
   GiveKudosRequestDto,
   GiveKudosResponseDto,
@@ -53,13 +56,14 @@ export class KudosController {
 
   @Post()
   @ApiOperation({
-    summary: 'Give Kudos to the Members of this Workspace it @mentions',
+    summary:
+      'Give Kudos to the Members of this Workspace it @mentions, or to all of them',
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.CREATED, type: GiveKudosResponseDto })
   @ApiBadRequestResponse({
     description:
-      'REQUEST_INVALID, KUDOS_MESSAGE_EMPTY, KUDOS_MESSAGE_TOO_LONG or KUDOS_NEEDS_A_RECIPIENT',
+      'REQUEST_INVALID, KUDOS_MESSAGE_EMPTY, KUDOS_MESSAGE_TOO_LONG or KUDOS_CARD_INVALID',
   })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
   @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
@@ -72,6 +76,7 @@ export class KudosController {
       workspaceId: params.workspaceId,
       giverAccountId: actor.accountId,
       message: body.message,
+      card: body.card ?? null,
     });
     return { id: given.id };
   }
@@ -106,6 +111,7 @@ export class KudosController {
         })),
         message: each.message,
         tags: toTagsResponse(each.tags),
+        card: toKudosCardResponse(each.card),
         createdAt: each.createdAt.toISOString(),
       })),
       nextCursor: toCursor(kudos.nextAfterId),
