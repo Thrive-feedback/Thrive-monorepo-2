@@ -10,6 +10,8 @@ import type {
   FeedbackWithPeoplePageRow,
   FeedbackWithPeopleRow,
   FeedbackWithVisibilityRow,
+  FeedItemAskRow,
+  FeedItemPageRow,
   WorkspaceFeedPageRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
@@ -19,7 +21,10 @@ import {
   type KudosRow,
 } from '@app/modules/feedback/application/query-port/kudos.query-port';
 import { TagsService } from '@app/modules/feedback/application/service/tags.service';
-import type { PageRequest } from '@app/modules/feedback/application/types/feedback-request.types';
+import type {
+  FeedItemShow,
+  PageRequest,
+} from '@app/modules/feedback/application/types/feedback-request.types';
 import type { CursorPageRequest } from '@app/modules/feedback/application/types/kudos.types';
 import type { Feedback } from '@app/modules/feedback/domain/entity/feedback.entity';
 import {
@@ -376,6 +381,71 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
         request: this.answeredRequestOf(workspaceId, row.feedbackRequestId),
       }));
     return { items: pageOf(feed, page), total: feed.length };
+  }
+
+  async feedItemsFor(
+    workspaceId: string,
+    readerAccountId: string,
+    show: FeedItemShow,
+    page: CursorPageRequest,
+  ): Promise<FeedItemPageRow> {
+    const read = this.feedbackWithVisibility
+      .filter((row) => {
+        const everyone =
+          row.visibility === 'EVERYONE' && show !== 'SHARED_WITH_ME';
+        const selected =
+          row.visibility === 'SELECTED_PEOPLE' &&
+          show !== 'EVERYONE' &&
+          row.selectedAccountIds.includes(readerAccountId);
+        return row.workspaceId === workspaceId && (everyone || selected);
+      })
+      .sort(newestFirst);
+    const start =
+      page.afterId === null
+        ? 0
+        : read.findIndex((row) => row.id === page.afterId) + 1;
+    const rest = read.slice(start);
+    return {
+      items: rest.slice(0, page.limit).map((row) => {
+        const request = this.answeredRequestOf(
+          workspaceId,
+          row.feedbackRequestId,
+        );
+        return {
+          ...withoutVisibility(row),
+          visibility:
+            row.visibility === 'EVERYONE' ? 'EVERYONE' : 'SELECTED_PEOPLE',
+          request: request && {
+            message: request.message,
+            tags: request.tags,
+            requesterAccountId: request.requesterAccountId,
+            asks: this.asksWithAnswersOf(row.feedbackRequestId),
+          },
+        };
+      }),
+      hasMore: rest.length > page.limit,
+    };
+  }
+
+  /** Every Ask of a request with what was written for it, as Home's join reads them. */
+  private asksWithAnswersOf(
+    feedbackRequestId: string | null,
+  ): FeedItemAskRow[] {
+    const request = this.rows.find((row) => row.id === feedbackRequestId);
+    return (request?.asks ?? []).map((ask) => {
+      const answer = this.answers.find((held) => held.askId === ask.askId);
+      return {
+        giverAccountId: ask.giverAccountId,
+        status: ask.status,
+        answer: answer
+          ? {
+              message: answer.message,
+              tags: answer.tags,
+              answeredAt: answer.answeredAt,
+            }
+          : null,
+      };
+    });
   }
 
   /** The request an answer responds to, as the feed's join reads it through the Ask. */

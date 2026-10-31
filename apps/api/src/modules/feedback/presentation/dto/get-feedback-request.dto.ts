@@ -6,7 +6,7 @@ import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
 import { postcardSchema } from './postcard.dto';
 import { tagsSchema } from './tags.dto';
 
-const answerSchema = z.object({
+export const answerSchema = z.object({
   message: z.string(),
   /** What its Giver wrote was bound to when it was sent. */
   tags: tagsSchema,

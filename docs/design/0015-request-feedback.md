@@ -9,6 +9,9 @@
 > **Since 2026-10-22:** Topic is retired (brain `ADR-0039`, ADR 0054). Read *Topic* below as the
 > request's **Request message**, and *body* as the **Feedback message**. Feedback no longer holds
 > or returns a Topic of its own. This record is left as it was decided.
+>
+> **Since 2026-10-31:** an Ask does not expire (brain `ADR-0049`). `AskStatus` is `PENDING` or
+> `ANSWERED`, and #38/#39 are not coming. This record is left as it was decided.
 
 ---
 

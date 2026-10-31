@@ -232,3 +232,50 @@ export interface WorkspaceFeedView {
   readonly items: readonly WorkspaceFeedItemView[];
   readonly total: number;
 }
+
+/**
+ * Which of what a Member reads on Home: everything, what was shown to everyone, or what somebody
+ * selected or mentioned them to read.
+ */
+export const FEED_ITEM_SHOWS = ['ALL', 'EVERYONE', 'SHARED_WITH_ME'] as const;
+
+export type FeedItemShow = (typeof FEED_ITEM_SHOWS)[number];
+
+/** The only Visibilities Home holds: Only me is read in the history of those it is about. */
+export const FEED_ITEM_VISIBILITIES = ['EVERYONE', 'SELECTED_PEOPLE'] as const;
+
+export type FeedItemVisibility = (typeof FEED_ITEM_VISIBILITIES)[number];
+
+/** One person a request on Home asked, where their Ask stands, and what they wrote once they have. */
+export interface FeedItemAskView {
+  readonly person: PersonView;
+  readonly status: AskStatusValue;
+  readonly answer: AnswerView | null;
+}
+
+/**
+ * The request an answer on Home responds to, with everyone it asked. Whoever may read the answer
+ * reads all of this: every answer takes the request's one Visibility, so the reader may read the
+ * others too (brain `ADR-0050`).
+ */
+export interface FeedItemRequestView {
+  readonly message: string;
+  /** What the Request message was bound to when it was sent. */
+  readonly tags: TagsView;
+  readonly requester: PersonView;
+  /** In the order they were asked, the Giver of this answer among them. */
+  readonly asked: readonly FeedItemAskView[];
+}
+
+/** One piece on Home: `request` is `null` for Feedback given without being asked. */
+export interface FeedItemView extends FeedbackView {
+  readonly visibility: FeedItemVisibility;
+  readonly request: FeedItemRequestView | null;
+}
+
+/** One page of what a Member reads on Home, newest first. */
+export interface FeedItemsView {
+  readonly items: readonly FeedItemView[];
+  /** The id the next page starts after, or `null` on the last page. */
+  readonly nextAfterId: string | null;
+}

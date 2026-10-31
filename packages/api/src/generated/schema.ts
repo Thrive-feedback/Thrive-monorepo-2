@@ -484,6 +484,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/feed-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List what the caller reads on Home */
+        get: operations["FeedItemsController_listFeedItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspaceId}/kudos": {
         parameters: {
             query?: never;
@@ -1040,7 +1057,7 @@ export interface components {
                     /** @enum {string} */
                     giverStatus: "ACTIVE" | "DEACTIVATED";
                     /** @enum {string} */
-                    status: "PENDING" | "ANSWERED" | "EXPIRED";
+                    status: "PENDING" | "ANSWERED";
                     answer: {
                         message: string;
                         tags: {
@@ -1120,7 +1137,7 @@ export interface components {
                 /** @enum {string} */
                 giverStatus: "ACTIVE" | "DEACTIVATED";
                 /** @enum {string} */
-                status: "PENDING" | "ANSWERED" | "EXPIRED";
+                status: "PENDING" | "ANSWERED";
                 answer: {
                     message: string;
                     tags: {
@@ -1165,7 +1182,7 @@ export interface components {
                     status: "ACTIVE" | "DEACTIVATED";
                 };
                 /** @enum {string} */
-                status: "PENDING" | "ANSWERED" | "EXPIRED";
+                status: "PENDING" | "ANSWERED";
                 /** Format: date-time */
                 createdAt: string;
             }[];
@@ -1198,7 +1215,7 @@ export interface components {
                 status: "ACTIVE" | "DEACTIVATED";
             };
             /** @enum {string} */
-            status: "PENDING" | "ANSWERED" | "EXPIRED";
+            status: "PENDING" | "ANSWERED";
             /** Format: date-time */
             createdAt: string;
             onWorkspaceFeed: boolean;
@@ -1464,6 +1481,99 @@ export interface components {
             page: number;
             pageSize: number;
         };
+        ListFeedItemsResponseDto_Output: {
+            /** Format: uuid */
+            readerAccountId: string;
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                origin: "REQUESTED" | "OFFERED";
+                /** Format: uuid */
+                feedbackRequestId: string | null;
+                giver: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                receivers: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                }[];
+                message: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                /** Format: date-time */
+                createdAt: string;
+                /** @enum {string} */
+                visibility: "EVERYONE" | "SELECTED_PEOPLE";
+                request: {
+                    message: string;
+                    tags: {
+                        workspaceGoals: {
+                            name: string;
+                        }[];
+                        mentions: {
+                            slug: string;
+                            displayName: string;
+                        }[];
+                    };
+                    requester: {
+                        /** Format: uuid */
+                        accountId: string;
+                        name: string | null;
+                        /** Format: uri */
+                        photoUrl: string | null;
+                        /** @enum {string} */
+                        status: "ACTIVE" | "DEACTIVATED";
+                    };
+                    asked: {
+                        person: {
+                            /** Format: uuid */
+                            accountId: string;
+                            name: string | null;
+                            /** Format: uri */
+                            photoUrl: string | null;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "DEACTIVATED";
+                        };
+                        /** @enum {string} */
+                        status: "PENDING" | "ANSWERED";
+                        answer: {
+                            message: string;
+                            tags: {
+                                workspaceGoals: {
+                                    name: string;
+                                }[];
+                                mentions: {
+                                    slug: string;
+                                    displayName: string;
+                                }[];
+                            };
+                            /** Format: date-time */
+                            answeredAt: string;
+                        } | null;
+                    }[];
+                } | null;
+            }[];
+            nextCursor: string | null;
+        };
         GiveKudosRequestDto: {
             message: string;
         };
@@ -1502,7 +1612,7 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
             }[];
-            nextCursor: string[];
+            nextCursor: string | null;
         };
         ListConnectionsResponseDto_Output: {
             items: {
@@ -2589,7 +2699,7 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
-                status?: "PENDING" | "ANSWERED" | "EXPIRED";
+                status?: "PENDING" | "ANSWERED";
             };
             header?: {
                 /** @description The browser's cookie header, forwarded by the web server. */
@@ -2943,6 +3053,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListWorkspaceFeedResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedItemsController_listFeedItems: {
+        parameters: {
+            query?: {
+                show?: "ALL" | "EVERYONE" | "SHARED_WITH_ME";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListFeedItemsResponseDto_Output"];
                 };
             };
             /** @description REQUEST_INVALID */

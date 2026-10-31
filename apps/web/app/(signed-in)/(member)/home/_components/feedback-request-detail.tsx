@@ -20,7 +20,6 @@ const ASK_STATUS_WORDS: Readonly<
 > = {
   PENDING: 'waiting for their answer',
   ANSWERED: 'answered',
-  EXPIRED: 'expired without an answer',
 };
 
 const names = new Intl.ListFormat('en', { type: 'conjunction' });
