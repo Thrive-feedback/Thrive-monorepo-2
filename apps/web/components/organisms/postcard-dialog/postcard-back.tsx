@@ -1,27 +1,16 @@
-import { PostcardAddress, PostcardFrom } from './postcard-address';
+import { PostcardAddress } from './postcard-address';
+import { FULL_BACK, STAMP_CLEARANCE } from './postcard-back.constant';
 import type {
   PostcardCard,
   PostcardKind,
   PostcardWriter,
 } from './postcard-draft.type';
 import {
+  PostcardAnswerFrom,
   PostcardAnswerPlaceholder,
   PostcardAskReadOnly,
   PostcardSplitBack,
 } from './postcard-split-back';
-
-/**
- * Keeps the address, and so the message under it, clear of the stamp's square in the top-right
- * corner: the line is tall enough to bring the message below it, and stops short of it where they
- * share a row. A request's corner is on the other half from `md`, so its address needs neither
- * there.
- */
-const STAMP_CLEARANCE: Readonly<
-  Record<Exclude<PostcardKind, 'answer'>, string>
-> = {
-  give: 'min-h-18.5 content-start pe-21 md:min-h-16.5 md:pe-18',
-  ask: 'min-h-18.5 content-start pe-21 md:min-h-0 md:pe-0',
-};
 
 /** Who is chosen after "To", for the cards that choose: what choosing means, and for whom. */
 const RECIPIENTS: Readonly<
@@ -67,10 +56,7 @@ export function PostcardBack({
         ask={<PostcardAskReadOnly ask={card.ask} />}
         answer={
           <>
-            {/* From `md` this half holds the stamp's corner. */}
-            <div className="md:min-h-17.5 md:pe-21">
-              <PostcardFrom writer={writer} />
-            </div>
+            <PostcardAnswerFrom writer={writer} />
             {message}
           </>
         }
@@ -105,7 +91,7 @@ export function PostcardBack({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 px-5 pt-5 pb-5 md:px-8 md:pt-7 md:pb-7">
+    <div className={FULL_BACK}>
       {address}
       {message}
     </div>

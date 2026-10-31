@@ -11,6 +11,7 @@ import {
   readMotionSteps,
   sampleCurve,
 } from './postcard-flight.util';
+import { POSTMARK_ANGLE } from './postcard-postmark.constant';
 
 /** How many points the flight is drawn through: enough that it reads as a curve. */
 const FLIGHT_POINTS = 24;
@@ -19,7 +20,7 @@ const FLIGHT_POINTS = 24;
 const LEAVING_SCALE = 0.001;
 
 /**
- * Sending a postcard by airmail: a postmark comes down on its top-right corner, the card gives
+ * Sending a postcard by airmail: a postmark comes down across its stamp, the card gives
  * under it, then flies off in an arc past the top-right of the screen, a contrail drawn on behind
  * it.
  *
@@ -71,7 +72,7 @@ export function usePostcardFlight() {
 
     await animate(
       postmark,
-      { opacity: 1, scale: 1, rotate: -8 },
+      { opacity: 1, scale: 1, rotate: POSTMARK_ANGLE },
       { duration: duration.quick, ease: ease.linear },
     );
     await animate(

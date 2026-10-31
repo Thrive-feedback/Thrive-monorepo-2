@@ -5,6 +5,7 @@ import styles from './postcard.module.css';
 import type {
   PlacedPostcardSticker,
   PostcardAskSticker,
+  PostcardSide,
 } from './postcard-draft.type';
 import { PostcardPicture } from './postcard-picture';
 import { postcardSticker } from './postcard-sticker.constant';
@@ -337,8 +338,8 @@ export type PostcardStickerReadOnlyProps = {
 };
 
 /**
- * A sticker the Requester stuck on, while answering on their card: there to see and nothing more,
- * and presses pass through it, so one over the answer never gets in the way of writing it.
+ * A sticker nobody can change, such as the Requester's while answering: there to see and nothing
+ * more, and presses pass through it, so one over the words never gets in the way of them.
  */
 export const PostcardStickerReadOnly = memo(function PostcardStickerReadOnly({
   sticker,
@@ -354,3 +355,22 @@ export const PostcardStickerReadOnly = memo(function PostcardStickerReadOnly({
     </div>
   );
 });
+
+export type PostcardStickersReadOnlyProps = {
+  stickers: readonly PostcardAskSticker[];
+  /** Which side of the card this is: the stickers on the other side are left out. */
+  side: PostcardSide;
+};
+
+/** The stickers on one side of a card, none of which can be changed. */
+export function PostcardStickersReadOnly({
+  stickers,
+  side,
+}: PostcardStickersReadOnlyProps) {
+  return stickers
+    .filter((sticker) => sticker.side === side)
+    .map((sticker, index) => (
+      // biome-ignore lint/suspicious/noArrayIndexKey: nobody can reorder a read-only list, and two can sit on one spot.
+      <PostcardStickerReadOnly key={index} sticker={sticker} />
+    ));
+}

@@ -173,13 +173,6 @@
   stroke-width: calc(var(--space-unit) * 3);
 }
 
-/* The postmark's rings and cancelling waves, in the ink of its text colour. */
-.postmarkInk {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: calc(var(--space-unit) * 0.5);
-}
-
 /*
  * A postage stamp's perforated edge: a row of round bites along every side, cut by a mask of
  * repeating circles, with the middle kept whole. Finer than the letter's stamps; a mask has

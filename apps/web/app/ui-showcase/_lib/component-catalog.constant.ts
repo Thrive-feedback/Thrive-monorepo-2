@@ -103,6 +103,14 @@ import {
   PostcardDialogPreview,
 } from '@/app/ui-showcase/_components/entries/postcard-dialog-entry';
 import {
+  PostcardReadDialogEntry,
+  PostcardReadDialogPreview,
+} from '@/app/ui-showcase/_components/entries/postcard-read-dialog-entry';
+import {
+  PostmarkEntry,
+  PostmarkPreview,
+} from '@/app/ui-showcase/_components/entries/postmark-entry';
+import {
   RadioGroupEntry,
   RadioGroupPreview,
 } from '@/app/ui-showcase/_components/entries/radio-group-entry';
@@ -365,6 +373,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: MiniPostcardEntry,
   },
   {
+    slug: 'postmark',
+    name: 'Postmark',
+    level: 'atom',
+    Preview: PostmarkPreview,
+    Entry: PostmarkEntry,
+  },
+  {
     slug: 'spinner',
     name: 'Spinner',
     level: 'atom',
@@ -511,5 +526,12 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'organism',
     Preview: RequestedFeedbackCardPreview,
     Entry: RequestedFeedbackCardEntry,
+  },
+  {
+    slug: 'postcard-read-dialog',
+    name: 'PostcardReadDialog',
+    level: 'organism',
+    Preview: PostcardReadDialogPreview,
+    Entry: PostcardReadDialogEntry,
   },
 ];

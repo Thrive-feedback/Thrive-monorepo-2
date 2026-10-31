@@ -11,6 +11,23 @@ const DAY = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'UTC',
 });
 
+/** `en-US`, because `en-GB` writes September in four letters and a postmark has room for three. */
+const MONTH = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  timeZone: 'UTC',
+});
+
 export function calendarDay(isoDateTime: string): string {
   return DAY.format(new Date(isoDateTime));
+}
+
+/** A day as a postmark prints it, on two lines: `04 OCT`, then `2026`. */
+export function postmarkDay(isoDateTime: string) {
+  const date = new Date(isoDateTime);
+  const day = String(date.getUTCDate()).padStart(2, '0');
+
+  return {
+    dayAndMonth: `${day} ${MONTH.format(date).toUpperCase()}`,
+    year: String(date.getUTCFullYear()),
+  };
 }

@@ -1,4 +1,4 @@
-import { ArrowRightIcon, Rotate3dIcon, XIcon } from 'lucide-react';
+import { ArrowRightIcon } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -18,11 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/atoms/dialog';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/atoms/tooltip';
 import { feedbackTagTriggers } from '@/components/organisms/feedback-tag-triggers.util';
 import { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
 import { cn } from '@/lib/cn.util';
@@ -49,9 +44,14 @@ import {
 import {
   BAR_LABELS,
   COPY,
+  POSTCARD_BAR,
+  POSTCARD_CARD_COLUMN,
+  POSTCARD_PAGE,
+  POSTCARD_SCREEN,
   SENT_AWAY,
   STAMP_ID,
 } from './postcard-editor.constant';
+import { focusedControl } from './postcard-focus.util';
 import { PostcardMessage } from './postcard-message';
 import { PostcardPostmark } from './postcard-postmark';
 import {
@@ -62,22 +62,17 @@ import {
 import {
   PostcardSticker,
   type PostcardStickerChange,
-  PostcardStickerReadOnly,
+  PostcardStickersReadOnly,
 } from './postcard-sticker';
 import type { PaperTone, PostcardTextStyle } from './postcard-style.constant';
 import { PostcardTextToolbar } from './postcard-text-toolbar';
+import { PostcardTitleRow } from './postcard-title-row';
 import { PostcardToolbar } from './postcard-toolbar';
+import { PostcardTurnButton } from './postcard-turn-button';
 import { PostcardVisibilityTool } from './postcard-visibility-tool';
 import { PostcardDrawerContainer } from './use-postcard-drawer-container';
+import { usePostcardOpener } from './use-postcard-opener';
 import { usePostcardSend } from './use-postcard-send';
-
-/** What has focus, if anything does: the page itself is not somewhere to send focus back to. */
-function focusedControl(): HTMLElement | null {
-  const focused = document.activeElement;
-  return focused instanceof HTMLElement && focused !== document.body
-    ? focused
-    : null;
-}
 
 function isSameList(one: readonly string[], other: readonly string[]) {
   return (
@@ -132,9 +127,8 @@ export function PostcardEditor({
   const toolbarRef = useRef<HTMLDivElement>(null);
   const sendRef = useRef<HTMLButtonElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
-  // Where focus goes back to: the control that opened the card, and the one that asked to close
-  // it. Neither is a `DialogTrigger`, so Radix would otherwise leave focus on the page itself.
-  const openerRef = useRef<HTMLElement | null>(null);
+  const { noteOpener, giveFocusBack } = usePostcardOpener();
+  // Where focus goes back to if the writer keeps writing: nothing here is a `DialogTrigger` either.
   const askedToCloseFromRef = useRef<HTMLElement | null>(null);
   const isLeavingRef = useRef(false);
 
@@ -377,7 +371,7 @@ export function PostcardEditor({
   // The cursor belongs on the card: on "To" while nobody is chosen, on the message once somebody
   // is. Whatever had it before is the opener, which gets it back on close.
   function handleOpenAutoFocus(event: Event) {
-    openerRef.current = focusedControl();
+    noteOpener();
     const target =
       kind !== 'answer' && draft.recipientAccountIds.length === 0
         ? contentRef.current?.querySelector('section:not([inert]) button')
@@ -392,12 +386,8 @@ export function PostcardEditor({
   // that is still on the page.
   function handleCloseAutoFocus(event: Event) {
     onCloseAutoFocus?.(event);
-    if (event.defaultPrevented) {
-      return;
-    }
-    event.preventDefault();
-    if (openerRef.current?.isConnected) {
-      openerRef.current.focus();
+    if (!event.defaultPrevented) {
+      giveFocusBack(event);
     }
   }
 
@@ -464,14 +454,15 @@ export function PostcardEditor({
   );
   // The stickers a Requester stuck on a side, under whatever is stuck on while answering.
   function theirStickersOn(stickerSide: PostcardSide) {
-    return card.kind === 'answer'
-      ? card.ask.stickers
-          .filter((sticker) => sticker.side === stickerSide)
-          .map((sticker, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: the Requester's list never changes, and two can sit on one spot.
-            <PostcardStickerReadOnly key={index} sticker={sticker} />
-          ))
-      : null;
+    return (
+      card.kind === 'answer' && (
+        <PostcardStickersReadOnly
+          key="theirs"
+          stickers={card.ask.stickers}
+          side={stickerSide}
+        />
+      )
+    );
   }
 
   // Each side's stickers, drawn on that side above the writing.
@@ -508,9 +499,8 @@ export function PostcardEditor({
     );
 
   return (
-    // The whole screen is the dialog, so a card taller than the window scrolls rather than being
-    // cut off. Nothing outside it can close it: every way out asks first. Its drawers are rendered
-    // inside it (ADR 0066), and it has no transform, so their sheet stays fixed to the window.
+    // Nothing outside it can close it: every way out asks first. Its drawers are rendered inside it
+    // (ADR 0066), and it has no transform, so their sheet stays fixed to the window.
     <PostcardDrawerContainer value={contentRef}>
       <DialogContent
         ref={contentRef}
@@ -521,60 +511,26 @@ export function PostcardEditor({
         onEscapeKeyDown={handleEscapeKeyDown}
         onInteractOutside={(event) => event.preventDefault()}
         onFocus={handleFocus}
-        className="translate-none inset-0 top-0 mx-0 max-h-none max-w-none gap-0 overflow-y-auto overflow-x-hidden rounded-none border-0 bg-transparent p-4 shadow-none focus-visible:outline-hidden md:p-8"
+        className={POSTCARD_SCREEN}
       >
         {/* Under everything, so the card flies over its own contrail; it scrolls with the card. The
           card leaves past the right edge, which hides rather than scrolls. */}
         <PostcardContrail ref={flight.contrailRef} course={flight.contrail} />
-        {/* Wider than the card, so the text tools fit on one line beside Send. A card that
-          has been sent is inert while it flies off, so nothing edits what has gone. */}
-        <div
-          inert={sendStatus !== 'writing'}
-          className="mx-auto my-auto flex w-full max-w-5xl flex-col items-center gap-4"
-        >
-          <div
-            className={cn(
-              'flex w-full max-w-2xl items-center gap-2',
-              isFlying && SENT_AWAY,
-            )}
-          >
-            <DialogTitle className="flex-1 text-subtitle-display-1">
-              {title}
-            </DialogTitle>
-            <Button variant="secondary" size="icon" onClick={askToClose}>
-              <XIcon aria-hidden="true" className="size-5" />
-              <span className="sr-only">Close</span>
-            </Button>
-          </div>
+        {/* A card that has been sent is inert while it flies off, so nothing edits what has gone. */}
+        <div inert={sendStatus !== 'writing'} className={POSTCARD_PAGE}>
+          <PostcardTitleRow
+            title={title}
+            onClose={askToClose}
+            className={cn(isFlying && SENT_AWAY)}
+          />
 
-          {/* Beside the card where there is room, so it never covers the writing; above it on a
-            narrow screen. */}
-          <div className="relative flex w-full max-w-2xl flex-col gap-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  onClick={handleFlip}
-                  className={cn(
-                    'self-end shadow-med lg:absolute lg:top-1/2 lg:left-full lg:ml-6 lg:-translate-y-1/2',
-                    isFlying && SENT_AWAY,
-                  )}
-                >
-                  <Rotate3dIcon aria-hidden="true" className="size-4.5" />
-                  <span className="sr-only">
-                    {side === 'back'
-                      ? 'Turn over to the front, the picture'
-                      : 'Turn over to the back, the message'}
-                  </span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {side === 'back'
-                  ? 'Turn over to see the front'
-                  : 'Turn over to write on the back'}
-              </TooltipContent>
-            </Tooltip>
+          <div className={POSTCARD_CARD_COLUMN}>
+            <PostcardTurnButton
+              side={side}
+              turnToBackHint="Turn over to write on the back"
+              onClick={handleFlip}
+              className={cn(isFlying && SENT_AWAY)}
+            />
             <div ref={flight.cardRef} className="relative">
               <Postcard
                 side={side}
@@ -625,7 +581,7 @@ export function PostcardEditor({
               }
               onFocus={(event) => event.stopPropagation()}
               onMouseDown={handleToolbarMouseDown}
-              className="flex max-w-full items-center rounded-control border border-border-muted bg-surface-raised p-1.5 shadow-high"
+              className={POSTCARD_BAR}
             >
               <div
                 key={bar}

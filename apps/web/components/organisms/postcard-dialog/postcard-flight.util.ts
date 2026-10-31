@@ -29,9 +29,6 @@ const KEYWORD_EASINGS: Readonly<Record<string, Easing>> = {
   'ease-in-out': 'easeInOut',
 };
 
-/** Where the postmark lands on every card, stamped or not: its top-right corner, in %. */
-export const POSTMARK_CORNER: Point = { x: 90, y: 15 };
-
 /** `250ms` or `0.25s` in seconds; anything unreadable is 0, so the step happens at once. */
 export function parseDuration(value: string): number {
   const trimmed = value.trim();

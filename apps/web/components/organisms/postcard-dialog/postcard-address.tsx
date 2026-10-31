@@ -1,25 +1,9 @@
 import { memo } from 'react';
-import { AvatarName } from '@/components/molecules/avatar-name';
 import { MemberMultiPicker } from '@/components/organisms/member-multi-picker';
 import { cn } from '@/lib/cn.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { PostcardFrom } from './postcard-address-read-only';
 import type { PostcardWriter } from './postcard-draft.type';
-
-export type PostcardFromProps = {
-  writer: PostcardWriter;
-};
-
-/** "From", a face and a name: who wrote the half of the card it heads. */
-export const PostcardFrom = memo(function PostcardFrom({
-  writer,
-}: PostcardFromProps) {
-  return (
-    <div className="flex items-center gap-2 text-body-2 text-fg-secondary">
-      From
-      <AvatarName name={writer.name} photoUrl={writer.photoUrl} />
-    </div>
-  );
-});
 
 export type PostcardAddressProps = {
   writer: PostcardWriter;
