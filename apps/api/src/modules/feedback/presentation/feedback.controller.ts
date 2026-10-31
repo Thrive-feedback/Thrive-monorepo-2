@@ -24,6 +24,7 @@ import { GetFeedbackUseCase } from '../application/use-cases/get-feedback.use-ca
 import { ListReceivedFeedbackUseCase } from '../application/use-cases/list-received-feedback.use-case';
 import { OfferFeedbackUseCase } from '../application/use-cases/offer-feedback.use-case';
 import {
+  toAnswerPostcardResponse,
   toFeedbackResponse,
   toPersonResponse,
   toPostcardResponse,
@@ -164,8 +165,23 @@ export class FeedbackController {
       feedbackId: params.feedbackId,
     });
     return {
+      readerAccountId: actor.accountId,
       ...toFeedbackResponse(feedback),
       postcard: toPostcardResponse(feedback.postcard),
+      request: feedback.request && {
+        message: feedback.request.message,
+        tags: toTagsResponse(feedback.request.tags),
+        requester: toPersonResponse(feedback.request.requester),
+        postcard: toPostcardResponse(feedback.request.postcard),
+        answers: feedback.request.answers.map((answer) => ({
+          id: answer.id,
+          giver: toPersonResponse(answer.giver),
+          message: answer.message,
+          tags: toTagsResponse(answer.tags),
+          postcard: toAnswerPostcardResponse(answer.postcard),
+          answeredAt: answer.answeredAt.toISOString(),
+        })),
+      },
     };
   }
 }

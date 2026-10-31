@@ -1,6 +1,9 @@
 import type { FeedbackOrigin } from '../../domain/entity/feedback.entity';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
-import type { PostcardSnapshot } from '../../domain/value-object/postcard.vo';
+import type {
+  AnswerPostcardSnapshot,
+  PostcardSnapshot,
+} from '../../domain/value-object/postcard.vo';
 import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
 import type {
   AnswerView,
@@ -106,6 +109,27 @@ export interface FeedbackWithVisibilityRow {
   readonly createdAt: Date;
   readonly visibility: string;
   readonly selectedAccountIds: readonly string[];
+}
+
+/** One answer on a request's card, with the Visibility it holds itself. */
+export interface OpenedAnswerRow {
+  readonly id: string;
+  readonly giverAccountId: string;
+  readonly message: string;
+  readonly tags: TagsView;
+  readonly postcard: AnswerPostcardSnapshot | null;
+  readonly answeredAt: Date;
+  readonly visibility: string;
+  readonly selectedAccountIds: readonly string[];
+}
+
+/** A request with what is on its card: every answer, in the order their Givers were asked. */
+export interface OpenedRequestRow {
+  readonly message: string;
+  readonly tags: TagsView;
+  readonly requesterAccountId: string;
+  readonly postcard: PostcardSnapshot | null;
+  readonly answers: readonly OpenedAnswerRow[];
 }
 
 export interface FeedbackPageRow {
@@ -284,6 +308,15 @@ export abstract class FeedbackRequestQuery {
     workspaceId: string,
     feedbackId: string,
   ): Promise<FeedbackWithVisibilityRow | null>;
+
+  /**
+   * A request's card and every answer on it, each with its own Visibility, or `null`. It applies no
+   * Visibility: a caller must hold each answer to its own (ADR 0072).
+   */
+  abstract openedRequest(
+    workspaceId: string,
+    requestId: string,
+  ): Promise<OpenedRequestRow | null>;
 
   /** One Ask addressed to one Member, or `null` when it is not theirs or does not exist. */
   abstract askFor(

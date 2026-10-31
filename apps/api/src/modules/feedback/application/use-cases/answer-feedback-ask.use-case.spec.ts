@@ -11,6 +11,7 @@ import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import {
   AskAlreadyAnsweredError,
   FeedbackMessageEmptyError,
+  PostcardInvalidError,
 } from '../../domain/feedback-request.errors';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
 import { RequestMessage } from '../../domain/value-object/request-message.vo';
@@ -106,6 +107,53 @@ describe('a Giver answering an Ask', () => {
         { workspaceGoalId: 'goal-ownership', name: 'ownership' },
       ],
     });
+  });
+
+  it('keeps how the answer looks, when it was written on the postcard', async () => {
+    const { useCase, feedbackRequestRepository } = await setUp();
+    const postcard = {
+      textStyle: {
+        font: 'signature',
+        sizeStep: 2,
+        align: 'left',
+        ink: 'navy',
+      },
+      stickers: [],
+    } as const;
+
+    await useCase.execute({ ...answering, postcard });
+
+    expect(feedbackRequestRepository.answers[0]?.postcard).toEqual(postcard);
+  });
+
+  it('refuses a look it cannot keep, before it writes anything', async () => {
+    const { useCase, feedbackRequestRepository } = await setUp();
+
+    await expect(
+      useCase.execute({
+        ...answering,
+        postcard: {
+          textStyle: {
+            font: 'signature',
+            sizeStep: 2,
+            align: 'left',
+            ink: 'navy',
+          },
+          stickers: [
+            {
+              stickerKey: 'system/sticker-01-thumbs-up',
+              side: 'front',
+              x: 50,
+              y: 50,
+              scale: 1,
+              rotation: 0,
+            },
+          ],
+        },
+      }),
+    ).rejects.toThrow(PostcardInvalidError);
+
+    expect(feedbackRequestRepository.answers).toEqual([]);
   });
 
   it('leaves the Ask answered, so it stops waiting on its Giver', async () => {

@@ -273,7 +273,8 @@ model Feedback {
   /// What the Giver wrote (glossary: Feedback message). A Requested answer carries only its own,
   /// never the request's Request message (brain `ADR-0039`, ADR 0054).
   message           String
-  /// How it looks, written on a postcard, or null when it was not (ADR 0067).
+  /// How it looks, written on a postcard, or null when it was not (ADR 0067). Offered Feedback
+  /// holds a whole card; an answer only its text style and stickers (ADR 0072).
   postcard          Json?
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt

@@ -4,7 +4,8 @@ Feature: Feedback requests
   only their own Ask, never who else was asked. The Feedback it
   collects is also read by whoever the Requester chose to share it with. When that is everyone
   in the Workspace, the person asked is told before answering that their answer goes on the
-  Workspace feed, which names everyone the request asked beside it.
+  Workspace feed, which names everyone the request asked beside it. Whoever may read an answer
+  opens it on the request's postcard, with the other answers they may read.
 
   Background:
     Given Ann owns a Workspace called "Acme"
@@ -242,6 +243,72 @@ Feature: Feedback requests
     Given Ann has asked Ben for Feedback on a postcard: "Running the planning meeting"
     When Ben opens Ann's Feedback request
     Then Ben sees the postcard it was written on
+
+  @api
+  Scenario: An answer written on a postcard is read on that postcard, under the request's
+    Given Ann has asked Ben for Feedback on a postcard: "Running the planning meeting"
+    And Ben has answered on the postcard: "It kept moving."
+    When Ann opens the Feedback Ben wrote
+    Then Ann sees the postcard the request was written on
+    And Ann sees "It kept moving." as it was written on the postcard
+
+  @api
+  Scenario: An answer's stickers stay on the back of the postcard
+    Given Ann has asked Ben for Feedback on a postcard: "Running the planning meeting"
+    When Ben answers on the postcard with a sticker on its front: "It kept moving."
+    Then Ben is told the postcard cannot be sent
+
+  @api
+  Scenario: An answer cannot choose the card it is written on
+    Given Ann has asked Ben for Feedback on a postcard: "Running the planning meeting"
+    When Ben answers choosing the picture of the postcard: "It kept moving."
+    Then the request is refused as malformed
+
+  @api
+  Scenario: Somebody who has not answered is not on the card
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting"
+    And Ben has answered "It kept moving."
+    When Ann opens the Feedback Ben wrote
+    Then the postcard Ann opened holds only "It kept moving."
+
+  @api
+  Scenario: Whoever may read an answer opens the card with every answer they may read
+    Given Cara is a Member of Ann's Workspace
+    And Dan is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting", shared with Dan
+    And Ben has answered "It kept moving."
+    And Cara has answered "It ran long."
+    When Dan opens the Feedback Cara wrote
+    Then the postcard Dan opened holds "It kept moving." then "It ran long."
+
+  @api
+  Scenario: Everyone in the Workspace opens the card with every answer
+    Given Cara is a Member of Ann's Workspace
+    And Dan is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting", shared with everyone in the Workspace
+    And Ben has answered "It kept moving."
+    And Cara has answered "It ran long."
+    When Dan opens the Feedback Ben wrote
+    Then the postcard Dan opened holds "It kept moving." then "It ran long."
+
+  @api
+  Scenario: A Giver opens only their own answer when it was kept to the Requester
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting"
+    And Ben has answered "It kept moving."
+    And Cara has answered "It ran long."
+    When Cara opens the Feedback Cara wrote
+    Then the postcard Cara opened holds only "It ran long."
+
+  @api
+  Scenario: The Requester opens every answer they were sent, in the order they asked
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting"
+    And Cara has answered "It ran long."
+    And Ben has answered "It kept moving."
+    When Ann opens the Feedback Cara wrote
+    Then the postcard Ann opened holds "It kept moving." then "It ran long."
 
   @api
   Scenario: A request's postcard carries three stickers at most

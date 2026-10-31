@@ -43,7 +43,8 @@ export class ThriveWorld extends World {
   fixtures!: WorkspaceFixtures;
   lastResponse?: ApiResponse;
   feedbackRequest?: FeedbackRequestSent;
-  feedback?: FeedbackWritten;
+  /** The last piece each person wrote, for a step that names whose it opens. */
+  readonly feedbackBy = new Map<string, FeedbackWritten>();
   private readonly people = new Map<string, SignedInAccount>();
   /** The Ask each person has open, so answering it twice does not need it to still be waiting. */
   private readonly asksOnScreen = new Map<string, string>();

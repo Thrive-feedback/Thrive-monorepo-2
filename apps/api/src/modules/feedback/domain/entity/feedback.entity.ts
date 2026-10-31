@@ -12,7 +12,12 @@ import type {
   BoundWorkspaceGoal,
 } from '../value-object/bound-tags.vo';
 import type { FeedbackMessage } from '../value-object/feedback-message.vo';
-import type { Postcard, PostcardSnapshot } from '../value-object/postcard.vo';
+import type {
+  AnswerPostcard,
+  AnswerPostcardSnapshot,
+  Postcard,
+  PostcardSnapshot,
+} from '../value-object/postcard.vo';
 import type {
   Visibility,
   VisibilityValue,
@@ -38,8 +43,11 @@ export interface FeedbackSnapshot {
   /** The Members selected to read it; empty unless the Visibility is Selected people. */
   readonly selectedAccountIds: readonly string[];
   readonly message: string;
-  /** How it looks, or `null` for Feedback not written on a postcard. */
-  readonly postcard: PostcardSnapshot | null;
+  /**
+   * How it looks, or `null` for Feedback not written on a postcard. An answer holds only what it
+   * decides itself: the rest of its card is the Ask's.
+   */
+  readonly postcard: PostcardSnapshot | AnswerPostcardSnapshot | null;
   /** What its Giver's Feedback message is bound to. */
   readonly workspaceGoals: readonly BoundWorkspaceGoal[];
   readonly mentions: readonly BoundMention[];
@@ -78,7 +86,7 @@ export class Feedback {
     private readonly visibility: Visibility,
     private readonly message: FeedbackMessage,
     private readonly tags: BoundTags,
-    private readonly postcard: Postcard | null,
+    private readonly postcard: Postcard | AnswerPostcard | null,
   ) {}
 
   /** Only the Feedback Request calls this, which is why it takes everything already decided. */
@@ -93,6 +101,8 @@ export class Feedback {
     readonly message: FeedbackMessage;
     /** What the Giver's answer names. Never the request's: an answer has its own. */
     readonly tags: BoundTags;
+    /** How it looks, when it was written on the Ask's postcard. */
+    readonly postcard?: AnswerPostcard | null;
   }): Feedback {
     return new Feedback(
       details.id,
@@ -106,7 +116,7 @@ export class Feedback {
       details.visibility,
       details.message,
       details.tags,
-      null,
+      details.postcard ?? null,
     );
   }
 

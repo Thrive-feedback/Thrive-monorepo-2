@@ -126,7 +126,8 @@ export class FeedbackAskController {
 
   @Post(':askId/answers')
   @ApiOperation({
-    summary: 'Answer an Ask waiting for the caller, in one free-text answer',
+    summary:
+      'Answer an Ask waiting for the caller, in one free-text answer, on its postcard or not',
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({
@@ -135,7 +136,7 @@ export class FeedbackAskController {
   })
   @ApiBadRequestResponse({
     description:
-      'REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY or FEEDBACK_MESSAGE_TOO_LONG',
+      'REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG or POSTCARD_INVALID',
   })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
   @ApiNotFoundResponse({
@@ -152,6 +153,7 @@ export class FeedbackAskController {
       giverAccountId: actor.accountId,
       askId: params.askId,
       message: body.message,
+      postcard: body.postcard,
     });
     return { feedbackId: answered.feedbackId };
   }

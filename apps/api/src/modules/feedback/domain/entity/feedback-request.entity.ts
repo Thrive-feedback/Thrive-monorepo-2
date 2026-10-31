@@ -11,7 +11,11 @@ import {
   type BoundWorkspaceGoal,
 } from '../value-object/bound-tags.vo';
 import type { FeedbackMessage } from '../value-object/feedback-message.vo';
-import { Postcard, type PostcardSnapshot } from '../value-object/postcard.vo';
+import {
+  type AnswerPostcard,
+  Postcard,
+  type PostcardSnapshot,
+} from '../value-object/postcard.vo';
 import { RequestMessage } from '../value-object/request-message.vo';
 import { Visibility } from '../value-object/visibility.vo';
 import { Feedback } from './feedback.entity';
@@ -171,6 +175,8 @@ export class FeedbackRequest {
     readonly message: FeedbackMessage;
     /** What the answer names. */
     readonly tags: BoundTags;
+    /** How it looks, when it was written on this request's postcard. */
+    readonly postcard?: AnswerPostcard | null;
   }): Feedback | null {
     const asked = this.asks.find(
       (ask) => ask.hasId(details.askId) && ask.isFor(details.giverAccountId),
@@ -191,6 +197,7 @@ export class FeedbackRequest {
       visibility: this.visibility,
       message: details.message,
       tags: details.tags,
+      postcard: details.postcard,
     });
   }
 

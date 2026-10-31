@@ -41,7 +41,7 @@ function mayRead(row: FeedbackRequestRow, callerAccountId: string): boolean {
  * are the Receiver of what it collected; their own answer, if they are the Giver who wrote it;
  * nothing otherwise. A Giver reads no other Giver's answer here even when the Visibility would
  * let them, because this screen is the Requester's and the Giver's; the people a request is
- * shared with read its Feedback one piece at a time (`ADR-0022`, `#24` AC 5).
+ * shared with read its Feedback through `GetFeedbackUseCase` (`ADR-0022`, `#24` AC 5, ADR 0072).
  */
 function answerFor(
   ask: { readonly askId: string; readonly giverAccountId: string },

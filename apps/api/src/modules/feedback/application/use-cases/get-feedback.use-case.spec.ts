@@ -23,8 +23,8 @@ function setUp(
   visibility: string,
   selectedAccountIds: string[] = [],
   deactivatedAccountIds: string[] = [],
+  feedbackRequestQuery = new FakeFeedbackRequestQuery(),
 ) {
-  const feedbackRequestQuery = new FakeFeedbackRequestQuery();
   feedbackRequestQuery.feedbackWithVisibility.push({
     id: FEEDBACK_ID,
     workspaceId: WORKSPACE_ID,
@@ -70,6 +70,39 @@ function setUp(
   );
 }
 
+const answer = (
+  id: string,
+  giverAccountId: string,
+  visibility: string,
+  selectedAccountIds: string[] = [],
+) => ({
+  id,
+  giverAccountId,
+  message: `Written by ${giverAccountId}`,
+  tags: NO_TAGS,
+  postcard: null,
+  answeredAt: CREATED_AT,
+  visibility,
+  selectedAccountIds,
+});
+
+function withCard(visibility: string, selectedAccountIds: string[] = []) {
+  const feedbackRequestQuery = new FakeFeedbackRequestQuery();
+  feedbackRequestQuery.openedRequests.push({
+    id: REQUEST_ID,
+    workspaceId: WORKSPACE_ID,
+    message: 'How clear was the plan?',
+    tags: NO_TAGS,
+    requesterAccountId: RECEIVER,
+    postcard: null,
+    answers: [
+      answer(FEEDBACK_ID, GIVER, visibility, selectedAccountIds),
+      answer('second-answer', CARA, visibility, selectedAccountIds),
+    ],
+  });
+  return setUp(visibility, selectedAccountIds, [], feedbackRequestQuery);
+}
+
 function readAs(
   useCase: GetFeedbackUseCase,
   readerAccountId: string,
@@ -84,7 +117,7 @@ function readAs(
 
 describe('reading one piece of Feedback', () => {
   it('gives a selected Member what was written, naming who wrote it and whom it is for', async () => {
-    const useCase = setUp('SELECTED_PEOPLE', [CARA]);
+    const useCase = withCard('SELECTED_PEOPLE', [CARA]);
 
     expect(await readAs(useCase, CARA)).toEqual({
       id: FEEDBACK_ID,
@@ -106,6 +139,15 @@ describe('reading one piece of Feedback', () => {
       postcard: null,
       tags: NO_TAGS,
       createdAt: CREATED_AT,
+      request: expect.objectContaining({
+        message: 'How clear was the plan?',
+        requester: {
+          accountId: RECEIVER,
+          name: 'Ana Lee',
+          photoUrl: null,
+          status: 'ACTIVE',
+        },
+      }),
     });
   });
 
@@ -151,6 +193,66 @@ describe('reading one piece of Feedback', () => {
     const useCase = setUp('SELECTED_PEOPLE', [CARA]);
 
     await expect(readAs(useCase, DAN)).rejects.toThrow(FeedbackNotFoundError);
+  });
+
+  describe('the card an answer is on', () => {
+    const answersRead = async (
+      useCase: GetFeedbackUseCase,
+      readerAccountId: string,
+    ) =>
+      (
+        await useCase.execute({
+          workspaceId: WORKSPACE_ID,
+          readerAccountId,
+          feedbackId: FEEDBACK_ID,
+        })
+      ).request?.answers.map((each) => each.giver.accountId);
+
+    it('gives the Requester every answer when they kept them to themselves', async () => {
+      const useCase = withCard('ONLY_ME');
+
+      expect(await answersRead(useCase, RECEIVER)).toEqual([GIVER, CARA]);
+    });
+
+    it('gives a Giver only their own when it was kept to the Requester', async () => {
+      const useCase = withCard('ONLY_ME');
+
+      expect(await answersRead(useCase, GIVER)).toEqual([GIVER]);
+    });
+
+    it('gives somebody selected every answer', async () => {
+      const useCase = withCard('SELECTED_PEOPLE', [DAN]);
+
+      expect(await answersRead(useCase, DAN)).toEqual([GIVER, CARA]);
+    });
+
+    it('gives a Giver who was not selected only their own', async () => {
+      const useCase = withCard('SELECTED_PEOPLE', [DAN]);
+
+      expect(await answersRead(useCase, GIVER)).toEqual([GIVER]);
+    });
+
+    it('gives a Giver who was selected too every answer', async () => {
+      const useCase = withCard('SELECTED_PEOPLE', [GIVER]);
+
+      expect(await answersRead(useCase, GIVER)).toEqual([GIVER, CARA]);
+    });
+  });
+
+  it('has no card for Feedback given without being asked', async () => {
+    const feedbackRequestQuery = new FakeFeedbackRequestQuery();
+    const useCase = setUp('EVERYONE', [], [], feedbackRequestQuery);
+    const [offered] = feedbackRequestQuery.feedbackWithVisibility;
+    if (!offered) {
+      throw new Error('setUp wrote no Feedback.');
+    }
+    feedbackRequestQuery.feedbackWithVisibility[0] = {
+      ...offered,
+      origin: 'OFFERED',
+      feedbackRequestId: null,
+    };
+
+    expect((await readAs(useCase, DAN)).request).toBeNull();
   });
 
   it('answers not-found for another Workspace’s Feedback, even to its Receiver', async () => {

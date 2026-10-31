@@ -44,3 +44,12 @@ export const postcardSchema = z.strictObject({
    */
   stampKey: z.string().nullable(),
 });
+
+/**
+ * What an answer decides about how it looks, out of the card it is written on: the picture, the
+ * paper and the stamp are the Ask's.
+ */
+export const answerPostcardSchema = postcardSchema.pick({
+  textStyle: true,
+  stickers: true,
+});

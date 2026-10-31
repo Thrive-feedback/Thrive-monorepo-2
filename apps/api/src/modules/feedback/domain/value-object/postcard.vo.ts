@@ -49,6 +49,15 @@ export type PostcardSnapshot = {
   readonly stampKey: string | null;
 };
 
+/**
+ * What an answer decides about how it looks: how its words are set and the stickers it puts on the back.
+ * The picture, the paper and the stamp are the Ask's, and an answer never changes them.
+ */
+export type AnswerPostcardSnapshot = Pick<
+  PostcardSnapshot,
+  'textStyle' | 'stickers'
+>;
+
 const MAX_STICKERS = 3;
 const MAX_SIZE_STEP = 4;
 const MIN_STICKER_SCALE = 0.5;
@@ -72,6 +81,15 @@ function isValidSticker(sticker: PostcardStickerSnapshot) {
   );
 }
 
+function hasValidWriting(details: AnswerPostcardSnapshot) {
+  return (
+    Number.isInteger(details.textStyle.sizeStep) &&
+    isWithin(details.textStyle.sizeStep, 0, MAX_SIZE_STEP) &&
+    details.stickers.length <= MAX_STICKERS &&
+    details.stickers.every(isValidSticker)
+  );
+}
+
 /**
  * How a Feedback message or a Request message looks: the picture on its front, its paper, how its
  * words are set, the stickers on it and its stamp. Everyone who reads the words reads the card, so
@@ -86,10 +104,7 @@ export class Postcard {
   static of(details: PostcardSnapshot): Postcard {
     const isValid =
       PICTURE_KEY.test(details.templateKey) &&
-      Number.isInteger(details.textStyle.sizeStep) &&
-      isWithin(details.textStyle.sizeStep, 0, MAX_SIZE_STEP) &&
-      details.stickers.length <= MAX_STICKERS &&
-      details.stickers.every(isValidSticker) &&
+      hasValidWriting(details) &&
       (details.stampKey === null || PICTURE_KEY.test(details.stampKey));
     if (!isValid) {
       throw new PostcardInvalidError();
@@ -106,6 +121,28 @@ export class Postcard {
   }
 
   snapshot(): PostcardSnapshot {
+    return this.value;
+  }
+}
+
+/**
+ * How an answer looks on the card of the Ask it answers. Its stickers stay on the back, anywhere on
+ * it: the front belongs to whoever asked (ADR 0072).
+ */
+export class AnswerPostcard {
+  private constructor(private readonly value: AnswerPostcardSnapshot) {}
+
+  static of(details: AnswerPostcardSnapshot): AnswerPostcard {
+    const isValid =
+      hasValidWriting(details) &&
+      details.stickers.every((sticker) => sticker.side === 'back');
+    if (!isValid) {
+      throw new PostcardInvalidError();
+    }
+    return new AnswerPostcard(details);
+  }
+
+  snapshot(): AnswerPostcardSnapshot {
     return this.value;
   }
 }

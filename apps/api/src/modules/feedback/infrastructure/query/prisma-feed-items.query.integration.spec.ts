@@ -7,6 +7,7 @@ import { Feedback } from '../../domain/entity/feedback.entity';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
 import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
+import { AnswerPostcard } from '../../domain/value-object/postcard.vo';
 import { RequestMessage } from '../../domain/value-object/request-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { PrismaFeedbackRepository } from '../repository/prisma-feedback.repository';
@@ -278,5 +279,80 @@ describe('reading Home', () => {
     );
 
     expect(page.items).toEqual([]);
+  });
+});
+
+describe('opening a request', () => {
+  it('holds its card and every answer, in the order they were asked', async () => {
+    const requestId = uuidv7();
+    requestsWritten.push(requestId);
+    const askForBen = uuidv7();
+    const askForAna = uuidv7();
+    const look = {
+      textStyle: {
+        font: 'signature',
+        sizeStep: 2,
+        align: 'left',
+        ink: 'navy',
+      },
+      stickers: [],
+    } as const;
+    const request = FeedbackRequest.send({
+      id: requestId,
+      workspaceId: WORKSPACE_ID,
+      requesterAccountId: CARA,
+      message: RequestMessage.of('How clear was the launch?'),
+      visibility: selected(DAN),
+      tags: BoundTags.none(),
+      givers: [
+        { askId: askForBen, giverAccountId: BEN },
+        { askId: askForAna, giverAccountId: ANA },
+      ],
+    });
+    await requestRepository.save(request);
+    const answerBy = async (
+      askId: string,
+      giverAccountId: string,
+      postcard: AnswerPostcard | null,
+    ) => {
+      const answer = request.answerAsk({
+        askId,
+        giverAccountId,
+        feedbackId: uuidv7(),
+        message: FeedbackMessage.of('It was clear.'),
+        tags: BoundTags.none(),
+        postcard,
+      });
+      if (!answer) {
+        throw new Error('The request does not hold that Ask.');
+      }
+      await requestRepository.saveAnswer(request, answer);
+      return answer.snapshot().id;
+    };
+    // Ana answers first, so the order on the card is not the order they answered in.
+    await answerBy(askForAna, ANA, null);
+    const bensAnswer = await answerBy(askForBen, BEN, AnswerPostcard.of(look));
+
+    const opened = await query.openedRequest(WORKSPACE_ID, requestId);
+    const inFeedback = await query.feedbackInWorkspace(
+      WORKSPACE_ID,
+      bensAnswer,
+    );
+
+    expect(opened?.requesterAccountId).toBe(CARA);
+    expect(opened?.postcard).toBeNull();
+    expect(opened?.answers.map((each) => each.giverAccountId)).toEqual([
+      BEN,
+      ANA,
+    ]);
+    expect(opened?.answers[0]).toMatchObject({
+      message: 'It was clear.',
+      postcard: look,
+      visibility: 'SELECTED_PEOPLE',
+      selectedAccountIds: [DAN],
+    });
+    expect(opened?.answers[1]?.postcard).toBeNull();
+    expect(inFeedback?.postcard).toBeNull();
+    expect(await query.openedRequest(OTHER_WORKSPACE_ID, requestId)).toBeNull();
   });
 });

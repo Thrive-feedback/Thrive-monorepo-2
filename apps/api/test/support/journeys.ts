@@ -219,7 +219,7 @@ export async function giveFeedback(
     },
   );
   if (response.status === 201) {
-    world.feedback = { id: response.body.id, workspaceId };
+    world.feedbackBy.set(giver, { id: response.body.id, workspaceId });
   }
   return response;
 }
@@ -295,16 +295,17 @@ export async function answerTheirAsk(
   world: ThriveWorld,
   giver: string,
   message: string,
+  postcard?: unknown,
 ): Promise<ApiResponse> {
   const workspaceId = world.workspaceOf(giver);
   const response = await world.as(
     giver,
     'POST',
     `/v1/workspaces/${workspaceId}/feedback-asks/${await askIdWaitingFor(world, giver)}/answers`,
-    { message: await withSlugs(world, message) },
+    { message: await withSlugs(world, message), postcard },
   );
   if (response.status === 201) {
-    world.feedback = { id: response.body.feedbackId, workspaceId };
+    world.feedbackBy.set(giver, { id: response.body.feedbackId, workspaceId });
   }
   return response;
 }
