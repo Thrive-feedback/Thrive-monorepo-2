@@ -5,6 +5,12 @@ import { BrandNewSidebar } from './brand-new-sidebar';
 
 const MEMBERSHIP = { workspace: { id: 'w-1', name: 'Acme' }, role: 'MEMBER' };
 
+const usePathname = vi.fn((): string => ROUTES.brandNewHome);
+vi.mock('next/navigation', () => ({
+  usePathname: () => usePathname(),
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
 vi.mock('@/lib/session/session.service', () => ({
   requireMember: async () => ({
     membership: MEMBERSHIP,
@@ -21,9 +27,9 @@ vi.mock(
 vi.mock('@/lib/feedback/workspace-goal-names.service', () => ({
   readWorkspaceGoalNames: async () => [],
 }));
-const readMyAsks = vi.fn();
-vi.mock('@/lib/feedback/my-asks.service', () => ({
-  readMyAsks: (membership: unknown) => readMyAsks(membership),
+const readWaitingCount = vi.fn();
+vi.mock('@/lib/feedback/waiting-count.service', () => ({
+  readWaitingCount: (membership: unknown) => readWaitingCount(membership),
 }));
 const readTeammates = vi.fn();
 vi.mock('@/lib/feedback/teammates.service', () => ({
@@ -31,11 +37,10 @@ vi.mock('@/lib/feedback/teammates.service', () => ({
     readTeammates(membership, ownEmail),
 }));
 
-async function draw(waiting: number) {
+async function draw(waiting: number, path: string = ROUTES.brandNewHome) {
+  usePathname.mockReturnValue(path);
   readTeammates.mockResolvedValue([]);
-  readMyAsks.mockResolvedValue(
-    Array.from({ length: waiting }, (_, index) => ({ askId: `a-${index}` })),
-  );
+  readWaitingCount.mockResolvedValue(waiting);
   render(await BrandNewSidebar());
   return screen.getByRole('navigation', { name: 'Main' });
 }
@@ -60,7 +65,18 @@ describe('BrandNewSidebar', () => {
     ]);
   });
 
-  it('marks Home as the open page, and leads nowhere else yet', async () => {
+  it('marks the page that is open, wherever the person went', async () => {
+    const nav = await draw(0, ROUTES.brandNewWaiting);
+
+    expect(
+      within(nav).getByRole('link', { name: 'Waiting for me' }),
+    ).toHaveAttribute('aria-current', 'page');
+    expect(within(nav).getByRole('link', { name: 'Home' })).not.toHaveAttribute(
+      'aria-current',
+    );
+  });
+
+  it('marks Home as the open page, and leads to Waiting for me and nowhere else yet', async () => {
     const nav = await draw(0);
 
     expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute(
@@ -71,7 +87,10 @@ describe('BrandNewSidebar', () => {
       'href',
       ROUTES.brandNewHome,
     );
-    expect(within(nav).getAllByRole('link')).toHaveLength(1);
+    expect(
+      within(nav).getByRole('link', { name: 'Waiting for me' }),
+    ).toHaveAttribute('href', ROUTES.brandNewWaiting);
+    expect(within(nav).getAllByRole('link')).toHaveLength(2);
     for (const button of within(nav).getAllByRole('button')) {
       expect(button).toHaveAttribute('aria-disabled', 'true');
     }
@@ -80,9 +99,9 @@ describe('BrandNewSidebar', () => {
   it('counts the Asks waiting for the person, in the Workspace they are in', async () => {
     const nav = await draw(3);
 
-    expect(readMyAsks).toHaveBeenLastCalledWith(MEMBERSHIP);
+    expect(readWaitingCount).toHaveBeenLastCalledWith(MEMBERSHIP);
     expect(
-      within(nav).getByRole('button', { name: 'Waiting for me 3' }),
+      within(nav).getByRole('link', { name: 'Waiting for me 3' }),
     ).toBeVisible();
   });
 

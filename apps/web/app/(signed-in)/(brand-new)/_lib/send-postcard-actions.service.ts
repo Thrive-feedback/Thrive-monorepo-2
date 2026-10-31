@@ -5,18 +5,24 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { apiClient } from '@/lib/api-client.service';
 import {
+  ANSWER_ASK_ERRORS,
   GIVE_FEEDBACK_ERRORS,
   REQUEST_FEEDBACK_ERRORS,
 } from '@/lib/feedback/send-feedback-errors.constant';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMemberOf } from '@/lib/session/session.service';
-import { SentPostcardInput } from './sent-postcard.schema';
-import type { SendPostcardResult, SentPostcard } from './sent-postcard.type';
+import { SentAnswerInput, SentPostcardInput } from './sent-postcard.schema';
+import type {
+  SendPostcardResult,
+  SentAnswer,
+  SentPostcard,
+} from './sent-postcard.type';
 
 const COULD_NOT_SEND_FEEDBACK =
   "We couldn't send your feedback. Please try again.";
 const COULD_NOT_SEND_REQUEST =
   "We couldn't send your request. Please try again.";
+const COULD_NOT_SEND_ANSWER = "We couldn't send your answer. Please try again.";
 
 /**
  * Sends one card and answers with what to say if it did not go. Anything but a refusal the API
@@ -134,5 +140,44 @@ export async function sendPostcardRequest(
       ),
     REQUEST_FEEDBACK_ERRORS,
     COULD_NOT_SEND_REQUEST,
+  );
+}
+
+/**
+ * Answers one Ask on its postcard, on the same terms as `sendPostcardFeedback`. It does not
+ * revalidate the page: that would read the Ask again while the card is still flying off, and find
+ * it answered. The dialog refreshes once the card has gone.
+ */
+export async function sendPostcardAnswer(
+  workspaceId: string,
+  askId: string,
+  answer: SentAnswer,
+): Promise<SendPostcardResult> {
+  const input = SentAnswerInput.safeParse({ askId, ...answer });
+  if (!input.success) {
+    return { formError: COULD_NOT_SEND_ANSWER };
+  }
+
+  const { membership } = await requireMemberOf(workspaceId);
+  const cookie = (await headers()).get('cookie') ?? undefined;
+  return send(
+    async () =>
+      unwrap(
+        await apiClient().POST(
+          '/v1/workspaces/{workspaceId}/feedback-asks/{askId}/answers',
+          {
+            params: {
+              path: {
+                workspaceId: membership.workspace.id,
+                askId: input.data.askId,
+              },
+              header: { cookie },
+            },
+            body: { message: input.data.message, postcard: input.data.look },
+          },
+        ),
+      ),
+    ANSWER_ASK_ERRORS,
+    COULD_NOT_SEND_ANSWER,
   );
 }

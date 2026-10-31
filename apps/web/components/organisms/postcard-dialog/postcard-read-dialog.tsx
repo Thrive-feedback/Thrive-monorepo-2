@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/atoms/dialog';
 import { cn } from '@/lib/cn.util';
 import { Postcard } from './postcard';
+import styles from './postcard.module.css';
 import { PostcardAnswerPager } from './postcard-answer-pager';
 import type { PostcardSide } from './postcard-draft.type';
 import {
@@ -64,6 +65,7 @@ export function PostcardReadDialog({
         aria-describedby={undefined}
         onOpenAutoFocus={noteOpener}
         onCloseAutoFocus={giveFocusBack}
+        overlayClassName={styles.scrim}
         className={POSTCARD_SCREEN}
       >
         <PostcardReadView

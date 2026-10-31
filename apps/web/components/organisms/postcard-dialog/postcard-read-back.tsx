@@ -7,7 +7,7 @@ import type {
   PostcardReadAnswer,
 } from './postcard-read.type';
 import {
-  PostcardAnswerFrom,
+  PostcardAnswerTo,
   PostcardAskReadOnly,
   PostcardSplitBack,
 } from './postcard-split-back';
@@ -55,7 +55,7 @@ export function PostcardAnsweredBack({
       }
       answer={
         <>
-          <PostcardAnswerFrom writer={answer.giver} />
+          <PostcardAnswerTo giver={answer.giver} />
           <PostcardMessageReadOnly
             key={answerIndex}
             message={answer.message}

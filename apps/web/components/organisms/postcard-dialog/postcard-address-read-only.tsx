@@ -33,7 +33,7 @@ export type PostcardFromProps = {
   writer: PostcardWriter;
 };
 
-/** "From", a face and a name: who wrote the half of the card it heads. */
+/** "From", a face and a name: who wrote the card or the Ask it heads. */
 export const PostcardFrom = memo(function PostcardFrom({
   writer,
 }: PostcardFromProps) {
@@ -44,6 +44,27 @@ export const PostcardFrom = memo(function PostcardFrom({
         name={writer.name}
         photoUrl={writer.photoUrl}
         inactive={writer.inactive}
+      />
+    </div>
+  );
+});
+
+export type PostcardToProps = {
+  /** The one person the line is addressed to. */
+  person: PostcardWriter;
+};
+
+/** "To", a face and a name: who an Ask was addressed to, and so who answers it. */
+export const PostcardTo = memo(function PostcardTo({
+  person,
+}: PostcardToProps) {
+  return (
+    <div className="flex items-center gap-2 text-body-2 text-fg-secondary">
+      To
+      <PostcardPerson
+        name={person.name}
+        photoUrl={person.photoUrl}
+        inactive={person.inactive}
       />
     </div>
   );

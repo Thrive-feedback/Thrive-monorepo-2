@@ -55,11 +55,14 @@ export type DialogContentProps = React.ComponentPropsWithRef<
 > & {
   /** The × in the corner. Leave it on unless the footer already has a way out. */
   hasCloseButton?: boolean;
+  /** Added to the scrim behind it, for a dialog that shows the page differently. */
+  overlayClassName?: string;
 };
 
 /** Centred on the page, at most the width of a short form, with the page dimmed behind it. */
 export function DialogContent({
   hasCloseButton = true,
+  overlayClassName,
   className,
   children,
   ...rest
@@ -71,6 +74,7 @@ export function DialogContent({
         className={cn(
           'fixed inset-0 z-50 bg-surface-scrim motion-safe:data-[state=closed]:animate-exit motion-safe:data-[state=open]:animate-enter',
           styles.scrim,
+          overlayClassName,
         )}
       />
       <DialogPrimitive.Content

@@ -1,6 +1,15 @@
+import { cva } from 'class-variance-authority';
 import { Postmark } from '@/components/atoms/postmark';
 import { cn } from '@/lib/cn.util';
 import styles from './mini-postcard.module.css';
+
+const box = cva('group/mini relative z-10 flex aspect-3/2 shrink-0', {
+  variants: { size: { md: 'w-20', lg: 'w-28 lg:w-36' } },
+});
+
+const postmark = cva('absolute top-1 right-1', {
+  variants: { size: { md: 'w-12', lg: 'w-16 lg:w-20' } },
+});
 
 /** One side of the drawing: lines of writing along its foot, clear of the corner. */
 function MiniPostcardSide() {
@@ -17,6 +26,8 @@ export type MiniPostcardProps = {
   kind: 'offered' | 'requested';
   /** When it was sent, as an ISO date, for the postmark in its corner. */
   date: string;
+  /** `lg` where the postcard is what the card is for, as an Ask waiting to be answered. */
+  size?: 'md' | 'lg';
   /** Whether "View postcard" shows without being hovered, as in the UI showcase. */
   isPopupShown?: boolean;
   /** What it opens is on its way: it fades and pulses, so a press does not look lost. */
@@ -33,6 +44,7 @@ export type MiniPostcardProps = {
 export function MiniPostcard({
   kind,
   date,
+  size = 'md',
   isPopupShown = false,
   isPending = false,
 }: MiniPostcardProps) {
@@ -40,10 +52,7 @@ export function MiniPostcard({
     <span
       data-slot="mini-postcard"
       aria-hidden="true"
-      className={cn(
-        'group/mini relative z-10 flex aspect-3/2 w-20 shrink-0',
-        styles.box,
-      )}
+      className={cn(box({ size }), styles.box)}
     >
       <span
         data-slot="mini-postcard-face"
@@ -63,7 +72,7 @@ export function MiniPostcard({
           <MiniPostcardSide />
           {kind === 'requested' && <MiniPostcardSide />}
         </span>
-        <span className="absolute top-1 right-1 w-12">
+        <span className={postmark({ size })}>
           <Postmark date={date} />
         </span>
       </span>

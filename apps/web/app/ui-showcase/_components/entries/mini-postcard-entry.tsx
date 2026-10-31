@@ -34,6 +34,13 @@ export function MiniPostcardEntry() {
           description: 'When it was sent, as an ISO date, for the postmark.',
         },
         {
+          name: 'size',
+          type: "'md' | 'lg'",
+          defaultValue: "'md'",
+          description:
+            '`lg` where the postcard is what the card is for, as an Ask waiting to be answered.',
+        },
+        {
           name: 'isPending',
           type: 'boolean',
           defaultValue: 'false',
@@ -64,6 +71,9 @@ export function MiniPostcardEntry() {
         hint="Hover it: it shakes, and the popup shows."
       >
         <MiniPostcard kind="requested" date={SENT_ON} />
+      </StateCell>
+      <StateCell label="Large" hint="On a card waiting to be answered.">
+        <MiniPostcard kind="requested" date={SENT_ON} size="lg" />
       </StateCell>
       <StateCell label="Popup showing">
         <div className="pt-10">

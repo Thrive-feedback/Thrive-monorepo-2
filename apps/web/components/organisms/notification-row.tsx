@@ -7,7 +7,7 @@ import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
 import type { BellNotification } from '@/lib/notifications/notification.type';
 import { notificationLine } from '@/lib/notifications/notification-copy.constant';
-import { timeAgo } from '@/lib/notifications/time-ago.util';
+import { timeAgo } from '@/lib/time-ago.util';
 
 export type NotificationRowProps = {
   notification: BellNotification;

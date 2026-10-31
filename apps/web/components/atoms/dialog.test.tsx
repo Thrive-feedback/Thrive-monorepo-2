@@ -12,11 +12,20 @@ import {
   DialogTrigger,
 } from './dialog';
 
-function InviteDialog({ hasCloseButton }: { hasCloseButton?: boolean }) {
+function InviteDialog({
+  hasCloseButton,
+  overlayClassName,
+}: {
+  hasCloseButton?: boolean;
+  overlayClassName?: string;
+}) {
   return (
     <Dialog>
       <DialogTrigger>Invite</DialogTrigger>
-      <DialogContent hasCloseButton={hasCloseButton}>
+      <DialogContent
+        hasCloseButton={hasCloseButton}
+        overlayClassName={overlayClassName}
+      >
         <DialogHeader>
           <DialogTitle>Invite a teammate</DialogTitle>
           <DialogDescription>They get an email with a link.</DialogDescription>
@@ -68,6 +77,17 @@ describe('Dialog', () => {
     await user.click(screen.getByRole('button', { name: 'Invite' }));
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('adds a class to the scrim behind it when asked', async () => {
+    const user = userEvent.setup();
+    render(<InviteDialog overlayClassName="less-blur" />);
+
+    await user.click(screen.getByRole('button', { name: 'Invite' }));
+
+    expect(document.querySelector('[data-slot="dialog-overlay"]')).toHaveClass(
+      'less-blur',
+    );
   });
 
   it('leaves the corner button out when asked', async () => {

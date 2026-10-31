@@ -37,6 +37,8 @@ export type PostcardWritingProps = {
   kind?: Exclude<PostcardKind, 'answer'>;
   /** Who it is for, or who is asked, as it opens, such as the Member whose page it was opened from. */
   defaultRecipientAccountIds?: readonly string[];
+  /** What is already written as it opens, as typed before choosing this card. */
+  defaultMessage?: string;
   /**
    * Send was pressed: everything on the card, handed over once its back is showing. The dialog
    * sends nothing itself. Resolve `true` once it has gone: the card then flies off and the dialog closes itself,
@@ -99,6 +101,7 @@ export function PostcardDialog(props: PostcardDialogProps) {
           workspaceGoals,
           defaultRecipientAccountIds:
             props.defaultRecipientAccountIds ?? NOBODY,
+          defaultMessage: props.defaultMessage ?? '',
           onSend: props.onSend,
         };
 

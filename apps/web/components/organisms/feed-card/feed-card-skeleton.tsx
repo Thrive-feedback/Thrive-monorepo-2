@@ -1,9 +1,10 @@
 import { Skeleton } from '@/components/atoms/skeleton';
+import { FEED_CARD_SURFACE } from './feed-card-surface.constant';
 
 /** A card on Home still loading, line for line: who to whom, the corner, and the message. */
 export function FeedCardSkeleton() {
   return (
-    <div className="flex flex-col gap-3 rounded-page bg-action-primary/8 p-5">
+    <div className={FEED_CARD_SURFACE}>
       <div className="flex items-start gap-3">
         <Skeleton shape="circle" className="size-8 shrink-0" />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
