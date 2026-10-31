@@ -1,15 +1,7 @@
 'use client';
 
 import { PlusIcon } from 'lucide-react';
-import dynamic from 'next/dynamic';
-import { unstable_rethrow } from 'next/navigation';
 import { useRef, useState } from 'react';
-import { toast } from 'sonner';
-import {
-  sendPostcardFeedback,
-  sendPostcardRequest,
-} from '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service';
-import { toSentPostcard } from '@/app/(signed-in)/(brand-new)/_lib/sent-postcard.util';
 import { Button } from '@/components/atoms/button';
 import {
   DropdownMenu,
@@ -17,17 +9,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
-import type {
-  PostcardDraft,
-  PostcardWriter,
-} from '@/components/organisms/postcard-dialog/postcard-draft.type';
+import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import {
+  type ComposeCard,
+  ComposePostcardDialog,
+  warmPostcardDialog,
+} from './compose-postcard-dialog';
 
 const CHOICES: readonly {
   title: string;
   description: string;
   /** The postcard it opens; none, and it is not built yet. */
-  card: 'give' | 'ask' | null;
+  card: ComposeCard | null;
 }[] = [
   {
     title: 'Ask for feedback',
@@ -45,33 +39,6 @@ const CHOICES: readonly {
     card: null,
   },
 ];
-
-/**
- * The postcard is the heaviest thing on the page and nobody needs it until they choose to write,
- * so its code arrives on its own, warmed as soon as the menu opens.
- */
-const PostcardDialog = dynamic(
-  () =>
-    import('@/components/organisms/postcard-dialog/postcard-dialog').then(
-      (postcard) => postcard.PostcardDialog,
-    ),
-  { ssr: false },
-);
-
-/** Fetches the postcard's code ahead of a choice; a failed fetch is retried when it is drawn. */
-function warmPostcardDialog() {
-  import('@/components/organisms/postcard-dialog/postcard-dialog').catch(
-    () => {},
-  );
-}
-
-/** What a sent card is called in the toast that says it went. */
-const SENT: Readonly<Record<'give' | 'ask', string>> = {
-  give: 'Feedback sent.',
-  ask: 'Request sent.',
-};
-
-const COULD_NOT_SEND = "We couldn't send your postcard. Please try again.";
 
 export type ComposeMenuProps = {
   /** The Workspace the page was drawn for, which a card is sent to. */
@@ -95,9 +62,10 @@ export function ComposeMenu({
   workspaceGoals,
   writer,
 }: ComposeMenuProps) {
-  const [choice, setChoice] = useState<{ title: string; card: 'give' | 'ask' }>(
-    { title: 'Give feedback', card: 'give' },
-  );
+  const [choice, setChoice] = useState<{ title: string; card: ComposeCard }>({
+    title: 'Give feedback',
+    card: 'give',
+  });
   const [isOpen, setIsOpen] = useState(false);
   // Mounted from the first card on, so it is not drawn before anyone writes, and stays for its
   // closing motion after.
@@ -105,7 +73,7 @@ export function ComposeMenu({
   const plusRef = useRef<HTMLButtonElement>(null);
   const isOpeningPostcard = useRef(false);
 
-  function handleChoose(title: string, card: 'give' | 'ask') {
+  function handleChoose(title: string, card: ComposeCard) {
     isOpeningPostcard.current = true;
     setHasOpenedPostcard(true);
     setChoice({ title, card });
@@ -119,27 +87,6 @@ export function ComposeMenu({
       event.preventDefault();
       isOpeningPostcard.current = false;
     }
-  }
-
-  // Whether it went decides what the card does next: a card that went flies off, and one that did
-  // not stays open with everything on it.
-  async function handleSend(postcard: PostcardDraft) {
-    const send =
-      choice.card === 'give' ? sendPostcardFeedback : sendPostcardRequest;
-    try {
-      const { formError } = await send(workspaceId, toSentPostcard(postcard));
-      if (formError) {
-        toast.error(formError);
-        return false;
-      }
-    } catch (error) {
-      // Being signed out rejects the action with a redirect, which is not a send that failed.
-      unstable_rethrow(error);
-      toast.error(COULD_NOT_SEND);
-      return false;
-    }
-    toast.success(SENT[choice.card]);
-    return true;
   }
 
   // The postcard opens from the menu rather than from a `DialogTrigger`, and the menu item is
@@ -186,15 +133,15 @@ export function ComposeMenu({
         </DropdownMenuContent>
       </DropdownMenu>
       {hasOpenedPostcard && (
-        <PostcardDialog
-          kind={choice.card}
-          title={choice.title}
+        <ComposePostcardDialog
+          workspaceId={workspaceId}
           teammates={teammates}
           workspaceGoals={workspaceGoals}
           writer={writer}
+          card={choice.card}
+          title={choice.title}
           open={isOpen}
           onOpenChange={setIsOpen}
-          onSend={handleSend}
           onCloseAutoFocus={handlePostcardCloseAutoFocus}
         />
       )}
