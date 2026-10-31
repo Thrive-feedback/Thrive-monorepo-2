@@ -146,4 +146,26 @@ describe('paging a Workspace’s Kudos by cursor', () => {
     expect(first.hasMore).toBe(true);
     expect(second.hasMore).toBe(false);
   });
+
+  it('still lists a Kudos whose card no longer reads, as one with no card', async () => {
+    const workspaceId = uuidv7();
+    const kudos = givenOn(KudosCard.of(CARD), workspaceId, uuidv7());
+    await repository.save(kudos);
+    await prismaService.kudos.update({
+      where: { id: kudos.snapshot().id },
+      data: {
+        card: {
+          ...CARD,
+          textStyle: { ...CARD.textStyle, ink: 'a-retired-ink' },
+        },
+      },
+    });
+
+    const { items } = await query.publicIn(workspaceId, {
+      afterId: null,
+      limit: 20,
+    });
+
+    expect(items.map((row) => row.card)).toEqual([null]);
+  });
 });

@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
+import { afterAll, describe, expect, it } from 'bun:test';
 import { loadConfiguration } from '@app/config/configuration';
 import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
@@ -17,21 +17,20 @@ const context = new PrismaTransactionContext(prismaService);
 const requestRepository = new PrismaFeedbackRequestRepository(context);
 const query = new PrismaFeedbackRequestQuery(context);
 
-const WORKSPACE_ID = uuidv7();
 const ANA = uuidv7();
 const BEN = uuidv7();
 
+const workspacesWritten: string[] = [];
 const requestsWritten: string[] = [];
-const held = new Map<string, FeedbackRequest>();
 
 /** Ana asks Ben, one request after another, so each Ask is newer than the last. */
-async function givenAnAsk(message: string): Promise<string> {
+async function givenAnAsk(workspaceId: string, message: string) {
   const id = uuidv7();
   requestsWritten.push(id);
   const askId = uuidv7();
   const request = FeedbackRequest.send({
     id,
-    workspaceId: WORKSPACE_ID,
+    workspaceId,
     requesterAccountId: ANA,
     message: RequestMessage.of(message),
     visibility: Visibility.of({ value: 'ONLY_ME', selectedAccountIds: [] }),
@@ -39,48 +38,48 @@ async function givenAnAsk(message: string): Promise<string> {
     givers: [{ askId, giverAccountId: BEN }],
   });
   await requestRepository.save(request);
-  held.set(askId, request);
-  return askId;
+  return {
+    askId,
+    answer: async () => {
+      const answer = request.answerAsk({
+        askId,
+        giverAccountId: BEN,
+        feedbackId: uuidv7(),
+        message: FeedbackMessage.of('Answered.'),
+        tags: BoundTags.none(),
+      });
+      if (!answer) {
+        throw new Error('The request does not hold this Ask.');
+      }
+      await requestRepository.saveAnswer(request, answer);
+    },
+  };
 }
 
-async function benAnswers(askId: string) {
-  const request = held.get(askId);
-  const answer = request?.answerAsk({
-    askId,
-    giverAccountId: BEN,
-    feedbackId: uuidv7(),
-    message: FeedbackMessage.of('Answered.'),
-    tags: BoundTags.none(),
-  });
-  if (!request || !answer) {
-    throw new Error('The test holds no such Ask.');
-  }
-  await requestRepository.saveAnswer(request, answer);
+/** Four Asks in a Workspace of their own, First the oldest. */
+async function fourAsks() {
+  const workspaceId = uuidv7();
+  workspacesWritten.push(workspaceId);
+  const first = await givenAnAsk(workspaceId, 'First');
+  const second = await givenAnAsk(workspaceId, 'Second');
+  const third = await givenAnAsk(workspaceId, 'Third');
+  const fourth = await givenAnAsk(workspaceId, 'Fourth');
+  return { workspaceId, first, second, third, fourth };
 }
 
 const page = (
+  workspaceId: string,
   afterId: string | null,
-  limit = 2,
   sort: 'NEWEST' | 'OLDEST' = 'NEWEST',
-) => query.waitingAsksFor(WORKSPACE_ID, BEN, sort, { afterId, limit });
+  limit = 2,
+) => query.waitingAsksFor(workspaceId, BEN, sort, { afterId, limit });
+
 const messagesOf = (read: Awaited<ReturnType<typeof page>>) =>
   read.items.map((ask) => ask.message);
 
-let first: string;
-let second: string;
-let third: string;
-let fourth: string;
-
-beforeAll(async () => {
-  first = await givenAnAsk('First');
-  second = await givenAnAsk('Second');
-  third = await givenAnAsk('Third');
-  fourth = await givenAnAsk('Fourth');
-});
-
 afterAll(async () => {
   await prismaService.feedback.deleteMany({
-    where: { workspaceId: WORKSPACE_ID },
+    where: { workspaceId: { in: workspacesWritten } },
   });
   await prismaService.feedbackRequest.deleteMany({
     where: { id: { in: requestsWritten } },
@@ -90,22 +89,28 @@ afterAll(async () => {
 
 describe('PrismaFeedbackRequestQuery.waitingAsksFor', () => {
   it('reads newest first, and says another page follows', async () => {
-    const read = await page(null);
+    const { workspaceId } = await fourAsks();
+
+    const read = await page(workspaceId, null);
 
     expect(messagesOf(read)).toEqual(['Fourth', 'Third']);
     expect(read.hasMore).toBe(true);
   });
 
   it('starts after the cursor, and ends on the last page', async () => {
-    const read = await page(third);
+    const { workspaceId, third } = await fourAsks();
+
+    const read = await page(workspaceId, third.askId);
 
     expect(messagesOf(read)).toEqual(['Second', 'First']);
     expect(read.hasMore).toBe(false);
   });
 
   it('reads oldest first when asked, and starts after the cursor in that order', async () => {
-    const read = await page(null, 2, 'OLDEST');
-    const next = await page(second, 2, 'OLDEST');
+    const { workspaceId, second } = await fourAsks();
+
+    const read = await page(workspaceId, null, 'OLDEST');
+    const next = await page(workspaceId, second.askId, 'OLDEST');
 
     expect(messagesOf(read)).toEqual(['First', 'Second']);
     expect(read.hasMore).toBe(true);
@@ -114,24 +119,47 @@ describe('PrismaFeedbackRequestQuery.waitingAsksFor', () => {
   });
 
   it('loses no Ask when the one the cursor names was answered meanwhile', async () => {
-    await benAnswers(third);
+    const { workspaceId, third } = await fourAsks();
+    await third.answer();
 
-    const read = await page(third);
+    const read = await page(workspaceId, third.askId);
 
     expect(messagesOf(read)).toEqual(['Second', 'First']);
   });
 
   it('loses no Ask in oldest first either', async () => {
-    await benAnswers(first);
+    const { workspaceId, first } = await fourAsks();
+    await first.answer();
 
-    const read = await page(first, 2, 'OLDEST');
+    const read = await page(workspaceId, first.askId, 'OLDEST');
 
-    expect(messagesOf(read)).toEqual(['Second', 'Fourth']);
+    expect(messagesOf(read)).toEqual(['Second', 'Third']);
+    expect(read.hasMore).toBe(true);
   });
 
   it('leaves out what was answered', async () => {
-    await benAnswers(fourth);
+    const { workspaceId, fourth, second } = await fourAsks();
+    await fourth.answer();
+    await second.answer();
 
-    expect(messagesOf(await page(null, 10))).toEqual(['Second']);
+    expect(messagesOf(await page(workspaceId, null, 'NEWEST', 10))).toEqual([
+      'Third',
+      'First',
+    ]);
+  });
+
+  it('holds only what waits in this Workspace', async () => {
+    const { workspaceId } = await fourAsks();
+    const another = uuidv7();
+    workspacesWritten.push(another);
+    await givenAnAsk(another, 'Elsewhere');
+
+    expect(messagesOf(await page(another, null))).toEqual(['Elsewhere']);
+    expect(messagesOf(await page(workspaceId, null, 'NEWEST', 10))).toEqual([
+      'Fourth',
+      'Third',
+      'Second',
+      'First',
+    ]);
   });
 });

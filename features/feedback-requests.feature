@@ -69,7 +69,30 @@ Feature: Feedback requests
   @api
   Scenario: Waiting for me refuses an order it does not offer
     When Ben asks for what is waiting in an order that does not exist
-    Then Waiting for me refuses the page size
+    Then Waiting for me refuses the request
+
+  @api
+  Scenario: Waiting for me loses nothing when the Ask it stopped at is answered
+    Given Ann has asked Ben for Feedback: "First."
+    And Ann has asked Ben for Feedback: "Second."
+    And Ann has asked Ben for Feedback: "Third."
+    When Ben reads two of what is waiting, answers the last of them, and reads on
+    Then Ben has read what is waiting: "Third." then "Second." then "First."
+
+  @api
+  Scenario: Waiting for me holds only what waits in this Workspace
+    Given Dan owns a Workspace called "Globex"
+    And Ben is a Member of Dan's Workspace
+    And Dan has asked Ben for Feedback: "In Globex."
+    And Ann has asked Ben for Feedback: "In Acme."
+    When Ben reads what is waiting in Ann's Workspace
+    Then Ben has read what is waiting: "In Acme."
+
+  @api
+  Scenario: Somebody outside a Workspace cannot read what waits in it
+    Given Dan owns a Workspace called "Globex"
+    When Dan signs in and reads what is waiting in Ann's Workspace
+    Then Dan is told that Workspace cannot be found
 
   @api
   Scenario: Waiting for me holds only what still waits on the reader
@@ -83,7 +106,7 @@ Feature: Feedback requests
   @api
   Scenario: Waiting for me refuses a page size it does not offer
     When Ben asks for 101 Asks waiting at a time
-    Then Waiting for me refuses the page size
+    Then Waiting for me refuses the request
 
   @api
   Scenario: A Member who has not been asked has nothing waiting

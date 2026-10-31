@@ -102,6 +102,17 @@ describe('reading the Asks still waiting for me', () => {
     expect(page.nextAfterId).toBeNull();
   });
 
+  it('reads on from an Ask that was answered since', async () => {
+    const { ask, useCase } = setUp();
+    ask('ask-1', BEN, 'PENDING', 1);
+    ask('ask-2', BEN, 'ANSWERED', 2);
+    ask('ask-3', BEN, 'PENDING', 3);
+
+    const page = await read(useCase, 'ask-2');
+
+    expect(page.items.map((item) => item.askId)).toEqual(['ask-1']);
+  });
+
   it('leaves out what was answered and what waits on somebody else', async () => {
     const { ask, useCase } = setUp();
     ask('ask-1', BEN, 'ANSWERED', 1);

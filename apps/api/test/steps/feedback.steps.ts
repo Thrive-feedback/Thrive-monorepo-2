@@ -629,27 +629,44 @@ Then(
 /** What one read of Waiting for me to the end was given, page after page. */
 const waitingToTheEnd = new WeakMap<ThriveWorld, string[]>();
 
+/** One page of Waiting for me, and where the next starts. */
+async function aPageOfWhatIsWaiting(
+  world: ThriveWorld,
+  name: string,
+  workspaceId: string,
+  query: string,
+) {
+  const page = world.succeeded(
+    await world.as(
+      name,
+      'GET',
+      `/v1/workspaces/${workspaceId}/waiting-asks?${query}`,
+    ),
+    `${name} reading a page of Waiting for me`,
+  );
+  const items: { askId: string; message: string }[] = page.body.items;
+  const nextCursor: string | null = page.body.nextCursor;
+  return { items, nextCursor };
+}
+
 async function readsWhatIsWaiting(
   world: ThriveWorld,
   name: string,
+  workspaceId: string,
   order: string,
 ) {
   const messages: string[] = [];
   let cursor: string | null = null;
   do {
     const after: string = cursor === null ? '' : `&cursor=${cursor}`;
-    const page = world.succeeded(
-      await world.as(
-        name,
-        'GET',
-        `/v1/workspaces/${world.workspaceOf(name)}/waiting-asks?limit=2${order}${after}`,
-      ),
-      `${name} reading a page of Waiting for me`,
+    const page = await aPageOfWhatIsWaiting(
+      world,
+      name,
+      workspaceId,
+      `limit=2${order}${after}`,
     );
-    messages.push(
-      ...page.body.items.map((item: { message: string }) => item.message),
-    );
-    cursor = page.body.nextCursor;
+    messages.push(...page.items.map((item) => item.message));
+    cursor = page.nextCursor;
   } while (cursor !== null);
   waitingToTheEnd.set(world, messages);
 }
@@ -657,14 +674,74 @@ async function readsWhatIsWaiting(
 When(
   '{person} reads what is waiting two at a time to the end',
   function (this: ThriveWorld, name: string) {
-    return readsWhatIsWaiting(this, name, '');
+    return readsWhatIsWaiting(this, name, this.workspaceOf(name), '');
   },
 );
 
 When(
   '{person} reads what is waiting oldest first, two at a time to the end',
   function (this: ThriveWorld, name: string) {
-    return readsWhatIsWaiting(this, name, '&sort=OLDEST');
+    return readsWhatIsWaiting(
+      this,
+      name,
+      this.workspaceOf(name),
+      '&sort=OLDEST',
+    );
+  },
+);
+
+When(
+  "{person} reads what is waiting in {person}'s Workspace",
+  function (this: ThriveWorld, name: string, member: string) {
+    return readsWhatIsWaiting(this, name, this.workspaceOf(member), '');
+  },
+);
+
+When(
+  "{person} signs in and reads what is waiting in {person}'s Workspace",
+  async function (this: ThriveWorld, outsider: string, member: string) {
+    if (!this.isSignedIn(outsider)) {
+      await this.signIn(outsider);
+    }
+    await this.as(
+      outsider,
+      'GET',
+      `/v1/workspaces/${this.workspaceOf(member)}/waiting-asks`,
+    );
+  },
+);
+
+When(
+  '{person} reads two of what is waiting, answers the last of them, and reads on',
+  async function (this: ThriveWorld, name: string) {
+    const workspaceId = this.workspaceOf(name);
+    const first = await aPageOfWhatIsWaiting(
+      this,
+      name,
+      workspaceId,
+      'limit=2',
+    );
+    const last = first.items.at(-1);
+    assert.ok(last && first.nextCursor, `${name} has a page to read on from.`);
+    this.succeeded(
+      await this.as(
+        name,
+        'POST',
+        `/v1/workspaces/${workspaceId}/feedback-asks/${last.askId}/answers`,
+        { message: 'It kept moving.' },
+      ),
+      `${name} answering the last Ask of the page`,
+    );
+    const next = await aPageOfWhatIsWaiting(
+      this,
+      name,
+      workspaceId,
+      `limit=2&cursor=${first.nextCursor}`,
+    );
+    waitingToTheEnd.set(
+      this,
+      [...first.items, ...next.items].map((item) => item.message),
+    );
   },
 );
 
@@ -691,6 +768,13 @@ When(
 );
 
 Then(
+  '{person} has read what is waiting: {string}',
+  function (this: ThriveWorld, _name: string, only: string) {
+    assert.deepEqual(waitingToTheEnd.get(this), [only]);
+  },
+);
+
+Then(
   '{person} has read what is waiting: {string} then {string} then {string}',
   function (
     this: ThriveWorld,
@@ -710,6 +794,6 @@ Then(
   },
 );
 
-Then('Waiting for me refuses the page size', function (this: ThriveWorld) {
+Then('Waiting for me refuses the request', function (this: ThriveWorld) {
   this.refusedWith('REQUEST_INVALID');
 });

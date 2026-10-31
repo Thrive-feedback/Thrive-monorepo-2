@@ -5,6 +5,7 @@ import type {
   KudosWorkspaceGoal as KudosWorkspaceGoalRecord,
 } from '@app/infrastructure/database/generated/client';
 import { Prisma } from '@app/infrastructure/database/generated/client';
+import { Logger } from '@nestjs/common';
 import { z } from 'zod';
 import type { Kudos } from '../../domain/entity/kudos.entity';
 import {
@@ -17,6 +18,8 @@ import {
 } from '../../domain/value-object/postcard.vo';
 
 /** The only place that knows both the stored rows and the Kudos entity. */
+
+const logger = new Logger('KudosMapper');
 
 /**
  * The stored shape, read back without the value's limits: a card was valid when it was sent, and a
@@ -41,8 +44,23 @@ const storedKudosCardSchema = z.object({
   ),
 });
 
+/**
+ * A stored card, or `null` when there is none. One that no longer reads, such as an ink since
+ * retired, also reads as none: its Kudos is plain, rather than a page of the list failing.
+ */
 export function toKudosCardSnapshot(stored: unknown): KudosCardSnapshot | null {
-  return stored === null ? null : storedKudosCardSchema.parse(stored);
+  if (stored === null) {
+    return null;
+  }
+  const card = storedKudosCardSchema.safeParse(stored);
+  if (!card.success) {
+    logger.warn({
+      event: 'feedback.kudos_card_unreadable',
+      fields: card.error.issues.map((issue) => issue.path.join('.')),
+    });
+    return null;
+  }
+  return card.data;
 }
 
 /** The audit timestamps are the database's to set. */

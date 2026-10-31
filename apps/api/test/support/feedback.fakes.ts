@@ -342,22 +342,23 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     sort: WaitingAskSort,
     page: CursorPageRequest,
   ): Promise<WaitingAskPageRow> {
-    const waiting = this.asksOf(workspaceId)
-      .filter(
-        (ask) =>
-          ask.giverAccountId === giverAccountId && ask.status === 'PENDING',
-      )
+    const theirs = this.asksOf(workspaceId)
+      .filter((ask) => ask.giverAccountId === giverAccountId)
       .sort(newestFirst);
     if (sort === 'OLDEST') {
-      waiting.reverse();
+      theirs.reverse();
     }
-    const start =
+    // The Ask the cursor names is found among all of them: it may have been answered since.
+    const after =
       page.afterId === null
-        ? 0
-        : waiting.findIndex((ask) => ask.askId === page.afterId) + 1;
+        ? theirs
+        : theirs.slice(
+            theirs.findIndex((ask) => ask.askId === page.afterId) + 1,
+          );
+    const waiting = after.filter((ask) => ask.status === 'PENDING');
     return {
-      items: waiting.slice(start, start + page.limit),
-      hasMore: waiting.length > start + page.limit,
+      items: waiting.slice(0, page.limit),
+      hasMore: waiting.length > page.limit,
     };
   }
 

@@ -30,7 +30,9 @@ the Feedback module, is what holds its rules.**
 - **The inks are the postcard's five and `paper`**, the colour of the card itself, for the template
   dark enough to need it. Which template offers which ink is the web app's to decide.
 - **A stored card is read without those checks**, as ADR 0067 says, so a limit tightened later cannot
-  stop a Kudos being read.
+  stop a Kudos being read. A value that no longer has the card's shape at all, which only a hand edit
+  or a changed shape can leave, reads as no card and logs `feedback.kudos_card_unreadable`, so one bad
+  row costs one card rather than the whole board.
 - **`GET /v1/workspaces/{workspaceId}/kudos` carries `card`.** A Kudos is read by every Member, so its
   card is too, with no rule of its own.
 - **How long the message is decides how large it is drawn, and that is not stored.** `sizeStep` is
