@@ -15,12 +15,14 @@ import {
   type FeedbackWithVisibilityRow,
   type FeedItemPageRow,
   type OpenedRequestRow,
+  type WaitingAskPageRow,
   type WorkspaceFeedPageRow,
 } from '../../application/query-port/feedback-request.query-port';
 import type {
   FeedItemShow,
   PageRequest,
   TagsView,
+  WaitingAskSort,
 } from '../../application/types/feedback-request.types';
 import type { CursorPageRequest } from '../../application/types/kudos.types';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
@@ -38,6 +40,10 @@ const ASKS_IN_ORDER_ASKED = [{ createdAt: 'asc' }, { id: 'asc' }] satisfies {
 /** Newest first across requests: what a person sent or was asked most recently comes up. */
 const NEWEST_FIRST = [{ createdAt: 'desc' }, { id: 'desc' }] satisfies {
   readonly [key: string]: 'desc';
+}[];
+
+const OLDEST_FIRST = [{ createdAt: 'asc' }, { id: 'asc' }] satisfies {
+  readonly [key: string]: 'asc';
 }[];
 
 /** What some sent text was bound to, in a fixed order so it reads the same on every open. */
@@ -305,6 +311,39 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     return { items: records.map(toFeedbackAskRow), total };
   }
 
+  async waitingAsksFor(
+    workspaceId: string,
+    giverAccountId: string,
+    sort: WaitingAskSort,
+    page: CursorPageRequest,
+  ): Promise<WaitingAskPageRow> {
+    // One row more than asked for tells whether another page follows (ADR 0059). One more again is
+    // for the Ask the cursor names, which is only in the read while it is still waiting. Answered,
+    // it has left, so a `skip: 1` would pass over the next Ask instead of it.
+    const records =
+      await this.prismaTransactionContext.client.feedbackAsk.findMany({
+        where: {
+          giverAccountId,
+          status: 'PENDING',
+          feedbackRequest: { workspaceId },
+        },
+        orderBy: sort === 'OLDEST' ? OLDEST_FIRST : NEWEST_FIRST,
+        take: page.limit + 2,
+        ...(page.afterId === null ? {} : { cursor: { id: page.afterId } }),
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
+          feedbackRequest: REQUEST_OF_ASK,
+        },
+      });
+    const after = records.filter((record) => record.id !== page.afterId);
+    return {
+      items: after.slice(0, page.limit).map(toFeedbackAskRow),
+      hasMore: after.length > page.limit,
+    };
+  }
+
   async receivedBy(
     workspaceId: string,
     receiverAccountId: string,
@@ -550,7 +589,11 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
           status: true,
           createdAt: true,
           feedbackRequest: {
-            select: { ...REQUEST_OF_ASK.select, visibility: true },
+            select: {
+              ...REQUEST_OF_ASK.select,
+              visibility: true,
+              postcard: true,
+            },
           },
         },
       });
@@ -558,6 +601,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       ? {
           ...toFeedbackAskRow(record),
           visibility: record.feedbackRequest.visibility,
+          postcard: toPostcardSnapshot(record.feedbackRequest.postcard),
         }
       : null;
   }

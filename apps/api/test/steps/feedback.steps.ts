@@ -625,3 +625,91 @@ Then(
     assert.deepEqual(listed.body.items, []);
   },
 );
+
+/** What one read of Waiting for me to the end was given, page after page. */
+const waitingToTheEnd = new WeakMap<ThriveWorld, string[]>();
+
+async function readsWhatIsWaiting(
+  world: ThriveWorld,
+  name: string,
+  order: string,
+) {
+  const messages: string[] = [];
+  let cursor: string | null = null;
+  do {
+    const after: string = cursor === null ? '' : `&cursor=${cursor}`;
+    const page = world.succeeded(
+      await world.as(
+        name,
+        'GET',
+        `/v1/workspaces/${world.workspaceOf(name)}/waiting-asks?limit=2${order}${after}`,
+      ),
+      `${name} reading a page of Waiting for me`,
+    );
+    messages.push(
+      ...page.body.items.map((item: { message: string }) => item.message),
+    );
+    cursor = page.body.nextCursor;
+  } while (cursor !== null);
+  waitingToTheEnd.set(world, messages);
+}
+
+When(
+  '{person} reads what is waiting two at a time to the end',
+  function (this: ThriveWorld, name: string) {
+    return readsWhatIsWaiting(this, name, '');
+  },
+);
+
+When(
+  '{person} reads what is waiting oldest first, two at a time to the end',
+  function (this: ThriveWorld, name: string) {
+    return readsWhatIsWaiting(this, name, '&sort=OLDEST');
+  },
+);
+
+When(
+  '{person} asks for what is waiting in an order that does not exist',
+  async function (this: ThriveWorld, name: string) {
+    await this.as(
+      name,
+      'GET',
+      `/v1/workspaces/${this.workspaceOf(name)}/waiting-asks?sort=RANDOM`,
+    );
+  },
+);
+
+When(
+  '{person} asks for {int} Asks waiting at a time',
+  async function (this: ThriveWorld, name: string, limit: number) {
+    await this.as(
+      name,
+      'GET',
+      `/v1/workspaces/${this.workspaceOf(name)}/waiting-asks?limit=${limit}`,
+    );
+  },
+);
+
+Then(
+  '{person} has read what is waiting: {string} then {string} then {string}',
+  function (
+    this: ThriveWorld,
+    _name: string,
+    first: string,
+    second: string,
+    third: string,
+  ) {
+    assert.deepEqual(waitingToTheEnd.get(this), [first, second, third]);
+  },
+);
+
+Then(
+  '{person} has nothing waiting',
+  function (this: ThriveWorld, _name: string) {
+    assert.deepEqual(waitingToTheEnd.get(this), []);
+  },
+);
+
+Then('Waiting for me refuses the page size', function (this: ThriveWorld) {
+  this.refusedWith('REQUEST_INVALID');
+});

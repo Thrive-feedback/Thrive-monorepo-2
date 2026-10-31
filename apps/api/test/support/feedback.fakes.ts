@@ -13,6 +13,7 @@ import type {
   FeedItemAskRow,
   FeedItemPageRow,
   OpenedRequestRow,
+  WaitingAskPageRow,
   WorkspaceFeedPageRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
@@ -25,6 +26,7 @@ import { TagsService } from '@app/modules/feedback/application/service/tags.serv
 import type {
   FeedItemShow,
   PageRequest,
+  WaitingAskSort,
 } from '@app/modules/feedback/application/types/feedback-request.types';
 import type { CursorPageRequest } from '@app/modules/feedback/application/types/kudos.types';
 import type { Feedback } from '@app/modules/feedback/domain/entity/feedback.entity';
@@ -334,6 +336,31 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     return { items: pageOf(waiting, page), total: waiting.length };
   }
 
+  async waitingAsksFor(
+    workspaceId: string,
+    giverAccountId: string,
+    sort: WaitingAskSort,
+    page: CursorPageRequest,
+  ): Promise<WaitingAskPageRow> {
+    const waiting = this.asksOf(workspaceId)
+      .filter(
+        (ask) =>
+          ask.giverAccountId === giverAccountId && ask.status === 'PENDING',
+      )
+      .sort(newestFirst);
+    if (sort === 'OLDEST') {
+      waiting.reverse();
+    }
+    const start =
+      page.afterId === null
+        ? 0
+        : waiting.findIndex((ask) => ask.askId === page.afterId) + 1;
+    return {
+      items: waiting.slice(start, start + page.limit),
+      hasMore: waiting.length > start + page.limit,
+    };
+  }
+
   /** Single pieces of Feedback with the Visibility of their request, as the test writes them. */
   readonly feedbackWithVisibility: (FeedbackWithVisibilityRow & {
     readonly workspaceId: string;
@@ -535,6 +562,7 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
           status: ask.status,
           createdAt: row.createdAt,
           visibility: storedVisibility(row.visibility),
+          postcard: row.postcard,
         })),
       );
   }

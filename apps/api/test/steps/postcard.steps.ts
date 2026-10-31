@@ -109,6 +109,11 @@ Then(
   },
 );
 
+Then('{person} sees no postcard', function (this: ThriveWorld, name: string) {
+  assert.equal(this.lastResponse?.status, 200, `${name} opening it`);
+  assert.equal(this.lastResponse?.body.postcard, null);
+});
+
 Given(
   '{person} has answered on the postcard: {string}',
   async function (this: ThriveWorld, giver: string, message: string) {

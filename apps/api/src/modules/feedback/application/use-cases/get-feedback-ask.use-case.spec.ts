@@ -5,6 +5,7 @@ import {
   NO_TAGS,
 } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
+import type { PostcardSnapshot } from '../../domain/value-object/postcard.vo';
 import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { PeopleService } from '../service/people.service';
@@ -19,14 +20,17 @@ const BEN = 'account-ben';
 const CARA = 'account-cara';
 const CREATED_AT = new Date('2026-10-11T03:00:00.000Z');
 
-function setUp(visibility: VisibilityValue = 'ONLY_ME') {
+function setUp(
+  visibility: VisibilityValue = 'ONLY_ME',
+  postcard: PostcardSnapshot | null = null,
+) {
   const feedbackRequestQuery = new FakeFeedbackRequestQuery();
   feedbackRequestQuery.rows.push({
     id: REQUEST_ID,
     workspaceId: WORKSPACE_ID,
     requesterAccountId: ANA,
     message: 'my presentation skills',
-    postcard: null,
+    postcard,
     tags: NO_TAGS,
     visibility,
     selectedAccountIds: [],
@@ -72,6 +76,7 @@ describe('reading one Ask waiting for me', () => {
       status: 'PENDING',
       createdAt: CREATED_AT,
       onWorkspaceFeed: false,
+      postcard: null,
     });
   });
 
@@ -97,6 +102,25 @@ describe('reading one Ask waiting for me', () => {
     });
 
     expect(ask.onWorkspaceFeed).toBe(false);
+  });
+
+  it('carries the card the request was written on, for the answer to go on', async () => {
+    const card: PostcardSnapshot = {
+      templateKey: 'system/postcard_template_2',
+      tone: 'sage',
+      textStyle: { font: 'classic', sizeStep: 2, align: 'left', ink: 'navy' },
+      stickers: [],
+      stampKey: 'system/stamp_flower',
+    };
+    const { useCase } = setUp('ONLY_ME', card);
+
+    const ask = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      giverAccountId: BEN,
+      askId: ASK_FOR_BEN,
+    });
+
+    expect(ask.postcard).toEqual(card);
   });
 
   it('shows a Requester who has since been Deactivated as inactive', async () => {

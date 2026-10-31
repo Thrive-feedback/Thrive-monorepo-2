@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import {
-  AskStatus,
-  type AskStatusValue,
-} from '../../domain/value-object/ask-status.vo';
+import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
+import { toMyAskView } from '../service/my-ask-view.mapper';
 import { PeopleService } from '../service/people.service';
 import type {
   MyAskListView,
@@ -45,19 +43,7 @@ export class ListMyFeedbackAsksUseCase {
     );
 
     return {
-      items: asks.items.map((ask) => ({
-        askId: ask.askId,
-        feedbackRequestId: ask.feedbackRequestId,
-        message: ask.message,
-        tags: ask.tags,
-        requesterAccountId: ask.requesterAccountId,
-        // The Requester's Account cascades away with them, as a Giver's does.
-        requesterName: people.nameOf(ask.requesterAccountId),
-        requesterPhotoUrl: people.photoOf(ask.requesterAccountId),
-        requesterStatus: people.statusOf(ask.requesterAccountId),
-        status: AskStatus.of(ask.status).toString(),
-        createdAt: ask.createdAt,
-      })),
+      items: asks.items.map((ask) => toMyAskView(ask, people)),
       total: asks.total,
     };
   }

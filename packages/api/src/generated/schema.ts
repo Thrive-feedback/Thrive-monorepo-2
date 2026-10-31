@@ -501,6 +501,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/waiting-asks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Asks still waiting for the caller */
+        get: operations["WaitingAsksController_listWaitingAsks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspaceId}/kudos": {
         parameters: {
             query?: never;
@@ -1219,6 +1236,30 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             onWorkspaceFeed: boolean;
+            postcard: {
+                templateKey: string;
+                /** @enum {string} */
+                tone: "cream" | "sage" | "blush";
+                textStyle: {
+                    /** @enum {string} */
+                    font: "modern" | "classic" | "signature";
+                    sizeStep: number;
+                    /** @enum {string} */
+                    align: "left" | "center" | "right";
+                    /** @enum {string} */
+                    ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                };
+                stickers: {
+                    stickerKey: string;
+                    /** @enum {string} */
+                    side: "front" | "back";
+                    x: number;
+                    y: number;
+                    scale: number;
+                    rotation: number;
+                }[];
+                stampKey: string | null;
+            } | null;
         };
         AnswerFeedbackAskRequestDto: {
             message: string;
@@ -1683,6 +1724,38 @@ export interface components {
                         } | null;
                     }[];
                 } | null;
+            }[];
+            nextCursor: string | null;
+        };
+        ListWaitingAsksResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                askId: string;
+                /** Format: uuid */
+                feedbackRequestId: string;
+                message: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                requester: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                /** @enum {string} */
+                status: "PENDING" | "ANSWERED";
+                /** Format: date-time */
+                createdAt: string;
             }[];
             nextCursor: string | null;
         };
@@ -3214,6 +3287,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListFeedItemsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WaitingAsksController_listWaitingAsks: {
+        parameters: {
+            query?: {
+                sort?: "NEWEST" | "OLDEST";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListWaitingAsksResponseDto_Output"];
                 };
             };
             /** @description REQUEST_INVALID */

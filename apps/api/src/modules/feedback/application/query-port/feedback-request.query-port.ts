@@ -11,6 +11,7 @@ import type {
   FeedItemVisibility,
   PageRequest,
   TagsView,
+  WaitingAskSort,
 } from '../types/feedback-request.types';
 import type { CursorPageRequest } from '../types/kudos.types';
 
@@ -55,14 +56,23 @@ export interface FeedbackAskRow {
 /**
  * One Ask with the Visibility its request chose, as the Giver opening it reads it: enough to tell
  * them whether their answer goes on the Workspace feed, and nothing about who else may read it.
+ * The card is the one the answer is written on.
  */
 export interface FeedbackAskWithVisibilityRow extends FeedbackAskRow {
   readonly visibility: VisibilityValue;
+  /** How the request looks, or `null` when it was not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
 }
 
 export interface FeedbackAskPageRow {
   readonly items: readonly FeedbackAskRow[];
   readonly total: number;
+}
+
+/** One page of the Asks waiting on a Member, and whether another follows. */
+export interface WaitingAskPageRow {
+  readonly items: readonly FeedbackAskRow[];
+  readonly hasMore: boolean;
 }
 
 export interface FeedbackAnswerRow {
@@ -247,6 +257,17 @@ export abstract class FeedbackRequestQuery {
     status: AskStatusValue,
     page: PageRequest,
   ): Promise<FeedbackAskPageRow>;
+
+  /**
+   * The Asks still waiting on one Member, in the order asked for, paged by cursor (ADR 0059). An
+   * Ask leaves this list when it is answered, so the Ask a cursor names may no longer be in it.
+   */
+  abstract waitingAsksFor(
+    workspaceId: string,
+    giverAccountId: string,
+    sort: WaitingAskSort,
+    page: CursorPageRequest,
+  ): Promise<WaitingAskPageRow>;
 
   /**
    * The Feedback written to one Member in one Workspace — as its only Receiver or one of several

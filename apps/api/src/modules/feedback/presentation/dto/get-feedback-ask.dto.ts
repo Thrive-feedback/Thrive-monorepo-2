@@ -2,6 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
+import { postcardSchema } from './postcard.dto';
 import { tagsSchema } from './tags.dto';
 
 /**
@@ -40,6 +41,8 @@ export const feedbackAskSchema = z.object({
  */
 export const getFeedbackAskResponseSchema = feedbackAskSchema.extend({
   onWorkspaceFeed: z.boolean(),
+  /** The card the answer is written on, or `null` when the request was not on a postcard. */
+  postcard: postcardSchema.nullable(),
 });
 export class GetFeedbackAskResponseDto extends createZodDto(
   getFeedbackAskResponseSchema,
