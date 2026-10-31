@@ -1,6 +1,9 @@
 import type { FeedbackOrigin } from '../../domain/entity/feedback.entity';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
-import type { PostcardSnapshot } from '../../domain/value-object/postcard.vo';
+import type {
+  AnswerPostcardSnapshot,
+  PostcardSnapshot,
+} from '../../domain/value-object/postcard.vo';
 import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
 
 /** What a collection route asks for. Declared here, not borrowed from another module. */
@@ -190,8 +193,31 @@ export interface FeedbackView {
 
 /** One piece of Feedback opened on its own, with the card it was written on. */
 export interface OpenedFeedbackView extends FeedbackView {
-  /** How it looks, or `null` when it was not written on a postcard. */
+  /** How it looks, or `null` when it was not written on a postcard, or is an answer. */
   readonly postcard: PostcardSnapshot | null;
+  /** The card an answer is on, or `null` for Feedback given without being asked. */
+  readonly request: OpenedRequestView | null;
+}
+
+/** One answer on a request's card. */
+export interface OpenedAnswerView {
+  readonly id: string;
+  readonly giver: PersonView;
+  readonly message: string;
+  readonly tags: TagsView;
+  /** What it decided about how it looks, or `null` when it was not written on the card. */
+  readonly postcard: AnswerPostcardSnapshot | null;
+  readonly answeredAt: Date;
+}
+
+/** A request's card, with every answer this reader may read, in the order they were asked. */
+export interface OpenedRequestView {
+  readonly message: string;
+  readonly tags: TagsView;
+  readonly requester: PersonView;
+  /** How the card looks, or `null` when the request was not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
+  readonly answers: readonly OpenedAnswerView[];
 }
 
 /** The Feedback written to one Member, newest first. */

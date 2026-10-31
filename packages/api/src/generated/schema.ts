@@ -407,7 +407,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Answer an Ask waiting for the caller, in one free-text answer */
+        /** Answer an Ask waiting for the caller, in one free-text answer, on its postcard or not */
         post: operations["FeedbackAskController_answerFeedbackAsk"];
         delete?: never;
         options?: never;
@@ -1222,6 +1222,26 @@ export interface components {
         };
         AnswerFeedbackAskRequestDto: {
             message: string;
+            postcard?: {
+                textStyle: {
+                    /** @enum {string} */
+                    font: "modern" | "classic" | "signature";
+                    sizeStep: number;
+                    /** @enum {string} */
+                    align: "left" | "center" | "right";
+                    /** @enum {string} */
+                    ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                };
+                stickers: {
+                    stickerKey: string;
+                    /** @enum {string} */
+                    side: "front" | "back";
+                    x: number;
+                    y: number;
+                    scale: number;
+                    rotation: number;
+                }[];
+            };
         };
         AnswerFeedbackAskResponseDto_Output: {
             /** Format: uuid */
@@ -1305,6 +1325,8 @@ export interface components {
         };
         GetFeedbackResponseDto_Output: {
             /** Format: uuid */
+            readerAccountId: string;
+            /** Format: uuid */
             id: string;
             /** @enum {string} */
             origin: "REQUESTED" | "OFFERED";
@@ -1364,6 +1386,96 @@ export interface components {
             };
             /** Format: date-time */
             createdAt: string;
+            request: {
+                message: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                requester: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                postcard: {
+                    templateKey: string;
+                    /** @enum {string} */
+                    tone: "cream" | "sage" | "blush";
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        /** @enum {string} */
+                        side: "front" | "back";
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                    stampKey: string | null;
+                } | null;
+                answers: {
+                    message: string;
+                    tags: {
+                        workspaceGoals: {
+                            name: string;
+                        }[];
+                        mentions: {
+                            slug: string;
+                            displayName: string;
+                        }[];
+                    };
+                    /** Format: date-time */
+                    answeredAt: string;
+                    /** Format: uuid */
+                    id: string;
+                    giver: {
+                        /** Format: uuid */
+                        accountId: string;
+                        name: string | null;
+                        /** Format: uri */
+                        photoUrl: string | null;
+                        /** @enum {string} */
+                        status: "ACTIVE" | "DEACTIVATED";
+                    };
+                    postcard: {
+                        textStyle: {
+                            /** @enum {string} */
+                            font: "modern" | "classic" | "signature";
+                            sizeStep: number;
+                            /** @enum {string} */
+                            align: "left" | "center" | "right";
+                            /** @enum {string} */
+                            ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                        };
+                        stickers: {
+                            stickerKey: string;
+                            /** @enum {string} */
+                            side: "front" | "back";
+                            x: number;
+                            y: number;
+                            scale: number;
+                            rotation: number;
+                        }[];
+                    } | null;
+                }[];
+            } | null;
         };
         ListSharedFeedbackResponseDto_Output: {
             items: {
@@ -2809,7 +2921,7 @@ export interface operations {
                     "application/json": components["schemas"]["AnswerFeedbackAskResponseDto_Output"];
                 };
             };
-            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY or FEEDBACK_MESSAGE_TOO_LONG */
+            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG or POSTCARD_INVALID */
             400: {
                 headers: {
                     [name: string]: unknown;

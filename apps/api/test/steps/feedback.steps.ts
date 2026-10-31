@@ -35,9 +35,10 @@ function lastSucceeded(world: ThriveWorld, what: string) {
   return world.succeeded(world.lastResponse, what);
 }
 
-function openFeedback(world: ThriveWorld, name: string) {
-  assert.ok(world.feedback, 'No Feedback was written in this scenario.');
-  const { id, workspaceId } = world.feedback;
+function openFeedback(world: ThriveWorld, name: string, giver: string) {
+  const written = world.feedbackBy.get(giver);
+  assert.ok(written, `${giver} wrote no Feedback in this scenario.`);
+  const { id, workspaceId } = written;
   return world.as(name, 'GET', `/v1/workspaces/${workspaceId}/feedback/${id}`);
 }
 
@@ -451,8 +452,8 @@ Then(
 
 When(
   '{person} opens the Feedback {person} wrote',
-  async function (this: ThriveWorld, name: string, _giver: string) {
-    await openFeedback(this, name);
+  async function (this: ThriveWorld, name: string, giver: string) {
+    await openFeedback(this, name, giver);
   },
 );
 

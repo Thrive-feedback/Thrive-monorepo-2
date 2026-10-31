@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { PostcardInvalidError } from '../feedback-request.errors';
 import {
+  AnswerPostcard,
   Postcard,
   type PostcardSnapshot,
   type PostcardStickerSnapshot,
@@ -111,5 +112,40 @@ describe('a postcard', () => {
     };
 
     expect(Postcard.restore(stored).snapshot()).toEqual(stored);
+  });
+});
+
+describe('how an answer looks', () => {
+  const look = {
+    textStyle: { font: 'signature', sizeStep: 2, align: 'left', ink: 'navy' },
+    stickers: [{ ...STICKER, side: 'back' }],
+  } as const;
+
+  it('keeps what the Giver chose', () => {
+    expect(AnswerPostcard.of(look).snapshot()).toEqual(look);
+  });
+
+  it('refuses a sticker on the front, which belongs to whoever asked', () => {
+    expect(() =>
+      AnswerPostcard.of({ ...look, stickers: [{ ...STICKER, side: 'front' }] }),
+    ).toThrow(PostcardInvalidError);
+  });
+
+  it('refuses a fourth sticker', () => {
+    expect(() =>
+      AnswerPostcard.of({
+        ...look,
+        stickers: Array.from({ length: 4 }, () => look.stickers[0]),
+      }),
+    ).toThrow(PostcardInvalidError);
+  });
+
+  it('refuses a size past the last step', () => {
+    expect(() =>
+      AnswerPostcard.of({
+        ...look,
+        textStyle: { ...look.textStyle, sizeStep: 5 },
+      }),
+    ).toThrow(PostcardInvalidError);
   });
 });

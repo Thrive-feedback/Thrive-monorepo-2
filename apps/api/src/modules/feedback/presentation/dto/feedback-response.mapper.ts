@@ -3,7 +3,10 @@ import type {
   PersonView,
   TagsView,
 } from '../../application/types/feedback-request.types';
-import type { PostcardSnapshot } from '../../domain/value-object/postcard.vo';
+import type {
+  AnswerPostcardSnapshot,
+  PostcardSnapshot,
+} from '../../domain/value-object/postcard.vo';
 
 /** One person a piece of Feedback names, on the wire. */
 export function toPersonResponse(person: PersonView) {
@@ -28,26 +31,40 @@ export function toTagsResponse(tags: TagsView) {
   };
 }
 
+/** How the words on a card are set and the stickers on it, on the wire. */
+function toWritingResponse(postcard: AnswerPostcardSnapshot) {
+  return {
+    textStyle: {
+      font: postcard.textStyle.font,
+      sizeStep: postcard.textStyle.sizeStep,
+      align: postcard.textStyle.align,
+      ink: postcard.textStyle.ink,
+    },
+    stickers: postcard.stickers.map((sticker) => ({
+      stickerKey: sticker.stickerKey,
+      side: sticker.side,
+      x: sticker.x,
+      y: sticker.y,
+      scale: sticker.scale,
+      rotation: sticker.rotation,
+    })),
+  };
+}
+
+/** What an answer decided about how it looks, on the wire. */
+export function toAnswerPostcardResponse(
+  postcard: AnswerPostcardSnapshot | null,
+) {
+  return postcard && toWritingResponse(postcard);
+}
+
 /** How a card looks, on the wire. `null` for what was not written on a postcard. */
 export function toPostcardResponse(postcard: PostcardSnapshot | null) {
   return (
     postcard && {
+      ...toWritingResponse(postcard),
       templateKey: postcard.templateKey,
       tone: postcard.tone,
-      textStyle: {
-        font: postcard.textStyle.font,
-        sizeStep: postcard.textStyle.sizeStep,
-        align: postcard.textStyle.align,
-        ink: postcard.textStyle.ink,
-      },
-      stickers: postcard.stickers.map((sticker) => ({
-        stickerKey: sticker.stickerKey,
-        side: sticker.side,
-        x: sticker.x,
-        y: sticker.y,
-        scale: sticker.scale,
-        rotation: sticker.rotation,
-      })),
       stampKey: postcard.stampKey,
     }
   );

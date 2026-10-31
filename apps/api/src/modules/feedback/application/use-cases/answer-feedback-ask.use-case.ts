@@ -5,6 +5,10 @@ import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable, Logger } from '@nestjs/common';
 import { FeedbackRequestRepository } from '../../domain/repository/feedback-request-repository.port';
 import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
+import {
+  AnswerPostcard,
+  type AnswerPostcardSnapshot,
+} from '../../domain/value-object/postcard.vo';
 import { isEveryone } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { TagsService } from '../service/tags.service';
@@ -16,6 +20,8 @@ export interface AnswerFeedbackAskInput {
   readonly giverAccountId: string;
   readonly askId: string;
   readonly message: string;
+  /** How it looks, when it was written on the Ask's postcard. */
+  readonly postcard?: AnswerPostcardSnapshot;
 }
 
 export interface AnswerFeedbackAskResult {
@@ -51,6 +57,7 @@ export class AnswerFeedbackAskUseCase {
     input: AnswerFeedbackAskInput,
   ): Promise<AnswerFeedbackAskResult> {
     const message = FeedbackMessage.of(input.message);
+    const postcard = input.postcard ? AnswerPostcard.of(input.postcard) : null;
     // Only what the Giver wrote: the Request message has its own, which the answer never takes.
     const tags = await this.tagsService.boundIn(
       input.workspaceId,
@@ -72,6 +79,7 @@ export class AnswerFeedbackAskUseCase {
         feedbackId: this.idGenerator.next(),
         message,
         tags,
+        postcard,
       });
       // The load already matched the Ask to this Giver, so the aggregate not holding it means
       // it was removed between the two — the same answer as never having had it.

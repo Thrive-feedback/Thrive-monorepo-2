@@ -12,6 +12,7 @@ import type {
   FeedbackWithVisibilityRow,
   FeedItemAskRow,
   FeedItemPageRow,
+  OpenedRequestRow,
   WorkspaceFeedPageRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
@@ -345,6 +346,22 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     return (
       this.feedbackWithVisibility.find(
         (row) => row.id === feedbackId && row.workspaceId === workspaceId,
+      ) ?? null
+    );
+  }
+
+  readonly openedRequests: (OpenedRequestRow & {
+    readonly id: string;
+    readonly workspaceId: string;
+  })[] = [];
+
+  async openedRequest(
+    workspaceId: string,
+    requestId: string,
+  ): Promise<OpenedRequestRow | null> {
+    return (
+      this.openedRequests.find(
+        (row) => row.id === requestId && row.workspaceId === workspaceId,
       ) ?? null
     );
   }

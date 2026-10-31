@@ -14,6 +14,7 @@ import {
   type FeedbackWithPeopleRow,
   type FeedbackWithVisibilityRow,
   type FeedItemPageRow,
+  type OpenedRequestRow,
   type WorkspaceFeedPageRow,
 } from '../../application/query-port/feedback-request.query-port';
 import type {
@@ -23,7 +24,11 @@ import type {
 } from '../../application/types/feedback-request.types';
 import type { CursorPageRequest } from '../../application/types/kudos.types';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
-import { toPostcardSnapshot } from '../mapper/postcard.mapper';
+import {
+  toAnswerPostcardSnapshot,
+  toFeedbackPostcardSnapshot,
+  toPostcardSnapshot,
+} from '../mapper/postcard.mapper';
 
 /** Oldest first inside one request: the order the Members were asked in. */
 const ASKS_IN_ORDER_ASKED = [{ createdAt: 'asc' }, { id: 'asc' }] satisfies {
@@ -115,7 +120,8 @@ const WORKSPACE_FEED_FIELDS = {
 /**
  * A piece on Home with its Visibility and, through the Ask it answers, the question, every Ask and
  * every answer. Nested for the reason the feed's is. The other answers need no Visibility of their
- * own: each took the request's, so whoever may read this one may read them (brain `ADR-0050`).
+ * own here: each took the request's, and Only me never reaches Home, so whoever reads this one on
+ * Home may read them (brain `ADR-0050`).
  */
 const FEED_ITEM_FIELDS = {
   ...FEEDBACK_WITH_PEOPLE_FIELDS,
@@ -136,6 +142,31 @@ const FEED_ITEM_FIELDS = {
               },
             },
           },
+          ...TAGS_FIELDS,
+        },
+      },
+    },
+  },
+} as const;
+
+/** A request's card and, through its Asks, every answer, each with its own Visibility. */
+const OPENED_REQUEST_FIELDS = {
+  message: true,
+  requesterAccountId: true,
+  postcard: true,
+  ...TAGS_FIELDS,
+  asks: {
+    orderBy: ASKS_IN_ORDER_ASKED,
+    select: {
+      giverAccountId: true,
+      feedback: {
+        select: {
+          id: true,
+          message: true,
+          postcard: true,
+          createdAt: true,
+          visibility: true,
+          selectedPeople: SELECTED_PEOPLE_IN_ORDER,
           ...TAGS_FIELDS,
         },
       },
@@ -454,12 +485,50 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       giverAccountId: record.giverAccountId,
       receiverAccountIds: accountIdsOf(record.receivers),
       message: record.message,
-      postcard: toPostcardSnapshot(record.postcard),
+      postcard: toFeedbackPostcardSnapshot(record.origin, record.postcard),
       tags: tagsOf(record),
       createdAt: record.createdAt,
       visibility: record.visibility,
       selectedAccountIds: record.selectedPeople.map(
         (person) => person.accountId,
+      ),
+    };
+  }
+
+  async openedRequest(
+    workspaceId: string,
+    requestId: string,
+  ): Promise<OpenedRequestRow | null> {
+    const record =
+      await this.prismaTransactionContext.client.feedbackRequest.findFirst({
+        where: { id: requestId, workspaceId },
+        select: OPENED_REQUEST_FIELDS,
+      });
+    if (!record) {
+      return null;
+    }
+    return {
+      message: record.message,
+      tags: tagsOf(record),
+      requesterAccountId: record.requesterAccountId,
+      postcard: toPostcardSnapshot(record.postcard),
+      answers: record.asks.flatMap(({ giverAccountId, feedback }) =>
+        feedback
+          ? [
+              {
+                id: feedback.id,
+                giverAccountId,
+                message: feedback.message,
+                tags: tagsOf(feedback),
+                postcard: toAnswerPostcardSnapshot(feedback.postcard),
+                answeredAt: feedback.createdAt,
+                visibility: feedback.visibility,
+                selectedAccountIds: feedback.selectedPeople.map(
+                  (person) => person.accountId,
+                ),
+              },
+            ]
+          : [],
       ),
     };
   }
