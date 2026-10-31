@@ -37,12 +37,13 @@ const TEAMMATES: readonly Teammate[] = [
 function dialog(props: Partial<KudosDialogProps> = {}) {
   return (
     <KudosDialog
-      title="Give kudos"
       teammates={TEAMMATES}
       workspaceGoals={['Ownership']}
       open
       onOpenChange={vi.fn()}
       onSend={vi.fn().mockResolvedValue(true)}
+      onGoToBoard={vi.fn()}
+      onBackToHome={vi.fn()}
       {...props}
     />
   );
@@ -350,22 +351,30 @@ describe('KudosDialog', () => {
     expect(onOpenChange).not.toHaveBeenCalled();
   });
 
-  it('offers the Kudos board first, which cannot be taken until it exists', async () => {
+  it('offers the Kudos board first, and goes there when pressed', async () => {
     const user = userEvent.setup();
-    render(dialog());
+    const onGoToBoard = vi.fn();
+    render(dialog({ onGoToBoard }));
 
     await write(user, '@mali thank you.');
     await user.click(sendButton());
-
-    expect(
+    await user.click(
       await screen.findByRole('button', { name: 'Go to Kudos board' }),
-    ).toBeDisabled();
+    );
+
+    expect(onGoToBoard).toHaveBeenCalledOnce();
   });
 
-  it('closes when the Giver goes back to Home', async () => {
+  it('opens holding what was typed before, as much of it as a Kudos can', async () => {
+    render(dialog({ defaultMessage: 'a'.repeat(300) }));
+
+    expect(await screen.findByRole('textbox')).toHaveValue('a'.repeat(280));
+  });
+
+  it('hands going back to Home to the caller, which may be leaving the page too', async () => {
     const user = userEvent.setup();
-    const onOpenChange = vi.fn();
-    render(dialog({ onOpenChange }));
+    const onBackToHome = vi.fn();
+    render(dialog({ onBackToHome }));
     await write(user, '@mali thank you.');
     await user.click(sendButton());
 
@@ -373,20 +382,20 @@ describe('KudosDialog', () => {
       await screen.findByRole('button', { name: 'Back to home' }),
     );
 
-    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onBackToHome).toHaveBeenCalledOnce();
   });
 
   it('goes back to Home on Escape, with nothing to ask once the card has gone', async () => {
     const user = userEvent.setup();
-    const onOpenChange = vi.fn();
-    render(dialog({ onOpenChange }));
+    const onBackToHome = vi.fn();
+    render(dialog({ onBackToHome }));
     await write(user, '@mali thank you.');
     await user.click(sendButton());
     await screen.findByRole('button', { name: 'Back to home' });
 
     await user.keyboard('{Escape}');
 
-    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onBackToHome).toHaveBeenCalledOnce();
     expect(screen.queryByText('Close without sending?')).toBeNull();
   });
 

@@ -76,7 +76,7 @@ describe('BrandNewSidebar', () => {
     );
   });
 
-  it('marks Home as the open page, and leads to Waiting for me and nowhere else yet', async () => {
+  it('marks Home as the open page, and leads to Waiting for me and the Kudos board', async () => {
     const nav = await draw(0);
 
     expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute(
@@ -90,7 +90,10 @@ describe('BrandNewSidebar', () => {
     expect(
       within(nav).getByRole('link', { name: 'Waiting for me' }),
     ).toHaveAttribute('href', ROUTES.brandNewWaiting);
-    expect(within(nav).getAllByRole('link')).toHaveLength(2);
+    expect(
+      within(nav).getByRole('link', { name: 'Kudos board' }),
+    ).toHaveAttribute('href', ROUTES.brandNewKudos);
+    expect(within(nav).getAllByRole('link')).toHaveLength(3);
     for (const button of within(nav).getAllByRole('button')) {
       expect(button).toHaveAttribute('aria-disabled', 'true');
     }

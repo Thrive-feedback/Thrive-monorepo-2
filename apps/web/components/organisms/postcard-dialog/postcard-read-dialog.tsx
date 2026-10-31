@@ -56,7 +56,7 @@ export function PostcardReadDialog({
   open,
   onOpenChange,
 }: PostcardReadDialogProps) {
-  const { noteOpener, giveFocusBack } = usePostcardOpener();
+  const { noteOpener, handleCloseAutoFocus } = usePostcardOpener();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -64,7 +64,7 @@ export function PostcardReadDialog({
         hasCloseButton={false}
         aria-describedby={undefined}
         onOpenAutoFocus={noteOpener}
-        onCloseAutoFocus={giveFocusBack}
+        onCloseAutoFocus={handleCloseAutoFocus}
         overlayClassName={styles.scrim}
         className={POSTCARD_SCREEN}
       >

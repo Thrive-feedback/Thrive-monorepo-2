@@ -2,20 +2,13 @@
 
 import { useRef, useState } from 'react';
 import {
-  ComposePostcardDialog,
-  warmPostcardDialog,
-} from '@/app/(signed-in)/(brand-new)/_components/compose-postcard-dialog';
-import {
-  FeedComposer,
-  type FeedComposerChoice,
-} from '@/components/organisms/feed-composer';
+  ComposeCards,
+  useComposeCards,
+  warmComposeCards,
+} from '@/app/(signed-in)/(brand-new)/_components/compose-cards';
+import { FeedComposer } from '@/components/organisms/feed-composer/feed-composer';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
-
-const TITLES: Readonly<Record<FeedComposerChoice, string>> = {
-  ask: 'Ask for feedback',
-  give: 'Give feedback',
-};
 
 export type HomeComposerPanelProps = {
   /** The Workspace the page was drawn for, which a card is sent to. */
@@ -36,22 +29,16 @@ export function HomeComposerPanel({
   writer,
 }: HomeComposerPanelProps) {
   const [message, setMessage] = useState('');
-  const [choice, setChoice] = useState<FeedComposerChoice>('give');
-  const [isOpen, setIsOpen] = useState(false);
-  // Mounted from the first card on, so it is not drawn before anyone writes, and stays for its
-  // closing motion after.
-  const [hasOpened, setHasOpened] = useState(false);
+  const { openCard, cards } = useComposeCards();
   const fieldRef = useRef<HTMLInputElement>(null);
-
-  function handleChoose(chosen: FeedComposerChoice) {
-    setChoice(chosen);
-    setHasOpened(true);
-    setIsOpen(true);
-  }
+  const hasWarmedCards = useRef(false);
 
   function handleMessageChange(typed: string) {
     setMessage(typed);
-    warmPostcardDialog();
+    if (!hasWarmedCards.current) {
+      hasWarmedCards.current = true;
+      warmComposeCards();
+    }
   }
 
   // The postcard opens from a button rather than a `DialogTrigger`, so Radix has nowhere to send
@@ -70,23 +57,18 @@ export function HomeComposerPanel({
         workspaceGoals={workspaceGoals}
         message={message}
         onMessageChange={handleMessageChange}
-        onChoose={handleChoose}
+        onChoose={openCard}
       />
-      {hasOpened && (
-        <ComposePostcardDialog
-          workspaceId={workspaceId}
-          teammates={teammates}
-          workspaceGoals={workspaceGoals}
-          writer={writer}
-          card={choice}
-          title={TITLES[choice]}
-          defaultMessage={message}
-          open={isOpen}
-          onOpenChange={setIsOpen}
-          onSent={() => setMessage('')}
-          onCloseAutoFocus={handleCloseAutoFocus}
-        />
-      )}
+      <ComposeCards
+        cards={cards}
+        workspaceId={workspaceId}
+        teammates={teammates}
+        workspaceGoals={workspaceGoals}
+        writer={writer}
+        defaultMessage={message}
+        onSent={() => setMessage('')}
+        onCloseAutoFocus={handleCloseAutoFocus}
+      />
     </>
   );
 }

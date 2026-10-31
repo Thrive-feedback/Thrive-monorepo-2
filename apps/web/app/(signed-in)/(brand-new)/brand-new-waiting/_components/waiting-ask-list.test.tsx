@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
@@ -159,5 +159,45 @@ describe('WaitingAskList', () => {
     expect(
       await screen.findByText('Nothing is waiting for you.'),
     ).toBeVisible();
+  });
+
+  it('shows what came in meanwhile once every card it read is answered', async () => {
+    const { rerender } = render(
+      <AnsweredAsksProvider>
+        <WaitingAskList
+          initialPage={{ items: [ask('a-2', 'Ben')], nextCursor: null }}
+          sort="newest"
+        />
+        <AnsweringBen />
+      </AnsweredAsksProvider>,
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Ben was answered' }),
+    );
+
+    rerender(
+      <AnsweredAsksProvider>
+        <WaitingAskList
+          initialPage={{ items: [ask('a-3', 'Cara')], nextCursor: null }}
+          sort="newest"
+        />
+        <AnsweringBen />
+      </AnsweredAsksProvider>,
+    );
+
+    expect(screen.getByText('Asked by Cara')).toBeInTheDocument();
+    expect(screen.queryByText('Asked by Ben')).not.toBeInTheDocument();
+  });
+
+  it('offers to try again when the read itself fails', async () => {
+    readNextWaitingAsks.mockRejectedValue(new TypeError('Failed to fetch'));
+    draw('cursor-1');
+
+    act(() => reachTheEnd());
+
+    expect(
+      await screen.findByRole('button', { name: 'Try again' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Asked by Ann')).toBeInTheDocument();
   });
 });

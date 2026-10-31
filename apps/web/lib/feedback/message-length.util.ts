@@ -41,3 +41,22 @@ export function cutToMessageLength(
   const kept = charactersOf(before.slice(indent)).slice(0, room).join('');
   return before.slice(0, indent) + kept + after;
 }
+
+/**
+ * Cuts what a field holds to the limit, and answers what is left. What is cut goes from the field
+ * itself as well as from the state: left to React, the shorter value would be written back over it
+ * and the cursor thrown to the end of the message.
+ */
+export function cutFieldToMessageLength(
+  field: HTMLInputElement | HTMLTextAreaElement,
+  limit: number = MAX_MESSAGE_LENGTH,
+): string {
+  const cursor = field.selectionStart ?? field.value.length;
+  const kept = cutToMessageLength(field.value, cursor, limit);
+  if (kept !== field.value) {
+    const cursorAfterCut = cursor - (field.value.length - kept.length);
+    field.value = kept;
+    field.setSelectionRange(cursorAfterCut, cursorAfterCut);
+  }
+  return kept;
+}

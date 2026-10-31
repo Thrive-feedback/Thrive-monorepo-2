@@ -1,38 +1,28 @@
 import { ArrowRightIcon } from 'lucide-react';
-import {
-  memo,
-  useCallback,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react';
-import { flushSync } from 'react-dom';
+import { memo, useCallback, useMemo, useReducer, useRef } from 'react';
 import { Button } from '@/components/atoms/button';
 import { DialogContent } from '@/components/atoms/dialog';
 import { feedbackTagTriggers } from '@/components/organisms/feedback-tag-triggers.util';
+import postcardStyles from '@/components/organisms/postcard-dialog/postcard.module.css';
 import {
   POSTCARD_BAR,
   POSTCARD_PAGE,
   POSTCARD_SCREEN,
   SENT_AWAY,
 } from '@/components/organisms/postcard-dialog/postcard-editor.constant';
-import { isEscapeTakenInside } from '@/components/organisms/postcard-dialog/postcard-focus.util';
 import { PostcardHideButton } from '@/components/organisms/postcard-dialog/postcard-hide-button';
 import {
   PostcardLeaveDialog,
   usePostcardLeave,
 } from '@/components/organisms/postcard-dialog/postcard-leave-dialog';
-import {
-  PostcardSticker,
-  type PostcardStickerChange,
-} from '@/components/organisms/postcard-dialog/postcard-sticker';
+import { PostcardSticker } from '@/components/organisms/postcard-dialog/postcard-sticker';
 import { PostcardStickerPicker } from '@/components/organisms/postcard-dialog/postcard-sticker-picker';
 import { CardTextToolbar } from '@/components/organisms/postcard-dialog/postcard-text-toolbar';
 import { PostcardTitleRow } from '@/components/organisms/postcard-dialog/postcard-title-row';
+import { useCardStickers } from '@/components/organisms/postcard-dialog/use-card-stickers';
+import { useCardTextTools } from '@/components/organisms/postcard-dialog/use-card-text-tools';
 import { PostcardDrawerContainer } from '@/components/organisms/postcard-dialog/use-postcard-drawer-container';
 import { usePostcardOpener } from '@/components/organisms/postcard-dialog/use-postcard-opener';
-import { usePressAway } from '@/components/organisms/postcard-dialog/use-press-away';
 import { cn } from '@/lib/cn.util';
 import { MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
 import { mentionedTeammates } from '@/lib/feedback/mentioned-teammates.util';
@@ -60,6 +50,8 @@ const NAMES = new Intl.ListFormat('en-GB', {
   type: 'conjunction',
 });
 
+const TITLE = 'Give kudos';
+
 const WHO_READS = 'Everyone in your Workspace reads a Kudos.';
 const FOR_EVERYONE =
   'For everyone in your Workspace. Name a teammate with @ to thank them by name.';
@@ -67,14 +59,15 @@ const STICKER_HINT =
   'Up to three on your card. Drag a sticker where you like, or hide them to read what is under them.';
 
 export type KudosEditorProps = {
-  title: string;
   teammates: readonly Teammate[];
   workspaceGoals: readonly string[];
   /** What is already written as it opens. Read once: the card owns it from then on. */
   defaultMessage: string;
   onSend: (kudos: KudosDraft) => Promise<boolean>;
-  /** The writer chose to leave, or went back to Home from the board: the dialog should close. */
+  /** The writer chose to leave: the dialog should close. */
   onClose: () => void;
+  onGoToBoard: () => void;
+  onBackToHome: () => void;
   onCloseAutoFocus?: (event: Event) => void;
 };
 
@@ -85,12 +78,13 @@ export type KudosEditorProps = {
  * it.
  */
 export function KudosEditor({
-  title,
   teammates,
   workspaceGoals,
   defaultMessage,
   onSend,
   onClose,
+  onGoToBoard,
+  onBackToHome,
   onCloseAutoFocus,
 }: KudosEditorProps) {
   const [draft, change] = useReducer(
@@ -98,18 +92,43 @@ export function KudosEditor({
     defaultMessage,
     blankKudosDraft,
   );
-  const [isEditingText, setIsEditingText] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [areStickersHidden, setAreStickersHidden] = useState(false);
-  const stickersAddedRef = useRef(0);
   const contentRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const sendRef = useRef<HTMLButtonElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
   const backToHomeRef = useRef<HTMLButtonElement>(null);
-  const { noteOpener, giveFocusBack } = usePostcardOpener();
+  const { noteOpener, handleCloseAutoFocus } =
+    usePostcardOpener(onCloseAutoFocus);
+  const {
+    isEditingText,
+    setIsEditingText,
+    handleDone,
+    handleFocus,
+    handleToolbarMouseDown,
+    handleEscape,
+  } = useCardTextTools({ messageRef, contentRef, toolbarRef });
+  const placeSticker = useCallback(
+    (id: string, stickerKey: string) =>
+      change({ kind: 'addSticker', id, stickerKey }),
+    [],
+  );
+  const {
+    selectedId,
+    setSelectedId,
+    letGo,
+    areStickersHidden,
+    handleAddSticker,
+    handleChangeSticker,
+    handleRemoveSticker,
+    handleHideStickers,
+    showStickers,
+  } = useCardStickers({
+    change,
+    place: placeSticker,
+    toolbarRef,
+    keepsSelection: '[data-sticker], [data-sticker-panel]',
+  });
 
-  const letGo = useCallback(() => setSelectedId(null), []);
   const { status, pin, send } = useKudosSend({
     handOver: () => onSend(draft),
     onLetGo: letGo,
@@ -122,15 +141,10 @@ export function KudosEditor({
     isWriting: status === 'writing',
     fallbackRef: messageRef,
     onLeave: () => {
-      setSelectedId(null);
+      letGo();
       onClose();
     },
   });
-  usePressAway(
-    selectedId !== null,
-    '[data-sticker], [data-sticker-panel]',
-    letGo,
-  );
 
   const triggers = useMemo(
     () => feedbackTagTriggers(workspaceGoals, teammates),
@@ -142,7 +156,10 @@ export function KudosEditor({
   function handleMessageChange(message: string) {
     change({ kind: 'message', message });
   }
-  const handleMessageFocus = useCallback(() => setIsEditingText(true), []);
+  const handleMessageFocus = useCallback(
+    () => setIsEditingText(true),
+    [setIsEditingText],
+  );
   const handleTemplateChange = useCallback(
     (templateKey: KudosTemplateKey) =>
       change({ kind: 'template', templateKey }),
@@ -153,81 +170,18 @@ export function KudosEditor({
     [],
   );
 
-  // A new sticker goes on selected, so it can be moved straight away, which takes the others being
-  // on show too.
-  const handleAddSticker = useCallback((stickerKey: string) => {
-    stickersAddedRef.current += 1;
-    const id = `sticker-${stickersAddedRef.current}`;
-    change({ kind: 'addSticker', id, stickerKey });
-    setSelectedId(id);
-    setAreStickersHidden(false);
-  }, []);
-  const handleChangeSticker = useCallback(
-    (id: string, fields: PostcardStickerChange) =>
-      change({ kind: 'changeSticker', id, fields }),
-    [],
-  );
-  // A sticker taken off takes the cursor with it, so it goes to Stickers, where another can be added.
-  const handleRemoveSticker = useCallback((id: string) => {
-    change({ kind: 'removeSticker', id });
-    setSelectedId((current) => (current === id ? null : current));
-    toolbarRef.current
-      ?.querySelector<HTMLElement>('[data-stickers-tool]')
-      ?.focus();
-  }, []);
-
-  // Done takes the text tools away, so the cursor goes to the first of the usual tools.
-  const handleDone = useCallback(() => {
-    flushSync(() => setIsEditingText(false));
-    toolbarRef.current?.querySelector<HTMLElement>('button')?.focus();
-  }, []);
-
-  // A key press reaches none of the listeners that let go of a selected sticker, and it would stay
-  // selected out of sight.
-  function handleHideStickers() {
-    setAreStickersHidden((current) => !current);
-    setSelectedId(null);
-  }
-
-  // The stickers go with the card whether they are showing or not, so the card pinned shows them.
   function handleSend() {
-    setAreStickersHidden(false);
+    showStickers();
     void send();
   }
 
-  // The cursor anywhere but the message or the bars leaves the text tools; those stop their own
-  // focus, menus included, from getting here.
-  function handleFocus(event: React.FocusEvent) {
-    if (event.target !== messageRef.current) {
-      setIsEditingText(false);
-    }
-  }
-
-  // A press on the bar between its tools takes no focus, so the text tools stay up.
-  function handleToolbarMouseDown(event: React.MouseEvent) {
-    if (
-      event.target instanceof Element &&
-      !event.target.closest('button, input, label, [role="menuitem"]')
-    ) {
-      event.preventDefault();
-    }
-  }
-
-  // Escape while styling leaves the text tools; otherwise it asks before closing, like Close. Once
-  // the card is on the board there is nothing to lose, so it goes back to Home.
+  // Once the card is on the board there is nothing to lose, so Escape goes back to Home.
   function handleEscapeKeyDown(event: KeyboardEvent) {
     event.preventDefault();
     if (status === 'pinned') {
-      onClose();
-      return;
-    }
-    if (isEscapeTakenInside(messageRef.current, contentRef.current)) {
-      return;
-    }
-    if (isEditingText) {
-      setIsEditingText(false);
+      onBackToHome();
     } else {
-      askToClose();
+      handleEscape(askToClose);
     }
   }
 
@@ -237,15 +191,6 @@ export function KudosEditor({
     if (messageRef.current) {
       event.preventDefault();
       messageRef.current.focus();
-    }
-  }
-
-  // The caller may send focus somewhere of its own; otherwise it goes back to the opener, if
-  // that is still on the page.
-  function handleCloseAutoFocus(event: Event) {
-    onCloseAutoFocus?.(event);
-    if (!event.defaultPrevented) {
-      giveFocusBack(event);
     }
   }
 
@@ -262,18 +207,23 @@ export function KudosEditor({
         onEscapeKeyDown={handleEscapeKeyDown}
         onInteractOutside={(event) => event.preventDefault()}
         onFocus={handleFocus}
+        overlayClassName={postcardStyles.scrim}
         className={POSTCARD_SCREEN}
       >
         {pin.isOnBoard && (
           <KudosPinBoard ref={pin.boardRef} isSettled={status === 'pinned'} />
         )}
         {status === 'pinned' && (
-          <KudosPinActions ref={backToHomeRef} onBackToHome={onClose} />
+          <KudosPinActions
+            ref={backToHomeRef}
+            onGoToBoard={onGoToBoard}
+            onBackToHome={onBackToHome}
+          />
         )}
         {/* A card that has been sent is inert from then on, so nothing edits what has gone. */}
         <div inert={status !== 'writing'} className={POSTCARD_PAGE}>
           <PostcardTitleRow
-            title={title}
+            title={TITLE}
             onClose={askToClose}
             className={cn('max-w-90', hasGone && SENT_AWAY)}
           />

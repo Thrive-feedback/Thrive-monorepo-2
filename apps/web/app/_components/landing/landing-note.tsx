@@ -1,8 +1,4 @@
-import { HandwrittenNote, writeOn } from '@/components/atoms/handwritten-note';
-
-export { writeOn };
-
-export const LandingNote = HandwrittenNote;
+import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 
 /**
  * Pins a note across the top corner of the words it sits inside, centred on the corner as if
@@ -26,7 +22,7 @@ export function NotedText({ text, note }: { text: string; note: string }) {
       {firstLine.slice(0, lastWordAt)}
       <span className="relative whitespace-nowrap">
         {firstLine.slice(lastWordAt)}
-        <LandingNote className={cornerNote}>{note}</LandingNote>
+        <HandwrittenNote className={cornerNote}>{note}</HandwrittenNote>
       </span>
       {rest.length > 0 && (
         <>

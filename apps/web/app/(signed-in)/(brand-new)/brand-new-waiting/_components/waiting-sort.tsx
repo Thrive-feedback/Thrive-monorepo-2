@@ -31,7 +31,10 @@ export function WaitingSort({ sort }: WaitingSortProps) {
   const labelId = useId();
 
   function handleValueChange(value: string) {
-    router.push(ROUTES.brandNewWaitingSorted(value as BrandNewWaitingSort));
+    const chosen = BRAND_NEW_WAITING_SORTS.find((one) => one === value);
+    if (chosen) {
+      router.push(ROUTES.brandNewWaitingSorted(chosen));
+    }
   }
 
   return (

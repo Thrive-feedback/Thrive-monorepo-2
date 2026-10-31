@@ -27,7 +27,7 @@ export function BrandNewSideNav({ waitingCount }: BrandNewSideNavProps) {
   const pathname = usePathname();
   const items: readonly SideNavEntry[] = [
     { href: ROUTES.brandNewHome, label: 'Home', Icon: HouseIcon },
-    { label: 'Kudos board', Icon: HandHeartIcon },
+    { href: ROUTES.brandNewKudos, label: 'Kudos board', Icon: HandHeartIcon },
     {
       href: ROUTES.brandNewWaiting,
       label: 'Waiting for me',

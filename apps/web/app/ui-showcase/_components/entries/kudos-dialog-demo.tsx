@@ -21,7 +21,6 @@ export function KudosDialogDemo() {
         Give kudos
       </Button>
       <KudosDialog
-        title="Give kudos"
         teammates={LETTER_TEAMMATES}
         workspaceGoals={SAMPLE_WORKSPACE_GOALS}
         open={open}
@@ -30,6 +29,8 @@ export function KudosDialogDemo() {
           toast.success('Kudos sent.');
           return true;
         }}
+        onGoToBoard={() => setOpen(false)}
+        onBackToHome={() => setOpen(false)}
       />
     </>
   );

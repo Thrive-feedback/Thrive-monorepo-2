@@ -49,6 +49,7 @@ describe('FeedComposer', () => {
   it.each([
     ['Ask for feedback', 'ask'],
     ['Give feedback', 'give'],
+    ['Give kudos', 'kudos'],
   ])('says %s was chosen', async (name, choice) => {
     const onChoose = vi.fn();
     render(<Composer onChoose={onChoose} />);
@@ -76,17 +77,6 @@ describe('FeedComposer', () => {
     expect(field()).toHaveValue('Well done');
   });
 
-  it('offers Kudos without pretending it works', async () => {
-    const onChoose = vi.fn();
-    render(<Composer onChoose={onChoose} />);
-    const kudos = screen.getByRole('button', { name: 'Give kudos' });
-
-    await userEvent.click(kudos);
-
-    expect(kudos).toHaveAttribute('aria-disabled', 'true');
-    expect(onChoose).not.toHaveBeenCalled();
-  });
-
   it('keeps to the length a message can be', async () => {
     render(<Composer onChoose={vi.fn()} />);
 
@@ -94,5 +84,22 @@ describe('FeedComposer', () => {
     await userEvent.paste('a'.repeat(1200));
 
     expect(field()).toHaveValue('a'.repeat(1000));
+  });
+
+  it('loses nothing already written when a key is pressed at the limit, mid-message', async () => {
+    render(<Composer onChoose={vi.fn()} />);
+    const written = `${'a'.repeat(998)}zz`;
+    await userEvent.click(field());
+    await userEvent.paste(written);
+
+    const box = field();
+    if (!(box instanceof HTMLInputElement)) {
+      throw new Error('The field is not an input.');
+    }
+    box.setSelectionRange(10, 10);
+    await userEvent.keyboard('x');
+
+    expect(field()).toHaveValue(written);
+    expect(field()).toHaveProperty('selectionStart', 10);
   });
 });

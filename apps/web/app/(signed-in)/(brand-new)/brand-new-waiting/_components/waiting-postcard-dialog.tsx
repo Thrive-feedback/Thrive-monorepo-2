@@ -1,9 +1,9 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { unstable_rethrow, useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { deliverCard } from '@/app/(signed-in)/(brand-new)/_lib/deliver-card.util';
 import { sendPostcardAnswer } from '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service';
 import { toSentAnswer } from '@/app/(signed-in)/(brand-new)/_lib/sent-postcard.util';
 import type {
@@ -59,29 +59,40 @@ export function WaitingPostcardDialog({
   const router = useRouter();
   const [closedAsk, setClosedAsk] = useState<PostcardAsk | null>(null);
   const hasSent = useRef(false);
+  const hasTakenItsCardOut = useRef(false);
+  const hasLeft = useRef(false);
   const { markAnswered } = useAnsweredAsks();
 
   async function handleSend(answer: PostcardAnswer) {
-    try {
-      const { formError } = await sendPostcardAnswer(
-        workspaceId,
-        askId,
-        toSentAnswer(answer),
-      );
-      if (formError) {
-        toast.error(formError);
-        return false;
-      }
-    } catch (error) {
-      // Being signed out rejects the action with a redirect, which is not a send that failed.
-      unstable_rethrow(error);
-      toast.error(COULD_NOT_SEND);
-      return false;
+    const hasGone = await deliverCard(
+      () => sendPostcardAnswer(workspaceId, askId, toSentAnswer(answer)),
+      'Answer sent.',
+      COULD_NOT_SEND,
+    );
+    hasSent.current = hasGone;
+    if (hasLeft.current) {
+      takeItsCardOut();
     }
-    hasSent.current = true;
-    toast.success('Answer sent.');
-    return true;
+    return hasGone;
   }
+
+  const takeItsCardOut = useCallback(() => {
+    if (hasSent.current && !hasTakenItsCardOut.current) {
+      hasTakenItsCardOut.current = true;
+      markAnswered(askId);
+      router.refresh();
+    }
+  }, [askId, markAnswered, router]);
+
+  // Leaving before it is over never closes the dialog, as Back does, and the card still has to go:
+  // now, if the answer has flown, or as soon as it is known to have gone.
+  useEffect(() => {
+    hasLeft.current = false;
+    return () => {
+      hasLeft.current = true;
+      takeItsCardOut();
+    };
+  }, [takeItsCardOut]);
 
   function handleOpenChange(open: boolean) {
     if (open) {
@@ -89,10 +100,7 @@ export function WaitingPostcardDialog({
     }
     setClosedAsk(ask);
     router.replace(closeHref, { scroll: false });
-    if (hasSent.current) {
-      markAnswered(askId);
-      router.refresh();
-    }
+    takeItsCardOut();
   }
 
   // The card that opened this is gone once it is answered, so focus has nowhere to go back to. It

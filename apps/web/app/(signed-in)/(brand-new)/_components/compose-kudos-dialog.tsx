@@ -1,13 +1,14 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useRef } from 'react';
 import { deliverCard } from '@/app/(signed-in)/(brand-new)/_lib/deliver-card.util';
 import { sendKudosCard } from '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service';
 import { toSentKudos } from '@/app/(signed-in)/(brand-new)/_lib/sent-kudos.util';
 import type { KudosDraft } from '@/components/organisms/kudos-dialog/kudos-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { ROUTES } from '@/lib/routes.constant';
 
 /** The Kudos card, on the same terms as the postcard. */
 const KudosDialog = dynamic(
@@ -43,7 +44,7 @@ export type ComposeKudosDialogProps = {
 
 /**
  * A Kudos card, sent to the API with the card itself. Once the Giver leaves the board the page
- * reads again, so what was sent is there.
+ * reads again, so it is up to date with what they sent.
  */
 export function ComposeKudosDialog({
   workspaceId,
@@ -56,6 +57,7 @@ export function ComposeKudosDialog({
   onCloseAutoFocus,
 }: ComposeKudosDialogProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const hasSent = useRef(false);
 
   async function handleSend(kudos: KudosDraft) {
@@ -77,15 +79,30 @@ export function ComposeKudosDialog({
     }
   }
 
+  function handleGoToBoard() {
+    handleOpenChange(false);
+    router.push(ROUTES.brandNewKudos);
+  }
+
+  // The dialog can be opened from anywhere the sidebar is. On Home itself going back is closing it,
+  // which keeps its filter.
+  function handleBackToHome() {
+    handleOpenChange(false);
+    if (pathname !== ROUTES.brandNewHome) {
+      router.push(ROUTES.brandNewHome);
+    }
+  }
+
   return (
     <KudosDialog
-      title="Give kudos"
       teammates={teammates}
       workspaceGoals={workspaceGoals}
       defaultMessage={defaultMessage}
       open={open}
       onOpenChange={handleOpenChange}
       onSend={handleSend}
+      onGoToBoard={handleGoToBoard}
+      onBackToHome={handleBackToHome}
       onCloseAutoFocus={onCloseAutoFocus}
     />
   );

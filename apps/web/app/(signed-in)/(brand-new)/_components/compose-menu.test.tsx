@@ -8,12 +8,15 @@ import { Toaster } from '@/components/atoms/toaster';
 import { POSTCARD_STAMPS } from '@/components/organisms/postcard-dialog/postcard-stamp.constant';
 import { POSTCARD_STICKERS } from '@/components/organisms/postcard-dialog/postcard-sticker.constant';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { ROUTES } from '@/lib/routes.constant';
 import { ComposeMenu } from './compose-menu';
 
 const refresh = vi.fn();
+const push = vi.fn();
 vi.mock('next/navigation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('next/navigation')>()),
-  useRouter: () => ({ refresh }),
+  useRouter: () => ({ refresh, push }),
+  usePathname: () => ROUTES.brandNewWaiting,
 }));
 
 const sendPostcardFeedback = vi.fn();
@@ -376,6 +379,29 @@ describe('ComposeMenu', () => {
         stickers: [],
       },
     });
+  });
+
+  it('takes the Giver to Home from the board when they wrote it on another page', async () => {
+    const user = userEvent.setup();
+    sendKudosCard.mockResolvedValue({});
+    draw();
+    await openPostcard(user, /Give kudos/);
+    await user.type(
+      screen.getByRole('textbox', { name: 'Your Kudos' }),
+      'Well done on the launch.',
+    );
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    await user.click(screen.getByRole('button', { name: /^Send kudos/ }));
+
+    await user.click(
+      await screen.findByRole(
+        'button',
+        { name: 'Back to home' },
+        { timeout: 5000 },
+      ),
+    );
+
+    expect(push).toHaveBeenCalledExactlyOnceWith(ROUTES.brandNewHome);
   });
 
   it('says why a Kudos did not go, and keeps it open', async () => {

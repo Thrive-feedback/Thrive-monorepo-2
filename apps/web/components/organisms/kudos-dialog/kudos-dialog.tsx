@@ -7,8 +7,6 @@ import type { KudosDraft } from './kudos-draft.type';
 import { KudosEditor } from './kudos-editor';
 
 export type KudosDialogProps = {
-  /** What is being written, above the card. */
-  title: string;
   /** Who `@` offers, which is who it can be for: the Workspace but the writer. */
   teammates: readonly Teammate[];
   /** The Workspace's active Workspace Goals, by name, offered on `#`. */
@@ -24,6 +22,10 @@ export type KudosDialogProps = {
    * open as it was, and saying why is the caller's.
    */
   onSend: (kudos: KudosDraft) => Promise<boolean>;
+  /** Go to Kudos board was pressed on the board a sent card was pinned to. */
+  onGoToBoard: () => void;
+  /** Back to home was pressed there. Closing is the caller's, as it may be leaving the page too. */
+  onBackToHome: () => void;
   /**
    * Closed. Focus goes back to whatever had it when the card opened; prevent the default to send
    * it somewhere else, as when that control has gone, like an item in a menu that has closed.
@@ -39,18 +41,19 @@ export type KudosDialogProps = {
  * text's tools, and Send is gone. A button beside the card hides the stickers, which still go with
  * it.
  *
- * Every opening is a blank card. Closing — Close or Escape — always asks first, and nothing outside
- * the card closes it. Sent, the card is pinned to a board, which stays with a way on from it until
- * the Giver takes one.
+ * Every opening is a new card, holding only what the caller says was typed first. Closing — Close
+ * or Escape — always asks first, and nothing outside the card closes it. Sent, the card is pinned
+ * to a board, which stays with a way on from it until the Giver takes one.
  */
 export function KudosDialog({
-  title,
   teammates,
   workspaceGoals,
   defaultMessage = '',
   open,
   onOpenChange,
   onSend,
+  onGoToBoard,
+  onBackToHome,
   onCloseAutoFocus,
 }: KudosDialogProps) {
   // A new opening gets a new editor, so its state starts blank. Counted while rendering rather
@@ -68,12 +71,13 @@ export function KudosDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <KudosEditor
         key={openings}
-        title={title}
         teammates={teammates}
         workspaceGoals={workspaceGoals}
         defaultMessage={defaultMessage}
         onSend={onSend}
         onClose={() => onOpenChange(false)}
+        onGoToBoard={onGoToBoard}
+        onBackToHome={onBackToHome}
         onCloseAutoFocus={onCloseAutoFocus}
       />
     </Dialog>

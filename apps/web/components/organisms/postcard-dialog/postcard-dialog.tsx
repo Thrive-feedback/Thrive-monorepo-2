@@ -73,7 +73,8 @@ export type PostcardDialogProps = PostcardDialogCommonProps &
  * - `answer`: the same halved back, the Ask read-only on the left and the answer written on the
  *   right under the writer's name.
  *
- * Every opening is a blank card, whatever was on the last one. Closing — Close or Escape —
+ * Every opening is a new card, whatever was on the last one, holding only what the caller says
+ * was typed first. Closing — Close or Escape —
  * always asks first, and nothing outside the card closes it.
  */
 export function PostcardDialog(props: PostcardDialogProps) {

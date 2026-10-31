@@ -140,7 +140,7 @@ exports[`Landing > renders the same page 1`] = `
                 while
                 <span
                   aria-hidden="true"
-                  class="font-handwrite text-subtitle-handwrite-1 pointer-events-none w-fit select-none text-action-secondary-hover rotate-3 _writeOn_7eb397 absolute top-1/4 left-full -ml-6 hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap lg:block"
+                  class="font-handwrite text-subtitle-handwrite-1 pointer-events-none w-fit select-none text-action-secondary-hover rotate-3 _writeOn_85273a absolute top-1/4 left-full -ml-6 hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap lg:block"
                   data-slot="text"
                 >
                   not six months later
@@ -227,7 +227,7 @@ exports[`Landing > renders the same page 1`] = `
               in
               <span
                 aria-hidden="true"
-                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none w-fit select-none text-action-secondary-hover rotate-3 _writeOn_7eb397 absolute top-1/4 left-full -ml-6 hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap lg:block"
+                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none w-fit select-none text-action-secondary-hover rotate-3 _writeOn_85273a absolute top-1/4 left-full -ml-6 hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap lg:block"
                 data-slot="text"
               >
                 Go on, click around
@@ -2012,7 +2012,7 @@ exports[`Landing > renders the same page 1`] = `
               moments
               <span
                 aria-hidden="true"
-                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none w-fit select-none text-action-secondary-hover rotate-3 _writeOn_7eb397 absolute top-1/4 left-full -ml-6 hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap lg:block"
+                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none w-fit select-none text-action-secondary-hover rotate-3 _writeOn_85273a absolute top-1/4 left-full -ml-6 hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap lg:block"
                 data-slot="text"
               >
                 sound familiar?
@@ -2026,7 +2026,7 @@ exports[`Landing > renders the same page 1`] = `
           </h2>
           <span
             aria-hidden="true"
-            class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover rotate-3 _writeOn_7eb397 lg:hidden"
+            class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover rotate-3 _writeOn_85273a lg:hidden"
             data-slot="text"
           >
             sound familiar?
@@ -2091,7 +2091,7 @@ exports[`Landing > renders the same page 1`] = `
               </div>
               <span
                 aria-hidden="true"
-                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover -rotate-3 _writeOn_7eb397 mt-1"
+                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover -rotate-3 _writeOn_85273a mt-1"
                 data-slot="text"
               >
                 Name the moment. Ask for one thing.
@@ -2154,7 +2154,7 @@ exports[`Landing > renders the same page 1`] = `
               </div>
               <span
                 aria-hidden="true"
-                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover -rotate-3 _writeOn_7eb397 mt-1"
+                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover -rotate-3 _writeOn_85273a mt-1"
                 data-slot="text"
               >
                 Say what you’re working on.
@@ -2217,7 +2217,7 @@ exports[`Landing > renders the same page 1`] = `
               </div>
               <span
                 aria-hidden="true"
-                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover -rotate-3 _writeOn_7eb397 mt-1"
+                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover -rotate-3 _writeOn_85273a mt-1"
                 data-slot="text"
               >
                 What happened → what it changed → what to try next.
@@ -2264,7 +2264,7 @@ exports[`Landing > renders the same page 1`] = `
               </div>
               <span
                 aria-hidden="true"
-                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover -rotate-3 _writeOn_7eb397 mt-1"
+                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover -rotate-3 _writeOn_85273a mt-1"
                 data-slot="text"
               >
                 Praise the thing you want to see again.
@@ -2302,7 +2302,7 @@ exports[`Landing > renders the same page 1`] = `
                 feedback
                 <span
                   aria-hidden="true"
-                  class="font-handwrite text-subtitle-handwrite-1 pointer-events-none w-fit select-none text-action-secondary-hover rotate-3 _writeOn_7eb397 absolute top-1/4 left-full -ml-6 hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap lg:block"
+                  class="font-handwrite text-subtitle-handwrite-1 pointer-events-none w-fit select-none text-action-secondary-hover rotate-3 _writeOn_85273a absolute top-1/4 left-full -ml-6 hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap lg:block"
                   data-slot="text"
                 >
                   it’s not you
@@ -2322,7 +2322,7 @@ exports[`Landing > renders the same page 1`] = `
             </p>
             <span
               aria-hidden="true"
-              class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover rotate-3 _writeOn_7eb397 lg:hidden"
+              class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover rotate-3 _writeOn_85273a lg:hidden"
               data-slot="text"
             >
               it’s not you
@@ -2438,7 +2438,7 @@ exports[`Landing > renders the same page 1`] = `
               start.
               <span
                 aria-hidden="true"
-                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none w-fit select-none text-action-secondary-hover rotate-3 _writeOn_7eb397 absolute top-1/4 left-full -ml-6 hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap lg:block"
+                class="font-handwrite text-subtitle-handwrite-1 pointer-events-none w-fit select-none text-action-secondary-hover rotate-3 _writeOn_85273a absolute top-1/4 left-full -ml-6 hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap lg:block"
                 data-slot="text"
               >
                 all in one place
@@ -2452,7 +2452,7 @@ exports[`Landing > renders the same page 1`] = `
           </h2>
           <span
             aria-hidden="true"
-            class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover rotate-3 _writeOn_7eb397 lg:hidden"
+            class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover rotate-3 _writeOn_85273a lg:hidden"
             data-slot="text"
           >
             all in one place
@@ -2582,7 +2582,7 @@ exports[`Landing > renders the same page 1`] = `
           </p>
           <span
             aria-hidden="true"
-            class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover rotate-3 _writeOn_7eb397"
+            class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover rotate-3 _writeOn_85273a"
             data-slot="text"
           >
             this one’s for you
@@ -2673,7 +2673,7 @@ exports[`Landing > renders the same page 1`] = `
             </a>
             <span
               aria-hidden="true"
-              class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover -rotate-3 _writeOn_7eb397"
+              class="font-handwrite text-subtitle-handwrite-1 pointer-events-none block w-fit select-none text-action-secondary-hover -rotate-3 _writeOn_85273a"
               data-slot="text"
             >
               see you inside

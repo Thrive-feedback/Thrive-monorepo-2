@@ -32,7 +32,10 @@ export function HomeFeedFilter({ show }: HomeFeedFilterProps) {
   const labelId = useId();
 
   function handleValueChange(value: string) {
-    router.push(ROUTES.brandNewHomeShowing(value as BrandNewHomeShow));
+    const chosen = BRAND_NEW_HOME_SHOWS.find((one) => one === value);
+    if (chosen) {
+      router.push(ROUTES.brandNewHomeShowing(chosen));
+    }
   }
 
   return (

@@ -2,19 +2,19 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
-import { HandwrittenNote } from '@/components/atoms/handwritten-note';
+import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 
 export function HandwrittenNoteEntry() {
   return (
     <ShowcaseEntry
       name="HandwrittenNote"
-      level="atom"
+      level="molecule"
       origin="thrive"
-      source="components/atoms/handwritten-note.tsx"
+      source="components/molecules/handwritten-note.tsx — Text, tilted, written on as it scrolls in."
       summary="A teammate's note in the margin, in the handwriting face and the secondary colour."
       useFor="A small human aside beside a heading, on the landing page and Home."
       avoidFor="Anything a person needs to read: a screen reader skips it."
-      usage={`import { HandwrittenNote } from '@/components/atoms/handwritten-note';
+      usage={`import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 
 <HandwrittenNote size="md" tilt="left">say it while it's fresh</HandwrittenNote>`}
       props={[

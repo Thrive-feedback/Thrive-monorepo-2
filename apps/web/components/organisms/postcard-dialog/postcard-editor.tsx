@@ -1,6 +1,5 @@
 import { ArrowRightIcon } from 'lucide-react';
 import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
 import { Button } from '@/components/atoms/button';
 import { DialogContent } from '@/components/atoms/dialog';
 import { feedbackTagTriggers } from '@/components/organisms/feedback-tag-triggers.util';
@@ -38,7 +37,6 @@ import {
   SENT_AWAY,
   STAMP_ID,
 } from './postcard-editor.constant';
-import { isEscapeTakenInside } from './postcard-focus.util';
 import { PostcardHideButton } from './postcard-hide-button';
 import { PostcardLeaveDialog, usePostcardLeave } from './postcard-leave-dialog';
 import { PostcardMessage } from './postcard-message';
@@ -48,21 +46,18 @@ import {
   PostcardStampBox,
   PostcardStampReadOnly,
 } from './postcard-stamp';
-import {
-  PostcardSticker,
-  type PostcardStickerChange,
-  PostcardStickersReadOnly,
-} from './postcard-sticker';
+import { PostcardSticker, PostcardStickersReadOnly } from './postcard-sticker';
 import type { PaperTone, PostcardTextStyle } from './postcard-style.constant';
 import { PostcardTextToolbar } from './postcard-text-toolbar';
 import { PostcardTitleRow } from './postcard-title-row';
 import { PostcardToolbar } from './postcard-toolbar';
 import { PostcardTurnButton } from './postcard-turn-button';
 import { PostcardVisibilityTool } from './postcard-visibility-tool';
+import { useCardStickers } from './use-card-stickers';
+import { useCardTextTools } from './use-card-text-tools';
 import { PostcardDrawerContainer } from './use-postcard-drawer-container';
 import { usePostcardOpener } from './use-postcard-opener';
 import { usePostcardSend } from './use-postcard-send';
-import { usePressAway } from './use-press-away';
 
 function isSameList(one: readonly string[], other: readonly string[]) {
   return (
@@ -106,18 +101,22 @@ export function PostcardEditor({
   const [openingRecipients] = useState(() =>
     card.kind === 'answer' ? NOBODY : card.defaultRecipientAccountIds,
   );
-  const [isEditingText, setIsEditingText] = useState(false);
-  // The sticker selected, or `STAMP_ID` for the stamp: one thing on the card at a time.
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   // Held here because the Stamp tool and the printed box both open it.
   const [isStampPickerOpen, setIsStampPickerOpen] = useState(false);
-  const [areStickersHidden, setAreStickersHidden] = useState(false);
-  const stickersAddedRef = useRef(0);
   const contentRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const sendRef = useRef<HTMLButtonElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
-  const { noteOpener, giveFocusBack } = usePostcardOpener();
+  const { noteOpener, handleCloseAutoFocus } =
+    usePostcardOpener(onCloseAutoFocus);
+  const {
+    isEditingText,
+    setIsEditingText,
+    handleDone,
+    handleFocus,
+    handleToolbarMouseDown,
+    handleEscape,
+  } = useCardTextTools({ messageRef, contentRef, toolbarRef });
 
   // The same rules as the composer on Home: who the text mentions decides who can read it.
   const audience = useMentionedAudience({
@@ -182,19 +181,42 @@ export function PostcardEditor({
     send,
   } = usePostcardSend({
     handOver,
-    onLetGo: () => setSelectedId(null),
+    onLetGo: () => letGo(),
     containerRef: contentRef,
     sendRef,
     onSent: onClose,
   });
   const isFlying = sendStatus === 'flying';
+  const placeSticker = useCallback(
+    (id: string, stickerKey: string) =>
+      change({ kind: 'addSticker', id, stickerKey, side }),
+    [side],
+  );
+  // The sticker selected, or `STAMP_ID` for the stamp: one thing on the card at a time.
+  const {
+    selectedId,
+    setSelectedId,
+    letGo,
+    areStickersHidden,
+    handleAddSticker,
+    handleChangeSticker,
+    handleRemoveSticker,
+    handleHideStickers,
+    showStickers,
+  } = useCardStickers({
+    change,
+    place: placeSticker,
+    toolbarRef,
+    keepsSelection:
+      '[data-sticker], [data-stamp], [data-sticker-panel], [data-stamp-panel]',
+  });
   // Leaving lets go of anything selected too, so its page-wide listener goes with the card; the
   // editor stays mounted after the card closes.
   const { askToClose, leaveDialog } = usePostcardLeave({
     isWriting: sendStatus === 'writing',
     fallbackRef: messageRef,
     onLeave: () => {
-      setSelectedId(null);
+      letGo();
       onClose();
     },
   });
@@ -223,47 +245,26 @@ export function PostcardEditor({
   const handleMessageFocus = useCallback(() => {
     setIsEditingText(true);
     setIsStampPickerOpen(false);
-  }, []);
-
-  // A new sticker goes on the side showing, selected, so it can be moved straight away, which takes
-  // the others being on show too. The bar refuses a fourth; were one to get through, it would select
-  // nothing.
-  const handleAddSticker = useCallback(
-    (stickerKey: string) => {
-      stickersAddedRef.current += 1;
-      const id = `sticker-${stickersAddedRef.current}`;
-      change({ kind: 'addSticker', id, stickerKey, side });
-      setSelectedId(id);
-      setAreStickersHidden(false);
-    },
-    [side],
-  );
-  const handleChangeSticker = useCallback(
-    (id: string, fields: PostcardStickerChange) =>
-      change({ kind: 'changeSticker', id, fields }),
-    [],
-  );
-  // A sticker taken off takes the cursor with it, so it goes to Stickers, where another can be added.
-  const handleRemoveSticker = useCallback((id: string) => {
-    change({ kind: 'removeSticker', id });
-    setSelectedId((current) => (current === id ? null : current));
-    toolbarRef.current
-      ?.querySelector<HTMLElement>('[data-stickers-tool]')
-      ?.focus();
-  }, []);
+  }, [setIsEditingText]);
 
   // A stamp chosen is selected, so what it can do shows straight away.
-  const handleStampChange = useCallback((stampKey: string) => {
-    change({ kind: 'card', fields: { stampKey } });
-    setSelectedId(STAMP_ID);
-  }, []);
-  const handleSelectStamp = useCallback(() => setSelectedId(STAMP_ID), []);
+  const handleStampChange = useCallback(
+    (stampKey: string) => {
+      change({ kind: 'card', fields: { stampKey } });
+      setSelectedId(STAMP_ID);
+    },
+    [setSelectedId],
+  );
+  const handleSelectStamp = useCallback(
+    () => setSelectedId(STAMP_ID),
+    [setSelectedId],
+  );
   // The box printed for a stamp opens the same drawer as Stamp, which is on the usual bar.
   const handleChooseStamp = useCallback(() => {
     setIsEditingText(false);
-    setSelectedId(null);
+    letGo();
     setIsStampPickerOpen(true);
-  }, []);
+  }, [letGo, setIsEditingText]);
   // As with a sticker, the cursor goes to the tool that puts one back.
   const handleRemoveStamp = useCallback(() => {
     change({ kind: 'card', fields: { stampKey: null } });
@@ -271,28 +272,7 @@ export function PostcardEditor({
     toolbarRef.current
       ?.querySelector<HTMLElement>('[data-stamp-tool]')
       ?.focus();
-  }, []);
-
-  // A press on anything but a sticker, the stamp or their drawers lets go of what was selected.
-  // Listened for only while one is: the editor stays mounted after the card closes.
-  const letGo = useCallback(() => setSelectedId(null), []);
-  usePressAway(
-    selectedId !== null,
-    '[data-sticker], [data-stamp], [data-sticker-panel], [data-stamp-panel]',
-    letGo,
-  );
-
-  // Done takes the text tools away, so the cursor goes to the first of the usual tools that
-  // works, or, where none works yet, as on an answer, to the first one, rather than being lost
-  // with them.
-  const handleDone = useCallback(() => {
-    flushSync(() => setIsEditingText(false));
-    const tools = toolbarRef.current;
-    (
-      tools?.querySelector<HTMLElement>('button:not([aria-disabled="true"])') ??
-      tools?.querySelector<HTMLElement>('button')
-    )?.focus();
-  }, []);
+  }, [setSelectedId]);
 
   // Anything the writer has done, beyond who the caller already chose it was for.
   const hasWritten =
@@ -304,53 +284,19 @@ export function PostcardEditor({
 
   function handleFlip() {
     setIsEditingText(false);
-    setSelectedId(null);
+    letGo();
     setIsStampPickerOpen(false);
     turnOver();
   }
 
-  // A key press reaches none of the listeners that let go of a selected sticker, and it would stay
-  // selected out of sight.
-  function handleHideStickers() {
-    setAreStickersHidden((current) => !current);
-    setSelectedId(null);
-  }
-
-  // The stickers go with the card whether they are showing or not, so the card that flies shows them.
   function handleSend() {
-    setAreStickersHidden(false);
+    showStickers();
     void send();
   }
 
-  // The cursor anywhere but the message or the bar leaves the text tools; the bar stops its own
-  // focus, menus included, from getting here.
-  function handleFocus(event: React.FocusEvent) {
-    if (event.target !== messageRef.current) {
-      setIsEditingText(false);
-    }
-  }
-
-  // A press on the bar between its tools takes no focus, so the text tools stay up.
-  function handleToolbarMouseDown(event: React.MouseEvent) {
-    if (
-      event.target instanceof Element &&
-      !event.target.closest('button, input, [role="menuitem"]')
-    ) {
-      event.preventDefault();
-    }
-  }
-
-  // Escape while styling leaves the text tools; otherwise it asks before closing, like Close.
   function handleEscapeKeyDown(event: KeyboardEvent) {
     event.preventDefault();
-    if (isEscapeTakenInside(messageRef.current, contentRef.current)) {
-      return;
-    }
-    if (isEditingText) {
-      setIsEditingText(false);
-    } else {
-      askToClose();
-    }
+    handleEscape(askToClose);
   }
 
   // The cursor belongs on the card: on "To" while nobody is chosen, on the message once somebody
@@ -364,15 +310,6 @@ export function PostcardEditor({
     if (target instanceof HTMLElement) {
       event.preventDefault();
       target.focus();
-    }
-  }
-
-  // The caller may send focus somewhere of its own; otherwise it goes back to the opener, if
-  // that is still on the page.
-  function handleCloseAutoFocus(event: Event) {
-    onCloseAutoFocus?.(event);
-    if (!event.defaultPrevented) {
-      giveFocusBack(event);
     }
   }
 

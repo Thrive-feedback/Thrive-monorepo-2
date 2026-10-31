@@ -33,7 +33,13 @@ export function WaitingAskList({ initialPage, sort }: WaitingAskListProps) {
     readNext,
   );
   const { answered } = useAnsweredAsks();
-  const waiting = items.filter((ask) => !answered.has(ask.askId));
+  const isUnanswered = (ask: MyAsk) => !answered.has(ask.askId);
+  const read = items.filter(isUnanswered);
+  // Every card read is answered, so what came in meanwhile is worth showing: the page holds it.
+  const waiting =
+    read.length === 0 && !hasMore
+      ? initialPage.items.filter(isUnanswered)
+      : read;
 
   if (waiting.length === 0 && !hasMore) {
     return <WaitingEmpty />;

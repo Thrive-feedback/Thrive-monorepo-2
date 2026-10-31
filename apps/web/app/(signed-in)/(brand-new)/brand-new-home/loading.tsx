@@ -1,6 +1,6 @@
 import { BrandNewPageTitle } from '@/app/(signed-in)/(brand-new)/_components/brand-new-page-title';
 import { BRAND_NEW_COLUMN } from '@/app/(signed-in)/(brand-new)/_lib/brand-new-column.constant';
-import { FeedComposerSkeleton } from '@/components/organisms/feed-composer';
+import { FeedComposerSkeleton } from '@/components/organisms/feed-composer/feed-composer-skeleton';
 import { cn } from '@/lib/cn.util';
 import { HomeFeedSkeleton } from './_components/home-feed';
 

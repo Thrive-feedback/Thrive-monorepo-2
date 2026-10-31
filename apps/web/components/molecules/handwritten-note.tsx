@@ -1,10 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
 import styles from './handwritten-note.module.css';
-import { Text } from './text';
-
-/** Exported so a handwritten figure can write itself on the way a note does. */
-export const writeOn = styles.writeOn;
 
 const note = cva(
   'pointer-events-none block w-fit select-none text-action-secondary-hover',
@@ -42,7 +39,7 @@ export function HandwrittenNote({
       as="span"
       variant={size === 'lg' ? 'subtitle-handwrite-1' : 'subtitle-handwrite-2'}
       aria-hidden="true"
-      className={cn(note({ tilt }), writeOn, className)}
+      className={cn(note({ tilt }), styles.writeOn, className)}
     >
       {children}
     </Text>

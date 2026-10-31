@@ -1,3 +1,4 @@
+import { unstable_rethrow } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 /** Starts reading the next page this far before the end comes into view. */
@@ -31,7 +32,14 @@ export function useEndlessList<Item>(
       return;
     }
     setPhase('reading');
-    const page = await readNext(cursor);
+    let page: EndlessPage<Item> | null = null;
+    try {
+      page = await readNext(cursor);
+    } catch (error) {
+      // Being signed out rejects with a redirect, which is not a page that failed. Anything else,
+      // such as the connection dropping, is one, and the list offers to try again.
+      unstable_rethrow(error);
+    }
     if (!page) {
       setPhase('failed');
       return;

@@ -6,7 +6,7 @@ import { POSTCARD_INKS } from '@/components/organisms/postcard-dialog/postcard-s
 import { cn } from '@/lib/cn.util';
 import { MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
 import {
-  cutToMessageLength,
+  cutFieldToMessageLength,
   messageLength,
 } from '@/lib/feedback/message-length.util';
 import styles from './kudos-card.module.css';
@@ -49,18 +49,10 @@ export function KudosMessage({
     sizeStep: fittedSizeStep(textStyle.sizeStep, messageLength(message)),
   };
 
-  // What is cut goes from the field itself as well as from the state: left to React, the shorter
-  // value would be written back over it and the cursor thrown to the end of the message.
   function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    const field = event.currentTarget;
-    const cursor = field.selectionStart;
-    const kept = cutToMessageLength(field.value, cursor, MAX_KUDOS_LENGTH);
-    if (kept !== field.value) {
-      const cursorAfterCut = cursor - (field.value.length - kept.length);
-      field.value = kept;
-      field.setSelectionRange(cursorAfterCut, cursorAfterCut);
-    }
-    onMessageChange(kept);
+    onMessageChange(
+      cutFieldToMessageLength(event.currentTarget, MAX_KUDOS_LENGTH),
+    );
   }
 
   return (
@@ -82,7 +74,7 @@ export function KudosMessage({
         value={message}
         triggers={triggers}
         aria-describedby={limitId}
-        placeholder="Say well done in a few words. Name someone with @, or leave it for the whole team."
+        placeholder="Say well done in a few words. Name someone with @, or leave it for the whole Workspace."
         onChange={handleChange}
         onFocus={onMessageFocus}
         onPointerDown={onMessageFocus}
