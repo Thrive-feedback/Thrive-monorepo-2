@@ -1,5 +1,5 @@
 import { ShowcaseEntry } from '@/app/ui-showcase/_components/showcase-entry';
-import { MiniPostcard } from '@/components/atoms/mini-postcard';
+import { MiniPostcard } from '@/components/molecules/mini-postcard';
 import { FeedCardCases } from './feed-card-cases';
 import { REQUESTED_CASES } from './feed-card-samples.constant';
 
@@ -53,5 +53,5 @@ export function RequestedFeedbackCardEntry() {
 }
 
 export function RequestedFeedbackCardPreview() {
-  return <MiniPostcard kind="requested" />;
+  return <MiniPostcard kind="requested" date="2026-10-31T03:00:00.000Z" />;
 }

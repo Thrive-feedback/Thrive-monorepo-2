@@ -22,7 +22,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .box:hover .face {
+  .box:hover .face:not([data-pending]) {
     animation: shake var(--motion-duration-slow) var(--motion-ease-in-out);
   }
 }

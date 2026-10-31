@@ -1,5 +1,5 @@
 import { Text } from '@/components/atoms/text';
-import { FeedbackText } from '../feedback-text';
+import { FeedbackText } from '@/components/organisms/feedback-text';
 import { FeedCardFrame, type FeedCardProps } from './feed-card-frame';
 
 /**

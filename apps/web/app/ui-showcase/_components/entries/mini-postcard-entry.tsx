@@ -2,28 +2,42 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
-import { MiniPostcard } from '@/components/atoms/mini-postcard';
+import { MiniPostcard } from '@/components/molecules/mini-postcard';
+
+/** Any day will do: the showcase reaches no Workspace. */
+const SENT_ON = '2026-10-31T03:00:00.000Z';
 
 export function MiniPostcardEntry() {
   return (
     <ShowcaseEntry
       name="MiniPostcard"
-      level="atom"
+      level="molecule"
       origin="thrive"
-      source="components/atoms/mini-postcard.tsx"
-      summary="A small drawing of a postcard, with lines of writing and the blue THRIVE POST mark. Hovering it gives it a small shake and shows View postcard."
+      source="components/molecules/mini-postcard.tsx"
+      summary="A small drawing of a postcard, with lines of writing and the postmark of the day it was sent. Hovering it gives it a small shake and shows View postcard."
       useFor="The corner of a card that opens a postcard."
       avoidFor="Showing what a postcard says or how it looks: it is the same drawing for every card of a kind."
-      usage={`import { MiniPostcard } from '@/components/atoms/mini-postcard';
+      usage={`import { MiniPostcard } from '@/components/molecules/mini-postcard';
 
-<MiniPostcard kind="offered" />
-<MiniPostcard kind="requested" />`}
+<MiniPostcard kind="offered" date={item.givenAt} />
+<MiniPostcard kind="requested" date={item.givenAt} />`}
       props={[
         {
           name: 'kind',
           type: "'offered' | 'requested'",
           description:
             'One full side, or a side halved as a request and its answer are.',
+        },
+        {
+          name: 'date',
+          type: 'string',
+          description: 'When it was sent, as an ISO date, for the postmark.',
+        },
+        {
+          name: 'isPending',
+          type: 'boolean',
+          defaultValue: 'false',
+          description: 'Fades and pulses it while what it opens is on its way.',
         },
         {
           name: 'isPopupShown',
@@ -43,17 +57,17 @@ export function MiniPostcardEntry() {
         label="Offered"
         hint="Hover it: it shakes, and the popup shows."
       >
-        <MiniPostcard kind="offered" />
+        <MiniPostcard kind="offered" date={SENT_ON} />
       </StateCell>
       <StateCell
         label="Requested"
         hint="Hover it: it shakes, and the popup shows."
       >
-        <MiniPostcard kind="requested" />
+        <MiniPostcard kind="requested" date={SENT_ON} />
       </StateCell>
       <StateCell label="Popup showing">
         <div className="pt-10">
-          <MiniPostcard kind="offered" isPopupShown />
+          <MiniPostcard kind="offered" date={SENT_ON} isPopupShown />
         </div>
       </StateCell>
     </ShowcaseEntry>
@@ -61,5 +75,5 @@ export function MiniPostcardEntry() {
 }
 
 export function MiniPostcardPreview() {
-  return <MiniPostcard kind="offered" />;
+  return <MiniPostcard kind="offered" date={SENT_ON} />;
 }

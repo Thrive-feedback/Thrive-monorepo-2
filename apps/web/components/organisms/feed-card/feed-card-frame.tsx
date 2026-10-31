@@ -1,20 +1,23 @@
 import { GlobeIcon, UsersIcon } from 'lucide-react';
 import { Badge } from '@/components/atoms/badge';
-import { MiniPostcard } from '@/components/atoms/mini-postcard';
 import { Text } from '@/components/atoms/text';
 import { AvatarName } from '@/components/molecules/avatar-name';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { TargetLink } from '@/components/molecules/target-link';
+import { PeopleDialogButton } from '@/components/organisms/people-dialog-button';
+import { PersonName } from '@/components/organisms/person-name';
 import { calendarDay } from '@/lib/calendar-day.util';
+import { cn } from '@/lib/cn.util';
 import type { HomeFeedItem } from '@/lib/feedback/home-feed-item.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
-import { PeopleDialogButton } from '../people-dialog-button';
-import { PersonName } from '../person-name';
+import styles from './feed-card-frame.module.css';
 import {
   feedCardGiver,
   feedCardSentence,
+  NO_NAME_IN_A_SENTENCE,
   readerFirst,
 } from './feed-card-sentence.util';
+import { PendingMiniPostcard } from './pending-mini-postcard';
 
 const ORIGIN_NAMES: Readonly<Record<HomeFeedItem['origin'], string>> = {
   REQUESTED: 'Requested',
@@ -28,9 +31,6 @@ const AUDIENCES: Readonly<
   EVERYONE: { label: 'Everyone in the Workspace', Icon: GlobeIcon },
   SELECTED_PEOPLE: { label: 'Selected people', Icon: UsersIcon },
 };
-
-/** What a card calls somebody who has not introduced themselves yet. */
-const RECEIVER_WITH_NO_NAME = 'a teammate';
 
 export type FeedCardProps = {
   item: HomeFeedItem;
@@ -66,7 +66,7 @@ function Receivers({
           'you'
         ) : (
           <PersonName
-            name={onlyReceiver.name ?? RECEIVER_WITH_NO_NAME}
+            name={onlyReceiver.name ?? NO_NAME_IN_A_SENTENCE}
             inactive={onlyReceiver.inactive}
           />
         )}
@@ -77,7 +77,7 @@ function Receivers({
     <span className="inline-flex">
       <PeopleDialogButton
         people={readerFirst(item.receivers, readerAccountId)}
-        unnamed={RECEIVER_WITH_NO_NAME}
+        unnamed={NO_NAME_IN_A_SENTENCE}
         description={`${feedCardGiver(item.giver, readerAccountId)} gave this Feedback to all of them. Each of them sees who else it was for.`}
       />
     </span>
@@ -99,7 +99,7 @@ export function FeedCardFrame({
 
   return (
     <article className="flex flex-col gap-3 rounded-page bg-action-primary/8 p-5">
-      <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1">
+      <header className={cn('grid items-start gap-x-3 gap-y-1', styles.header)}>
         <PhotoAvatar
           name={item.giver.name ?? ''}
           photoUrl={item.giver.photoUrl}
@@ -148,8 +148,9 @@ export function FeedCardFrame({
           <span className="sr-only">
             Open postcard: {feedCardSentence(item, readerAccountId)}
           </span>
-          <MiniPostcard
+          <PendingMiniPostcard
             kind={item.origin === 'REQUESTED' ? 'requested' : 'offered'}
+            date={item.givenAt}
           />
         </TargetLink>
       </header>
