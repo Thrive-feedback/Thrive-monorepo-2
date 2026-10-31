@@ -32,8 +32,6 @@ export type PostcardToolbarProps = {
   stampKey: string | null;
   /** Whether the Stamp drawer is open: the box printed on the card opens it too. */
   isStampPickerOpen: boolean;
-  /** Who else can read it, last on the bar. */
-  children?: React.ReactNode;
   onToneChange: (tone: PaperTone) => void;
   /** Adds a sticker to the back, which is the side showing. */
   onAddSticker: (stickerKey: string) => void;
@@ -43,9 +41,9 @@ export type PostcardToolbarProps = {
 
 /**
  * The postcard's floating bar while nothing on it is being styled: stickers for the back, its
- * stamp, the paper the card is printed on, and who else can read it. Giving and asking offer all
- * four; an answer offers only stickers, since it is written on the Requester's card and the person
- * answering is never told who reads it. On a phone the tools keep their icons and drop their words.
+ * stamp, and the paper the card is printed on. Giving and asking offer all three; an answer offers
+ * only stickers, since it is written on the Requester's card. On a phone the tools keep their icons
+ * and drop their words.
  */
 export function PostcardToolbar({
   kind,
@@ -53,7 +51,6 @@ export function PostcardToolbar({
   stickerCount,
   stampKey,
   isStampPickerOpen,
-  children,
   onToneChange,
   onAddSticker,
   onStampChange,
@@ -120,8 +117,6 @@ export function PostcardToolbar({
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-          <PostcardToolDivider />
-          {children}
         </>
       )}
     </>

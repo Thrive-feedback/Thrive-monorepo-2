@@ -11,7 +11,7 @@ export const SENT_AWAY =
 export const POSTCARD_SCREEN =
   'translate-none inset-0 top-0 mx-0 max-h-none max-w-none gap-0 overflow-y-auto overflow-x-hidden rounded-none border-0 bg-transparent p-4 shadow-none focus-visible:outline-hidden md:p-8';
 
-/** The column everything sits in, wider than the card, so the text tools fit on one line beside Send. */
+/** The column everything sits in, wider than the card, so the tools fit on one line beside Send. */
 export const POSTCARD_PAGE =
   'mx-auto my-auto flex w-full max-w-5xl flex-col items-center gap-4';
 
@@ -19,7 +19,11 @@ export const POSTCARD_PAGE =
 export const POSTCARD_CARD_COLUMN =
   'relative flex w-full max-w-2xl flex-col gap-3';
 
-/** The pill under the card that holds its tools. */
+/** The buttons for the card itself: beside it where there is room, so they never cover the writing; above it on a narrow screen. */
+export const POSTCARD_CARD_ACTIONS =
+  'flex gap-2 self-end lg:absolute lg:top-1/2 lg:left-full lg:ml-6 lg:-translate-y-1/2 lg:flex-col';
+
+/** A pill under the card: the bar of its tools, and the box of who else can read it and Send. */
 export const POSTCARD_BAR =
   'flex max-w-full items-center rounded-control border border-border-muted bg-surface-raised p-1.5 shadow-high';
 

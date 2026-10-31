@@ -22,7 +22,7 @@ export function PostcardReadDialogEntry() {
       level="organism"
       origin="thrive"
       source="components/organisms/postcard-dialog/postcard-read-dialog.tsx — Dialog + Postcard + PostcardAnswerPager, on the parts PostcardDialog writes with"
-      summary="A postcard that has been sent, in front of the page, looking as it did when it was written, with its postmark in the corner and nothing left to change."
+      summary="A postcard that has been sent, in front of the page, looking as it did when it was written, with its postmark in the corner and nothing left to change. A button beside Turn over clears the stickers and the postmark away for a moment."
       useFor="Reading Feedback or an answered Feedback Request that was written on a postcard."
       avoidFor="Writing one; use PostcardDialog. A list of Feedback; use FeedbackCard."
       usage={`import { PostcardReadDialog } from '@/components/organisms/postcard-dialog/postcard-read-dialog';
@@ -46,10 +46,17 @@ export function PostcardReadDialogEntry() {
             'Which card, by kind. give: one full back, the message under who it is from and who it went to. ask: the back halved, the Ask on the left and one answer on the right, with at least one answer; pass only the answers this reader may read.',
         },
         {
+          name: 'initialAnswerIndex',
+          type: 'number',
+          defaultValue: '0',
+          description:
+            'Which answer shows as it opens, on a request: the one pressed, on Home.',
+        },
+        {
           name: 'open / onOpenChange',
           type: 'boolean / (open: boolean) => void',
           description:
-            'Whether it is open. Each opening starts on the back at the first answer. Close and Escape close it at once, because nothing can be lost.',
+            'Whether it is open. Each opening starts on the back at initialAnswerIndex. Close and Escape close it at once, because nothing can be lost.',
         },
       ]}
       accessibility={[
@@ -57,7 +64,7 @@ export function PostcardReadDialogEntry() {
         'The side turned away is inert and hidden from screen readers. Turn over is named for the side it turns to.',
         'A message can be reached from the keyboard, so a long one can be scrolled.',
         'The pager says whose answer is showing as it changes. It runs round, so neither button is ever disabled under the cursor.',
-        'The postmark is hidden from screen readers, and the day it prints is said in words beside it. On a request it is the day of the answer showing.',
+        'The postmark is hidden from screen readers, and the day it prints is said in words beside it. On a request it is the day of the answer showing. Hiding the postmark hides those words too.',
       ]}
     >
       <StateCell

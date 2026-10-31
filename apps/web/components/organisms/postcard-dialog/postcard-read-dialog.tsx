@@ -7,10 +7,12 @@ import { Postcard } from './postcard';
 import { PostcardAnswerPager } from './postcard-answer-pager';
 import type { PostcardSide } from './postcard-draft.type';
 import {
+  POSTCARD_CARD_ACTIONS,
   POSTCARD_CARD_COLUMN,
   POSTCARD_PAGE,
   POSTCARD_SCREEN,
 } from './postcard-editor.constant';
+import { PostcardHideButton } from './postcard-hide-button';
 import { PostcardPostmarkStill } from './postcard-postmark-still';
 import type { ReadPostcard } from './postcard-read.type';
 import { PostcardAnsweredBack, PostcardGivenBack } from './postcard-read-back';
@@ -27,6 +29,8 @@ export type PostcardReadDialogProps = {
   /** What is being read, above the card: "Feedback from Ann". */
   title: string;
   card: ReadPostcard;
+  /** Which answer shows as it opens, counting from 0, on a request's card. */
+  initialAnswerIndex?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -39,11 +43,15 @@ export type PostcardReadDialogProps = {
  * - `ask`: the back halved, the Ask on the left and one answer on the right, with a pager under the
  *   card when there is more than one.
  *
+ * Beside Turn over, a button clears the stickers and the postmark away to read what lies under
+ * them, and puts them back. Every opening starts with them on.
+ *
  * Nothing can be lost, so Close and Escape close it at once.
  */
 export function PostcardReadDialog({
   title,
   card,
+  initialAnswerIndex = 0,
   open,
   onOpenChange,
 }: PostcardReadDialogProps) {
@@ -61,6 +69,7 @@ export function PostcardReadDialog({
         <PostcardReadView
           title={title}
           card={card}
+          initialAnswerIndex={initialAnswerIndex}
           onClose={() => onOpenChange(false)}
         />
       </DialogContent>
@@ -110,16 +119,23 @@ function showing(card: ReadPostcard, answerIndex: number) {
 type PostcardReadViewProps = {
   title: string;
   card: ReadPostcard;
+  initialAnswerIndex: number;
   onClose: () => void;
 };
 
 /**
  * One opening of the dialog. It lives inside the dialog's content, which goes when the dialog
- * closes, so every opening starts on the back at the first answer.
+ * closes, so every opening starts on the back at the answer it was opened on.
  */
-function PostcardReadView({ title, card, onClose }: PostcardReadViewProps) {
+function PostcardReadView({
+  title,
+  card,
+  initialAnswerIndex,
+  onClose,
+}: PostcardReadViewProps) {
   const [side, setSide] = useState<PostcardSide>('back');
-  const [answerIndex, setAnswerIndex] = useState(0);
+  const [answerIndex, setAnswerIndex] = useState(initialAnswerIndex);
+  const [areMarksHidden, setAreMarksHidden] = useState(false);
   const { look, sentOn, back, shownIndex, answerStickers, pager } = showing(
     card,
     answerIndex,
@@ -145,18 +161,26 @@ function PostcardReadView({ title, card, onClose }: PostcardReadViewProps) {
       <PostcardTitleRow title={title} onClose={onClose} />
 
       <div className={POSTCARD_CARD_COLUMN}>
-        <PostcardTurnButton
-          side={side}
-          turnToBackHint="Turn over to read the back"
-          onClick={() =>
-            setSide((current) => (current === 'back' ? 'front' : 'back'))
-          }
-        />
+        <div className={POSTCARD_CARD_ACTIONS}>
+          <PostcardTurnButton
+            side={side}
+            turnToBackHint="Turn over to read the back"
+            onClick={() =>
+              setSide((current) => (current === 'back' ? 'front' : 'back'))
+            }
+          />
+          <PostcardHideButton
+            isHidden={areMarksHidden}
+            what="stickers and postmark"
+            onClick={() => setAreMarksHidden((current) => !current)}
+          />
+        </div>
         <Postcard
           side={side}
           tone={look.tone}
           templateKey={look.templateKey}
           stickers={{ front: stickersOn('front'), back: stickersOn('back') }}
+          areStickersHidden={areMarksHidden}
           stamp={
             <>
               {look.stampKey ? (
@@ -164,7 +188,7 @@ function PostcardReadView({ title, card, onClose }: PostcardReadViewProps) {
               ) : (
                 <PostcardStampBoxReadOnly />
               )}
-              <PostcardPostmarkStill date={sentOn} />
+              {!areMarksHidden && <PostcardPostmarkStill date={sentOn} />}
             </>
           }
         >

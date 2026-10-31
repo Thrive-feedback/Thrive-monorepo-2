@@ -171,8 +171,14 @@ function parentOf(element: Element) {
   return parent;
 }
 const send = () => screen.getByRole('button', { name: /^Send feedback/ });
+const sendIfAny = () =>
+  screen.queryByRole('button', { name: /^Send feedback/ });
+const visibilityTool = () =>
+  screen.getByRole('button', { name: /^Who else can read it/ });
+const visibilityToolIfAny = () =>
+  screen.queryByRole('button', { name: /^Who else can read it/ });
 
-/** Send waits for the text tools to be put away, so Done comes first where they are up. */
+/** Send is gone while the text tools are up, so Done comes first where they are. */
 async function leaveTextTools(user: ReturnType<typeof userEvent.setup>) {
   const done = screen.queryByRole('button', { name: 'Done' });
   if (done) {
@@ -538,19 +544,32 @@ describe('PostcardDialog', () => {
     expect(message()).toHaveAccessibleDescription('Up to 1,000 characters.');
   });
 
-  it('keeps Send disabled while the text tools are up, until Done', async () => {
+  it('takes Send and who else can read it away while the text tools are up, until Done', async () => {
     const user = userEvent.setup();
     render(dialog({ defaultRecipientAccountIds: ['mali'] }));
 
     await user.type(message(), 'Thank you for the demo.');
-    expect(send()).toBeDisabled();
+    expect(sendIfAny()).toBeNull();
+    expect(visibilityToolIfAny()).toBeNull();
 
     await user.click(screen.getByRole('button', { name: 'Done' }));
 
     expect(send()).toBeEnabled();
+    expect(visibilityToolIfAny()).toBeInTheDocument();
   });
 
-  it('keeps Send disabled again when the message is gone back to', async () => {
+  it('brings Send back when Escape leaves the text tools', async () => {
+    const user = userEvent.setup();
+    render(dialog({ defaultRecipientAccountIds: ['mali'] }));
+    await user.type(message(), 'Thank you for the demo.');
+
+    await user.keyboard('{Escape}');
+
+    expect(send()).toBeEnabled();
+    expect(visibilityTool()).toBeInTheDocument();
+  });
+
+  it('takes Send away again when the message is gone back to', async () => {
     const user = userEvent.setup();
     render(dialog({ defaultRecipientAccountIds: ['mali'] }));
     await user.type(message(), 'Thank you for the demo.');
@@ -558,7 +577,7 @@ describe('PostcardDialog', () => {
 
     await user.click(message());
 
-    expect(send()).toBeDisabled();
+    expect(sendIfAny()).toBeNull();
   });
 
   it('waits for somebody to send it to and something to say', async () => {
@@ -566,6 +585,7 @@ describe('PostcardDialog', () => {
     render(dialog());
 
     await user.type(message(), 'Thank you for the demo.');
+    await leaveTextTools(user);
     expect(send()).toBeDisabled();
 
     await chooseMali(user);
@@ -758,7 +778,6 @@ describe('PostcardDialog, the front', () => {
     ).toEqual([
       ['Templates', null],
       ['Stickers (0/3)', null],
-      ['Who else can read it: Everyone in the Workspace', null],
     ]);
   });
 
@@ -972,10 +991,6 @@ describe('PostcardDialog, the front', () => {
 });
 
 describe('PostcardDialog, as the composer on Home', () => {
-  /** The visibility tool, which says the current choice, and the choices it opens. */
-  const visibilityTool = () =>
-    screen.getByRole('button', { name: /Who else can read it/ });
-
   it('starts shared with everyone, as the composer does', async () => {
     const user = userEvent.setup();
     render(dialog({ defaultRecipientAccountIds: ['mali'] }));
@@ -2049,6 +2064,97 @@ describe('PostcardDialog, stickers', () => {
   });
 });
 
+describe('PostcardDialog, hiding the stickers', () => {
+  const hide = () => screen.getByRole('button', { name: 'Hide stickers' });
+  const show = () => screen.getByRole('button', { name: 'Show stickers' });
+  const sticker = (name: string) =>
+    screen.queryByRole('button', { name: `${name} sticker`, hidden: true });
+
+  it('has nothing to hide on a card with no stickers', () => {
+    render(dialog());
+
+    expect(hide()).toBeDisabled();
+  });
+
+  it('hides every sticker on both sides, and shows them again', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await addSticker(user, 'Love');
+    await turnToFront(user);
+    await addSticker(user, 'Star');
+
+    await user.click(hide());
+
+    expect(sticker('Love')).toBeNull();
+    expect(sticker('Star')).toBeNull();
+    expect(stickersTool()).toHaveTextContent('Stickers (2/3)');
+
+    await user.click(show());
+
+    expect(sticker('Love')).toBeInTheDocument();
+    expect(sticker('Star')).toBeInTheDocument();
+  });
+
+  it('shows them all again when one is added, or it would land unseen', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await addSticker(user, 'Love');
+    await user.click(hide());
+
+    await addSticker(user, 'Star');
+
+    expect(sticker('Love')).toBeInTheDocument();
+    expect(sticker('Star')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('still sends them, and shows them on the card that goes', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn().mockResolvedValue(true);
+    render(dialog({ defaultRecipientAccountIds: ['mali'], onSend }));
+    await user.type(message(), 'Thank you.');
+    await user.keyboard('{Escape}');
+    await addSticker(user, 'Love');
+    await user.click(hide());
+
+    await pressSend(user);
+
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stickers: [
+          expect.objectContaining({ stickerKey: 'system/sticker-03-love' }),
+        ],
+      }),
+    );
+    expect(sticker('Love')).toBeInTheDocument();
+  });
+
+  it('lets go of the sticker selected, even from the keyboard', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await addSticker(user, 'Love');
+    expect(sticker('Love')).toHaveAttribute('aria-pressed', 'true');
+
+    hide().focus();
+    await user.keyboard('{Enter}');
+    show().focus();
+    await user.keyboard('{Enter}');
+
+    expect(sticker('Love')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('says what it does when pointed at', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await addSticker(user, 'Love');
+
+    await user.hover(hide());
+
+    expect(
+      await screen.findByRole('tooltip', { name: 'Hide stickers' }),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('PostcardDialog, asking for feedback', () => {
   it('halves the back: the request on the left, the right left for the answers', () => {
     render(dialog({ kind: 'ask', title: 'Ask for feedback' }));
@@ -2075,9 +2181,10 @@ describe('PostcardDialog, asking for feedback', () => {
       within(tools).getByRole('button', { name: /^Paper Tone/ }),
     ).toBeInTheDocument();
     expect(
-      within(tools).getByRole('button', {
-        name: /^Who else can read it.*Everyone/,
-      }),
+      within(tools).queryByRole('button', { name: /^Who else can read it/ }),
+    ).toBeNull();
+    expect(
+      screen.getByRole('button', { name: /^Who else can read it.*Everyone/ }),
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole('textbox', { name: 'Your request' }));
@@ -2158,6 +2265,28 @@ describe('PostcardDialog, answering an Ask', () => {
     expect(screen.queryByRole('button', { name: /Love sticker/ })).toBeNull();
   });
 
+  it("hides the Requester's stickers too, on both sides", async () => {
+    const user = userEvent.setup();
+    render(answerDialog(vi.fn().mockResolvedValue(true), STICKERED));
+
+    await user.click(screen.getByRole('button', { name: 'Hide stickers' }));
+
+    expect(
+      screen.queryByRole('img', { name: 'Love sticker', hidden: true }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('img', { name: 'Star sticker', hidden: true }),
+    ).toBeNull();
+  });
+
+  it('has nothing to hide when nobody put a sticker on', () => {
+    render(answerDialog());
+
+    expect(
+      screen.getByRole('button', { name: 'Hide stickers' }),
+    ).toBeDisabled();
+  });
+
   it('prints no box for a stamp when the Requester put none on', () => {
     render(answerDialog());
 
@@ -2223,6 +2352,10 @@ describe('PostcardDialog, answering an Ask', () => {
         .getAllByRole('button')
         .map((tool) => tool.textContent),
     ).toEqual(['Stickers (0/3)']);
+    expect(visibilityToolIfAny()).toBeNull();
+    expect(
+      screen.getByRole('button', { name: /Send answer/ }),
+    ).toBeInTheDocument();
   });
 
   it('leaves Done on Stickers, the only tool, rather than losing the cursor', async () => {
@@ -2240,6 +2373,7 @@ describe('PostcardDialog, answering an Ask', () => {
     const onSend = vi.fn().mockResolvedValue(true);
     render(answerDialog(onSend));
 
+    await leaveTextTools(user);
     expect(screen.getByRole('button', { name: /Send answer/ })).toBeDisabled();
 
     await user.type(

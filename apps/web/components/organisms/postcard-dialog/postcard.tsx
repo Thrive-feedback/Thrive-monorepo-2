@@ -20,6 +20,8 @@ export type PostcardProps = {
   stamp: React.ReactNode;
   /** What is written on the back. */
   children: React.ReactNode;
+  /** Leaves the stickers off for now, on both sides, so what lies under them can be seen. */
+  areStickersHidden?: boolean;
   /** The card has finished turning over. */
   onTurned?: () => void;
 };
@@ -36,6 +38,7 @@ export function Postcard({
   stickers,
   stamp,
   children,
+  areStickersHidden = false,
   onTurned,
 }: PostcardProps) {
   const [shownSide, setShownSide] = useState(side);
@@ -88,7 +91,7 @@ export function Postcard({
           className={classNameFor('front')}
         >
           <PostcardCover templateKey={templateKey} />
-          {stickers.front}
+          {!areStickersHidden && stickers.front}
         </section>
         <section
           aria-label="Back of the postcard"
@@ -98,7 +101,7 @@ export function Postcard({
         >
           {children}
           {stamp}
-          {stickers.back}
+          {!areStickersHidden && stickers.back}
         </section>
       </div>
     </div>

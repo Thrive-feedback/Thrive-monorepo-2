@@ -60,8 +60,10 @@ export type PostcardDialogProps = PostcardDialogCommonProps &
 
 /**
  * Feedback written on a postcard, in front of the page. The card opens on its back; its front is
- * a picture, a turn away. Under the card a bar of tools sits beside Send, and while the message
- * has the cursor the bar holds the text's tools instead.
+ * a picture, a turn away. Under the card a bar of tools sits beside a box holding who else can read
+ * it and Send. While the message has the cursor the bar holds the text's tools instead, and the box
+ * is gone. Beside Turn over, a button hides every sticker to see what lies under them, and shows
+ * them again; hidden stickers still go with the card.
  *
  * - `give` (the default): one full back, the message under who it is from and who it is for.
  * - `ask`: the back halved, the Request message written on the left under From and To, and the

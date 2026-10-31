@@ -215,7 +215,7 @@ describe('PostcardReadDialog', () => {
       screen.queryByRole('button', { name: /send/i }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: /stamp|sticker/i }),
+      within(back()).queryByRole('button', { name: /stamp|sticker/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -297,6 +297,7 @@ describe('PostcardReadDialog', () => {
     renderDialog(GIVEN);
     expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
 
+    await user.tab();
     await user.tab();
     await user.tab();
 
@@ -429,6 +430,22 @@ describe('PostcardReadDialog', () => {
     expect(screen.getByRole('button', { name: 'Next answer' })).toHaveFocus();
   });
 
+  it('opens at the answer it was opened on', () => {
+    render(
+      <PostcardReadDialog
+        title="Feedback from Ann"
+        card={ANSWERED}
+        initialAnswerIndex={1}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Answer from Ben Park, 2 of 2',
+    );
+  });
+
   it('sets each answer in its own style', async () => {
     const user = userEvent.setup();
     renderDialog(DRESSED_UP);
@@ -542,5 +559,88 @@ describe('PostcardReadDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Open postcard' }));
 
     expect(within(back()).getByText('It landed well.')).toBeInTheDocument();
+  });
+
+  describe('hiding the stickers and the postmark', () => {
+    const hide = () =>
+      screen.getByRole('button', { name: 'Hide stickers and postmark' });
+    const show = () =>
+      screen.getByRole('button', { name: 'Show stickers and postmark' });
+    const sticker = (name: string) =>
+      within(back()).queryByRole('img', { name: `${name} sticker` });
+    const postmark = () => within(back()).queryByText(/^Posted /);
+
+    it('takes both off the card and leaves the stamp, then puts them back', async () => {
+      const user = userEvent.setup();
+      renderDialog(GIVEN);
+      expect(sticker('Thumbs up')).toBeInTheDocument();
+      expect(postmark()).toBeInTheDocument();
+
+      await user.click(hide());
+
+      expect(sticker('Thumbs up')).not.toBeInTheDocument();
+      expect(postmark()).not.toBeInTheDocument();
+      expect(
+        within(back()).getByRole('img', { name: 'Ocean stamp' }),
+      ).toBeInTheDocument();
+      expect(within(back()).getByText('#Ownership')).toBeInTheDocument();
+
+      await user.click(show());
+
+      expect(sticker('Thumbs up')).toBeInTheDocument();
+      expect(postmark()).toBeInTheDocument();
+    });
+
+    it('takes the ones on the front off too, and stays hidden as the card turns', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        ...GIVEN,
+        stickers: [
+          { ...STICKER, stickerKey: 'system/sticker-03-love', side: 'front' },
+        ],
+      });
+
+      await user.click(hide());
+      await user.click(
+        screen.getByRole('button', {
+          name: 'Turn over to the front, the picture',
+        }),
+      );
+      endTurn();
+
+      expect(
+        within(
+          screen.getByRole('region', { name: 'Front of the postcard' }),
+        ).queryByRole('img', { name: 'Love sticker' }),
+      ).not.toBeInTheDocument();
+      expect(show()).toBeInTheDocument();
+    });
+
+    it('stays hidden as the answers change', async () => {
+      const user = userEvent.setup();
+      renderDialog(DRESSED_UP);
+
+      await user.click(hide());
+      await user.click(screen.getByRole('button', { name: 'Next answer' }));
+
+      expect(
+        within(back()).getByText('The pricing went fast.'),
+      ).toBeInTheDocument();
+      expect(sticker('Love')).not.toBeInTheDocument();
+      expect(postmark()).not.toBeInTheDocument();
+    });
+
+    it('puts them back on the next opening', async () => {
+      const user = userEvent.setup();
+      render(<Opened card={GIVEN} />);
+
+      await user.click(screen.getByRole('button', { name: 'Open postcard' }));
+      await user.click(hide());
+      await user.click(screen.getByRole('button', { name: 'Close' }));
+      await user.click(screen.getByRole('button', { name: 'Open postcard' }));
+
+      expect(sticker('Thumbs up')).toBeInTheDocument();
+      expect(postmark()).toBeInTheDocument();
+    });
   });
 });

@@ -47,7 +47,7 @@ const ALIGNS: Readonly<
 export type PostcardTextToolbarProps = {
   textStyle: PostcardTextStyle;
   onTextStyleChange: (change: Partial<PostcardTextStyle>) => void;
-  /** Done: the writer has finished styling, and the bar goes back to its usual tools. */
+  /** Done: the writer has finished styling, so the bar's usual tools and Send come back. */
   onDone: () => void;
 };
 

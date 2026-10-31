@@ -76,7 +76,7 @@ export type PostcardVisibilityToolProps = {
   onSelectedChange: (accountIds: ReadonlySet<string>) => void;
 };
 
-/** Who else can read the card, on the bar of whichever side is showing. */
+/** Who else can read the card, beside Send on whichever side is showing. */
 export function PostcardVisibilityTool({
   kind,
   value,
