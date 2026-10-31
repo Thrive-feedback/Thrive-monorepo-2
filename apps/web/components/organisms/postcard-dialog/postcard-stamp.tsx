@@ -8,6 +8,10 @@ import { postcardStamp } from './postcard-stamp.constant';
 /** The stamp's place: 96 px, 5 px from the card's edges. The writing keeps clear of this square. */
 const CORNER = 'absolute top-1.25 right-1.25 size-24';
 
+/** The box printed in that place while no stamp is on it, with its one word in the middle. */
+const BOX =
+  'flex items-center justify-center border border-border-strong border-dashed font-display text-body-3 text-fg-secondary';
+
 /** The stamp as it looks: its picture in a paper frame with a perforated edge. */
 function StampFace({ stampKey }: { stampKey: string }) {
   return (
@@ -104,7 +108,7 @@ export type PostcardStampReadOnlyProps = {
   stampKey: string;
 };
 
-/** The Requester's stamp, while answering on their card: there to see, and nothing more. */
+/** A stamp nobody can change, such as the Requester's while answering: there to see, and nothing more. */
 export const PostcardStampReadOnly = memo(function PostcardStampReadOnly({
   stampKey,
 }: PostcardStampReadOnlyProps) {
@@ -118,6 +122,17 @@ export const PostcardStampReadOnly = memo(function PostcardStampReadOnly({
     </div>
   );
 });
+
+/** The box printed on a card sent with no stamp: as it was while writing, but part of the paper. */
+export const PostcardStampBoxReadOnly = memo(
+  function PostcardStampBoxReadOnly() {
+    return (
+      <div aria-hidden="true" className={cn(CORNER, BOX)}>
+        Stamp
+      </div>
+    );
+  },
+);
 
 export type PostcardStampBoxProps = {
   onChoose: () => void;
@@ -138,7 +153,8 @@ export const PostcardStampBox = memo(function PostcardStampBox({
       onClick={onChoose}
       className={cn(
         CORNER,
-        'flex cursor-pointer items-center justify-center border border-border-strong border-dashed text-body-3 text-fg-secondary transition-colors ease-smooth-out hover:border-action-primary hover:text-action-primary',
+        BOX,
+        'cursor-pointer transition-colors ease-smooth-out hover:border-action-primary hover:text-action-primary',
       )}
     >
       Stamp

@@ -7,6 +7,22 @@ import type { PostcardKind } from './postcard-draft.type';
 export const SENT_AWAY =
   'opacity-0 transition-opacity duration-fast ease-smooth-out motion-reduce:transition-none';
 
+/** The whole screen as the dialog, so a card taller than the window scrolls rather than being cut off. */
+export const POSTCARD_SCREEN =
+  'translate-none inset-0 top-0 mx-0 max-h-none max-w-none gap-0 overflow-y-auto overflow-x-hidden rounded-none border-0 bg-transparent p-4 shadow-none focus-visible:outline-hidden md:p-8';
+
+/** The column everything sits in, wider than the card, so the text tools fit on one line beside Send. */
+export const POSTCARD_PAGE =
+  'mx-auto my-auto flex w-full max-w-5xl flex-col items-center gap-4';
+
+/** The card, at its width, with what turns it over. */
+export const POSTCARD_CARD_COLUMN =
+  'relative flex w-full max-w-2xl flex-col gap-3';
+
+/** The pill under the card that holds its tools. */
+export const POSTCARD_BAR =
+  'flex max-w-full items-center rounded-control border border-border-muted bg-surface-raised p-1.5 shadow-high';
+
 /** What selects the stamp, among the stickers' ids: a card has only one. */
 export const STAMP_ID = 'stamp';
 

@@ -5,39 +5,9 @@ import { toast } from 'sonner';
 import { LETTER_TEAMMATES } from '@/app/ui-showcase/letter/_components/letter-teammates.mock';
 import { Button } from '@/components/atoms/button';
 import { PostcardDialog } from '@/components/organisms/postcard-dialog/postcard-dialog';
-import type { PostcardAsk } from '@/components/organisms/postcard-dialog/postcard-draft.type';
-import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
+import { SAMPLE_ASK } from './postcard-samples.mock';
 
 const WRITER = { name: 'Ann', photoUrl: null };
-
-/** A made-up Ask from Mali: the showcase reaches no Workspace. */
-const SAMPLE_ASK: PostcardAsk = {
-  requester: { name: 'Mali Sombat', photoUrl: null },
-  templateKey: 'system/postcard_template_2',
-  stampKey: 'system/stamp-02-ocean',
-  stickers: [
-    {
-      stickerKey: 'system/sticker-03-love',
-      side: 'back',
-      x: 30,
-      y: 78,
-      scale: 1,
-      rotation: -10,
-    },
-    {
-      stickerKey: 'system/sticker-09-star',
-      side: 'front',
-      x: 20,
-      y: 25,
-      scale: 1.2,
-      rotation: 12,
-    },
-  ],
-  message:
-    'How did the demo land for you?\nI rushed the pricing slide — was it still clear what each plan includes?',
-  tone: 'sage',
-  textStyle: { ...DEFAULT_TEXT_STYLE, font: 'classic' },
-};
 
 const SAMPLE_WORKSPACE_GOALS = ['Ownership', 'CustomerFirst'];
 

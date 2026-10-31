@@ -34,6 +34,8 @@ export type PlacedPostcardSticker = {
 export type PostcardWriter = {
   readonly name: string;
   readonly photoUrl: string | null;
+  /** Deactivated in this Workspace, which a card read later than it was written can show. */
+  readonly inactive?: boolean;
 };
 
 /**

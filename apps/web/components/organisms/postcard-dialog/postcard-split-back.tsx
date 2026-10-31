@@ -1,9 +1,11 @@
 import { memo } from 'react';
 import { cn } from '@/lib/cn.util';
+import { NO_TEXT_TAGS, type TextTags } from '@/lib/feedback/text-tags.type';
 import styles from './postcard.module.css';
-import { PostcardFrom } from './postcard-address';
-import type { PostcardAsk } from './postcard-draft.type';
-import { messageClassName } from './postcard-message';
+import { PostcardFrom } from './postcard-address-read-only';
+import type { PostcardAsk, PostcardWriter } from './postcard-draft.type';
+import { PostcardMessageReadOnly } from './postcard-message-read-only';
+import { messageClassName } from './postcard-message-style.util';
 import { DEFAULT_TEXT_STYLE } from './postcard-style.constant';
 
 const half = 'flex min-h-48 min-w-0 flex-col gap-4 p-5 md:min-h-0 md:p-6';
@@ -31,17 +33,33 @@ export function PostcardSplitBack({ ask, answer }: PostcardSplitBackProps) {
   );
 }
 
+export type PostcardAnswerFromProps = {
+  writer: PostcardWriter;
+};
+
+/** Who wrote the answer, heading its half, which holds the stamp's corner from `md`. */
+export function PostcardAnswerFrom({ writer }: PostcardAnswerFromProps) {
+  return (
+    <div className="md:min-h-17.5 md:pe-21">
+      <PostcardFrom writer={writer} />
+    </div>
+  );
+}
+
 export type PostcardAskReadOnlyProps = {
   ask: PostcardAsk;
+  /** What the Request message was bound to when it was sent, once it has been. */
+  messageTags?: TextTags;
 };
 
 /**
- * The Ask as its Requester wrote it, for the person answering: who asked, then the Request
- * message in full, printed in the Requester's own style. Only read: there is nothing to edit,
- * and who else was asked is never shown. It never changes, so it is drawn once.
+ * The Ask as its Requester wrote it: who asked, then the Request message in full, printed in the
+ * Requester's own style. Only read: there is nothing to edit, and who else was asked is never
+ * shown. It never changes, so it is drawn once.
  */
 export const PostcardAskReadOnly = memo(function PostcardAskReadOnly({
   ask,
+  messageTags = NO_TEXT_TAGS,
 }: PostcardAskReadOnlyProps) {
   return (
     <>
@@ -49,14 +67,12 @@ export const PostcardAskReadOnly = memo(function PostcardAskReadOnly({
       <div className="min-h-18.5 pe-21 md:min-h-0 md:pe-0">
         <PostcardFrom writer={ask.requester} />
       </div>
-      <p
-        className={cn(
-          'min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap',
-          messageClassName(ask.textStyle),
-        )}
-      >
-        {ask.message}
-      </p>
+      <PostcardMessageReadOnly
+        message={ask.message}
+        tags={messageTags}
+        textStyle={ask.textStyle}
+        isRuled={false}
+      />
     </>
   );
 });

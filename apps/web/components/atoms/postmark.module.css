@@ -1,0 +1,11 @@
+/* The postmark's rings and cancelling waves, in the ink of its text colour. */
+.ink {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: calc(var(--space-unit) * 0.5);
+}
+
+/* The ring round its date, finer than the outer one. */
+.fine {
+  stroke-width: calc(var(--space-unit) * 0.25);
+}

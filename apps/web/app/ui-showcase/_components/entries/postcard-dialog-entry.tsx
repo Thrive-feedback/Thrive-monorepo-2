@@ -15,7 +15,7 @@ export function PostcardDialogEntry() {
       source="components/organisms/postcard-dialog/postcard-dialog.tsx — Dialog + MemberMultiPicker + VisibilityMenu + DropdownMenu on a card that turns over"
       summary="Feedback written on a landscape postcard in front of the page: the message on the back under who it is from and who it is for, a picture on the front, and a bar of tools beside Send feedback that holds the text's tools while the message is written."
       useFor="Giving Feedback from anywhere: Home's + menu, a Member's page with them already chosen, a reply to something in the Feed."
-      avoidFor="Reading Feedback that was sent; use FeedbackCard. Kudos, which has its own small card."
+      avoidFor="Reading a postcard that was sent; use PostcardReadDialog. Kudos, which has its own small card."
       usage={`import { PostcardDialog } from '@/components/organisms/postcard-dialog/postcard-dialog';
 
 <PostcardDialog
@@ -80,7 +80,7 @@ export function PostcardDialogEntry() {
           name: 'onSend',
           type: '(postcard: PostcardDraft) => Promise<boolean> · answer: (answer: PostcardAnswer) => Promise<boolean>',
           description:
-            "Send was pressed, handed over at the press: give and ask hand over who it is for (or who is asked), the message, who else can read it, the stickers, the stamp, the paper and the text style; answer hands over the answer, its stickers and its style. The dialog sends nothing itself. Resolve true once it has gone: it postmarks the card in its top-right corner, flies it off by airmail and closes itself. Resolve false and the card stays open as it was; saying why is the caller's.",
+            "Send was pressed, handed over at the press: give and ask hand over who it is for (or who is asked), the message, who else can read it, the stickers, the stamp, the paper and the text style; answer hands over the answer, its stickers and its style. The dialog sends nothing itself. Resolve true once it has gone: it postmarks the card across its stamp, flies it off by airmail and closes itself. Resolve false and the card stays open as it was; saying why is the caller's.",
         },
         {
           name: 'onCloseAutoFocus',

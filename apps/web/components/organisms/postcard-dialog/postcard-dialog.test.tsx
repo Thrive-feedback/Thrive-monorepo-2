@@ -1789,7 +1789,7 @@ describe('PostcardDialog, stickers', () => {
     });
   });
 
-  it('postmarks a card with a sticker in its top-right corner, not on the sticker, then closes', async () => {
+  it('postmarks a card with a sticker on its spot, not on the sticker, then closes', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
     render(dialog({ defaultRecipientAccountIds: ['mali'], onOpenChange }));
@@ -1800,21 +1800,48 @@ describe('PostcardDialog, stickers', () => {
     await pressSend(user);
 
     // Decoration, hidden from screen readers, so it is found by its mark rather than a role.
-    expect(await postmark()).toHaveStyle({ left: '90%', top: '15%' });
+    expect(await postmark()).toHaveStyle({ left: '85.5%', top: '19.9%' });
     // The whole flight, which jsdom plays in real time.
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false), {
       timeout: 5000,
     });
   });
 
-  it('postmarks a card with nothing on it in the same corner', async () => {
+  it('dates the postmark today', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime('2026-10-04T09:30:00.000Z');
+    try {
+      const user = userEvent.setup();
+      render(dialog({ defaultRecipientAccountIds: ['mali'] }));
+      await user.type(message(), 'Thank you.');
+      await user.keyboard('{Escape}');
+
+      await pressSend(user);
+
+      const mark = await postmark();
+      expect(mark).toHaveTextContent('04 OCT');
+      expect(mark).toHaveTextContent('2026');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('prints the word in the box left for a stamp', () => {
+    render(dialog());
+
+    expect(
+      screen.getByRole('button', { name: 'Choose a stamp' }),
+    ).toHaveTextContent('Stamp');
+  });
+
+  it('postmarks a card with nothing on it on the same spot', async () => {
     const user = userEvent.setup();
     render(dialog({ defaultRecipientAccountIds: ['mali'] }));
     await user.type(message(), 'Thank you.');
 
     await pressSend(user);
 
-    expect(await postmark()).toHaveStyle({ left: '90%', top: '15%' });
+    expect(await postmark()).toHaveStyle({ left: '85.5%', top: '19.9%' });
   });
 
   it('takes a sticker off with Delete, and gives the cursor to Stickers', async () => {
@@ -2272,5 +2299,16 @@ describe('PostcardDialog, answering an Ask', () => {
     expect(
       screen.queryByRole('button', { name: /^Stickers/ }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('PostcardDialog, reading the Ask while answering', () => {
+  it('is a stop for Tab, so a long Ask can be scrolled from the keyboard', async () => {
+    const user = userEvent.setup();
+    render(answerDialog());
+
+    await user.tab({ shift: true });
+
+    expect(screen.getByText(ASK.message).closest('p')).toHaveFocus();
   });
 });
