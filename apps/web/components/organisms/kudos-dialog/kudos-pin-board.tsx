@@ -143,20 +143,23 @@ export function KudosPinBoard({ isSettled, ref }: KudosPinBoardProps) {
 export type KudosPinActionsProps = {
   /** Takes the cursor when the card has landed, since everything else is out of reach by then. */
   ref?: React.Ref<HTMLButtonElement>;
+  onGoToBoard: () => void;
   onBackToHome: () => void;
 };
 
 /**
  * What comes after the card is pinned, under the board. Going to the Kudos Board is what is offered
- * first, but it cannot be taken yet: it has no page, as the sidebar's item has no link. Home is
- * under the dialog, so going back is closing it. On a narrow screen the bar sits above the toast
- * that says the Kudos went.
+ * first. On a narrow screen the bar sits above the toast that says the Kudos went.
  */
-export function KudosPinActions({ ref, onBackToHome }: KudosPinActionsProps) {
+export function KudosPinActions({
+  ref,
+  onGoToBoard,
+  onBackToHome,
+}: KudosPinActionsProps) {
   return (
     <div className="fixed inset-x-0 bottom-28 flex justify-center px-4 motion-safe:animate-enter lg:bottom-6">
       <div className={cn(POSTCARD_BAR, 'flex-wrap justify-center gap-1.5')}>
-        <Button variant="primary" disabled className="min-h-11">
+        <Button variant="primary" onClick={onGoToBoard} className="min-h-11">
           Go to Kudos board
         </Button>
         <Button

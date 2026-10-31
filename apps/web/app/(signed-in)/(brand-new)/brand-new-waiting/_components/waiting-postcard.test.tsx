@@ -1,7 +1,12 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render as draw, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
+import { Toaster } from '@/components/atoms/toaster';
+import type { PostcardAsk } from '@/components/organisms/postcard-dialog/postcard-draft.type';
+import type { MyAsk } from '@/lib/feedback/my-ask.type';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { ROUTES } from '@/lib/routes.constant';
 import { server, TEST_API_BASE_URL } from '@/lib/test/msw-server';
 
@@ -11,28 +16,13 @@ vi.mock('next/headers', () => ({
   headers: async () => new Headers({ cookie: 'thrive.session_token=abc' }),
 }));
 
-/** `redirect` works by throwing, so the fake does too, carrying where it went. */
-class Redirected extends Error {
-  constructor(readonly to: string) {
-    super(`redirected to ${to}`);
-  }
-}
 const replace = vi.fn();
 const refresh = vi.fn();
+// One router for the whole page, as Next hands out.
+const ROUTER = { replace, refresh };
 vi.mock('next/navigation', () => ({
-  redirect: (to: string) => {
-    throw new Redirected(to);
-  },
   unstable_rethrow: () => {},
-  useRouter: () => ({ replace, refresh }),
-}));
-const toastError = vi.fn();
-const toastSuccess = vi.fn();
-vi.mock('sonner', () => ({
-  toast: {
-    error: (...args: unknown[]) => toastError(...args),
-    success: (...args: unknown[]) => toastSuccess(...args),
-  },
+  useRouter: () => ROUTER,
 }));
 const sendPostcardAnswer = vi.fn();
 vi.mock(
@@ -41,14 +31,16 @@ vi.mock(
     sendPostcardAnswer: (...args: unknown[]) => sendPostcardAnswer(...args),
   }),
 );
-vi.mock('@/lib/feedback/teammates.service', () => ({
-  readTeammates: async () => [],
-}));
-vi.mock('@/lib/feedback/workspace-goal-names.service', () => ({
-  readWorkspaceGoalNames: async () => [],
-}));
+vi.mock(
+  '@/app/(signed-in)/(brand-new)/brand-new-waiting/_lib/waiting-asks-actions.service',
+  () => ({ readNextWaitingAsks: vi.fn() }),
+);
 
+const { AnsweredAsksProvider } = await import('./answered-asks');
+const { WaitingAskList } = await import('./waiting-ask-list');
+const { WAITING_HEADING_ID } = await import('./waiting-heading.constant');
 const { WaitingPostcard } = await import('./waiting-postcard');
+const { WaitingPostcardDialog } = await import('./waiting-postcard-dialog');
 // Its code arrives on its own, which can outlast a test in a busy run if the first opening fetches it.
 await import('@/components/organisms/postcard-dialog/postcard-dialog');
 
@@ -79,14 +71,31 @@ const AN_ASK = {
   postcard: null,
 };
 
+const NOBODY_TO_NAME = { items: [], page: 1, pageSize: 100, total: 0 };
+
 function theApiAnswers(body: object, init?: ResponseInit) {
   server.use(
+    http.get(`${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/members`, () =>
+      HttpResponse.json(NOBODY_TO_NAME),
+    ),
+    http.get(
+      `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/workspace-goals`,
+      () => HttpResponse.json(NOBODY_TO_NAME),
+    ),
     http.get(
       `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/feedback-asks/:askId`,
       () => HttpResponse.json(body, init),
     ),
   );
 }
+
+const render = (opened: React.ReactNode) =>
+  draw(
+    <>
+      {opened}
+      <Toaster />
+    </>,
+  );
 
 const opening = () =>
   WaitingPostcard({ session: SESSION, askId: ASK_ID, sort: 'oldest' });
@@ -108,8 +117,6 @@ async function writeAnAnswer() {
 beforeEach(() => {
   replace.mockClear();
   refresh.mockClear();
-  toastError.mockClear();
-  toastSuccess.mockClear();
   sendPostcardAnswer.mockReset().mockResolvedValue({});
 });
 
@@ -151,10 +158,9 @@ describe('WaitingPostcard', () => {
         ),
       AFTER_THE_FLIGHT,
     );
-    await waitFor(
-      () => expect(toastSuccess).toHaveBeenCalledWith('Answer sent.'),
-      AFTER_THE_FLIGHT,
-    );
+    expect(
+      await screen.findByText('Answer sent.', undefined, AFTER_THE_FLIGHT),
+    ).toBeInTheDocument();
     await waitFor(
       () =>
         expect(replace).toHaveBeenCalledExactlyOnceWith(
@@ -175,13 +181,13 @@ describe('WaitingPostcard', () => {
 
     await writeAnAnswer();
 
-    await waitFor(
-      () =>
-        expect(toastError).toHaveBeenCalledWith(
-          "You've already answered this request.",
-        ),
-      AFTER_THE_FLIGHT,
-    );
+    expect(
+      await screen.findByText(
+        "You've already answered this request.",
+        undefined,
+        AFTER_THE_FLIGHT,
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toHaveTextContent(
       'The order was clear.',
     );
@@ -195,13 +201,13 @@ describe('WaitingPostcard', () => {
 
     await writeAnAnswer();
 
-    await waitFor(
-      () =>
-        expect(toastError).toHaveBeenCalledWith(
-          "We couldn't send your answer. Please try again.",
-        ),
-      AFTER_THE_FLIGHT,
-    );
+    expect(
+      await screen.findByText(
+        "We couldn't send your answer. Please try again.",
+        undefined,
+        AFTER_THE_FLIGHT,
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
@@ -227,9 +233,16 @@ describe('WaitingPostcard', () => {
   it('leaves the person on the list when the Ask was answered already', async () => {
     theApiAnswers({ ...AN_ASK, status: 'ANSWERED' });
 
-    await expect(opening()).rejects.toThrow(
-      new Redirected(ROUTES.brandNewWaitingSorted('oldest')),
+    render(await opening());
+
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledExactlyOnceWith(
+        ROUTES.brandNewWaitingSorted('oldest'),
+        { scroll: false },
+      ),
     );
+    expect(refresh).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('leaves the person on the list when the Ask is not theirs', async () => {
@@ -244,9 +257,15 @@ describe('WaitingPostcard', () => {
       { status: 404 },
     );
 
-    await expect(opening()).rejects.toThrow(
-      new Redirected(ROUTES.brandNewWaitingSorted('oldest')),
+    render(await opening());
+
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledExactlyOnceWith(
+        ROUTES.brandNewWaitingSorted('oldest'),
+        { scroll: false },
+      ),
     );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('says so when the Ask could not be read', async () => {
@@ -264,15 +283,175 @@ describe('WaitingPostcard', () => {
     render(await opening());
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(toastError).toHaveBeenCalledExactlyOnceWith(
-      "Couldn't open this postcard. Try again.",
-      expect.anything(),
-    );
+    expect(
+      await screen.findByText("Couldn't open this postcard. Try again."),
+    ).toBeInTheDocument();
     expect(replace).toHaveBeenCalledExactlyOnceWith(
       ROUTES.brandNewWaitingSorted('oldest'),
       {
         scroll: false,
       },
     );
+  });
+
+  describe('over the list it was opened from', () => {
+    const ASK_ON_THE_CARD: PostcardAsk = {
+      ...PLAIN_POSTCARD,
+      requester: { name: 'Ann Lee', photoUrl: null },
+      message: 'How clear was the plan?',
+    };
+
+    const card = (askId: string, requesterName: string): MyAsk => ({
+      askId,
+      message: `Asked by ${requesterName}`,
+      messageTags: NO_TEXT_TAGS,
+      requesterName,
+      requesterPhotoUrl: null,
+      requesterInactive: false,
+      askedAt: '2026-10-31T03:00:00.000Z',
+      status: 'PENDING',
+    });
+
+    function drawThePage() {
+      return (
+        <AnsweredAsksProvider>
+          <h1 id={WAITING_HEADING_ID} tabIndex={-1}>
+            Waiting for me
+          </h1>
+          <WaitingAskList
+            initialPage={{
+              items: [card(ASK_ID, 'Ann'), card('a-2', 'Ben')],
+              nextCursor: null,
+            }}
+            sort="newest"
+          />
+          <WaitingPostcardDialog
+            workspaceId={WORKSPACE_ID}
+            askId={ASK_ID}
+            closeHref={ROUTES.brandNewWaiting}
+            ask={ASK_ON_THE_CARD}
+            writer={{ name: 'Dao', photoUrl: null }}
+            teammates={[]}
+            workspaceGoals={[]}
+          />
+        </AnsweredAsksProvider>
+      );
+    }
+
+    function theListWith(opened?: React.ReactNode) {
+      return (
+        <AnsweredAsksProvider>
+          <h1 id={WAITING_HEADING_ID} tabIndex={-1}>
+            Waiting for me
+          </h1>
+          <WaitingAskList
+            initialPage={{
+              items: [card(ASK_ID, 'Ann'), card('a-2', 'Ben')],
+              nextCursor: null,
+            }}
+            sort="oldest"
+          />
+          {opened}
+        </AnsweredAsksProvider>
+      );
+    }
+
+    it('takes a card out when it turns out to have been answered elsewhere, with the cursor on the title', async () => {
+      theApiAnswers({ ...AN_ASK, status: 'ANSWERED' });
+      const opened = await opening();
+      const { rerender } = draw(theListWith());
+      screen
+        .getByRole('link', { name: /^Answer in the postcard: Ann/ })
+        .focus();
+
+      rerender(theListWith(opened));
+
+      await waitFor(() =>
+        expect(screen.queryByText('Asked by Ann')).not.toBeInTheDocument(),
+      );
+      expect(screen.getByText('Asked by Ben')).toBeInTheDocument();
+      expect(screen.getByRole('heading')).toHaveFocus();
+    });
+
+    it('takes no cursor to the title when the address opened it and nothing has one', async () => {
+      theApiAnswers({ ...AN_ASK, status: 'ANSWERED' });
+
+      draw(theListWith(await opening()));
+
+      await waitFor(() =>
+        expect(screen.queryByText('Asked by Ann')).not.toBeInTheDocument(),
+      );
+      expect(screen.getByRole('heading')).not.toHaveFocus();
+    });
+
+    it('takes the answered card out once it has flown, with the cursor on the title', async () => {
+      render(drawThePage());
+
+      await writeAnAnswer();
+
+      expect(screen.getByText('Asked by Ann')).toBeInTheDocument();
+      await waitFor(
+        () =>
+          expect(screen.queryByText('Asked by Ann')).not.toBeInTheDocument(),
+        AFTER_THE_FLIGHT,
+      );
+      expect(screen.getByText('Asked by Ben')).toBeInTheDocument();
+      await waitFor(
+        () => expect(screen.getByRole('heading')).toHaveFocus(),
+        AFTER_THE_FLIGHT,
+      );
+      expect(refresh).toHaveBeenCalledOnce();
+    });
+
+    it('still takes the card out when the person leaves in flight', async () => {
+      const { unmount } = render(drawThePage());
+      await writeAnAnswer();
+      await waitFor(
+        () => expect(sendPostcardAnswer).toHaveBeenCalledOnce(),
+        AFTER_THE_FLIGHT,
+      );
+      await screen.findByText('Answer sent.', undefined, AFTER_THE_FLIGHT);
+
+      unmount();
+
+      expect(refresh).toHaveBeenCalledOnce();
+    });
+
+    it('still takes the card out when the person leaves while it is being sent', async () => {
+      let answerGoes = (_outcome: object) => {};
+      sendPostcardAnswer.mockReturnValue(
+        new Promise((resolve) => {
+          answerGoes = resolve;
+        }),
+      );
+      const { unmount } = render(drawThePage());
+      await writeAnAnswer();
+      await waitFor(
+        () => expect(sendPostcardAnswer).toHaveBeenCalledOnce(),
+        AFTER_THE_FLIGHT,
+      );
+
+      unmount();
+      expect(refresh).not.toHaveBeenCalled();
+      answerGoes({});
+
+      await waitFor(() => expect(refresh).toHaveBeenCalledOnce());
+    });
+
+    it('sends the cursor back to the card when closed unsent', async () => {
+      render(drawThePage());
+      await screen.findByRole('dialog', { name: 'Answer' });
+
+      await userEvent.click(screen.getByRole('button', { name: 'Close' }));
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Close' }),
+      );
+
+      await waitFor(() =>
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+      );
+      expect(screen.getByText('Asked by Ann')).toBeInTheDocument();
+      expect(refresh).not.toHaveBeenCalled();
+    });
   });
 });

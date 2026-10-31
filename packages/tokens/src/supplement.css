@@ -39,9 +39,10 @@
   --motion-tooltip-enter: var(--motion-duration-quick) var(--motion-ease-out);
   --motion-tooltip-exit: var(--motion-duration-micro) var(--motion-ease-out);
 
-  /* How much the page blurs behind a dialog, and blurs and gains colour under a glass bar such
-     as the navbar. */
+  /* How much the page blurs behind a dialog, further still behind a card being written, and
+     blurs and gains colour under a glass bar such as the navbar. */
   --scrim-blur: 0.375rem;
+  --scrim-blur-deep: 0.9375rem;
   --glass-blur: 1.25rem;
   --glass-saturate: 1.8;
 

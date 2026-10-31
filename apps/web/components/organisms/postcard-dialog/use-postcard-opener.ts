@@ -2,23 +2,27 @@ import { useRef } from 'react';
 import { focusedControl } from './postcard-focus.util';
 
 /**
- * Sends focus back to whatever had it when a postcard opened. What opens one is not a
- * `DialogTrigger`, so Radix would otherwise leave focus on the page itself.
+ * Sends focus back to whatever had it when a card opened, unless the caller sends it somewhere of
+ * its own. What opens one is not a `DialogTrigger`, so Radix would otherwise leave focus on the page
+ * itself.
  */
-export function usePostcardOpener() {
+export function usePostcardOpener(onCloseAutoFocus?: (event: Event) => void) {
   const openerRef = useRef<HTMLElement | null>(null);
 
   function noteOpener() {
     openerRef.current = focusedControl();
   }
 
-  /** Back to the opener, if that is still on the page. */
-  function giveFocusBack(event: Event) {
+  function handleCloseAutoFocus(event: Event) {
+    onCloseAutoFocus?.(event);
+    if (event.defaultPrevented) {
+      return;
+    }
     event.preventDefault();
     if (openerRef.current?.isConnected) {
       openerRef.current.focus();
     }
   }
 
-  return { noteOpener, giveFocusBack };
+  return { noteOpener, handleCloseAutoFocus };
 }

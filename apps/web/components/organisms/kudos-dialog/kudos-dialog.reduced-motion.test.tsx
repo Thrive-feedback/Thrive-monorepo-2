@@ -30,12 +30,13 @@ describe('KudosDialog, with reduced motion', () => {
     const onOpenChange = vi.fn();
     render(
       <KudosDialog
-        title="Give kudos"
         teammates={[MALI]}
         workspaceGoals={[]}
         open
         onOpenChange={onOpenChange}
         onSend={vi.fn().mockResolvedValue(true)}
+        onGoToBoard={vi.fn()}
+        onBackToHome={() => onOpenChange(false)}
       />,
     );
     await user.type(

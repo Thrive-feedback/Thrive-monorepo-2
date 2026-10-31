@@ -1,11 +1,11 @@
 import { ApiError } from '@repo/api';
-import { redirect } from 'next/navigation';
 import { readWaitingPostcard } from '@/app/(signed-in)/(brand-new)/brand-new-waiting/_lib/waiting-postcard.service';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { readTeammates } from '@/lib/feedback/teammates.service';
 import { readWorkspaceGoalNames } from '@/lib/feedback/workspace-goal-names.service';
 import { type BrandNewWaitingSort, ROUTES } from '@/lib/routes.constant';
 import type { MemberAccount } from '@/lib/session/session.service';
+import { WaitingAskGone } from './waiting-ask-gone';
 import { WaitingPostcardDialog } from './waiting-postcard-dialog';
 
 const COULD_NOT_OPEN = "Couldn't open this postcard. Try again.";
@@ -56,7 +56,7 @@ export async function WaitingPostcard({
     );
   }
   if (!opening) {
-    redirect(closeHref);
+    return <WaitingAskGone askId={askId} closeHref={closeHref} />;
   }
   return (
     <WaitingPostcardDialog

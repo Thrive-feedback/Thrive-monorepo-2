@@ -1,7 +1,7 @@
 import { Badge, type BadgeTone } from '@/components/atoms/badge';
 import { Text } from '@/components/atoms/text';
+import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 import { LANDING_COPY } from './landing-copy.constant';
-import { LandingNote } from './landing-note';
 import { LandingSection } from './landing-section';
 
 const { moments } = LANDING_COPY;
@@ -58,9 +58,9 @@ export function LandingMoments() {
                   <Text variant="body-1">{moment.reply}</Text>
                 </div>
               )}
-              <LandingNote tilt="left" className="mt-1">
+              <HandwrittenNote tilt="left" className="mt-1">
                 {moment.hint}
-              </LandingNote>
+              </HandwrittenNote>
             </div>
           </li>
         ))}

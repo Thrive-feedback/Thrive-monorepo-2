@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FeedComposer } from '@/components/organisms/feed-composer';
+import { FeedComposer } from '@/components/organisms/feed-composer/feed-composer';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 
 const TEAMMATES: readonly Teammate[] = [

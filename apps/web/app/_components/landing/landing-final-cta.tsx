@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
+import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 import { ROUTES } from '@/lib/routes.constant';
 import { LANDING_COPY } from './landing-copy.constant';
-import { LandingNote } from './landing-note';
 
 const { finalCta } = LANDING_COPY;
 
@@ -29,7 +29,7 @@ export function LandingFinalCta() {
         <Button asChild variant="primary" size="lg">
           <Link href={ROUTES.signIn}>{finalCta.cta}</Link>
         </Button>
-        <LandingNote tilt="left">{finalCta.note}</LandingNote>
+        <HandwrittenNote tilt="left">{finalCta.note}</HandwrittenNote>
       </div>
     </section>
   );

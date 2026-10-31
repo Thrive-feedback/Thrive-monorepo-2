@@ -56,6 +56,8 @@ export const ROUTES = {
     const showing = brandNewHomeShowing(show);
     return `${showing}${showing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
+  /** The Workspace's Kudos, in the new Home. */
+  brandNewKudos: '/brand-new-kudos',
   /** Every Ask waiting for the person, in the new Home. */
   brandNewWaiting: '/brand-new-waiting',
   /** Waiting for me in one order. */

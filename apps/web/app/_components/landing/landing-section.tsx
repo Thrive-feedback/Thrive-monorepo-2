@@ -1,7 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Text } from '@/components/atoms/text';
+import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 import { cn } from '@/lib/cn.util';
-import { LandingNote, NotedText } from './landing-note';
+import { NotedText } from './landing-note';
 
 const section = cva('mx-auto grid w-full max-w-5xl gap-10', {
   variants: {
@@ -92,9 +93,9 @@ export function LandingSection({
           </Text>
         )}
         {note && (
-          <LandingNote className={notePlacement({ layout })}>
+          <HandwrittenNote className={notePlacement({ layout })}>
             {note}
-          </LandingNote>
+          </HandwrittenNote>
         )}
       </header>
       {children}

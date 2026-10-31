@@ -1,7 +1,7 @@
 'use client';
 
 import { PlusIcon } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Button } from '@/components/atoms/button';
 import {
   DropdownMenu,
@@ -11,26 +11,27 @@ import {
 } from '@/components/atoms/dropdown-menu';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
-import { ComposeKudosDialog, warmKudosDialog } from './compose-kudos-dialog';
 import {
-  type ComposeCard,
-  ComposePostcardDialog,
-  warmPostcardDialog,
-} from './compose-postcard-dialog';
+  COMPOSE_CARD_TITLES,
+  ComposeCards,
+  type ComposeChoice,
+  useComposeCards,
+  warmComposeCards,
+} from './compose-cards';
 
 const CHOICES: readonly {
   title: string;
   description: string;
   /** The card it opens. */
-  card: ComposeCard | 'kudos';
+  card: ComposeChoice;
 }[] = [
   {
-    title: 'Ask for feedback',
+    title: COMPOSE_CARD_TITLES.ask,
     description: 'Ask teammates what they think.',
     card: 'ask',
   },
   {
-    title: 'Give feedback',
+    title: COMPOSE_CARD_TITLES.give,
     description: "Tell a teammate what you've seen.",
     card: 'give',
   },
@@ -62,37 +63,21 @@ export function ComposeMenu({
   workspaceGoals,
   writer,
 }: ComposeMenuProps) {
-  const [choice, setChoice] = useState<{ title: string; card: ComposeCard }>({
-    title: 'Give feedback',
-    card: 'give',
-  });
-  const [isOpen, setIsOpen] = useState(false);
-  const [isKudosOpen, setIsKudosOpen] = useState(false);
-  // Each is mounted from its first card on, so it is not drawn before anyone writes, and stays for
-  // its closing motion after.
-  const [hasOpenedPostcard, setHasOpenedPostcard] = useState(false);
-  const [hasOpenedKudos, setHasOpenedKudos] = useState(false);
+  const { openCard, cards } = useComposeCards();
   const plusRef = useRef<HTMLButtonElement>(null);
-  const isOpeningPostcard = useRef(false);
+  const isOpeningCard = useRef(false);
 
-  function handleChoose(title: string, card: ComposeCard | 'kudos') {
-    isOpeningPostcard.current = true;
-    if (card === 'kudos') {
-      setHasOpenedKudos(true);
-      setIsKudosOpen(true);
-      return;
-    }
-    setHasOpenedPostcard(true);
-    setChoice({ title, card });
-    setIsOpen(true);
+  function handleChoose(card: ComposeChoice) {
+    isOpeningCard.current = true;
+    openCard(card);
   }
 
   // A menu sends focus back to "+" as it closes, which would pull it out of the postcard opening
   // in its place; the postcard puts it on the card itself.
   function handleMenuCloseAutoFocus(event: Event) {
-    if (isOpeningPostcard.current) {
+    if (isOpeningCard.current) {
       event.preventDefault();
-      isOpeningPostcard.current = false;
+      isOpeningCard.current = false;
     }
   }
 
@@ -108,8 +93,7 @@ export function ComposeMenu({
       <DropdownMenu
         onOpenChange={(isMenuOpen) => {
           if (isMenuOpen) {
-            warmPostcardDialog();
-            warmKudosDialog();
+            warmComposeCards();
           }
         }}
       >
@@ -130,7 +114,7 @@ export function ComposeMenu({
             <DropdownMenuItem
               key={title}
               className="flex-col items-start gap-0.5 px-3 py-2.5"
-              onSelect={() => handleChoose(title, card)}
+              onSelect={() => handleChoose(card)}
             >
               <span className="text-fg-primary text-subtitle-4">{title}</span>
               <span className="text-body-3 text-fg-secondary">
@@ -140,29 +124,14 @@ export function ComposeMenu({
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      {hasOpenedPostcard && (
-        <ComposePostcardDialog
-          workspaceId={workspaceId}
-          teammates={teammates}
-          workspaceGoals={workspaceGoals}
-          writer={writer}
-          card={choice.card}
-          title={choice.title}
-          open={isOpen}
-          onOpenChange={setIsOpen}
-          onCloseAutoFocus={handlePostcardCloseAutoFocus}
-        />
-      )}
-      {hasOpenedKudos && (
-        <ComposeKudosDialog
-          workspaceId={workspaceId}
-          teammates={teammates}
-          workspaceGoals={workspaceGoals}
-          open={isKudosOpen}
-          onOpenChange={setIsKudosOpen}
-          onCloseAutoFocus={handlePostcardCloseAutoFocus}
-        />
-      )}
+      <ComposeCards
+        cards={cards}
+        workspaceId={workspaceId}
+        teammates={teammates}
+        workspaceGoals={workspaceGoals}
+        writer={writer}
+        onCloseAutoFocus={handlePostcardCloseAutoFocus}
+      />
     </>
   );
 }

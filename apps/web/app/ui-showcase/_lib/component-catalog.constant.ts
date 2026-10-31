@@ -367,7 +367,7 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
   {
     slug: 'handwritten-note',
     name: 'HandwrittenNote',
-    level: 'atom',
+    level: 'molecule',
     Preview: HandwrittenNotePreview,
     Entry: HandwrittenNoteEntry,
   },

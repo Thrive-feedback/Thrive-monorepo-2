@@ -10,7 +10,7 @@ import type { HomeFeedPage } from '@/lib/feedback/home-feed-item.type';
 import { type BrandNewHomeShow, ROUTES } from '@/lib/routes.constant';
 
 export type HomeFeedListProps = {
-  /** The page the server read. Later reads of it are ignored: see below. */
+  /** The page the server read. Later reads of it are ignored: see `useEndlessList`. */
   initialPage: HomeFeedPage;
   show: BrandNewHomeShow;
 };

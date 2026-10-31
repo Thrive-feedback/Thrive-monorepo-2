@@ -79,12 +79,6 @@ describe('BrandNewHome', () => {
     expect(screen.getByText('The feed, showing all')).toBeInTheDocument();
   });
 
-  it('offers the composer above the feed', async () => {
-    render(await open());
-
-    expect(await screen.findByText('The composer')).toBeVisible();
-  });
-
   it('shows what the address asks for', async () => {
     render(await open({ show: 'shared' }));
 

@@ -2,7 +2,7 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
-import { FeedComposerSkeleton } from '@/components/organisms/feed-composer';
+import { FeedComposerSkeleton } from '@/components/organisms/feed-composer/feed-composer-skeleton';
 import { FeedComposerDemo } from './feed-composer-demo';
 
 export function FeedComposerEntry() {
@@ -11,11 +11,11 @@ export function FeedComposerEntry() {
       name="FeedComposer"
       level="organism"
       origin="thrive"
-      source="components/organisms/feed-composer.tsx — PhotoAvatar + AutocompleteInput + three Buttons."
+      source="components/organisms/feed-composer/feed-composer.tsx — PhotoAvatar + AutocompleteInput + three Buttons."
       summary="The first line of something to write, at the head of the feed. Pressing what it is to be carries the words onto a postcard."
       useFor="The head of Home in the new Home."
       avoidFor="Writing the whole message: that happens on the postcard. /home, which keeps FeedbackComposer."
-      usage={`import { FeedComposer } from '@/components/organisms/feed-composer';
+      usage={`import { FeedComposer } from '@/components/organisms/feed-composer/feed-composer';
 
 <FeedComposer
   writer={writer}
@@ -53,13 +53,12 @@ export function FeedComposerEntry() {
         },
         {
           name: 'onChoose',
-          type: "(choice: 'ask' | 'give') => void",
-          description: 'Ask or Give was pressed.',
+          type: "(choice: 'ask' | 'give' | 'kudos') => void",
+          description: 'Ask, Give or Kudos was pressed.',
         },
       ]}
       accessibility={[
         'A named region, with the field named for a screen reader.',
-        'Give kudos stays in the tab order and says it is not ready, with `aria-disabled`.',
         'Suggestions are chosen with the arrow keys while focus stays in the field.',
       ]}
     >

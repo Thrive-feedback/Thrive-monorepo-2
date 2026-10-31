@@ -19,7 +19,6 @@ export function KudosDialogEntry() {
       usage={`import { KudosDialog } from '@/components/organisms/kudos-dialog/kudos-dialog';
 
 <KudosDialog
-  title="Give kudos"
   teammates={teammates}
   workspaceGoals={workspaceGoals}
   open={open}
@@ -27,11 +26,6 @@ export function KudosDialogEntry() {
   onSend={(kudos) => giveKudos(kudos)}
 />`}
       props={[
-        {
-          name: 'title',
-          type: 'string',
-          description: 'What is being written, above the card.',
-        },
         {
           name: 'teammates',
           type: 'Teammate[]',

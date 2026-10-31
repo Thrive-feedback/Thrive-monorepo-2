@@ -3,7 +3,7 @@ import { AutocompleteTextarea } from '@/components/molecules/autocomplete-textar
 import type { AutocompleteTrigger } from '@/components/molecules/use-tag-autocomplete';
 import { cn } from '@/lib/cn.util';
 import {
-  cutToMessageLength,
+  cutFieldToMessageLength,
   MAX_MESSAGE_LENGTH,
   messageLength,
 } from '@/lib/feedback/message-length.util';
@@ -57,18 +57,8 @@ export function PostcardMessage({
     onMessageFocus();
   }
 
-  // What is cut goes from the field itself as well as from the state: left to React, the shorter
-  // value would be written back over it and the cursor thrown to the end of the message.
   function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    const field = event.currentTarget;
-    const cursor = field.selectionStart;
-    const kept = cutToMessageLength(field.value, cursor);
-    if (kept !== field.value) {
-      const cursorAfterCut = cursor - (field.value.length - kept.length);
-      field.value = kept;
-      field.setSelectionRange(cursorAfterCut, cursorAfterCut);
-    }
-    onMessageChange(kept);
+    onMessageChange(cutFieldToMessageLength(event.currentTarget));
   }
 
   return (

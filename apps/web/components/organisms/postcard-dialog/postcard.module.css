@@ -210,7 +210,7 @@
     drop-shadow(var(--lift-far)) drop-shadow(var(--lift-far));
 }
 
-/* The page falls further back behind a postcard than behind a form: 15px, to a dialog's 6px. */
+/* The page falls further back behind a card being written than behind a form. */
 .scrim {
-  --scrim-blur: calc(var(--space-unit) * 3.75);
+  --scrim-blur: var(--scrim-blur-deep);
 }
