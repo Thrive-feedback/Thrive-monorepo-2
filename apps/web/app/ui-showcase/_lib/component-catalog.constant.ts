@@ -75,6 +75,10 @@ import {
   InputPreview,
 } from '@/app/ui-showcase/_components/entries/input-entry';
 import {
+  KudosDialogEntry,
+  KudosDialogPreview,
+} from '@/app/ui-showcase/_components/entries/kudos-dialog-entry';
+import {
   LabelEntry,
   LabelPreview,
 } from '@/app/ui-showcase/_components/entries/label-entry';
@@ -528,6 +532,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'organism',
     Preview: MemberPickerDialogPreview,
     Entry: MemberPickerDialogEntry,
+  },
+  {
+    slug: 'kudos-dialog',
+    name: 'KudosDialog',
+    level: 'organism',
+    Preview: KudosDialogPreview,
+    Entry: KudosDialogEntry,
   },
   {
     slug: 'postcard-dialog',

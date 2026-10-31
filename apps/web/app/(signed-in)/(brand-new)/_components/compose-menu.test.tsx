@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SentKudosInput } from '@/app/(signed-in)/(brand-new)/_lib/sent-kudos.schema';
 import { SentPostcardInput } from '@/app/(signed-in)/(brand-new)/_lib/sent-postcard.schema';
 import { Toaster } from '@/components/atoms/toaster';
 import { POSTCARD_STAMPS } from '@/components/organisms/postcard-dialog/postcard-stamp.constant';
@@ -17,11 +18,13 @@ vi.mock('next/navigation', async (importOriginal) => ({
 
 const sendPostcardFeedback = vi.fn();
 const sendPostcardRequest = vi.fn();
+const sendKudosCard = vi.fn();
 vi.mock(
   '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service',
   () => ({
     sendPostcardFeedback: (...args: unknown[]) => sendPostcardFeedback(...args),
     sendPostcardRequest: (...args: unknown[]) => sendPostcardRequest(...args),
+    sendKudosCard: (...args: unknown[]) => sendKudosCard(...args),
   }),
 );
 
@@ -331,13 +334,70 @@ describe('ComposeMenu', () => {
     ).toBeEnabled();
   });
 
-  it('only closes when Give kudos is chosen, since it is not built yet', async () => {
+  it('opens the Kudos card when Give kudos is chosen, with the cursor in its words', async () => {
     const user = userEvent.setup();
     draw();
 
-    await choose(user, /Give kudos/);
+    await openPostcard(user, /Give kudos/);
 
-    expect(screen.queryByRole('menu')).toBeNull();
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('dialog', { name: 'Give kudos' })).toBeVisible();
+    expect(screen.getByRole('textbox', { name: 'Your Kudos' })).toHaveFocus();
+  });
+
+  it('gives Kudos to the Workspace it was drawn for, in the shape the server action accepts', async () => {
+    const user = userEvent.setup();
+    sendKudosCard.mockResolvedValue({});
+    // The first template, of the ones a card opens on at random.
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    draw();
+
+    await openPostcard(user, /Give kudos/);
+    await user.type(
+      screen.getByRole('textbox', { name: 'Your Kudos' }),
+      '@mali thank you.',
+    );
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    await user.click(screen.getByRole('button', { name: /^Send kudos/ }));
+
+    expect(await screen.findByText('Kudos sent.')).toBeInTheDocument();
+    const [workspaceId, sent] = sendKudosCard.mock.calls[0] ?? [];
+    expect(workspaceId).toBe(WORKSPACE_ID);
+    expect(SentKudosInput.safeParse(sent).success).toBe(true);
+    expect(sent).toEqual({
+      message: '@mali thank you.',
+      card: {
+        templateKey: 'cobalt-dash',
+        textStyle: {
+          font: 'signature',
+          ink: 'paper',
+          sizeStep: 4,
+          align: 'center',
+        },
+        stickers: [],
+      },
+    });
+  });
+
+  it('says why a Kudos did not go, and keeps it open', async () => {
+    const user = userEvent.setup();
+    sendKudosCard.mockResolvedValue({
+      formError: 'Mention at least one teammate with @.',
+    });
+    draw();
+
+    await openPostcard(user, /Give kudos/);
+    await user.type(
+      screen.getByRole('textbox', { name: 'Your Kudos' }),
+      '@mali thank you.',
+    );
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    await user.click(screen.getByRole('button', { name: /^Send kudos/ }));
+
+    expect(
+      await screen.findByText('Mention at least one teammate with @.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Your Kudos' })).toHaveValue(
+      '@mali thank you.',
+    );
   });
 });

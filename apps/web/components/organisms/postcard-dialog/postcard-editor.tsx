@@ -1,23 +1,8 @@
 import { ArrowRightIcon } from 'lucide-react';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Button } from '@/components/atoms/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/atoms/dialog';
+import { DialogContent } from '@/components/atoms/dialog';
 import { feedbackTagTriggers } from '@/components/organisms/feedback-tag-triggers.util';
 import { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
 import { cn } from '@/lib/cn.util';
@@ -53,8 +38,9 @@ import {
   SENT_AWAY,
   STAMP_ID,
 } from './postcard-editor.constant';
-import { focusedControl } from './postcard-focus.util';
+import { isEscapeTakenInside } from './postcard-focus.util';
 import { PostcardHideButton } from './postcard-hide-button';
+import { PostcardLeaveDialog, usePostcardLeave } from './postcard-leave-dialog';
 import { PostcardMessage } from './postcard-message';
 import { PostcardPostmark } from './postcard-postmark';
 import {
@@ -76,6 +62,7 @@ import { PostcardVisibilityTool } from './postcard-visibility-tool';
 import { PostcardDrawerContainer } from './use-postcard-drawer-container';
 import { usePostcardOpener } from './use-postcard-opener';
 import { usePostcardSend } from './use-postcard-send';
+import { usePressAway } from './use-press-away';
 
 function isSameList(one: readonly string[], other: readonly string[]) {
   return (
@@ -120,7 +107,6 @@ export function PostcardEditor({
     card.kind === 'answer' ? NOBODY : card.defaultRecipientAccountIds,
   );
   const [isEditingText, setIsEditingText] = useState(false);
-  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
   // The sticker selected, or `STAMP_ID` for the stamp: one thing on the card at a time.
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Held here because the Stamp tool and the printed box both open it.
@@ -132,9 +118,6 @@ export function PostcardEditor({
   const sendRef = useRef<HTMLButtonElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
   const { noteOpener, giveFocusBack } = usePostcardOpener();
-  // Where focus goes back to if the writer keeps writing: nothing here is a `DialogTrigger` either.
-  const askedToCloseFromRef = useRef<HTMLElement | null>(null);
-  const isLeavingRef = useRef(false);
 
   // The same rules as the composer on Home: who the text mentions decides who can read it.
   const audience = useMentionedAudience({
@@ -205,6 +188,16 @@ export function PostcardEditor({
     onSent: onClose,
   });
   const isFlying = sendStatus === 'flying';
+  // Leaving lets go of anything selected too, so its page-wide listener goes with the card; the
+  // editor stays mounted after the card closes.
+  const { askToClose, leaveDialog } = usePostcardLeave({
+    isWriting: sendStatus === 'writing',
+    fallbackRef: messageRef,
+    onLeave: () => {
+      setSelectedId(null);
+      onClose();
+    },
+  });
 
   const handleRecipientsChange = useCallback(
     (recipientAccountIds: readonly string[]) =>
@@ -282,24 +275,12 @@ export function PostcardEditor({
 
   // A press on anything but a sticker, the stamp or their drawers lets go of what was selected.
   // Listened for only while one is: the editor stays mounted after the card closes.
-  useEffect(() => {
-    if (selectedId === null) {
-      return;
-    }
-    function handlePointerDown(event: PointerEvent) {
-      if (
-        event.target instanceof Element &&
-        event.target.closest(
-          '[data-sticker], [data-stamp], [data-sticker-panel], [data-stamp-panel]',
-        )
-      ) {
-        return;
-      }
-      setSelectedId(null);
-    }
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [selectedId]);
+  const letGo = useCallback(() => setSelectedId(null), []);
+  usePressAway(
+    selectedId !== null,
+    '[data-sticker], [data-stamp], [data-sticker-panel], [data-stamp-panel]',
+    letGo,
+  );
 
   // Done takes the text tools away, so the cursor goes to the first of the usual tools that
   // works, or, where none works yet, as on an answer, to the first one, rather than being lost
@@ -320,14 +301,6 @@ export function PostcardEditor({
     selectedReaders.size > 0 ||
     draft.stickers.length > 0 ||
     draft.stampKey !== null;
-
-  function askToClose() {
-    if (sendStatus !== 'writing') {
-      return;
-    }
-    askedToCloseFromRef.current = focusedControl();
-    setIsConfirmingClose(true);
-  }
 
   function handleFlip() {
     setIsEditingText(false);
@@ -370,14 +343,7 @@ export function PostcardEditor({
   // Escape while styling leaves the text tools; otherwise it asks before closing, like Close.
   function handleEscapeKeyDown(event: KeyboardEvent) {
     event.preventDefault();
-    // The suggestions for a tag being typed close first, by the field's own handler.
-    if (messageRef.current?.hasAttribute('aria-controls')) {
-      return;
-    }
-    // An open drawer takes Escape for itself: Radix hears it first, and would ask to close the card.
-    if (
-      contentRef.current?.querySelector('[data-slot="drawer-popup"][data-open]')
-    ) {
+    if (isEscapeTakenInside(messageRef.current, contentRef.current)) {
       return;
     }
     if (isEditingText) {
@@ -408,27 +374,6 @@ export function PostcardEditor({
     if (!event.defaultPrevented) {
       giveFocusBack(event);
     }
-  }
-
-  // Keep writing puts the cursor back where it was. Discard leaves it to the card's own close.
-  function handleConfirmCloseAutoFocus(event: Event) {
-    event.preventDefault();
-    if (isLeavingRef.current) {
-      return;
-    }
-    const back = askedToCloseFromRef.current?.isConnected
-      ? askedToCloseFromRef.current
-      : messageRef.current;
-    back?.focus();
-  }
-
-  // Leaving lets go of anything selected too, so its page-wide listener goes with the card; the editor
-  // stays mounted after the card closes.
-  function handleDiscard() {
-    isLeavingRef.current = true;
-    setIsConfirmingClose(false);
-    setSelectedId(null);
-    onClose();
   }
 
   // Beside Send on either side, so who can read it is never a turn away from sending.
@@ -678,27 +623,11 @@ export function PostcardEditor({
           </div>
         </div>
 
-        <Dialog open={isConfirmingClose} onOpenChange={setIsConfirmingClose}>
-          <DialogContent
-            hasCloseButton={false}
-            onCloseAutoFocus={handleConfirmCloseAutoFocus}
-          >
-            <DialogHeader>
-              <DialogTitle>Close without sending?</DialogTitle>
-              <DialogDescription>
-                {hasWritten ? copy.lost : 'Nothing on this card will be kept.'}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button>Keep writing</Button>
-              </DialogClose>
-              <Button variant="danger" onClick={handleDiscard}>
-                {hasWritten ? 'Discard' : 'Close'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <PostcardLeaveDialog
+          {...leaveDialog}
+          hasWritten={hasWritten}
+          lost={copy.lost}
+        />
       </DialogContent>
     </PostcardDrawerContainer>
   );

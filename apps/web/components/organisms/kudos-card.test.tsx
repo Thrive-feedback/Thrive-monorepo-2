@@ -39,6 +39,14 @@ describe('KudosCard', () => {
     expect(screen.getByText('@Ben')).toBeInTheDocument();
   });
 
+  it('says a Kudos that names nobody went to the whole Workspace', () => {
+    render(<KudosCard item={kudos({ recipients: [] })} />);
+
+    expect(screen.getByRole('banner')).toHaveTextContent(
+      /Ann Leetothe whole Workspace/,
+    );
+  });
+
   it('says in the dialog of several recipients that the Giver sent them all this Kudos', async () => {
     const user = userEvent.setup();
     render(<KudosCard item={kudos()} />);

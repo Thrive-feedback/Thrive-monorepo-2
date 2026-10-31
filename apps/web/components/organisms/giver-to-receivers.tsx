@@ -9,7 +9,7 @@ const RECEIVER_WITH_NO_NAME = 'a teammate';
 
 export type GiverToReceiversProps = {
   giver: GroupPerson;
-  /** Everyone it is for, in the order the Giver chose them — at least one. */
+  /** Everyone it names, in the order the Giver chose them. A Kudos may name nobody: see below. */
   receivers: readonly GroupPerson[];
   /** What was given, which words the dialog of several people uses. */
   kind: 'Feedback' | 'Kudos';
@@ -39,7 +39,8 @@ function FaceAndName({
  * A card's opening line: "[face] Giver to [face] Receiver". Given to several, the Receivers
  * fold into one stack of faces that opens a dialog naming each of them, so the line stays one
  * line however many it was for. Never anonymous (`ADR-0022` in the brain): somebody with no name
- * yet is "a teammate", and somebody Deactivated is named in grey with "(inactive)".
+ * yet is "a teammate", and somebody Deactivated is named in grey with "(inactive)". A Kudos that
+ * names nobody is for the whole Workspace (ADR 0074), and the line says so.
  */
 export function GiverToReceivers({
   giver,
@@ -62,7 +63,9 @@ export function GiverToReceivers({
     >
       <FaceAndName person={giver} unnamed={GIVER_WITH_NO_NAME} />
       <span className="text-fg-secondary">to</span>
-      {receivers.length === 1 && onlyReceiver ? (
+      {receivers.length === 0 ? (
+        <span>the whole Workspace</span>
+      ) : receivers.length === 1 && onlyReceiver ? (
         <FaceAndName person={onlyReceiver} unnamed={RECEIVER_WITH_NO_NAME} />
       ) : (
         <PeopleDialogButton

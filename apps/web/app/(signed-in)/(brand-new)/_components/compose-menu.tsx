@@ -11,6 +11,7 @@ import {
 } from '@/components/atoms/dropdown-menu';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { ComposeKudosDialog, warmKudosDialog } from './compose-kudos-dialog';
 import {
   type ComposeCard,
   ComposePostcardDialog,
@@ -20,8 +21,8 @@ import {
 const CHOICES: readonly {
   title: string;
   description: string;
-  /** The postcard it opens; none, and it is not built yet. */
-  card: ComposeCard | null;
+  /** The card it opens. */
+  card: ComposeCard | 'kudos';
 }[] = [
   {
     title: 'Ask for feedback',
@@ -36,7 +37,7 @@ const CHOICES: readonly {
   {
     title: 'Give kudos',
     description: 'Say well done in a few words.',
-    card: null,
+    card: 'kudos',
   },
 ];
 
@@ -52,9 +53,8 @@ export type ComposeMenuProps = {
 
 /**
  * "+": the three things to write, each with a line on what it is for. Asking for feedback opens
- * the request postcard in front of the page, and giving it the Feedback one, each titled by the
- * choice, and either is sent to the API with the card itself. Kudos is not built yet, so choosing
- * it only closes the menu.
+ * the request postcard in front of the page, giving it the Feedback one, and giving Kudos the Kudos
+ * card, each titled by the choice, and each is sent to the API with the card itself.
  */
 export function ComposeMenu({
   workspaceId,
@@ -67,14 +67,21 @@ export function ComposeMenu({
     card: 'give',
   });
   const [isOpen, setIsOpen] = useState(false);
-  // Mounted from the first card on, so it is not drawn before anyone writes, and stays for its
-  // closing motion after.
+  const [isKudosOpen, setIsKudosOpen] = useState(false);
+  // Each is mounted from its first card on, so it is not drawn before anyone writes, and stays for
+  // its closing motion after.
   const [hasOpenedPostcard, setHasOpenedPostcard] = useState(false);
+  const [hasOpenedKudos, setHasOpenedKudos] = useState(false);
   const plusRef = useRef<HTMLButtonElement>(null);
   const isOpeningPostcard = useRef(false);
 
-  function handleChoose(title: string, card: ComposeCard) {
+  function handleChoose(title: string, card: ComposeCard | 'kudos') {
     isOpeningPostcard.current = true;
+    if (card === 'kudos') {
+      setHasOpenedKudos(true);
+      setIsKudosOpen(true);
+      return;
+    }
     setHasOpenedPostcard(true);
     setChoice({ title, card });
     setIsOpen(true);
@@ -102,6 +109,7 @@ export function ComposeMenu({
         onOpenChange={(isMenuOpen) => {
           if (isMenuOpen) {
             warmPostcardDialog();
+            warmKudosDialog();
           }
         }}
       >
@@ -122,7 +130,7 @@ export function ComposeMenu({
             <DropdownMenuItem
               key={title}
               className="flex-col items-start gap-0.5 px-3 py-2.5"
-              onSelect={card ? () => handleChoose(title, card) : undefined}
+              onSelect={() => handleChoose(title, card)}
             >
               <span className="text-fg-primary text-subtitle-4">{title}</span>
               <span className="text-body-3 text-fg-secondary">
@@ -142,6 +150,16 @@ export function ComposeMenu({
           title={choice.title}
           open={isOpen}
           onOpenChange={setIsOpen}
+          onCloseAutoFocus={handlePostcardCloseAutoFocus}
+        />
+      )}
+      {hasOpenedKudos && (
+        <ComposeKudosDialog
+          workspaceId={workspaceId}
+          teammates={teammates}
+          workspaceGoals={workspaceGoals}
+          open={isKudosOpen}
+          onOpenChange={setIsKudosOpen}
           onCloseAutoFocus={handlePostcardCloseAutoFocus}
         />
       )}

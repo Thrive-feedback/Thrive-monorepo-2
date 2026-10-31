@@ -46,15 +46,13 @@ describe('KudosForm', () => {
     giveKudos.mockResolvedValue({});
   });
 
-  it('waits to send until the Kudos mentions a teammate', async () => {
+  it('waits to send until something is written, naming a teammate or not', async () => {
     const user = userEvent.setup();
     const { message, send } = renderForm();
-
-    await user.type(message, 'Great launch, @nobody');
     expect(send).toBeDisabled();
 
-    await user.clear(message);
-    await user.type(message, 'Great launch, @ben');
+    await user.type(message, 'Great launch, everyone.');
+
     expect(send).toBeEnabled();
   });
 

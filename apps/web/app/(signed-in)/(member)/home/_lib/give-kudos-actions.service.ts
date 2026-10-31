@@ -11,7 +11,6 @@ import { ROUTES } from '@/lib/routes.constant';
 import { requireMemberOf } from '@/lib/session/session.service';
 
 const TOO_LONG = `Your Kudos is too long. Keep it to ${MAX_KUDOS_LENGTH} characters.`;
-const NO_RECIPIENT = 'Mention at least one teammate with @.';
 
 /** The shape the API's own schema accepts, so the browser is never the first to check it. */
 const GiveKudosInput = z.object({
@@ -24,7 +23,6 @@ const GiveKudosInput = z.object({
 const SEND_ERRORS: Readonly<Record<string, string>> = {
   KUDOS_MESSAGE_EMPTY: 'Write your Kudos.',
   KUDOS_MESSAGE_TOO_LONG: TOO_LONG,
-  KUDOS_NEEDS_A_RECIPIENT: NO_RECIPIENT,
 };
 
 /** Where to go instead when the API says this step is not the person's to take. */
@@ -37,7 +35,8 @@ const ELSEWHERE: Readonly<Record<string, string>> = {
 const COULD_NOT_SEND = "We couldn't send your Kudos. Please try again.";
 
 /**
- * Gives Kudos to the teammates the message @mentions, then goes back to Home, saying once that it
+ * Gives Kudos to the teammates the message @mentions, or to the whole Workspace if it mentions
+ * nobody, then goes back to Home, saying once that it
  * went. `workspaceId` is the Workspace the page was drawn for, bound where the form is drawn; it
  * must still be the one the person is in, or nothing is sent. The API decides who is giving it
  * from the session cookie, and who it is for from the message.

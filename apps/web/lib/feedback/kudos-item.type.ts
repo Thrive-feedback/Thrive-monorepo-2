@@ -12,7 +12,7 @@ export type KudosPerson = {
 export type KudosItem = {
   readonly id: string;
   readonly giver: KudosPerson;
-  /** Everyone it is for, at least one. */
+  /** Everyone it names. None: it is for the whole Workspace. */
   readonly recipients: readonly KudosPerson[];
   /** What the Giver wrote. */
   readonly message: string;
