@@ -1309,6 +1309,14 @@ describe('PostcardDialog, the stamp', () => {
     );
   });
 
+  it('prints the word Stamp in the box, with no icon', () => {
+    render(dialog());
+
+    const box = screen.getByRole('button', { name: 'Choose a stamp' });
+    expect(box).toHaveTextContent('Stamp');
+    expect(box.querySelector('svg')).not.toBeInTheDocument();
+  });
+
   it('opens the stamps from the box printed in the corner', async () => {
     const user = userEvent.setup();
     render(dialog());

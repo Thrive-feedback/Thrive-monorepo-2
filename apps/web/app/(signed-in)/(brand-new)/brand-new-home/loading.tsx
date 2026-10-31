@@ -1,13 +1,13 @@
-import { SkeletonRegion } from '@/components/atoms/skeleton';
+import { HomeFeedSkeleton } from './_components/home-feed';
 
 /**
- * The new Home while the server builds it. It has nothing drawn yet besides its navbar and
- * sidebar, which stay in place, so this only says it is loading.
+ * The new Home while the server builds it. The navbar and sidebar stay in place, so this holds the
+ * feed's column in grey.
  */
 export default function BrandNewHomeLoading() {
   return (
-    <SkeletonRegion>
-      <div />
-    </SkeletonRegion>
+    <div className="mx-auto w-full max-w-180 px-4 py-8">
+      <HomeFeedSkeleton />
+    </div>
   );
 }

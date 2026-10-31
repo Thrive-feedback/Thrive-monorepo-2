@@ -59,6 +59,10 @@ import {
   DropdownMenuPreview,
 } from '@/app/ui-showcase/_components/entries/dropdown-menu-entry';
 import {
+  FeedCardListEntry,
+  FeedCardListPreview,
+} from '@/app/ui-showcase/_components/entries/feed-card-list-entry';
+import {
   InputEntry,
   InputPreview,
 } from '@/app/ui-showcase/_components/entries/input-entry';
@@ -79,6 +83,14 @@ import {
   MemberPickerDialogPreview,
 } from '@/app/ui-showcase/_components/entries/member-picker-dialog-entry';
 import {
+  MiniPostcardEntry,
+  MiniPostcardPreview,
+} from '@/app/ui-showcase/_components/entries/mini-postcard-entry';
+import {
+  OfferedFeedbackCardEntry,
+  OfferedFeedbackCardPreview,
+} from '@/app/ui-showcase/_components/entries/offered-feedback-card-entry';
+import {
   PeopleStackEntry,
   PeopleStackPreview,
 } from '@/app/ui-showcase/_components/entries/people-stack-entry';
@@ -94,6 +106,10 @@ import {
   RadioGroupEntry,
   RadioGroupPreview,
 } from '@/app/ui-showcase/_components/entries/radio-group-entry';
+import {
+  RequestedFeedbackCardEntry,
+  RequestedFeedbackCardPreview,
+} from '@/app/ui-showcase/_components/entries/requested-feedback-card-entry';
 import {
   ResizableEntry,
   ResizablePreview,
@@ -342,6 +358,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: SkeletonEntry,
   },
   {
+    slug: 'mini-postcard',
+    name: 'MiniPostcard',
+    level: 'atom',
+    Preview: MiniPostcardPreview,
+    Entry: MiniPostcardEntry,
+  },
+  {
     slug: 'spinner',
     name: 'Spinner',
     level: 'atom',
@@ -467,5 +490,26 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'organism',
     Preview: PostcardDialogPreview,
     Entry: PostcardDialogEntry,
+  },
+  {
+    slug: 'feed-card-list',
+    name: 'FeedCardList',
+    level: 'organism',
+    Preview: FeedCardListPreview,
+    Entry: FeedCardListEntry,
+  },
+  {
+    slug: 'offered-feedback-card',
+    name: 'OfferedFeedbackCard',
+    level: 'organism',
+    Preview: OfferedFeedbackCardPreview,
+    Entry: OfferedFeedbackCardEntry,
+  },
+  {
+    slug: 'requested-feedback-card',
+    name: 'RequestedFeedbackCard',
+    level: 'organism',
+    Preview: RequestedFeedbackCardPreview,
+    Entry: RequestedFeedbackCardEntry,
   },
 ];

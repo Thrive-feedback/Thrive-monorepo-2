@@ -4,7 +4,6 @@ import { cn } from '@/lib/cn.util';
 import styles from './postcard.module.css';
 import { PostcardPicture } from './postcard-picture';
 import { postcardStamp } from './postcard-stamp.constant';
-import { PostcardStampIcon } from './postcard-stamp-icon';
 
 /** The stamp's place: 96 px, 5 px from the card's edges. The writing keeps clear of this square. */
 const CORNER = 'absolute top-1.25 right-1.25 size-24';
@@ -125,8 +124,9 @@ export type PostcardStampBoxProps = {
 };
 
 /**
- * The stamp box printed in the corner of the back while no stamp is on it, as on a real postcard,
- * so the space kept clear of the writing reads as meant. Pressing it opens the stamps.
+ * The stamp box printed in the corner of the back while no stamp is on it, with the word in it, as
+ * on a real postcard, so the space kept clear of the writing reads as meant. Pressing it opens the
+ * stamps.
  */
 export const PostcardStampBox = memo(function PostcardStampBox({
   onChoose,
@@ -138,10 +138,10 @@ export const PostcardStampBox = memo(function PostcardStampBox({
       onClick={onChoose}
       className={cn(
         CORNER,
-        'flex cursor-pointer items-center justify-center border border-border-strong border-dashed text-fg-secondary transition-colors ease-smooth-out hover:border-action-primary hover:text-action-primary',
+        'flex cursor-pointer items-center justify-center border border-border-strong border-dashed text-body-3 text-fg-secondary transition-colors ease-smooth-out hover:border-action-primary hover:text-action-primary',
       )}
     >
-      <PostcardStampIcon className="h-8 w-auto" />
+      Stamp
     </button>
   );
 });

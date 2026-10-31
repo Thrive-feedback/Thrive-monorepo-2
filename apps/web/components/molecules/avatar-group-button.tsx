@@ -6,9 +6,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/atoms/tooltip';
-import { AvatarGroup } from '@/components/molecules/avatar-group';
+import {
+  AvatarGroup,
+  type AvatarGroupPerson,
+} from '@/components/molecules/avatar-group';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { cn } from '@/lib/cn.util';
+
+export type { AvatarGroupPerson };
 
 const names = new Intl.ListFormat('en', { type: 'conjunction' });
 
@@ -33,14 +38,6 @@ const addCircle = cva(
 const addIcon = cva('', {
   variants: { size: { sm: 'size-3.5', md: 'size-4', lg: 'size-4' } },
 });
-
-/** One person in the stack: who they are, and the name their face stands for. */
-export type AvatarGroupPerson = {
-  readonly id: string;
-  readonly name: string;
-  /** Their photo, or `null` to show their initials. */
-  readonly photoUrl: string | null;
-};
 
 export type AvatarGroupButtonProps = Omit<
   React.ComponentPropsWithRef<'button'>,
