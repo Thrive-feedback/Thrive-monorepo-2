@@ -1,0 +1,28 @@
+/*
+ * A hover gives the card a small shake. It is the face that turns, inside a box that stays still,
+ * so the popup keeps steady and the edge moving under the pointer cannot end the hover. A named
+ * step of keyframes has no utility, which is why this is CSS. Without motion it keeps still.
+ */
+@keyframes shake {
+  20% {
+    rotate: -3deg;
+  }
+
+  40% {
+    rotate: 3deg;
+  }
+
+  60% {
+    rotate: -2deg;
+  }
+
+  80% {
+    rotate: 1deg;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .box:hover .face {
+    animation: shake var(--motion-duration-slow) var(--motion-ease-in-out);
+  }
+}

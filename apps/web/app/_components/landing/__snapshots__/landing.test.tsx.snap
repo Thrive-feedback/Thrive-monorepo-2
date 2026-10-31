@@ -637,21 +637,22 @@ exports[`Landing > renders the same page 1`] = `
                                       <button
                                         aria-expanded="false"
                                         aria-haspopup="dialog"
-                                        class="-m-0.5 inline-flex cursor-pointer rounded-full p-0.5 transition-colors hover:bg-action-neutral-surface-hover"
+                                        class="-m-0.5 inline-flex w-fit cursor-pointer rounded-full p-0.5 transition-colors hover:bg-action-neutral-surface-hover"
                                         data-slot="dialog-trigger"
                                         data-state="closed"
                                         type="button"
                                       >
                                         <div
                                           aria-hidden="true"
-                                          class="flex *:ring-2 *:ring-surface-base -space-x-1"
+                                          class="flex *:ring-2 *:ring-surface-base -space-x-0.5"
                                           data-slot="avatar-group"
                                           role="group"
                                         >
                                           <span
                                             aria-hidden="true"
                                             class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
-                                            data-slot="avatar"
+                                            data-slot="tooltip-trigger"
+                                            data-state="closed"
                                           >
                                             <span
                                               class="flex size-full items-center justify-center font-medium"
@@ -663,7 +664,8 @@ exports[`Landing > renders the same page 1`] = `
                                           <span
                                             aria-hidden="true"
                                             class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
-                                            data-slot="avatar"
+                                            data-slot="tooltip-trigger"
+                                            data-state="closed"
                                           >
                                             <span
                                               class="flex size-full items-center justify-center font-medium"
@@ -675,7 +677,8 @@ exports[`Landing > renders the same page 1`] = `
                                           <span
                                             aria-hidden="true"
                                             class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
-                                            data-slot="avatar"
+                                            data-slot="tooltip-trigger"
+                                            data-state="closed"
                                           >
                                             <span
                                               class="flex size-full items-center justify-center font-medium"
@@ -985,13 +988,13 @@ exports[`Landing > renders the same page 1`] = `
                         <div
                           data-group="true"
                           data-slot="resizable-panel-group"
-                          id="_r_9_"
+                          id="_r_c_"
                           style="height: 100%; width: 100%; overflow: hidden; display: flex; flex-direction: row; flex-wrap: nowrap;"
                         >
                           <div
                             data-panel="true"
                             data-slot="resizable-panel"
-                            id="_r_a_"
+                            id="_r_d_"
                             style="min-height: 0; max-height: 100%; height: auto; min-width: 0; max-width: 100%; width: auto; border-width: 0px; padding: 0px; margin: 0px; display: flex; flex-basis: 0px; overflow: visible; flex-shrink: 1; flex-grow: 50;"
                           >
                             <div
@@ -1071,21 +1074,22 @@ exports[`Landing > renders the same page 1`] = `
                                               <button
                                                 aria-expanded="false"
                                                 aria-haspopup="dialog"
-                                                class="-m-0.5 inline-flex cursor-pointer rounded-full p-0.5 transition-colors hover:bg-action-neutral-surface-hover"
+                                                class="-m-0.5 inline-flex w-fit cursor-pointer rounded-full p-0.5 transition-colors hover:bg-action-neutral-surface-hover"
                                                 data-slot="dialog-trigger"
                                                 data-state="closed"
                                                 type="button"
                                               >
                                                 <div
                                                   aria-hidden="true"
-                                                  class="flex *:ring-2 *:ring-surface-base -space-x-1"
+                                                  class="flex *:ring-2 *:ring-surface-base -space-x-0.5"
                                                   data-slot="avatar-group"
                                                   role="group"
                                                 >
                                                   <span
                                                     aria-hidden="true"
                                                     class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
-                                                    data-slot="avatar"
+                                                    data-slot="tooltip-trigger"
+                                                    data-state="closed"
                                                   >
                                                     <span
                                                       class="flex size-full items-center justify-center font-medium"
@@ -1097,7 +1101,8 @@ exports[`Landing > renders the same page 1`] = `
                                                   <span
                                                     aria-hidden="true"
                                                     class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
-                                                    data-slot="avatar"
+                                                    data-slot="tooltip-trigger"
+                                                    data-state="closed"
                                                   >
                                                     <span
                                                       class="flex size-full items-center justify-center font-medium"
@@ -1109,7 +1114,8 @@ exports[`Landing > renders the same page 1`] = `
                                                   <span
                                                     aria-hidden="true"
                                                     class="relative flex shrink-0 select-none overflow-hidden bg-surface-subtle text-fg-secondary size-6 text-body-3 rounded-full"
-                                                    data-slot="avatar"
+                                                    data-slot="tooltip-trigger"
+                                                    data-state="closed"
                                                   >
                                                     <span
                                                       class="flex size-full items-center justify-center font-medium"
@@ -1416,7 +1422,7 @@ exports[`Landing > renders the same page 1`] = `
                             </div>
                           </div>
                           <div
-                            aria-controls="_r_a_"
+                            aria-controls="_r_d_"
                             aria-label="Resize Workspace feed"
                             aria-orientation="vertical"
                             aria-valuemax="100"
@@ -1425,7 +1431,7 @@ exports[`Landing > renders the same page 1`] = `
                             class="relative flex w-px items-center justify-center bg-border-muted after:absolute after:inset-y-0 after:left-1/2 after:w-2 after:-translate-x-1/2 hover:bg-action-primary aria-[orientation=horizontal]:h-px aria-[orientation=horizontal]:w-full aria-[orientation=horizontal]:after:inset-x-0 aria-[orientation=horizontal]:after:top-1/2 aria-[orientation=horizontal]:after:left-0 aria-[orientation=horizontal]:after:h-2 aria-[orientation=horizontal]:after:w-full aria-[orientation=horizontal]:after:translate-x-0 aria-[orientation=horizontal]:after:-translate-y-1/2 aria-[orientation=horizontal]:*:rotate-90"
                             data-separator="inactive"
                             data-slot="resizable-handle"
-                            id="_r_e_"
+                            id="_r_k_"
                             role="separator"
                             style="flex-basis: auto; flex-grow: 0; flex-shrink: 0;"
                             tabindex="0"
@@ -1482,7 +1488,7 @@ exports[`Landing > renders the same page 1`] = `
                           <div
                             data-panel="true"
                             data-slot="resizable-panel"
-                            id="_r_f_"
+                            id="_r_l_"
                             style="min-height: 0; max-height: 100%; height: auto; min-width: 0; max-width: 100%; width: auto; border-width: 0px; padding: 0px; margin: 0px; display: flex; flex-basis: 0px; overflow: visible; flex-shrink: 1; flex-grow: 50;"
                           >
                             <div
@@ -1599,7 +1605,7 @@ exports[`Landing > renders the same page 1`] = `
                                   class="mt-6"
                                 >
                                   <section
-                                    aria-labelledby="_r_g_"
+                                    aria-labelledby="_r_m_"
                                     class="flex flex-col gap-1"
                                   >
                                     <div
@@ -1608,7 +1614,7 @@ exports[`Landing > renders the same page 1`] = `
                                       <h3
                                         class="text-subtitle-3"
                                         data-slot="text"
-                                        id="_r_g_"
+                                        id="_r_m_"
                                       >
                                         Waiting for me
                                       </h3>

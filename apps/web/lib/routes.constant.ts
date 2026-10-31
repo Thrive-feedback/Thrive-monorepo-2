@@ -15,6 +15,18 @@ export const HOME_TABS = [
 
 export type HomeTab = (typeof HOME_TABS)[number];
 
+/** What the new Home's filter can show, in the order offered. The first is what Home opens on. */
+export const BRAND_NEW_HOME_SHOWS = ['all', 'everyone', 'shared'] as const;
+
+export type BrandNewHomeShow = (typeof BRAND_NEW_HOME_SHOWS)[number];
+
+/** The new Home showing one choice of its filter; `all` is what it opens on, so it needs no query. */
+function brandNewHomeShowing(show: BrandNewHomeShow) {
+  return show === BRAND_NEW_HOME_SHOWS[0]
+    ? '/brand-new-home'
+    : `/brand-new-home?show=${show}`;
+}
+
 export const ROUTES = {
   landing: '/',
   signIn: '/signin',
@@ -25,6 +37,13 @@ export const ROUTES = {
   brandNewHome: '/brand-new-home',
   /** The new Home, saying once that the person has just switched to this Workspace. */
   brandNewHomeOpened: '/brand-new-home?opened=1',
+  /** The new Home showing one choice of its filter. */
+  brandNewHomeShowing,
+  /** One piece of Feedback open over the new Home, which keeps showing what it was showing. */
+  brandNewHomeFeedback: (feedbackId: string, show: BrandNewHomeShow) => {
+    const showing = brandNewHomeShowing(show);
+    return `${showing}${showing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
+  },
   /** One tab of Home's feed. `workspace` is the tab Home opens on, so it needs no query. */
   homeTab: (tab: HomeTab) =>
     tab === HOME_TABS[0] ? '/home' : `/home?tab=${tab}`,

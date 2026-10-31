@@ -1,7 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ROUTES } from '@/lib/routes.constant';
 import BrandNewHome from './page';
+
+const FEEDBACK_ID = '0199a0f0-0000-7000-8000-0000000000d1';
 
 const requireMember = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
@@ -11,6 +13,16 @@ vi.mock('@/components/atoms/one-time-toast', () => ({
   OneTimeToast: ({ message, then }: { message: string; then: string }) => (
     <output data-then={then}>{message}</output>
   ),
+}));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: vi.fn() }),
+}));
+vi.mock('./_components/home-feed', () => ({
+  HomeFeed: ({ show }: { show: string }) => <p>The feed, showing {show}</p>,
+  HomeFeedSkeleton: () => null,
+}));
+vi.mock('./_components/home-feed-filter', () => ({
+  HomeFeedFilter: ({ show }: { show: string }) => <p>The filter on {show}</p>,
 }));
 
 beforeEach(() => {
@@ -42,5 +54,33 @@ describe('BrandNewHome', () => {
       'data-then',
       ROUTES.brandNewHome,
     );
+  });
+
+  it('opens on All Feedback', async () => {
+    render(await open());
+
+    expect(screen.getByText('The filter on all')).toBeInTheDocument();
+    expect(screen.getByText('The feed, showing all')).toBeInTheDocument();
+  });
+
+  it('shows what the address asks for', async () => {
+    render(await open({ show: 'shared' }));
+
+    expect(screen.getByText('The filter on shared')).toBeInTheDocument();
+    expect(screen.getByText('The feed, showing shared')).toBeInTheDocument();
+  });
+
+  it('opens nothing over the feed until a piece is named', async () => {
+    render(await open());
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('opens an empty overlay over the feed for the piece the address names', async () => {
+    render(await open({ show: 'shared', feedback: FEEDBACK_ID }));
+
+    const overlay = screen.getByRole('dialog', { name: 'Postcard' });
+    expect(within(overlay).getByRole('button')).toBeInTheDocument();
+    expect(screen.getByText('The feed, showing shared')).toBeInTheDocument();
   });
 });
