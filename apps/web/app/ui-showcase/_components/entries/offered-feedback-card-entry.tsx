@@ -2,7 +2,7 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
-import { MiniPostcard } from '@/components/atoms/mini-postcard';
+import { MiniPostcard } from '@/components/molecules/mini-postcard';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { FeedCardCases } from './feed-card-cases';
 import { OFFERED_CASES } from './feed-card-samples.constant';
@@ -61,5 +61,5 @@ export function OfferedFeedbackCardEntry() {
 }
 
 export function OfferedFeedbackCardPreview() {
-  return <MiniPostcard kind="offered" />;
+  return <MiniPostcard kind="offered" date="2026-10-31T03:00:00.000Z" />;
 }

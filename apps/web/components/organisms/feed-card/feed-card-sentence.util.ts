@@ -4,8 +4,8 @@ import type {
 } from '@/lib/feedback/home-feed-item.type';
 
 /** What a card calls somebody who has not introduced themselves yet. */
-const GIVER_WITH_NO_NAME = 'A teammate';
-const RECEIVER_WITH_NO_NAME = 'a teammate';
+export const NO_NAME_STARTING_A_SENTENCE = 'A teammate';
+export const NO_NAME_IN_A_SENTENCE = 'a teammate';
 
 const names = new Intl.ListFormat('en-GB', {
   style: 'long',
@@ -19,7 +19,7 @@ export function feedCardGiver(
 ): string {
   return giver.accountId === readerAccountId
     ? 'You'
-    : (giver.name ?? GIVER_WITH_NO_NAME);
+    : (giver.name ?? NO_NAME_STARTING_A_SENTENCE);
 }
 
 /** Everyone a piece is for, the reader first and the rest in the order the Giver chose them. */
@@ -42,7 +42,7 @@ export function feedCardSentence(
     (receiver) =>
       receiver.accountId === readerAccountId
         ? 'you'
-        : (receiver.name ?? RECEIVER_WITH_NO_NAME),
+        : (receiver.name ?? NO_NAME_IN_A_SENTENCE),
   );
   return `${feedCardGiver(item.giver, readerAccountId)} gave feedback to ${names.format(receivers)}`;
 }

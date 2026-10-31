@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ROUTES } from '@/lib/routes.constant';
 import BrandNewHome from './page';
@@ -20,6 +20,19 @@ vi.mock('next/navigation', () => ({
 vi.mock('./_components/home-feed', () => ({
   HomeFeed: ({ show }: { show: string }) => <p>The feed, showing {show}</p>,
   HomeFeedSkeleton: () => null,
+}));
+vi.mock('./_components/home-postcard', () => ({
+  HomePostcard: ({
+    feedbackId,
+    show,
+  }: {
+    feedbackId: string;
+    show: string;
+  }) => (
+    <p>
+      The postcard {feedbackId}, from {show}
+    </p>
+  ),
 }));
 vi.mock('./_components/home-feed-filter', () => ({
   HomeFeedFilter: ({ show }: { show: string }) => <p>The filter on {show}</p>,
@@ -76,11 +89,12 @@ describe('BrandNewHome', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('opens an empty overlay over the feed for the piece the address names', async () => {
+  it('opens the postcard the address names over the feed', async () => {
     render(await open({ show: 'shared', feedback: FEEDBACK_ID }));
 
-    const overlay = screen.getByRole('dialog', { name: 'Postcard' });
-    expect(within(overlay).getByRole('button')).toBeInTheDocument();
+    expect(
+      screen.getByText(`The postcard ${FEEDBACK_ID}, from shared`),
+    ).toBeInTheDocument();
     expect(screen.getByText('The feed, showing shared')).toBeInTheDocument();
   });
 });

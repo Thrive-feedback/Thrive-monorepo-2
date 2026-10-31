@@ -366,13 +366,6 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: SkeletonEntry,
   },
   {
-    slug: 'mini-postcard',
-    name: 'MiniPostcard',
-    level: 'atom',
-    Preview: MiniPostcardPreview,
-    Entry: MiniPostcardEntry,
-  },
-  {
     slug: 'postmark',
     name: 'Postmark',
     level: 'atom',
@@ -476,6 +469,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'molecule',
     Preview: AvatarNamePreview,
     Entry: AvatarNameEntry,
+  },
+  {
+    slug: 'mini-postcard',
+    name: 'MiniPostcard',
+    level: 'molecule',
+    Preview: MiniPostcardPreview,
+    Entry: MiniPostcardEntry,
   },
   {
     slug: 'photo-avatar',

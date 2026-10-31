@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
-import { HomeDialog } from '@/components/organisms/home-dialog';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 import { HomeFeed, HomeFeedSkeleton } from './_components/home-feed';
 import { HomeFeedFilter } from './_components/home-feed-filter';
+import { HomePostcard } from './_components/home-postcard';
 import { BrandNewHomeSearchParams } from './_lib/brand-new-home-search-params.schema';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
@@ -56,16 +56,18 @@ export default async function BrandNewHome({
           <HomeFeed membership={session.membership} show={show} />
         </Suspense>
       </div>
-      {feedback !== undefined && (
-        <HomeDialog
-          key={feedback}
-          title="Postcard"
-          close={{ href: ROUTES.brandNewHomeShowing(show) }}
-        >
-          {/* The postcard is drawn here once it can be read. */}
-          <div className="min-h-64" />
-        </HomeDialog>
-      )}
+      {/* Always there, so a press holds the small postcard's pending mark until the postcard is
+          ready, rather than committing to an empty fallback; a reload still does not wait. */}
+      <Suspense fallback={null}>
+        {feedback !== undefined && (
+          <HomePostcard
+            key={feedback}
+            membership={session.membership}
+            feedbackId={feedback}
+            show={show}
+          />
+        )}
+      </Suspense>
     </>
   );
 }

@@ -145,6 +145,66 @@ describe('FeedCard', () => {
     expect(screen.getByRole('article')).toHaveTextContent('You asked:');
   });
 
+  describe('how much of the words a card shows', () => {
+    it('cuts an Offered message at three lines', () => {
+      renderCard(OFFERED);
+
+      expect(screen.getByText(OFFERED.message).closest('p')).toHaveClass(
+        'line-clamp-3',
+      );
+    });
+
+    it('cuts the question at two lines', () => {
+      renderCard(REQUESTED);
+
+      expect(
+        screen.getByText('How clear was the plan?').closest('p'),
+      ).toHaveClass('line-clamp-2');
+    });
+
+    it('never cuts the answer the card is for', () => {
+      renderCard(REQUESTED);
+
+      expect(
+        screen.getByText(REQUESTED.message).closest('p')?.className,
+      ).not.toMatch(/line-clamp/);
+    });
+  });
+
+  describe('@ and #', () => {
+    const TAGS = {
+      workspaceGoals: [{ name: 'Ownership' }],
+      mentions: [{ slug: 'ann.lee', displayName: 'Ann' }],
+    };
+    const TAGGED = 'Thanks to @ann.lee, #Ownership at its best.';
+
+    it('binds them in an Offered message', () => {
+      renderCard({ ...OFFERED, message: TAGGED, messageTags: TAGS });
+
+      const card = screen.getByRole('article');
+      expect(card).toHaveTextContent('@Ann');
+      expect(card).toHaveTextContent('#Ownership');
+      expect(card).not.toHaveTextContent('ann.lee');
+    });
+
+    it('binds the question and the answer each by its own', () => {
+      renderCard({
+        ...REQUESTED,
+        message: 'Thanks to @ann.lee.',
+        messageTags: { workspaceGoals: [], mentions: TAGS.mentions },
+        request: {
+          ...QUESTION,
+          message: 'How was #Ownership here?',
+          messageTags: { workspaceGoals: TAGS.workspaceGoals, mentions: [] },
+        },
+      });
+
+      const card = screen.getByRole('article');
+      expect(card).toHaveTextContent('@Ann');
+      expect(card).toHaveTextContent('#Ownership');
+    });
+  });
+
   describe('who else was asked', () => {
     const openAnswers = () =>
       userEvent.click(screen.getByRole('button', { name: 'Show answers' }));
@@ -461,8 +521,8 @@ describe('FeedCard', () => {
   it('draws the small postcard with a postmark, and no writing of its own', () => {
     renderCard(REQUESTED);
 
-    expect(screen.getByText('THRIVE')).toBeInTheDocument();
-    expect(screen.getByText('POST')).toBeInTheDocument();
+    expect(screen.getByText('Thrive')).toBeInTheDocument();
+    expect(screen.getByText('31 OCT')).toBeInTheDocument();
     expect(screen.queryByText('Request')).not.toBeInTheDocument();
     expect(screen.queryByText('Feedback')).not.toBeInTheDocument();
     expect(screen.queryByText(/—/)).not.toBeInTheDocument();

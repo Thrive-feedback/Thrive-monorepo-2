@@ -1,9 +1,10 @@
 import { Text } from '@/components/atoms/text';
+import { FeedbackText } from '@/components/organisms/feedback-text';
+import { PersonName } from '@/components/organisms/person-name';
 import type { HomeFeedRequest } from '@/lib/feedback/home-feed-item.type';
-import { FeedbackText } from '../feedback-text';
-import { PersonName } from '../person-name';
 import { AskedPeople } from './asked-people';
 import { FeedCardFrame, type FeedCardProps } from './feed-card-frame';
+import { NO_NAME_STARTING_A_SENTENCE } from './feed-card-sentence.util';
 
 /** What was asked, over a dashed rule: who asked and the Request message, cut at two lines. */
 function Question({
@@ -25,7 +26,7 @@ function Question({
           'You'
         ) : (
           <PersonName
-            name={request.requester.name ?? 'A teammate'}
+            name={request.requester.name ?? NO_NAME_STARTING_A_SENTENCE}
             inactive={request.requester.inactive}
           />
         )}{' '}

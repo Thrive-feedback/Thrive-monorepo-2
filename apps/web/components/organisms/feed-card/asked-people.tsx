@@ -7,6 +7,8 @@ import { link } from '@/components/atoms/link';
 import { Text } from '@/components/atoms/text';
 import { AvatarGroup } from '@/components/molecules/avatar-group';
 import { AvatarName } from '@/components/molecules/avatar-name';
+import { FeedbackText } from '@/components/organisms/feedback-text';
+import { PersonName } from '@/components/organisms/person-name';
 import { cn } from '@/lib/cn.util';
 import {
   ASK_STATUS_NAMES,
@@ -16,8 +18,6 @@ import type {
   HomeFeedAsk,
   HomeFeedRequest,
 } from '@/lib/feedback/home-feed-item.type';
-import { FeedbackText } from '../feedback-text';
-import { PersonName } from '../person-name';
 import { feedCardGiver } from './feed-card-sentence.util';
 import { useIsCutOff } from './use-is-cut-off';
 
