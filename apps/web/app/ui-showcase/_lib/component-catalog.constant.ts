@@ -63,6 +63,14 @@ import {
   FeedCardListPreview,
 } from '@/app/ui-showcase/_components/entries/feed-card-list-entry';
 import {
+  FeedComposerEntry,
+  FeedComposerPreview,
+} from '@/app/ui-showcase/_components/entries/feed-composer-entry';
+import {
+  HandwrittenNoteEntry,
+  HandwrittenNotePreview,
+} from '@/app/ui-showcase/_components/entries/handwritten-note-entry';
+import {
   InputEntry,
   InputPreview,
 } from '@/app/ui-showcase/_components/entries/input-entry';
@@ -167,6 +175,10 @@ import {
   TextareaPreview,
 } from '@/app/ui-showcase/_components/entries/textarea-entry';
 import {
+  TimeAgoEntry,
+  TimeAgoPreview,
+} from '@/app/ui-showcase/_components/entries/time-ago-entry';
+import {
   ToastEntry,
   ToastPreview,
 } from '@/app/ui-showcase/_components/entries/toast-entry';
@@ -178,6 +190,10 @@ import {
   TooltipEntry,
   TooltipPreview,
 } from '@/app/ui-showcase/_components/entries/tooltip-entry';
+import {
+  WaitingAskCardEntry,
+  WaitingAskCardPreview,
+} from '@/app/ui-showcase/_components/entries/waiting-ask-card-entry';
 import type { AtomicLevel } from '@/app/ui-showcase/_components/level-badge';
 
 export type ShowcaseComponent = {
@@ -343,6 +359,20 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'atom',
     Preview: TooltipPreview,
     Entry: TooltipEntry,
+  },
+  {
+    slug: 'handwritten-note',
+    name: 'HandwrittenNote',
+    level: 'atom',
+    Preview: HandwrittenNotePreview,
+    Entry: HandwrittenNoteEntry,
+  },
+  {
+    slug: 'time-ago',
+    name: 'TimeAgo',
+    level: 'atom',
+    Preview: TimeAgoPreview,
+    Entry: TimeAgoEntry,
   },
   {
     slug: 'avatar',
@@ -512,6 +542,20 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'organism',
     Preview: FeedCardListPreview,
     Entry: FeedCardListEntry,
+  },
+  {
+    slug: 'feed-composer',
+    name: 'FeedComposer',
+    level: 'organism',
+    Preview: FeedComposerPreview,
+    Entry: FeedComposerEntry,
+  },
+  {
+    slug: 'waiting-ask-card',
+    name: 'WaitingAskCard',
+    level: 'organism',
+    Preview: WaitingAskCardPreview,
+    Entry: WaitingAskCardEntry,
   },
   {
     slug: 'offered-feedback-card',

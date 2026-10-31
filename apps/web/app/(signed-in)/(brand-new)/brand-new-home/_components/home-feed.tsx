@@ -18,7 +18,18 @@ export async function HomeFeed({ membership, show }: HomeFeedProps) {
   if (page.items.length === 0) {
     return <FeedEmpty show={show} />;
   }
-  return <HomeFeedList key={show} initialPage={page} show={show} />;
+  // The list keeps what it read, so only the reader's own newest card starts it again: what they
+  // just sent has to show, and somebody else's post must not move cards under them.
+  const newestOfTheirs = page.items.find(
+    (item) => item.giver.accountId === page.readerAccountId,
+  )?.id;
+  return (
+    <HomeFeedList
+      key={`${show}:${newestOfTheirs}`}
+      initialPage={page}
+      show={show}
+    />
+  );
 }
 
 /** `HomeFeed` still loading: a few cards, spaced as the list spaces them. */

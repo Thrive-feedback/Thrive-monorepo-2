@@ -1,8 +1,14 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { BrandNewPageTitle } from '@/app/(signed-in)/(brand-new)/_components/brand-new-page-title';
+import { BRAND_NEW_COLUMN } from '@/app/(signed-in)/(brand-new)/_lib/brand-new-column.constant';
+import { HandwrittenNote } from '@/components/atoms/handwritten-note';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
+import { FeedComposerSkeleton } from '@/components/organisms/feed-composer';
+import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
+import { HomeComposer } from './_components/home-composer';
 import { HomeFeed, HomeFeedSkeleton } from './_components/home-feed';
 import { HomeFeedFilter } from './_components/home-feed-filter';
 import { HomePostcard } from './_components/home-postcard';
@@ -49,12 +55,35 @@ export default async function BrandNewHome({
           then={ROUTES.brandNewHome}
         />
       )}
-      <h1 className="sr-only">Home</h1>
-      <div className="mx-auto flex w-full max-w-180 flex-col gap-4 px-4 py-8">
-        <HomeFeedFilter show={show} />
-        <Suspense key={show} fallback={<HomeFeedSkeleton />}>
-          <HomeFeed membership={session.membership} show={show} />
-        </Suspense>
+      <div className={cn(BRAND_NEW_COLUMN, 'flex flex-col gap-8')}>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-end gap-x-3">
+            <BrandNewPageTitle>Home</BrandNewPageTitle>
+            <HandwrittenNote size="md" className="-translate-y-1.5">
+              say it while it's fresh
+            </HandwrittenNote>
+          </div>
+          <Suspense fallback={<FeedComposerSkeleton />}>
+            <HomeComposer session={session} />
+          </Suspense>
+        </div>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1 md:flex-none">
+              <HomeFeedFilter show={show} />
+            </div>
+            <HandwrittenNote
+              size="md"
+              tilt="left"
+              className="hidden shrink-0 md:block"
+            >
+              what your team's been saying
+            </HandwrittenNote>
+          </div>
+          <Suspense key={show} fallback={<HomeFeedSkeleton />}>
+            <HomeFeed membership={session.membership} show={show} />
+          </Suspense>
+        </div>
       </div>
       {/* Always there, so a press holds the small postcard's pending mark until the postcard is
           ready, rather than committing to an empty fallback; a reload still does not wait. */}

@@ -9,6 +9,12 @@ import { POSTCARD_STICKERS } from '@/components/organisms/postcard-dialog/postca
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { ComposeMenu } from './compose-menu';
 
+const refresh = vi.fn();
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh }),
+}));
+
 const sendPostcardFeedback = vi.fn();
 const sendPostcardRequest = vi.fn();
 vi.mock(

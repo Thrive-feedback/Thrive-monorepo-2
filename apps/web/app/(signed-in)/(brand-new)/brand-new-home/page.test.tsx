@@ -17,6 +17,9 @@ vi.mock('@/components/atoms/one-time-toast', () => ({
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn() }),
 }));
+vi.mock('./_components/home-composer', () => ({
+  HomeComposer: () => <p>The composer</p>,
+}));
 vi.mock('./_components/home-feed', () => ({
   HomeFeed: ({ show }: { show: string }) => <p>The feed, showing {show}</p>,
   HomeFeedSkeleton: () => null,
@@ -74,6 +77,12 @@ describe('BrandNewHome', () => {
 
     expect(screen.getByText('The filter on all')).toBeInTheDocument();
     expect(screen.getByText('The feed, showing all')).toBeInTheDocument();
+  });
+
+  it('offers the composer above the feed', async () => {
+    render(await open());
+
+    expect(await screen.findByText('The composer')).toBeVisible();
   });
 
   it('shows what the address asks for', async () => {
