@@ -9,9 +9,10 @@ import { FakeIdGenerator } from '@test/support/id-generator.fake';
 import { FakeChannelAnnouncer } from '@test/support/integrations.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
+  KudosCardInvalidError,
   KudosMessageEmptyError,
-  KudosNeedsARecipientError,
 } from '../../domain/feedback-request.errors';
+import type { KudosCardSnapshot } from '../../domain/value-object/kudos-card.vo';
 import { TagsService } from '../service/tags.service';
 import { GiveKudosUseCase } from './give-kudos.use-case';
 
@@ -50,8 +51,14 @@ function setUp() {
   return { kudosRepository, unitOfWork, useCase, channelAnnouncer };
 }
 
-function giving(message: string) {
-  return { workspaceId: WORKSPACE_ID, giverAccountId: ANN, message };
+const CARD: KudosCardSnapshot = {
+  templateKey: 'cobalt-dash',
+  textStyle: { font: 'signature', sizeStep: 4, align: 'center', ink: 'paper' },
+  stickers: [],
+};
+
+function giving(message: string, card: KudosCardSnapshot | null = null) {
+  return { workspaceId: WORKSPACE_ID, giverAccountId: ANN, message, card };
 }
 
 describe('a Member giving Kudos', () => {
@@ -77,8 +84,28 @@ describe('a Member giving Kudos', () => {
           { accountId: BEN, slug: 'ben', displayName: 'Ben' },
           { accountId: CARA, slug: 'cara', displayName: 'Cara' },
         ],
+        card: null,
       },
     ]);
+  });
+
+  it('stores the card it was written on', async () => {
+    const { kudosRepository, useCase } = setUp();
+
+    await useCase.execute(giving('@ben thank you.', CARD));
+
+    expect(kudosRepository.saved[0]?.card).toEqual(CARD);
+  });
+
+  it('refuses a card that does not fit, and stores nothing', async () => {
+    const { kudosRepository, useCase } = setUp();
+
+    await expect(
+      useCase.execute(
+        giving('@ben thank you.', { ...CARD, templateKey: 'Not A Slug' }),
+      ),
+    ).rejects.toThrow(KudosCardInvalidError);
+    expect(kudosRepository.saved).toEqual([]);
   });
 
   it('writes inside one unit of work', async () => {
@@ -89,21 +116,36 @@ describe('a Member giving Kudos', () => {
     expect(unitOfWork.opened).toHaveLength(1);
   });
 
-  it('gives nobody outside the Workspace Kudos, and refuses one that names only them', async () => {
+  it('stores a Kudos that names nobody, for the whole Workspace', async () => {
     const { kudosRepository, useCase } = setUp();
 
-    await expect(useCase.execute(giving('@dan thank you.'))).rejects.toThrow(
-      KudosNeedsARecipientError,
-    );
-    expect(kudosRepository.saved).toEqual([]);
+    await useCase.execute(giving('Great launch, everyone.'));
+
+    expect(kudosRepository.saved[0]?.recipientAccountIds).toEqual([]);
   });
 
-  it('refuses a Kudos that only names its Giver', async () => {
-    const { useCase } = setUp();
+  it('gives nobody outside the Workspace Kudos: one naming only them is for the whole Workspace', async () => {
+    const { kudosRepository, useCase } = setUp();
 
-    await expect(useCase.execute(giving('@ann well done me.'))).rejects.toThrow(
-      KudosNeedsARecipientError,
-    );
+    await useCase.execute(giving('@dan thank you.'));
+
+    expect(kudosRepository.saved[0]?.recipientAccountIds).toEqual([]);
+  });
+
+  it('never gives its Giver their own Kudos: one naming only them is for the whole Workspace', async () => {
+    const { kudosRepository, useCase } = setUp();
+
+    await useCase.execute(giving('@ann well done me.'));
+
+    expect(kudosRepository.saved[0]?.recipientAccountIds).toEqual([]);
+  });
+
+  it('tells the channel about a Kudos for the whole Workspace too', async () => {
+    const { useCase, channelAnnouncer } = setUp();
+
+    await useCase.execute(giving('Great launch, everyone.'));
+
+    expect(channelAnnouncer.kudosGiven_[0]?.recipientAccountIds).toEqual([]);
   });
 
   it('refuses an empty Kudos before reading anything', async () => {

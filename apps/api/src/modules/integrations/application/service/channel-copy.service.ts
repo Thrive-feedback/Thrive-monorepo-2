@@ -44,8 +44,13 @@ export class ChannelCopyService {
     readonly recipientNames: readonly (string | null)[];
     readonly message: string;
   }): string {
+    // A Kudos that names nobody is for everyone (ADR 0074), and an empty list would leave a gap.
+    const given =
+      event.recipientNames.length === 0
+        ? 'the whole team'
+        : listOf(event.recipientNames);
     return [
-      `**${named(event.giverName)}** gave **${listOf(event.recipientNames)}** kudos`,
+      `**${named(event.giverName)}** gave **${given}** kudos`,
       quoted(event.message),
       this.linkTo(WEB_PATHS.home()),
     ].join('\n');

@@ -5,6 +5,7 @@ import {
   KudosQuery,
 } from '../../application/query-port/kudos.query-port';
 import type { CursorPageRequest } from '../../application/types/kudos.types';
+import { toKudosCardSnapshot } from '../mapper/kudos.mapper';
 
 /** Newest first, `id` breaking ties, so the order is total and a cursor names one place in it. */
 const NEWEST_FIRST = [{ createdAt: 'desc' }, { id: 'desc' }] satisfies {
@@ -15,6 +16,7 @@ const KUDOS_FIELDS = {
   id: true,
   giverAccountId: true,
   message: true,
+  card: true,
   createdAt: true,
   recipients: { orderBy: { accountId: 'asc' }, select: { accountId: true } },
   workspaceGoals: { orderBy: { name: 'asc' }, select: { name: true } },
@@ -64,6 +66,7 @@ export class PrismaKudosQuery extends KudosQuery {
             displayName: mention.displayName,
           })),
         },
+        card: toKudosCardSnapshot(record.card),
         createdAt: record.createdAt,
       })),
       hasMore: records.length > page.limit,

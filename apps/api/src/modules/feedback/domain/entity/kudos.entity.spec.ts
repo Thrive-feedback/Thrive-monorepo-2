@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { KudosNeedsARecipientError } from '../feedback-request.errors';
 import { type BoundMention, BoundTags } from '../value-object/bound-tags.vo';
+import { KudosCard } from '../value-object/kudos-card.vo';
 import { KudosMessage } from '../value-object/kudos-message.vo';
 import { Kudos } from './kudos.entity';
 
@@ -13,12 +13,17 @@ function mentionOf(accountId: string, slug: string): BoundMention {
 }
 
 function giving(...mentions: BoundMention[]) {
+  return givingOn(null, ...mentions);
+}
+
+function givingOn(card: KudosCard | null, ...mentions: BoundMention[]) {
   return Kudos.give({
     id: 'kudos-1',
     workspaceId: 'workspace-1',
     giverAccountId: ANN,
     message: KudosMessage.of('Thanks, team.'),
     tags: BoundTags.of({ workspaceGoals: [], mentions }),
+    card,
   });
 }
 
@@ -36,13 +41,37 @@ describe('giving Kudos', () => {
     expect(kudos.snapshot().mentions).toHaveLength(2);
   });
 
-  it('is refused when it mentions nobody', () => {
-    expect(() => giving()).toThrow(KudosNeedsARecipientError);
+  it('keeps the card it was written on', () => {
+    const card = {
+      templateKey: 'mint-breeze',
+      textStyle: {
+        font: 'modern',
+        sizeStep: 3,
+        align: 'center',
+        ink: 'forest',
+      },
+      stickers: [],
+    } as const;
+
+    const kudos = givingOn(KudosCard.of(card), mentionOf(BEN, 'ben'));
+
+    expect(kudos.snapshot().card).toEqual(card);
   });
 
-  it('is refused when the only person it mentions is its Giver', () => {
-    expect(() => giving(mentionOf(ANN, 'ann'))).toThrow(
-      KudosNeedsARecipientError,
-    );
+  it('has no card when it was not written on one', () => {
+    const kudos = giving(mentionOf(BEN, 'ben'));
+
+    expect(kudos.snapshot().card).toBeNull();
+  });
+
+  it('is for the whole Workspace when it mentions nobody', () => {
+    expect(giving().snapshot().recipientAccountIds).toEqual([]);
+  });
+
+  it('is for the whole Workspace when the only person it mentions is its Giver', () => {
+    const kudos = giving(mentionOf(ANN, 'ann'));
+
+    expect(kudos.snapshot().recipientAccountIds).toEqual([]);
+    expect(kudos.snapshot().mentions).toHaveLength(1);
   });
 });

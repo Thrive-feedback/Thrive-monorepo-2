@@ -4,6 +4,10 @@ import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable, Logger } from '@nestjs/common';
 import { Kudos } from '../../domain/entity/kudos.entity';
 import { KudosRepository } from '../../domain/repository/kudos-repository.port';
+import {
+  KudosCard,
+  type KudosCardSnapshot,
+} from '../../domain/value-object/kudos-card.vo';
 import { KudosMessage } from '../../domain/value-object/kudos-message.vo';
 import { TagsService } from '../service/tags.service';
 
@@ -14,6 +18,8 @@ export interface GiveKudosInput {
   readonly giverAccountId: string;
   /** The Kudos as written; who it is for is read out of its @mentions. */
   readonly message: string;
+  /** How it looks, or `null` when it was not written on a card. */
+  readonly card: KudosCardSnapshot | null;
 }
 
 export interface GiveKudosResult {
@@ -21,8 +27,10 @@ export interface GiveKudosResult {
 }
 
 /**
- * The Giver gives Kudos to the teammates they @mention. Nobody is named beside the message: binding its tags is what finds the recipients, and binding only ever finds
- * active Members of this Workspace, so a slug naming a stranger, or nobody, gives nobody Kudos.
+ * The Giver gives Kudos to the teammates they @mention, or to the whole Workspace if they name
+ * nobody (ADR 0074). Nobody is named beside the message: binding its tags is what finds the
+ * recipients, and binding only ever finds active Members of this Workspace, so a slug naming a
+ * stranger names nobody.
  *
  * **The Workspace's channel is told, and nobody else is.** A Kudos posted to a connected channel
  * carries its message, unlike Feedback, because it has no Visibility to respect — every Member
@@ -47,6 +55,7 @@ export class GiveKudosUseCase {
 
   async execute(input: GiveKudosInput): Promise<GiveKudosResult> {
     const message = KudosMessage.of(input.message);
+    const card = input.card === null ? null : KudosCard.of(input.card);
     const tags = await this.tagsService.boundIn(
       input.workspaceId,
       message.toString(),
@@ -57,6 +66,7 @@ export class GiveKudosUseCase {
       giverAccountId: input.giverAccountId,
       message,
       tags,
+      card,
     });
 
     await this.unitOfWork.run(() => this.kudosRepository.save(kudos));

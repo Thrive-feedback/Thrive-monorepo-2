@@ -13,7 +13,7 @@ export interface FeedbackPublished extends WorkspaceEvent {
 }
 
 export interface KudosGiven extends WorkspaceEvent {
-  /** Everyone the Kudos is for: the Members its message @mentions, less the Giver. */
+  /** Who the Kudos names: its message's @mentions, less the Giver. None: the whole Workspace. */
   readonly recipientAccountIds: readonly string[];
   /**
    * What the Giver wrote, and it **is** posted — unlike a Feedback message. A Kudos has no

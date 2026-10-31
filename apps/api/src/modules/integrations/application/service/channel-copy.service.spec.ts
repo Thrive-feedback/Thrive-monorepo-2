@@ -89,6 +89,18 @@ describe('what a Workspace channel is told about Kudos', () => {
   });
 });
 
+describe('a Kudos that names nobody', () => {
+  it('is announced as given to the whole team, with no gap where the names go', () => {
+    const post = copy.kudosGiven({
+      giverName: 'Ann',
+      recipientNames: [],
+      message: 'Great launch, everyone.',
+    });
+
+    expect(post).toContain('**Ann** gave **the whole team** kudos');
+  });
+});
+
 describe('the difference between the two, which is the point', () => {
   it('never puts the words of Feedback in a channel (brain ADR-0040)', () => {
     // A channel is read by whoever is in that server, which is not the same set of people as

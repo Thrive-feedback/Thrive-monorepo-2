@@ -393,6 +393,7 @@ export async function giveKudos(
   world: ThriveWorld,
   giver: string,
   message: string,
+  card?: object,
 ): Promise<ApiResponse> {
   return world.as(
     giver,
@@ -400,6 +401,7 @@ export async function giveKudos(
     `/v1/workspaces/${world.workspaceOf(giver)}/kudos`,
     {
       message: await withSlugs(world, message),
+      ...(card && { card }),
     },
   );
 }

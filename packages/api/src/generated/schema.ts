@@ -528,7 +528,7 @@ export interface paths {
         /** List the Kudos given in this Workspace */
         get: operations["KudosController_listWorkspaceKudos"];
         put?: never;
-        /** Give Kudos to the Members of this Workspace it @mentions */
+        /** Give Kudos to the Members of this Workspace it @mentions, or to all of them */
         post: operations["KudosController_giveKudos"];
         delete?: never;
         options?: never;
@@ -1761,6 +1761,25 @@ export interface components {
         };
         GiveKudosRequestDto: {
             message: string;
+            card?: {
+                templateKey: string;
+                textStyle: {
+                    /** @enum {string} */
+                    font: "modern" | "classic" | "signature";
+                    sizeStep: number;
+                    /** @enum {string} */
+                    align: "left" | "center" | "right";
+                    /** @enum {string} */
+                    ink: "ink" | "navy" | "forest" | "plum" | "brick" | "paper";
+                };
+                stickers: {
+                    stickerKey: string;
+                    x: number;
+                    y: number;
+                    scale: number;
+                    rotation: number;
+                }[];
+            };
         };
         GiveKudosResponseDto_Output: {
             /** Format: uuid */
@@ -1794,6 +1813,25 @@ export interface components {
                         displayName: string;
                     }[];
                 };
+                card: {
+                    templateKey: string;
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick" | "paper";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                } | null;
                 /** Format: date-time */
                 createdAt: string;
             }[];
@@ -3435,7 +3473,7 @@ export interface operations {
                     "application/json": components["schemas"]["GiveKudosResponseDto_Output"];
                 };
             };
-            /** @description REQUEST_INVALID, KUDOS_MESSAGE_EMPTY, KUDOS_MESSAGE_TOO_LONG or KUDOS_NEEDS_A_RECIPIENT */
+            /** @description REQUEST_INVALID, KUDOS_MESSAGE_EMPTY, KUDOS_MESSAGE_TOO_LONG or KUDOS_CARD_INVALID */
             400: {
                 headers: {
                     [name: string]: unknown;

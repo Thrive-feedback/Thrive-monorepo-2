@@ -7,6 +7,28 @@ interface KudosItem {
   readonly message: string;
   readonly giver: { readonly accountId: string };
   readonly recipients: readonly { readonly accountId: string }[];
+  readonly card: unknown;
+}
+
+const A_KUDOS_CARD = {
+  templateKey: 'cobalt-dash',
+  textStyle: { font: 'signature', sizeStep: 4, align: 'center', ink: 'paper' },
+  stickers: [
+    {
+      stickerKey: 'system/sticker-01-thumbs-up',
+      x: 62.5,
+      y: 40,
+      scale: 1.25,
+      rotation: -8,
+    },
+  ],
+};
+
+function theOnlyKudosRead(world: ThriveWorld): KudosItem {
+  const items: KudosItem[] | undefined = world.lastResponse?.body?.items;
+  assert.ok(items, 'No Kudos were read.');
+  assert.equal(items.length, 1);
+  return items[0] as KudosItem;
 }
 
 Given(
@@ -16,6 +38,26 @@ Given(
       await giveKudos(this, giver, message),
       `${giver} giving Kudos`,
     );
+  },
+);
+
+Given(
+  '{person} has given Kudos on a card: {string}',
+  async function (this: ThriveWorld, giver: string, message: string) {
+    this.succeeded(
+      await giveKudos(this, giver, message, A_KUDOS_CARD),
+      `${giver} giving Kudos on a card`,
+    );
+  },
+);
+
+When(
+  '{person} gives Kudos on a card with no template it could have: {string}',
+  async function (this: ThriveWorld, giver: string, message: string) {
+    await giveKudos(this, giver, message, {
+      ...A_KUDOS_CARD,
+      templateKey: 'Not A Template',
+    });
   },
 );
 
@@ -71,10 +113,7 @@ Then(
     first: string,
     second: string,
   ) {
-    const items: KudosItem[] | undefined = this.lastResponse?.body?.items;
-    assert.ok(items, 'No Kudos were read.');
-    assert.equal(items.length, 1);
-    const [kudos] = items as [KudosItem];
+    const kudos = theOnlyKudosRead(this);
     // The feature names people; what was sent, and is read back, carries their slugs.
     let sent = written;
     for (const name of [first, second]) {
@@ -90,9 +129,30 @@ Then(
 );
 
 Then(
-  '{person} is told a Kudos has to mention a teammate',
+  '{person} sees the card the Kudos was written on',
   function (this: ThriveWorld, _name: string) {
-    this.refusedWith('KUDOS_NEEDS_A_RECIPIENT');
+    assert.deepEqual(theOnlyKudosRead(this).card, A_KUDOS_CARD);
+  },
+);
+
+Then(
+  '{person} sees the Kudos on no card',
+  function (this: ThriveWorld, _name: string) {
+    assert.equal(theOnlyKudosRead(this).card, null);
+  },
+);
+
+Then(
+  '{person} is told the Kudos card cannot be sent',
+  function (this: ThriveWorld, _name: string) {
+    this.refusedWith('KUDOS_CARD_INVALID');
+  },
+);
+
+Then(
+  '{person} reads a Kudos for the whole Workspace',
+  function (this: ThriveWorld, _name: string) {
+    assert.deepEqual(theOnlyKudosRead(this).recipients, []);
   },
 );
 

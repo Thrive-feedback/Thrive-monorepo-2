@@ -5,6 +5,7 @@ import {
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { PERSON_STATUSES } from '../../application/types/feedback-request.types';
+import { kudosCardSchema } from './kudos-card.dto';
 import { tagsSchema } from './tags.dto';
 
 export const listWorkspaceKudosQuerySchema = z.strictObject(cursorQueryShape);
@@ -27,12 +28,14 @@ const personSchema = z.object({
 const kudosSchema = z.object({
   id: z.uuid(),
   giver: personSchema,
-  /** Everyone it is for, at least one. Never the Giver. */
+  /** Everyone it names, never the Giver. Empty: it is for the whole Workspace (ADR 0074). */
   recipients: z.array(personSchema),
   /** What the Giver wrote. */
   message: z.string(),
   /** What the message was bound to when it was sent. */
   tags: tagsSchema,
+  /** How it looks, or `null` when it was not written on a card. */
+  card: kudosCardSchema.nullable(),
   createdAt: z.iso.datetime({ offset: true }),
 });
 

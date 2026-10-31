@@ -22,6 +22,7 @@ function kudosRow(id: string, day: number, workspaceId = WORKSPACE_ID) {
     recipientAccountIds: [BEN, CARA],
     message: `Kudos ${id}`,
     tags: NO_TAGS,
+    card: null,
     createdAt: new Date(`2026-10-${day}T03:00:00.000Z`),
   };
 }

@@ -5,6 +5,10 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { v7 as uuidv7 } from 'uuid';
 import { Kudos } from '../../domain/entity/kudos.entity';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
+import {
+  KudosCard,
+  type KudosCardSnapshot,
+} from '../../domain/value-object/kudos-card.vo';
 import { KudosMessage } from '../../domain/value-object/kudos-message.vo';
 import { PrismaKudosQuery } from '../query/prisma-kudos.query';
 import { PrismaKudosRepository } from './prisma-kudos.repository';
@@ -17,11 +21,33 @@ const query = new PrismaKudosQuery(context);
 
 const written: string[] = [];
 
+const CARD: KudosCardSnapshot = {
+  templateKey: 'red-squiggle',
+  textStyle: { font: 'classic', sizeStep: 2, align: 'right', ink: 'brick' },
+  stickers: [
+    {
+      stickerKey: 'system/sticker-01-thumbs-up',
+      x: 62.5,
+      y: 40,
+      scale: 1.25,
+      rotation: -8,
+    },
+  ],
+};
+
 /**
  * No Account and no Workspace is created first: Kudos' tables hold their ids without a foreign
  * key, as Feedback's do.
  */
 function given(workspaceId: string, ...recipientAccountIds: string[]) {
+  return givenOn(null, workspaceId, ...recipientAccountIds);
+}
+
+function givenOn(
+  card: KudosCard | null,
+  workspaceId: string,
+  ...recipientAccountIds: string[]
+) {
   const id = uuidv7();
   written.push(id);
   return Kudos.give({
@@ -37,6 +63,7 @@ function given(workspaceId: string, ...recipientAccountIds: string[]) {
         displayName: `Person ${index}`,
       })),
     }),
+    card,
   });
 }
 
@@ -72,11 +99,24 @@ describe('storing Kudos', () => {
               { slug: 'person-1', displayName: 'Person 1' },
             ],
           },
+          card: null,
           createdAt: expect.any(Date),
         },
       ],
       hasMore: false,
     });
+  });
+
+  it('reads back the card it was written on, exactly as it was saved', async () => {
+    const workspaceId = uuidv7();
+
+    await repository.save(givenOn(KudosCard.of(CARD), workspaceId, uuidv7()));
+
+    const page = await query.publicIn(workspaceId, {
+      afterId: null,
+      limit: 20,
+    });
+    expect(page.items[0]?.card).toEqual(CARD);
   });
 });
 

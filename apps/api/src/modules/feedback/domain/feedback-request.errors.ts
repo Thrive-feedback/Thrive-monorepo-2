@@ -220,12 +220,13 @@ export class KudosMessageTooLongError extends DomainError {
  * A Kudos is for the teammates it @mentions, so one that names nobody — or only its Giver, or
  * only people outside the Workspace — is for nobody.
  */
-export class KudosNeedsARecipientError extends DomainError {
-  readonly code = 'KUDOS_NEEDS_A_RECIPIENT';
+/** The request body's schema holds the closed choices; this is what it cannot say on its own. */
+export class KudosCardInvalidError extends DomainError {
+  readonly code = 'KUDOS_CARD_INVALID';
   readonly category = 'validation' as const;
 
   constructor() {
-    super('A Kudos must @mention at least one other Member of the Workspace.');
+    super('A Kudos card must name its template and fit on the card.');
   }
 }
 

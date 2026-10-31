@@ -2009,7 +2009,7 @@
             }
           },
           "400": {
-            "description": "REQUEST_INVALID, KUDOS_MESSAGE_EMPTY, KUDOS_MESSAGE_TOO_LONG or KUDOS_NEEDS_A_RECIPIENT"
+            "description": "REQUEST_INVALID, KUDOS_MESSAGE_EMPTY, KUDOS_MESSAGE_TOO_LONG or KUDOS_CARD_INVALID"
           },
           "401": {
             "description": "NOT_SIGNED_IN"
@@ -2018,7 +2018,7 @@
             "description": "WORKSPACE_NOT_FOUND"
           }
         },
-        "summary": "Give Kudos to the Members of this Workspace it @mentions",
+        "summary": "Give Kudos to the Members of this Workspace it @mentions, or to all of them",
         "tags": [
           "kudos"
         ]
@@ -7316,6 +7316,93 @@
         "properties": {
           "message": {
             "type": "string"
+          },
+          "card": {
+            "type": "object",
+            "properties": {
+              "templateKey": {
+                "type": "string"
+              },
+              "textStyle": {
+                "type": "object",
+                "properties": {
+                  "font": {
+                    "type": "string",
+                    "enum": [
+                      "modern",
+                      "classic",
+                      "signature"
+                    ]
+                  },
+                  "sizeStep": {
+                    "type": "number"
+                  },
+                  "align": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "center",
+                      "right"
+                    ]
+                  },
+                  "ink": {
+                    "type": "string",
+                    "enum": [
+                      "ink",
+                      "navy",
+                      "forest",
+                      "plum",
+                      "brick",
+                      "paper"
+                    ]
+                  }
+                },
+                "required": [
+                  "font",
+                  "sizeStep",
+                  "align",
+                  "ink"
+                ],
+                "additionalProperties": false
+              },
+              "stickers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stickerKey": {
+                      "type": "string"
+                    },
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    },
+                    "scale": {
+                      "type": "number"
+                    },
+                    "rotation": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "stickerKey",
+                    "x",
+                    "y",
+                    "scale",
+                    "rotation"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "templateKey",
+              "textStyle",
+              "stickers"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -7458,6 +7545,94 @@
                   ],
                   "additionalProperties": false
                 },
+                "card": {
+                  "type": "object",
+                  "properties": {
+                    "templateKey": {
+                      "type": "string"
+                    },
+                    "textStyle": {
+                      "type": "object",
+                      "properties": {
+                        "font": {
+                          "type": "string",
+                          "enum": [
+                            "modern",
+                            "classic",
+                            "signature"
+                          ]
+                        },
+                        "sizeStep": {
+                          "type": "number"
+                        },
+                        "align": {
+                          "type": "string",
+                          "enum": [
+                            "left",
+                            "center",
+                            "right"
+                          ]
+                        },
+                        "ink": {
+                          "type": "string",
+                          "enum": [
+                            "ink",
+                            "navy",
+                            "forest",
+                            "plum",
+                            "brick",
+                            "paper"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "font",
+                        "sizeStep",
+                        "align",
+                        "ink"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "stickers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "stickerKey": {
+                            "type": "string"
+                          },
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          },
+                          "scale": {
+                            "type": "number"
+                          },
+                          "rotation": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "stickerKey",
+                          "x",
+                          "y",
+                          "scale",
+                          "rotation"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "templateKey",
+                    "textStyle",
+                    "stickers"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time",
@@ -7470,6 +7645,7 @@
                 "recipients",
                 "message",
                 "tags",
+                "card",
                 "createdAt"
               ],
               "additionalProperties": false

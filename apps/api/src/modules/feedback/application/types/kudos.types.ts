@@ -1,3 +1,4 @@
+import type { KudosCardSnapshot } from '../../domain/value-object/kudos-card.vo';
 import type { PersonStatus, TagsView } from './feedback-request.types';
 
 /**
@@ -26,6 +27,8 @@ export interface KudosView {
   readonly recipients: readonly KudosPersonView[];
   readonly message: string;
   readonly tags: TagsView;
+  /** How it looks, or `null` when it was not written on a card. */
+  readonly card: KudosCardSnapshot | null;
   readonly createdAt: Date;
 }
 

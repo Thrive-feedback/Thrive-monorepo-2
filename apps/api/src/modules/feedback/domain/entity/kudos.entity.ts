@@ -1,20 +1,25 @@
-import { KudosNeedsARecipientError } from '../feedback-request.errors';
 import type {
   BoundMention,
   BoundTags,
   BoundWorkspaceGoal,
 } from '../value-object/bound-tags.vo';
+import type {
+  KudosCard,
+  KudosCardSnapshot,
+} from '../value-object/kudos-card.vo';
 import type { KudosMessage } from '../value-object/kudos-message.vo';
 
 export interface KudosSnapshot {
   readonly id: string;
   readonly workspaceId: string;
   readonly giverAccountId: string;
-  /** Every Member it is for, once each. Never the Giver. */
+  /** Every Member it names, once each, never the Giver. None: it is for the whole Workspace. */
   readonly recipientAccountIds: readonly string[];
   readonly message: string;
   readonly workspaceGoals: readonly BoundWorkspaceGoal[];
   readonly mentions: readonly BoundMention[];
+  /** How it looks, or `null` when it was not written on a card. */
+  readonly card: KudosCardSnapshot | null;
 }
 
 /**
@@ -24,7 +29,8 @@ export interface KudosSnapshot {
  *
  * Who it is for is not sent beside the message — it is read out of it. The recipients are the
  * Members the message's slugs were bound to, which only ever binds active Members of the
- * Workspace, less the Giver, who may name themselves but cannot be given their own Kudos.
+ * Workspace, less the Giver, who may name themselves but cannot be given their own Kudos. A Kudos
+ * that names nobody is for the whole Workspace (ADR 0074).
  */
 export class Kudos {
   private constructor(
@@ -34,9 +40,10 @@ export class Kudos {
     private readonly recipientAccountIds: readonly string[],
     private readonly message: KudosMessage,
     private readonly tags: BoundTags,
+    private readonly card: KudosCard | null,
   ) {}
 
-  /** The Giver gives Kudos to everyone the message names, and refuses to give it to nobody. */
+  /** The Giver gives Kudos to everyone the message names, or to the whole Workspace. */
   static give(details: {
     readonly id: string;
     readonly workspaceId: string;
@@ -44,14 +51,12 @@ export class Kudos {
     readonly message: KudosMessage;
     /** What the message names; its mentions are who the Kudos is for. */
     readonly tags: BoundTags;
+    readonly card: KudosCard | null;
   }): Kudos {
     const recipients = details.tags
       .mentions()
       .map((mention) => mention.accountId)
       .filter((accountId) => accountId !== details.giverAccountId);
-    if (recipients.length === 0) {
-      throw new KudosNeedsARecipientError();
-    }
     return new Kudos(
       details.id,
       details.workspaceId,
@@ -59,6 +64,7 @@ export class Kudos {
       recipients,
       details.message,
       details.tags,
+      details.card,
     );
   }
 
@@ -71,6 +77,7 @@ export class Kudos {
       message: this.message.toString(),
       workspaceGoals: this.tags.workspaceGoals(),
       mentions: this.tags.mentions(),
+      card: this.card?.snapshot() ?? null,
     };
   }
 }
