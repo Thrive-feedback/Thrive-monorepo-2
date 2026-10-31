@@ -23,7 +23,7 @@ export default function BrandNewLayout({
       <div className="-my-12 flex flex-1">
         <aside
           aria-label="The new Home"
-          className="-ms-inset-container hidden w-52 shrink-0 border-border-subtle border-r px-2 py-6 md:block"
+          className="-ms-inset-container hidden w-56 shrink-0 border-border-subtle border-r px-2 py-6 md:block"
         >
           <div className="sticky top-24">
             <BrandNewSidebar />

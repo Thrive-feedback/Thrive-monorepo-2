@@ -6,7 +6,7 @@
 import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { server, TEST_API_BASE_URL } from '@/lib/test/msw-server';
-import type { SentPostcard } from './sent-postcard.type';
+import type { SentAnswer, SentPostcard } from './sent-postcard.type';
 
 vi.stubEnv('API_BASE_URL', TEST_API_BASE_URL);
 vi.mock('server-only', () => ({}));
@@ -39,9 +39,8 @@ vi.mock('next/navigation', () => ({
   },
 }));
 
-const { sendPostcardFeedback, sendPostcardRequest } = await import(
-  './send-postcard-actions.service'
-);
+const { sendPostcardAnswer, sendPostcardFeedback, sendPostcardRequest } =
+  await import('./send-postcard-actions.service');
 
 const FEEDBACK = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/feedback`;
 const REQUESTS = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/feedback-requests`;
@@ -294,5 +293,105 @@ describe('sending a postcard asking for Feedback', () => {
     const result = await sendPostcardRequest(WORKSPACE_ID, aCard());
 
     expect(result.formError).toBe("You can't ask yourself for Feedback.");
+  });
+});
+
+describe('sending an answer on its postcard', () => {
+  const ASK_ID = '0199a0f0-0000-7000-8000-0000000000a1';
+  const ANSWERS = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/feedback-asks/${ASK_ID}/answers`;
+  const AN_ANSWER: SentAnswer = {
+    message: 'The order was clear.',
+    look: {
+      textStyle: LOOK.textStyle,
+      stickers: [
+        {
+          stickerKey: 'system/sticker-01-thumbs-up',
+          side: 'back',
+          x: 50,
+          y: 50,
+          scale: 1,
+          rotation: 0,
+        },
+      ],
+    },
+  };
+
+  it('answers with how it looks, and has nothing to say', async () => {
+    const received = apiAccepts(ANSWERS);
+
+    const result = await sendPostcardAnswer(WORKSPACE_ID, ASK_ID, AN_ANSWER);
+
+    expect(result).toEqual({});
+    expect(received.body).toEqual({
+      message: 'The order was clear.',
+      postcard: AN_ANSWER.look,
+    });
+  });
+
+  it('checks the session again before anything is sent', async () => {
+    apiAccepts(ANSWERS);
+
+    await sendPostcardAnswer(WORKSPACE_ID, ASK_ID, AN_ANSWER);
+
+    expect(requireMember).toHaveBeenCalledWith(WORKSPACE_ID);
+  });
+
+  it.each([
+    ['ASK_ALREADY_ANSWERED', 409, "You've already answered this request."],
+    [
+      'FEEDBACK_ASK_NOT_FOUND',
+      404,
+      'This request is no longer waiting for you.',
+    ],
+    ['FEEDBACK_MESSAGE_EMPTY', 400, 'Write your answer before sending it.'],
+    [
+      'FEEDBACK_MESSAGE_TOO_LONG',
+      400,
+      'That answer is longer than 1,000 characters. Try saying it more briefly.',
+    ],
+    [
+      'POSTCARD_INVALID',
+      400,
+      "We couldn't send your answer. Please try again.",
+    ],
+  ])('says what %s means', async (code, status, words) => {
+    apiRefuses(ANSWERS, code, status);
+
+    const result = await sendPostcardAnswer(WORKSPACE_ID, ASK_ID, AN_ANSWER);
+
+    expect(result.formError).toBe(words);
+  });
+
+  it('sends nothing for an answer of nothing but spaces', async () => {
+    const received = apiAccepts(ANSWERS);
+
+    const result = await sendPostcardAnswer(WORKSPACE_ID, ASK_ID, {
+      ...AN_ANSWER,
+      message: '  \n  ',
+    });
+
+    expect(result.formError).toBeDefined();
+    expect(received.body).toBeUndefined();
+  });
+
+  it('sends nothing for an id that is not one', async () => {
+    const received = apiAccepts(ANSWERS);
+
+    const result = await sendPostcardAnswer(
+      WORKSPACE_ID,
+      'nonsense',
+      AN_ANSWER,
+    );
+
+    expect(result.formError).toBeDefined();
+    expect(received.body).toBeUndefined();
+  });
+
+  it('leaves the page altogether when nobody is signed in', async () => {
+    apiRefuses(ANSWERS, 'NOT_SIGNED_IN', 401);
+
+    await expect(
+      sendPostcardAnswer(WORKSPACE_ID, ASK_ID, AN_ANSWER),
+    ).rejects.toThrow(new Redirected('/signin'));
   });
 });

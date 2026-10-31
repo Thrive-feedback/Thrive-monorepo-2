@@ -62,6 +62,12 @@ export function DialogEntry() {
           description: 'On DialogContent: the × in the corner.',
         },
         {
+          name: 'overlayClassName',
+          type: 'string',
+          description:
+            'On DialogContent: added to the scrim, for a dialog that shows the page differently.',
+        },
+        {
           name: 'asChild',
           type: 'boolean',
           defaultValue: 'false',

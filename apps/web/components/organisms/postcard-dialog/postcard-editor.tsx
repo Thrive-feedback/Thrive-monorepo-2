@@ -24,6 +24,7 @@ import { cn } from '@/lib/cn.util';
 import { chosenPeople } from '@/lib/feedback/chosen-people.util';
 import { useMentionedAudience } from '@/lib/feedback/use-mentioned-audience';
 import { Postcard } from './postcard';
+import styles from './postcard.module.css';
 import { PostcardBack } from './postcard-back';
 import { PostcardContrail } from './postcard-contrail';
 import {
@@ -533,6 +534,7 @@ export function PostcardEditor({
         onEscapeKeyDown={handleEscapeKeyDown}
         onInteractOutside={(event) => event.preventDefault()}
         onFocus={handleFocus}
+        overlayClassName={styles.scrim}
         className={POSTCARD_SCREEN}
       >
         {/* Under everything, so the card flies over its own contrail; it scrolls with the card. The

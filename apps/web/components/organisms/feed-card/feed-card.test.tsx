@@ -544,3 +544,20 @@ describe('FeedCard', () => {
     ).not.toBeInTheDocument();
   });
 });
+
+describe('when a card was given', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('says how long ago', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-31T06:00:00.000Z'));
+
+    render(
+      <FeedCard item={OFFERED} readerAccountId="ann" target={{ href: '/x' }} />,
+    );
+
+    expect(screen.getByRole('article')).toHaveTextContent('3 hours ago');
+  });
+});

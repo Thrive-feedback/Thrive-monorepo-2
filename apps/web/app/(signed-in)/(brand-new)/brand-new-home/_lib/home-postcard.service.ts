@@ -1,35 +1,17 @@
 import 'server-only';
 import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
-import {
-  NO_NAME_IN_A_SENTENCE,
-  NO_NAME_STARTING_A_SENTENCE,
-} from '@/components/organisms/feed-card/feed-card-sentence.util';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
+import { toPostcardWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
+import { NO_NAME_IN_A_SENTENCE } from '@/components/organisms/feed-card/feed-card-sentence.util';
 import type {
   PostcardReadAnswer,
   ReadPostcard,
 } from '@/components/organisms/postcard-dialog/postcard-read.type';
 import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
-import { POSTCARD_TEMPLATES } from '@/components/organisms/postcard-dialog/postcard-template.constant';
 import { apiClient } from '@/lib/api-client.service';
 import { toFeedbackPerson } from '@/lib/feedback/feedback-person.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-
-/** How a card looks when what it holds was not written on a postcard. */
-const PLAIN_POSTCARD = {
-  templateKey: POSTCARD_TEMPLATES[0].key,
-  tone: 'cream',
-  textStyle: DEFAULT_TEXT_STYLE,
-  stickers: [],
-  stampKey: null,
-} as const;
-
-type PersonOnTheWire = Parameters<typeof toFeedbackPerson>[0];
-
-function toWriter(person: PersonOnTheWire) {
-  const { name, photoUrl, inactive } = toFeedbackPerson(person);
-  return { name: name ?? NO_NAME_STARTING_A_SENTENCE, photoUrl, inactive };
-}
 
 /** A postcard to read on Home, and what the dialog shows it under. */
 export type HomePostcard = {
@@ -68,7 +50,7 @@ export async function readHomePostcard(
       if (!receiver) {
         return null;
       }
-      const giver = toWriter(feedback.giver);
+      const giver = toPostcardWriter(feedback.giver);
       return {
         title:
           feedback.giver.accountId === feedback.readerAccountId
@@ -93,7 +75,7 @@ export async function readHomePostcard(
 
     const answers = request.answers.map(
       (answer): PostcardReadAnswer => ({
-        giver: toWriter(answer.giver),
+        giver: toPostcardWriter(answer.giver),
         message: answer.message,
         messageTags: answer.tags,
         stickers: answer.postcard?.stickers ?? [],
@@ -105,7 +87,7 @@ export async function readHomePostcard(
     if (!first) {
       return null;
     }
-    const requester = toWriter(request.requester);
+    const requester = toPostcardWriter(request.requester);
     return {
       // Not the Giver's: the pager changes who is showing under a title that stays.
       title:

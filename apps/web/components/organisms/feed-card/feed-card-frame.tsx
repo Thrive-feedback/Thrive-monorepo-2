@@ -1,12 +1,12 @@
 import { GlobeIcon, UsersIcon } from 'lucide-react';
 import { Badge } from '@/components/atoms/badge';
 import { Text } from '@/components/atoms/text';
+import { TimeAgo } from '@/components/atoms/time-ago';
 import { AvatarName } from '@/components/molecules/avatar-name';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { TargetLink } from '@/components/molecules/target-link';
 import { PeopleDialogButton } from '@/components/organisms/people-dialog-button';
 import { PersonName } from '@/components/organisms/person-name';
-import { calendarDay } from '@/lib/calendar-day.util';
 import { cn } from '@/lib/cn.util';
 import type { HomeFeedItem } from '@/lib/feedback/home-feed-item.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
@@ -17,6 +17,7 @@ import {
   NO_NAME_IN_A_SENTENCE,
   readerFirst,
 } from './feed-card-sentence.util';
+import { FEED_CARD_SURFACE } from './feed-card-surface.constant';
 import { PendingMiniPostcard } from './pending-mini-postcard';
 
 const ORIGIN_NAMES: Readonly<Record<HomeFeedItem['origin'], string>> = {
@@ -98,7 +99,7 @@ export function FeedCardFrame({
   const { label, Icon } = AUDIENCES[item.visibility];
 
   return (
-    <article className="flex flex-col gap-3 rounded-page bg-action-primary/8 p-5">
+    <article className={FEED_CARD_SURFACE}>
       <header className={cn('grid items-start gap-x-3 gap-y-1', styles.header)}>
         <PhotoAvatar
           name={item.giver.name ?? ''}
@@ -134,7 +135,7 @@ export function FeedCardFrame({
           >
             <span className="text-fg-primary">{ORIGIN_NAMES[item.origin]}</span>
             <span aria-hidden="true">·</span>
-            <time dateTime={item.givenAt}>{calendarDay(item.givenAt)}</time>
+            <TimeAgo dateTime={item.givenAt} />
             <Badge tone="outline">
               <Icon aria-hidden="true" className="size-3" />
               {label}

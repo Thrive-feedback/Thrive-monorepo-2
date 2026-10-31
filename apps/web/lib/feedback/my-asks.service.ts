@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
+import { toMyAsk } from '@/lib/feedback/my-ask.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 /** As on My requests: one page covers a Workspace of 20–50 people asking one another. */
@@ -30,15 +31,6 @@ export const readMyAsks = cache(
         cache: 'no-store',
       }),
     );
-    return waiting.items.map((ask) => ({
-      askId: ask.askId,
-      message: ask.message,
-      messageTags: ask.tags,
-      requesterName: ask.requester.name,
-      requesterPhotoUrl: ask.requester.photoUrl,
-      requesterInactive: ask.requester.status === 'DEACTIVATED',
-      askedAt: ask.createdAt,
-      status: ask.status,
-    }));
+    return waiting.items.map(toMyAsk);
   },
 );

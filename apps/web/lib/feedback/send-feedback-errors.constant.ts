@@ -32,3 +32,11 @@ export const REQUEST_FEEDBACK_ERRORS: Readonly<Record<string, string>> = {
   MENTIONED_PERSON_LEFT_OUT:
     'Everyone you mention must be able to read it. Share it with them, or with everyone.',
 };
+
+/** What to say when the API refused an answer written on a postcard, by its error code. */
+export const ANSWER_ASK_ERRORS: Readonly<Record<string, string>> = {
+  FEEDBACK_MESSAGE_EMPTY: 'Write your answer before sending it.',
+  FEEDBACK_MESSAGE_TOO_LONG: `That answer is longer than ${MAX_MESSAGE_LENGTH_IN_WORDS} characters. Try saying it more briefly.`,
+  ASK_ALREADY_ANSWERED: "You've already answered this request.",
+  FEEDBACK_ASK_NOT_FOUND: 'This request is no longer waiting for you.',
+};

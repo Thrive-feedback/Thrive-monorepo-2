@@ -27,6 +27,18 @@ function brandNewHomeShowing(show: BrandNewHomeShow) {
     : `/brand-new-home?show=${show}`;
 }
 
+/** The orders Waiting for me can be read in. The first is what it opens on. */
+export const BRAND_NEW_WAITING_SORTS = ['newest', 'oldest'] as const;
+
+export type BrandNewWaitingSort = (typeof BRAND_NEW_WAITING_SORTS)[number];
+
+/** Waiting for me in one order; `newest` is what it opens on, so it needs no query. */
+function brandNewWaitingSorted(sort: BrandNewWaitingSort) {
+  return sort === BRAND_NEW_WAITING_SORTS[0]
+    ? '/brand-new-waiting'
+    : `/brand-new-waiting?sort=${sort}`;
+}
+
 export const ROUTES = {
   landing: '/',
   signIn: '/signin',
@@ -43,6 +55,18 @@ export const ROUTES = {
   brandNewHomeFeedback: (feedbackId: string, show: BrandNewHomeShow) => {
     const showing = brandNewHomeShowing(show);
     return `${showing}${showing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
+  },
+  /** Every Ask waiting for the person, in the new Home. */
+  brandNewWaiting: '/brand-new-waiting',
+  /** Waiting for me in one order. */
+  brandNewWaitingSorted,
+  /** One Ask open over Waiting for me, on the postcard it is answered on, keeping its order. */
+  brandNewWaitingAsk: (
+    askId: string,
+    sort: BrandNewWaitingSort = BRAND_NEW_WAITING_SORTS[0],
+  ) => {
+    const sorted = brandNewWaitingSorted(sort);
+    return `${sorted}${sorted.includes('?') ? '&' : '?'}ask=${askId}`;
   },
   /** One tab of Home's feed. `workspace` is the tab Home opens on, so it needs no query. */
   homeTab: (tab: HomeTab) =>

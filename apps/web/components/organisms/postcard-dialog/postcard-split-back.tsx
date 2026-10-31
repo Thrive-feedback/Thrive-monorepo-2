@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { cn } from '@/lib/cn.util';
 import { NO_TEXT_TAGS, type TextTags } from '@/lib/feedback/text-tags.type';
 import styles from './postcard.module.css';
-import { PostcardFrom } from './postcard-address-read-only';
+import { PostcardFrom, PostcardTo } from './postcard-address-read-only';
 import type { PostcardAsk, PostcardWriter } from './postcard-draft.type';
 import { PostcardMessageReadOnly } from './postcard-message-read-only';
 import { messageClassName } from './postcard-message-style.util';
@@ -33,15 +33,18 @@ export function PostcardSplitBack({ ask, answer }: PostcardSplitBackProps) {
   );
 }
 
-export type PostcardAnswerFromProps = {
-  writer: PostcardWriter;
+export type PostcardAnswerToProps = {
+  giver: PostcardWriter;
 };
 
-/** Who wrote the answer, heading its half, which holds the stamp's corner from `md`. */
-export function PostcardAnswerFrom({ writer }: PostcardAnswerFromProps) {
+/**
+ * Who the Ask was addressed to, which reads on from "From" across the card, heading the half they
+ * answer on. It holds the stamp's corner from `md`.
+ */
+export function PostcardAnswerTo({ giver }: PostcardAnswerToProps) {
   return (
     <div className="md:min-h-17.5 md:pe-21">
-      <PostcardFrom writer={writer} />
+      <PostcardTo person={giver} />
     </div>
   );
 }

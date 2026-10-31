@@ -120,6 +120,8 @@ describe('HomePostcard', () => {
     expect(screen.getByRole('status')).toHaveTextContent(
       'Answer from Cara Diaz, 2 of 2',
     );
+    expect(screen.getByRole('dialog')).toHaveTextContent(/From.*Ann Lee/);
+    expect(screen.getByRole('dialog')).toHaveTextContent(/To.*Cara Diaz/);
 
     await userEvent.click(
       screen.getByRole('button', { name: 'Previous answer' }),

@@ -6,8 +6,8 @@ import type {
   PostcardWriter,
 } from './postcard-draft.type';
 import {
-  PostcardAnswerFrom,
   PostcardAnswerPlaceholder,
+  PostcardAnswerTo,
   PostcardAskReadOnly,
   PostcardSplitBack,
 } from './postcard-split-back';
@@ -53,10 +53,15 @@ export function PostcardBack({
   if (card.kind === 'answer') {
     return (
       <PostcardSplitBack
-        ask={<PostcardAskReadOnly ask={card.ask} />}
+        ask={
+          <PostcardAskReadOnly
+            ask={card.ask}
+            messageTags={card.ask.messageTags}
+          />
+        }
         answer={
           <>
-            <PostcardAnswerFrom writer={writer} />
+            <PostcardAnswerTo giver={writer} />
             {message}
           </>
         }

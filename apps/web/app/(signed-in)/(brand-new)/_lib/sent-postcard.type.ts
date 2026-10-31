@@ -19,6 +19,17 @@ export type SentPostcard = {
   readonly look: PostcardLook;
 };
 
+/** What an answer decides about how it looks, as the API stores it. */
+export type AnswerLook = NonNullable<
+  components['schemas']['AnswerFeedbackAskRequestDto']['postcard']
+>;
+
+/** Everything on an answer as the server action takes it. */
+export type SentAnswer = {
+  readonly message: string;
+  readonly look: AnswerLook;
+};
+
 /** What sending answers: a sentence to show when it did not go, and nothing when it did. */
 export type SendPostcardResult = {
   readonly formError?: string;

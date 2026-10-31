@@ -1,5 +1,6 @@
 import type { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import type { TextTags } from '@/lib/feedback/text-tags.type';
 import type { PaperTone, PostcardTextStyle } from './postcard-style.constant';
 
 /**
@@ -81,6 +82,8 @@ export type PostcardAsk = {
   readonly stampKey: string | null;
   /** The Request message. */
   readonly message: string;
+  /** What the Request message was bound to when it was sent. */
+  readonly messageTags?: TextTags;
   /** The Requester's paper, which the answer is written on too. */
   readonly tone: PaperTone;
   readonly textStyle: PostcardTextStyle;
@@ -105,6 +108,8 @@ export type PostcardCard =
       workspaceGoals: readonly string[];
       /** Who it is for as it opens. Read once: the card owns it from then on. */
       defaultRecipientAccountIds: readonly string[];
+      /** What is already written as it opens, as typed before choosing this card. */
+      defaultMessage: string;
       onSend: (postcard: PostcardDraft) => Promise<boolean>;
     }
   | {
