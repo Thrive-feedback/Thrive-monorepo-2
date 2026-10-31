@@ -319,7 +319,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
   ): Promise<WaitingAskPageRow> {
     // One row more than asked for tells whether another page follows (ADR 0059). One more again is
     // for the Ask the cursor names, which is only in the read while it is still waiting. Answered,
-    // it has left, so a `skip: 1` would pass over the next Ask instead of it.
+    // it has left, so a `skip: 1` would pass over the next Ask instead of it (ADR 0075).
     const records =
       await this.prismaTransactionContext.client.feedbackAsk.findMany({
         where: {

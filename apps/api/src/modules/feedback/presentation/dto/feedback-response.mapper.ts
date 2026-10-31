@@ -72,7 +72,7 @@ export function toPostcardResponse(postcard: PostcardSnapshot | null) {
   );
 }
 
-/** How a Kudos card looks, on the wire. `null` for a Kudos not written on a card. */
+/** How a Kudos card looks, on the wire. `null` when there is no card to draw. */
 export function toKudosCardResponse(card: KudosCardSnapshot | null) {
   return (
     card && {

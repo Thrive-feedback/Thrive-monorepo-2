@@ -34,7 +34,7 @@ const kudosSchema = z.object({
   message: z.string(),
   /** What the message was bound to when it was sent. */
   tags: tagsSchema,
-  /** How it looks, or `null` when it was not written on a card. */
+  /** How it looks, or `null` when there is no card to draw. */
   card: kudosCardSchema.nullable(),
   createdAt: z.iso.datetime({ offset: true }),
 });

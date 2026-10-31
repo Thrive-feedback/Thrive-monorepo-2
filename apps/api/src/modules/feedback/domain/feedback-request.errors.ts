@@ -216,10 +216,6 @@ export class KudosMessageTooLongError extends DomainError {
   }
 }
 
-/**
- * A Kudos is for the teammates it @mentions, so one that names nobody — or only its Giver, or
- * only people outside the Workspace — is for nobody.
- */
 /** The request body's schema holds the closed choices; this is what it cannot say on its own. */
 export class KudosCardInvalidError extends DomainError {
   readonly code = 'KUDOS_CARD_INVALID';

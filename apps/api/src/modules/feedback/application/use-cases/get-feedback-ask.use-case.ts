@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AskStatus } from '../../domain/value-object/ask-status.vo';
 import { isEveryone } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
+import { toMyAskView } from '../service/my-ask-view.mapper';
 import { PeopleService } from '../service/people.service';
 import type { OpenedAskView } from '../types/feedback-request.types';
 
@@ -40,16 +40,7 @@ export class GetFeedbackAskUseCase {
     ]);
 
     return {
-      askId: ask.askId,
-      feedbackRequestId: ask.feedbackRequestId,
-      message: ask.message,
-      tags: ask.tags,
-      requesterAccountId: ask.requesterAccountId,
-      requesterName: people.nameOf(ask.requesterAccountId),
-      requesterPhotoUrl: people.photoOf(ask.requesterAccountId),
-      requesterStatus: people.statusOf(ask.requesterAccountId),
-      status: AskStatus.of(ask.status).toString(),
-      createdAt: ask.createdAt,
+      ...toMyAskView(ask, people),
       onWorkspaceFeed: isEveryone(ask.visibility),
       postcard: ask.postcard,
     };

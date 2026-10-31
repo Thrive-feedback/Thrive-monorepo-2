@@ -9,7 +9,7 @@ export interface KudosRow {
   readonly recipientAccountIds: readonly string[];
   readonly message: string;
   readonly tags: TagsView;
-  /** How it looks, or `null` when it was not written on a card. */
+  /** How it looks, or `null` when there is no card to draw. */
   readonly card: KudosCardSnapshot | null;
   readonly createdAt: Date;
 }

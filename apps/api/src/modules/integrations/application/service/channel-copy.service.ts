@@ -47,7 +47,7 @@ export class ChannelCopyService {
     // A Kudos that names nobody is for everyone (ADR 0074), and an empty list would leave a gap.
     const given =
       event.recipientNames.length === 0
-        ? 'the whole team'
+        ? 'the whole Workspace'
         : listOf(event.recipientNames);
     return [
       `**${named(event.giverName)}** gave **${given}** kudos`,
