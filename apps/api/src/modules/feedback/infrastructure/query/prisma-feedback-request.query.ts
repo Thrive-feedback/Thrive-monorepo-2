@@ -13,12 +13,15 @@ import {
   type FeedbackWithPeoplePageRow,
   type FeedbackWithPeopleRow,
   type FeedbackWithVisibilityRow,
+  type FeedItemPageRow,
   type WorkspaceFeedPageRow,
 } from '../../application/query-port/feedback-request.query-port';
 import type {
+  FeedItemShow,
   PageRequest,
   TagsView,
 } from '../../application/types/feedback-request.types';
+import type { CursorPageRequest } from '../../application/types/kudos.types';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
 import { toPostcardSnapshot } from '../mapper/postcard.mapper';
 
@@ -109,8 +112,61 @@ const WORKSPACE_FEED_FIELDS = {
   },
 } as const;
 
+/**
+ * A piece on Home with its Visibility and, through the Ask it answers, the question, every Ask and
+ * every answer. Nested for the reason the feed's is. The other answers need no Visibility of their
+ * own: each took the request's, so whoever may read this one may read them (brain `ADR-0050`).
+ */
+const FEED_ITEM_FIELDS = {
+  ...FEEDBACK_WITH_PEOPLE_FIELDS,
+  visibility: true,
+  feedbackAsk: {
+    select: {
+      feedbackRequest: {
+        select: {
+          message: true,
+          requesterAccountId: true,
+          asks: {
+            orderBy: ASKS_IN_ORDER_ASKED,
+            select: {
+              giverAccountId: true,
+              status: true,
+              feedback: {
+                select: { message: true, createdAt: true, ...TAGS_FIELDS },
+              },
+            },
+          },
+          ...TAGS_FIELDS,
+        },
+      },
+    },
+  },
+} as const;
+
 function skipFor(page: PageRequest): number {
   return (page.page - 1) * page.pageSize;
+}
+
+/** What each choice on Home lets a reader see, always inside one Workspace. */
+function feedItemsWhere(
+  workspaceId: string,
+  readerAccountId: string,
+  show: FeedItemShow,
+) {
+  const everyone = { visibility: 'EVERYONE' } as const;
+  // As `sharedWith`: the join alone would answer this, and the value is matched anyway.
+  const selected = {
+    visibility: 'SELECTED_PEOPLE',
+    selectedPeople: { some: { accountId: readerAccountId } },
+  } as const;
+  switch (show) {
+    case 'EVERYONE':
+      return { workspaceId, ...everyone };
+    case 'SHARED_WITH_ME':
+      return { workspaceId, ...selected };
+    case 'ALL':
+      return { workspaceId, OR: [everyone, selected] };
+  }
 }
 
 /** Reads through `client`, so a read inside a unit of work joins its transaction. */
@@ -315,6 +371,53 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
           : null,
       })),
       total,
+    };
+  }
+
+  async feedItemsFor(
+    workspaceId: string,
+    readerAccountId: string,
+    show: FeedItemShow,
+    page: CursorPageRequest,
+  ): Promise<FeedItemPageRow> {
+    // One row more than asked for, only to tell whether another page follows (ADR 0059).
+    const records =
+      await this.prismaTransactionContext.client.feedback.findMany({
+        where: feedItemsWhere(workspaceId, readerAccountId, show),
+        orderBy: NEWEST_FIRST,
+        take: page.limit + 1,
+        ...(page.afterId === null
+          ? {}
+          : { cursor: { id: page.afterId }, skip: 1 }),
+        select: FEED_ITEM_FIELDS,
+      });
+    return {
+      items: records.slice(0, page.limit).map((record) => {
+        const request = record.feedbackAsk?.feedbackRequest;
+        return {
+          ...toFeedbackWithPeopleRow(record),
+          // Everything `feedItemsWhere` lets through is one of these two.
+          visibility:
+            record.visibility === 'EVERYONE' ? 'EVERYONE' : 'SELECTED_PEOPLE',
+          request: request
+            ? {
+                message: request.message,
+                tags: tagsOf(request),
+                requesterAccountId: request.requesterAccountId,
+                asks: request.asks.map((ask) => ({
+                  giverAccountId: ask.giverAccountId,
+                  status: ask.status,
+                  answer: ask.feedback && {
+                    message: ask.feedback.message,
+                    tags: tagsOf(ask.feedback),
+                    answeredAt: ask.feedback.createdAt,
+                  },
+                })),
+              }
+            : null,
+        };
+      }),
+      hasMore: records.length > page.limit,
     };
   }
 

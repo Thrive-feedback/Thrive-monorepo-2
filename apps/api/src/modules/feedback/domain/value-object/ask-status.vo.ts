@@ -3,7 +3,7 @@ import {
   AskStatusInvalidError,
 } from '../feedback-request.errors';
 
-export const ASK_STATUSES = ['PENDING', 'ANSWERED', 'EXPIRED'] as const;
+export const ASK_STATUSES = ['PENDING', 'ANSWERED'] as const;
 
 export type AskStatusValue = (typeof ASK_STATUSES)[number];
 
@@ -13,7 +13,7 @@ function isAskStatus(raw: string): raw is AskStatusValue {
 
 /**
  * Where one Ask stands. An Ask starts Pending and becomes Answered when its Giver writes the
- * answer; expiry brings the transition that reaches Expired (#39), so nothing reaches it yet.
+ * answer. It does not expire (brain `ADR-0049`).
  */
 export class AskStatus {
   static readonly Pending = new AskStatus('PENDING');

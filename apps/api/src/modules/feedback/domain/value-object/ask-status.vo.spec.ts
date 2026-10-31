@@ -25,10 +25,4 @@ describe('where an Ask stands', () => {
       AskAlreadyAnsweredError,
     );
   });
-
-  it('refuses to answer an Ask that has expired', () => {
-    expect(() => AskStatus.of('EXPIRED').answered()).toThrow(
-      AskAlreadyAnsweredError,
-    );
-  });
 });

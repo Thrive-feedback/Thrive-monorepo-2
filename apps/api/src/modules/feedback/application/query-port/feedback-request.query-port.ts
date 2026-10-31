@@ -2,7 +2,14 @@ import type { FeedbackOrigin } from '../../domain/entity/feedback.entity';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
 import type { PostcardSnapshot } from '../../domain/value-object/postcard.vo';
 import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
-import type { PageRequest, TagsView } from '../types/feedback-request.types';
+import type {
+  AnswerView,
+  FeedItemShow,
+  FeedItemVisibility,
+  PageRequest,
+  TagsView,
+} from '../types/feedback-request.types';
+import type { CursorPageRequest } from '../types/kudos.types';
 
 /** One Ask, as stored. Names are Identity's and are added above this port. */
 export interface FeedbackRequestAskRow {
@@ -151,6 +158,34 @@ export interface WorkspaceFeedPageRow {
   readonly total: number;
 }
 
+/** One Ask of a request on Home, with its answer once there is one. */
+export interface FeedItemAskRow {
+  readonly giverAccountId: string;
+  readonly status: string;
+  readonly answer: AnswerView | null;
+}
+
+/** The request a piece on Home answers, and every Ask it holds, in the order they were asked. */
+export interface FeedItemRequestRow {
+  readonly message: string;
+  /** What the Request message was bound to when it was sent. */
+  readonly tags: TagsView;
+  readonly requesterAccountId: string;
+  readonly asks: readonly FeedItemAskRow[];
+}
+
+/** One piece on Home: `request` is `null` for Offered Feedback. */
+export interface FeedItemRow extends FeedbackWithPeopleRow {
+  readonly visibility: FeedItemVisibility;
+  readonly request: FeedItemRequestRow | null;
+}
+
+export interface FeedItemPageRow {
+  readonly items: readonly FeedItemRow[];
+  /** Whether another page follows this one. */
+  readonly hasMore: boolean;
+}
+
 export abstract class FeedbackRequestQuery {
   /**
    * One request of one Workspace with its Asks, or `null`. The Workspace is a required
@@ -225,6 +260,21 @@ export abstract class FeedbackRequestQuery {
     workspaceId: string,
     page: PageRequest,
   ): Promise<WorkspaceFeedPageRow>;
+
+  /**
+   * What one Member reads on Home in one Workspace, newest first: Everyone, what they were selected
+   * to read, or both. One read, so one cursor names a place in all of it. A Giver or a Receiver
+   * cannot be selected, so a Selected piece of their own is not here: it belongs to their history.
+   *
+   * The Visibility is applied here for the reason `sharedWith` applies it (ADR 0044): a page has to
+   * hold only what this reader may read.
+   */
+  abstract feedItemsFor(
+    workspaceId: string,
+    readerAccountId: string,
+    show: FeedItemShow,
+    page: CursorPageRequest,
+  ): Promise<FeedItemPageRow>;
 
   /**
    * One piece of Feedback of one Workspace, or `null`. Not scoped to a reader: who may read it

@@ -37,6 +37,11 @@ function theFeedReadReturns(row: StoredRow): boolean {
   return row.visibility === 'EVERYONE';
 }
 
+/** What `feedItemsFor` asks under All Feedback: either of the two above, in one read. */
+function theHomeReadReturns(row: StoredRow, readerAccountId: string): boolean {
+  return theFeedReadReturns(row) || theSharedReadReturns(row, readerAccountId);
+}
+
 function theVisibilityLetsRead(
   row: StoredRow,
   readerAccountId: string,
@@ -103,6 +108,14 @@ describe('the Visibility and the list reads', () => {
         expect(
           theSharedReadReturns(row, reader) || theFeedReadReturns(row),
         ).toBe(theVisibilityLetsRead(row, reader));
+      }
+    });
+
+    it(`shows ${named(row)} on Home exactly when the Visibility allows it`, () => {
+      for (const reader of READERS) {
+        expect(theHomeReadReturns(row, reader)).toBe(
+          theVisibilityLetsRead(row, reader),
+        );
       }
     });
   }

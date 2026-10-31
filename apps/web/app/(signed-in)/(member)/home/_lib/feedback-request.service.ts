@@ -18,7 +18,7 @@ export type SentFeedbackRequest = {
     readonly giverName: string | null;
     /** Deactivated in this Workspace, so shown as inactive; their Ask stays. */
     readonly giverInactive: boolean;
-    readonly status: 'PENDING' | 'ANSWERED' | 'EXPIRED';
+    readonly status: 'PENDING' | 'ANSWERED';
     /** What they wrote, once they have — and only for the people allowed to read it. */
     readonly answer: {
       readonly message: string;

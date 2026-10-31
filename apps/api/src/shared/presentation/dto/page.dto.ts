@@ -54,9 +54,13 @@ export const cursorQueryShape = {
     .default(DEFAULT_PAGE_SIZE),
 };
 
-/** The paging field a cursor-paged response carries beside its `items`; `null` on the last page. */
+/**
+ * The paging field a cursor-paged response carries beside its `items`; `null` on the last page.
+ * Described by hand, because a nullable string on a response root otherwise comes out of the
+ * contract as an array of strings (`docs/design/0016` §10).
+ */
 export const cursorResultShape = {
-  nextCursor: z.string().nullable(),
+  nextCursor: z.string().nullable().meta({ type: 'string', nullable: true }),
 };
 
 /** The opaque cursor for the page after the row with this id, or `null` when there is none. */

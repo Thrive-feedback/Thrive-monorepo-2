@@ -193,7 +193,6 @@ enum FeedbackOrigin {
 enum AskStatus {
   PENDING
   ANSWERED
-  EXPIRED
 }
 
 /// A Member asking other Members for Feedback with a Request message (glossary: Feedback Request).

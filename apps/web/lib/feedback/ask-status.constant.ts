@@ -8,16 +8,13 @@ export type AskStatus =
 export const ASK_STATUS_NAMES: Readonly<Record<AskStatus, string>> = {
   PENDING: 'Pending',
   ANSWERED: 'Answered',
-  EXPIRED: 'Expired',
 };
 
 /**
- * Each status as a Badge tone for where it stands: waiting, done, or lapsed, the tones Members
- * gives an Invitation too. The word carries the same meaning, so nothing depends on seeing the
- * colour.
+ * Each status as a Badge tone for where it stands: waiting or done, the tones Members gives an
+ * Invitation too. The word carries the same meaning, so nothing depends on seeing the colour.
  */
 export const ASK_STATUS_TONES: Readonly<Record<AskStatus, BadgeTone>> = {
   PENDING: 'warning',
   ANSWERED: 'success',
-  EXPIRED: 'error',
 };
