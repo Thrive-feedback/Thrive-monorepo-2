@@ -15,8 +15,8 @@ export interface GetFeedbackAskInput {
 }
 
 /**
- * A query: one Ask waiting on the caller — who asked, about what, and whether the answer goes on
- * the Workspace feed — which is what the screen that answers it shows. The Giver is part of the read, so an Ask addressed to somebody else is
+ * A query: one Ask waiting on the caller — who asked, about what, whether the answer goes on the
+ * Workspace feed, and the card it is written on — which is what the screen that answers it shows. The Giver is part of the read, so an Ask addressed to somebody else is
  * not found rather than refused, and nobody learns it exists.
  */
 @Injectable()
@@ -51,6 +51,7 @@ export class GetFeedbackAskUseCase {
       status: AskStatus.of(ask.status).toString(),
       createdAt: ask.createdAt,
       onWorkspaceFeed: isEveryone(ask.visibility),
+      postcard: ask.postcard,
     };
   }
 }

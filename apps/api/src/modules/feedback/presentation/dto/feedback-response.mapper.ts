@@ -1,5 +1,6 @@
 import type {
   FeedbackView,
+  MyAskView,
   PersonView,
   TagsView,
 } from '../../application/types/feedback-request.types';
@@ -90,5 +91,23 @@ export function toFeedbackResponse(feedback: FeedbackView) {
     message: feedback.message,
     tags: toTagsResponse(feedback.tags),
     createdAt: feedback.createdAt.toISOString(),
+  };
+}
+
+/** One Ask on the wire, with its dates written as the contract declares them. */
+export function toFeedbackAskResponse(ask: MyAskView) {
+  return {
+    askId: ask.askId,
+    feedbackRequestId: ask.feedbackRequestId,
+    message: ask.message,
+    tags: toTagsResponse(ask.tags),
+    requester: {
+      accountId: ask.requesterAccountId,
+      name: ask.requesterName,
+      photoUrl: ask.requesterPhotoUrl,
+      status: ask.requesterStatus,
+    },
+    status: ask.status,
+    createdAt: ask.createdAt.toISOString(),
   };
 }

@@ -129,10 +129,25 @@ export interface MyAskView {
 
 /**
  * One Ask as the Member asked opens it to answer: everything the list shows, and whether the
- * answer goes on the Workspace feed — never who else may read it (`ADR-0022`).
+ * answer goes on the Workspace feed — never who else may read it (`ADR-0022`) — and the card the
+ * answer is written on.
  */
 export interface OpenedAskView extends MyAskView {
   readonly onWorkspaceFeed: boolean;
+  /** How the request looks, or `null` when it was not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
+}
+
+/** The orders Waiting for me can be read in. */
+export const WAITING_ASK_SORTS = ['NEWEST', 'OLDEST'] as const;
+
+export type WaitingAskSort = (typeof WAITING_ASK_SORTS)[number];
+
+/** One page of the Asks waiting on one Member, in the order they chose. */
+export interface WaitingAsksView {
+  readonly items: readonly MyAskView[];
+  /** The id the next page starts after, or `null` on the last page. */
+  readonly nextAfterId: string | null;
 }
 
 /** The Asks waiting on one Member, newest first. */

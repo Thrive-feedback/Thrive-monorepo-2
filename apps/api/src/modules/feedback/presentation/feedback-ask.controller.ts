@@ -20,7 +20,6 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import type { MyAskView } from '../application/types/feedback-request.types';
 import { AnswerFeedbackAskUseCase } from '../application/use-cases/answer-feedback-ask.use-case';
 import { GetFeedbackAskUseCase } from '../application/use-cases/get-feedback-ask.use-case';
 import { ListMyFeedbackAsksUseCase } from '../application/use-cases/list-my-feedback-asks.use-case';
@@ -28,7 +27,10 @@ import {
   AnswerFeedbackAskRequestDto,
   AnswerFeedbackAskResponseDto,
 } from './dto/answer-feedback-ask.dto';
-import { toTagsResponse } from './dto/feedback-response.mapper';
+import {
+  toFeedbackAskResponse,
+  toPostcardResponse,
+} from './dto/feedback-response.mapper';
 import { GetFeedbackAskResponseDto } from './dto/get-feedback-ask.dto';
 import {
   ListMyFeedbackAsksQueryDto,
@@ -39,24 +41,6 @@ import {
   WorkspacePathParamsDto,
 } from './dto/path-params.dto';
 import { WorkspaceMemberGuard } from './workspace-member.guard';
-
-/** One Ask on the wire, with its dates written as the contract declares them. */
-function toResponse(ask: MyAskView) {
-  return {
-    askId: ask.askId,
-    feedbackRequestId: ask.feedbackRequestId,
-    message: ask.message,
-    tags: toTagsResponse(ask.tags),
-    requester: {
-      accountId: ask.requesterAccountId,
-      name: ask.requesterName,
-      photoUrl: ask.requesterPhotoUrl,
-      status: ask.requesterStatus,
-    },
-    status: ask.status,
-    createdAt: ask.createdAt.toISOString(),
-  };
-}
 
 /**
  * The Asks addressed to the caller in one Workspace — the only read of an Ask that has no
@@ -95,7 +79,7 @@ export class FeedbackAskController {
       page,
     });
     return {
-      items: asks.items.map(toResponse),
+      items: asks.items.map(toFeedbackAskResponse),
       total: asks.total,
       page: page.page,
       pageSize: page.pageSize,
@@ -121,7 +105,11 @@ export class FeedbackAskController {
       giverAccountId: actor.accountId,
       askId: params.askId,
     });
-    return { ...toResponse(ask), onWorkspaceFeed: ask.onWorkspaceFeed };
+    return {
+      ...toFeedbackAskResponse(ask),
+      onWorkspaceFeed: ask.onWorkspaceFeed,
+      postcard: toPostcardResponse(ask.postcard),
+    };
   }
 
   @Post(':askId/answers')

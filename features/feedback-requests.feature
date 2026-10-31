@@ -51,6 +51,41 @@ Feature: Feedback requests
     Then Ann sees a request saying "Running the planning meeting" asking Ben
 
   @api
+  Scenario: Waiting for me pages through every Ask with one cursor
+    Given Ann has asked Ben for Feedback: "First."
+    And Ann has asked Ben for Feedback: "Second."
+    And Ann has asked Ben for Feedback: "Third."
+    When Ben reads what is waiting two at a time to the end
+    Then Ben has read what is waiting: "Third." then "Second." then "First."
+
+  @api
+  Scenario: Waiting for me reads oldest first when asked
+    Given Ann has asked Ben for Feedback: "First."
+    And Ann has asked Ben for Feedback: "Second."
+    And Ann has asked Ben for Feedback: "Third."
+    When Ben reads what is waiting oldest first, two at a time to the end
+    Then Ben has read what is waiting: "First." then "Second." then "Third."
+
+  @api
+  Scenario: Waiting for me refuses an order it does not offer
+    When Ben asks for what is waiting in an order that does not exist
+    Then Waiting for me refuses the page size
+
+  @api
+  Scenario: Waiting for me holds only what still waits on the reader
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben for Feedback: "For Ben, answered."
+    And Ben has answered "It kept moving."
+    And Ann has asked Cara for Feedback: "For Cara."
+    When Ben reads what is waiting two at a time to the end
+    Then Ben has nothing waiting
+
+  @api
+  Scenario: Waiting for me refuses a page size it does not offer
+    When Ben asks for 101 Asks waiting at a time
+    Then Waiting for me refuses the page size
+
+  @api
   Scenario: A Member who has not been asked has nothing waiting
     Given Cara is a Member of Ann's Workspace
     And Ann has asked Ben for Feedback: "Running the planning meeting"
@@ -243,6 +278,18 @@ Feature: Feedback requests
     Given Ann has asked Ben for Feedback on a postcard: "Running the planning meeting"
     When Ben opens Ann's Feedback request
     Then Ben sees the postcard it was written on
+
+  @api
+  Scenario: The person asked opens the postcard they answer on
+    Given Ann has asked Ben for Feedback on a postcard: "Running the planning meeting"
+    When Ben opens the Ask waiting for Ben
+    Then Ben sees the postcard it was written on
+
+  @api
+  Scenario: The person asked opens no postcard when the request was not written on one
+    Given Ann has asked Ben for Feedback: "Running the planning meeting"
+    When Ben opens the Ask waiting for Ben
+    Then Ben sees no postcard
 
   @api
   Scenario: An answer written on a postcard is read on that postcard, under the request's
