@@ -1,3 +1,5 @@
+import { MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
+
 import { MAX_MESSAGE_LENGTH } from './message-length.util';
 
 const MAX_MESSAGE_LENGTH_IN_WORDS = MAX_MESSAGE_LENGTH.toLocaleString('en-GB');
@@ -5,6 +7,12 @@ const MAX_MESSAGE_LENGTH_IN_WORDS = MAX_MESSAGE_LENGTH.toLocaleString('en-GB');
 export const FEEDBACK_TOO_LONG = `Your feedback is too long. Keep it under ${MAX_MESSAGE_LENGTH_IN_WORDS} characters.`;
 
 export const REQUEST_TOO_LONG = `That request is too long. Keep it under ${MAX_MESSAGE_LENGTH_IN_WORDS} characters.`;
+
+/** What to say when the API refused a Kudos, by its error code. */
+export const GIVE_KUDOS_ERRORS: Readonly<Record<string, string>> = {
+  KUDOS_MESSAGE_EMPTY: 'Write your Kudos.',
+  KUDOS_MESSAGE_TOO_LONG: `Your Kudos is too long. Keep it to ${MAX_KUDOS_LENGTH} characters.`,
+};
 
 /** What to say when the API refused Feedback given without being asked, by its error code. */
 export const GIVE_FEEDBACK_ERRORS: Readonly<Record<string, string>> = {

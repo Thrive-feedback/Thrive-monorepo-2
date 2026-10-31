@@ -1,9 +1,9 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { unstable_rethrow, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useRef } from 'react';
-import { toast } from 'sonner';
+import { deliverCard } from '@/app/(signed-in)/(brand-new)/_lib/deliver-card.util';
 import {
   sendPostcardFeedback,
   sendPostcardRequest,
@@ -64,9 +64,8 @@ export type ComposePostcardDialogProps = {
 };
 
 /**
- * A postcard to give Feedback or ask for it, sent to the API with the card itself. Whether it went
- * decides what the card does next: a card that went flies off, and one that did not stays open
- * with everything on it. Once it has flown off the page reads again, so what was sent is there.
+ * A postcard to give Feedback or ask for it, sent to the API with the card itself. Once it has
+ * flown off the page reads again, so what was sent is there.
  */
 export function ComposePostcardDialog({
   workspaceId,
@@ -86,21 +85,13 @@ export function ComposePostcardDialog({
 
   async function handleSend(postcard: PostcardDraft) {
     const send = card === 'give' ? sendPostcardFeedback : sendPostcardRequest;
-    try {
-      const { formError } = await send(workspaceId, toSentPostcard(postcard));
-      if (formError) {
-        toast.error(formError);
-        return false;
-      }
-    } catch (error) {
-      // Being signed out rejects the action with a redirect, which is not a send that failed.
-      unstable_rethrow(error);
-      toast.error(COULD_NOT_SEND);
-      return false;
-    }
-    hasSent.current = true;
-    toast.success(SENT[card]);
-    return true;
+    const hasGone = await deliverCard(
+      () => send(workspaceId, toSentPostcard(postcard)),
+      SENT[card],
+      COULD_NOT_SEND,
+    );
+    hasSent.current = hasGone;
+    return hasGone;
   }
 
   function handleOpenChange(isOpen: boolean) {

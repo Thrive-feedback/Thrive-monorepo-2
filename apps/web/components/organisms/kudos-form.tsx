@@ -30,11 +30,11 @@ export type KudosFormProps = {
 };
 
 /**
- * Giving Kudos: one short message that @mentions everyone it is for (brain `ADR-0043`). Nobody is
- * picked from a list — the To row fills in from the message as people are mentioned — and nobody
- * chooses who reads it: every Member of the Workspace does, which the footer says where the other
- * modes offer the choice. Send waits until the message names a teammate and fits; sending goes
- * back to Home, which says once that it went.
+ * Giving Kudos: one short message that @mentions everyone it is for, or nobody, for the whole
+ * Workspace (ADR 0074). Nobody is picked from a list — the To row fills in from the message as
+ * people are mentioned — and nobody chooses who reads it: every Member of the Workspace does, which
+ * the footer says where the other modes offer the choice. Send waits until something is written and
+ * fits; sending goes back to Home, which says once that it went.
  *
  * The message stays controlled, so what was typed survives a refusal. The form is submitted by
  * hand rather than through `action`, because React resets a form after its action.
@@ -53,7 +53,7 @@ export function KudosForm({
 
   const recipients = mentionedTeammates(message, teammates);
   const left = MAX_KUDOS_LENGTH - kudosLength(message);
-  const ready = left >= 0 && recipients.length > 0;
+  const ready = left >= 0 && message.trim() !== '';
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -72,7 +72,7 @@ export function KudosForm({
         <ComposerToRow>
           {recipients.length === 0 ? (
             <Text as="p" variant="body-2" tone="muted" className="pt-1.5">
-              Mention who it&apos;s for with @
+              Everyone in your Workspace, or mention someone with @
             </Text>
           ) : (
             <ul

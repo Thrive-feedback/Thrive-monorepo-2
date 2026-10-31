@@ -76,13 +76,17 @@ export const POSTCARD_INK_KEYS = [
 
 export type PostcardInk = (typeof POSTCARD_INK_KEYS)[number];
 
+/** Any ink a card can be written in: `paper` is the Kudos card's, for its dark template. */
+export type CardInk = PostcardInk | 'paper';
+
 /**
  * Five inks in five clearly different hues: the body ink, then each status colour at its deepest
  * step, which stays readable on the light papers and turns to a light tint on the dark ones.
+ * `paper` is the raised surface itself, so it reads on a card that inverts in either theme.
  */
 export const POSTCARD_INKS: Readonly<
   Record<
-    PostcardInk,
+    CardInk,
     { label: string; textClassName: string; swatchClassName: string }
   >
 > = {
@@ -111,14 +115,19 @@ export const POSTCARD_INKS: Readonly<
     textClassName: 'text-status-error-active',
     swatchClassName: 'bg-status-error-active',
   },
+  paper: {
+    label: 'Paper',
+    textClassName: 'text-surface-raised',
+    swatchClassName: 'border border-border-default bg-surface-raised',
+  },
 };
 
 /** How the message is set: how it looks, not what it says. */
-export type PostcardTextStyle = {
+export type PostcardTextStyle<Ink extends CardInk = PostcardInk> = {
   font: PostcardFont;
   sizeStep: number;
   align: PostcardAlign;
-  ink: PostcardInk;
+  ink: Ink;
 };
 
 export const DEFAULT_TEXT_STYLE: PostcardTextStyle = {

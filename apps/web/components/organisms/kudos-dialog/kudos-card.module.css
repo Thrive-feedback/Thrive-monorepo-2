@@ -1,0 +1,145 @@
+/*
+ * The Kudos card. Everything on it is a share of its width, so the same card is the one being
+ * written, the small one in the row of templates and the small one on the board. Container units
+ * have no utility, and they measure an element's container and never the element, so `.card` is
+ * only that container, and `.face`, inside it, is what is drawn. Each template is drawn from the
+ * theme's colours, so it follows the theme as the postcard's paper does; `--kudos-writing` is how
+ * far the words stay from its edge.
+ */
+.card {
+  container-type: inline-size;
+}
+
+.face {
+  border-radius: 5cqw;
+  box-shadow: var(--elevation-high);
+}
+
+/* The frame or panel a template draws under the words. */
+.face::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.writing {
+  padding: var(--kudos-writing);
+}
+
+.cobalt {
+  --kudos-writing: 15cqw;
+  --kudos-border: var(--status-error);
+
+  background-color: var(--status-info-active);
+}
+
+.squiggle {
+  --kudos-writing: 14cqw;
+  --kudos-border: var(--status-error);
+
+  background-color: var(--surface-raised);
+}
+
+.check {
+  --kudos-writing: 18cqw;
+
+  background:
+    repeating-conic-gradient(
+      var(--status-warning) 0 25%,
+      var(--surface-raised) 0 50%
+    )
+    0 0 / 9cqw 9cqw;
+}
+
+.check::before {
+  inset: 8cqw;
+  border-radius: 3cqw;
+  background-color: var(--surface-raised);
+}
+
+.peach,
+.mint {
+  --kudos-writing: 12cqw;
+}
+
+.peach {
+  background-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--status-error) 55%, var(--status-warning)) 40%,
+    var(--surface-raised)
+  );
+}
+
+.peach::before {
+  inset: 5cqw;
+  border: 1cqw solid color-mix(in oklch, var(--surface-raised) 75%, transparent);
+  border-radius: 4cqw;
+}
+
+.mint {
+  background-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--status-success) 60%, var(--status-info)) 38%,
+    var(--surface-raised)
+  );
+}
+
+.mint::before {
+  inset: 5cqw;
+  border: 1.5cqw dotted var(--surface-raised);
+  border-radius: 4cqw;
+}
+
+.sky {
+  --kudos-writing: 14cqw;
+
+  background-color: color-mix(
+    in oklch,
+    var(--status-info) 22%,
+    var(--surface-raised)
+  );
+}
+
+.sky::before {
+  inset: 4cqw;
+  border: 0.8cqw solid var(--status-info);
+  border-radius: 3cqw;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 10cqw,
+    color-mix(in oklch, var(--status-info) 35%, transparent) 10cqw 10.7cqw
+  );
+}
+
+/* The dashes and the squiggle: SVG strokes have no utility. */
+.border {
+  fill: none;
+  stroke: var(--kudos-border);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* A name in the words is underlined, so it shows on every template, in whatever ink it has. */
+.tags span {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/*
+ * The board a sent card is pinned to. The veil and the blur are the first scene and lift as the
+ * card lands, so both start where the first frame shows them; `use-kudos-pin.ts` moves them.
+ */
+.board {
+  filter: blur(var(--scrim-blur));
+  opacity: 0;
+}
+
+.veil {
+  background-color: color-mix(in oklch, var(--fg-primary) 38%, transparent);
+  opacity: 0;
+}
+
+.pin {
+  opacity: 0;
+}

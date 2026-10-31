@@ -13,7 +13,9 @@ import {
  * The classes that set a message in its chosen font, size and alignment. A size step the scale
  * does not have, as a caller's Ask might carry, falls back to the usual size.
  */
-export function metricsClassName(textStyle: PostcardTextStyle) {
+export function metricsClassName(
+  textStyle: Pick<PostcardTextStyle, 'font' | 'sizeStep' | 'align'>,
+) {
   return cn(
     styles.sized,
     (POSTCARD_SIZES[textStyle.sizeStep] ?? POSTCARD_SIZES[DEFAULT_SIZE_STEP])

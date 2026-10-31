@@ -15,7 +15,7 @@ export function PostcardDialogEntry() {
       source="components/organisms/postcard-dialog/postcard-dialog.tsx — Dialog + MemberMultiPicker + VisibilityMenu + DropdownMenu on a card that turns over"
       summary="Feedback written on a landscape postcard in front of the page: the message on the back under who it is from and who it is for, a picture on the front, and a bar of tools beside a box holding who else can read it and Send feedback. While the message is written the bar holds the text's tools and the box is gone. A button beside Turn over hides the stickers for a moment."
       useFor="Giving Feedback from anywhere: Home's + menu, a Member's page with them already chosen, a reply to something in the Feed."
-      avoidFor="Reading a postcard that was sent; use PostcardReadDialog. Kudos, which has its own small card."
+      avoidFor="Reading a postcard that was sent; use PostcardReadDialog. Kudos, which has its own card; use KudosDialog."
       usage={`import { PostcardDialog } from '@/components/organisms/postcard-dialog/postcard-dialog';
 
 <PostcardDialog

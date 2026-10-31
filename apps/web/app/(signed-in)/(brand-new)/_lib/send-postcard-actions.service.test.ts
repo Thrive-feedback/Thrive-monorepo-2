@@ -6,6 +6,7 @@
 import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { server, TEST_API_BASE_URL } from '@/lib/test/msw-server';
+import type { SentKudos } from './sent-kudos.type';
 import type { SentAnswer, SentPostcard } from './sent-postcard.type';
 
 vi.stubEnv('API_BASE_URL', TEST_API_BASE_URL);
@@ -39,11 +40,16 @@ vi.mock('next/navigation', () => ({
   },
 }));
 
-const { sendPostcardAnswer, sendPostcardFeedback, sendPostcardRequest } =
-  await import('./send-postcard-actions.service');
+const {
+  sendKudosCard,
+  sendPostcardAnswer,
+  sendPostcardFeedback,
+  sendPostcardRequest,
+} = await import('./send-postcard-actions.service');
 
 const FEEDBACK = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/feedback`;
 const REQUESTS = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/feedback-requests`;
+const KUDOS = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/kudos`;
 
 const LOOK: SentPostcard['look'] = {
   templateKey: 'system/postcard_template_2',
@@ -393,5 +399,78 @@ describe('sending an answer on its postcard', () => {
     await expect(
       sendPostcardAnswer(WORKSPACE_ID, ASK_ID, AN_ANSWER),
     ).rejects.toThrow(new Redirected('/signin'));
+  });
+});
+
+describe('sending a Kudos card', () => {
+  const A_KUDOS: SentKudos = {
+    message: '@ben thank you.',
+    card: {
+      templateKey: 'mint-breeze',
+      textStyle: {
+        font: 'modern',
+        sizeStep: 4,
+        align: 'center',
+        ink: 'forest',
+      },
+      stickers: [
+        {
+          stickerKey: 'system/sticker-01-thumbs-up',
+          x: 62.5,
+          y: 40,
+          scale: 1.25,
+          rotation: -8,
+        },
+      ],
+    },
+  };
+
+  it('gives it with the card, whoever the message names or does not', async () => {
+    const received = apiAccepts(KUDOS);
+
+    const result = await sendKudosCard(WORKSPACE_ID, A_KUDOS);
+
+    expect(result).toEqual({});
+    expect(received.body).toEqual(A_KUDOS);
+  });
+
+  it('says what went wrong when the API refuses it', async () => {
+    apiRefuses(KUDOS, 'KUDOS_MESSAGE_EMPTY', 400);
+
+    const result = await sendKudosCard(WORKSPACE_ID, A_KUDOS);
+
+    expect(result.formError).toBe('Write your Kudos.');
+  });
+
+  it('falls back on a sentence of its own for a refusal it has no words for', async () => {
+    apiRefuses(KUDOS, 'KUDOS_CARD_INVALID', 400);
+
+    const result = await sendKudosCard(WORKSPACE_ID, A_KUDOS);
+
+    expect(result.formError).toBe(
+      "We couldn't send your Kudos. Please try again.",
+    );
+  });
+
+  it('sends nothing longer than a Kudos can be', async () => {
+    const received = apiAccepts(KUDOS);
+
+    const result = await sendKudosCard(WORKSPACE_ID, {
+      ...A_KUDOS,
+      message: `@ben ${'a'.repeat(280)}`,
+    });
+
+    expect(result.formError).toBe(
+      "We couldn't send your Kudos. Please try again.",
+    );
+    expect(received.body).toBeUndefined();
+  });
+
+  it('leaves the page when the Workspace is gone', async () => {
+    apiRefuses(KUDOS, 'WORKSPACE_NOT_FOUND', 404);
+
+    await expect(sendKudosCard(WORKSPACE_ID, A_KUDOS)).rejects.toThrow(
+      Redirected,
+    );
   });
 });

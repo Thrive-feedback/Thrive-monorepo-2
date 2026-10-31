@@ -107,16 +107,6 @@ describe('giveKudos', () => {
     expect(state.fieldErrors?.message).toMatch(/Keep it to 280 characters/);
   });
 
-  it('says in words when the Kudos mentions nobody', async () => {
-    apiRefuses('KUDOS_NEEDS_A_RECIPIENT', 400);
-
-    const state = await giveKudos(WORKSPACE_ID, {}, form('Thanks, team.'));
-
-    expect(state).toEqual({
-      formError: 'Mention at least one teammate with @.',
-    });
-  });
-
   it('goes to sign in when the session has ended', async () => {
     apiRefuses('NOT_SIGNED_IN', 401);
 

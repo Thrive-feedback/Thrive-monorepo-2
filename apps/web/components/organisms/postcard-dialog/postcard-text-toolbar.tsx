@@ -19,6 +19,7 @@ import {
 import { Toggle } from '@/components/atoms/toggle';
 import { cn } from '@/lib/cn.util';
 import {
+  type CardInk,
   POSTCARD_ALIGN_KEYS,
   POSTCARD_FONT_KEYS,
   POSTCARD_FONTS,
@@ -26,6 +27,7 @@ import {
   POSTCARD_INKS,
   POSTCARD_SIZES,
   type PostcardAlign,
+  type PostcardInk,
   type PostcardTextStyle,
 } from './postcard-style.constant';
 import {
@@ -44,23 +46,27 @@ const ALIGNS: Readonly<
   right: { label: 'Right', Icon: AlignRightIcon },
 };
 
-export type PostcardTextToolbarProps = {
-  textStyle: PostcardTextStyle;
-  onTextStyleChange: (change: Partial<PostcardTextStyle>) => void;
+export type CardTextToolbarProps<Ink extends CardInk> = {
+  textStyle: PostcardTextStyle<Ink>;
+  /** The inks offered, in order. */
+  inks: readonly Ink[];
+  onTextStyleChange: (change: Partial<PostcardTextStyle<Ink>>) => void;
   /** Done: the writer has finished styling, so the bar's usual tools and Send come back. */
   onDone: () => void;
 };
 
 /**
- * The postcard's floating bar while the message is being written: its font, its size along the
- * type scale, its alignment and its ink, then Done. On a phone the font and ink keep their
- * swatches and drop their names. Memoised: typing the message changes none of its props.
+ * A card's floating bar while its message is being written: its font, its size along the type
+ * scale, its alignment and its ink, then Done. On a phone the font and ink keep their swatches and
+ * drop their names. Memoise it per card, as `PostcardTextToolbar` is: typing the message changes
+ * none of its props.
  */
-export const PostcardTextToolbar = memo(function PostcardTextToolbar({
+export function CardTextToolbar<Ink extends CardInk>({
   textStyle,
+  inks,
   onTextStyleChange,
   onDone,
-}: PostcardTextToolbarProps) {
+}: CardTextToolbarProps<Ink>) {
   const size = POSTCARD_SIZES[textStyle.sizeStep];
   const font = POSTCARD_FONTS[textStyle.font];
   const ink = POSTCARD_INKS[textStyle.ink];
@@ -179,13 +185,13 @@ export const PostcardTextToolbar = memo(function PostcardTextToolbar({
           <DropdownMenuRadioGroup
             value={textStyle.ink}
             onValueChange={(value) => {
-              const chosen = POSTCARD_INK_KEYS.find((key) => key === value);
+              const chosen = inks.find((key) => key === value);
               if (chosen) {
                 onTextStyleChange({ ink: chosen });
               }
             }}
           >
-            {POSTCARD_INK_KEYS.map((key) => (
+            {inks.map((key) => (
               <DropdownMenuRadioItem key={key} value={key} className="gap-3">
                 <span
                   aria-hidden="true"
@@ -206,4 +212,16 @@ export const PostcardTextToolbar = memo(function PostcardTextToolbar({
       </Button>
     </>
   );
+}
+
+export type PostcardTextToolbarProps = Omit<
+  CardTextToolbarProps<PostcardInk>,
+  'inks'
+>;
+
+/** The postcard's bar for its message, in the postcard's inks. */
+export const PostcardTextToolbar = memo(function PostcardTextToolbar(
+  props: PostcardTextToolbarProps,
+) {
+  return <CardTextToolbar {...props} inks={POSTCARD_INK_KEYS} />;
 });

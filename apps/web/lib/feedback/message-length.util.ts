@@ -12,8 +12,11 @@ export function messageLength(message: string): number {
   return charactersOf(message.trim()).length;
 }
 
-export function isWithinMessageLength(message: string): boolean {
-  return messageLength(message) <= MAX_MESSAGE_LENGTH;
+export function isWithinMessageLength(
+  message: string,
+  limit = MAX_MESSAGE_LENGTH,
+): boolean {
+  return messageLength(message) <= limit;
 }
 
 /**
@@ -26,17 +29,15 @@ export function isWithinMessageLength(message: string): boolean {
 export function cutToMessageLength(
   message: string,
   cursor = message.length,
+  limit = MAX_MESSAGE_LENGTH,
 ): string {
-  if (isWithinMessageLength(message)) {
+  if (isWithinMessageLength(message, limit)) {
     return message;
   }
   const before = message.slice(0, cursor);
   const after = message.slice(cursor);
   const indent = before.length - before.trimStart().length;
-  const room = Math.max(
-    0,
-    MAX_MESSAGE_LENGTH - charactersOf(after.trimEnd()).length,
-  );
+  const room = Math.max(0, limit - charactersOf(after.trimEnd()).length);
   const kept = charactersOf(before.slice(indent)).slice(0, room).join('');
   return before.slice(0, indent) + kept + after;
 }

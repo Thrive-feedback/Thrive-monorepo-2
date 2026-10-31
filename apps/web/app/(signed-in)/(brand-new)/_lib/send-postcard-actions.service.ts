@@ -7,10 +7,13 @@ import { apiClient } from '@/lib/api-client.service';
 import {
   ANSWER_ASK_ERRORS,
   GIVE_FEEDBACK_ERRORS,
+  GIVE_KUDOS_ERRORS,
   REQUEST_FEEDBACK_ERRORS,
 } from '@/lib/feedback/send-feedback-errors.constant';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMemberOf } from '@/lib/session/session.service';
+import { SentKudosInput } from './sent-kudos.schema';
+import type { SentKudos } from './sent-kudos.type';
 import { SentAnswerInput, SentPostcardInput } from './sent-postcard.schema';
 import type {
   SendPostcardResult,
@@ -23,6 +26,7 @@ const COULD_NOT_SEND_FEEDBACK =
 const COULD_NOT_SEND_REQUEST =
   "We couldn't send your request. Please try again.";
 const COULD_NOT_SEND_ANSWER = "We couldn't send your answer. Please try again.";
+const COULD_NOT_SEND_KUDOS = "We couldn't send your Kudos. Please try again.";
 
 /**
  * Sends one card and answers with what to say if it did not go. Anything but a refusal the API
@@ -179,5 +183,36 @@ export async function sendPostcardAnswer(
       ),
     ANSWER_ASK_ERRORS,
     COULD_NOT_SEND_ANSWER,
+  );
+}
+
+/**
+ * Gives Kudos to the teammates the message @mentions, with the card itself, on the same terms as
+ * `sendPostcardFeedback`. The API decides who it is for from the message.
+ */
+export async function sendKudosCard(
+  workspaceId: string,
+  kudos: SentKudos,
+): Promise<SendPostcardResult> {
+  const input = SentKudosInput.safeParse(kudos);
+  if (!input.success) {
+    return { formError: COULD_NOT_SEND_KUDOS };
+  }
+
+  const { membership } = await requireMemberOf(workspaceId);
+  const cookie = (await headers()).get('cookie') ?? undefined;
+  return send(
+    async () =>
+      unwrap(
+        await apiClient().POST('/v1/workspaces/{workspaceId}/kudos', {
+          params: {
+            path: { workspaceId: membership.workspace.id },
+            header: { cookie },
+          },
+          body: { message: input.data.message, card: input.data.card },
+        }),
+      ),
+    GIVE_KUDOS_ERRORS,
+    COULD_NOT_SEND_KUDOS,
   );
 }

@@ -49,54 +49,72 @@ function normalTurn(degrees: number) {
   return turned > 180 ? turned - 360 : turned;
 }
 
+/** The stickers with one more, unless the card is full. */
+export function withStickerAdded(
+  stickers: readonly PlacedPostcardSticker[],
+  {
+    id,
+    stickerKey,
+    side,
+  }: Omit<PlacedPostcardSticker, 'x' | 'y' | 'scale' | 'rotation'>,
+): readonly PlacedPostcardSticker[] {
+  if (stickers.length >= MAX_STICKERS) {
+    return stickers;
+  }
+  // Centred, so it can be moved straight away; each one already there pushes the next down and
+  // right, and a step another sticker still sits on is passed over, so none lands hidden under
+  // another, even after one has come off.
+  const onSide = stickers.filter((sticker) => sticker.side === side);
+  let offset = onSide.length * STICKER_OFFSET;
+  while (
+    onSide.some(
+      (sticker) => sticker.x === 50 + offset && sticker.y === 50 + offset,
+    )
+  ) {
+    offset += STICKER_OFFSET;
+  }
+  return [
+    ...stickers,
+    {
+      id,
+      stickerKey,
+      side,
+      x: 50 + offset,
+      y: 50 + offset,
+      scale: 1,
+      rotation: 0,
+    },
+  ];
+}
+
+/** The stickers with one changed. However many times it is turned, the turn kept is the one it shows. */
+export function withStickerChanged(
+  stickers: readonly PlacedPostcardSticker[],
+  id: string,
+  change: PostcardStickerChange,
+): readonly PlacedPostcardSticker[] {
+  const fields =
+    change.rotation === undefined
+      ? change
+      : { ...change, rotation: normalTurn(change.rotation) };
+  return stickers.map((sticker) =>
+    sticker.id === id ? { ...sticker, ...fields } : sticker,
+  );
+}
+
 export function applyChange(draft: CardState, change: DraftChange): CardState {
   switch (change.kind) {
     case 'style':
       return { ...draft, textStyle: { ...draft.textStyle, ...change.fields } };
     case 'card':
       return { ...draft, ...change.fields };
-    case 'addSticker': {
-      if (draft.stickers.length >= MAX_STICKERS) {
-        return draft;
-      }
-      // Centred, so it can be moved straight away; each one already there pushes the next down
-      // and right, and a step another sticker still sits on is passed over, so none lands hidden
-      // under another, even after one has come off.
-      const onSide = draft.stickers.filter(
-        (sticker) => sticker.side === change.side,
-      );
-      let offset = onSide.length * STICKER_OFFSET;
-      while (
-        onSide.some(
-          (sticker) => sticker.x === 50 + offset && sticker.y === 50 + offset,
-        )
-      ) {
-        offset += STICKER_OFFSET;
-      }
-      const sticker: PlacedPostcardSticker = {
-        id: change.id,
-        stickerKey: change.stickerKey,
-        side: change.side,
-        x: 50 + offset,
-        y: 50 + offset,
-        scale: 1,
-        rotation: 0,
-      };
-      return { ...draft, stickers: [...draft.stickers, sticker] };
-    }
-    case 'changeSticker': {
-      // However many times it is turned, the turn handed on is the one it shows.
-      const fields =
-        change.fields.rotation === undefined
-          ? change.fields
-          : { ...change.fields, rotation: normalTurn(change.fields.rotation) };
+    case 'addSticker':
+      return { ...draft, stickers: withStickerAdded(draft.stickers, change) };
+    case 'changeSticker':
       return {
         ...draft,
-        stickers: draft.stickers.map((sticker) =>
-          sticker.id === change.id ? { ...sticker, ...fields } : sticker,
-        ),
+        stickers: withStickerChanged(draft.stickers, change.id, change.fields),
       };
-    }
     case 'removeSticker':
       return {
         ...draft,
