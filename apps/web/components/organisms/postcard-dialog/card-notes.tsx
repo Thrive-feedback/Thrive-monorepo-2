@@ -47,6 +47,8 @@ export function useCardNotes() {
 
 export type CardNotesButtonProps = {
   areNotesShown: boolean;
+  /** There are no notes on this card for it to turn off or on. */
+  disabled?: boolean;
   onClick: () => void;
 };
 
@@ -56,6 +58,7 @@ export type CardNotesButtonProps = {
  */
 export function CardNotesButton({
   areNotesShown,
+  disabled,
   onClick,
 }: CardNotesButtonProps) {
   const label = areNotesShown ? 'Hide tips' : 'Show tips';
@@ -67,6 +70,7 @@ export function CardNotesButton({
         <Button
           variant="secondary"
           size="icon"
+          disabled={disabled}
           onClick={onClick}
           className="hidden shadow-med lg:inline-flex"
         >

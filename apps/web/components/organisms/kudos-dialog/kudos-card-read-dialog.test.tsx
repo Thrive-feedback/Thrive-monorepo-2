@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { KudosCardReadDialog } from './kudos-card-read-dialog';
 import type { ReadKudos } from './read-kudos.type';
@@ -51,6 +51,10 @@ function finishTurning() {
 }
 
 describe('reading a Kudos card large', () => {
+  afterEach(() => {
+    localStorage.clear();
+  });
+
   it('says whose it is, and shows the words', () => {
     draw();
 
@@ -96,6 +100,24 @@ describe('reading a Kudos card large', () => {
     expect(sticker()).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /^Show stickers/ }));
     expect(sticker()).toBeInTheDocument();
+  });
+
+  it('offers to hide its tip while the card has stickers to say it about', async () => {
+    const user = userEvent.setup();
+    draw();
+    expect(screen.getByText('hide the stickers here')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Hide tips' }));
+
+    expect(
+      screen.queryByText('hide the stickers here'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('has no tips to hide on a card with no stickers', () => {
+    draw({ ...KUDOS, drawing: { ...KUDOS.drawing, stickers: [] } });
+
+    expect(screen.getByRole('button', { name: 'Hide tips' })).toBeDisabled();
   });
 
   it('closes at once', async () => {
