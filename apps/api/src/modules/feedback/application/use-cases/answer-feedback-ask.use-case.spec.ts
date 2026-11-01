@@ -4,8 +4,8 @@ import {
   FakeFeedbackRequestRepository,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
-import { FakeChannelAnnouncer } from '@test/support/integrations.fakes';
 import { FakePersonNotifier } from '@test/support/notifications.fakes';
+import { FakeOutbox } from '@test/support/outbox.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import {
@@ -46,21 +46,21 @@ async function setUp(visibility: Visibility = Visibility.onlyMe()) {
   );
   const unitOfWork = new FakeUnitOfWork();
   const personNotifier = new FakePersonNotifier();
-  const channelAnnouncer = new FakeChannelAnnouncer();
+  const outbox = new FakeOutbox();
   const useCase = new AnswerFeedbackAskUseCase(
     feedbackRequestRepository,
     aTagsService(WORKSPACE_ID),
     new FakeIdGenerator(FEEDBACK_ID, SECOND_FEEDBACK_ID),
     unitOfWork,
     personNotifier,
-    channelAnnouncer,
+    outbox,
   );
   return {
     feedbackRequestRepository,
     unitOfWork,
     useCase,
     personNotifier,
-    channelAnnouncer,
+    outbox,
   };
 }
 
@@ -271,15 +271,17 @@ describe('telling the Workspace channel about an answer', () => {
     return Visibility.of({ value: 'EVERYONE', selectedAccountIds: [] });
   }
 
-  it('announces an answer to a request set to Everyone', async () => {
-    const { useCase, channelAnnouncer } = await setUp(everyone());
+  const PUBLISHED = 'integrations.feedback_published';
+
+  it('enqueues an announcement for an answer to a request set to Everyone', async () => {
+    const { useCase, outbox } = await setUp(everyone());
 
     await useCase.execute(answering);
 
     // The Workspace feed shows public Feedback whatever its origin, so the channel must agree
     // with it rather than showing Offered Feedback only (ADR 0062).
-    expect(channelAnnouncer.feedbackPublished_).toHaveLength(1);
-    expect(channelAnnouncer.feedbackPublished_[0]).toEqual({
+    expect(outbox.ofType(PUBLISHED)).toHaveLength(1);
+    expect(outbox.ofType(PUBLISHED)[0]?.payload).toEqual({
       workspaceId: WORKSPACE_ID,
       giverAccountId: BEN,
       receiverAccountIds: [ANN],
@@ -287,32 +289,35 @@ describe('telling the Workspace channel about an answer', () => {
     });
   });
 
-  it('announces nothing when the request was for the Requester alone', async () => {
-    const { useCase, channelAnnouncer } = await setUp();
+  it('enqueues nothing when the request was for the Requester alone', async () => {
+    const { useCase, outbox } = await setUp();
 
     await useCase.execute(answering);
 
-    expect(channelAnnouncer.feedbackPublished_).toHaveLength(0);
+    expect(outbox.ofType(PUBLISHED)).toHaveLength(0);
   });
 
   it('carries none of what was written (brain ADR-0040)', async () => {
-    const { useCase, channelAnnouncer } = await setUp(everyone());
+    const { useCase, outbox } = await setUp(everyone());
 
     await useCase.execute(answering);
 
-    expect(
-      JSON.stringify(channelAnnouncer.feedbackPublished_[0]),
-    ).not.toContain('lose the room');
+    expect(JSON.stringify(outbox.ofType(PUBLISHED)[0]?.payload)).not.toContain(
+      'lose the room',
+    );
   });
 
-  it('succeeds, and still stores the answer, when no channel can be told', async () => {
-    const { useCase, channelAnnouncer, feedbackRequestRepository } =
-      await setUp(everyone());
-    channelAnnouncer.rejectingEverything();
+  it('records the promise in the answer own transaction', async () => {
+    const { useCase, outbox, feedbackRequestRepository } = await setUp(
+      everyone(),
+    );
 
     const answered = await useCase.execute(answering);
 
+    // The answer and the promise to announce it commit together: there is no window in which
+    // one exists without the other (ADR 0076).
     expect(answered.feedbackId).toBe(FEEDBACK_ID);
     expect(feedbackRequestRepository.answers).toHaveLength(1);
+    expect(outbox.ofType(PUBLISHED)).toHaveLength(1);
   });
 });

@@ -7,6 +7,7 @@ import { IdentityModule } from '@app/modules/identity';
 import { WorkspaceModule } from '@app/modules/workspace';
 import { Clock } from '@app/shared/application/clock.port';
 import { Module } from '@nestjs/common';
+import { ChannelAnnouncementOutboxHandler } from './application/adapter/channel-announcement-outbox.adapter';
 import { ConnectionChannelAnnouncer } from './application/adapter/connection-channel-announcer.adapter';
 import { ChannelAnnouncerPort } from './application/port/channel-announcer.port';
 import { ChatInstaller } from './application/port/chat-installer.port';
@@ -78,6 +79,8 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     // What Feedback calls when something happens in the open. Integrations owns it because it
     // owns the Connection and what the channel is told (brain `ADR-0035` §9, ADR 0062).
     { provide: ChannelAnnouncerPort, useClass: ConnectionChannelAnnouncer },
+    // Drained by the relay, which the composition root wires: this module never imports it.
+    ChannelAnnouncementOutboxHandler,
     ChannelCopyService,
     { provide: ConnectionRepository, useClass: PrismaConnectionRepository },
     { provide: ConnectionQuery, useClass: PrismaConnectionQuery },
@@ -88,6 +91,6 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ListConnectionsUseCase,
     WorkspaceMemberGuard,
   ],
-  exports: [ChannelAnnouncerPort],
+  exports: [ChannelAnnouncerPort, ChannelAnnouncementOutboxHandler],
 })
 export class IntegrationsModule {}

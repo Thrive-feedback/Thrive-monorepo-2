@@ -13,11 +13,14 @@ import type { PostableChannel } from '../types/connection.types';
 /**
  * Tells a Workspace's connected channels about something that happened in the open.
  *
- * **Nothing a person does may fail because a channel is unreachable** (brain `ADR-0035` §8). Every
- * method here resolves, always, and {@link ConnectionChannelAnnouncer.announce} is what makes that
- * true rather than the caller's own `.catch`: a Workspace that has connected nothing returns in
- * silence, and anything that goes wrong after that is one `warn` line. Giving Feedback and giving
- * Kudos never learn that any of this happened.
+ * **Nothing a person does may fail because a channel is unreachable** (brain `ADR-0035` §8) — and
+ * since ADR 0076 that is true because the caller is the outbox relay, not a use case. Giving
+ * Feedback commits and enqueues; whether a channel heard about it is settled afterwards and
+ * cannot reach the person who wrote it.
+ *
+ * So this **rejects when a post was refused**, where it used to swallow. The relay is the one
+ * caller, its whole job is to know, and a refusal it never saw would make the outbox decorative.
+ * A Workspace that has connected nothing is still a success: there was nothing to tell.
  */
 @Injectable()
 export class ConnectionChannelAnnouncer extends ChannelAnnouncerPort {
@@ -72,18 +75,12 @@ export class ConnectionChannelAnnouncer extends ChannelAnnouncerPort {
     workspaceId: string,
     compose: () => Promise<string>,
   ): Promise<void> {
-    try {
-      const channels = await this.channelsOf(workspaceId);
-      if (channels.length === 0) {
-        return;
-      }
-      await this.post(channels, await compose());
-    } catch {
-      // Most often a name could not be read. Nothing a person does may fail because somebody
-      // could not be told, and an announcement nobody is waiting for is not worth more than a
-      // line (brain `ADR-0035` §8).
-      this.logger.warn({ event: 'integration.announcement_failed' });
+    const channels = await this.channelsOf(workspaceId);
+    if (channels.length === 0) {
+      // Nothing to tell, which is the ordinary case and a success.
+      return;
     }
+    await this.post(channels, await compose());
   }
 
   private channelsOf(workspaceId: string): Promise<readonly PostableChannel[]> {
@@ -116,24 +113,32 @@ export class ConnectionChannelAnnouncer extends ChannelAnnouncerPort {
     channels: readonly PostableChannel[],
     text: string,
   ): Promise<void> {
-    await Promise.allSettled(
+    const results = await Promise.allSettled(
       channels.map((channel) =>
-        this.chatPoster
-          .postToChannel({
-            provider: channel.provider,
-            channelId: channel.externalChannelId,
-            text,
-          })
-          .catch(() => {
-            // Most often the bot was removed from the channel by hand. Not an error and not
-            // stored — said once, and forgotten (brain `ADR-0035` §8). No identifier of
-            // anybody's goes in the line: it would be personal data.
-            this.logger.warn({
-              event: 'integration.channel_post_skipped',
-              provider: channel.provider,
-            });
-          }),
+        this.chatPoster.postToChannel({
+          provider: channel.provider,
+          channelId: channel.externalChannelId,
+          text,
+        }),
       ),
+    );
+
+    const refused = results.filter((result) => result.status === 'rejected');
+    if (refused.length === 0) {
+      return;
+    }
+
+    // Said once here, because the relay logs only the id and the type. No identifier of
+    // anybody's goes in the line: it would be personal data.
+    this.logger.warn({
+      event: 'integration.channel_post_refused',
+      refused: refused.length,
+      channels: channels.length,
+    });
+    // Every channel was attempted before this throws — one refusing must not stop another
+    // (ADR 0062) — and the relay is told so the row is visible rather than lost.
+    throw new Error(
+      `${refused.length} of ${channels.length} channels refused the post`,
     );
   }
 }

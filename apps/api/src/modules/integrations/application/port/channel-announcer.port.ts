@@ -36,10 +36,17 @@ export interface KudosGiven extends WorkspaceEvent {
  * was shown to the whole Workspace*, and it is called for nothing else. This module decides what a
  * room is then told, which is deliberately less than a direct message may say.
  *
- * **Nothing a person does may fail because a channel is unreachable.** Every method resolves rather
- * than rejecting; a refused post is logged once and forgotten (brain `ADR-0035` §8). There is no
- * delivery state and no retry: there is no outbox, and the thing being announced has already
- * committed.
+ * **Nothing a person does may fail because a channel is unreachable** (brain `ADR-0035` §8) — and
+ * since ADR 0076 that holds because of *who calls this*, not because failures are swallowed. The
+ * caller is the outbox relay: Feedback commits and enqueues, and whether a channel heard about it
+ * is settled afterwards, out of the request's way.
+ *
+ * So **these methods reject when a post was refused.** The relay records the attempt, and at
+ * `maxAttempts: 1` a refusal becomes a dead row somebody can see and replay by hand, rather than
+ * the log line it used to be. One attempt, deliberately: a chat post cannot be taken back (brain
+ * `ADR-0040`), so retrying it would trade "occasionally lost" for "occasionally doubled".
+ *
+ * A Workspace that has connected nothing is a success, not a failure: there was nothing to tell.
  */
 export abstract class ChannelAnnouncerPort {
   /**

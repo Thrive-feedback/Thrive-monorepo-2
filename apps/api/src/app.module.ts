@@ -10,7 +10,12 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 import { outboxModule } from './infrastructure/outbox/outbox.module';
 import { FeedbackModule } from './modules/feedback';
 import { IdentityModule } from './modules/identity';
-import { IntegrationsModule } from './modules/integrations';
+import {
+  ChannelAnnouncementOutboxHandler,
+  FEEDBACK_PUBLISHED_TYPE,
+  IntegrationsModule,
+  KUDOS_GIVEN_TYPE,
+} from './modules/integrations';
 import { NotificationsModule } from './modules/notifications';
 import { WorkspaceModule } from './modules/workspace';
 import { WorkspaceGoalModule } from './modules/workspace-goal';
@@ -24,9 +29,18 @@ import { SharedModule } from './shared/shared.module';
     ConfigModule,
     SharedModule,
     DatabaseModule,
-    // No handlers yet: the table and its relay land before the first consumer moves
-    // onto them (ADR 0076, slice A1).
-    outboxModule([]),
+    // The composition root is where handlers are named, so the relay imports no module and no
+    // module imports the relay (ADR 0076 D1).
+    outboxModule({
+      imports: [IntegrationsModule],
+      handlers: {
+        inject: [ChannelAnnouncementOutboxHandler],
+        useFactory: (announcements: ChannelAnnouncementOutboxHandler) => [
+          { type: FEEDBACK_PUBLISHED_TYPE, handler: announcements },
+          { type: KUDOS_GIVEN_TYPE, handler: announcements },
+        ],
+      },
+    }),
     IdentityModule,
     WorkspaceModule,
     FeedbackModule,

@@ -1,7 +1,8 @@
-import { ChannelAnnouncerPort } from '@app/modules/integrations';
+import { FEEDBACK_PUBLISHED_TYPE } from '@app/modules/integrations';
 import { PersonNotifierPort } from '@app/modules/notifications';
 import { WorkspaceMembershipPort } from '@app/modules/workspace';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
+import { Outbox } from '@app/shared/application/outbox.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable, Logger } from '@nestjs/common';
 import { Feedback } from '../../domain/entity/feedback.entity';
@@ -60,7 +61,7 @@ export class OfferFeedbackUseCase {
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
     private readonly personNotifierPort: PersonNotifierPort,
-    private readonly channelAnnouncerPort: ChannelAnnouncerPort,
+    private readonly outbox: Outbox,
   ) {}
 
   async execute(input: OfferFeedbackInput): Promise<OfferFeedbackResult> {
@@ -103,9 +104,29 @@ export class OfferFeedbackUseCase {
       postcard,
     });
 
-    await this.unitOfWork.run(() => this.feedbackRepository.save(feedback));
-
     const written = feedback.snapshot();
+
+    await this.unitOfWork.run(async () => {
+      await this.feedbackRepository.save(feedback);
+      if (visibility.isEveryone()) {
+        // Enqueued in the same transaction as the Feedback, so the promise to tell the channel
+        // cannot survive a rollback and cannot be lost after a commit (ADR 0076). The channel is
+        // told who gave Feedback to whom and nothing of what it said (brain `ADR-0040`); which
+        // tool, which channel, and whether there is one at all are Integrations' (ADR 0062).
+        await this.outbox.enqueue([
+          {
+            type: FEEDBACK_PUBLISHED_TYPE,
+            idempotencyKey: `${FEEDBACK_PUBLISHED_TYPE}:${written.id}`,
+            payload: {
+              workspaceId: input.workspaceId,
+              giverAccountId: input.giverAccountId,
+              receiverAccountIds: written.receiverAccountIds,
+              feedbackId: written.id,
+            },
+          },
+        ]);
+      }
+    });
     // After the Feedback has committed, and never awaited: giving Feedback must not be held up
     // by a chat tool, nor fail because one is unreachable (`ADR-0035` §8, design 0021 D5).
     //
@@ -131,27 +152,6 @@ export class OfferFeedbackUseCase {
           error: error instanceof Error ? error.message : 'unknown',
         });
       });
-
-    if (visibility.isEveryone()) {
-      // Only Feedback the Giver put in front of the whole Workspace, and the same way: after the
-      // commit, never awaited. The channel is told who gave Feedback to whom and nothing of what
-      // it said (brain `ADR-0040`); which tool, which channel, and whether there is one at all
-      // are Integrations' (ADR 0062).
-      void this.channelAnnouncerPort
-        .feedbackPublished({
-          workspaceId: input.workspaceId,
-          giverAccountId: input.giverAccountId,
-          receiverAccountIds: written.receiverAccountIds,
-          feedbackId: written.id,
-        })
-        .catch((error: unknown) => {
-          this.logger.warn({
-            event: 'feedback.announce_failed',
-            announcement: 'feedbackPublished',
-            error: error instanceof Error ? error.message : 'unknown',
-          });
-        });
-    }
 
     return { id: written.id };
   }
