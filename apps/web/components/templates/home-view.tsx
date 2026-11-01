@@ -116,17 +116,17 @@ export function HomeView({
   );
 }
 
+export type HomeViewSkeletonProps = {
+  /** Gives the split its height, as it does `HomeView`'s. */
+  splitClassName?: string;
+};
+
 /**
  * `HomeView` while the page is still being built, in both layouts: the Workspace's name, the
  * composer, the feed and the tabs in grey, with the words that never change already in place.
  * Which tab is open is not known yet, so each column shows the feed its tabs open on.
  */
-export function HomeViewSkeleton({
-  splitClassName,
-}: {
-  /** Gives the split its height, as it does `HomeView`'s. */
-  splitClassName?: string;
-}) {
+export function HomeViewSkeleton({ splitClassName }: HomeViewSkeletonProps) {
   return (
     <HomeLayout
       sectionHeadingLevel="h2"

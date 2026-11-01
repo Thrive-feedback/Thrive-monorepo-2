@@ -64,11 +64,15 @@ export function SettingValues({ rows }: SettingValuesProps) {
   );
 }
 
+export type SettingRowSkeletonProps = {
+  label: string;
+};
+
 /**
  * A `SettingRow` whose description and control wait on data: its label as it will read, and the
  * rest in grey.
  */
-export function SettingRowSkeleton({ label }: { label: string }) {
+export function SettingRowSkeleton({ label }: SettingRowSkeletonProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border-border-subtle border-b py-5">
       <div className="flex flex-1 flex-col gap-1">
@@ -82,12 +86,12 @@ export function SettingRowSkeleton({ label }: { label: string }) {
   );
 }
 
-/** `SettingValues` still loading: each label as it will read, beside its value in grey. */
-export function SettingValuesSkeleton({
-  labels,
-}: {
+export type SettingValuesSkeletonProps = {
   labels: readonly string[];
-}) {
+};
+
+/** `SettingValues` still loading: each label as it will read, beside its value in grey. */
+export function SettingValuesSkeleton({ labels }: SettingValuesSkeletonProps) {
   return (
     <div className="flex flex-col">
       {labels.map((label) => (
