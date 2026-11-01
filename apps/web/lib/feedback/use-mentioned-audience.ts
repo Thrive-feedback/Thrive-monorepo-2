@@ -58,9 +58,9 @@ export function useMentionedAudience({
     selectedAccountIds,
     lockedAccountIds,
     /** Those people, each with the reason the people dialog shows for keeping them selected. */
-    lockedPeople: new Map(
-      [...lockedAccountIds].map((accountId) => [accountId, MENTIONED]),
-    ) as ReadonlyMap<string, string>,
+    lockedPeople: new Map<string, string>(
+      [...lockedAccountIds].map((accountId) => [accountId, MENTIONED] as const),
+    ),
     /** Only me, while somebody mentioned would be left out by it. */
     onlyMeDisabled: outsiders.length > 0,
     /** Why the choice moved to Selected people by itself, while that is still the choice. */
