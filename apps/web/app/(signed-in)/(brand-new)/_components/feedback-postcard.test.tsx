@@ -30,7 +30,7 @@ vi.mock('sonner', () => ({
   toast: { error: (...args: unknown[]) => toastError(...args) },
 }));
 
-const { HomePostcard } = await import('./home-postcard');
+const { FeedbackPostcard } = await import('./feedback-postcard');
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
 const READER = '0199a0f0-0000-7000-8000-00000000000a';
@@ -100,15 +100,15 @@ beforeEach(() => {
   toastError.mockClear();
 });
 
-function reading(show: 'all' | 'shared' = 'all') {
-  return HomePostcard({
+function reading(closeHref: string = ROUTES.brandNewHome) {
+  return FeedbackPostcard({
     membership: MEMBERSHIP,
     feedbackId: CARAS_ANSWER,
-    show,
+    closeHref,
   });
 }
 
-describe('HomePostcard', () => {
+describe('FeedbackPostcard', () => {
   it('opens at the answer of the card that was pressed, and pages to the others', async () => {
     theApiAnswers(CARAS_CARD);
 
@@ -140,7 +140,7 @@ describe('HomePostcard', () => {
     rerender(
       <>
         {link}
-        {await reading('shared')}
+        {await reading(ROUTES.brandNewHomeShowing('shared'))}
       </>,
     );
 
@@ -172,18 +172,18 @@ describe('HomePostcard', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
-  it('leaves the reader on Home when the postcard is not theirs to open', async () => {
+  it('leaves the reader where they were when the postcard is not theirs to open', async () => {
     theApiAnswers({ code: 'FEEDBACK_NOT_FOUND' }, { status: 404 });
 
-    await expect(reading('shared')).rejects.toEqual(
+    await expect(reading(ROUTES.brandNewHomeShowing('shared'))).rejects.toEqual(
       new Redirected(ROUTES.brandNewHomeShowing('shared')),
     );
   });
 
-  it('says so and stays on Home when the postcard could not be read', async () => {
+  it('says so and leaves the reader where they were when the postcard could not be read', async () => {
     theApiAnswers({ code: 'INTERNAL' }, { status: 500 });
 
-    render(await reading('shared'));
+    render(await reading(ROUTES.brandNewHomeShowing('shared')));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(toastError).toHaveBeenCalledExactlyOnceWith(

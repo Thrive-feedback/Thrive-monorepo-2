@@ -17,7 +17,7 @@ vi.mock('next/headers', () => ({
   headers: async () => new Headers({ cookie: 'thrive.session_token=abc' }),
 }));
 
-const { readHomePostcard } = await import('./home-postcard.service');
+const { readFeedbackPostcard } = await import('./feedback-postcard.service');
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
 const READER = '0199a0f0-0000-7000-8000-00000000000a';
@@ -98,11 +98,11 @@ function theApiAnswers(body: unknown, init?: ResponseInit) {
   );
 }
 
-describe('readHomePostcard', () => {
+describe('readFeedbackPostcard', () => {
   it('reads Feedback given unasked as the card it was written on', async () => {
     theApiAnswers(OFFERED);
 
-    const postcard = await readHomePostcard(MEMBERSHIP, FIRST_ANSWER);
+    const postcard = await readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER);
 
     expect(postcard?.title).toBe('Feedback from Ben Carter');
     expect(postcard?.card).toMatchObject({
@@ -117,7 +117,7 @@ describe('readHomePostcard', () => {
   it('calls what the reader gave theirs', async () => {
     theApiAnswers({ ...OFFERED, giver: person(READER, 'Ann Lee') });
 
-    const postcard = await readHomePostcard(MEMBERSHIP, FIRST_ANSWER);
+    const postcard = await readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER);
 
     expect(postcard?.title).toBe('Your Feedback');
   });
@@ -125,7 +125,7 @@ describe('readHomePostcard', () => {
   it('draws what was not written on a postcard on a plain one', async () => {
     theApiAnswers({ ...OFFERED, postcard: null });
 
-    const postcard = await readHomePostcard(MEMBERSHIP, FIRST_ANSWER);
+    const postcard = await readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER);
 
     expect(postcard?.card).toMatchObject({
       templateKey: POSTCARD_TEMPLATES[0].key,
@@ -139,7 +139,7 @@ describe('readHomePostcard', () => {
   it('reads an answer on its request, opened at the answer pressed', async () => {
     theApiAnswers(REQUESTED);
 
-    const postcard = await readHomePostcard(MEMBERSHIP, SECOND_ANSWER);
+    const postcard = await readFeedbackPostcard(MEMBERSHIP, SECOND_ANSWER);
 
     expect(postcard?.title).toBe('Feedback for Cara Diaz');
     expect(postcard?.answerIndex).toBe(1);
@@ -178,7 +178,7 @@ describe('readHomePostcard', () => {
       },
     });
 
-    const postcard = await readHomePostcard(MEMBERSHIP, SECOND_ANSWER);
+    const postcard = await readFeedbackPostcard(MEMBERSHIP, SECOND_ANSWER);
 
     expect(postcard?.card).toMatchObject({
       answers: [
@@ -212,7 +212,7 @@ describe('readHomePostcard', () => {
       },
     });
 
-    const postcard = await readHomePostcard(MEMBERSHIP, FIRST_ANSWER);
+    const postcard = await readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER);
 
     expect(postcard?.card).toMatchObject({
       messageTags: onTheQuestion,
@@ -226,7 +226,7 @@ describe('readHomePostcard', () => {
       request: { ...REQUESTED.request, requester: person(READER, 'Ann Lee') },
     });
 
-    const postcard = await readHomePostcard(MEMBERSHIP, SECOND_ANSWER);
+    const postcard = await readFeedbackPostcard(MEMBERSHIP, SECOND_ANSWER);
 
     expect(postcard?.title).toBe('Feedback for you');
   });
@@ -238,7 +238,7 @@ describe('readHomePostcard', () => {
       receivers: [person(CARA, 'Cara Diaz', 'DEACTIVATED')],
     });
 
-    const postcard = await readHomePostcard(MEMBERSHIP, FIRST_ANSWER);
+    const postcard = await readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER);
 
     expect(postcard?.title).toBe('Feedback from a teammate');
     expect(postcard?.card).toMatchObject({
@@ -253,7 +253,7 @@ describe('readHomePostcard', () => {
       request: { ...REQUESTED.request, postcard: null },
     });
 
-    const postcard = await readHomePostcard(MEMBERSHIP, SECOND_ANSWER);
+    const postcard = await readFeedbackPostcard(MEMBERSHIP, SECOND_ANSWER);
 
     expect(postcard?.card).toMatchObject({
       ask: {
@@ -267,7 +267,7 @@ describe('readHomePostcard', () => {
   it('answers nothing for what the reader may not open', async () => {
     theApiAnswers({ code: 'FEEDBACK_NOT_FOUND' }, { status: 404 });
 
-    expect(await readHomePostcard(MEMBERSHIP, FIRST_ANSWER)).toBeNull();
+    expect(await readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER)).toBeNull();
   });
 
   it('answers nothing once the reader has left the Workspace', async () => {
@@ -282,12 +282,14 @@ describe('readHomePostcard', () => {
       { status: 404 },
     );
 
-    expect(await readHomePostcard(MEMBERSHIP, FIRST_ANSWER)).toBeNull();
+    expect(await readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER)).toBeNull();
   });
 
   it('does not hide a failure as not found', async () => {
     theApiAnswers({ code: 'INTERNAL' }, { status: 500 });
 
-    await expect(readHomePostcard(MEMBERSHIP, FIRST_ANSWER)).rejects.toThrow();
+    await expect(
+      readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER),
+    ).rejects.toThrow();
   });
 });

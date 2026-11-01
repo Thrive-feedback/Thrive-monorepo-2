@@ -1,4 +1,3 @@
-import { GlobeIcon, UsersIcon } from 'lucide-react';
 import { Badge } from '@/components/atoms/badge';
 import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';
@@ -7,6 +6,7 @@ import { TargetLink } from '@/components/molecules/target-link';
 import { cn } from '@/lib/cn.util';
 import type { HomeFeedItem } from '@/lib/feedback/home-feed-item.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
+import { feedCardAudienceOf } from './feed-card-audience.util';
 import styles from './feed-card-frame.module.css';
 import { FeedCardNote, noteLieOf } from './feed-card-note';
 import { feedCardGiver, feedCardSentence } from './feed-card-sentence.util';
@@ -26,14 +26,6 @@ const ORIGIN_NAMES: Readonly<Record<HomeFeedItem['origin'], string>> = {
 const POSTCARD_NOTES: Readonly<Record<HomeFeedItem['origin'], string>> = {
   REQUESTED: 'All the answers in here',
   OFFERED: 'Read the whole postcard',
-};
-
-/** Who can read a card, in the Visibility's own words. Text and icon, never the icon alone. */
-const AUDIENCES: Readonly<
-  Record<HomeFeedItem['visibility'], { label: string; Icon: typeof GlobeIcon }>
-> = {
-  EVERYONE: { label: 'Everyone in the Workspace', Icon: GlobeIcon },
-  SELECTED_PEOPLE: { label: 'Selected people', Icon: UsersIcon },
 };
 
 export type FeedCardProps = {
@@ -61,7 +53,7 @@ export function FeedCardFrame({
   target,
   children,
 }: FeedCardFrameProps) {
-  const { label, Icon } = AUDIENCES[item.visibility];
+  const { label, Icon } = feedCardAudienceOf(item);
 
   return (
     <article className={FEED_CARD_SURFACE}>

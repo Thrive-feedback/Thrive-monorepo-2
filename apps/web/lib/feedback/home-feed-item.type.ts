@@ -56,8 +56,11 @@ export type HomeFeedItem = {
   /** What the Feedback message was bound to. */
   readonly messageTags: TextTags;
   readonly givenAt: string;
-  /** Who can read it: Only me is never on Home. */
-  readonly visibility: FeedItemOnTheWire['visibility'];
+  /** Who can read it. Only me is never on Home: it is read by those it was written to. */
+  readonly visibility: Extract<
+    components['schemas']['ListReceivedItemsResponseDto_Output']['items'][number],
+    { kind: 'FEEDBACK' }
+  >['visibility'];
   /** The request an answer responds to; `null` for Offered Feedback. */
   readonly request: HomeFeedRequest | null;
 };

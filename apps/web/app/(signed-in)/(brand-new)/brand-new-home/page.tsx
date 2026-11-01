@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { BrandNewPageTitle } from '@/app/(signed-in)/(brand-new)/_components/brand-new-page-title';
+import { FeedbackPostcard } from '@/app/(signed-in)/(brand-new)/_components/feedback-postcard';
 import { BRAND_NEW_COLUMN } from '@/app/(signed-in)/(brand-new)/_lib/brand-new-column.constant';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { HandwrittenNote } from '@/components/molecules/handwritten-note';
@@ -11,7 +12,6 @@ import { FeedComposerSkeleton } from './_components/feed-composer/feed-composer-
 import { HomeComposer } from './_components/home-composer';
 import { HomeFeed, HomeFeedSkeleton } from './_components/home-feed';
 import { HomeFeedFilter } from './_components/home-feed-filter';
-import { HomePostcard } from './_components/home-postcard';
 import { BrandNewHomeSearchParams } from './_lib/brand-new-home-search-params.schema';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
@@ -86,11 +86,11 @@ export default async function BrandNewHome({
           ready, rather than committing to an empty fallback; a reload still does not wait. */}
       <Suspense fallback={null}>
         {feedback !== undefined && (
-          <HomePostcard
+          <FeedbackPostcard
             key={feedback}
             membership={session.membership}
             feedbackId={feedback}
-            show={show}
+            closeHref={ROUTES.brandNewHomeShowing(show)}
           />
         )}
       </Suspense>
