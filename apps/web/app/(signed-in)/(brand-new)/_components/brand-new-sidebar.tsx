@@ -1,3 +1,4 @@
+import { toSessionWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
 import { readTeammates } from '@/lib/feedback/teammates.service';
 import { readWaitingCount } from '@/lib/feedback/waiting-count.service';
 import { readWorkspaceGoalNames } from '@/lib/feedback/workspace-goal-names.service';
@@ -24,10 +25,7 @@ export async function BrandNewSidebar() {
         workspaceId={membership.workspace.id}
         teammates={teammates}
         workspaceGoals={workspaceGoals}
-        writer={{
-          name: session.profile.displayName,
-          photoUrl: session.photoUrl,
-        }}
+        writer={toSessionWriter(session)}
       />
       <BrandNewSideNav waitingCount={waitingCount} />
     </div>

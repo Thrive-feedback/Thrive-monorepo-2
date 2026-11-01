@@ -1,3 +1,4 @@
+import { toSessionWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
 import { readTeammates } from '@/lib/feedback/teammates.service';
 import { readWorkspaceGoalNames } from '@/lib/feedback/workspace-goal-names.service';
 import type { MemberAccount } from '@/lib/session/session.service';
@@ -25,10 +26,7 @@ export async function HomeComposer({
       workspaceId={membership.workspace.id}
       teammates={teammates}
       workspaceGoals={workspaceGoals}
-      writer={{
-        name: session.profile.displayName,
-        photoUrl: session.photoUrl,
-      }}
+      writer={toSessionWriter(session)}
       isUnderPostcard={isUnderPostcard}
     />
   );
