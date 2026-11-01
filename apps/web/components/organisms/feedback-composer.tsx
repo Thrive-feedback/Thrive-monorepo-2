@@ -119,7 +119,7 @@ export function FeedbackComposer({
   useEffect(
     () =>
       whenIdle(() => {
-        void preloadComposerForms();
+        preloadComposerForms().catch(() => {});
       }),
     [],
   );
