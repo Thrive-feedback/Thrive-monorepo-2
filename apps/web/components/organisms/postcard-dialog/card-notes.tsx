@@ -1,5 +1,3 @@
-'use client';
-
 import { LightbulbIcon, LightbulbOffIcon } from 'lucide-react';
 import { createContext, useState } from 'react';
 import { Button } from '@/components/atoms/button';

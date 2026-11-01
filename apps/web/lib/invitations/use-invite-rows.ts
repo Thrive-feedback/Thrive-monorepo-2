@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useRef, useState } from 'react';
 import type { MemberRole } from '@/lib/session/current-account.type';
 import {

@@ -1,5 +1,3 @@
-'use client';
-
 import { useId, useState } from 'react';
 import { AvatarGroupButton } from '@/components/molecules/avatar-group-button';
 import { chosenPeople } from '@/lib/feedback/chosen-people.util';

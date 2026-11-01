@@ -1,5 +1,3 @@
-'use client';
-
 import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
 import { useRef } from 'react';
