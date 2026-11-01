@@ -6,6 +6,7 @@ import { apiClient } from '@/lib/api-client.service';
 import type { FeedItem } from '@/lib/feedback/feed-item.type';
 import { toFeedbackPerson } from '@/lib/feedback/feedback-person.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { toFeedItem } from './feed-item.util';
 
 /** As on the other tabs: one page covers a Workspace of 20–50 people. */
 const ONE_PAGE = { page: 1, pageSize: 100 };
@@ -31,17 +32,7 @@ export const readWorkspaceFeed = cache(
       }),
     );
     return feed.items.map((feedback) => ({
-      id: feedback.id,
-      giverName: feedback.giver.name,
-      giverPhotoUrl: feedback.giver.photoUrl,
-      giverInactive: feedback.giver.status === 'DEACTIVATED',
-      receivers: feedback.receivers.map(toFeedbackPerson),
-      origin: feedback.origin,
-      message: feedback.message,
-      messageTags: feedback.tags,
-      givenAt: feedback.createdAt,
-      // Reactions are #92; until then a card shows the four with nobody behind them.
-      reactions: {},
+      ...toFeedItem(feedback),
       request: feedback.request && {
         message: feedback.request.message,
         messageTags: feedback.request.tags,
