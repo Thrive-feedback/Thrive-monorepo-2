@@ -15,11 +15,16 @@ import type { LinkedAccount } from './linked-account.type';
 export async function readLinkedAccounts(): Promise<readonly LinkedAccount[]> {
   const cookie = (await headers()).get('cookie') ?? undefined;
   try {
-    return unwrap(
+    const linked = unwrap(
       await apiClient().GET('/v1/linked-accounts/mine', {
         params: { header: { cookie } },
       }),
-    ).items;
+    );
+    return linked.items.map((account) => ({
+      provider: account.provider,
+      externalUsername: account.externalUsername,
+      linkedAt: account.linkedAt,
+    }));
   } catch (error) {
     if (!(error instanceof ApiError)) {
       throw error;
