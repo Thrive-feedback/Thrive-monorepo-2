@@ -97,6 +97,26 @@ describe('FeedCard', () => {
     expect(screen.getByText('BC')).toBeInTheDocument();
   });
 
+  it('points at the small postcard, by hand, saying what is in it', () => {
+    renderCard(OFFERED);
+
+    expect(screen.getByText('Read the whole postcard')).toBeInTheDocument();
+  });
+
+  it('points a request at the answers in its postcard', () => {
+    renderCard(REQUESTED);
+
+    expect(screen.getByText('All the answers in here')).toBeInTheDocument();
+  });
+
+  it('keeps that note out of the link and away from a screen reader', () => {
+    renderCard(OFFERED);
+
+    const note = screen.getByText('Read the whole postcard');
+    expect(screen.getByRole('link')).not.toContainElement(note);
+    expect(note.closest('[aria-hidden="true"]')).toBeInTheDocument();
+  });
+
   it('opens the postcard from the small postcard alone', () => {
     renderCard(OFFERED);
 

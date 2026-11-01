@@ -85,7 +85,8 @@ export type KudosCardFaceProps = {
 
 /**
  * A Kudos card with nothing written on it: portrait, one side, at whatever width it is given. The
- * row of templates and the board draw it small, and the editor puts the words and stickers on it.
+ * row of templates draws it small, the board a sent card lands on smaller still, and the editor and
+ * `KudosCardReadOnly` put the words and stickers on it.
  */
 export function KudosCardFace({ templateKey, children }: KudosCardFaceProps) {
   return (

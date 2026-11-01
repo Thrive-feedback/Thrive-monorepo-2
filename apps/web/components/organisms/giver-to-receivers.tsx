@@ -13,6 +13,8 @@ export type GiverToReceiversProps = {
   receivers: readonly GroupPerson[];
   /** What was given, which words the dialog of several people uses. */
   kind: 'Feedback' | 'Kudos';
+  /** Writes "to" in the secondary colour, as Home's cards do. */
+  hasAccentedTo?: boolean;
 };
 
 /** One person in the line: their face beside their name. */
@@ -46,6 +48,7 @@ export function GiverToReceivers({
   giver,
   receivers,
   kind,
+  hasAccentedTo = false,
 }: GiverToReceiversProps) {
   const [onlyReceiver] = receivers;
   const giverName = giver.name ?? GIVER_WITH_NO_NAME;
@@ -62,7 +65,13 @@ export function GiverToReceivers({
       className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1"
     >
       <FaceAndName person={giver} unnamed={GIVER_WITH_NO_NAME} />
-      <span className="text-fg-secondary">to</span>
+      <span
+        className={
+          hasAccentedTo ? 'text-action-secondary-hover' : 'text-fg-secondary'
+        }
+      >
+        to
+      </span>
       {receivers.length === 0 ? (
         <span>the whole Workspace</span>
       ) : receivers.length === 1 && onlyReceiver ? (

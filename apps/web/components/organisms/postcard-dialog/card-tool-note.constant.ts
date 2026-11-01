@@ -12,6 +12,7 @@ export const CARD_NOTES = {
   otherAnswers: 'see the other answers',
   done: 'press done when finished',
   typeKudos: 'type your kudos here',
+  stickersOnFront: 'stickers: front only',
   changeCardStyle: 'change your card style',
   styleWords: 'style your words here',
   sendReady: 'all set, send it',

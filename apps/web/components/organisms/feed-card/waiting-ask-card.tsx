@@ -7,10 +7,10 @@ import { PersonName } from '@/components/organisms/person-name';
 import { cn } from '@/lib/cn.util';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
+import { FeedCardNote, noteLieOf } from './feed-card-note';
 import { NO_NAME_STARTING_A_SENTENCE } from './feed-card-sentence.util';
 import { FEED_CARD_SURFACE } from './feed-card-surface.constant';
 import { PendingMiniPostcard } from './pending-mini-postcard';
-import { noteLieOf, WaitingAskNote } from './waiting-ask-note';
 
 export type WaitingAskCardProps = {
   ask: MyAsk;
@@ -57,7 +57,9 @@ export function WaitingAskCard({ ask, target }: WaitingAskCardProps) {
         </Text>
       </div>
       <div className="flex shrink-0 items-center justify-end gap-2">
-        <WaitingAskNote lie={noteLieOf(ask.askId)} />
+        <FeedCardNote lie={noteLieOf(ask.askId)}>
+          Answer in the postcard
+        </FeedCardNote>
         <TargetLink target={target} className="group/card-link block">
           <span className="sr-only">
             Answer in the postcard: {name} requested feedback from you

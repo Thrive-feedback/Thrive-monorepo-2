@@ -22,10 +22,10 @@ const note = cva(
   },
 );
 
-export type WaitingAskNoteLie = NonNullable<VariantProps<typeof note>['lie']>;
+export type FeedCardNoteLie = NonNullable<VariantProps<typeof note>['lie']>;
 
 /** Every way the note can lie, for a card to take one of. */
-export const WAITING_ASK_NOTE_LIES: readonly WaitingAskNoteLie[] = [
+export const FEED_CARD_NOTE_LIES: readonly FeedCardNoteLie[] = [
   'rising',
   'falling',
   'easingUp',
@@ -34,36 +34,39 @@ export const WAITING_ASK_NOTE_LIES: readonly WaitingAskNoteLie[] = [
 ];
 
 /**
- * The way an Ask's note lies, picked from its id: it looks picked by hand, yet stays the same for
- * that Ask on the server, on the client and after a reload.
+ * The way a card's note lies, picked from its id: it looks picked by hand, yet stays the same for
+ * that card on the server, on the client and after a reload.
  */
-export function noteLieOf(askId: string): WaitingAskNoteLie {
+export function noteLieOf(id: string): FeedCardNoteLie {
   // A rolling hash, because ids made moments apart share most of their characters: adding them up
   // gave a run of neighbours the same note.
-  const hash = [...askId].reduce(
+  const hash = [...id].reduce(
     (total, character) => (total * 31 + (character.codePointAt(0) ?? 0)) >>> 0,
     0,
   );
-  return WAITING_ASK_NOTE_LIES[hash % WAITING_ASK_NOTE_LIES.length] ?? 'level';
+  return FEED_CARD_NOTE_LIES[hash % FEED_CARD_NOTE_LIES.length] ?? 'level';
 }
 
-export type WaitingAskNoteProps = {
-  lie: WaitingAskNoteLie;
+export type FeedCardNoteProps = {
+  lie: FeedCardNoteLie;
+  /** What opening the postcard gives. */
+  children: React.ReactNode;
+  className?: string;
 };
 
 /**
- * "Answer in the postcard", written by hand beside the small postcard with an arrow to it. It only
- * points the way, so the link names the same words and a screen reader skips this.
+ * A few words by hand beside a card's small postcard, with an arrow to it. It only points the way,
+ * so the link names the same thing and a screen reader skips this.
  */
-export function WaitingAskNote({ lie }: WaitingAskNoteProps) {
+export function FeedCardNote({ lie, children, className }: FeedCardNoteProps) {
   return (
-    <span aria-hidden="true" className={cn(note({ lie }))}>
+    <span aria-hidden="true" className={cn(note({ lie }), className)}>
       <Text
         as="span"
         variant="subtitle-handwrite-3"
         className="w-20 text-right lg:w-22"
       >
-        Answer in the postcard
+        {children}
       </Text>
       <HandArrow className="h-4 w-8 lg:h-5 lg:w-12" />
     </span>

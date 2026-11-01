@@ -1,10 +1,9 @@
 /*
- * The Kudos card. Everything on it is a share of its width, so the same card is the one being
- * written, the small one in the row of templates and the small one on the board. Container units
- * have no utility, and they measure an element's container and never the element, so `.card` is
- * only that container, and `.face`, inside it, is what is drawn. Each template is drawn from the
- * theme's colours, so it follows the theme as the postcard's paper does; `--kudos-writing` is how
- * far the words stay from its edge.
+ * The Kudos card. Its drawing is a share of its width, so the same card is the one being written
+ * and the small one in the row of templates. Container units have no utility, and they measure an
+ * element's container and never the element, so `.card` is only that container, and `.face`, inside
+ * it, is what is drawn. Each template is drawn from the theme's colours, so it follows the theme as
+ * the postcard's paper does; `--kudos-writing` is how far the words stay from its edge.
  */
 .card {
   container-type: inline-size;
@@ -111,6 +110,22 @@
   );
 }
 
+/*
+ * The back: the same paper on every card, whatever is on the front, with a fine printed frame. A
+ * side nothing is written on, so only the wordmark and the day ask to be read.
+ */
+.back {
+  --kudos-writing: 12cqw;
+
+  background-color: var(--surface-raised);
+}
+
+.back::before {
+  inset: 4cqw;
+  border: 1px solid var(--border-muted);
+  border-radius: 3cqw;
+}
+
 /* The dashes and the squiggle: SVG strokes have no utility. */
 .border {
   fill: none;
@@ -119,11 +134,52 @@
   stroke-linejoin: round;
 }
 
-/* A name in the words is underlined, so it shows on every template, in whatever ink it has. */
+/*
+ * A name in the words is underlined, so it shows on every template, in whatever ink it has. Read
+ * back, a name comes as a pill; here it stays in the line, as it was when it was written.
+ */
 .tags span {
+  padding-inline: 0;
+  background: none;
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 0.15em;
+}
+
+/*
+ * A card being read. Its words and stickers are set in fixed sizes, so a card simply drawn smaller
+ * would wrap its lines differently and carry stickers too large for it. `.sheet` is laid out at the
+ * width the card is written at, in the editor's `max-w-90`, and scaled to `.stage` as one piece,
+ * so what the Giver saw is what everyone reads. `tan(atan2())` is how CSS divides one length by
+ * another. Both widths are registered, so they reach it as pixels: WebKit reads an unregistered
+ * `cqw` or `rem` as a bare number, and turns the card upside down.
+ */
+@property --kudos-stage-width {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --kudos-written-width {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.stage {
+  container-type: inline-size;
+}
+
+.sheet {
+  --kudos-written-width: calc(var(--space-unit) * 90);
+  --kudos-stage-width: 100cqw;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--kudos-written-width);
+  transform-origin: 0 0;
+  scale: tan(atan2(var(--kudos-stage-width), var(--kudos-written-width)));
 }
 
 /*

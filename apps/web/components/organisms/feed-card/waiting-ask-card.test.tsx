@@ -2,8 +2,8 @@ import { render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
+import { FEED_CARD_NOTE_LIES, noteLieOf } from './feed-card-note';
 import { WaitingAskCard } from './waiting-ask-card';
-import { noteLieOf, WAITING_ASK_NOTE_LIES } from './waiting-ask-note';
 
 const ASK: MyAsk = {
   askId: 'ask-1',
@@ -107,6 +107,6 @@ describe('noteLieOf', () => {
   it('reaches all five ways across a few Asks', () => {
     const lies = ['ask-1', 'ask-2', 'ask-3', 'ask-4', 'ask-5'].map(noteLieOf);
 
-    expect(new Set(lies)).toEqual(new Set(WAITING_ASK_NOTE_LIES));
+    expect(new Set(lies)).toEqual(new Set(FEED_CARD_NOTE_LIES));
   });
 });

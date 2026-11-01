@@ -1,0 +1,11 @@
+/*
+ * The small board a Kudos hangs on in the feed, as the board a sent card lands on: the cards beside
+ * it out of focus under a veil, so only this one is sharp. A blur and a mix have no utility.
+ */
+.neighbours {
+  filter: blur(var(--scrim-blur-deep));
+}
+
+.veil {
+  background-color: color-mix(in oklch, var(--surface-base) 35%, transparent);
+}

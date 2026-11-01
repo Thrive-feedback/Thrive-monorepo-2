@@ -15,7 +15,7 @@ export function PostcardToolButton({
     <button
       type="button"
       className={cn(
-        'inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-button px-2.5 text-body-2 text-fg-primary hover:bg-action-neutral-surface-hover aria-disabled:cursor-not-allowed aria-disabled:text-fg-disabled aria-disabled:hover:bg-transparent data-[state=open]:bg-action-neutral-surface-hover max-sm:gap-1 max-sm:px-1.5',
+        'inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-button px-2.5 text-body-2 text-fg-primary hover:bg-action-neutral-surface-hover disabled:cursor-not-allowed disabled:text-fg-disabled aria-disabled:cursor-not-allowed aria-disabled:text-fg-disabled aria-disabled:hover:bg-transparent data-[state=open]:bg-action-neutral-surface-hover max-sm:gap-1 max-sm:px-1.5',
         className,
       )}
       {...rest}
