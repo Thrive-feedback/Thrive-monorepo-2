@@ -9,9 +9,10 @@ import { BrandNewSidebar } from './_components/brand-new-sidebar';
  * nor its replacement yet. The check is in each page, not here, because a layout does not run
  * again when the client navigates between the pages under it.
  *
- * The panel cancels the main region's `py-12` and the container's side inset (`MemberShell`), so
- * the sidebar meets the frame on three sides: the navbar above, the strip to its left, the strip
- * below. Its contents stay in view as the page scrolls, stuck just below the navbar (`mt-18`).
+ * The page fills the frame, so the sidebar meets it on three sides, the navbar above, the strip to
+ * its left and the strip below, and the column beside it runs to the strip on the right. Each page
+ * keeps its own distance from those edges. The sidebar's contents stay in view as the page scrolls,
+ * stuck just below the navbar (`mt-18`).
  */
 export default function BrandNewLayout({
   children,
@@ -19,11 +20,11 @@ export default function BrandNewLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <MemberShell navbar={<BrandNewNavbar />}>
-      <div className="-my-12 flex flex-1">
+    <MemberShell navbar={<BrandNewNavbar />} fillsFrame>
+      <div className="flex flex-1">
         <aside
           aria-label="The new Home"
-          className="-ms-inset-container hidden w-56 shrink-0 border-border-subtle border-r px-2 py-6 md:block"
+          className="hidden w-56 shrink-0 border-border-subtle border-r px-2 py-6 md:block"
         >
           <div className="sticky top-24">
             <BrandNewSidebar />

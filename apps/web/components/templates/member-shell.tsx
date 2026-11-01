@@ -9,6 +9,11 @@ const GOOGLE_PHOTOS_ORIGIN = 'https://lh3.googleusercontent.com';
 export type MemberShellProps = {
   /** The bar across the top; the new Home brings its own while it is built beside the old one. */
   navbar?: React.ReactNode;
+  /**
+   * The page meets the frame on every side, and each of its columns keeps its own distance from it,
+   * rather than sitting inside the shell's own padding.
+   */
+  fillsFrame?: boolean;
   children: React.ReactNode;
 };
 
@@ -27,6 +32,7 @@ export type MemberShellProps = {
  */
 export function MemberShell({
   navbar = <MemberNavbar />,
+  fillsFrame = false,
   children,
 }: MemberShellProps) {
   // Every signed-in page shows faces, so the connection to Google is opened while the page
@@ -38,8 +44,18 @@ export function MemberShell({
       {/* The strips lie over the page, so the inset is measured from inside them: the outer
           padding is a strip's width, the inner one the container's inset. Otherwise, on a
           phone, the content would come within a few pixels of the frame. */}
-      <main className="mt-18 flex flex-1 flex-col px-3 py-12">
-        <div className="flex flex-1 flex-col px-inset-container">
+      <main
+        className={cn(
+          'mt-18 flex flex-1 flex-col px-3',
+          !fillsFrame && 'py-12',
+        )}
+      >
+        <div
+          className={cn(
+            'flex flex-1 flex-col',
+            !fillsFrame && 'px-inset-container',
+          )}
+        >
           {children}
         </div>
       </main>
