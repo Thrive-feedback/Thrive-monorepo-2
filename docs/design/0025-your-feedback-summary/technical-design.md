@@ -1,6 +1,6 @@
 # Technical design · Your feedback summary
 
-**Product decision:** brain `ADR-0051` (**proposed, unaccepted**) — d9 makes this the first AI
+**Product decision:** brain `ADR-0051` (**accepted 2026-11-01, naroebordin**) — d9 makes this the first AI
 feature, d6 makes it stored, d7 makes it readable only by the person it is about
 **Depends on:** `docs/adr/0076` (the outbox — §5's cadence has no other mechanism), `0077` (the model
 port). **Not** on `0078`/`0079`, deferred the same day
@@ -273,7 +273,7 @@ reader's, permanently.
 
 ## 9. Open for kritpavin
 
-1. **`ADR-0051` is proposed.** Nothing here is buildable until it is accepted or rejected.
+1. ~~`ADR-0051` is proposed.~~ **Accepted 2026-11-01 by naroebordin.** This design is unblocked.
 2. **Is the period a quarter?** D2 assumes it. A month regenerates more and reads thinner; a half-year
    is stale for a fast-moving team.
 3. **Does the floor sit at 3?** (D7) It decides what a new Member sees.

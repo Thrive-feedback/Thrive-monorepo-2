@@ -1,9 +1,9 @@
 # Technical design · The outbox, and the goal-tagging spike that runs beside it
 
-**Product decision:** brain `ADR-0051` (proposed, unaccepted) — a model may read Feedback text, Thrive
+**Product decision:** brain `ADR-0051` (accepted 2026-11-01, naroebordin) — a model may read Feedback text, Thrive
 binds to no provider, a label binds only when a Member confirms it
 **Code decisions:** `docs/adr/0076` (this outbox), `0077` (the model port), `0078` (proposal binding),
-`0079` (goal coverage) — all **proposed, none accepted**
+`0079` (goal coverage) — all **proposed**
 **Spike specification:** `~/thrive-spikes/goal-tagging/SPEC.md`, outside this repository
 **Status:** draft, 2026-10-31 · **Author:** naroebordin (with Claude)
 **Superseded in priority, same day:** Part B's question was answered and the answer was *not yet*.
