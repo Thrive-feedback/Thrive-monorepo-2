@@ -1,5 +1,6 @@
 import {
   act,
+  cleanup,
   fireEvent,
   render,
   screen,
@@ -1142,6 +1143,161 @@ describe('PostcardDialog, as the composer on Home', () => {
   });
 });
 
+describe('PostcardDialog, its notes by hand', () => {
+  it('says how to turn the card over, for the side it is on', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    expect(
+      screen
+        .getByText('flip for the front')
+        .parentElement?.querySelector('svg'),
+    ).toBeInTheDocument();
+
+    await turnToFront(user);
+
+    expect(screen.getByText('flip back to write')).toBeInTheDocument();
+    expect(screen.queryByText('flip for the front')).not.toBeInTheDocument();
+  });
+
+  it('points at who can read it, wherever the box stands', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    expect(
+      screen
+        .getByText('choose who can read it')
+        .parentElement?.querySelector('svg'),
+    ).toBeInTheDocument();
+
+    await turnToFront(user);
+
+    expect(screen.getByText('choose who can read it')).toBeInTheDocument();
+    expect(screen.getByText('pick the picture here')).toBeInTheDocument();
+  });
+
+  it('adds no note beside the bar of tools or the text tools', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    expect(
+      screen.queryByText('add stickers, a stamp or a paper tone'),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('textbox', { name: 'Your feedback' }));
+
+    expect(screen.queryByText('style your words here')).not.toBeInTheDocument();
+  });
+
+  it('points an answer only at what it can use', async () => {
+    const user = userEvent.setup();
+    render(answerDialog());
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+
+    expect(screen.getByText('stick on a sticker here')).toBeInTheDocument();
+    expect(
+      screen.queryByText('choose who can read it'),
+    ).not.toBeInTheDocument();
+
+    await turnToFront(user);
+
+    expect(screen.queryByText('pick the picture here')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('stick on a sticker here'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('points at Done from the first character typed', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    const message = screen.getByRole('textbox', { name: 'Your feedback' });
+
+    await user.click(message);
+    expect(
+      screen.queryByText('press done when finished'),
+    ).not.toBeInTheDocument();
+
+    await user.type(message, 'T');
+    expect(
+      screen
+        .getByText('press done when finished')
+        .parentElement?.querySelector('svg'),
+    ).toBeInTheDocument();
+  });
+
+  it('says why Send cannot be pressed, then that it can', async () => {
+    const user = userEvent.setup();
+    render(dialog({ defaultRecipientAccountIds: [] }));
+    const send = screen.getByRole('button', { name: /^Send feedback/ });
+
+    expect(send).toBeDisabled();
+    expect(screen.getByText("pick who it's for first")).toBeInTheDocument();
+    cleanup();
+
+    render(dialog({ defaultRecipientAccountIds: ['mali'] }));
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.getByText('write something first')).toBeInTheDocument();
+
+    await user.type(
+      screen.getByRole('textbox', { name: 'Your feedback' }),
+      'Thank you.',
+    );
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+
+    expect(screen.getByText('all set, send it')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^Send feedback/ }),
+    ).toBeEnabled();
+  });
+
+  it('says a request needs somebody to ask', () => {
+    render(dialog({ kind: 'ask', title: 'Ask for feedback' }));
+
+    expect(screen.getByText('pick who to ask first')).toBeInTheDocument();
+  });
+
+  it('says an answer needs words', async () => {
+    const user = userEvent.setup();
+    render(answerDialog());
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+
+    expect(screen.getByText('write something first')).toBeInTheDocument();
+  });
+
+  describe('turning them off', () => {
+    afterEach(() => localStorage.clear());
+
+    it('hides every note and shows them again, by default on', async () => {
+      const user = userEvent.setup();
+      render(dialog());
+      expect(screen.getByText('flip for the front')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Hide tips' }));
+
+      expect(screen.queryByText('flip for the front')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('choose who can read it'),
+      ).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Show tips' }));
+
+      expect(screen.getByText('flip for the front')).toBeInTheDocument();
+    });
+
+    it('stays off on the next card', async () => {
+      const user = userEvent.setup();
+      render(dialog());
+      await user.click(screen.getByRole('button', { name: 'Hide tips' }));
+      cleanup();
+
+      render(dialog());
+
+      expect(screen.getByRole('button', { name: 'Show tips' })).toBeEnabled();
+      expect(screen.queryByText('flip for the front')).not.toBeInTheDocument();
+    });
+  });
+});
+
 describe('PostcardDialog, on its front', () => {
   it('says who else can read it, and lets it be changed there', async () => {
     const user = userEvent.setup();
@@ -1278,6 +1434,42 @@ describe('PostcardDialog, the stamp', () => {
       expect(screen.queryByRole('dialog', { name: 'Stamp' })).toBeNull(),
     );
   }
+
+  it('stays on the card when the stickers are hidden', async () => {
+    const user = userEvent.setup();
+    const name = POSTCARD_STAMPS[0]?.alt ?? '';
+    render(dialog());
+    await chooseStamp(user, name);
+
+    expect(
+      screen.getByRole('button', { name: 'Hide stickers' }),
+    ).toBeDisabled();
+    expect(screen.queryByText(/stickers here$/)).not.toBeInTheDocument();
+
+    await addSticker(user, POSTCARD_STICKERS[0]?.alt ?? '');
+    await user.click(screen.getByRole('button', { name: 'Hide stickers' }));
+
+    expect(
+      screen.getByRole('button', { name: `${name} stamp` }),
+    ).toBeInTheDocument();
+  });
+
+  it('points at the hide button while a sticker is on the card', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await addSticker(user, POSTCARD_STICKERS[0]?.alt ?? '');
+
+    expect(
+      screen
+        .getByText('hide the stickers here')
+        .parentElement?.querySelector('svg'),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Hide stickers' }));
+
+    expect(screen.getByText('show the stickers here')).toBeInTheDocument();
+  });
 
   it('offers every stamp, and is offered on the back alone', async () => {
     const user = userEvent.setup();

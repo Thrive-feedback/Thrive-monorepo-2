@@ -1,0 +1,22 @@
+/** The words of every note beside a card, so the dialogs and the showcase cannot drift apart. */
+export const CARD_NOTES = {
+  flipToFront: 'flip for the front',
+  flipToBack: 'flip back to write',
+  pickPicture: 'pick the picture here',
+  addSticker: 'stick on a sticker here',
+  chooseReaders: 'choose who can read it',
+  hideStickers: 'hide the stickers here',
+  showStickers: 'show the stickers here',
+  hideMarks: 'hide stickers & postmark',
+  showMarks: 'show stickers & postmark',
+  otherAnswers: 'see the other answers',
+  done: 'press done when finished',
+  typeKudos: 'type your kudos here',
+  changeCardStyle: 'change your card style',
+  styleWords: 'style your words here',
+  sendReady: 'all set, send it',
+  needsMessage: 'write something first',
+  needsReceiver: "pick who it's for first",
+  needsAsked: 'pick who to ask first',
+  needsReaders: 'pick your readers first',
+} as const;

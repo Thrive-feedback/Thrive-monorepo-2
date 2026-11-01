@@ -31,11 +31,21 @@ export type KudosTemplate = {
   ink: KudosInk;
   /** The inks that can be read on it. */
   inks: readonly KudosInk[];
-  /** The cursor and the placeholder, which have no drawn text to take a colour from. */
-  fieldClassName: string;
+  /** The cursor, which has no drawn text to take a colour from. */
+  caretClassName: string;
 };
 
-const ON_A_LIGHT_CARD = 'caret-fg-primary placeholder:text-fg-secondary';
+const ON_A_LIGHT_CARD = 'caret-fg-primary';
+
+/** The placeholder in each ink, so it shows the colour the words will be. */
+export const KUDOS_PLACEHOLDER_INKS: Readonly<Record<KudosInk, string>> = {
+  ink: 'placeholder:text-fg-primary',
+  navy: 'placeholder:text-status-info-active',
+  forest: 'placeholder:text-status-success-active',
+  plum: 'placeholder:text-fg-accent',
+  brick: 'placeholder:text-status-error-active',
+  paper: 'placeholder:text-surface-raised',
+};
 
 export const KUDOS_TEMPLATES: Readonly<
   Record<KudosTemplateKey, KudosTemplate>
@@ -47,7 +57,7 @@ export const KUDOS_TEMPLATES: Readonly<
     ink: 'paper',
     // Dark in the light theme and pale in the dark one, so only the paper's own colour reads on it.
     inks: ['paper'],
-    fieldClassName: 'caret-surface-raised placeholder:text-surface-raised',
+    caretClassName: 'caret-surface-raised',
   },
   'red-squiggle': {
     label: 'Red Squiggle',
@@ -55,7 +65,7 @@ export const KUDOS_TEMPLATES: Readonly<
     font: 'signature',
     ink: 'ink',
     inks: POSTCARD_INK_KEYS,
-    fieldClassName: ON_A_LIGHT_CARD,
+    caretClassName: ON_A_LIGHT_CARD,
   },
   'sunny-check': {
     label: 'Sunny Check',
@@ -63,7 +73,7 @@ export const KUDOS_TEMPLATES: Readonly<
     font: 'modern',
     ink: 'ink',
     inks: POSTCARD_INK_KEYS,
-    fieldClassName: ON_A_LIGHT_CARD,
+    caretClassName: ON_A_LIGHT_CARD,
   },
   'peach-pop': {
     label: 'Peach Pop',
@@ -71,7 +81,7 @@ export const KUDOS_TEMPLATES: Readonly<
     font: 'classic',
     ink: 'ink',
     inks: POSTCARD_INK_KEYS,
-    fieldClassName: ON_A_LIGHT_CARD,
+    caretClassName: ON_A_LIGHT_CARD,
   },
   'mint-breeze': {
     label: 'Mint Breeze',
@@ -79,7 +89,7 @@ export const KUDOS_TEMPLATES: Readonly<
     font: 'modern',
     ink: 'forest',
     inks: POSTCARD_INK_KEYS,
-    fieldClassName: ON_A_LIGHT_CARD,
+    caretClassName: ON_A_LIGHT_CARD,
   },
   'sky-note': {
     label: 'Sky Note',
@@ -87,7 +97,7 @@ export const KUDOS_TEMPLATES: Readonly<
     font: 'signature',
     ink: 'navy',
     inks: POSTCARD_INK_KEYS,
-    fieldClassName: ON_A_LIGHT_CARD,
+    caretClassName: ON_A_LIGHT_CARD,
   },
 };
 

@@ -24,4 +24,10 @@
       animation-range: cover 0% cover 20%;
     }
   }
+
+  /* In a dialog nothing scrolls it in, so it is written once, after the dialog has come up. */
+  .writeOnOpen {
+    animation: write-on var(--motion-duration-very-slow)
+      var(--motion-ease-smooth-out) var(--motion-duration-fast) both;
+  }
 }

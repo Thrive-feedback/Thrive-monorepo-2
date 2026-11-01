@@ -10,9 +10,9 @@ export function HandwrittenNoteEntry() {
       name="HandwrittenNote"
       level="molecule"
       origin="thrive"
-      source="components/molecules/handwritten-note.tsx — Text, tilted, written on as it scrolls in."
+      source="components/molecules/handwritten-note.tsx — Text, tilted, written on as it scrolls in or as a dialog opens."
       summary="A teammate's note in the margin, in the handwriting face and the secondary colour."
-      useFor="A small human aside beside a heading, on the landing page and Home."
+      useFor="A small human aside beside a heading, on the landing page and Home, or beside a tool in a dialog."
       avoidFor="Anything a person needs to read: a screen reader skips it."
       usage={`import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 
@@ -29,6 +29,13 @@ export function HandwrittenNoteEntry() {
           type: "'lg' | 'md'",
           defaultValue: "'lg'",
           description: '`lg` beside a display heading, `md` inside the app.',
+        },
+        {
+          name: 'writes',
+          type: "'on-scroll' | 'on-open'",
+          defaultValue: "'on-scroll'",
+          description:
+            'When it is written on: in step with the scroll on a page, or once in a dialog, where nothing scrolls it in.',
         },
       ]}
       accessibility={[

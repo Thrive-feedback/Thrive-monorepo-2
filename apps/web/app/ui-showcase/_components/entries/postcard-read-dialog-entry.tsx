@@ -2,7 +2,7 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
-import { Skeleton } from '@/components/atoms/skeleton';
+import { Postmark } from '@/components/atoms/postmark';
 import { Text } from '@/components/atoms/text';
 import { PostcardReadDialogDemo } from './postcard-read-dialog-demo';
 import {
@@ -22,7 +22,7 @@ export function PostcardReadDialogEntry() {
       level="organism"
       origin="thrive"
       source="components/organisms/postcard-dialog/postcard-read-dialog.tsx — Dialog + Postcard + PostcardAnswerPager, on the parts PostcardDialog writes with"
-      summary="A postcard that has been sent, in front of the page, looking as it did when it was written, with its postmark in the corner and nothing left to change. A button beside Turn over clears the stickers and the postmark away for a moment."
+      summary="A postcard that has been sent, in front of the page, looking as it did when it was written, with its postmark in the corner and nothing left to change. A button beside Turn over clears the stickers and the postmark away for a moment, with a note by hand pointing at it; the stamp stays. A button under it turns the note off."
       useFor="Reading Feedback or an answered Feedback Request that was written on a postcard."
       avoidFor="Writing one; use PostcardDialog. A list of Feedback; use FeedbackCard."
       usage={`import { PostcardReadDialog } from '@/components/organisms/postcard-dialog/postcard-read-dialog';
@@ -141,14 +141,21 @@ export function PostcardReadDialogEntry() {
   );
 }
 
+/** A card that has been sent, small: the words written, its stamp postmarked, and no tools. */
 export function PostcardReadDialogPreview() {
   return (
-    <div className="flex aspect-3/2 w-40 flex-col gap-2 rounded-element border border-border-muted bg-surface-raised p-3 shadow-high">
+    <div className="relative flex aspect-3/2 w-52 flex-col gap-2 rounded-element border border-border-muted bg-surface-raised p-3 shadow-high">
       <Text variant="body-3" tone="muted" as="span">
         From Ann · To Mali
       </Text>
-      <Skeleton />
-      <Skeleton className="w-3/4" />
+      <Text variant="subtitle-handwrite-3" as="span" className="mt-8">
+        Your notes made my first week so much easier.
+      </Text>
+      <span className="absolute top-1 right-1 size-10 border border-border-strong bg-surface-subtle" />
+      <Postmark
+        date="2026-10-31T03:00:00.000Z"
+        className="absolute top-2 right-3 w-20"
+      />
     </div>
   );
 }

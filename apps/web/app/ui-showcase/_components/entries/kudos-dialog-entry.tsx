@@ -13,8 +13,8 @@ export function KudosDialogEntry() {
       level="organism"
       origin="thrive"
       source="components/organisms/kudos-dialog/kudos-dialog.tsx — Dialog + AutocompleteTextarea + the postcard's text tools and stickers"
-      summary="A Kudos written on a portrait card in front of the page: one side, the words in the middle, and whoever they @mention is who it is for, or the whole Workspace if they mention nobody. A row of small cards chooses the template; stickers go on top and can be hidden. Sent, it is pinned to a board, which stays with a way back to Home."
-      useFor="Giving Kudos from Home's + menu."
+      summary="A Kudos written on a portrait card in front of the page: one side, the words in the middle, and whoever they @mention is who it is for, or the whole Workspace if they mention nobody. A row of small cards chooses the template; stickers go on top and can be hidden. Notes by hand on the overlay (CardToolNote) say how to use the tools, each with an arrow to its tool, and why Send cannot be pressed yet; a button under the hide button turns them off. Sent, it is pinned to a board, which stays with a way back to Home."
+      useFor="Giving Kudos, from Home's composer or the sidebar's + menu."
       avoidFor="Feedback, which has a Visibility and a back and front; use PostcardDialog."
       usage={`import { KudosDialog } from '@/components/organisms/kudos-dialog/kudos-dialog';
 
@@ -24,6 +24,8 @@ export function KudosDialogEntry() {
   open={open}
   onOpenChange={setOpen}
   onSend={(kudos) => giveKudos(kudos)}
+  onGoToBoard={() => router.push(ROUTES.brandNewKudos)}
+  onBackToHome={() => setOpen(false)}
 />`}
       props={[
         {
@@ -39,6 +41,13 @@ export function KudosDialogEntry() {
             "The Workspace's active Workspace Goals, by name, offered on `#`.",
         },
         {
+          name: 'defaultMessage',
+          type: 'string',
+          defaultValue: "''",
+          description:
+            'What is already written as it opens, as typed before choosing this card.',
+        },
+        {
           name: 'open / onOpenChange',
           type: 'boolean / (open: boolean) => void',
           description:
@@ -49,6 +58,12 @@ export function KudosDialogEntry() {
           type: '(kudos: KudosDraft) => Promise<boolean>',
           description:
             'Send was pressed. Resolve true once it has gone, and the card is pinned to the board, which stays open; resolve false and it stays open as it was, with saying why left to the caller.',
+        },
+        {
+          name: 'onGoToBoard / onBackToHome',
+          type: '() => void',
+          description:
+            'The two ways on from the board a sent card is pinned to. Closing is the caller’s, as it may be leaving the page too.',
         },
         {
           name: 'onCloseAutoFocus',
@@ -62,6 +77,7 @@ export function KudosDialogEntry() {
         'The templates are native radios, named for each template, so the arrow keys move along the row.',
         'Who it is for is announced as it changes. The field says its limit; the count beside it is not read out on every keystroke.',
         'The bar is a group named for what it holds: Kudos tools, or Text style while the words are written in.',
+        'The notes on the overlay are hidden from screen readers: every tool they point at names itself.',
         'The board and the pin are decoration, hidden from screen readers. Once the card is pinned, focus goes to Back to home, and Escape takes it too. With reduced motion the card is pinned with no movement.',
       ]}
     >

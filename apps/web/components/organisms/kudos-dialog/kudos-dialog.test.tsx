@@ -290,6 +290,114 @@ describe('KudosDialog', () => {
     expect(onSend.mock.calls[0]?.[0].textStyle.font).toBe('classic');
   });
 
+  it('shows its placeholder faded, in the ink each template writes in', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    expect(message()).toHaveClass(
+      'placeholder:text-surface-raised',
+      'placeholder:opacity-70',
+    );
+
+    await user.click(screen.getByRole('radio', { name: 'Mint Breeze' }));
+
+    expect(message()).toHaveClass('placeholder:text-status-success-active');
+  });
+
+  it('shows its placeholder in the ink chosen, as the words will be', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await user.click(screen.getByRole('radio', { name: 'Red Squiggle' }));
+
+    await user.click(screen.getByRole('button', { name: /Ink\s+ink/ }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Brick' }));
+
+    expect(message()).toHaveClass('placeholder:text-status-error-active');
+  });
+
+  it('says by hand how to use its tools, each with an arrow to the tool', async () => {
+    render(dialog());
+
+    for (const note of [
+      'type your kudos here',
+      'change your card style',
+      'style your words here',
+    ]) {
+      expect(
+        screen.getByText(note).parentElement?.querySelector('svg'),
+      ).toBeInTheDocument();
+    }
+  });
+
+  it('points at Done from the first character, then says it can be sent', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    expect(
+      screen.queryByText('press done when finished'),
+    ).not.toBeInTheDocument();
+
+    await user.type(message(), 'T');
+    expect(screen.getByText('press done when finished')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.getByText('all set, send it')).toBeInTheDocument();
+  });
+
+  it('says why Send cannot be pressed with nothing written', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+
+    expect(sendButton()).toBeDisabled();
+    expect(screen.getByText('write something first')).toBeInTheDocument();
+  });
+
+  it('can have its notes turned off', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await user.click(screen.getByRole('button', { name: 'Hide tips' }));
+
+    expect(screen.queryByText('type your kudos here')).not.toBeInTheDocument();
+    localStorage.clear();
+  });
+
+  it('leaves the bar of stickers without a note', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await write(user, 'Thank you.');
+
+    expect(screen.queryByText('style your words here')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('stick on a sticker here'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('points at the hide button while a sticker is on the card', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    expect(
+      screen.queryByText('hide the stickers here'),
+    ).not.toBeInTheDocument();
+
+    await write(user, 'Thank you.');
+    await addSticker(user);
+
+    expect(
+      screen
+        .getByText('hide the stickers here')
+        .parentElement?.querySelector('svg'),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Hide stickers' }));
+
+    expect(screen.getByText('show the stickers here')).toBeInTheDocument();
+  });
+
   it('offers only the ink that can be read on the dark template', async () => {
     const user = userEvent.setup();
     render(dialog());

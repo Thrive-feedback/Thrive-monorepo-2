@@ -39,24 +39,22 @@ export function HomeFeedFilter({ show }: HomeFeedFilterProps) {
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex shrink-0 items-center gap-2">
       <Text as="span" id={labelId} variant="body-2" tone="muted">
         Show
       </Text>
-      <div className="w-full md:w-70">
-        <Select value={show} onValueChange={handleValueChange}>
-          <SelectTrigger aria-labelledby={labelId}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {BRAND_NEW_HOME_SHOWS.map((value) => (
-              <SelectItem key={value} value={value}>
-                {SHOW_NAMES[value]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Select value={show} onValueChange={handleValueChange}>
+        <SelectTrigger variant="inline" aria-labelledby={labelId}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent fitsItems align="end">
+          {BRAND_NEW_HOME_SHOWS.map((value) => (
+            <SelectItem key={value} value={value}>
+              {SHOW_NAMES[value]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

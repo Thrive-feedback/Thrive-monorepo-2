@@ -12,6 +12,7 @@ import {
 import styles from './kudos-card.module.css';
 import { fittedSizeStep } from './kudos-card.util';
 import {
+  KUDOS_PLACEHOLDER_INKS,
   KUDOS_TEMPLATES,
   type KudosTemplateKey,
   type KudosTextStyle,
@@ -80,9 +81,10 @@ export function KudosMessage({
         onPointerDown={onMessageFocus}
         className={cn(
           // The card is the field: the cursor and the text tools show it is being written in.
-          'min-h-0 resize-none rounded-none border-0 bg-transparent px-0 py-0 focus-visible:outline-hidden',
+          'min-h-0 resize-none rounded-none border-0 bg-transparent px-0 py-0 placeholder:opacity-70 focus-visible:outline-hidden',
           metricsClassName(fitted),
-          KUDOS_TEMPLATES[templateKey].fieldClassName,
+          KUDOS_TEMPLATES[templateKey].caretClassName,
+          KUDOS_PLACEHOLDER_INKS[textStyle.ink],
         )}
         textClassName={cn(
           POSTCARD_INKS[textStyle.ink].textClassName,

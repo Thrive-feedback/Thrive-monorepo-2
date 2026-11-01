@@ -1,14 +1,17 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ComposeCards,
   useComposeCards,
   warmComposeCards,
 } from '@/app/(signed-in)/(brand-new)/_components/compose-cards';
-import { FeedComposer } from '@/components/organisms/feed-composer/feed-composer';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { FeedComposer } from './feed-composer/feed-composer';
+
+/** On a touch screen, focus brings up the keyboard, which would cover the page on arrival. */
+const TOUCH_SCREEN = '(pointer: coarse)';
 
 export type HomeComposerPanelProps = {
   /** The Workspace the page was drawn for, which a card is sent to. */
@@ -16,22 +19,35 @@ export type HomeComposerPanelProps = {
   teammates: readonly Teammate[];
   workspaceGoals: readonly string[];
   writer: PostcardWriter;
+  /** A postcard is open over Home as it is reached, which keeps the cursor. Read once. */
+  isUnderPostcard?: boolean;
 };
 
 /**
- * The composer at the head of Home and the postcard it opens. What was typed stays in the field
- * until a card goes, so closing the postcard without sending loses nothing here.
+ * The composer at the head of Home and the postcard it opens. Reaching Home puts the cursor in the
+ * field, ready to write. What was typed stays there until a card goes, so closing the postcard
+ * without sending loses nothing here.
  */
 export function HomeComposerPanel({
   workspaceId,
   teammates,
   workspaceGoals,
   writer,
+  isUnderPostcard = false,
 }: HomeComposerPanelProps) {
   const [message, setMessage] = useState('');
+  const [wasUnderPostcard] = useState(isUnderPostcard);
   const { openCard, cards } = useComposeCards();
   const fieldRef = useRef<HTMLInputElement>(null);
   const hasWarmedCards = useRef(false);
+
+  useEffect(() => {
+    const isTouchScreen =
+      typeof matchMedia === 'function' && matchMedia(TOUCH_SCREEN).matches;
+    if (!wasUnderPostcard && !isTouchScreen) {
+      fieldRef.current?.focus();
+    }
+  }, [wasUnderPostcard]);
 
   function handleMessageChange(typed: string) {
     setMessage(typed);

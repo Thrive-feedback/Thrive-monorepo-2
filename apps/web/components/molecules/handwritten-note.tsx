@@ -11,8 +11,13 @@ const note = cva(
         left: '-rotate-3',
         right: 'rotate-3',
       },
+      /** A note on a page is written as it is scrolled to; nothing scrolls a note in a dialog. */
+      writes: {
+        'on-scroll': styles.writeOn,
+        'on-open': styles.writeOnOpen,
+      },
     },
-    defaultVariants: { tilt: 'right' },
+    defaultVariants: { tilt: 'right', writes: 'on-scroll' },
   },
 );
 
@@ -30,6 +35,7 @@ export type HandwrittenNoteProps = VariantProps<typeof note> & {
  */
 export function HandwrittenNote({
   tilt,
+  writes,
   size = 'lg',
   children,
   className,
@@ -39,7 +45,7 @@ export function HandwrittenNote({
       as="span"
       variant={size === 'lg' ? 'subtitle-handwrite-1' : 'subtitle-handwrite-2'}
       aria-hidden="true"
-      className={cn(note({ tilt }), styles.writeOn, className)}
+      className={cn(note({ tilt, writes }), className)}
     >
       {children}
     </Text>

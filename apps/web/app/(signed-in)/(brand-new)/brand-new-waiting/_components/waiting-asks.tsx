@@ -1,6 +1,6 @@
 import { readWaitingAsks } from '@/app/(signed-in)/(brand-new)/brand-new-waiting/_lib/waiting-asks.service';
 import { SkeletonRegion } from '@/components/atoms/skeleton';
-import { FeedCardListSkeleton } from '@/components/organisms/feed-card/feed-card-list';
+import { FeedCardSkeletonList } from '@/components/organisms/feed-card/feed-card-skeleton';
 import type { BrandNewWaitingSort } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { WaitingAskList } from './waiting-ask-list';
@@ -25,7 +25,7 @@ export async function WaitingAsks({ membership, sort }: WaitingAsksProps) {
 export function WaitingAsksSkeleton() {
   return (
     <SkeletonRegion>
-      <FeedCardListSkeleton />
+      <FeedCardSkeletonList />
     </SkeletonRegion>
   );
 }

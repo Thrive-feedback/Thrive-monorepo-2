@@ -66,4 +66,31 @@ describe('Select', () => {
 
     expect(screen.getByRole('combobox', { name: 'Team' })).toBeDisabled();
   });
+
+  it('sits as wide as what it says inline, and its list still picks', async () => {
+    const user = userEvent.setup();
+    const handleValueChange = vi.fn();
+    render(
+      <Select defaultValue="design" onValueChange={handleValueChange}>
+        <SelectTrigger variant="inline" aria-label="Team">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent fitsItems>
+          <SelectItem value="design">Design</SelectItem>
+          <SelectItem value="everyone">Everyone in the Workspace</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+    const trigger = screen.getByRole('combobox', { name: 'Team' });
+
+    expect(trigger).toHaveClass('w-fit');
+    expect(trigger).not.toHaveClass('w-full');
+
+    await user.click(trigger);
+    await user.click(
+      screen.getByRole('option', { name: 'Everyone in the Workspace' }),
+    );
+
+    expect(handleValueChange).toHaveBeenCalledWith('everyone');
+  });
 });

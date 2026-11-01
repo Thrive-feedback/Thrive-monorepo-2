@@ -43,6 +43,10 @@ import {
   CardPreview,
 } from '@/app/ui-showcase/_components/entries/card-entry';
 import {
+  CardToolNoteEntry,
+  CardToolNotePreview,
+} from '@/app/ui-showcase/_components/entries/card-tool-note-entry';
+import {
   CheckboxEntry,
   CheckboxPreview,
 } from '@/app/ui-showcase/_components/entries/checkbox-entry';
@@ -59,13 +63,17 @@ import {
   DropdownMenuPreview,
 } from '@/app/ui-showcase/_components/entries/dropdown-menu-entry';
 import {
-  FeedCardListEntry,
-  FeedCardListPreview,
-} from '@/app/ui-showcase/_components/entries/feed-card-list-entry';
+  FeedCardSkeletonEntry,
+  FeedCardSkeletonPreview,
+} from '@/app/ui-showcase/_components/entries/feed-card-skeleton-entry';
 import {
-  FeedComposerEntry,
-  FeedComposerPreview,
-} from '@/app/ui-showcase/_components/entries/feed-composer-entry';
+  FeedPageFailedEntry,
+  FeedPageFailedPreview,
+} from '@/app/ui-showcase/_components/entries/feed-page-failed-entry';
+import {
+  HandArrowEntry,
+  HandArrowPreview,
+} from '@/app/ui-showcase/_components/entries/hand-arrow-entry';
 import {
   HandwrittenNoteEntry,
   HandwrittenNotePreview,
@@ -246,6 +254,62 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: TextEntry,
   },
   {
+    slug: 'link',
+    name: 'Link',
+    level: 'atom',
+    Preview: LinkPreview,
+    Entry: LinkEntry,
+  },
+  {
+    slug: 'badge',
+    name: 'Badge',
+    level: 'atom',
+    Preview: BadgePreview,
+    Entry: BadgeEntry,
+  },
+  {
+    slug: 'avatar',
+    name: 'Avatar',
+    level: 'atom',
+    Preview: AvatarPreview,
+    Entry: AvatarEntry,
+  },
+  {
+    slug: 'spinner',
+    name: 'Spinner',
+    level: 'atom',
+    Preview: SpinnerPreview,
+    Entry: SpinnerEntry,
+  },
+  {
+    slug: 'skeleton',
+    name: 'Skeleton',
+    level: 'atom',
+    Preview: SkeletonPreview,
+    Entry: SkeletonEntry,
+  },
+  {
+    slug: 'time-ago',
+    name: 'TimeAgo',
+    level: 'atom',
+    Preview: TimeAgoPreview,
+    Entry: TimeAgoEntry,
+  },
+  {
+    slug: 'postmark',
+    name: 'Postmark',
+    level: 'atom',
+    Preview: PostmarkPreview,
+    Entry: PostmarkEntry,
+  },
+  {
+    slug: 'hand-arrow',
+    name: 'HandArrow',
+    level: 'atom',
+    Preview: HandArrowPreview,
+    Entry: HandArrowEntry,
+  },
+  {
     slug: 'button',
     name: 'Button',
     level: 'atom',
@@ -260,11 +324,18 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: ButtonGroupEntry,
   },
   {
-    slug: 'link',
-    name: 'Link',
+    slug: 'toggle',
+    name: 'Toggle',
     level: 'atom',
-    Preview: LinkPreview,
-    Entry: LinkEntry,
+    Preview: TogglePreview,
+    Entry: ToggleEntry,
+  },
+  {
+    slug: 'label',
+    name: 'Label',
+    level: 'atom',
+    Preview: LabelPreview,
+    Entry: LabelEntry,
   },
   {
     slug: 'input',
@@ -279,13 +350,6 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'atom',
     Preview: TextareaPreview,
     Entry: TextareaEntry,
-  },
-  {
-    slug: 'label',
-    name: 'Label',
-    level: 'atom',
-    Preview: LabelPreview,
-    Entry: LabelEntry,
   },
   {
     slug: 'checkbox',
@@ -309,13 +373,6 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: SwitchEntry,
   },
   {
-    slug: 'toggle',
-    name: 'Toggle',
-    level: 'atom',
-    Preview: TogglePreview,
-    Entry: ToggleEntry,
-  },
-  {
     slug: 'select',
     name: 'Select',
     level: 'atom',
@@ -337,13 +394,6 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: BreadcrumbEntry,
   },
   {
-    slug: 'dropdown-menu',
-    name: 'DropdownMenu',
-    level: 'atom',
-    Preview: DropdownMenuPreview,
-    Entry: DropdownMenuEntry,
-  },
-  {
     slug: 'dialog',
     name: 'Dialog',
     level: 'atom',
@@ -358,60 +408,18 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: DrawerEntry,
   },
   {
+    slug: 'dropdown-menu',
+    name: 'DropdownMenu',
+    level: 'atom',
+    Preview: DropdownMenuPreview,
+    Entry: DropdownMenuEntry,
+  },
+  {
     slug: 'tooltip',
     name: 'Tooltip',
     level: 'atom',
     Preview: TooltipPreview,
     Entry: TooltipEntry,
-  },
-  {
-    slug: 'handwritten-note',
-    name: 'HandwrittenNote',
-    level: 'molecule',
-    Preview: HandwrittenNotePreview,
-    Entry: HandwrittenNoteEntry,
-  },
-  {
-    slug: 'time-ago',
-    name: 'TimeAgo',
-    level: 'atom',
-    Preview: TimeAgoPreview,
-    Entry: TimeAgoEntry,
-  },
-  {
-    slug: 'avatar',
-    name: 'Avatar',
-    level: 'atom',
-    Preview: AvatarPreview,
-    Entry: AvatarEntry,
-  },
-  {
-    slug: 'badge',
-    name: 'Badge',
-    level: 'atom',
-    Preview: BadgePreview,
-    Entry: BadgeEntry,
-  },
-  {
-    slug: 'skeleton',
-    name: 'Skeleton',
-    level: 'atom',
-    Preview: SkeletonPreview,
-    Entry: SkeletonEntry,
-  },
-  {
-    slug: 'postmark',
-    name: 'Postmark',
-    level: 'atom',
-    Preview: PostmarkPreview,
-    Entry: PostmarkEntry,
-  },
-  {
-    slug: 'spinner',
-    name: 'Spinner',
-    level: 'atom',
-    Preview: SpinnerPreview,
-    Entry: SpinnerEntry,
   },
   {
     slug: 'toast',
@@ -456,13 +464,6 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: TextAreaFieldEntry,
   },
   {
-    slug: 'autocomplete-textarea',
-    name: 'AutocompleteTextarea',
-    level: 'molecule',
-    Preview: AutocompleteTextareaPreview,
-    Entry: AutocompleteTextareaEntry,
-  },
-  {
     slug: 'autocomplete-input',
     name: 'AutocompleteInput',
     level: 'molecule',
@@ -470,11 +471,32 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: AutocompleteInputEntry,
   },
   {
+    slug: 'autocomplete-textarea',
+    name: 'AutocompleteTextarea',
+    level: 'molecule',
+    Preview: AutocompleteTextareaPreview,
+    Entry: AutocompleteTextareaEntry,
+  },
+  {
     slug: 'tagged-text',
     name: 'TaggedText',
     level: 'molecule',
     Preview: TaggedTextPreview,
     Entry: TaggedTextEntry,
+  },
+  {
+    slug: 'photo-avatar',
+    name: 'PhotoAvatar',
+    level: 'molecule',
+    Preview: PhotoAvatarPreview,
+    Entry: PhotoAvatarEntry,
+  },
+  {
+    slug: 'avatar-name',
+    name: 'AvatarName',
+    level: 'molecule',
+    Preview: AvatarNamePreview,
+    Entry: AvatarNameEntry,
   },
   {
     slug: 'avatar-group',
@@ -498,11 +520,11 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: PeopleStackEntry,
   },
   {
-    slug: 'avatar-name',
-    name: 'AvatarName',
+    slug: 'handwritten-note',
+    name: 'HandwrittenNote',
     level: 'molecule',
-    Preview: AvatarNamePreview,
-    Entry: AvatarNameEntry,
+    Preview: HandwrittenNotePreview,
+    Entry: HandwrittenNoteEntry,
   },
   {
     slug: 'mini-postcard',
@@ -512,26 +534,18 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: MiniPostcardEntry,
   },
   {
-    slug: 'photo-avatar',
-    name: 'PhotoAvatar',
-    level: 'molecule',
-    Preview: PhotoAvatarPreview,
-    Entry: PhotoAvatarEntry,
+    slug: 'postcard-dialog',
+    name: 'PostcardDialog',
+    level: 'organism',
+    Preview: PostcardDialogPreview,
+    Entry: PostcardDialogEntry,
   },
   {
-    // Not `letter`: that address is the letter's first look, a page of its own.
-    slug: 'letter-sheet',
-    name: 'Letter',
+    slug: 'postcard-read-dialog',
+    name: 'PostcardReadDialog',
     level: 'organism',
-    Preview: LetterPreview,
-    Entry: LetterEntry,
-  },
-  {
-    slug: 'member-picker-dialog',
-    name: 'MemberPickerDialog',
-    level: 'organism',
-    Preview: MemberPickerDialogPreview,
-    Entry: MemberPickerDialogEntry,
+    Preview: PostcardReadDialogPreview,
+    Entry: PostcardReadDialogEntry,
   },
   {
     slug: 'kudos-dialog',
@@ -541,32 +555,11 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: KudosDialogEntry,
   },
   {
-    slug: 'postcard-dialog',
-    name: 'PostcardDialog',
+    slug: 'card-tool-note',
+    name: 'CardToolNote',
     level: 'organism',
-    Preview: PostcardDialogPreview,
-    Entry: PostcardDialogEntry,
-  },
-  {
-    slug: 'feed-card-list',
-    name: 'FeedCardList',
-    level: 'organism',
-    Preview: FeedCardListPreview,
-    Entry: FeedCardListEntry,
-  },
-  {
-    slug: 'feed-composer',
-    name: 'FeedComposer',
-    level: 'organism',
-    Preview: FeedComposerPreview,
-    Entry: FeedComposerEntry,
-  },
-  {
-    slug: 'waiting-ask-card',
-    name: 'WaitingAskCard',
-    level: 'organism',
-    Preview: WaitingAskCardPreview,
-    Entry: WaitingAskCardEntry,
+    Preview: CardToolNotePreview,
+    Entry: CardToolNoteEntry,
   },
   {
     slug: 'offered-feedback-card',
@@ -583,10 +576,39 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: RequestedFeedbackCardEntry,
   },
   {
-    slug: 'postcard-read-dialog',
-    name: 'PostcardReadDialog',
+    slug: 'waiting-ask-card',
+    name: 'WaitingAskCard',
     level: 'organism',
-    Preview: PostcardReadDialogPreview,
-    Entry: PostcardReadDialogEntry,
+    Preview: WaitingAskCardPreview,
+    Entry: WaitingAskCardEntry,
+  },
+  {
+    slug: 'feed-card-skeleton',
+    name: 'FeedCardSkeleton',
+    level: 'organism',
+    Preview: FeedCardSkeletonPreview,
+    Entry: FeedCardSkeletonEntry,
+  },
+  {
+    slug: 'feed-page-failed',
+    name: 'FeedPageFailed',
+    level: 'organism',
+    Preview: FeedPageFailedPreview,
+    Entry: FeedPageFailedEntry,
+  },
+  {
+    slug: 'member-picker-dialog',
+    name: 'MemberPickerDialog',
+    level: 'organism',
+    Preview: MemberPickerDialogPreview,
+    Entry: MemberPickerDialogEntry,
+  },
+  {
+    // Not `letter`: that address is the letter's first look, a page of its own.
+    slug: 'letter-sheet',
+    name: 'Letter',
+    level: 'organism',
+    Preview: LetterPreview,
+    Entry: LetterEntry,
   },
 ];

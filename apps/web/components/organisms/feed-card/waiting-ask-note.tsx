@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
+import { HandArrow } from '@/components/atoms/hand-arrow';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
 
@@ -64,19 +65,7 @@ export function WaitingAskNote({ lie }: WaitingAskNoteProps) {
       >
         Answer in the postcard
       </Text>
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 48 20"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-4 w-8 shrink-0 lg:h-5 lg:w-12"
-      >
-        <path d="M2 11c8-5 14 3 22-1s12-2 21-1" />
-        <path d="M38 3l7 6-8 6" />
-      </svg>
+      <HandArrow className="h-4 w-8 lg:h-5 lg:w-12" />
     </span>
   );
 }

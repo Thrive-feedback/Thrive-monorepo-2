@@ -7,6 +7,9 @@ import { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
 import { cn } from '@/lib/cn.util';
 import { chosenPeople } from '@/lib/feedback/chosen-people.util';
 import { useMentionedAudience } from '@/lib/feedback/use-mentioned-audience';
+import { CardNotesButton, CardNotesContext, useCardNotes } from './card-notes';
+import { CardToolNote } from './card-tool-note';
+import { CARD_NOTES } from './card-tool-note.constant';
 import { Postcard } from './postcard';
 import styles from './postcard.module.css';
 import { PostcardBack } from './postcard-back';
@@ -25,9 +28,18 @@ import {
   blankDraft,
   isReady,
   NOBODY,
+  sendNote,
 } from './postcard-draft.util';
 import {
   BAR_LABELS,
+  CARD_NOTE_AFTER_TOOLS,
+  CARD_NOTE_ARROW_DOWN,
+  CARD_NOTE_ARROW_LEFT,
+  CARD_NOTE_ARROW_UP,
+  CARD_NOTE_BESIDE_TOOLS,
+  CARD_NOTE_BY_HIDE_BUTTON,
+  CARD_NOTE_OVER_BUTTONS,
+  CARD_NOTE_UNDER_CONTROL,
   COPY,
   POSTCARD_BAR,
   POSTCARD_CARD_ACTIONS,
@@ -103,6 +115,7 @@ export function PostcardEditor({
   );
   // Held here because the Stamp tool and the printed box both open it.
   const [isStampPickerOpen, setIsStampPickerOpen] = useState(false);
+  const { areNotesShown, handleToggleNotes } = useCardNotes();
   const contentRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const sendRef = useRef<HTMLButtonElement>(null);
@@ -337,6 +350,7 @@ export function PostcardEditor({
     cover: copy.coverStatus,
     card: copy.status,
   }[bar];
+  const barNote = bar === 'text' ? null : copy.barNotes[bar];
 
   // The message is the same field on every card: ruled like a letter, except a request, which is
   // printed stationery. The cards that choose who it is for put it under From and To.
@@ -407,165 +421,234 @@ export function PostcardEditor({
     // Nothing outside it can close it: every way out asks first. Its drawers are rendered inside it
     // (ADR 0066), and it has no transform, so their sheet stays fixed to the window.
     <PostcardDrawerContainer value={contentRef}>
-      <DialogContent
-        ref={contentRef}
-        hasCloseButton={false}
-        aria-describedby={undefined}
-        onOpenAutoFocus={handleOpenAutoFocus}
-        onCloseAutoFocus={handleCloseAutoFocus}
-        onEscapeKeyDown={handleEscapeKeyDown}
-        onInteractOutside={(event) => event.preventDefault()}
-        onFocus={handleFocus}
-        overlayClassName={styles.scrim}
-        className={POSTCARD_SCREEN}
-      >
-        {/* Under everything, so the card flies over its own contrail; it scrolls with the card. The
+      <CardNotesContext value={areNotesShown}>
+        <DialogContent
+          ref={contentRef}
+          hasCloseButton={false}
+          aria-describedby={undefined}
+          onOpenAutoFocus={handleOpenAutoFocus}
+          onCloseAutoFocus={handleCloseAutoFocus}
+          onEscapeKeyDown={handleEscapeKeyDown}
+          onInteractOutside={(event) => event.preventDefault()}
+          onFocus={handleFocus}
+          overlayClassName={styles.scrim}
+          className={POSTCARD_SCREEN}
+        >
+          {/* Under everything, so the card flies over its own contrail; it scrolls with the card. The
           card leaves past the right edge, which hides rather than scrolls. */}
-        <PostcardContrail ref={flight.contrailRef} course={flight.contrail} />
-        {/* A card that has been sent is inert while it flies off, so nothing edits what has gone. */}
-        <div inert={sendStatus !== 'writing'} className={POSTCARD_PAGE}>
-          <PostcardTitleRow
-            title={title}
-            onClose={askToClose}
-            className={cn(isFlying && SENT_AWAY)}
-          />
+          <PostcardContrail ref={flight.contrailRef} course={flight.contrail} />
+          {/* A card that has been sent is inert while it flies off, so nothing edits what has gone. */}
+          <div inert={sendStatus !== 'writing'} className={POSTCARD_PAGE}>
+            <PostcardTitleRow
+              title={title}
+              onClose={askToClose}
+              className={cn(isFlying && SENT_AWAY)}
+            />
 
-          <div className={POSTCARD_CARD_COLUMN}>
-            <div className={cn(POSTCARD_CARD_ACTIONS, isFlying && SENT_AWAY)}>
-              <PostcardTurnButton
-                side={side}
-                turnToBackHint="Turn over to write on the back"
-                onClick={handleFlip}
-              />
-              <PostcardHideButton
-                isHidden={areStickersHidden}
-                what="stickers"
-                disabled={!hasStickers}
-                onClick={handleHideStickers}
-              />
-            </div>
-            <div ref={flight.cardRef} className="relative">
-              <Postcard
-                side={side}
-                tone={draft.tone}
-                templateKey={draft.templateKey}
-                onTurned={handleTurned}
-                stickers={{
-                  front: [theirStickersOn('front'), stickersOn('front')],
-                  back: [theirStickersOn('back'), stickersOn('back')],
-                }}
-                areStickersHidden={areStickersHidden}
-                stamp={stamp}
-              >
-                <PostcardBack
-                  card={card}
-                  writer={writer}
-                  recipientAccountIds={draft.recipientAccountIds}
-                  message={message}
-                  onRecipientsChange={handleRecipientsChange}
-                />
-              </Postcard>
-              {flight.isPostmarked && <PostcardPostmark />}
-            </div>
-          </div>
-
-          <p
-            aria-live="polite"
-            className={cn(
-              'max-w-2xl text-center text-body-3 text-fg-secondary',
-              isFlying && SENT_AWAY,
-            )}
-          >
-            {status}
-          </p>
-
-          <div
-            className={cn(
-              'flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch sm:justify-center',
-              isFlying && SENT_AWAY,
-            )}
-          >
-            {/* The bar's own focus, its menus' included, keeps the text tools up. */}
-            {/* biome-ignore lint/a11y/useSemanticElements: `<fieldset>` groups form fields under a legend; a row of tools is a plain named group. */}
-            <div
-              ref={toolbarRef}
-              role="group"
-              aria-label={
-                bar === 'cover' && kind === 'answer' ? 'Front' : BAR_LABELS[bar]
-              }
-              onFocus={(event) => event.stopPropagation()}
-              onMouseDown={handleToolbarMouseDown}
-              className={POSTCARD_BAR}
-            >
-              <div
-                key={bar}
-                className="flex flex-wrap items-center justify-center gap-0.5 motion-safe:animate-enter"
-              >
-                {bar === 'text' ? (
-                  <PostcardTextToolbar
-                    textStyle={draft.textStyle}
-                    onTextStyleChange={handleTextStyleChange}
-                    onDone={handleDone}
-                  />
-                ) : bar === 'cover' ? (
-                  card.kind === 'answer' ? (
-                    <PostcardCoverNote ownerName={card.ask.requester.name} />
-                  ) : (
-                    <PostcardCoverToolbar
-                      templateKey={draft.templateKey}
-                      stickerCount={draft.stickers.length}
-                      onTemplateChange={handleTemplateChange}
-                      onAddSticker={handleAddSticker}
-                    />
-                  )
-                ) : (
-                  <PostcardToolbar
-                    kind={kind}
-                    tone={draft.tone}
-                    stickerCount={draft.stickers.length}
-                    stampKey={draft.stampKey}
-                    isStampPickerOpen={isStampPickerOpen}
-                    onToneChange={handleToneChange}
-                    onAddSticker={handleAddSticker}
-                    onStampChange={handleStampChange}
-                    onStampPickerOpenChange={setIsStampPickerOpen}
-                  />
-                )}
-              </div>
-            </div>
-            {bar !== 'text' && (
-              <div
-                className={cn(
-                  POSTCARD_BAR,
-                  'flex-wrap justify-center gap-1.5 motion-safe:animate-enter',
-                )}
-              >
-                {visibilityTool}
-                <Button
-                  variant="primary"
-                  ref={sendRef}
-                  loading={sendStatus === 'posting'}
-                  disabled={
-                    isFlying ||
-                    !isReady(kind, draft, audience.visibility, selectedReaders)
-                  }
-                  onClick={handleSend}
-                  className="min-h-11"
+            <div className={POSTCARD_CARD_COLUMN}>
+              <div className={cn(POSTCARD_CARD_ACTIONS, isFlying && SENT_AWAY)}>
+                <CardToolNote
+                  className={CARD_NOTE_OVER_BUTTONS}
+                  arrowClassName={CARD_NOTE_ARROW_DOWN}
                 >
-                  {copy.send}
-                  <ArrowRightIcon aria-hidden="true" className="size-4.5" />
-                </Button>
+                  {side === 'back'
+                    ? CARD_NOTES.flipToFront
+                    : CARD_NOTES.flipToBack}
+                </CardToolNote>
+                <PostcardTurnButton
+                  side={side}
+                  turnToBackHint="Turn over to write on the back"
+                  onClick={handleFlip}
+                />
+                {hasStickers && (
+                  <CardToolNote
+                    className={CARD_NOTE_BY_HIDE_BUTTON}
+                    arrowClassName={CARD_NOTE_ARROW_LEFT}
+                  >
+                    {areStickersHidden
+                      ? CARD_NOTES.showStickers
+                      : CARD_NOTES.hideStickers}
+                  </CardToolNote>
+                )}
+                <PostcardHideButton
+                  isHidden={areStickersHidden}
+                  what="stickers"
+                  disabled={!hasStickers}
+                  onClick={handleHideStickers}
+                />
+                <CardNotesButton
+                  areNotesShown={areNotesShown}
+                  onClick={handleToggleNotes}
+                />
               </div>
-            )}
-          </div>
-        </div>
+              <div ref={flight.cardRef} className="relative">
+                <Postcard
+                  side={side}
+                  tone={draft.tone}
+                  templateKey={draft.templateKey}
+                  onTurned={handleTurned}
+                  stickers={{
+                    front: [theirStickersOn('front'), stickersOn('front')],
+                    back: [theirStickersOn('back'), stickersOn('back')],
+                  }}
+                  areStickersHidden={areStickersHidden}
+                  stamp={stamp}
+                >
+                  <PostcardBack
+                    card={card}
+                    writer={writer}
+                    recipientAccountIds={draft.recipientAccountIds}
+                    message={message}
+                    onRecipientsChange={handleRecipientsChange}
+                  />
+                </Postcard>
+                {flight.isPostmarked && <PostcardPostmark />}
+              </div>
+            </div>
 
-        <PostcardLeaveDialog
-          {...leaveDialog}
-          hasWritten={hasWritten}
-          lost={copy.lost}
-        />
-      </DialogContent>
+            <p
+              aria-live="polite"
+              className={cn(
+                'max-w-2xl text-center text-body-3 text-fg-secondary',
+                isFlying && SENT_AWAY,
+              )}
+            >
+              {status}
+            </p>
+
+            <div
+              className={cn(
+                'flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch sm:justify-center',
+                isFlying && SENT_AWAY,
+              )}
+            >
+              {/* The bar's own focus, its menus' included, keeps the text tools up. */}
+              {/* biome-ignore lint/a11y/useSemanticElements: `<fieldset>` groups form fields under a legend; a row of tools is a plain named group. */}
+              <div
+                ref={toolbarRef}
+                role="group"
+                aria-label={
+                  bar === 'cover' && kind === 'answer'
+                    ? 'Front'
+                    : BAR_LABELS[bar]
+                }
+                onFocus={(event) => event.stopPropagation()}
+                onMouseDown={handleToolbarMouseDown}
+                className={cn(POSTCARD_BAR, 'relative')}
+              >
+                {bar === 'text' && draft.message !== '' && (
+                  <CardToolNote
+                    className={CARD_NOTE_AFTER_TOOLS}
+                    arrowClassName={CARD_NOTE_ARROW_LEFT}
+                  >
+                    {CARD_NOTES.done}
+                  </CardToolNote>
+                )}
+                {barNote && (
+                  <CardToolNote
+                    className={cn(CARD_NOTE_BESIDE_TOOLS, 'xl:flex')}
+                  >
+                    {barNote}
+                  </CardToolNote>
+                )}
+                <div
+                  key={bar}
+                  className="flex flex-wrap items-center justify-center gap-0.5 motion-safe:animate-enter"
+                >
+                  {bar === 'text' ? (
+                    <PostcardTextToolbar
+                      textStyle={draft.textStyle}
+                      onTextStyleChange={handleTextStyleChange}
+                      onDone={handleDone}
+                    />
+                  ) : bar === 'cover' ? (
+                    card.kind === 'answer' ? (
+                      <PostcardCoverNote ownerName={card.ask.requester.name} />
+                    ) : (
+                      <PostcardCoverToolbar
+                        templateKey={draft.templateKey}
+                        stickerCount={draft.stickers.length}
+                        onTemplateChange={handleTemplateChange}
+                        onAddSticker={handleAddSticker}
+                      />
+                    )
+                  ) : (
+                    <PostcardToolbar
+                      kind={kind}
+                      tone={draft.tone}
+                      stickerCount={draft.stickers.length}
+                      stampKey={draft.stampKey}
+                      isStampPickerOpen={isStampPickerOpen}
+                      onToneChange={handleToneChange}
+                      onAddSticker={handleAddSticker}
+                      onStampChange={handleStampChange}
+                      onStampPickerOpenChange={setIsStampPickerOpen}
+                    />
+                  )}
+                </div>
+              </div>
+              {bar !== 'text' && (
+                <div
+                  className={cn(
+                    POSTCARD_BAR,
+                    'relative flex-wrap justify-center gap-1.5 motion-safe:animate-enter',
+                  )}
+                >
+                  {visibilityTool && (
+                    <div className="relative max-w-full">
+                      {visibilityTool}
+                      <CardToolNote
+                        className={CARD_NOTE_UNDER_CONTROL}
+                        arrowClassName={CARD_NOTE_ARROW_UP}
+                      >
+                        {CARD_NOTES.chooseReaders}
+                      </CardToolNote>
+                    </div>
+                  )}
+                  <div className="relative">
+                    <CardToolNote
+                      className={CARD_NOTE_UNDER_CONTROL}
+                      arrowClassName={CARD_NOTE_ARROW_UP}
+                    >
+                      {sendNote(
+                        kind,
+                        draft,
+                        audience.visibility,
+                        selectedReaders,
+                      )}
+                    </CardToolNote>
+                    <Button
+                      variant="primary"
+                      ref={sendRef}
+                      loading={sendStatus === 'posting'}
+                      disabled={
+                        isFlying ||
+                        !isReady(
+                          kind,
+                          draft,
+                          audience.visibility,
+                          selectedReaders,
+                        )
+                      }
+                      onClick={handleSend}
+                      className="min-h-11"
+                    >
+                      {copy.send}
+                      <ArrowRightIcon aria-hidden="true" className="size-4.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <PostcardLeaveDialog
+            {...leaveDialog}
+            hasWritten={hasWritten}
+            lost={copy.lost}
+          />
+        </DialogContent>
+      </CardNotesContext>
     </PostcardDrawerContainer>
   );
 }

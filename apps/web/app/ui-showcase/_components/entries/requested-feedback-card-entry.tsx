@@ -1,7 +1,13 @@
 import { ShowcaseEntry } from '@/app/ui-showcase/_components/showcase-entry';
-import { MiniPostcard } from '@/components/molecules/mini-postcard';
+import { RequestedFeedbackCard } from '@/components/organisms/feed-card/requested-feedback-card';
+import { CardCover } from './card-cover';
 import { FeedCardCases } from './feed-card-cases';
-import { REQUESTED_CASES } from './feed-card-samples.constant';
+import {
+  REQUESTED_CASES,
+  SAMPLE_READER,
+  SAMPLE_REQUESTED,
+  SAMPLE_TARGET,
+} from './feed-card-samples.constant';
 
 export function RequestedFeedbackCardEntry() {
   return (
@@ -11,7 +17,7 @@ export function RequestedFeedbackCardEntry() {
       origin="thrive"
       source="components/organisms/feed-card/requested-feedback-card.tsx — FeedCardFrame + MiniPostcard + FeedbackText"
       summary="An answer to a Feedback Request, in Home's feed: the same card as OfferedFeedbackCard, with what was asked above the answer, who else was asked under it, and a small postcard halved as the real one is."
-      useFor="One answer in the Home menu. In a list, use FeedCardList."
+      useFor="One answer in the Home menu."
       avoidFor="/home's lists, which keep FeedbackCard until that page is replaced. Feedback kept to the person who asked, which is never on Home."
       usage={`import { RequestedFeedbackCard } from '@/components/organisms/feed-card/requested-feedback-card';
 
@@ -53,5 +59,13 @@ export function RequestedFeedbackCardEntry() {
 }
 
 export function RequestedFeedbackCardPreview() {
-  return <MiniPostcard kind="requested" date="2026-10-31T03:00:00.000Z" />;
+  return (
+    <CardCover>
+      <RequestedFeedbackCard
+        item={SAMPLE_REQUESTED}
+        readerAccountId={SAMPLE_READER}
+        target={SAMPLE_TARGET}
+      />
+    </CardCover>
+  );
 }

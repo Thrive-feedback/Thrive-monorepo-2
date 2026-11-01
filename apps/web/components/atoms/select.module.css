@@ -8,3 +8,9 @@
   max-height: var(--radix-select-content-available-height);
   transform-origin: var(--radix-select-content-transform-origin);
 }
+
+/* Never narrower than its trigger, and as wide as its longest item past that. */
+.fitsItems {
+  width: max-content;
+  min-width: var(--radix-select-trigger-width);
+}

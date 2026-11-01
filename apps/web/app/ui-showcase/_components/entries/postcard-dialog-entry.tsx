@@ -2,7 +2,7 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
-import { Skeleton } from '@/components/atoms/skeleton';
+import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { PostcardDialogDemo } from './postcard-dialog-demo';
 
@@ -13,7 +13,7 @@ export function PostcardDialogEntry() {
       level="organism"
       origin="thrive"
       source="components/organisms/postcard-dialog/postcard-dialog.tsx — Dialog + MemberMultiPicker + VisibilityMenu + DropdownMenu on a card that turns over"
-      summary="Feedback written on a landscape postcard in front of the page: the message on the back under who it is from and who it is for, a picture on the front, and a bar of tools beside a box holding who else can read it and Send feedback. While the message is written the bar holds the text's tools and the box is gone. A button beside Turn over hides the stickers for a moment."
+      summary="Feedback written on a landscape postcard in front of the page: the message on the back under who it is from and who it is for, a picture on the front, and a bar of tools beside a box holding who else can read it and Send feedback. While the message is written the bar holds the text's tools and the box is gone. A button beside Turn over hides the stickers for a moment; the stamp stays. Notes by hand on the overlay (CardToolNote) point at its tools and say why Send cannot be pressed yet; a button under the hide button turns them off."
       useFor="Giving Feedback from anywhere: Home's + menu, a Member's page with them already chosen, a reply to something in the Feed."
       avoidFor="Reading a postcard that was sent; use PostcardReadDialog. Kudos, which has its own card; use KudosDialog."
       usage={`import { PostcardDialog } from '@/components/organisms/postcard-dialog/postcard-dialog';
@@ -125,14 +125,29 @@ export function PostcardDialogEntry() {
   );
 }
 
+/** A card being written, small: nobody chosen yet, blank lines, the stamp's box and its tools. */
 export function PostcardDialogPreview() {
   return (
-    <div className="flex aspect-3/2 w-40 flex-col gap-2 rounded-element border border-border-muted bg-surface-raised p-3 shadow-high">
-      <Text variant="body-3" tone="muted" as="span">
-        From Ann · To Mali
-      </Text>
-      <Skeleton />
-      <Skeleton className="w-3/4" />
+    <div className="flex w-52 flex-col items-center gap-2">
+      <div className="relative flex aspect-3/2 w-full flex-col gap-4 rounded-element border border-border-muted bg-surface-raised p-3 shadow-high">
+        <Text variant="body-3" tone="muted" as="span">
+          From Ann · To +
+        </Text>
+        <span className="mt-2 border-border-muted border-b" />
+        <span className="border-border-muted border-b" />
+        <span className="border-border-muted border-b" />
+        <span className="absolute top-1 right-1 flex size-10 items-center justify-center border border-border-strong border-dashed font-display text-fg-secondary text-tag">
+          Stamp
+        </span>
+      </div>
+      <div className="flex items-center gap-2 rounded-control border border-border-muted bg-surface-raised px-2 py-1 shadow-high">
+        <Text variant="body-3" as="span">
+          Stickers
+        </Text>
+        <Button variant="primary" size="sm">
+          Send
+        </Button>
+      </div>
     </div>
   );
 }
