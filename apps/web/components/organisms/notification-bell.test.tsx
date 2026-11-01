@@ -199,6 +199,36 @@ describe('NotificationBell', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  it('keeps the number it has when a poll never reaches the server', async () => {
+    countUnreadNotifications.mockRejectedValue(new Error('Failed to fetch'));
+
+    render(<NotificationBell />);
+
+    expect(
+      await screen.findByRole('button', { name: 'Notifications' }),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(countUnreadNotifications).toHaveBeenCalledOnce(),
+    );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('takes the number down when pressing a line never reaches the server', async () => {
+    countUnreadNotifications.mockResolvedValue(1);
+    listMyNotifications.mockResolvedValue([aNotification()]);
+    markNotificationRead.mockRejectedValue(new Error('Failed to fetch'));
+    const user = await openTheBell('Notifications, 1 unread');
+
+    await user.click(
+      await screen.findByRole('menuitem', { name: /asked you for feedback/ }),
+    );
+
+    expect(
+      await screen.findByRole('button', { name: 'Notifications' }),
+    ).toBeInTheDocument();
+    expect(markNotificationRead).toHaveBeenCalledOnce();
+  });
+
   it('says so in the panel when it could not read them', async () => {
     listMyNotifications.mockResolvedValue(null);
 

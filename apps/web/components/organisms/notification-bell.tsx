@@ -95,7 +95,7 @@ export function NotificationBell() {
       if (document.visibilityState !== 'visible') {
         return;
       }
-      const count = await countUnreadNotifications();
+      const count = await countUnreadNotifications().catch(() => null);
       if (isCurrent && count !== null) {
         setUnreadCount(count);
       }
@@ -161,7 +161,7 @@ export function NotificationBell() {
         item.id === notification.id ? { ...item, isRead: true } : item,
       ),
     );
-    void markNotificationRead(notification.id);
+    markNotificationRead(notification.id).catch(() => {});
   }
 
   function handleMarkAllRead() {
