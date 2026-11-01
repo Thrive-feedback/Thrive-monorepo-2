@@ -35,10 +35,10 @@ interface Told {
  * - **The two are independent in both directions.** A chat tool being down does not stop a bell
  *   line appearing, and the row failing does not skip the chat attempt. Telling somebody in one
  *   place beats telling them in neither.
- * - **The row is awaited; the chat message is not.** The row is one local insert of a few
- *   milliseconds, and losing it means the person is told by *nothing*. A chat message is two
- *   HTTPS round trips to somebody else's service. Different risks, different handling
- *   (design 0022 D5, D6).
+ * - **The row goes before the chat message.** The row is one local insert of a few milliseconds,
+ *   and losing it means the person is told by *nothing*. A chat message is two HTTPS round trips
+ *   to somebody else's service. Both are awaited here, in that order; Feedback awaits neither, so
+ *   its request never waits on them (design 0022 D5, D6).
  *
  * Nothing here rejects. The port promises that, and `ADR-0035` §8 is why.
  */
@@ -128,7 +128,7 @@ export class FanOutPersonNotifier extends PersonNotifierPort {
     deliverToChat: () => Promise<void>,
   ): Promise<void> {
     await this.record(event.workspaceId, event.actorAccountId, told);
-    // Not awaited and separately guarded: a chat tool is slow and somebody else's.
+    // Separately guarded: a chat tool is slow and somebody else's.
     await deliverToChat().catch(() => {
       // `ChatPersonNotifier` already logs what it skipped and why; this is only the promise
       // that a fault there cannot escape into the caller's request.
