@@ -315,6 +315,7 @@ export class FakeWorkspaceNamePort extends WorkspaceNamePort {
 /** The Display name of whoever caused an event, or `null` before they introduced themselves. */
 export class FakeProfileNamePort extends ProfileNamePort {
   private readonly names = new Map<string, string>();
+  private isRefusing = false;
   readonly calls: string[] = [];
 
   withName(accountId: string, displayName: string): this {
@@ -322,8 +323,16 @@ export class FakeProfileNamePort extends ProfileNamePort {
     return this;
   }
 
+  refusingToRead(): this {
+    this.isRefusing = true;
+    return this;
+  }
+
   async displayNameOf(accountId: string): Promise<string | null> {
     this.calls.push(accountId);
+    if (this.isRefusing) {
+      throw new Error('Identity could not be read.');
+    }
     return this.names.get(accountId) ?? null;
   }
 }

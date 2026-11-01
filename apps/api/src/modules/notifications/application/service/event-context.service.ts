@@ -22,8 +22,9 @@ export interface EventContext {
  * a name from (found while building #213; `0021` D11 assumed otherwise).
  *
  * Both reads happen together, at most once per event, after the caller's transaction has
- * committed, and not at all when nobody can be reached. A missing name never stops a message: somebody who has not introduced themselves still asked for
- * Feedback, and the person being told should hear about it.
+ * committed, and not at all when nobody can be reached. A missing name never stops a message:
+ * somebody who has not introduced themselves still asked for Feedback, and the person being told
+ * should hear about it.
  */
 @Injectable()
 export class EventContextService {
