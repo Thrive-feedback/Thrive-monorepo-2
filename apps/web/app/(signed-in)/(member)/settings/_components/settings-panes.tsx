@@ -24,13 +24,13 @@ import { SideNav, type SideNavItem } from '@/components/molecules/side-nav';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 
-/** What `/settings` shows on a wide screen, so it is also the section marked there. */
 /** A section of Settings: always a page, so always somewhere to go. */
 type SettingsSection = SideNavItem & {
   readonly href: string;
   readonly children?: readonly SettingsSection[];
 };
 
+/** What `/settings` shows on a wide screen, so it is also the section marked there. */
 const ACCOUNT: SettingsSection = {
   href: ROUTES.settings.account,
   label: 'Account',

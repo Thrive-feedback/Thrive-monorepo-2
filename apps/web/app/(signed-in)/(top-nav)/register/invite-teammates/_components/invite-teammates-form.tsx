@@ -17,6 +17,11 @@ import { useInviteRows } from '@/lib/invitations/use-invite-rows';
 import { ROUTES } from '@/lib/routes.constant';
 import { InviteResults } from './invite-results';
 
+export type InviteTeammatesFormProps = {
+  /** The Workspace just created; sending is refused once the person is no longer in it. */
+  workspaceId: string;
+};
+
 /**
  * One person per row, each with the Role they join with, Member unless the founder picks Admin.
  * Rows are checked as `useInviteRows` describes.
@@ -29,11 +34,6 @@ import { InviteResults } from './invite-results';
  * its Role, flagged, and the rest leave the form, so sending again retries only those. Once none
  * is left, the form gives way to what happened to every address.
  */
-export type InviteTeammatesFormProps = {
-  /** The Workspace just created; sending is refused once the person is no longer in it. */
-  workspaceId: string;
-};
-
 export function InviteTeammatesForm({ workspaceId }: InviteTeammatesFormProps) {
   const router = useRouter();
   const inviteRows = useInviteRows();

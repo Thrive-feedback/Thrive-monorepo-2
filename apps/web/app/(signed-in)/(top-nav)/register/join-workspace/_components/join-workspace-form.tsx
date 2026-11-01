@@ -25,8 +25,8 @@ export type JoinWorkspaceFormProps = {
 };
 
 /**
- * One Workspace can be chosen, because a person belongs to one for now. With a single
- * Invitation it starts chosen. Join stays disabled until something is chosen, and while
+ * One Invitation is chosen at a time. With a single Invitation it starts chosen. Join stays
+ * disabled until something is chosen, and while
  * joining, so a second click cannot send it twice.
  */
 export function JoinWorkspaceForm({ choices }: JoinWorkspaceFormProps) {

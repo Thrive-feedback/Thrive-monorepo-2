@@ -49,6 +49,11 @@ function summaryOf(results: readonly InviteMemberResult[]): string {
     .join(' · ');
 }
 
+export type InviteMembersFormProps = {
+  /** The Workspace the page was drawn for; sending is refused once the person is no longer in it. */
+  workspaceId: string;
+};
+
 /**
  * Invites teammates from Members, each as an Admin or a Member (Member unless the Admin picks
  * otherwise). One by one is a row per person with their own Role, as in the register flow; Paste
@@ -60,11 +65,6 @@ function summaryOf(results: readonly InviteMemberResult[]): string {
  * those; the rest clear. The new Invitations appear under Invitations, which the action draws
  * again.
  */
-export type InviteMembersFormProps = {
-  /** The Workspace the page was drawn for; sending is refused once the person is no longer in it. */
-  workspaceId: string;
-};
-
 export function InviteMembersForm({ workspaceId }: InviteMembersFormProps) {
   const [formError, setFormError] = useState<string>();
   const [isSending, startSending] = useTransition();

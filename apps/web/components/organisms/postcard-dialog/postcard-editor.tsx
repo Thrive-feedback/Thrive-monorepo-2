@@ -144,8 +144,7 @@ export function PostcardEditor({
 
   // Who can be picked under Selected people. Whoever Feedback is for reads it anyway, so they are
   // not among them; the people asked can be, because selecting one lets them read the others'
-  // answers, which is the Requester's call. Only the Receivers change this, so the bar's props stay
-  // the same while the message is typed.
+  // answers, which is the Requester's call.
   const people = useMemo(
     () =>
       kind === 'give'
