@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Dialog } from '@/components/atoms/dialog';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import type {
@@ -13,6 +12,7 @@ import type {
 } from './postcard-draft.type';
 import { NOBODY } from './postcard-draft.util';
 import { PostcardEditor } from './postcard-editor';
+import { useOpenings } from './use-openings';
 
 type PostcardDialogCommonProps = {
   /** What is being written, above the card: "Give feedback", "Ask for feedback", "Answer". */
@@ -106,16 +106,7 @@ export function PostcardDialog(props: PostcardDialogProps) {
           onSend: props.onSend,
         };
 
-  // A new opening gets a new editor, so its state starts blank. Counted while rendering rather
-  // than in an effect, so the first frame of an opening is already the blank card.
-  const [openings, setOpenings] = useState(0);
-  const [wasOpen, setWasOpen] = useState(open);
-  if (open !== wasOpen) {
-    setWasOpen(open);
-    if (open) {
-      setOpenings((count) => count + 1);
-    }
-  }
+  const openings = useOpenings(open);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
