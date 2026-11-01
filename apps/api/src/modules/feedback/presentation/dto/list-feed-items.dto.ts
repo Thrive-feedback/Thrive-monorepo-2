@@ -32,7 +32,7 @@ const feedItemAskSchema = z.object({
 });
 
 /** What an answer responds to. Whoever may read the answer reads the others asked too. */
-const feedItemRequestSchema = z.object({
+export const feedItemRequestSchema = z.object({
   /** The Request message. */
   message: z.string(),
   /** What the Request message was bound to when it was sent. */
@@ -46,7 +46,7 @@ const feedItemRequestSchema = z.object({
  * One piece of Feedback on Home. People are nested objects, as on the feed: a nullable name must
  * sit below the response root (`docs/design/0016` §10).
  */
-const feedItemSchema = z.object({
+export const feedItemSchema = z.object({
   kind: z.literal('FEEDBACK'),
   id: z.uuid(),
   /** `REQUESTED` answered an Ask; `OFFERED` was given without being asked. */
@@ -68,7 +68,9 @@ const feedItemSchema = z.object({
 });
 
 /** One Kudos on Home, in the shape it has on the Kudos list. */
-const kudosFeedItemSchema = kudosSchema.extend({ kind: z.literal('KUDOS') });
+export const kudosFeedItemSchema = kudosSchema.extend({
+  kind: z.literal('KUDOS'),
+});
 
 export const listFeedItemsResponseSchema = z.object({
   /** Whose Home this is, so a reader can tell themselves among the people a piece names. */

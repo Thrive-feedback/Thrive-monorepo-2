@@ -722,6 +722,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/received-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Feedback and Kudos written to the caller */
+        get: operations["ReceivedItemsController_listReceivedItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspaceId}/waiting-asks": {
         parameters: {
             query?: never;
@@ -1823,6 +1840,223 @@ export interface components {
                             answeredAt: string;
                         } | null;
                     }[];
+                } | null;
+            } | {
+                /** Format: uuid */
+                id: string;
+                giver: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                recipients: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                }[];
+                message: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                card: {
+                    templateKey: string;
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick" | "paper";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                } | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** @enum {string} */
+                kind: "KUDOS";
+            })[];
+            nextCursor: string | null;
+        };
+        ListReceivedItemsResponseDto_Output: {
+            /** Format: uuid */
+            readerAccountId: string;
+            items: ({
+                /** @enum {string} */
+                kind: "FEEDBACK";
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                origin: "REQUESTED" | "OFFERED";
+                /** Format: uuid */
+                feedbackRequestId: string | null;
+                giver: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                receivers: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                }[];
+                message: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                /** Format: date-time */
+                createdAt: string;
+                /** @enum {string} */
+                visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
+                request: {
+                    message: string;
+                    tags: {
+                        workspaceGoals: {
+                            name: string;
+                        }[];
+                        mentions: {
+                            slug: string;
+                            displayName: string;
+                        }[];
+                    };
+                    requester: {
+                        /** Format: uuid */
+                        accountId: string;
+                        name: string | null;
+                        /** Format: uri */
+                        photoUrl: string | null;
+                        /** @enum {string} */
+                        status: "ACTIVE" | "DEACTIVATED";
+                    };
+                    asked: {
+                        person: {
+                            /** Format: uuid */
+                            accountId: string;
+                            name: string | null;
+                            /** Format: uri */
+                            photoUrl: string | null;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "DEACTIVATED";
+                        };
+                        /** @enum {string} */
+                        status: "PENDING" | "ANSWERED";
+                        answer: {
+                            message: string;
+                            tags: {
+                                workspaceGoals: {
+                                    name: string;
+                                }[];
+                                mentions: {
+                                    slug: string;
+                                    displayName: string;
+                                }[];
+                            };
+                            /** Format: date-time */
+                            answeredAt: string;
+                        } | null;
+                    }[];
+                    postcard: {
+                        templateKey: string;
+                        /** @enum {string} */
+                        tone: "cream" | "sage" | "blush";
+                        textStyle: {
+                            /** @enum {string} */
+                            font: "modern" | "classic" | "signature";
+                            sizeStep: number;
+                            /** @enum {string} */
+                            align: "left" | "center" | "right";
+                            /** @enum {string} */
+                            ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                        };
+                        stickers: {
+                            stickerKey: string;
+                            /** @enum {string} */
+                            side: "front" | "back";
+                            x: number;
+                            y: number;
+                            scale: number;
+                            rotation: number;
+                        }[];
+                        stampKey: string | null;
+                    } | null;
+                    answerPostcard: {
+                        textStyle: {
+                            /** @enum {string} */
+                            font: "modern" | "classic" | "signature";
+                            sizeStep: number;
+                            /** @enum {string} */
+                            align: "left" | "center" | "right";
+                            /** @enum {string} */
+                            ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                        };
+                        stickers: {
+                            stickerKey: string;
+                            /** @enum {string} */
+                            side: "front" | "back";
+                            x: number;
+                            y: number;
+                            scale: number;
+                            rotation: number;
+                        }[];
+                    } | null;
+                } | null;
+                postcard: {
+                    templateKey: string;
+                    /** @enum {string} */
+                    tone: "cream" | "sage" | "blush";
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        /** @enum {string} */
+                        side: "front" | "back";
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                    stampKey: string | null;
                 } | null;
             } | {
                 /** Format: uuid */
@@ -4031,6 +4265,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListFeedItemsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReceivedItemsController_listReceivedItems: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListReceivedItemsResponseDto_Output"];
                 };
             };
             /** @description REQUEST_INVALID */

@@ -1,5 +1,6 @@
 import type {
   FeedbackView,
+  FeedItemRequestView,
   MyAskView,
   PersonView,
   TagsView,
@@ -128,6 +129,24 @@ export function toFeedbackResponse(feedback: FeedbackView) {
     message: feedback.message,
     tags: toTagsResponse(feedback.tags),
     createdAt: feedback.createdAt.toISOString(),
+  };
+}
+
+/** The request an answer responds to and everyone it asked, on the wire. */
+export function toFeedItemRequestResponse(request: FeedItemRequestView) {
+  return {
+    message: request.message,
+    tags: toTagsResponse(request.tags),
+    requester: toPersonResponse(request.requester),
+    asked: request.asked.map((ask) => ({
+      person: toPersonResponse(ask.person),
+      status: ask.status,
+      answer: ask.answer && {
+        message: ask.answer.message,
+        tags: toTagsResponse(ask.answer.tags),
+        answeredAt: ask.answer.answeredAt.toISOString(),
+      },
+    })),
   };
 }
 

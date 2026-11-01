@@ -18,6 +18,7 @@ import { ListFeedItemsUseCase } from './application/use-cases/list-feed-items.us
 import { ListKudosMonthsUseCase } from './application/use-cases/list-kudos-months.use-case';
 import { ListMyFeedbackAsksUseCase } from './application/use-cases/list-my-feedback-asks.use-case';
 import { ListReceivedFeedbackUseCase } from './application/use-cases/list-received-feedback.use-case';
+import { ListReceivedItemsUseCase } from './application/use-cases/list-received-items.use-case';
 import { ListSentFeedbackRequestsUseCase } from './application/use-cases/list-sent-feedback-requests.use-case';
 import { ListSharedFeedbackUseCase } from './application/use-cases/list-shared-feedback.use-case';
 import { ListWaitingAsksUseCase } from './application/use-cases/list-waiting-asks.use-case';
@@ -38,6 +39,7 @@ import { FeedbackController } from './presentation/feedback.controller';
 import { FeedbackAskController } from './presentation/feedback-ask.controller';
 import { FeedbackRequestController } from './presentation/feedback-request.controller';
 import { KudosController } from './presentation/kudos.controller';
+import { ReceivedItemsController } from './presentation/received-items.controller';
 import { SharedFeedbackController } from './presentation/shared-feedback.controller';
 import { WaitingAsksController } from './presentation/waiting-asks.controller';
 import { WorkspaceFeedController } from './presentation/workspace-feed.controller';
@@ -68,6 +70,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     SharedFeedbackController,
     WorkspaceFeedController,
     FeedItemsController,
+    ReceivedItemsController,
     WaitingAsksController,
     KudosController,
   ],
@@ -87,6 +90,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ListSentFeedbackRequestsUseCase,
     ListMyFeedbackAsksUseCase,
     ListReceivedFeedbackUseCase,
+    ListReceivedItemsUseCase,
     ListSharedFeedbackUseCase,
     ListWorkspaceFeedUseCase,
     ListFeedItemsUseCase,

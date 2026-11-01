@@ -11,10 +11,11 @@ import type {
   FeedItemShow,
   FeedItemView,
 } from '../types/feedback-request.types';
-import type {
-  CursorPageRequest,
-  FeedPageRequest,
-  FeedPosition,
+import {
+  type CursorPageRequest,
+  type FeedPageRequest,
+  type FeedPosition,
+  newestFirst,
 } from '../types/kudos.types';
 
 export interface ListFeedItemsInput {
@@ -27,14 +28,6 @@ export interface ListFeedItemsInput {
 }
 
 const NOTHING_MORE: FeedItemsView = { items: [], nextAfterId: null };
-
-/** Newest first, `id` breaking ties: the order both tables are read in. */
-function newestFirst(a: FeedPosition, b: FeedPosition) {
-  return (
-    b.createdAt.getTime() - a.createdAt.getTime() ||
-    (a.id < b.id ? 1 : a.id > b.id ? -1 : 0)
-  );
-}
 
 /**
  * A query: what one Member reads on Home — Everyone, what they were selected to read, or both —

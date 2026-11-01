@@ -21,9 +21,8 @@ import { ZodResponse } from 'nestjs-zod';
 import { ListFeedItemsUseCase } from '../application/use-cases/list-feed-items.use-case';
 import {
   toFeedbackResponse,
+  toFeedItemRequestResponse,
   toKudosResponse,
-  toPersonResponse,
-  toTagsResponse,
 } from './dto/feedback-response.mapper';
 import {
   ListFeedItemsQueryDto,
@@ -71,20 +70,7 @@ export class FeedItemsController {
               kind: item.kind,
               ...toFeedbackResponse(item),
               visibility: item.visibility,
-              request: item.request && {
-                message: item.request.message,
-                tags: toTagsResponse(item.request.tags),
-                requester: toPersonResponse(item.request.requester),
-                asked: item.request.asked.map((ask) => ({
-                  person: toPersonResponse(ask.person),
-                  status: ask.status,
-                  answer: ask.answer && {
-                    message: ask.answer.message,
-                    tags: toTagsResponse(ask.answer.tags),
-                    answeredAt: ask.answer.answeredAt.toISOString(),
-                  },
-                })),
-              },
+              request: item.request && toFeedItemRequestResponse(item.request),
             },
       ),
       nextCursor: toCursor(feedItems.nextAfterId),
