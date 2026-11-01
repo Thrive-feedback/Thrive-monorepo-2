@@ -96,6 +96,50 @@ describe('telling another module who was Deactivated', () => {
   });
 });
 
+describe('telling another module whether one Account is a Member', () => {
+  it('answers yes for an active Admin and Member, and no for someone Deactivated and an outsider', async () => {
+    const admin = await fixtures.aSignedInAccount('is-member-admin');
+    const workspaceId = await fixtures.aWorkspace(admin);
+    const member = await fixtures.aSignedInAccount('is-member-member');
+    await fixtures.addMember(workspaceId, member, 'member');
+    const leftMember = await fixtures.aSignedInAccount('is-member-left');
+    await fixtures.addMember(workspaceId, leftMember, 'member');
+    await prismaService.member.update({
+      where: {
+        workspaceId_userId: { workspaceId, userId: leftMember.accountId },
+      },
+      data: { deactivatedAt: new Date() },
+    });
+    const outsider = await fixtures.aSignedInAccount('is-member-outsider');
+    await fixtures.aWorkspace(outsider, 'Globex');
+
+    const answers = await Promise.all(
+      [admin, member, leftMember, outsider].map((account) =>
+        workspaceMembershipPort.isMemberOf({
+          workspaceId,
+          accountId: account.accountId,
+        }),
+      ),
+    );
+
+    expect(answers).toEqual([true, true, false, false]);
+  });
+
+  it('answers no for a Member of a different Workspace', async () => {
+    const admin = await fixtures.aSignedInAccount('is-member-elsewhere');
+    await fixtures.aWorkspace(admin);
+    const other = await fixtures.aSignedInAccount('is-member-other');
+    const otherWorkspaceId = await fixtures.aWorkspace(other, 'Initech');
+
+    expect(
+      await workspaceMembershipPort.isMemberOf({
+        workspaceId: otherWorkspaceId,
+        accountId: admin.accountId,
+      }),
+    ).toBe(false);
+  });
+});
+
 describe('telling another module who is an Admin', () => {
   it('answers yes for an active Admin, and no for a Member, a Deactivated Admin and an outsider', async () => {
     const admin = await fixtures.aSignedInAccount('is-admin-admin');
