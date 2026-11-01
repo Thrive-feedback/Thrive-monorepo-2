@@ -1,7 +1,8 @@
-import { ChannelAnnouncerPort } from '@app/modules/integrations';
+import { KUDOS_GIVEN_TYPE } from '@app/modules/integrations';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
+import { Outbox } from '@app/shared/application/outbox.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Kudos } from '../../domain/entity/kudos.entity';
 import { KudosRepository } from '../../domain/repository/kudos-repository.port';
 import {
@@ -43,14 +44,12 @@ export interface GiveKudosResult {
  */
 @Injectable()
 export class GiveKudosUseCase {
-  private readonly logger = new Logger(GiveKudosUseCase.name);
-
   constructor(
     private readonly kudosRepository: KudosRepository,
     private readonly tagsService: TagsService,
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
-    private readonly channelAnnouncerPort: ChannelAnnouncerPort,
+    private readonly outbox: Outbox,
   ) {}
 
   async execute(input: GiveKudosInput): Promise<GiveKudosResult> {
@@ -69,28 +68,28 @@ export class GiveKudosUseCase {
       card,
     });
 
-    await this.unitOfWork.run(() => this.kudosRepository.save(kudos));
-
     const given = kudos.snapshot();
-    // After the Kudos has committed, and never awaited: saying well done must not be held up by
-    // a chat tool, nor fail because one is unreachable (`ADR-0035` §8). Whether the Workspace has
-    // connected a channel at all is Integrations' to know (ADR 0062).
-    void this.channelAnnouncerPort
-      .kudosGiven({
-        workspaceId: given.workspaceId,
-        giverAccountId: given.giverAccountId,
-        recipientAccountIds: given.recipientAccountIds,
-        message: given.message,
-        kudosId: given.id,
-      })
-      .catch((error: unknown) => {
-        // The port promises not to reject, so this is the belt to its braces.
-        this.logger.warn({
-          event: 'feedback.announce_failed',
-          announcement: 'kudosGiven',
-          error: error instanceof Error ? error.message : 'unknown',
-        });
-      });
+
+    await this.unitOfWork.run(async () => {
+      await this.kudosRepository.save(kudos);
+      // Enqueued in the Kudos's own transaction (ADR 0076). Unlike Feedback, the **message
+      // travels**: a Kudos has no Visibility, so every Member can already read it, and one
+      // announced without its words says only that praise happened somewhere else (brain
+      // `ADR-0045`). Whether the Workspace has connected a channel is Integrations' (ADR 0062).
+      await this.outbox.enqueue([
+        {
+          type: KUDOS_GIVEN_TYPE,
+          idempotencyKey: `${KUDOS_GIVEN_TYPE}:${given.id}`,
+          payload: {
+            workspaceId: given.workspaceId,
+            giverAccountId: given.giverAccountId,
+            recipientAccountIds: given.recipientAccountIds,
+            message: given.message,
+            kudosId: given.id,
+          },
+        },
+      ]);
+    });
 
     return { id: given.id };
   }

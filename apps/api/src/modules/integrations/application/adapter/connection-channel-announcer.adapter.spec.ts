@@ -110,18 +110,21 @@ describe('announcing to a connected channel', () => {
 });
 
 describe('when the channel refuses the post', () => {
-  it('resolves rather than rejecting — ADR-0035 §8', async () => {
+  it('rejects, so the relay can record it — ADR 0076', async () => {
     const { announcer, connectionQuery, chatPoster } = setUp();
     connectionQuery.postingTo(CHANNEL);
     chatPoster.unreachableChannel();
 
-    // Nothing a person does may fail because a chat tool is unreachable, so this must not throw.
-    await expect(
-      announcer.feedbackPublished(publishing()),
-    ).resolves.toBeUndefined();
+    // This used to resolve and swallow. The caller is now the outbox relay, whose whole job is
+    // to know: at `maxAttempts: 1` a refusal becomes a dead row somebody can see and replay by
+    // hand, instead of the log line it used to be. Nothing a person does fails because of it —
+    // that holds because no request is waiting on this any more.
+    await expect(announcer.feedbackPublished(publishing())).rejects.toThrow(
+      /refused the post/,
+    );
   });
 
-  it('still posts to the channel that works', async () => {
+  it('still posts to the channel that works before it rejects', async () => {
     const { announcer, connectionQuery, chatPoster } = setUp();
     connectionQuery.postingTo(CHANNEL, {
       provider: 'DISCORD',
@@ -130,39 +133,41 @@ describe('when the channel refuses the post', () => {
     // Only the first channel refuses, so a post reaching the second is the whole claim.
     chatPoster.unreachableChannels('42');
 
-    await announcer.feedbackPublished(publishing());
+    await expect(announcer.feedbackPublished(publishing())).rejects.toThrow();
 
-    expect(chatPoster.delivered.map((post) => post.channelId)).toEqual(['43']);
+    // One channel refusing must not stop another (ADR 0062): the working channel is still
+    // posted to, and only then does the refusal surface.
+    expect(chatPoster.posts.map((post) => post.channelId)).toContain('43');
   });
 });
 
 describe('when a name cannot be read', () => {
-  it('resolves rather than rejecting, and posts nothing', async () => {
+  it('rejects without posting, rather than posting a line with a gap in it', async () => {
     const { announcer, connectionQuery, accountSummary, chatPoster } = setUp();
     connectionQuery.postingTo(CHANNEL);
     accountSummary.summariesOf = () => {
       throw new Error('Identity is gone');
     };
 
-    // The port promises never to reject, and this adapter is what has to make that true — the
-    // caller's own `.catch` is a belt to these braces, not the braces.
-    await expect(
-      announcer.feedbackPublished(publishing()),
-    ).resolves.toBeUndefined();
+    await expect(announcer.feedbackPublished(publishing())).rejects.toThrow(
+      'Identity is gone',
+    );
     expect(chatPoster.posts).toHaveLength(0);
   });
 });
 
 describe('when the Connection cannot be read at all', () => {
-  it('reads as nowhere to post rather than failing', async () => {
+  it('rejects, because nobody can say whether there was a channel to tell', async () => {
     const { announcer, chatPoster, connectionQuery } = setUp();
     connectionQuery.postableChannelsOf = () => {
       throw new Error('the database is gone');
     };
 
-    await expect(
-      announcer.feedbackPublished(publishing()),
-    ).resolves.toBeUndefined();
+    // Distinct from a Workspace that has connected nothing, which is a success: there, the read
+    // succeeded and the answer was none.
+    await expect(announcer.feedbackPublished(publishing())).rejects.toThrow(
+      'the database is gone',
+    );
     expect(chatPoster.posts).toHaveLength(0);
   });
 });

@@ -5,8 +5,8 @@ import {
   FakeWorkspaceMembershipPort,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
-import { FakeChannelAnnouncer } from '@test/support/integrations.fakes';
 import { FakePersonNotifier } from '@test/support/notifications.fakes';
+import { FakeOutbox } from '@test/support/outbox.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   CannotGiveYourselfFeedbackError,
@@ -48,7 +48,7 @@ function setUp() {
   const feedbackRepository = new FakeFeedbackRepository();
   const unitOfWork = new FakeUnitOfWork();
   const personNotifier = new FakePersonNotifier();
-  const channelAnnouncer = new FakeChannelAnnouncer();
+  const outbox = new FakeOutbox();
   const useCase = new OfferFeedbackUseCase(
     feedbackRepository,
     new FakeWorkspaceMembershipPort().with(WORKSPACE_ID, ANN, BEN, CARA),
@@ -56,14 +56,14 @@ function setUp() {
     new FakeIdGenerator(FEEDBACK_ID),
     unitOfWork,
     personNotifier,
-    channelAnnouncer,
+    outbox,
   );
   return {
     feedbackRepository,
     unitOfWork,
     useCase,
     personNotifier,
-    channelAnnouncer,
+    outbox,
   };
 }
 
@@ -269,13 +269,15 @@ describe('telling the people Feedback was written for', () => {
 });
 
 describe('telling the Workspace channel', () => {
-  it('announces Feedback the Giver showed everyone', async () => {
-    const { useCase, channelAnnouncer } = setUp();
+  const PUBLISHED = 'integrations.feedback_published';
+
+  it('enqueues an announcement for Feedback the Giver showed everyone', async () => {
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(offering({ visibility: 'EVERYONE' }));
 
-    expect(channelAnnouncer.feedbackPublished_).toHaveLength(1);
-    expect(channelAnnouncer.feedbackPublished_[0]).toEqual({
+    expect(outbox.ofType(PUBLISHED)).toHaveLength(1);
+    expect(outbox.ofType(PUBLISHED)[0]?.payload).toEqual({
       workspaceId: WORKSPACE_ID,
       giverAccountId: ANN,
       receiverAccountIds: [BEN],
@@ -283,16 +285,26 @@ describe('telling the Workspace channel', () => {
     });
   });
 
-  it('announces nothing when the Feedback is for the Receiver alone', async () => {
-    const { useCase, channelAnnouncer } = setUp();
+  it('keys the message by the Feedback, so a retried request announces once', async () => {
+    const { useCase, outbox } = setUp();
+
+    await useCase.execute(offering({ visibility: 'EVERYONE' }));
+
+    expect(outbox.ofType(PUBLISHED)[0]?.idempotencyKey).toBe(
+      `${PUBLISHED}:${FEEDBACK_ID}`,
+    );
+  });
+
+  it('enqueues nothing when the Feedback is for the Receiver alone', async () => {
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(offering({ visibility: 'ONLY_ME' }));
 
-    expect(channelAnnouncer.feedbackPublished_).toHaveLength(0);
+    expect(outbox.ofType(PUBLISHED)).toHaveLength(0);
   });
 
-  it('announces nothing when only Selected people may read it', async () => {
-    const { useCase, channelAnnouncer } = setUp();
+  it('enqueues nothing when only Selected people may read it', async () => {
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(
       offering({
@@ -302,26 +314,27 @@ describe('telling the Workspace channel', () => {
     );
 
     // A channel is a wider room than the people the Giver picked.
-    expect(channelAnnouncer.feedbackPublished_).toHaveLength(0);
+    expect(outbox.ofType(PUBLISHED)).toHaveLength(0);
   });
 
   it('carries none of the Feedback message (brain ADR-0040)', async () => {
-    const { useCase, channelAnnouncer } = setUp();
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(offering({ visibility: 'EVERYONE' }));
 
-    expect(
-      JSON.stringify(channelAnnouncer.feedbackPublished_[0]),
-    ).not.toContain('Keep the recap');
+    expect(JSON.stringify(outbox.ofType(PUBLISHED)[0]?.payload)).not.toContain(
+      'Keep the recap',
+    );
   });
 
-  it('succeeds, and still stores the Feedback, when no channel can be told', async () => {
-    const { useCase, channelAnnouncer, feedbackRepository } = setUp();
-    channelAnnouncer.rejectingEverything();
+  it('never touches a chat tool while the Giver waits', async () => {
+    const { useCase, outbox } = setUp();
 
-    const given = await useCase.execute(offering({ visibility: 'EVERYONE' }));
+    await useCase.execute(offering({ visibility: 'EVERYONE' }));
 
-    expect(given.id).toBe(FEEDBACK_ID);
-    expect(feedbackRepository.saved).toHaveLength(1);
+    // Giving Feedback used to call the announcer and swallow whatever came back. It now records
+    // a row and returns, so an unreachable chat tool cannot reach this request at all — the
+    // guarantee of brain `ADR-0035` §8, kept by the shape rather than by a `.catch`.
+    expect(outbox.ofType(PUBLISHED)).toHaveLength(1);
   });
 });

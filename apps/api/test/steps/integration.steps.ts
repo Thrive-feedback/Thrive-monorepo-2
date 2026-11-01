@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { OutboxRelay } from '@app/infrastructure/outbox/outbox-relay.service';
 import { Given, Then, When } from '@cucumber/cucumber';
 import { harness } from '../support/harness';
 import { slugOf } from '../support/journeys';
@@ -276,27 +277,29 @@ function postsIn(channelName: string): string[] {
 }
 
 /**
- * An announcement is made after the write commits and is never awaited, so it has not
- * necessarily happened by the time a step runs. These steps wait for it rather than pretending
- * it is atomic — which is also the honest description of the behaviour.
+ * An announcement is recorded in the writer's transaction and delivered when the outbox is
+ * drained (ADR 0076). The poller is stopped in these scenarios, so the drain happens here,
+ * explicitly — which makes the assertion deterministic rather than a race against a
+ * fire-and-forget call, as it used to be.
  *
  * The connect itself posted a test message, so the announcement is the second post onwards.
  */
-async function announcementIn(
-  channelName: string,
-  timeoutMs = 2000,
-): Promise<string> {
-  const deadline = Date.now() + timeoutMs;
+/** Until nothing is left: one tick claims a batch, and a scenario may have enqueued more. */
+async function drainTheOutbox(): Promise<void> {
+  const relay = harness().app.get(OutboxRelay);
   for (;;) {
-    const posts = postsIn(channelName);
-    if (posts.length > 1) {
-      return posts[posts.length - 1] as string;
-    }
-    if (Date.now() > deadline) {
-      assert.fail(`Timed out waiting for an announcement in ${channelName}.`);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    const { claimed } = await relay.drainOnce();
+    if (claimed === 0) return;
   }
+}
+
+async function announcementIn(channelName: string): Promise<string> {
+  await drainTheOutbox();
+  const posts = postsIn(channelName);
+  if (posts.length > 1) {
+    return posts[posts.length - 1] as string;
+  }
+  return assert.fail(`The outbox drained but nothing reached ${channelName}.`);
 }
 
 Then(

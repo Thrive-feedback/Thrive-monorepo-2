@@ -94,6 +94,10 @@ Before(function (this: ThriveWorld) {
 
 After(async function (this: ThriveWorld) {
   await this.fixtures.removeAll();
+  // The outbox belongs to no Workspace, so the fixtures cannot take its rows with them. Left
+  // behind they would be claimed by the next scenario's drain, which is both a leak between
+  // scenarios and — at a batch of twenty — enough to push a scenario's own message out of reach.
+  await harness().prismaService.outboxMessage.deleteMany({});
 });
 
 AfterAll(async () => {

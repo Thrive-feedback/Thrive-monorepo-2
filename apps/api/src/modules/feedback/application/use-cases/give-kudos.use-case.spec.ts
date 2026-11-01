@@ -6,7 +6,7 @@ import {
   FakeWorkspaceMembershipPort,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
-import { FakeChannelAnnouncer } from '@test/support/integrations.fakes';
+import { FakeOutbox } from '@test/support/outbox.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   KudosCardInvalidError,
@@ -40,15 +40,15 @@ function setUp() {
     // Dan has an Account but is in another Workspace.
     new FakeWorkspaceMembershipPort().with(WORKSPACE_ID, ANN, BEN, CARA),
   );
-  const channelAnnouncer = new FakeChannelAnnouncer();
+  const outbox = new FakeOutbox();
   const useCase = new GiveKudosUseCase(
     kudosRepository,
     tagsService,
     new FakeIdGenerator(KUDOS_ID),
     unitOfWork,
-    channelAnnouncer,
+    outbox,
   );
-  return { kudosRepository, unitOfWork, useCase, channelAnnouncer };
+  return { kudosRepository, unitOfWork, useCase, outbox };
 }
 
 const CARD: KudosCardSnapshot = {
@@ -141,11 +141,13 @@ describe('a Member giving Kudos', () => {
   });
 
   it('tells the channel about a Kudos for the whole Workspace too', async () => {
-    const { useCase, channelAnnouncer } = setUp();
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(giving('Great launch, everyone.'));
 
-    expect(channelAnnouncer.kudosGiven_[0]?.recipientAccountIds).toEqual([]);
+    expect(outbox.ofType('integrations.kudos_given')[0]?.payload).toMatchObject(
+      { recipientAccountIds: [] },
+    );
   });
 
   it('refuses an empty Kudos before reading anything', async () => {
@@ -158,13 +160,15 @@ describe('a Member giving Kudos', () => {
 });
 
 describe('telling the Workspace channel about a Kudos', () => {
-  it('announces it, with its message (brain ADR-0045)', async () => {
-    const { useCase, channelAnnouncer } = setUp();
+  const GIVEN = 'integrations.kudos_given';
+
+  it('enqueues it, with its message (brain ADR-0045)', async () => {
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(giving('@ben carried the launch #ownership.'));
 
-    expect(channelAnnouncer.kudosGiven_).toHaveLength(1);
-    expect(channelAnnouncer.kudosGiven_[0]).toEqual({
+    expect(outbox.ofType(GIVEN)).toHaveLength(1);
+    expect(outbox.ofType(GIVEN)[0]?.payload).toEqual({
       workspaceId: WORKSPACE_ID,
       giverAccountId: ANN,
       recipientAccountIds: [BEN],
@@ -173,24 +177,36 @@ describe('telling the Workspace channel about a Kudos', () => {
     });
   });
 
+  it('is the one payload that carries words, because a Kudos has no Visibility', async () => {
+    const { useCase, outbox } = setUp();
+
+    await useCase.execute(giving('@ben carried the launch.'));
+
+    // Feedback's payload carries ids only (brain ADR-0040). A Kudos is the stated exception:
+    // every Member can already read it, and stripped of its words it announces that praise
+    // happened somewhere else (brain ADR-0045).
+    expect(JSON.stringify(outbox.ofType(GIVEN)[0]?.payload)).toContain(
+      'carried the launch',
+    );
+  });
+
   it('names everyone the Kudos is for', async () => {
-    const { useCase, channelAnnouncer } = setUp();
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(giving('@ben and @cara carried the launch.'));
 
-    expect(channelAnnouncer.kudosGiven_[0]?.recipientAccountIds).toEqual([
-      BEN,
-      CARA,
-    ]);
+    expect(outbox.ofType(GIVEN)[0]?.payload).toMatchObject({
+      recipientAccountIds: [BEN, CARA],
+    });
   });
 
-  it('succeeds, and still stores the Kudos, when no channel can be told', async () => {
-    const { useCase, channelAnnouncer, kudosRepository } = setUp();
-    channelAnnouncer.rejectingEverything();
+  it('keys the message by the Kudos, so a retried request announces once', async () => {
+    const { useCase, outbox } = setUp();
 
-    const given = await useCase.execute(giving('@ben carried the launch.'));
+    await useCase.execute(giving('@ben carried the launch.'));
 
-    expect(given.id).toBe(KUDOS_ID);
-    expect(kudosRepository.saved).toHaveLength(1);
+    expect(outbox.ofType(GIVEN)[0]?.idempotencyKey).toBe(
+      `${GIVEN}:${KUDOS_ID}`,
+    );
   });
 });
