@@ -1,5 +1,3 @@
-'use client';
-
 import NextLink from 'next/link';
 import { DropdownMenuItem } from '@/components/atoms/dropdown-menu';
 import { Skeleton } from '@/components/atoms/skeleton';

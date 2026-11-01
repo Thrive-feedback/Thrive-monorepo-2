@@ -1,5 +1,3 @@
-'use client';
-
 import { ChevronDownIcon, CircleAlertIcon, EyeIcon } from 'lucide-react';
 import { Popover } from 'radix-ui';
 import { useId, useRef } from 'react';

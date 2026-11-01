@@ -1,5 +1,3 @@
-'use client';
-
 import { useMemo } from 'react';
 import { Button } from '@/components/atoms/button';
 import { AutocompleteInput } from '@/components/molecules/autocomplete-input';

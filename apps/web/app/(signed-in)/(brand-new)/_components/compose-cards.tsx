@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
