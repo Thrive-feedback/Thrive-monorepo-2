@@ -79,7 +79,6 @@ function KudosCardBorder({ templateKey }: { templateKey: KudosTemplateKey }) {
 
 export type KudosCardFaceProps = {
   templateKey: KudosTemplateKey;
-  className?: string;
   /** What lies on the card, above its border. */
   children?: React.ReactNode;
 };
@@ -88,13 +87,9 @@ export type KudosCardFaceProps = {
  * A Kudos card with nothing written on it: portrait, one side, at whatever width it is given. The
  * row of templates and the board draw it small, and the editor puts the words and stickers on it.
  */
-export function KudosCardFace({
-  templateKey,
-  className,
-  children,
-}: KudosCardFaceProps) {
+export function KudosCardFace({ templateKey, children }: KudosCardFaceProps) {
   return (
-    <div className={cn('relative aspect-3/4 w-full', styles.card, className)}>
+    <div className={cn('relative aspect-3/4 w-full', styles.card)}>
       <div
         className={cn(
           'absolute inset-0 overflow-hidden',

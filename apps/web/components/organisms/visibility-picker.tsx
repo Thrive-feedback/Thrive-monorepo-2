@@ -1,7 +1,6 @@
 import { useId, useRef, useState } from 'react';
 import { Label } from '@/components/atoms/label';
 import { RadioGroup, RadioGroupItem } from '@/components/atoms/radio-group';
-import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { AvatarGroupButton } from '@/components/molecules/avatar-group-button';
 import { chosenPeople } from '@/lib/feedback/chosen-people.util';
@@ -167,33 +166,5 @@ export function VisibilityPicker<Value extends string>({
         onCancel={() => putBackIfNobody([...selectedAccountIds])}
       />
     </>
-  );
-}
-
-/**
- * A `VisibilityPicker` still loading: its question, one radio per option, and the two lines that
- * say what the choice means. Selected people is never the default, so its list is not drawn.
- */
-export function VisibilityPickerSkeleton<Value extends string>({
-  options,
-}: {
-  options: readonly VisibilityOption<Value>[];
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <Skeleton className="w-1/3 text-label" />
-      <div className="grid gap-3">
-        {options.map((option) => (
-          <div key={option.value} className="flex items-center gap-2">
-            <Skeleton shape="circle" className="size-4" />
-            <Skeleton className="w-40 text-subtitle-4" />
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-col">
-        <Skeleton className="text-caption" />
-        <Skeleton className="w-1/2 text-caption" />
-      </div>
-    </div>
   );
 }
