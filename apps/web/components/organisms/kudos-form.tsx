@@ -9,8 +9,9 @@ import type {
   GiveKudosAction,
   GiveKudosState,
 } from '@/lib/feedback/give-kudos-state.type';
-import { kudosLength, MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
+import { MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
 import { mentionedTeammates } from '@/lib/feedback/mentioned-teammates.util';
+import { messageLength } from '@/lib/feedback/message-length.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import {
   ComposerAudienceNote,
@@ -52,7 +53,7 @@ export function KudosForm({
   >(action, {});
 
   const recipients = mentionedTeammates(message, teammates);
-  const left = MAX_KUDOS_LENGTH - kudosLength(message);
+  const left = MAX_KUDOS_LENGTH - messageLength(message);
   const ready = left >= 0 && message.trim() !== '';
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
