@@ -295,6 +295,27 @@ No contract regeneration: Part A adds no route.
   polls on its own 60 s cycle (design 0022 D9) regardless.
 - **R5 — the relay shares a process with request handling** (D4). Named, not mitigated.
 
+## 9b. What building it changed, 2026-11-01
+
+Part A is built (slice A1: table, migration, ports, adapter, relay, registry, tests — no consumer
+yet). Four things differ from §2–§5 above, each found by a guardrail or a test rather than by
+reading:
+
+| # | The design said | What building it showed |
+| --- | --- | --- |
+| 1 | `infrastructure/outbox/` is exempt from the architecture checker because it sits outside `modules/` | Exempt from **`ROLE_SUFFIXES`**, yes — but `layerOf()` in `check-architecture.mjs` only recognises a layer inside `modules/<x>/<layer>/`, so a top-level `infrastructure/` file is **layer-*less*** and `BE_02 R2` then forbids it importing any `@app/**/infrastructure/**` path. The existing files there already avoid this by importing siblings **relatively**, which `prisma-unit-of-work.adapter.ts` does. The outbox now does the same. Nothing was weakened; the rule was right and the design had simply not read it closely enough |
+| 2 | The relay leases against the injected `Clock` | It leases against Postgres's own `now()`. Prisma could not infer the type of a `Date` parameter used in both a comparison and an interval, and the fix is better than the workaround: **every replica leases against one clock**, so a machine whose own clock drifts cannot claim a row early or hold it late. `Clock` still stamps `deliveredAt` and `deadAt` |
+| 3 | `OutboxModule.forRoot(handlers)` | `outboxModule(handlers)`, a plain function. `forRoot` would have made the module a class whose only member is static, which `lint/complexity/noStaticOnlyClass` refuses. The repository has no dynamic-module precedent, so this is the first |
+| 4 | Shutdown stops the relay | Shutdown and "stop polling" are **two** switches. `stopPolling()` clears the timer and leaves `drainOnce()` working; `onApplicationShutdown()` does that *and* sets `stopping`, which also breaks out of a batch in progress. The Gherkin harness calls `stopPolling()` after boot: with one flag, silencing the poller for tests would also have disabled the deterministic drain the tests depend on |
+
+**D13 held.** The 270 scenarios pass with the poller stopped and the relay drained by hand. That was
+the risk most likely to force a redesign, and it did not.
+
+**Verified:** 790 unit · 199 integration (including two relays claiming disjoint rows against real
+Postgres) · 270 scenarios / 2157 steps · style, types, architecture and build all clean.
+
+---
+
 ---
 
 # Part B — the goal-tagging spike

@@ -573,3 +573,35 @@ model Notification {
   @@index([recipientAccountId, workspaceId, readAt])
   @@map("notification")
 }
+
+/// One thing that must happen after a write, recorded in the same transaction as that write
+/// (ADR 0076). It belongs to no module: it is part of the unit of work rather than a second
+/// module's table, which is what lets a use case enqueue without transacting across a boundary
+/// (BE_03 R7).
+model OutboxMessage {
+  id             String    @id
+  /// Which handler drains it, as `<owning module>.<event>`. Text, as every other value this
+  /// application keys a registry by is.
+  type           String
+  /// The shape of `payload`. A breaking change ships as a new `type`, never a new version of an
+  /// old one, so rows already written keep draining through the handler that understands them.
+  version        Int       @default(1)
+  /// Ids and enums only. Never a Feedback message and never personal data: this is the one field
+  /// that could carry something about a person, and a row outlives the request that wrote it.
+  payload        Json
+  /// What makes a second enqueue of the same thing a no-op, as `<type>:<subject id>`.
+  idempotencyKey String
+  /// When it may next be claimed. Pushed forward as it is claimed, which is also its lease: a
+  /// relay that dies mid-batch leaves rows that become due again on their own.
+  availableAt    DateTime  @default(now())
+  attempts       Int       @default(0)
+  deliveredAt    DateTime?
+  /// Set when it gave up or could never succeed. A dead row is read by hand, never retried.
+  deadAt         DateTime?
+  /// The last refusal, truncated. Never a credential and never a message body.
+  lastError      String?
+  createdAt      DateTime  @default(now())
+
+  @@unique([idempotencyKey])
+  @@map("outbox_message")
+}
