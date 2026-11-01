@@ -1,6 +1,7 @@
 import { CONFIGURATION } from '@app/config/configuration';
 import { AUTH } from '@app/infrastructure/auth/auth';
 import { PrismaService } from '@app/infrastructure/database/prisma.service';
+import { OutboxRelay } from '@app/infrastructure/outbox/outbox-relay.service';
 import { ChatInstaller } from '@app/modules/integrations/application/port/chat-installer.port';
 import { AccountLinker } from '@app/modules/notifications/application/port/account-linker.port';
 import { DirectMessenger } from '@app/modules/notifications/application/port/direct-messenger.port';
@@ -55,6 +56,9 @@ BeforeAll({ timeout: BOOT_TIMEOUT_MS }, async () => {
   const app = moduleRef.createNestApplication();
   // Port 0: the system picks a free one, so a running dev server is never in the way.
   await app.listen(0);
+  // The outbox drains by hand in these scenarios: a poller ticking behind them would race
+  // whatever each one asserts (ADR 0076 D13).
+  app.get(OutboxRelay).stopPolling();
   setHarness({
     app,
     baseUrl: (await app.getUrl()).replace('[::1]', 'localhost'),

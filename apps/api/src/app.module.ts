@@ -7,6 +7,7 @@ import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
+import { outboxModule } from './infrastructure/outbox/outbox.module';
 import { FeedbackModule } from './modules/feedback';
 import { IdentityModule } from './modules/identity';
 import { IntegrationsModule } from './modules/integrations';
@@ -23,6 +24,9 @@ import { SharedModule } from './shared/shared.module';
     ConfigModule,
     SharedModule,
     DatabaseModule,
+    // No handlers yet: the table and its relay land before the first consumer moves
+    // onto them (ADR 0076, slice A1).
+    outboxModule([]),
     IdentityModule,
     WorkspaceModule,
     FeedbackModule,
