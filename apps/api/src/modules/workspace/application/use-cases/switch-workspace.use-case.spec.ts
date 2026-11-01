@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'bun:test';
 import { FakeClock } from '@test/support/clock.fake';
-import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   FakeMembershipQuery,
   FakeSessionWorkspace,
@@ -31,7 +30,6 @@ function setUp() {
   const useCase = new SwitchWorkspaceUseCase(
     workspaceSwitching,
     sessionWorkspace,
-    new FakeUnitOfWork(),
     new FakeClock(NOW),
   );
   return { membershipQuery, workspaceSwitching, sessionWorkspace, useCase };

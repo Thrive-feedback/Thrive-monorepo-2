@@ -1,5 +1,4 @@
 import { Clock } from '@app/shared/application/clock.port';
-import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable } from '@nestjs/common';
 import { SessionWorkspace } from '../port/session-workspace.port';
 import { WorkspaceSwitching } from '../port/workspace-switching.port';
@@ -23,19 +22,16 @@ export class SwitchWorkspaceUseCase {
   constructor(
     private readonly workspaceSwitching: WorkspaceSwitching,
     private readonly sessionWorkspace: SessionWorkspace,
-    private readonly unitOfWork: UnitOfWork,
     private readonly clock: Clock,
   ) {}
 
   async execute(input: SwitchWorkspaceInput): Promise<void> {
     const workspaceId = input.membership.workspace.id;
-    await this.unitOfWork.run(() =>
-      this.workspaceSwitching.switchTo({
-        workspaceId,
-        accountId: input.accountId,
-        switchedAt: this.clock.now(),
-      }),
-    );
+    await this.workspaceSwitching.switchTo({
+      workspaceId,
+      accountId: input.accountId,
+      switchedAt: this.clock.now(),
+    });
     await this.sessionWorkspace.select(input.credential, workspaceId);
   }
 }
