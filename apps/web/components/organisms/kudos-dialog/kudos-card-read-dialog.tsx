@@ -118,6 +118,7 @@ function KudosCardReadView({ kudos, onClose }: KudosCardReadViewProps) {
             />
             <CardNotesButton
               areNotesShown={areNotesShown}
+              disabled={!hasStickers}
               onClick={handleToggleNotes}
             />
           </div>
