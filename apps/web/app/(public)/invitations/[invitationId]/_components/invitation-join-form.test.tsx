@@ -15,20 +15,20 @@ const INVITATION: Invitation = {
 
 const acceptInvitation =
   vi.fn<(invitationId: string) => Promise<AcceptInvitationState>>();
-const useAnotherGoogleAccount =
+const signInWithAnotherGoogleAccount =
   vi.fn<(invitationId: string) => Promise<void>>();
 vi.mock(
   '@/app/(public)/invitations/[invitationId]/_lib/invitation-actions.service',
   () => ({
     acceptInvitation: (invitationId: string) => acceptInvitation(invitationId),
-    useAnotherGoogleAccount: (invitationId: string) =>
-      useAnotherGoogleAccount(invitationId),
+    signInWithAnotherGoogleAccount: (invitationId: string) =>
+      signInWithAnotherGoogleAccount(invitationId),
   }),
 );
 
 beforeEach(() => {
   acceptInvitation.mockReset();
-  useAnotherGoogleAccount.mockReset();
+  signInWithAnotherGoogleAccount.mockReset();
 });
 
 function renderForm() {
@@ -74,7 +74,7 @@ describe('InvitationJoinForm', () => {
     await user.click(
       screen.getByRole('button', { name: 'Use another Google account' }),
     );
-    expect(useAnotherGoogleAccount).toHaveBeenCalledWith(
+    expect(signInWithAnotherGoogleAccount).toHaveBeenCalledWith(
       INVITATION.invitationId,
     );
   });

@@ -56,7 +56,7 @@ export async function signInToAccept(invitationId: string): Promise<void> {
  * this Invitation to join it. For someone signed in with an address the Invitation was not sent
  * to.
  */
-export async function useAnotherGoogleAccount(
+export async function signInWithAnotherGoogleAccount(
   invitationId: string,
 ): Promise<void> {
   const id = InvitationId.safeParse(invitationId);

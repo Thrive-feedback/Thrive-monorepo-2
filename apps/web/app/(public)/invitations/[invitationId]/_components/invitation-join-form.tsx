@@ -9,7 +9,7 @@ import type {
 import type { Invitation } from '@/app/(public)/invitations/[invitationId]/_lib/invitation.type';
 import {
   acceptInvitation,
-  useAnotherGoogleAccount,
+  signInWithAnotherGoogleAccount,
 } from '@/app/(public)/invitations/[invitationId]/_lib/invitation-actions.service';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
@@ -97,7 +97,10 @@ export function InvitationJoinForm({
         </form>
       )}
       <form
-        action={useAnotherGoogleAccount.bind(null, invitation.invitationId)}
+        action={signInWithAnotherGoogleAccount.bind(
+          null,
+          invitation.invitationId,
+        )}
         className="w-full"
       >
         <Button
