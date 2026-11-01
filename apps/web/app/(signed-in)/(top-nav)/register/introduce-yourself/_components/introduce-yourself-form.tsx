@@ -26,26 +26,22 @@ export function IntroduceYourselfForm({
   defaultFullName = '',
 }: IntroduceYourselfFormProps) {
   const [fullName, setFullName] = useState(defaultFullName);
-  const [displayName, setDisplayName] = useState(firstWord(defaultFullName));
-  const [isDisplayNameEdited, setIsDisplayNameEdited] = useState(false);
+  const [typedDisplayName, setTypedDisplayName] = useState<string | null>(null);
   const [state, formAction, isSaving] = useActionState<
     SaveProfileState,
     FormData
   >(saveProfile, {});
 
+  const displayName = typedDisplayName ?? firstWord(fullName);
   const canContinue =
     fullName.trim() !== '' && displayName.trim() !== '' && !isSaving;
 
   function handleFullNameChange(event: React.ChangeEvent<HTMLInputElement>) {
     setFullName(event.target.value);
-    if (!isDisplayNameEdited) {
-      setDisplayName(firstWord(event.target.value));
-    }
   }
 
   function handleDisplayNameChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setIsDisplayNameEdited(true);
-    setDisplayName(event.target.value);
+    setTypedDisplayName(event.target.value);
   }
 
   return (
