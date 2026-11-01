@@ -1,9 +1,9 @@
 import 'server-only';
 import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
+import { readMembers } from '@/app/(signed-in)/(member)/settings/_lib/members.service';
 import { apiClient } from '@/lib/api-client.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import { readMembers } from '../../_lib/members.service';
 import type { WorkspaceConnection } from './connection.type';
 
 /** One Connection per chat tool, so one page of any size covers them. */

@@ -1,7 +1,7 @@
+import { SettingRow } from '@/app/(signed-in)/(member)/settings/_components/setting-row';
 import { readLinkedAccounts } from '@/app/(signed-in)/(member)/settings/account/_lib/linked-accounts.service';
 import { calendarDay } from '@/lib/calendar-day.util';
 import { CHAT_PROVIDER_LIST } from '@/lib/chat/chat-providers.constant';
-import { SettingRow } from '../../_components/setting-row';
 import { LinkAccountButton } from './link-account-button';
 import { UnlinkAccountButton } from './unlink-account-button';
 

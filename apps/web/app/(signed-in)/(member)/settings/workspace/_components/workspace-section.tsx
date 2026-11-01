@@ -1,12 +1,12 @@
 import { Suspense } from 'react';
-import { Button } from '@/components/atoms/button';
-import { ROLE_NAMES } from '@/lib/session/role-names.constant';
-import type { MemberAccount } from '@/lib/session/session.service';
 import {
   SettingRow,
   SettingValues,
   SettingValuesSkeleton,
-} from '../../_components/setting-row';
+} from '@/app/(signed-in)/(member)/settings/_components/setting-row';
+import { Button } from '@/components/atoms/button';
+import { ROLE_NAMES } from '@/lib/session/role-names.constant';
+import type { MemberAccount } from '@/lib/session/session.service';
 import { IntegrationList, IntegrationListSkeleton } from './integration-list';
 import {
   LeaveWorkspaceRow,

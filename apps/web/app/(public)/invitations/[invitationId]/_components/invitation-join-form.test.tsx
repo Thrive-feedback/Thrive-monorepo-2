@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AcceptInvitationState } from '../_lib/accept-invitation-state.type';
-import type { Invitation } from '../_lib/invitation.type';
+import type { AcceptInvitationState } from '@/app/(public)/invitations/[invitationId]/_lib/accept-invitation-state.type';
+import type { Invitation } from '@/app/(public)/invitations/[invitationId]/_lib/invitation.type';
 import { InvitationJoinForm } from './invitation-join-form';
 
 const INVITATION: Invitation = {
@@ -17,11 +17,14 @@ const acceptInvitation =
   vi.fn<(invitationId: string) => Promise<AcceptInvitationState>>();
 const useAnotherGoogleAccount =
   vi.fn<(invitationId: string) => Promise<void>>();
-vi.mock('../_lib/invitation-actions.service', () => ({
-  acceptInvitation: (invitationId: string) => acceptInvitation(invitationId),
-  useAnotherGoogleAccount: (invitationId: string) =>
-    useAnotherGoogleAccount(invitationId),
-}));
+vi.mock(
+  '@/app/(public)/invitations/[invitationId]/_lib/invitation-actions.service',
+  () => ({
+    acceptInvitation: (invitationId: string) => acceptInvitation(invitationId),
+    useAnotherGoogleAccount: (invitationId: string) =>
+      useAnotherGoogleAccount(invitationId),
+  }),
+);
 
 beforeEach(() => {
   acceptInvitation.mockReset();

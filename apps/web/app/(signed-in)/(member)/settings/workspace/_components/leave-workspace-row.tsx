@@ -1,7 +1,10 @@
 import { DeactivateMemberButton } from '@/app/(signed-in)/(member)/settings/_components/deactivate-member-button';
+import {
+  SettingRow,
+  SettingRowSkeleton,
+} from '@/app/(signed-in)/(member)/settings/_components/setting-row';
 import { readMembers } from '@/app/(signed-in)/(member)/settings/_lib/members.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import { SettingRow, SettingRowSkeleton } from '../../_components/setting-row';
 
 export type LeaveWorkspaceRowProps = {
   membership: CurrentMembership;
