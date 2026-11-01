@@ -145,10 +145,12 @@
 
 /* Writing lines, spaced by the size's line height. `local` makes them scroll with the text. */
 .ruled {
+  --postcard-rule: calc(var(--space-unit) * 0.25);
+
   background-image: repeating-linear-gradient(
     to bottom,
-    transparent 0 calc(var(--postcard-leading) - var(--space-unit) * 0.25),
-    var(--border-muted) calc(var(--postcard-leading) - var(--space-unit) * 0.25)
+    transparent 0 calc(var(--postcard-leading) - var(--postcard-rule)),
+    var(--border-muted) calc(var(--postcard-leading) - var(--postcard-rule))
       var(--postcard-leading)
   );
   background-attachment: local;

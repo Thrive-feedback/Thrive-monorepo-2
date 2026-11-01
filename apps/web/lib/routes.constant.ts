@@ -27,6 +27,26 @@ function brandNewHomeShowing(show: BrandNewHomeShow) {
     : `/brand-new-home?show=${show}`;
 }
 
+/** How Received can be laid out. The first is what it opens on. */
+export const BRAND_NEW_RECEIVED_VIEWS = ['grid', 'list'] as const;
+
+export type BrandNewReceivedView = (typeof BRAND_NEW_RECEIVED_VIEWS)[number];
+
+/** The view an address names, or the one Received opens on when it names none it knows. */
+export function receivedViewOf(value: string | null): BrandNewReceivedView {
+  return (
+    BRAND_NEW_RECEIVED_VIEWS.find((view) => view === value) ??
+    BRAND_NEW_RECEIVED_VIEWS[0]
+  );
+}
+
+/** Received laid out one way; `grid` is what it opens on, so it needs no query. */
+function brandNewReceivedViewing(view: BrandNewReceivedView) {
+  return view === BRAND_NEW_RECEIVED_VIEWS[0]
+    ? '/brand-new-received'
+    : `/brand-new-received?view=${view}`;
+}
+
 /** The orders Waiting for me can be read in. The first is what it opens on. */
 export const BRAND_NEW_WAITING_SORTS = ['newest', 'oldest'] as const;
 
@@ -60,6 +80,18 @@ export const ROUTES = {
   brandNewKudos: '/brand-new-kudos',
   /** The Kudos board narrowed to one month, `YYYY-MM`. */
   brandNewKudosMonth: (month: string) => `/brand-new-kudos?month=${month}`,
+  /** Everything written to the person, in the new Home. */
+  brandNewReceived: '/brand-new-received',
+  /** Received laid out one way. */
+  brandNewReceivedViewing,
+  /** One piece of Feedback open over Received, which stays laid out as it was. */
+  brandNewReceivedFeedback: (
+    feedbackId: string,
+    view: BrandNewReceivedView = BRAND_NEW_RECEIVED_VIEWS[0],
+  ) => {
+    const viewing = brandNewReceivedViewing(view);
+    return `${viewing}${viewing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
+  },
   /** Every Ask waiting for the person, in the new Home. */
   brandNewWaiting: '/brand-new-waiting',
   /** Waiting for me in one order. */

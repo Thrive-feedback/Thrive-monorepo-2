@@ -1,0 +1,56 @@
+/*
+ * A sent postcard made small. It is laid out at the width it is written at and scaled to `.stage` as
+ * one piece, so its lines break where they did. `tan(atan2())` is how CSS divides one length by
+ * another. Both widths are registered, so they reach it as pixels: WebKit reads an unregistered `cqw`
+ * or `rem` as a bare number, and turns the card upside down. Container units have no utility, and
+ * they measure an element's container and never the element, so `.stage` is only that container.
+ */
+@property --miniature-stage-width {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --miniature-written-width {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.stage {
+  container-type: inline-size;
+  position: relative;
+  aspect-ratio: 3 / 2;
+}
+
+/* Out of the flow, because scaling leaves the space a card takes at its full size. */
+.sheet {
+  --miniature-written-width: var(--container-2xl);
+  --miniature-stage-width: 100cqw;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--miniature-written-width);
+  transform-origin: 0 0;
+  scale: tan(
+    atan2(var(--miniature-stage-width), var(--miniature-written-width))
+  );
+}
+
+/* A long message is cut off by the card here: there is nobody to scroll it. */
+.sheet * {
+  scrollbar-width: none;
+}
+
+/*
+ * Writing too long for the small card fades out rather than being cut through a line of letters.
+ * A short message never reaches the fade, so it stays whole. Nothing here is a colour: a mask only
+ * reads how opaque it is. The writing lines are heavier here, because a hairline scaled this far
+ * falls between pixels and breaks into dashes.
+ */
+.sheet p {
+  --postcard-rule: calc(var(--space-unit) * 0.75);
+
+  mask-image: linear-gradient(to bottom, currentcolor 80%, transparent);
+}
