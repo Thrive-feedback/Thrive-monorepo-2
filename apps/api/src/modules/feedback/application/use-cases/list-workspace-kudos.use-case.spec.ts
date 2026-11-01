@@ -44,7 +44,7 @@ function setUp() {
       fullName: 'Ann Lee',
       displayName: 'Ann',
       slug: 'ann',
-      photoUrl: null,
+      photoUrl: 'https://lh3.googleusercontent.com/ann',
     },
     {
       accountId: BEN,
@@ -59,7 +59,7 @@ function setUp() {
     kudosQuery,
     new PeopleService(accountSummaryPort, workspaceMembershipPort),
   );
-  return { accountSummaryPort, useCase };
+  return { accountSummaryPort, kudosQuery, useCase };
 }
 
 describe('reading the Kudos of a Workspace', () => {
@@ -69,12 +69,14 @@ describe('reading the Kudos of a Workspace', () => {
     const page = await useCase.execute({
       workspaceId: WORKSPACE_ID,
       page: { afterId: null, limit: 20 },
+      month: null,
     });
 
     expect(page.items.map((kudos) => kudos.id)).toEqual(['k3', 'k2', 'k1']);
     expect(page.items[0]?.giver).toEqual({
       accountId: ANN,
       name: 'Ann Lee',
+      photoUrl: 'https://lh3.googleusercontent.com/ann',
       status: 'ACTIVE',
     });
     expect(page.items[0]?.recipients.map((person) => person.name)).toEqual([
@@ -90,10 +92,12 @@ describe('reading the Kudos of a Workspace', () => {
     const first = await useCase.execute({
       workspaceId: WORKSPACE_ID,
       page: { afterId: null, limit: 2 },
+      month: null,
     });
     const second = await useCase.execute({
       workspaceId: WORKSPACE_ID,
       page: { afterId: first.nextAfterId, limit: 2 },
+      month: null,
     });
 
     expect(first.items.map((kudos) => kudos.id)).toEqual(['k3', 'k2']);
@@ -102,12 +106,30 @@ describe('reading the Kudos of a Workspace', () => {
     expect(second.nextAfterId).toBeNull();
   });
 
+  it('narrows to one month, by the clock everyone shares', async () => {
+    const { kudosQuery, useCase } = setUp();
+    kudosQuery.rows.push({
+      ...kudosRow('k5', 11),
+      // 06:00 on 1 November at UTC+7 is still 31 October in UTC.
+      createdAt: new Date('2026-10-31T23:00:00.000Z'),
+    });
+
+    const page = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      page: { afterId: null, limit: 20 },
+      month: '2026-11',
+    });
+
+    expect(page.items.map((kudos) => kudos.id)).toEqual(['k5']);
+  });
+
   it('asks who people are once for the whole page', async () => {
     const { accountSummaryPort, useCase } = setUp();
 
     await useCase.execute({
       workspaceId: WORKSPACE_ID,
       page: { afterId: null, limit: 20 },
+      month: null,
     });
 
     expect(accountSummaryPort.calls).toHaveLength(1);

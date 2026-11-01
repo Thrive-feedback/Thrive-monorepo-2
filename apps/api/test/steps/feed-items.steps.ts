@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import { Then, When } from '@cucumber/cucumber';
 import type { ThriveWorld } from '../support/world';
 
+/** What a Member read of Home one item at a time, in the order they read it. */
+const readThroughHome = new WeakMap<ThriveWorld, readonly string[]>();
+
 interface HomeItem {
   readonly message: string;
   readonly visibility: string;
@@ -135,6 +138,80 @@ Then(
       homeItems(this).map((item) => item.message),
       [first, second],
     );
+  },
+);
+
+Then(
+  "{person}'s Home reads {string} then {string} then {string}",
+  function (
+    this: ThriveWorld,
+    _name: string,
+    first: string,
+    second: string,
+    third: string,
+  ) {
+    const items: readonly { message: string }[] =
+      this.lastResponse?.body?.items ?? [];
+    assert.deepEqual(
+      items.map((item) => item.message),
+      [first, second, third],
+    );
+  },
+);
+
+Then(
+  "{person}'s Home shows a Kudos on its card",
+  function (this: ThriveWorld, _name: string) {
+    const [item] = this.lastResponse?.body?.items ?? [];
+    assert.equal(item?.kind, 'KUDOS');
+    assert.ok(item?.card, 'The Kudos came with no card.');
+  },
+);
+
+Then(
+  "{person}'s Home holds {int} Kudos",
+  function (this: ThriveWorld, _name: string, count: number) {
+    const items: readonly { kind: string }[] =
+      this.lastResponse?.body?.items ?? [];
+    assert.equal(items.filter((item) => item.kind === 'KUDOS').length, count);
+  },
+);
+
+When(
+  '{person} reads Home one item at a time',
+  async function (this: ThriveWorld, name: string) {
+    const read: string[] = [];
+    let cursor: string | null = null;
+    do {
+      const query: string = cursor ? `&cursor=${cursor}` : '';
+      const page = this.succeeded(
+        await this.as(
+          name,
+          'GET',
+          `/v1/workspaces/${this.workspaceOf(name)}/feed-items?limit=1${query}`,
+        ),
+        `${name} reading Home`,
+      );
+      read.push(
+        ...page.body.items.map((item: { message: string }) => item.message),
+      );
+      cursor = page.body.nextCursor;
+    } while (cursor !== null);
+    readThroughHome.set(this, read);
+  },
+);
+
+Then(
+  '{person} read {string} then {string} then {string} then {string}',
+  function (
+    this: ThriveWorld,
+    _name: string,
+    first: string,
+    second: string,
+    third: string,
+    fourth: string,
+  ) {
+    assert.deepEqual(readThroughHome.get(this), [first, second, third, fourth]);
   },
 );
 

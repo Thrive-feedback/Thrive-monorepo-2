@@ -11,6 +11,7 @@ import {
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
 import { answerSchema } from './get-feedback-request.dto';
+import { kudosSchema } from './list-workspace-kudos.dto';
 import { personSchema } from './person.dto';
 import { tagsSchema } from './tags.dto';
 
@@ -46,6 +47,7 @@ const feedItemRequestSchema = z.object({
  * sit below the response root (`docs/design/0016` §10).
  */
 const feedItemSchema = z.object({
+  kind: z.literal('FEEDBACK'),
   id: z.uuid(),
   /** `REQUESTED` answered an Ask; `OFFERED` was given without being asked. */
   origin: z.enum(FEEDBACK_ORIGINS),
@@ -65,11 +67,16 @@ const feedItemSchema = z.object({
   request: feedItemRequestSchema.nullable(),
 });
 
+/** One Kudos on Home, in the shape it has on the Kudos list. */
+const kudosFeedItemSchema = kudosSchema.extend({ kind: z.literal('KUDOS') });
+
 export const listFeedItemsResponseSchema = z.object({
   /** Whose Home this is, so a reader can tell themselves among the people a piece names. */
   readerAccountId: z.uuid(),
-  /** Newest first. */
-  items: z.array(feedItemSchema),
+  /** Feedback and Kudos together, newest first. */
+  items: z.array(
+    z.discriminatedUnion('kind', [feedItemSchema, kudosFeedItemSchema]),
+  ),
   ...cursorResultShape,
 });
 export class ListFeedItemsResponseDto extends createZodDto(

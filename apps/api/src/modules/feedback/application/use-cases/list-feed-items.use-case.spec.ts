@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 import {
   FakeFeedbackRequestQuery,
+  FakeKudosQuery,
   FakeWorkspaceMembershipPort,
   NO_TAGS,
 } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { PeopleService } from '../service/people.service';
+import type { FeedItemsView } from '../types/feed-items.types';
+import type { FeedItemShow } from '../types/feedback-request.types';
 import { ListFeedItemsUseCase } from './list-feed-items.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -141,11 +144,35 @@ function setUp() {
       photoUrl: null,
     },
   );
+  const kudosQuery = new FakeKudosQuery();
   const useCase = new ListFeedItemsUseCase(
     feedbackRequestQuery,
+    kudosQuery,
     new PeopleService(accountSummaryPort, new FakeWorkspaceMembershipPort()),
   );
-  return { useCase };
+  return { accountSummaryPort, kudosQuery, useCase };
+}
+
+/** The Feedback on a page, for what only Feedback carries. */
+function feedbackOf(page: FeedItemsView) {
+  return page.items.flatMap((item) => (item.kind === 'FEEDBACK' ? [item] : []));
+}
+
+function kudosRow(
+  id: string,
+  createdAt: Date,
+  overrides: { workspaceId?: string; recipients?: readonly string[] } = {},
+) {
+  return {
+    id,
+    workspaceId: overrides.workspaceId ?? WORKSPACE_ID,
+    giverAccountId: BEN,
+    recipientAccountIds: overrides.recipients ?? [],
+    message: `Kudos ${id}`,
+    tags: NO_TAGS,
+    card: null,
+    createdAt,
+  };
 }
 
 describe('reading Home', () => {
@@ -181,9 +208,9 @@ describe('reading Home', () => {
       'to-everyone-about-ana',
       'to-everyone',
     ]);
-    expect(home.items.every((item) => item.visibility === 'EVERYONE')).toBe(
-      true,
-    );
+    expect(
+      feedbackOf(home).every((item) => item.visibility === 'EVERYONE'),
+    ).toBe(true);
   });
 
   it('shows only what the reader was selected for under Shared with me', async () => {
@@ -201,7 +228,7 @@ describe('reading Home', () => {
       'selects-ana',
     ]);
     expect(
-      home.items.every((item) => item.visibility === 'SELECTED_PEOPLE'),
+      feedbackOf(home).every((item) => item.visibility === 'SELECTED_PEOPLE'),
     ).toBe(true);
   });
 
@@ -215,7 +242,7 @@ describe('reading Home', () => {
       page: FIRST_PAGE,
     });
 
-    const [answer] = home.items;
+    const [answer] = feedbackOf(home);
     expect(answer?.request?.message).toBe('How clear was the plan?');
     expect(answer?.request?.requester.name).toBe('Cara Diaz');
     expect(
@@ -240,7 +267,7 @@ describe('reading Home', () => {
       page: FIRST_PAGE,
     });
 
-    expect(home.items.every((item) => item.request === null)).toBe(true);
+    expect(feedbackOf(home).every((item) => item.request === null)).toBe(true);
   });
 
   it('pages through all of it with one cursor, repeating and skipping nothing', async () => {
@@ -278,5 +305,133 @@ describe('reading Home', () => {
 
     expect(home.items).toEqual([]);
     expect(home.nextAfterId).toBeNull();
+  });
+
+  describe('with Kudos among it', () => {
+    /** Newer than every piece of Feedback set up above. */
+    const NEWEST = new Date('2030-01-01T00:00:00.000Z');
+    /** Older than every piece of Feedback set up above. */
+    const OLDEST = new Date('2000-01-01T00:00:00.000Z');
+
+    function read(
+      useCase: ListFeedItemsUseCase,
+      show: FeedItemShow,
+      afterId: string | null = null,
+      limit = 20,
+    ) {
+      return useCase.execute({
+        workspaceId: WORKSPACE_ID,
+        readerAccountId: ANA,
+        show,
+        page: { afterId, limit },
+      });
+    }
+
+    it('puts Kudos among the Feedback, by date', async () => {
+      const { kudosQuery, useCase } = setUp();
+      kudosQuery.rows.push(
+        kudosRow('newest-kudos', NEWEST),
+        kudosRow('oldest-kudos', OLDEST),
+      );
+
+      const home = await read(useCase, 'ALL');
+
+      expect(home.items.at(0)?.id).toBe('newest-kudos');
+      expect(home.items.at(-1)?.id).toBe('oldest-kudos');
+      expect(home.items.at(0)?.kind).toBe('KUDOS');
+      expect(home.items.at(1)?.kind).toBe('FEEDBACK');
+    });
+
+    it('names everyone on a Kudos, with their face', async () => {
+      const { accountSummaryPort, kudosQuery, useCase } = setUp();
+      kudosQuery.rows.push(kudosRow('kudos', NEWEST, { recipients: [CARA] }));
+
+      const home = await read(useCase, 'ALL');
+
+      expect(home.items[0]).toMatchObject({
+        kind: 'KUDOS',
+        giver: { accountId: BEN, name: 'Ben Carter' },
+        recipients: [{ accountId: CARA, name: 'Cara Diaz' }],
+      });
+      expect(accountSummaryPort.calls).toHaveLength(1);
+    });
+
+    it('holds every Kudos under Everyone in the Workspace', async () => {
+      const { kudosQuery, useCase } = setUp();
+      kudosQuery.rows.push(kudosRow('for-the-workspace', NEWEST));
+
+      const home = await read(useCase, 'EVERYONE');
+
+      expect(home.items.at(0)?.id).toBe('for-the-workspace');
+    });
+
+    it('holds only the Kudos that name the reader under Shared with me', async () => {
+      const { kudosQuery, useCase } = setUp();
+      kudosQuery.rows.push(
+        kudosRow('names-ana', NEWEST, { recipients: [ANA] }),
+        kudosRow('names-cara', NEWEST, { recipients: [CARA] }),
+        kudosRow('for-the-workspace', NEWEST),
+      );
+
+      const home = await read(useCase, 'SHARED_WITH_ME');
+
+      expect(
+        home.items.filter((item) => item.kind === 'KUDOS').map(({ id }) => id),
+      ).toEqual(['names-ana']);
+    });
+
+    it('holds nothing from another Workspace', async () => {
+      const { kudosQuery, useCase } = setUp();
+      kudosQuery.rows.push(
+        kudosRow('elsewhere', NEWEST, { workspaceId: 'another-workspace' }),
+      );
+
+      const home = await read(useCase, 'ALL');
+
+      expect(home.items.map(({ id }) => id)).not.toContain('elsewhere');
+    });
+
+    it('pages across both with one cursor, a Kudos as good a place to stop as Feedback', async () => {
+      const { kudosQuery, useCase } = setUp();
+      kudosQuery.rows.push(
+        kudosRow('newest-kudos', NEWEST),
+        kudosRow('oldest-kudos', OLDEST),
+      );
+
+      const everything = await read(useCase, 'ALL');
+      const seen: string[] = [];
+      let afterId: string | null = null;
+      do {
+        const page: FeedItemsView = await read(useCase, 'ALL', afterId, 2);
+        seen.push(...page.items.map(({ id }) => id));
+        afterId = page.nextAfterId;
+      } while (afterId !== null);
+
+      expect(seen).toEqual(everything.items.map(({ id }) => id));
+    });
+
+    it('breaks a tie the same way on every page', async () => {
+      const { kudosQuery, useCase } = setUp();
+      kudosQuery.rows.push(
+        kudosRow('tie-a', NEWEST),
+        kudosRow('tie-b', NEWEST),
+        kudosRow('tie-c', NEWEST),
+      );
+
+      const first = await read(useCase, 'ALL', null, 2);
+      const second = await read(useCase, 'ALL', first.nextAfterId, 1);
+
+      expect(first.items.map(({ id }) => id)).toEqual(['tie-c', 'tie-b']);
+      expect(second.items.map(({ id }) => id)).toEqual(['tie-a']);
+    });
+
+    it('ends the list when the cursor names a row that is gone', async () => {
+      const { useCase } = setUp();
+
+      expect(await read(useCase, 'ALL', 'a-row-that-is-gone')).toEqual({
+        items: [],
+        nextAfterId: null,
+      });
+    });
   });
 });

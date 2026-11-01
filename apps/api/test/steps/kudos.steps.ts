@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { KUDOS_MONTH_UTC_OFFSET_HOURS } from '@app/modules/feedback/domain/value-object/kudos-month.vo';
 import { Given, Then, When } from '@cucumber/cucumber';
 import { giveKudos, slugOf } from '../support/journeys';
 import type { ThriveWorld } from '../support/world';
@@ -23,6 +24,12 @@ const A_KUDOS_CARD = {
     },
   ],
 };
+
+/** This month on the clock the board reads. `Date.now` is safe: the Kudos are given just before. */
+function thisMonth(): string {
+  const shifted = Date.now() + KUDOS_MONTH_UTC_OFFSET_HOURS * 60 * 60 * 1000;
+  return new Date(shifted).toISOString().slice(0, 7);
+}
 
 function theOnlyKudosRead(world: ThriveWorld): KudosItem {
   const items: KudosItem[] | undefined = world.lastResponse?.body?.items;
@@ -90,6 +97,59 @@ When(
 );
 
 When(
+  "{person} looks at this month's Kudos of their Workspace",
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await this.as(
+        name,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(name)}/kudos?month=${thisMonth()}`,
+      ),
+      `${name} reading this month's Kudos`,
+    );
+  },
+);
+
+When(
+  '{person} looks at the Kudos of their Workspace from {string}',
+  async function (this: ThriveWorld, name: string, month: string) {
+    await this.as(
+      name,
+      'GET',
+      `/v1/workspaces/${this.workspaceOf(name)}/kudos?month=${month}`,
+    );
+  },
+);
+
+When(
+  '{person} counts the Kudos of their Workspace',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await this.as(
+        name,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(name)}/kudos/months`,
+      ),
+      `${name} counting their Workspace's Kudos`,
+    );
+  },
+);
+
+When(
+  "{person} signs in and counts the Kudos of {person}'s Workspace",
+  async function (this: ThriveWorld, outsider: string, member: string) {
+    if (!this.isSignedIn(outsider)) {
+      await this.signIn(outsider);
+    }
+    await this.as(
+      outsider,
+      'GET',
+      `/v1/workspaces/${this.workspaceOf(member)}/kudos/months`,
+    );
+  },
+);
+
+When(
   "{person} signs in and looks at the Kudos of {person}'s Workspace",
   async function (this: ThriveWorld, outsider: string, member: string) {
     if (!this.isSignedIn(outsider)) {
@@ -100,6 +160,34 @@ When(
       'GET',
       `/v1/workspaces/${this.workspaceOf(member)}/kudos`,
     );
+  },
+);
+
+Then(
+  '{person} reads {int} Kudos',
+  function (this: ThriveWorld, _name: string, count: number) {
+    assert.equal(this.lastResponse?.body?.items.length, count);
+  },
+);
+
+Then('{person} reads no Kudos', function (this: ThriveWorld, _name: string) {
+  assert.deepEqual(this.lastResponse?.body?.items, []);
+});
+
+Then(
+  '{person} is told of {int} Kudos in all, every one of them this month',
+  function (this: ThriveWorld, _name: string, count: number) {
+    assert.deepEqual(this.lastResponse?.body, {
+      total: count,
+      months: [{ month: thisMonth(), count }],
+    });
+  },
+);
+
+Then(
+  '{person} is told of {int} Kudos in all, in no month',
+  function (this: ThriveWorld, _name: string, count: number) {
+    assert.deepEqual(this.lastResponse?.body, { total: count, months: [] });
   },
 );
 

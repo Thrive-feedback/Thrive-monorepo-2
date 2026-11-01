@@ -310,13 +310,7 @@ export interface FeedItemRequestView {
 
 /** One piece on Home: `request` is `null` for Feedback given without being asked. */
 export interface FeedItemView extends FeedbackView {
+  readonly kind: 'FEEDBACK';
   readonly visibility: FeedItemVisibility;
   readonly request: FeedItemRequestView | null;
-}
-
-/** One page of what a Member reads on Home, newest first. */
-export interface FeedItemsView {
-  readonly items: readonly FeedItemView[];
-  /** The id the next page starts after, or `null` on the last page. */
-  readonly nextAfterId: string | null;
 }

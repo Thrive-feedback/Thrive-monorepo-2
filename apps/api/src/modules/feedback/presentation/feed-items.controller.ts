@@ -21,6 +21,7 @@ import { ZodResponse } from 'nestjs-zod';
 import { ListFeedItemsUseCase } from '../application/use-cases/list-feed-items.use-case';
 import {
   toFeedbackResponse,
+  toKudosResponse,
   toPersonResponse,
   toTagsResponse,
 } from './dto/feedback-response.mapper';
@@ -63,24 +64,29 @@ export class FeedItemsController {
     });
     return {
       readerAccountId: actor.accountId,
-      items: feedItems.items.map((feedback) => ({
-        ...toFeedbackResponse(feedback),
-        visibility: feedback.visibility,
-        request: feedback.request && {
-          message: feedback.request.message,
-          tags: toTagsResponse(feedback.request.tags),
-          requester: toPersonResponse(feedback.request.requester),
-          asked: feedback.request.asked.map((ask) => ({
-            person: toPersonResponse(ask.person),
-            status: ask.status,
-            answer: ask.answer && {
-              message: ask.answer.message,
-              tags: toTagsResponse(ask.answer.tags),
-              answeredAt: ask.answer.answeredAt.toISOString(),
+      items: feedItems.items.map((item) =>
+        item.kind === 'KUDOS'
+          ? { kind: item.kind, ...toKudosResponse(item) }
+          : {
+              kind: item.kind,
+              ...toFeedbackResponse(item),
+              visibility: item.visibility,
+              request: item.request && {
+                message: item.request.message,
+                tags: toTagsResponse(item.request.tags),
+                requester: toPersonResponse(item.request.requester),
+                asked: item.request.asked.map((ask) => ({
+                  person: toPersonResponse(ask.person),
+                  status: ask.status,
+                  answer: ask.answer && {
+                    message: ask.answer.message,
+                    tags: toTagsResponse(ask.answer.tags),
+                    answeredAt: ask.answer.answeredAt.toISOString(),
+                  },
+                })),
+              },
             },
-          })),
-        },
-      })),
+      ),
       nextCursor: toCursor(feedItems.nextAfterId),
     };
   }

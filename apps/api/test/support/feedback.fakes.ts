@@ -18,6 +18,7 @@ import type {
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import { FeedbackRequestQuery } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
 import {
+  type KudosMonthRow,
   type KudosPageRow,
   KudosQuery,
   type KudosRow,
@@ -28,7 +29,11 @@ import type {
   PageRequest,
   WaitingAskSort,
 } from '@app/modules/feedback/application/types/feedback-request.types';
-import type { CursorPageRequest } from '@app/modules/feedback/application/types/kudos.types';
+import type {
+  CursorPageRequest,
+  FeedPageRequest,
+  FeedPosition,
+} from '@app/modules/feedback/application/types/kudos.types';
 import type { Feedback } from '@app/modules/feedback/domain/entity/feedback.entity';
 import {
   FeedbackRequest,
@@ -43,6 +48,10 @@ import { FeedbackRepository } from '@app/modules/feedback/domain/repository/feed
 import { FeedbackRequestRepository } from '@app/modules/feedback/domain/repository/feedback-request-repository.port';
 import { KudosRepository } from '@app/modules/feedback/domain/repository/kudos-repository.port';
 import type { AskStatusValue } from '@app/modules/feedback/domain/value-object/ask-status.vo';
+import {
+  KUDOS_MONTH_UTC_OFFSET_HOURS,
+  type KudosMonthRange,
+} from '@app/modules/feedback/domain/value-object/kudos-month.vo';
 import {
   VISIBILITIES,
   type VisibilityValue,
@@ -428,11 +437,22 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     return { items: pageOf(feed, page), total: feed.length };
   }
 
+  async feedbackPositionOf(
+    workspaceId: string,
+    feedbackId: string,
+  ): Promise<FeedPosition | null> {
+    return (
+      this.feedbackWithVisibility.find(
+        (row) => row.workspaceId === workspaceId && row.id === feedbackId,
+      ) ?? null
+    );
+  }
+
   async feedItemsFor(
     workspaceId: string,
     readerAccountId: string,
     show: FeedItemShow,
-    page: CursorPageRequest,
+    page: FeedPageRequest,
   ): Promise<FeedItemPageRow> {
     const read = this.feedbackWithVisibility
       .filter((row) => {
@@ -445,11 +465,7 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
         return row.workspaceId === workspaceId && (everyone || selected);
       })
       .sort(newestFirst);
-    const start =
-      page.afterId === null
-        ? 0
-        : read.findIndex((row) => row.id === page.afterId) + 1;
-    const rest = read.slice(start);
+    const rest = read.filter((row) => isPast(row, page.after));
     return {
       items: rest.slice(0, page.limit).map((row) => {
         const request = this.answeredRequestOf(
@@ -617,6 +633,17 @@ export class FakeKudosRepository extends KudosRepository {
   }
 }
 
+const HOUR = 60 * 60 * 1000;
+
+/** Whether a row comes after a place in a list ordered newest first, `id` breaking ties. */
+function isPast(row: FeedPosition, after: FeedPosition | null) {
+  return (
+    after === null ||
+    row.createdAt < after.createdAt ||
+    (row.createdAt.getTime() === after.createdAt.getTime() && row.id < after.id)
+  );
+}
+
 /** Kudos held in memory, paged newest first by the id cursor the real read uses. */
 export class FakeKudosQuery extends KudosQuery {
   readonly rows: (KudosRow & { readonly workspaceId: string })[] = [];
@@ -624,9 +651,15 @@ export class FakeKudosQuery extends KudosQuery {
   async publicIn(
     workspaceId: string,
     page: CursorPageRequest,
+    within: KudosMonthRange | null,
   ): Promise<KudosPageRow> {
     const newestFirst = this.rows
-      .filter((row) => row.workspaceId === workspaceId)
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          (within === null ||
+            (row.createdAt >= within.from && row.createdAt < within.until)),
+      )
       .sort(
         (a, b) =>
           b.createdAt.getTime() - a.createdAt.getTime() ||
@@ -642,5 +675,56 @@ export class FakeKudosQuery extends KudosQuery {
       items: rest.slice(0, page.limit),
       hasMore: rest.length > page.limit,
     };
+  }
+
+  async onHome(
+    workspaceId: string,
+    page: FeedPageRequest,
+    recipientAccountId: string | null,
+  ): Promise<KudosPageRow> {
+    const rest = this.rows
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          (recipientAccountId === null ||
+            row.recipientAccountIds.includes(recipientAccountId)) &&
+          isPast(row, page.after),
+      )
+      .sort(
+        (a, b) =>
+          b.createdAt.getTime() - a.createdAt.getTime() ||
+          b.id.localeCompare(a.id),
+      );
+    return {
+      items: rest.slice(0, page.limit),
+      hasMore: rest.length > page.limit,
+    };
+  }
+
+  async positionOf(
+    workspaceId: string,
+    kudosId: string,
+  ): Promise<FeedPosition | null> {
+    return (
+      this.rows.find(
+        (row) => row.workspaceId === workspaceId && row.id === kudosId,
+      ) ?? null
+    );
+  }
+
+  async monthsIn(workspaceId: string): Promise<readonly KudosMonthRow[]> {
+    const counts = new Map<string, number>();
+    for (const row of this.rows) {
+      if (row.workspaceId === workspaceId) {
+        const shifted = new Date(
+          row.createdAt.getTime() + KUDOS_MONTH_UTC_OFFSET_HOURS * HOUR,
+        );
+        const month = shifted.toISOString().slice(0, 7);
+        counts.set(month, (counts.get(month) ?? 0) + 1);
+      }
+    }
+    return [...counts]
+      .map(([month, count]) => ({ month, count }))
+      .sort((a, b) => b.month.localeCompare(a.month));
   }
 }

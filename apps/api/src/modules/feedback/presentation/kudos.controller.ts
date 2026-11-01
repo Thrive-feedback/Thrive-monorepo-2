@@ -21,16 +21,15 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { GiveKudosUseCase } from '../application/use-cases/give-kudos.use-case';
+import { ListKudosMonthsUseCase } from '../application/use-cases/list-kudos-months.use-case';
 import { ListWorkspaceKudosUseCase } from '../application/use-cases/list-workspace-kudos.use-case';
-import {
-  toKudosCardResponse,
-  toTagsResponse,
-} from './dto/feedback-response.mapper';
+import { toKudosResponse } from './dto/feedback-response.mapper';
 import {
   GiveKudosRequestDto,
   GiveKudosResponseDto,
 } from './dto/give-kudos.dto';
 import {
+  ListKudosMonthsResponseDto,
   ListWorkspaceKudosQueryDto,
   ListWorkspaceKudosResponseDto,
 } from './dto/list-workspace-kudos.dto';
@@ -52,6 +51,7 @@ export class KudosController {
   constructor(
     private readonly giveKudosUseCase: GiveKudosUseCase,
     private readonly listWorkspaceKudosUseCase: ListWorkspaceKudosUseCase,
+    private readonly listKudosMonthsUseCase: ListKudosMonthsUseCase,
   ) {}
 
   @Post()
@@ -95,26 +95,29 @@ export class KudosController {
     const kudos = await this.listWorkspaceKudosUseCase.execute({
       workspaceId: params.workspaceId,
       page: { afterId: query.cursor, limit: query.limit },
+      month: query.month ?? null,
     });
     return {
-      items: kudos.items.map((each) => ({
-        id: each.id,
-        giver: {
-          accountId: each.giver.accountId,
-          name: each.giver.name,
-          status: each.giver.status,
-        },
-        recipients: each.recipients.map((recipient) => ({
-          accountId: recipient.accountId,
-          name: recipient.name,
-          status: recipient.status,
-        })),
-        message: each.message,
-        tags: toTagsResponse(each.tags),
-        card: toKudosCardResponse(each.card),
-        createdAt: each.createdAt.toISOString(),
-      })),
+      items: kudos.items.map(toKudosResponse),
       nextCursor: toCursor(kudos.nextAfterId),
+    };
+  }
+
+  @Get('months')
+  @ApiOperation({
+    summary: 'Count the Kudos given in this Workspace, in all and by month',
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ZodResponse({ status: HttpStatus.OK, type: ListKudosMonthsResponseDto })
+  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
+  @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
+  async listKudosMonths(@Param() params: WorkspacePathParamsDto) {
+    const { total, months } = await this.listKudosMonthsUseCase.execute({
+      workspaceId: params.workspaceId,
+    });
+    return {
+      total,
+      months: months.map(({ month, count }) => ({ month, count })),
     };
   }
 }

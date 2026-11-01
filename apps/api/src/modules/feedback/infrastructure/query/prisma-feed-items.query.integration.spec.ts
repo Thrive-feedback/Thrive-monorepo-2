@@ -3,6 +3,8 @@ import { loadConfiguration } from '@app/config/configuration';
 import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { v7 as uuidv7 } from 'uuid';
+import type { FeedItemPageRow } from '../../application/query-port/feedback-request.query-port';
+import type { FeedPosition } from '../../application/types/kudos.types';
 import { Feedback } from '../../domain/entity/feedback.entity';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
@@ -20,7 +22,7 @@ const context = new PrismaTransactionContext(prismaService);
 const repository = new PrismaFeedbackRepository(context);
 const requestRepository = new PrismaFeedbackRequestRepository(context);
 const query = new PrismaFeedbackRequestQuery(context);
-const FIRST_PAGE = { afterId: null, limit: 20 };
+const FIRST_PAGE = { after: null, limit: 20 };
 
 const WORKSPACE_ID = uuidv7();
 const OTHER_WORKSPACE_ID = uuidv7();
@@ -249,17 +251,19 @@ describe('reading Home', () => {
 
   it('pages by the row it stopped on, repeating and skipping nothing', async () => {
     const seen: string[] = [];
-    let afterId: string | null = null;
+    let after: FeedPosition | null = null;
     for (;;) {
-      const page = await query.feedItemsFor(WORKSPACE_ID, ANA, 'ALL', {
-        afterId,
-        limit: 3,
-      });
+      const page: FeedItemPageRow = await query.feedItemsFor(
+        WORKSPACE_ID,
+        ANA,
+        'ALL',
+        { after, limit: 3 },
+      );
       seen.push(...page.items.map((item) => item.id));
       if (!page.hasMore) {
         break;
       }
-      afterId = page.items.at(-1)?.id ?? null;
+      after = page.items.at(-1) ?? null;
     }
 
     expect(seen).toEqual([

@@ -59,3 +59,34 @@ Feature: Kudos
     Given Dan owns a Workspace called "Globex"
     When Dan signs in and looks at the Kudos of Ann's Workspace
     Then Dan is told that Workspace cannot be found
+
+  @api
+  Scenario: The Kudos of one month can be read on their own
+    Given Ann has given Kudos: "@Ben carried the launch."
+    When Cara looks at this month's Kudos of their Workspace
+    Then Cara reads 1 Kudos
+    When Cara looks at the Kudos of their Workspace from "2020-01"
+    Then Cara reads no Kudos
+
+  @api
+  Scenario: A Member can see how many Kudos each month holds
+    Given Ann has given Kudos: "@Ben carried the launch."
+    And Ann has given Kudos: "@Cara kept us calm."
+    When Cara counts the Kudos of their Workspace
+    Then Cara is told of 2 Kudos in all, every one of them this month
+
+  @api
+  Scenario: A Workspace with no Kudos has no months
+    When Cara counts the Kudos of their Workspace
+    Then Cara is told of 0 Kudos in all, in no month
+
+  @api
+  Scenario: A month has to be a month
+    When Cara looks at the Kudos of their Workspace from "2026-13"
+    Then the request is refused as malformed
+
+  @api
+  Scenario: Somebody outside a Workspace cannot count its Kudos
+    Given Dan owns a Workspace called "Globex"
+    When Dan signs in and counts the Kudos of Ann's Workspace
+    Then Dan is told that Workspace cannot be found

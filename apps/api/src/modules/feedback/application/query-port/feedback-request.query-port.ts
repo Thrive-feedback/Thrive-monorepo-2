@@ -13,7 +13,11 @@ import type {
   TagsView,
   WaitingAskSort,
 } from '../types/feedback-request.types';
-import type { CursorPageRequest } from '../types/kudos.types';
+import type {
+  CursorPageRequest,
+  FeedPageRequest,
+  FeedPosition,
+} from '../types/kudos.types';
 
 /** One Ask, as stored. Names are Identity's and are added above this port. */
 export interface FeedbackRequestAskRow {
@@ -318,8 +322,14 @@ export abstract class FeedbackRequestQuery {
     workspaceId: string,
     readerAccountId: string,
     show: FeedItemShow,
-    page: CursorPageRequest,
+    page: FeedPageRequest,
   ): Promise<FeedItemPageRow>;
+
+  /** Where one piece of Feedback of this Workspace sits on Home, or `null` if it is not there. */
+  abstract feedbackPositionOf(
+    workspaceId: string,
+    feedbackId: string,
+  ): Promise<FeedPosition | null>;
 
   /**
    * One piece of Feedback of one Workspace, or `null`. Not scoped to a reader: who may read it

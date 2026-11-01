@@ -12,11 +12,29 @@ export interface CursorPageRequest {
   readonly limit: number;
 }
 
+/**
+ * A place in a list ordered newest first with `id` breaking ties. It means the same in any table
+ * ordered that way, which is what lets Home read two under one cursor (ADR 0077).
+ */
+export interface FeedPosition {
+  readonly createdAt: Date;
+  readonly id: string;
+}
+
+/** One page of Home: the rows after a place, or the first page, and how many. */
+export interface FeedPageRequest {
+  /** Where the last page ended, or `null` for the first page. */
+  readonly after: FeedPosition | null;
+  readonly limit: number;
+}
+
 /** One person a Kudos names, as a reader is shown them. */
 export interface KudosPersonView {
   readonly accountId: string;
   /** `null` while they have not introduced themselves. */
   readonly name: string | null;
+  /** Their Google photo, or `null` when they have none. */
+  readonly photoUrl: string | null;
   readonly status: PersonStatus;
 }
 
@@ -37,4 +55,17 @@ export interface WorkspaceKudosView {
   readonly items: readonly KudosView[];
   /** The id the next page starts after, or `null` on the last page. */
   readonly nextAfterId: string | null;
+}
+
+/** How many Kudos one month of a Workspace holds. */
+export interface KudosMonthView {
+  /** `YYYY-MM`, on the clock `KudosMonth` reads. */
+  readonly month: string;
+  readonly count: number;
+}
+
+/** A Workspace's Kudos counted: in all, and in each month holding one, newest first. */
+export interface KudosMonthsView {
+  readonly total: number;
+  readonly months: readonly KudosMonthView[];
 }
