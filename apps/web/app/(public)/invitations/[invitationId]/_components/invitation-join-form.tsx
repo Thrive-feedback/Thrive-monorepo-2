@@ -2,17 +2,17 @@
 
 import Image from 'next/image';
 import { startTransition, useActionState, useEffect, useRef } from 'react';
-import { Button } from '@/components/atoms/button';
-import { Text } from '@/components/atoms/text';
 import type {
   AcceptInvitationRefusal,
   AcceptInvitationState,
-} from '../_lib/accept-invitation-state.type';
-import type { Invitation } from '../_lib/invitation.type';
+} from '@/app/(public)/invitations/[invitationId]/_lib/accept-invitation-state.type';
+import type { Invitation } from '@/app/(public)/invitations/[invitationId]/_lib/invitation.type';
 import {
   acceptInvitation,
   useAnotherGoogleAccount,
-} from '../_lib/invitation-actions.service';
+} from '@/app/(public)/invitations/[invitationId]/_lib/invitation-actions.service';
+import { Button } from '@/components/atoms/button';
+import { Text } from '@/components/atoms/text';
 
 export type InvitationJoinFormProps = {
   invitation: Invitation;

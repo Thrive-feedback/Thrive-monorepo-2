@@ -1,10 +1,10 @@
-import { Link } from '@/components/atoms/link';
-import { Text } from '@/components/atoms/text';
-import { ROUTES } from '@/lib/routes.constant';
 import type {
   ClosedInvitationStatus,
   Invitation,
-} from '../_lib/invitation.type';
+} from '@/app/(public)/invitations/[invitationId]/_lib/invitation.type';
+import { Link } from '@/components/atoms/link';
+import { Text } from '@/components/atoms/text';
+import { ROUTES } from '@/lib/routes.constant';
 import { InvitationHeading } from './invitation-heading';
 
 export type InvitationClosedProps = {

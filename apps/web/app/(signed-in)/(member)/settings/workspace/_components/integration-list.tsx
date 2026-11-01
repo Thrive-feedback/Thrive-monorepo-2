@@ -1,9 +1,9 @@
+import { SettingRow } from '@/app/(signed-in)/(member)/settings/_components/setting-row';
 import { readConnections } from '@/app/(signed-in)/(member)/settings/workspace/_lib/connections.service';
 import { mayManageIntegrations } from '@/app/(signed-in)/(member)/settings/workspace/_lib/integration-access.util';
 import { calendarDay } from '@/lib/calendar-day.util';
 import { CHAT_PROVIDER_LIST } from '@/lib/chat/chat-providers.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import { SettingRow } from '../../_components/setting-row';
 import { ConnectIntegrationButton } from './connect-integration-button';
 import { DisconnectIntegrationButton } from './disconnect-integration-button';
 

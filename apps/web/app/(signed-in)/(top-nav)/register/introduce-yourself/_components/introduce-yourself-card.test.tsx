@@ -5,9 +5,12 @@ import { IntroduceYourselfCard } from './introduce-yourself-card';
 vi.mock('@/lib/session/session-actions.service', () => ({
   signOut: vi.fn(),
 }));
-vi.mock('../_lib/profile-actions.service', () => ({
-  saveProfile: vi.fn(),
-}));
+vi.mock(
+  '@/app/(signed-in)/(top-nav)/register/introduce-yourself/_lib/profile-actions.service',
+  () => ({
+    saveProfile: vi.fn(),
+  }),
+);
 
 describe('IntroduceYourselfCard', () => {
   it('says who is signed in and offers a way out', () => {

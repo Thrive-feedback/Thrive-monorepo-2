@@ -1,6 +1,6 @@
+import { SettingRow } from '@/app/(signed-in)/(member)/settings/_components/setting-row';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { ThemePicker } from '@/components/molecules/theme-picker';
-import { SettingRow } from '../../_components/setting-row';
 
 /** The colour mode, kept in this browser rather than on the account. */
 export function AppearanceSection() {

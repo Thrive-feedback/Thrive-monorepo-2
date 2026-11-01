@@ -1,8 +1,8 @@
 import Image from 'next/image';
+import type { Invitation } from '@/app/(public)/invitations/[invitationId]/_lib/invitation.type';
+import { signInToAccept } from '@/app/(public)/invitations/[invitationId]/_lib/invitation-actions.service';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
-import type { Invitation } from '../_lib/invitation.type';
-import { signInToAccept } from '../_lib/invitation-actions.service';
 import { InvitationHeading } from './invitation-heading';
 
 export type InvitationSignInProps = {

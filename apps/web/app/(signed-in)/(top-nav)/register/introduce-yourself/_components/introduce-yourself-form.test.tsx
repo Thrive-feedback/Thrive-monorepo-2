@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SaveProfileState } from '../_lib/save-profile-state.type';
+import type { SaveProfileState } from '@/app/(signed-in)/(top-nav)/register/introduce-yourself/_lib/save-profile-state.type';
 import { IntroduceYourselfForm } from './introduce-yourself-form';
 
 const saveProfile =
@@ -11,10 +11,13 @@ const saveProfile =
       formData: FormData,
     ) => Promise<SaveProfileState>
   >();
-vi.mock('../_lib/profile-actions.service', () => ({
-  saveProfile: (previous: SaveProfileState, formData: FormData) =>
-    saveProfile(previous, formData),
-}));
+vi.mock(
+  '@/app/(signed-in)/(top-nav)/register/introduce-yourself/_lib/profile-actions.service',
+  () => ({
+    saveProfile: (previous: SaveProfileState, formData: FormData) =>
+      saveProfile(previous, formData),
+  }),
+);
 
 beforeEach(() => {
   saveProfile.mockReset();

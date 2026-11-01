@@ -1,6 +1,6 @@
+import type { Invitation } from '@/app/(public)/invitations/[invitationId]/_lib/invitation.type';
 import { HandUnderline } from '@/components/atoms/hand-underline';
 import { Text } from '@/components/atoms/text';
-import type { Invitation } from '../_lib/invitation.type';
 
 export type InvitationHeadingProps = {
   invitation: Invitation;

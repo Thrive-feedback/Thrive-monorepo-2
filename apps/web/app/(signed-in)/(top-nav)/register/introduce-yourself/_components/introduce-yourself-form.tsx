@@ -1,11 +1,11 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import { saveProfile } from '@/app/(signed-in)/(top-nav)/register/introduce-yourself/_lib/profile-actions.service';
+import type { SaveProfileState } from '@/app/(signed-in)/(top-nav)/register/introduce-yourself/_lib/save-profile-state.type';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { TextField } from '@/components/molecules/text-field';
-import { saveProfile } from '../_lib/profile-actions.service';
-import type { SaveProfileState } from '../_lib/save-profile-state.type';
 
 function firstWord(value: string): string {
   return value.trim().split(/\s+/)[0] ?? '';
