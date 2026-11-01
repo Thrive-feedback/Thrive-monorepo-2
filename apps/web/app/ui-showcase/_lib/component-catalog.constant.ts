@@ -83,9 +83,21 @@ import {
   InputPreview,
 } from '@/app/ui-showcase/_components/entries/input-entry';
 import {
+  KudosCardReadDialogEntry,
+  KudosCardReadDialogPreview,
+} from '@/app/ui-showcase/_components/entries/kudos-card-read-dialog-entry';
+import {
+  KudosCardReadOnlyEntry,
+  KudosCardReadOnlyPreview,
+} from '@/app/ui-showcase/_components/entries/kudos-card-read-only-entry';
+import {
   KudosDialogEntry,
   KudosDialogPreview,
 } from '@/app/ui-showcase/_components/entries/kudos-dialog-entry';
+import {
+  KudosFeedCardEntry,
+  KudosFeedCardPreview,
+} from '@/app/ui-showcase/_components/entries/kudos-feed-card-entry';
 import {
   LabelEntry,
   LabelPreview,
@@ -555,6 +567,20 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: KudosDialogEntry,
   },
   {
+    slug: 'kudos-card-read-dialog',
+    name: 'KudosCardReadDialog',
+    level: 'organism',
+    Preview: KudosCardReadDialogPreview,
+    Entry: KudosCardReadDialogEntry,
+  },
+  {
+    slug: 'kudos-card-read-only',
+    name: 'KudosCardReadOnly',
+    level: 'organism',
+    Preview: KudosCardReadOnlyPreview,
+    Entry: KudosCardReadOnlyEntry,
+  },
+  {
     slug: 'card-tool-note',
     name: 'CardToolNote',
     level: 'organism',
@@ -567,6 +593,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'organism',
     Preview: OfferedFeedbackCardPreview,
     Entry: OfferedFeedbackCardEntry,
+  },
+  {
+    slug: 'kudos-feed-card',
+    name: 'KudosFeedCard',
+    level: 'organism',
+    Preview: KudosFeedCardPreview,
+    Entry: KudosFeedCardEntry,
   },
   {
     slug: 'requested-feedback-card',
