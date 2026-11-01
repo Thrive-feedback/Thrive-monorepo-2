@@ -1,16 +1,13 @@
-import type { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import type { TextTags } from '@/lib/feedback/text-tags.type';
+import type { Visibility } from '@/lib/feedback/visibility.type';
 import type { PaperTone, PostcardTextStyle } from './postcard-style.constant';
 
 /**
  * Who else can read a postcard; whoever it is for always can. The values are the API's own, so a
  * caller hands them on unchanged. `ONLY_ME` is shown to the Giver as "Only them".
  */
-export type PostcardVisibility =
-  | 'ONLY_ME'
-  | typeof SELECTED_PEOPLE
-  | 'EVERYONE';
+export type PostcardVisibility = Visibility;
 
 /** The two sides of a postcard: the picture on the front, the message on the back. */
 export type PostcardSide = 'front' | 'back';
