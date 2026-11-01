@@ -12,13 +12,16 @@ import {
 } from '../query-port/linked-account.query-port';
 import { ChatCopyService } from '../service/chat-copy.service';
 import { DirectMessengerRegistry } from '../service/direct-messenger-registry.service';
-import { EventContextService } from '../service/event-context.service';
+import {
+  type EventContext,
+  EventContextService,
+} from '../service/event-context.service';
 import { NotificationRecipients } from '../service/notification-recipients.service';
 
-/** One person and the words meant for them, after the rules have decided both. */
+/** One person the rules chose, and the words meant for them once the names are known. */
 interface Delivery {
   readonly accountId: string;
-  readonly text: string;
+  readonly textFor: (context: EventContext) => string;
 }
 
 /**
@@ -50,15 +53,13 @@ export class ChatPersonNotifier extends PersonNotifierPort {
   }
 
   async askReceived(event: AskReceived): Promise<void> {
-    const [recipients, context] = await Promise.all([
-      this.notificationRecipients.of({
-        workspaceId: event.workspaceId,
-        actorAccountId: event.actorAccountId,
-        candidates: event.giverAccountIds,
-      }),
-      this.eventContextService.of(event),
-    ]);
+    const recipients = await this.notificationRecipients.of({
+      workspaceId: event.workspaceId,
+      actorAccountId: event.actorAccountId,
+      candidates: event.giverAccountIds,
+    });
     await this.deliver(
+      event,
       recipients.flatMap((accountId) => {
         const askId = event.askIdByGiver[accountId];
         // An Ask the caller did not name is not this module's to invent; the person simply is
@@ -67,12 +68,13 @@ export class ChatPersonNotifier extends PersonNotifierPort {
           ? [
               {
                 accountId,
-                text: this.chatCopyService.askReceived({
-                  actorName: context.actorName,
-                  workspaceName: context.workspaceName,
-                  requestMessage: event.requestMessage,
-                  askId,
-                }),
+                textFor: (context: EventContext) =>
+                  this.chatCopyService.askReceived({
+                    actorName: context.actorName,
+                    workspaceName: context.workspaceName,
+                    requestMessage: event.requestMessage,
+                    askId,
+                  }),
               },
             ]
           : [];
@@ -81,65 +83,71 @@ export class ChatPersonNotifier extends PersonNotifierPort {
   }
 
   async askAnswered(event: AskAnswered): Promise<void> {
-    const [recipients, context] = await Promise.all([
-      this.notificationRecipients.of({
-        workspaceId: event.workspaceId,
-        actorAccountId: event.actorAccountId,
-        candidates: [event.requesterAccountId],
-      }),
-      this.eventContextService.of(event),
-    ]);
-    const text = this.chatCopyService.askAnswered({
-      actorName: context.actorName,
-      workspaceName: context.workspaceName,
-      feedbackRequestId: event.feedbackRequestId,
+    const recipients = await this.notificationRecipients.of({
+      workspaceId: event.workspaceId,
+      actorAccountId: event.actorAccountId,
+      candidates: [event.requesterAccountId],
     });
-    await this.deliver(recipients.map((accountId) => ({ accountId, text })));
+    await this.deliver(
+      event,
+      recipients.map((accountId) => ({
+        accountId,
+        textFor: (context) =>
+          this.chatCopyService.askAnswered({
+            actorName: context.actorName,
+            workspaceName: context.workspaceName,
+            feedbackRequestId: event.feedbackRequestId,
+          }),
+      })),
+    );
   }
 
   async feedbackWritten(event: FeedbackWritten): Promise<void> {
-    const [recipients, context] = await Promise.all([
-      this.notificationRecipients.of({
-        workspaceId: event.workspaceId,
-        actorAccountId: event.actorAccountId,
-        // The Receivers first, so somebody also named under Selected people is de-duplicated to
-        // the wording that is true of them: it was written *to* them (#215 AC 5).
-        candidates: [
-          ...event.receiverAccountIds,
-          ...event.sharedWithAccountIds,
-        ],
-      }),
-      this.eventContextService.of(event),
-    ]);
+    const recipients = await this.notificationRecipients.of({
+      workspaceId: event.workspaceId,
+      actorAccountId: event.actorAccountId,
+      // The Receivers first, so somebody also named under Selected people is de-duplicated to
+      // the wording that is true of them: it was written *to* them (#215 AC 5).
+      candidates: [...event.receiverAccountIds, ...event.sharedWithAccountIds],
+    });
     const receivers = new Set(event.receiverAccountIds);
     await this.deliver(
+      event,
       recipients.map((accountId) => ({
         accountId,
-        text: this.chatCopyService.feedbackWritten({
-          actorName: context.actorName,
-          workspaceName: context.workspaceName,
-          feedbackId: event.feedbackId,
-          isReceiver: receivers.has(accountId),
-        }),
+        textFor: (context) =>
+          this.chatCopyService.feedbackWritten({
+            actorName: context.actorName,
+            workspaceName: context.workspaceName,
+            feedbackId: event.feedbackId,
+            isReceiver: receivers.has(accountId),
+          }),
       })),
     );
   }
 
   /**
-   * One read of who is reachable however many people are being told (`BE_06` R9), then every
-   * message in flight at once.
+   * One read of who is reachable however many people are being told (`BE_06` R9), and that read
+   * first: most people link nothing, and then no name is worth reading. Then every message in
+   * flight at once.
    *
    * `allSettled`, not a loop with `await`: one person a tool refuses must not stop the rest
    * (#213 AC 7). At this size — a request asks a handful of people — that is a handful of
    * calls; `BE_18` is where it stops being acceptable, and nothing in this scope goes near it.
    */
-  private async deliver(deliveries: readonly Delivery[]): Promise<void> {
+  private async deliver(
+    event: { readonly workspaceId: string; readonly actorAccountId: string },
+    deliveries: readonly Delivery[],
+  ): Promise<void> {
     if (deliveries.length === 0) {
       return;
     }
     const reachable = await this.linkedAccountQuery.reachableFor(
       deliveries.map((delivery) => delivery.accountId),
     );
+    if (reachable.length === 0) {
+      return;
+    }
     const linksOf = new Map<string, ReachableAccount[]>();
     for (const link of reachable) {
       linksOf.set(link.accountId, [
@@ -147,12 +155,13 @@ export class ChatPersonNotifier extends PersonNotifierPort {
         link,
       ]);
     }
+    const context = await this.eventContextService.of(event);
     await Promise.allSettled(
       deliveries.flatMap((delivery) =>
         // Somebody who has linked nothing is skipped in silence — there is nothing wrong, and
         // nothing to record.
         (linksOf.get(delivery.accountId) ?? []).map((link) =>
-          this.sendTo(link, delivery.text),
+          this.sendTo(link, delivery.textFor(context)),
         ),
       ),
     );
