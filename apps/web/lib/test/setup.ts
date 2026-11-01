@@ -1,7 +1,11 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
+import { toast } from 'sonner';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 import { server } from './msw-server';
+
+/** Longer than sonner's own 200 ms between a toast leaving and being removed. */
+const TOAST_EXIT_MS = 250;
 
 // Next writes this into the build; tests have no build, so they get a fixed host of their own.
 // It is set before any test file is imported, because the template, stamp and sticker catalogs read it then.
@@ -24,6 +28,15 @@ afterEach(() => {
 });
 afterAll(() => {
   server.close();
+});
+
+// A toast on its way out holds a timer that no unmount cancels. Left running, it fires after the
+// test environment has gone, where it finds no `window`, and that fails the whole run though every
+// test passed. Only a file that showed a toast has to wait for it.
+afterAll(async () => {
+  if (toast.getHistory().length > 0) {
+    await new Promise((resolve) => setTimeout(resolve, TOAST_EXIT_MS));
+  }
 });
 
 // jsdom leaves out layout and pointer APIs that Radix and sonner call: the Select measures its
