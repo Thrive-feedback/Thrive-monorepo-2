@@ -31,7 +31,7 @@ export function PostcardMessageReadOnly({
       // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrolling message must be reachable to scroll it from the keyboard.
       tabIndex={0}
       className={cn(
-        'flex-1 overflow-y-auto whitespace-pre-wrap contain-size md:min-h-0',
+        'flex-1 overflow-y-auto whitespace-pre-wrap break-words contain-size md:min-h-0',
         styles.message,
         messageClassName(textStyle),
         isRuled ? [styles.ruled, 'mb-6 min-h-40'] : 'min-h-24',
