@@ -93,6 +93,33 @@ describe('answering an Ask', () => {
     expect(sentBody).toBeUndefined();
   });
 
+  it.each([
+    ['nothing at all', ''],
+    ['more spaces than the limit', ' '.repeat(5000)],
+  ])('asks for an answer when given %s', async (_case, message) => {
+    apiAccepts();
+
+    const state = await answerAsk(WORKSPACE_ID, {}, answering(message));
+
+    expect(state.fieldErrors?.message).toBe(
+      'Write your answer before sending it.',
+    );
+    expect(sentBody).toBeUndefined();
+  });
+
+  it('asks for an answer when the form has no message in it', async () => {
+    apiAccepts();
+    const formData = answering('');
+    formData.delete('message');
+
+    const state = await answerAsk(WORKSPACE_ID, {}, formData);
+
+    expect(state.fieldErrors?.message).toBe(
+      'Write your answer before sending it.',
+    );
+    expect(sentBody).toBeUndefined();
+  });
+
   it('names the limit when the answer is too long, without asking the API', async () => {
     apiAccepts();
 

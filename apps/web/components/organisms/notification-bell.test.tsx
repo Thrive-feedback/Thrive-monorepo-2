@@ -200,16 +200,20 @@ describe('NotificationBell', () => {
   });
 
   it('keeps the number it has when a poll never reaches the server', async () => {
-    countUnreadNotifications.mockRejectedValue(new Error('Failed to fetch'));
-
+    countUnreadNotifications
+      .mockResolvedValueOnce(3)
+      .mockRejectedValue(new Error('Failed to fetch'));
     render(<NotificationBell />);
+    await screen.findByRole('button', { name: 'Notifications, 3 unread' });
 
-    expect(
-      await screen.findByRole('button', { name: 'Notifications' }),
-    ).toBeInTheDocument();
+    window.dispatchEvent(new Event('focus'));
+
     await waitFor(() =>
-      expect(countUnreadNotifications).toHaveBeenCalledOnce(),
+      expect(countUnreadNotifications).toHaveBeenCalledTimes(2),
     );
+    expect(
+      await screen.findByRole('button', { name: 'Notifications, 3 unread' }),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 

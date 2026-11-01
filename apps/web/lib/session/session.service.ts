@@ -124,7 +124,7 @@ const readMyInvitations = cache(async (): Promise<PendingInvitation[]> => {
   }
 });
 
-/** The Invitations waiting for this request's person, for the notice on Home. */
+/** The Invitations waiting for this request's person, for Home's notice and `/choose-workspace`. */
 export function readInvitationsWaiting(): Promise<PendingInvitation[]> {
   return readMyInvitations();
 }
