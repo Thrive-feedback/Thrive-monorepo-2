@@ -24,16 +24,16 @@ vi.mock('./_components/home-feed', () => ({
   HomeFeed: ({ show }: { show: string }) => <p>The feed, showing {show}</p>,
   HomeFeedSkeleton: () => null,
 }));
-vi.mock('./_components/home-postcard', () => ({
-  HomePostcard: ({
+vi.mock('@/app/(signed-in)/(brand-new)/_components/feedback-postcard', () => ({
+  FeedbackPostcard: ({
     feedbackId,
-    show,
+    closeHref,
   }: {
     feedbackId: string;
-    show: string;
+    closeHref: string;
   }) => (
     <p>
-      The postcard {feedbackId}, from {show}
+      The postcard {feedbackId}, closing to {closeHref}
     </p>
   ),
 }));
@@ -96,7 +96,9 @@ describe('BrandNewHome', () => {
     render(await open({ show: 'shared', feedback: FEEDBACK_ID }));
 
     expect(
-      screen.getByText(`The postcard ${FEEDBACK_ID}, from shared`),
+      screen.getByText(
+        `The postcard ${FEEDBACK_ID}, closing to ${ROUTES.brandNewHomeShowing('shared')}`,
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText('The feed, showing shared')).toBeInTheDocument();
   });

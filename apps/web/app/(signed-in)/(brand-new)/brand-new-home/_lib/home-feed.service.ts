@@ -3,14 +3,11 @@ import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { toReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.util';
 import { apiClient } from '@/lib/api-client.service';
-import { toFeedbackPerson } from '@/lib/feedback/feedback-person.util';
 import type {
-  FeedItemOnTheWire,
-  HomeFeedItem,
   HomeFeedPage,
-  HomeFeedPerson,
   HomeFeedShow,
 } from '@/lib/feedback/home-feed-item.type';
+import { toHomeFeedItem } from '@/lib/feedback/home-feed-item.util';
 import type { BrandNewHomeShow } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
@@ -23,41 +20,6 @@ const API_SHOWS: Readonly<Record<BrandNewHomeShow, HomeFeedShow>> = {
   everyone: 'EVERYONE',
   shared: 'SHARED_WITH_ME',
 };
-
-function toHomeFeedPerson(
-  person: Pick<
-    FeedItemOnTheWire['giver'],
-    'accountId' | 'name' | 'photoUrl' | 'status'
-  >,
-): HomeFeedPerson {
-  return { accountId: person.accountId, ...toFeedbackPerson(person) };
-}
-
-function toHomeFeedItem(feedback: FeedItemOnTheWire): HomeFeedItem {
-  return {
-    id: feedback.id,
-    origin: feedback.origin,
-    giver: toHomeFeedPerson(feedback.giver),
-    receivers: feedback.receivers.map(toHomeFeedPerson),
-    message: feedback.message,
-    messageTags: feedback.tags,
-    givenAt: feedback.createdAt,
-    visibility: feedback.visibility,
-    request: feedback.request && {
-      message: feedback.request.message,
-      messageTags: feedback.request.tags,
-      requester: toHomeFeedPerson(feedback.request.requester),
-      asked: feedback.request.asked.map((ask) => ({
-        person: toHomeFeedPerson(ask.person),
-        status: ask.status,
-        answer: ask.answer && {
-          message: ask.answer.message,
-          messageTags: ask.answer.tags,
-        },
-      })),
-    },
-  };
-}
 
 /**
  * One page of what the signed-in person reads on Home, newest first. Who they are is the API's to
