@@ -1,4 +1,5 @@
 import { ApiError } from '@repo/api';
+import { toSessionWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
 import { readWaitingPostcard } from '@/app/(signed-in)/(brand-new)/brand-new-waiting/_lib/waiting-postcard.service';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { readTeammates } from '@/lib/feedback/teammates.service';
@@ -64,10 +65,7 @@ export async function WaitingPostcard({
       askId={askId}
       closeHref={closeHref}
       ask={opening.ask}
-      writer={{
-        name: session.profile.displayName,
-        photoUrl: session.photoUrl,
-      }}
+      writer={toSessionWriter(session)}
       teammates={opening.teammates}
       workspaceGoals={opening.workspaceGoals}
     />
