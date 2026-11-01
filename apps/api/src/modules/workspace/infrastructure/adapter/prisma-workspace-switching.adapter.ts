@@ -7,7 +7,7 @@ import {
 
 /**
  * Stamps `lastUsedAt` on the `member` row, which the plugin knows nothing of (ADR 0049). Writes
- * through `client`, so it joins the use case's unit of work and rolls back with it.
+ * through `client`, so inside a unit of work it joins that and rolls back with it.
  */
 @Injectable()
 export class PrismaWorkspaceSwitchingAdapter extends WorkspaceSwitching {
