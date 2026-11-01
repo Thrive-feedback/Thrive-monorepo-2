@@ -15,8 +15,8 @@ export function RequestedFeedbackCardEntry() {
       name="RequestedFeedbackCard"
       level="organism"
       origin="thrive"
-      source="components/organisms/feed-card/requested-feedback-card.tsx — FeedCardFrame + MiniPostcard + FeedbackText"
-      summary="An answer to a Feedback Request, in Home's feed: the same card as OfferedFeedbackCard, with what was asked above the answer, who else was asked under it, and a small postcard halved as the real one is."
+      source="components/organisms/feed-card/requested-feedback-card.tsx — FeedCardFrame + FeedCardNote + MiniPostcard + FeedbackText"
+      summary="An answer to a Feedback Request, in Home's feed: the same card as OfferedFeedbackCard, with what was asked above the answer, who else was asked under it, and a small postcard halved as the real one is, with a note by hand pointing to it on a wide screen."
       useFor="One answer in the Home menu."
       avoidFor="/home's lists, which keep FeedbackCard until that page is replaced. Feedback kept to the person who asked, which is never on Home."
       usage={`import { RequestedFeedbackCard } from '@/components/organisms/feed-card/requested-feedback-card';
