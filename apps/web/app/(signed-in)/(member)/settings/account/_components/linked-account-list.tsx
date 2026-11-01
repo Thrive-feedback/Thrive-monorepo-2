@@ -25,8 +25,7 @@ const NEEDS_A_CONNECTION =
  * and since when, or that nothing is linked.
  *
  * It reads only the caller's own links — the API has no way to ask about anybody else — so no
- * Member, Admin included, can see another's here or anywhere. It reads its own data, so the
- * section renders around it.
+ * Member, Admin included, can see another's here or anywhere.
  */
 export async function LinkedAccountList() {
   const links = await readLinkedAccounts();

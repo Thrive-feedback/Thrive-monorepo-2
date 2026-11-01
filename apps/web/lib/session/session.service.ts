@@ -41,8 +41,7 @@ const readCurrentSession = cache(async () => {
  * The Workspace this request's session is in, if any: the one chosen in this browser, or the only
  * one for someone in just one. Asked alongside the session rather than after it, so a page waits
  * for one round trip, not two.
- */
-/**
+ *
  * Exported for the one caller that needs the Workspace and nothing else: the bell's poll, which
  * runs every minute per signed-in tab. Going through `requireMember` would read the session too,
  * for a fact it then throws away — three API calls a minute instead of two.
@@ -100,9 +99,9 @@ export async function readSession(): Promise<CurrentAccount | null> {
 
 /**
  * The Invitations sent to this request's person that they could accept now. Asked of someone in
- * no Workspace while deciding where they land, and of a Member only by Home's notice, which
- * streams in, so no page waits on it. One page holds them all: the API's largest, far more than
- * anyone is invited to at once.
+ * no Workspace while deciding where they land, of a Member by Home's notice, which streams in, and
+ * by `/choose-workspace`, which waits for it. One page holds them all: the API's largest, far more
+ * than anyone is invited to at once.
  */
 const readMyInvitations = cache(async (): Promise<PendingInvitation[]> => {
   try {

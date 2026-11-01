@@ -12,15 +12,15 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/**
- * The check is in the page, not a layout, because a layout does not re-run when the client
- * navigates between the pages under it.
- */
 type IntroduceYourselfPageProps = {
   /** `signedIn` is set when signing in led here: a first sign-in, or one that has not introduced itself yet. */
   searchParams: Promise<{ signedIn?: string | string[] }>;
 };
 
+/**
+ * The check is in the page, not a layout, because a layout does not re-run when the client
+ * navigates between the pages under it.
+ */
 export default async function IntroduceYourselfPage({
   searchParams,
 }: IntroduceYourselfPageProps) {

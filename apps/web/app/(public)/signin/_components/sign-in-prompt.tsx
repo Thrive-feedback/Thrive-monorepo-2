@@ -7,13 +7,6 @@ import { Text } from '@/components/atoms/text';
 import { ROUTES } from '@/lib/routes.constant';
 import { signIn } from '@/lib/session/session-actions.service';
 
-/**
- * `m-auto` centres the prompt on both axes inside the layout's flex column. The heading is a
- * handwritten "Welcome to", tilted like the landing page's margin notes, over the wordmark, which
- * names it "Welcome to Thrive"; the line under it is set like the landing page's promise, with the
- * same pen strokes under its last word. The Google button matches the one on an Invitation opened
- * signed out.
- */
 export type SignInPromptProps = {
   /** Google or the API turned the last attempt back, and the visitor should know. */
   didSignInFail?: boolean;
@@ -21,6 +14,13 @@ export type SignInPromptProps = {
   destination?: string | null;
 };
 
+/**
+ * `m-auto` centres the prompt on both axes inside the layout's flex column. The heading is a
+ * handwritten "Welcome to", tilted like the landing page's margin notes, over the wordmark, which
+ * names it "Welcome to Thrive"; the line under it is set like the landing page's promise, with the
+ * same pen strokes under its last word. The Google button matches the one on an Invitation opened
+ * signed out.
+ */
 export function SignInPrompt({
   didSignInFail = false,
   destination = null,
