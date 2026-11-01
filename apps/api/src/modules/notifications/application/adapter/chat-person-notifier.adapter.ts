@@ -128,8 +128,8 @@ export class ChatPersonNotifier extends PersonNotifierPort {
 
   /**
    * One read of who is reachable however many people are being told (`BE_06` R9), and that read
-   * first: most people link nothing, and then no name is worth reading. Then every message in
-   * flight at once.
+   * first, so no name is read for an event nobody can be reached about. Then every message is
+   * written, and only then are they all put in flight at once.
    *
    * `allSettled`, not a loop with `await`: one person a tool refuses must not stop the rest
    * (#213 AC 7). At this size — a request asks a handful of people — that is a handful of
@@ -156,14 +156,16 @@ export class ChatPersonNotifier extends PersonNotifierPort {
       ]);
     }
     const context = await this.eventContextService.of(event);
+    const messages = deliveries.flatMap((delivery) =>
+      // Somebody who has linked nothing is skipped in silence — there is nothing wrong, and
+      // nothing to record.
+      (linksOf.get(delivery.accountId) ?? []).map((link) => ({
+        link,
+        text: delivery.textFor(context),
+      })),
+    );
     await Promise.allSettled(
-      deliveries.flatMap((delivery) =>
-        // Somebody who has linked nothing is skipped in silence — there is nothing wrong, and
-        // nothing to record.
-        (linksOf.get(delivery.accountId) ?? []).map((link) =>
-          this.sendTo(link, delivery.textFor(context)),
-        ),
-      ),
+      messages.map(({ link, text }) => this.sendTo(link, text)),
     );
   }
 

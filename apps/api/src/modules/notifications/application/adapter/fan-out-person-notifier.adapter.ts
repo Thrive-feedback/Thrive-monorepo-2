@@ -37,8 +37,8 @@ interface Told {
  *   place beats telling them in neither.
  * - **The row goes before the chat message.** The row is one local insert of a few milliseconds,
  *   and losing it means the person is told by *nothing*. A chat message is two HTTPS round trips
- *   to somebody else's service. Both are awaited here, in that order; Feedback awaits neither, so
- *   its request never waits on them (design 0022 D5, D6).
+ *   to somebody else's service (design 0022 D5, D6). Both are awaited here, in that order; Feedback
+ *   awaits neither, so its request never waits on them.
  *
  * Nothing here rejects. The port promises that, and `ADR-0035` §8 is why.
  */

@@ -33,6 +33,7 @@ function setUp() {
   const linkedAccountQuery = new FakeLinkedAccountQuery();
   const notifications = new FakeNotificationRepository();
   const discord = new FakeDirectMessenger();
+  const profileNames = new FakeProfileNamePort().withName(ANN, 'Ann');
   const chat = new ChatPersonNotifier(
     recipients,
     linkedAccountQuery,
@@ -41,7 +42,7 @@ function setUp() {
     new ChatCopyService(new WebConfig('https://thrive.test')),
     new EventContextService(
       new FakeWorkspaceNamePort().withName(WORKSPACE, 'Acme'),
-      new FakeProfileNamePort().withName(ANN, 'Ann'),
+      profileNames,
     ),
   );
   const notifier = new FanOutPersonNotifier(
@@ -66,7 +67,15 @@ function setUp() {
       giverAccountIds.map((giver) => [giver, `ask-${giver}`]),
     ),
   });
-  return { membership, notifications, discord, notifier, linked, asked };
+  return {
+    membership,
+    notifications,
+    discord,
+    profileNames,
+    notifier,
+    linked,
+    asked,
+  };
 }
 
 describe('the bell is the floor', () => {
@@ -124,6 +133,18 @@ describe('the two channels are independent, in both directions', () => {
     await notifier.askReceived(asked());
 
     expect(notifications.stored).toHaveLength(1);
+  });
+
+  it('keeps the bell line and resolves when a name cannot be read', async () => {
+    const { notifier, notifications, discord, profileNames, linked, asked } =
+      setUp();
+    linked(BEN);
+    profileNames.refusingToRead();
+
+    await expect(notifier.askReceived(asked())).resolves.toBeUndefined();
+
+    expect(notifications.stored).toHaveLength(1);
+    expect(discord.posted).toEqual([]);
   });
 
   it('resolves even when both fail', async () => {

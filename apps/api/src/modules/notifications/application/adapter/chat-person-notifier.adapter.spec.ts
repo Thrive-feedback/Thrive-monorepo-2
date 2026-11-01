@@ -104,6 +104,16 @@ describe('messaging the people an Ask is for', () => {
     expect(profileNames.calls).toHaveLength(0);
   });
 
+  it('sends nothing, and says so to its caller, when a name cannot be read for somebody reachable', async () => {
+    const { notifier, discord, linked, asked, profileNames } = setUp();
+    linked(BEN, 'dm-ben');
+    profileNames.refusingToRead();
+
+    await expect(notifier.askReceived(asked())).rejects.toThrow();
+
+    expect(discord.posted).toEqual([]);
+  });
+
   it('never messages the person who did the asking', async () => {
     const { notifier, discord, linked, asked } = setUp();
     linked(ANN);
