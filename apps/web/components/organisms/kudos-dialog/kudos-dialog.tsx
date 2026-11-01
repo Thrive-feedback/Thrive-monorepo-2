@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { Dialog } from '@/components/atoms/dialog';
+import { useOpenings } from '@/components/organisms/postcard-dialog/use-openings';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import type { KudosDraft } from './kudos-draft.type';
 import { KudosEditor } from './kudos-editor';
@@ -56,16 +56,7 @@ export function KudosDialog({
   onBackToHome,
   onCloseAutoFocus,
 }: KudosDialogProps) {
-  // A new opening gets a new editor, so its state starts blank. Counted while rendering rather
-  // than in an effect, so the first frame of an opening is already the blank card.
-  const [openings, setOpenings] = useState(0);
-  const [wasOpen, setWasOpen] = useState(open);
-  if (open !== wasOpen) {
-    setWasOpen(open);
-    if (open) {
-      setOpenings((count) => count + 1);
-    }
-  }
+  const openings = useOpenings(open);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
