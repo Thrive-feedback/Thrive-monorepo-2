@@ -5,7 +5,6 @@ import { useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import {
   checkEmailList,
-  MAX_INVITES_PER_SEND,
   parseEmailList,
 } from '@/app/(signed-in)/(member)/settings/members/_lib/email-list.util';
 import { inviteMembers } from '@/app/(signed-in)/(member)/settings/members/_lib/invitation-actions.service';
@@ -24,7 +23,12 @@ import { Text } from '@/components/atoms/text';
 import { TextAreaField } from '@/components/molecules/text-area-field';
 import { InviteEmailRow } from '@/components/organisms/invite-email-row';
 import { RoleSelect } from '@/components/organisms/role-select';
-import type { Invitee } from '@/lib/invitations/invite-emails.util';
+import {
+  COULD_NOT_SEND_TO_ROW,
+  type Invitee,
+  MAX_INVITES_PER_SEND,
+  roleSentTo,
+} from '@/lib/invitations/invite-emails.util';
 import { useInviteRows } from '@/lib/invitations/use-invite-rows';
 import type { MemberRole } from '@/lib/session/current-account.type';
 
@@ -43,19 +47,6 @@ function summaryOf(results: readonly InviteMemberResult[]): string {
   ]
     .filter(Boolean)
     .join(' · ');
-}
-
-const COULD_NOT_SEND_TO_ROW = "Couldn't send. Try again.";
-
-/** The Role an address was sent with, for putting a failed one back as it was. */
-function roleSentTo(
-  invitations: readonly Invitee[],
-  email: string,
-): MemberRole {
-  return (
-    invitations.find((i) => i.email.toLowerCase() === email.toLowerCase())
-      ?.role ?? 'MEMBER'
-  );
 }
 
 /**

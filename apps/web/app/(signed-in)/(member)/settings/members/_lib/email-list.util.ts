@@ -1,8 +1,7 @@
+import { MAX_INVITES_PER_SEND } from '@/lib/invitations/invite-emails.util';
+
 /** Deliberately loose: one `@`, no spaces, a dot in the domain. Delivery is the real check. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/** The API invites at most this many people per send. */
-export const MAX_INVITES_PER_SEND = 10;
 
 export type EmailList = {
   /** Each address once, in the order first written; the first spelling wins. */

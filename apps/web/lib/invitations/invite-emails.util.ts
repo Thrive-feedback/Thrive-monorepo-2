@@ -3,12 +3,29 @@ import type { MemberRole } from '@/lib/session/current-account.type';
 /** Deliberately loose: one `@`, no spaces, a dot in the domain. Delivery is the real check. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** The API invites at most this many people per send. */
+export const MAX_INVITES_PER_SEND = 10;
+
 export const INVITE_EMAIL_MESSAGES = {
   malformed: 'Enter a valid email address.',
 } as const;
 
+/** What a row says when its address could not be sent to. */
+export const COULD_NOT_SEND_TO_ROW = "Couldn't send. Try again.";
+
 /** One person to invite, and the Role they join with. */
 export type Invitee = { readonly email: string; readonly role: MemberRole };
+
+/** The Role an address was sent with, for putting a failed one back as it was. */
+export function roleSentTo(
+  invitations: readonly Invitee[],
+  email: string,
+): MemberRole {
+  return (
+    invitations.find((i) => i.email.toLowerCase() === email.toLowerCase())
+      ?.role ?? 'MEMBER'
+  );
+}
 
 export type InviteEmailCheck =
   | { ok: true; invitations: Invitee[] }
