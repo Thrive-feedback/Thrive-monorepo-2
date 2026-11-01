@@ -17,13 +17,17 @@ import { WorkspaceSwitcherLoader } from './workspace-switcher-loader';
 const WORKSPACE_NAME = 'Workspace name';
 const YOUR_ROLE = 'Your Role';
 
+export type WorkspaceSectionProps = {
+  session: MemberAccount;
+};
+
 /**
  * The Workspace this device is in: its name and the person's Role in it; Switch Workspace, to
  * open another of the person's or create one; the chat tools it posts into, which every Member
  * can see and only an Admin can change; and, last, the way to leave it. Who is in it lives in
  * Settings → Members.
  */
-export function WorkspaceSection({ session }: { session: MemberAccount }) {
+export function WorkspaceSection({ session }: WorkspaceSectionProps) {
   return (
     <section className="flex flex-col">
       <SettingValues

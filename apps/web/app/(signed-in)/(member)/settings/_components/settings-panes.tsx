@@ -59,6 +59,10 @@ function flatten(
   return items.flatMap((item) => [item, ...flatten(item.children ?? [])]);
 }
 
+export type SettingsPanesProps = {
+  children: React.ReactNode;
+};
+
 /**
  * One panel: the menu down the left, and the open section on the right under a header that
  * names it. On a wide screen they sit side by side, and `/settings` shows Account beside the
@@ -69,7 +73,7 @@ function flatten(
  * The panel keeps the main region's side padding but reaches 8 steps into its `py-12`
  * (`MemberShell`), leaving 4 above and below, as Home's split does.
  */
-export function SettingsPanes({ children }: { children: React.ReactNode }) {
+export function SettingsPanes({ children }: SettingsPanesProps) {
   const pathname = usePathname();
   const atIndex = pathname === ROUTES.settings.index;
   const current =

@@ -15,13 +15,17 @@ const EMAIL = 'Email';
 const SIGN_OUT = 'Sign out';
 const SIGN_OUT_DESCRIPTION = 'Sign out of Thrive on this device.';
 
+export type AccountSectionProps = {
+  session: MemberAccount;
+};
+
 /**
  * The person's own Profile, as the session already knows it — their photo and full name, the
  * name others call them by, and the address they sign in with — and Sign out. Read only: the API
  * can create a Profile but not yet change one. What they are in one Workspace, their Role, is in
  * Settings → Workspace, since an Account is the same in every Workspace.
  */
-export function AccountSection({ session }: { session: MemberAccount }) {
+export function AccountSection({ session }: AccountSectionProps) {
   const { profile } = session;
 
   return (

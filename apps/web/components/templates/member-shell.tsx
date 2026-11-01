@@ -6,6 +6,12 @@ import { cn } from '@/lib/cn.util';
 /** Where Google serves the photos people signed in with. */
 const GOOGLE_PHOTOS_ORIGIN = 'https://lh3.googleusercontent.com';
 
+export type MemberShellProps = {
+  /** The bar across the top; the new Home brings its own while it is built beside the old one. */
+  navbar?: React.ReactNode;
+  children: React.ReactNode;
+};
+
 /**
  * The page shape of every page a Member uses: the Member navbar, then content. It is
  * `SiteShell` with the navbar that has Settings and the account avatar, inside a frame of frosted
@@ -22,11 +28,7 @@ const GOOGLE_PHOTOS_ORIGIN = 'https://lh3.googleusercontent.com';
 export function MemberShell({
   navbar = <MemberNavbar />,
   children,
-}: {
-  /** The bar across the top; the new Home brings its own while it is built beside the old one. */
-  navbar?: React.ReactNode;
-  children: React.ReactNode;
-}) {
+}: MemberShellProps) {
   // Every signed-in page shows faces, so the connection to Google is opened while the page
   // renders rather than when the first photo is asked for.
   preconnect(GOOGLE_PHOTOS_ORIGIN);

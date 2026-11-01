@@ -99,11 +99,15 @@ export function HomeTabs({
   );
 }
 
+export type HomeTabsSkeletonProps = {
+  children: React.ReactNode;
+};
+
 /**
  * `HomeTabs` still loading, for a page that does not yet know which tab is open: the row of
  * tabs as one line on its baseline, and the panel it is given.
  */
-export function HomeTabsSkeleton({ children }: { children: React.ReactNode }) {
+export function HomeTabsSkeleton({ children }: HomeTabsSkeletonProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="border-border-subtle border-b pb-2.5">
