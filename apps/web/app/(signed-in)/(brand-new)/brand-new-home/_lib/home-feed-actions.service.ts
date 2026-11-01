@@ -1,11 +1,9 @@
 'use server';
 
-import { ApiError } from '@repo/api';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { readNextPageAsMember } from '@/app/(signed-in)/(brand-new)/_lib/read-next-page.service';
 import type { HomeFeedPage } from '@/lib/feedback/home-feed-item.type';
-import { BRAND_NEW_HOME_SHOWS, ROUTES } from '@/lib/routes.constant';
-import { readCurrentMembership } from '@/lib/session/session.service';
+import { BRAND_NEW_HOME_SHOWS } from '@/lib/routes.constant';
 import { readHomeFeed } from './home-feed.service';
 
 const NextPage = z.object({
@@ -27,16 +25,7 @@ export async function readNextHomeFeedPage(
   if (!parsed.success) {
     return null;
   }
-  const membership = await readCurrentMembership();
-  if (!membership) {
-    redirect(ROUTES.signIn);
-  }
-  try {
-    return await readHomeFeed(membership, parsed.data.show, parsed.data.cursor);
-  } catch (error) {
-    if (!(error instanceof ApiError)) {
-      throw error;
-    }
-    return null;
-  }
+  return readNextPageAsMember((membership) =>
+    readHomeFeed(membership, parsed.data.show, parsed.data.cursor),
+  );
 }

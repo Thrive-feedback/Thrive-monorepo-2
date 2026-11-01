@@ -1,10 +1,8 @@
 'use server';
 
-import { ApiError } from '@repo/api';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { BRAND_NEW_WAITING_SORTS, ROUTES } from '@/lib/routes.constant';
-import { readCurrentMembership } from '@/lib/session/session.service';
+import { readNextPageAsMember } from '@/app/(signed-in)/(brand-new)/_lib/read-next-page.service';
+import { BRAND_NEW_WAITING_SORTS } from '@/lib/routes.constant';
 import { readWaitingAsks, type WaitingAsksPage } from './waiting-asks.service';
 
 const NextPage = z.object({
@@ -24,20 +22,7 @@ export async function readNextWaitingAsks(
   if (!parsed.success) {
     return null;
   }
-  const membership = await readCurrentMembership();
-  if (!membership) {
-    redirect(ROUTES.signIn);
-  }
-  try {
-    return await readWaitingAsks(
-      membership,
-      parsed.data.sort,
-      parsed.data.cursor,
-    );
-  } catch (error) {
-    if (!(error instanceof ApiError)) {
-      throw error;
-    }
-    return null;
-  }
+  return readNextPageAsMember((membership) =>
+    readWaitingAsks(membership, parsed.data.sort, parsed.data.cursor),
+  );
 }
