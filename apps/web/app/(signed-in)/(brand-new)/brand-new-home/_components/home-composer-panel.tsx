@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ComposeCards,
   useComposeCards,
@@ -57,12 +57,14 @@ export function HomeComposerPanel({
     }
   }
 
+  const handleSent = useCallback(() => setMessage(''), []);
+
   // The postcard opens from a button rather than a `DialogTrigger`, so Radix has nowhere to send
   // focus back to: it goes to the field, ready for the next thing to write.
-  function handleCloseAutoFocus(event: Event) {
+  const handleCloseAutoFocus = useCallback((event: Event) => {
     event.preventDefault();
     fieldRef.current?.focus();
-  }
+  }, []);
 
   return (
     <>
@@ -81,8 +83,13 @@ export function HomeComposerPanel({
         teammates={teammates}
         workspaceGoals={workspaceGoals}
         writer={writer}
-        defaultMessage={message}
-        onSent={() => setMessage('')}
+        // A card reads this as its editor mounts, which on a first opening is once its code has
+        // arrived, so it stays live while a card is open. Closed, it stays blank and typing
+        // leaves the cards alone.
+        defaultMessage={
+          cards.isPostcardOpen || cards.isKudosOpen ? message : ''
+        }
+        onSent={handleSent}
         onCloseAutoFocus={handleCloseAutoFocus}
       />
     </>
