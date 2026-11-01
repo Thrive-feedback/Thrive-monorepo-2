@@ -60,14 +60,16 @@ export async function answerAsk(
   });
   if (!input.success) {
     const { fieldErrors } = z.flattenError(input.error);
-    const tooLong = (formData.get('message') as string | null) ?? '';
+    const messageTooLong = input.error.issues.some(
+      (issue) => issue.path[0] === 'message' && issue.code === 'custom',
+    );
     return {
       fieldErrors: {
-        message: fieldErrors.message
-          ? !isWithinMessageLength(tooLong)
-            ? TOO_LONG
-            : WRITE_SOMETHING
-          : undefined,
+        message: messageTooLong
+          ? TOO_LONG
+          : fieldErrors.message
+            ? WRITE_SOMETHING
+            : undefined,
       },
       // A malformed id never comes from the form this page renders.
       formError: fieldErrors.askId ? COULD_NOT_SEND : undefined,
