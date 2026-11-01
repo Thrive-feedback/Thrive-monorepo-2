@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { ComposeKudosDialog, warmKudosDialog } from './compose-kudos-dialog';
@@ -44,9 +44,8 @@ export function useComposeCards() {
     setIsPostcardOpen(true);
   }
 
-  return {
-    openCard,
-    cards: {
+  const cards = useMemo(
+    () => ({
       postcard,
       isPostcardOpen,
       setIsPostcardOpen,
@@ -54,8 +53,11 @@ export function useComposeCards() {
       setIsKudosOpen,
       hasOpenedPostcard,
       hasOpenedKudos,
-    },
-  };
+    }),
+    [postcard, isPostcardOpen, isKudosOpen, hasOpenedPostcard, hasOpenedKudos],
+  );
+
+  return { openCard, cards };
 }
 
 export type ComposeCardsProps = {
@@ -74,8 +76,12 @@ export type ComposeCardsProps = {
   onCloseAutoFocus?: (event: Event) => void;
 };
 
-/** The postcard and the Kudos card, in front of whatever chose them. */
-export function ComposeCards({
+/**
+ * The postcard and the Kudos card, in front of whatever chose them. Memoised because Home's
+ * composer holds what is being typed above this, and a closed card stays mounted once opened, so
+ * every keystroke would otherwise run both editors for nothing.
+ */
+export const ComposeCards = memo(function ComposeCards({
   cards,
   workspaceId,
   teammates,
@@ -116,4 +122,4 @@ export function ComposeCards({
       )}
     </>
   );
-}
+});
