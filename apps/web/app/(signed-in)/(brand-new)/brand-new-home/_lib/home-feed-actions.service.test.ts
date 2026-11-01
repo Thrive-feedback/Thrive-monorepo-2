@@ -208,6 +208,14 @@ describe('readNextHomeFeedPage', () => {
     ).toBeNull();
   });
 
+  it('does not hide a fault of its own as a page that could not be read', async () => {
+    server.use(http.get(FEED_ITEMS, () => HttpResponse.json({})));
+
+    await expect(
+      readNextHomeFeedPage({ show: 'all', cursor: 'cursor-1' }),
+    ).rejects.toThrow(TypeError);
+  });
+
   it('sends somebody whose session has gone to sign in', async () => {
     readCurrentMembership.mockResolvedValue(null);
 
