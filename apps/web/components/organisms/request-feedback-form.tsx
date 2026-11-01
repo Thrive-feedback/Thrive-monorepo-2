@@ -17,11 +17,7 @@ import type {
 } from '@/lib/feedback/request-feedback-state.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { useMentionedAudience } from '@/lib/feedback/use-mentioned-audience';
-import {
-  ComposerLayout,
-  ComposerLayoutSkeleton,
-  ComposerToRow,
-} from './composer-layout';
+import { ComposerLayout, ComposerToRow } from './composer-layout';
 import { feedbackTagTriggers } from './feedback-tag-triggers.util';
 import { VisibilityMenu } from './visibility-menu';
 
@@ -223,9 +219,4 @@ export function RequestFeedbackForm({
       }
     />
   );
-}
-
-/** A `RequestFeedbackForm` still loading, in the composer's shape. */
-export function RequestFeedbackFormSkeleton() {
-  return <ComposerLayoutSkeleton />;
 }
