@@ -9,6 +9,7 @@ import { Clock } from '@app/shared/application/clock.port';
 import { Module } from '@nestjs/common';
 import { ChatPersonNotifier } from './application/adapter/chat-person-notifier.adapter';
 import { FanOutPersonNotifier } from './application/adapter/fan-out-person-notifier.adapter';
+import { PersonNotificationOutboxHandler } from './application/adapter/person-notification-outbox.adapter';
 import { AccountLinker } from './application/port/account-linker.port';
 import { DirectMessenger } from './application/port/direct-messenger.port';
 import { LinkHandoff } from './application/port/link-handoff.port';
@@ -106,6 +107,8 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     // chat message goes only to people who linked an account. Rebinding this one token is the
     // whole of what #248 changed on the write side — Feedback's call sites never moved.
     { provide: PersonNotifierPort, useClass: FanOutPersonNotifier },
+    // Drained by the relay, which the composition root wires: this module never imports it.
+    PersonNotificationOutboxHandler,
     ChatPersonNotifier,
     ChatCopyService,
     EventContextService,
@@ -127,6 +130,6 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     MarkAllReadUseCase,
     WorkspaceMemberGuard,
   ],
-  exports: [PersonNotifierPort],
+  exports: [PersonNotifierPort, PersonNotificationOutboxHandler],
 })
 export class NotificationsModule {}

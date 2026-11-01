@@ -316,6 +316,64 @@ Postgres) · 270 scenarios / 2157 steps · style, types, architecture and build 
 
 ---
 
+## 9c. Slices A2 and A3, 2026-11-01
+
+Both consumers are on the outbox. The three places that said a message could be silently lost no
+longer say it, because it no longer can be.
+
+**The design did not anticipate that both ports swallowed their own failures.** `ChannelAnnouncerPort`
+and `PersonNotifierPort` each promised never to reject, because a *use case* was the caller and must
+not fail. Left alone, every message would have looked delivered and the outbox would have been
+decorative. Both now reject — the caller is the relay, whose whole job is to know — and the guarantee
+they protected still holds, because no request waits on either any more.
+
+**One of them rejects only halfway, and the split is the point.**
+
+| | Retried? | Why |
+| --- | --- | --- |
+| The bell row | **Yes**, five attempts | `notification` is unique on `(recipient, type, subject)`, so a second write is a no-op |
+| A chat message | **No**, swallowed as before | It cannot be unsent and has no idempotency key, so a retry delivers it twice |
+| A channel post | **No**, one attempt then dead | Same reason (brain `ADR-0040`), but visible as a dead row rather than a log line |
+
+**A deliberate property had to go, and it was worth going.** `FanOutPersonNotifier` used to attempt
+the chat message even when the row failed — "telling somebody in one place beats telling them in
+neither". That was right when nothing would ever retry. Now the relay tries the whole event again
+within seconds, so attempting chat first would mean sending it twice. The row goes first and stops
+the tick; the gap closes on the next attempt.
+
+### What the suites taught
+
+- **The Gherkin suite got faster and deterministic.** Three step files polled for up to two seconds
+  against fire-and-forget calls. They now drain and read. 270 scenarios went from ~23 s to ~13 s, and
+  the races went with the waits.
+- **Outbox rows must be cleared between scenarios.** They belong to no Workspace, so the fixtures
+  cannot take them; left behind, a backlog larger than one claim batch pushed a scenario's own
+  message out of reach.
+- **A TypeScript default is invisible to Nest.** The relay's poll interval is injected through a
+  token, because `design:paramtypes` made Nest look for a provider called `Number`.
+
+### Coverage
+
+100% of lines on every file these slices added, and 93–100% of functions:
+
+| File | Funcs | Lines |
+| --- | --- | --- |
+| `outbox-relay.service.ts` | 93.10 | 100.00 |
+| `prisma-outbox.adapter.ts` | 100.00 | 100.00 |
+| `channel-announcement-outbox.adapter.ts` | 100.00 | 100.00 |
+| `person-notification-outbox.adapter.ts` | 100.00 | 100.00 |
+| `fan-out-person-notifier.adapter.ts` | 100.00 | 100.00 |
+
+The relay's polling loop is covered by injecting its interval — the same deterministic seam the
+outbound adapters use for `Wait` — which buys a test for the failure that matters most there: **a
+tick that throws must not quietly stop the loop**, because every later message would go undelivered
+and nothing would say so.
+
+**Verified across A2 and A3:** 817 unit · 201 integration · 270 scenarios / 2157 steps · style,
+types, architecture, contract and build.
+
+---
+
 ---
 
 # Part B — the goal-tagging spike

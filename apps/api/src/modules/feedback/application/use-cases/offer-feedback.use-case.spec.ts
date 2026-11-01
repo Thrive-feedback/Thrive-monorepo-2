@@ -5,7 +5,6 @@ import {
   FakeWorkspaceMembershipPort,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
-import { FakePersonNotifier } from '@test/support/notifications.fakes';
 import { FakeOutbox } from '@test/support/outbox.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
@@ -47,7 +46,6 @@ function offering(
 function setUp() {
   const feedbackRepository = new FakeFeedbackRepository();
   const unitOfWork = new FakeUnitOfWork();
-  const personNotifier = new FakePersonNotifier();
   const outbox = new FakeOutbox();
   const useCase = new OfferFeedbackUseCase(
     feedbackRepository,
@@ -55,14 +53,12 @@ function setUp() {
     aTagsService(WORKSPACE_ID),
     new FakeIdGenerator(FEEDBACK_ID),
     unitOfWork,
-    personNotifier,
     outbox,
   );
   return {
     feedbackRepository,
     unitOfWork,
     useCase,
-    personNotifier,
     outbox,
   };
 }
@@ -212,59 +208,72 @@ describe('a Giver giving a teammate Feedback without being asked', () => {
 });
 
 describe('telling the people Feedback was written for', () => {
+  const WRITTEN = 'notifications.feedback_written';
+
   it('names the Receiver and the Feedback to open', async () => {
-    const { useCase, personNotifier } = setUp();
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(offering());
 
-    expect(personNotifier.feedbackWritten_).toHaveLength(1);
-    const told = personNotifier.feedbackWritten_[0];
-    expect(told?.actorAccountId).toBe(ANN);
-    expect(told?.receiverAccountIds).toEqual([BEN]);
-    expect(told?.feedbackId).toBe(FEEDBACK_ID);
+    expect(outbox.ofType(WRITTEN)).toHaveLength(1);
+    expect(outbox.ofType(WRITTEN)[0]?.payload).toMatchObject({
+      actorAccountId: ANN,
+      receiverAccountIds: [BEN],
+      feedbackId: FEEDBACK_ID,
+    });
   });
 
   it('names the people the Giver chose to share it with', async () => {
-    const { useCase, personNotifier } = setUp();
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(
       offering({ visibility: 'SELECTED_PEOPLE', selectedAccountIds: [CARA] }),
     );
 
-    expect(personNotifier.feedbackWritten_[0]?.sharedWithAccountIds).toEqual([
-      CARA,
-    ]);
+    expect(outbox.ofType(WRITTEN)[0]?.payload).toMatchObject({
+      sharedWithAccountIds: [CARA],
+    });
   });
 
   it('shares with nobody when the Feedback is for the Receiver alone', async () => {
-    const { useCase, personNotifier } = setUp();
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(offering());
 
-    expect(personNotifier.feedbackWritten_[0]?.sharedWithAccountIds).toEqual(
-      [],
-    );
+    expect(outbox.ofType(WRITTEN)[0]?.payload).toMatchObject({
+      sharedWithAccountIds: [],
+    });
   });
 
   it('carries none of the Feedback message', async () => {
-    const { useCase, personNotifier } = setUp();
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(offering());
 
     // #215: neither message carries any of the Feedback's words.
-    expect(JSON.stringify(personNotifier.feedbackWritten_[0])).not.toContain(
+    expect(JSON.stringify(outbox.ofType(WRITTEN)[0]?.payload)).not.toContain(
       'Keep the recap',
     );
   });
 
-  it('succeeds, and still stores the Feedback, when nobody can be told', async () => {
-    const { useCase, personNotifier, feedbackRepository } = setUp();
-    personNotifier.rejectingEverything();
+  it('is enqueued for every Feedback, whoever may read it', async () => {
+    const { useCase, outbox } = setUp();
 
-    const given = await useCase.execute(offering());
+    await useCase.execute(offering({ visibility: 'ONLY_ME' }));
 
-    expect(given.id).toBe(FEEDBACK_ID);
-    expect(feedbackRepository.saved).toHaveLength(1);
+    // The bell is the floor: the Receiver is told whatever the Visibility, unlike the channel
+    // announcement, which is for Everyone alone.
+    expect(outbox.ofType(WRITTEN)).toHaveLength(1);
+  });
+
+  it('keys the message by the Feedback, so a retried request tells each person once', async () => {
+    const { useCase, outbox } = setUp();
+
+    await useCase.execute(offering());
+
+    expect(outbox.ofType(WRITTEN)[0]?.idempotencyKey).toBe(
+      `${WRITTEN}:${FEEDBACK_ID}`,
+    );
   });
 });
 

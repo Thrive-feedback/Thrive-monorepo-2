@@ -5,7 +5,7 @@ import {
   FakeWorkspaceMembershipPort,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
-import { FakePersonNotifier } from '@test/support/notifications.fakes';
+import { FakeOutbox } from '@test/support/outbox.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   CannotAskYourselfError,
@@ -55,17 +55,17 @@ function setUp() {
     CARA,
   );
   const unitOfWork = new FakeUnitOfWork();
-  const personNotifier = new FakePersonNotifier();
+  const outbox = new FakeOutbox();
   const useCase = new SendFeedbackRequestUseCase(
     feedbackRequestRepository,
     workspaceMembershipPort,
     aTagsService(WORKSPACE_ID),
     new FakeIdGenerator(REQUEST_ID, ASK_ID),
     unitOfWork,
-    personNotifier,
+    outbox,
   );
   return {
-    personNotifier,
+    outbox,
     feedbackRequestRepository,
     workspaceMembershipPort,
     unitOfWork,
@@ -144,7 +144,7 @@ describe('a Requester asking a teammate for Feedback', () => {
       aTagsService(WORKSPACE_ID),
       new FakeIdGenerator(REQUEST_ID, ASK_ID, SECOND_ASK_ID),
       new FakeUnitOfWork(),
-      new FakePersonNotifier(),
+      new FakeOutbox(),
     );
 
     await useCase.execute(request({ giverAccountIds: [BEN, CARA] }));
@@ -237,27 +237,54 @@ describe('a Requester asking a teammate for Feedback', () => {
 });
 
 describe('telling the people asked', () => {
+  const ASK_RECEIVED = 'notifications.ask_received';
+
   it('names every Giver, the Ask each of them opens, and who asked', async () => {
-    const { useCase, personNotifier } = setUp();
+    const { useCase, outbox } = setUp();
 
     await useCase.execute(request());
 
-    expect(personNotifier.asksReceived).toHaveLength(1);
-    const told = personNotifier.asksReceived[0];
-    expect(told?.workspaceId).toBe(WORKSPACE_ID);
-    expect(told?.actorAccountId).toBe(ANN);
-    expect(told?.giverAccountIds).toEqual([BEN]);
-    expect(told?.askIdByGiver).toEqual({ [BEN]: ASK_ID });
+    expect(outbox.ofType(ASK_RECEIVED)).toHaveLength(1);
+    expect(outbox.ofType(ASK_RECEIVED)[0]?.payload).toMatchObject({
+      workspaceId: WORKSPACE_ID,
+      actorAccountId: ANN,
+      giverAccountIds: [BEN],
+      askIdByGiver: { [BEN]: ASK_ID },
+    });
   });
 
-  it('succeeds, and still stores the request, when nobody can be told', async () => {
-    const { useCase, personNotifier, feedbackRequestRepository } = setUp();
-    personNotifier.rejectingEverything();
+  it('keys the message by the request, so a retried send tells each person once', async () => {
+    const { useCase, outbox } = setUp();
+
+    await useCase.execute(request());
+
+    expect(outbox.ofType(ASK_RECEIVED)[0]?.idempotencyKey).toBe(
+      `${ASK_RECEIVED}:${REQUEST_ID}`,
+    );
+  });
+
+  it('records the promise in the request own transaction', async () => {
+    const { useCase, outbox, feedbackRequestRepository } = setUp();
 
     const sent = await useCase.execute(request());
 
-    // `ADR-0035` §8: asking for Feedback never fails because somebody could not be reached.
+    // Nobody is asked without the promise to tell them, and no promise survives a request that
+    // rolled back (ADR 0076).
     expect(sent.id).toBe(REQUEST_ID);
     expect(feedbackRequestRepository.saved).toHaveLength(1);
+    expect(outbox.ofType(ASK_RECEIVED)).toHaveLength(1);
+  });
+
+  it('fails the send when the promise cannot be recorded', async () => {
+    const { useCase, outbox } = setUp();
+    outbox.rejectingEverything();
+
+    // The old behaviour swallowed this and asked people nobody would ever be told about. The
+    // enqueue now runs inside the use case's unit of work, so the failure reaches the caller.
+    // That the *write* is undone with it is the transaction's doing and is proved against
+    // Postgres in `outbox.integration.spec.ts` — this fake runs the work and records nothing.
+    await expect(useCase.execute(request())).rejects.toThrow(
+      'the outbox refused',
+    );
   });
 });

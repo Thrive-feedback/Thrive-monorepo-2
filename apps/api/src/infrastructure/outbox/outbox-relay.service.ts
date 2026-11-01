@@ -5,6 +5,7 @@ import {
   UnprocessableOutboxMessage,
 } from '@app/shared/application/outbox-handler.port';
 import {
+  Inject,
   Injectable,
   Logger,
   type OnApplicationBootstrap,
@@ -12,8 +13,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
-/** How often a replay looks for due work. Every replica polls; see ADR 0076 on standing load. */
-const POLL_INTERVAL_MS = 2_000;
+/** How often a replica looks for due work. Every replica polls; see ADR 0076 on standing load. */
+export const POLL_INTERVAL_MS = 2_000;
+/**
+ * How long the relay waits between ticks, as an injected value: a default on the parameter is
+ * invisible to Nest, which reads constructor types from `design:paramtypes` and would look for
+ * a provider called `Number`.
+ */
+export const OUTBOX_POLL_INTERVAL_MS = Symbol('OUTBOX_POLL_INTERVAL_MS');
 /** Claimed together. Small, because the batch is worked through one at a time. */
 const CLAIM_BATCH_SIZE = 20;
 /** A model answers in seconds and a chat tool in hundreds of milliseconds; this covers both. */
@@ -65,6 +72,12 @@ export class OutboxRelay
     private readonly prismaService: PrismaService,
     private readonly handlers: OutboxHandlerRegistry,
     private readonly clock: Clock,
+    /**
+     * Injected so a test can drive the loop without waiting two seconds for it, the same way
+     * the outbound adapters inject their `Wait`.
+     */
+    @Inject(OUTBOX_POLL_INTERVAL_MS)
+    private readonly pollIntervalMs: number = POLL_INTERVAL_MS,
   ) {}
 
   onApplicationBootstrap(): void {
@@ -139,7 +152,7 @@ export class OutboxRelay
           this.inFlight = undefined;
           this.scheduleNextTick();
         });
-    }, POLL_INTERVAL_MS);
+    }, this.pollIntervalMs);
     // Nothing is owed if the process is otherwise finished.
     this.timer.unref?.();
   }

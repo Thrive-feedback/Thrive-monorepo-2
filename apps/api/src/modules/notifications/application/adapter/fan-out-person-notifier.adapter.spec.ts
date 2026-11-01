@@ -114,15 +114,17 @@ describe('the bell is the floor', () => {
 });
 
 describe('the two channels are independent, in both directions', () => {
-  it('still sends the chat message when the bell cannot be written', async () => {
+  it('rejects without sending the chat message when the bell cannot be written', async () => {
     const { notifier, notifications, discord, linked, asked } = setUp();
     linked(BEN);
     notifications.refusingToRecord();
 
-    await notifier.askReceived(asked());
+    await expect(notifier.askReceived(asked())).rejects.toThrow();
 
-    // Telling somebody in one place beats telling them in neither.
-    expect(discord.posted).toHaveLength(1);
+    // It used to send anyway, because nothing would ever retry: telling somebody in one place
+    // beat telling them in neither. The relay now tries the whole event again within seconds
+    // (ADR 0076), and a chat message sent on this attempt would be sent twice on the next.
+    expect(discord.posted).toEqual([]);
   });
 
   it('still writes the bell line when the chat tool refuses', async () => {
@@ -147,13 +149,26 @@ describe('the two channels are independent, in both directions', () => {
     expect(discord.posted).toEqual([]);
   });
 
-  it('resolves even when both fail', async () => {
+  it('rejects when the bell cannot be written, so the relay tries again', async () => {
     const { notifier, notifications, discord, linked, asked } = setUp();
     linked(BEN);
     notifications.refusingToRecord();
     discord.refusingTo('open');
 
+    // The row is unique per person per thing, so the retry that follows is a no-op if it turns
+    // out the write did land. Losing it silently is what this slice exists to stop.
+    await expect(notifier.askReceived(asked())).rejects.toThrow();
+  });
+
+  it('resolves when only the chat tool refuses, because a message cannot be unsent', async () => {
+    const { notifier, notifications, discord, linked, asked } = setUp();
+    linked(BEN);
+    discord.refusingTo('open');
+
+    // Retrying a direct message would deliver it twice, so this half stays swallowed — the
+    // opposite trade from the row, for the opposite reason (ADR 0076 D7).
     await expect(notifier.askReceived(asked())).resolves.toBeUndefined();
+    expect(notifications.stored).toHaveLength(1);
   });
 });
 

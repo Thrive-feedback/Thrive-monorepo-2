@@ -16,7 +16,13 @@ import {
   IntegrationsModule,
   KUDOS_GIVEN_TYPE,
 } from './modules/integrations';
-import { NotificationsModule } from './modules/notifications';
+import {
+  ASK_ANSWERED_TYPE,
+  ASK_RECEIVED_TYPE,
+  FEEDBACK_WRITTEN_TYPE,
+  NotificationsModule,
+  PersonNotificationOutboxHandler,
+} from './modules/notifications';
 import { WorkspaceModule } from './modules/workspace';
 import { WorkspaceGoalModule } from './modules/workspace-goal';
 import { CodedErrorFilter } from './shared/presentation/coded-error.filter';
@@ -32,12 +38,21 @@ import { SharedModule } from './shared/shared.module';
     // The composition root is where handlers are named, so the relay imports no module and no
     // module imports the relay (ADR 0076 D1).
     outboxModule({
-      imports: [IntegrationsModule],
+      imports: [IntegrationsModule, NotificationsModule],
       handlers: {
-        inject: [ChannelAnnouncementOutboxHandler],
-        useFactory: (announcements: ChannelAnnouncementOutboxHandler) => [
+        inject: [
+          ChannelAnnouncementOutboxHandler,
+          PersonNotificationOutboxHandler,
+        ],
+        useFactory: (
+          announcements: ChannelAnnouncementOutboxHandler,
+          notifications: PersonNotificationOutboxHandler,
+        ) => [
           { type: FEEDBACK_PUBLISHED_TYPE, handler: announcements },
           { type: KUDOS_GIVEN_TYPE, handler: announcements },
+          { type: ASK_RECEIVED_TYPE, handler: notifications },
+          { type: ASK_ANSWERED_TYPE, handler: notifications },
+          { type: FEEDBACK_WRITTEN_TYPE, handler: notifications },
         ],
       },
     }),

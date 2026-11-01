@@ -11,7 +11,11 @@ import {
   OUTBOX_HANDLERS,
   type RegisteredOutboxHandler,
 } from './keyed-outbox-handler.registry';
-import { OutboxRelay } from './outbox-relay.service';
+import {
+  OUTBOX_POLL_INTERVAL_MS,
+  OutboxRelay,
+  POLL_INTERVAL_MS,
+} from './outbox-relay.service';
 import { PrismaOutbox } from './prisma-outbox.adapter';
 
 @Module({})
@@ -63,6 +67,7 @@ export function outboxModule(wiring: OutboxHandlerWiring = {}): DynamicModule {
         inject: wiring.handlers?.inject ?? [],
       },
       { provide: OutboxHandlerRegistry, useClass: KeyedOutboxHandlerRegistry },
+      { provide: OUTBOX_POLL_INTERVAL_MS, useValue: POLL_INTERVAL_MS },
       OutboxRelay,
     ],
     exports: [Outbox, OutboxRelay],

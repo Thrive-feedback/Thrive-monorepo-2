@@ -4,7 +4,6 @@ import {
   FakeFeedbackRequestRepository,
 } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
-import { FakePersonNotifier } from '@test/support/notifications.fakes';
 import { FakeOutbox } from '@test/support/outbox.fake';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
@@ -45,21 +44,18 @@ async function setUp(visibility: Visibility = Visibility.onlyMe()) {
     }),
   );
   const unitOfWork = new FakeUnitOfWork();
-  const personNotifier = new FakePersonNotifier();
   const outbox = new FakeOutbox();
   const useCase = new AnswerFeedbackAskUseCase(
     feedbackRequestRepository,
     aTagsService(WORKSPACE_ID),
     new FakeIdGenerator(FEEDBACK_ID, SECOND_FEEDBACK_ID),
     unitOfWork,
-    personNotifier,
     outbox,
   );
   return {
     feedbackRequestRepository,
     unitOfWork,
     useCase,
-    personNotifier,
     outbox,
   };
 }
@@ -227,41 +223,55 @@ describe('a Giver answering an Ask', () => {
 });
 
 describe('telling the Requester their request was answered', () => {
+  const ASK_ANSWERED = 'notifications.ask_answered';
+
   it('tells the Requester, naming who answered and the request to open', async () => {
-    const { useCase, personNotifier } = await setUp();
+    const { useCase, outbox } = await setUp();
 
     await useCase.execute(answering);
 
-    expect(personNotifier.asksAnswered).toHaveLength(1);
-    const told = personNotifier.asksAnswered[0];
-    expect(told?.workspaceId).toBe(WORKSPACE_ID);
-    // Ben answered, so Ben is the actor and is never told about his own action.
-    expect(told?.actorAccountId).toBe(BEN);
-    expect(told?.requesterAccountId).toBe(ANN);
-    expect(told?.feedbackRequestId).toBe(REQUEST_ID);
+    expect(outbox.ofType(ASK_ANSWERED)).toHaveLength(1);
+    expect(outbox.ofType(ASK_ANSWERED)[0]?.payload).toMatchObject({
+      workspaceId: WORKSPACE_ID,
+      // Ben answered, so Ben is the actor and is never told about his own action.
+      actorAccountId: BEN,
+      requesterAccountId: ANN,
+      feedbackRequestId: REQUEST_ID,
+    });
   });
 
   it('carries nothing of what was written', async () => {
-    const { useCase, personNotifier } = await setUp();
+    const { useCase, outbox } = await setUp();
 
     await useCase.execute(answering);
 
     // #214: the answer is the part of Feedback people are most careful about. The link does
     // that job, behind a sign-in.
-    expect(JSON.stringify(personNotifier.asksAnswered[0])).not.toContain(
-      answering.message,
-    );
+    expect(
+      JSON.stringify(outbox.ofType(ASK_ANSWERED)[0]?.payload),
+    ).not.toContain(answering.message);
   });
 
-  it('succeeds, and still stores the answer, when nobody can be told', async () => {
-    const { useCase, personNotifier, feedbackRequestRepository } =
-      await setUp();
-    personNotifier.rejectingEverything();
+  it('tells nobody but the Requester — not the other Givers on the same request', async () => {
+    const { useCase, outbox } = await setUp();
 
-    const answered = await useCase.execute(answering);
+    await useCase.execute(answering);
 
-    expect(answered.feedbackId).toBe(FEEDBACK_ID);
-    expect(feedbackRequestRepository.answers).toHaveLength(1);
+    const payload = outbox.ofType(ASK_ANSWERED)[0]?.payload as {
+      requesterAccountId: string;
+    };
+    expect(Object.keys(payload)).not.toContain('giverAccountIds');
+    expect(payload.requesterAccountId).toBe(ANN);
+  });
+
+  it('keys the message by the answer, so a retried answer tells the Requester once', async () => {
+    const { useCase, outbox } = await setUp();
+
+    await useCase.execute(answering);
+
+    expect(outbox.ofType(ASK_ANSWERED)[0]?.idempotencyKey).toBe(
+      `${ASK_ANSWERED}:${FEEDBACK_ID}`,
+    );
   });
 });
 
