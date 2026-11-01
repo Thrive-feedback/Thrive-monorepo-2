@@ -53,8 +53,13 @@ export interface FeedbackWritten extends PersonEvent {
  * message, because composing the words needs the recipient's language, which lives on a Profile
  * Feedback does not own (design 0021 D2).
  *
- * **Nothing a person does may fail because somebody could not be told.** Every method resolves
- * rather than rejecting; an unreachable person is logged once and skipped (`ADR-0035` §8).
+ * **Nothing a person does may fail because somebody could not be told** (`ADR-0035` §8) — and
+ * since ADR 0076 that holds because the caller is the outbox relay rather than a use case.
+ * Feedback commits and enqueues; whether anybody was reached is settled afterwards.
+ *
+ * So these **reject when the bell line could not be written**, which the relay retries: the row
+ * is unique per person per thing, so a second write is a no-op. A chat message that could not be
+ * delivered is still logged once and dropped, because it cannot be unsent.
  */
 export abstract class PersonNotifierPort {
   abstract askReceived(event: AskReceived): Promise<void>;

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { Then, When } from '@cucumber/cucumber';
+import { drainOutbox } from '../support/drain-outbox';
 import type { ApiResponse, ThriveWorld } from '../support/world';
 
 /** The bell is a Workspace's: a Member of several reads one at a time. */
@@ -8,27 +9,22 @@ function notificationsOf(world: ThriveWorld, name: string): string {
 }
 
 /**
- * A Notification is written **after** the thing it is about has committed, and the API has
- * already answered by the time a step runs. So these steps wait for it rather than pretending
- * it is atomic — which is also the honest description of the behaviour.
+ * A Notification is recorded in the transaction of the thing it is about and written when the
+ * outbox drains (ADR 0076), so these steps drain and then read. It used to poll for up to two
+ * seconds against a fire-and-forget call; this is both deterministic and the honest description
+ * of the behaviour.
  */
 async function eventually<T>(
   read: () => Promise<T>,
   isReady: (value: T) => boolean,
   what: string,
-  timeoutMs = 2000,
 ): Promise<T> {
-  const deadline = Date.now() + timeoutMs;
-  for (;;) {
-    const value = await read();
-    if (isReady(value)) {
-      return value;
-    }
-    if (Date.now() > deadline) {
-      assert.fail(`Timed out after ${timeoutMs}ms waiting for ${what}.`);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 10));
+  await drainOutbox();
+  const value = await read();
+  if (isReady(value)) {
+    return value;
   }
+  return assert.fail(`The outbox drained but there was no ${what}.`);
 }
 
 function listFor(world: ThriveWorld, name: string): Promise<ApiResponse> {

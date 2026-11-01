@@ -77,13 +77,20 @@ const frozenClock = new (class extends Clock {
 function relayFor(
   prisma: ReturnType<typeof prismaDouble>,
   registry: OutboxHandlerRegistry,
+  pollIntervalMs?: number,
 ) {
   // The double is shaped to the slice of PrismaService the relay touches, nothing wider.
   return new OutboxRelay(
     prisma as unknown as ConstructorParameters<typeof OutboxRelay>[0],
     registry,
     frozenClock,
+    pollIntervalMs,
   );
+}
+
+/** Lets the macrotask the timer was queued on actually run. No sleep, one turn of the loop. */
+function nextTick(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 describe('OutboxRelay', () => {
@@ -248,5 +255,64 @@ describe('OutboxRelay', () => {
     await relay.drainOnce();
 
     expect(handled.map((message) => message.id)).toEqual(['m1']);
+  });
+});
+
+describe('the polling loop', () => {
+  it('drains once the timer fires, without being asked', async () => {
+    const prisma = prismaDouble([
+      { id: 'm1', type: 'a.thing', version: 1, payload: {}, attempts: 1 },
+    ]);
+    const handled: string[] = [];
+    const relay = relayFor(
+      prisma,
+      registryOf({
+        'a.thing': handler(async (message) => {
+          handled.push(message.id);
+        }),
+      }),
+      0,
+    );
+
+    relay.onApplicationBootstrap();
+    await nextTick();
+    await relay.onApplicationShutdown();
+
+    expect(handled).toEqual(['m1']);
+  });
+
+  it('keeps polling after a tick fails, rather than dying quietly', async () => {
+    const prisma = prismaDouble([]);
+    let claims = 0;
+    prisma.$queryRaw = mock(async () => {
+      claims += 1;
+      if (claims === 1) throw new Error('the database blinked');
+      return [];
+    });
+    const relay = relayFor(prisma, registryOf({}), 0);
+
+    relay.onApplicationBootstrap();
+    await nextTick();
+    await nextTick();
+    await relay.onApplicationShutdown();
+
+    // A relay that stopped on its first bad tick would leave every later message undelivered,
+    // and nothing would say so.
+    expect(claims).toBeGreaterThan(1);
+  });
+
+  it('stops scheduling once polling is stopped, and still drains when asked', async () => {
+    const prisma = prismaDouble([]);
+    const relay = relayFor(prisma, registryOf({}), 0);
+
+    relay.onApplicationBootstrap();
+    relay.stopPolling();
+    await nextTick();
+    const claimsWhileStopped = prisma.$queryRaw.mock.calls.length;
+
+    // The Gherkin suite depends on exactly this: no background tick, but drainOnce still works.
+    await relay.drainOnce();
+
+    expect(prisma.$queryRaw.mock.calls.length).toBe(claimsWhileStopped + 1);
   });
 });

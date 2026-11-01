@@ -1,9 +1,9 @@
 import { FEEDBACK_PUBLISHED_TYPE } from '@app/modules/integrations';
-import { PersonNotifierPort } from '@app/modules/notifications';
+import { ASK_ANSWERED_TYPE } from '@app/modules/notifications';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
 import { Outbox } from '@app/shared/application/outbox.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { FeedbackRequestRepository } from '../../domain/repository/feedback-request-repository.port';
 import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
 import {
@@ -43,14 +43,11 @@ export interface AnswerFeedbackAskResult {
  */
 @Injectable()
 export class AnswerFeedbackAskUseCase {
-  private readonly logger = new Logger(AnswerFeedbackAskUseCase.name);
-
   constructor(
     private readonly feedbackRequestRepository: FeedbackRequestRepository,
     private readonly tagsService: TagsService,
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
-    private readonly personNotifierPort: PersonNotifierPort,
     private readonly outbox: Outbox,
   ) {}
 
@@ -90,6 +87,20 @@ export class AnswerFeedbackAskUseCase {
       await this.feedbackRequestRepository.saveAnswer(request, feedback);
       const asked = request.snapshot();
       const written = feedback.snapshot();
+      // The Requester, and nobody else — not the other Givers on the same request, who were
+      // never promised anything about each other (#214).
+      await this.outbox.enqueue([
+        {
+          type: ASK_ANSWERED_TYPE,
+          idempotencyKey: `${ASK_ANSWERED_TYPE}:${written.id}`,
+          payload: {
+            workspaceId: input.workspaceId,
+            actorAccountId: input.giverAccountId,
+            requesterAccountId: asked.requesterAccountId,
+            feedbackRequestId: asked.id,
+          },
+        },
+      ]);
       if (isEveryone(written.visibility)) {
         // In the answer's own transaction (ADR 0076). The Workspace feed shows public Feedback
         // whatever its origin, so a channel that showed only Offered Feedback would quietly
@@ -113,27 +124,6 @@ export class AnswerFeedbackAskUseCase {
         requesterAccountId: asked.requesterAccountId,
       };
     });
-
-    // After the answer has committed, and never awaited: answering must not be held up by a
-    // chat tool, nor fail because one is unreachable (`ADR-0035` §8, design 0021 D5). Only the
-    // Requester is told — not the other Givers on the same request, who were never promised
-    // anything about each other (#214).
-    void this.personNotifierPort
-      .askAnswered({
-        workspaceId: input.workspaceId,
-        actorAccountId: input.giverAccountId,
-        requesterAccountId: answered.requesterAccountId,
-        feedbackRequestId: answered.feedbackRequestId,
-      })
-      .catch((error: unknown) => {
-        // The port promises not to reject, so this is the belt to its braces: a fault here is
-        // this module's bug, not a chat tool being down, and it still may not reach the caller.
-        this.logger.warn({
-          event: 'feedback.notify_failed',
-          notification: 'askAnswered',
-          error: error instanceof Error ? error.message : 'unknown',
-        });
-      });
 
     return { feedbackId: answered.feedbackId };
   }

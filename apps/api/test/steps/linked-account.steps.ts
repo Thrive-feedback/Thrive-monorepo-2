@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { Given, Then, When } from '@cucumber/cucumber';
+import { drainOutbox } from '../support/drain-outbox';
 import { harness } from '../support/harness';
 import type { ApiResponse, ThriveWorld } from '../support/world';
 
@@ -187,34 +188,23 @@ function messagesSent() {
 }
 
 /**
- * A message is sent **after** the request it is about has committed, and is never awaited, so
- * that asking for Feedback is not held up by a chat tool (design 0021 D5). The API has therefore
- * already answered by the time a step runs, and the message may not have left yet.
- *
- * So these steps wait for it rather than pretending it is synchronous — which is also the
- * honest description of the behaviour: it arrives shortly afterwards, not atomically.
+ * A message is recorded in the transaction of the request it is about and sent when the outbox
+ * drains (ADR 0076), so these steps drain and then look. They used to poll for up to two
+ * seconds against a fire-and-forget call.
  */
-async function eventually(
-  isReady: () => boolean,
-  what: string,
-  timeoutMs = 2000,
-): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (!isReady()) {
-    if (Date.now() > deadline) {
-      assert.fail(`Timed out after ${timeoutMs}ms waiting for ${what}.`);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 10));
+async function eventually(isReady: () => boolean, what: string): Promise<void> {
+  await drainOutbox();
+  if (!isReady()) {
+    assert.fail(`The outbox drained but there was no ${what}.`);
   }
 }
 
 /**
- * For the scenarios that assert **nothing** was sent: there is no event to wait for, so this
- * gives anything in flight a moment to arrive and then checks it did not. Without it the
- * assertion could pass simply by running first.
+ * For the scenarios that assert **nothing** was sent. Draining is now the whole wait: once it
+ * reports nothing left to claim, anything that was going to be sent has been.
  */
 async function settled(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 150));
+  await drainOutbox();
 }
 
 Then(

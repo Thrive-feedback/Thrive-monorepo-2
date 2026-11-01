@@ -32,15 +32,28 @@ interface Told {
  * - **In-app is the floor.** The row is written for every recipient whether or not they linked
  *   anything, which is what makes being told not depend on a chat tool, a Connection, or a
  *   setting (`0022/requirement.md` rule 1).
- * - **The two are independent in both directions.** A chat tool being down does not stop a bell
- *   line appearing, and the row failing does not skip the chat attempt. Telling somebody in one
- *   place beats telling them in neither.
+ * - **A chat tool being down does not stop a bell line appearing.** That direction still holds.
+ *   The other direction changed with ADR 0076: a row that cannot be written now stops the tick
+ *   and the relay tries the whole event again. "Telling somebody in one place beats telling them
+ *   in neither" was the right answer when nothing would ever retry; now the gap closes in
+ *   seconds, and attempting chat first would mean the retry sent the message twice.
  * - **The row goes before the chat message.** The row is one local insert of a few milliseconds,
  *   and losing it means the person is told by *nothing*. A chat message is two HTTPS round trips
  *   to somebody else's service (design 0022 D5, D6). Both are awaited here, in that order; Feedback
  *   awaits neither, so its request never waits on them.
  *
- * Nothing here rejects. The port promises that, and `ADR-0035` §8 is why.
+ * **Since ADR 0076 the two halves fail differently, and deliberately.** The caller is the outbox
+ * relay, not a use case, so a failure can be seen and retried rather than swallowed — but only
+ * where retrying is safe:
+ *
+ * - **The row propagates.** `notification` is unique on `(recipient, type, subject)`, so writing
+ *   it twice is a no-op and a retry is pure gain. This is what deletes the old line that read "a
+ *   lost Notification is accepted": the person was told by nothing, and nobody knew.
+ * - **The chat message does not.** A direct message cannot be unsent and has no idempotency key,
+ *   so a retry would deliver it twice. It stays logged once and dropped, exactly as before.
+ *
+ * Nothing a person does fails because of either, and that now holds because no request is waiting
+ * on this at all (`ADR-0035` §8).
  */
 @Injectable()
 export class FanOutPersonNotifier extends PersonNotifierPort {
@@ -127,11 +140,12 @@ export class FanOutPersonNotifier extends PersonNotifierPort {
     told: readonly Told[],
     deliverToChat: () => Promise<void>,
   ): Promise<void> {
+    // The row first, and its failure reaches the relay: it is the floor under everything, and
+    // retrying it is free.
     await this.record(event.workspaceId, event.actorAccountId, told);
-    // Separately guarded: a chat tool is slow and somebody else's.
+    // The chat message second, and still swallowed: it cannot be unsent, so a retry doubles it
+    // rather than repairing it. `ChatPersonNotifier` already logs what it skipped and why.
     await deliverToChat().catch(() => {
-      // `ChatPersonNotifier` already logs what it skipped and why; this is only the promise
-      // that a fault there cannot escape into the caller's request.
       this.logger.warn({ event: 'notification.chat_fan_out_failed' });
     });
   }
@@ -152,17 +166,9 @@ export class FanOutPersonNotifier extends PersonNotifierPort {
       actorAccountId,
       subjectId: one.subjectId,
     }));
-    try {
-      // One statement for the whole fan-out: five people asked is one round trip, not five.
-      await this.notificationRepository.recordAll(rows);
-    } catch {
-      // A lost Notification is accepted, named and not retried: there is no outbox (`BE_17` is
-      // `todo`), and the thing this is about has already committed. What must not happen is
-      // this reaching the person who caused it.
-      this.logger.warn({
-        event: 'notification.not_recorded',
-        recipients: rows.length,
-      });
-    }
+    // One statement for the whole fan-out: five people asked is one round trip, not five.
+    // A failure is not caught here — the relay records the attempt and tries again, which is
+    // safe because the unique index makes a second write a no-op.
+    await this.notificationRepository.recordAll(rows);
   }
 }

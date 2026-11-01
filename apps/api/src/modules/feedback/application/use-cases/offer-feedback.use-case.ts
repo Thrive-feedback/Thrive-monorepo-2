@@ -1,10 +1,10 @@
 import { FEEDBACK_PUBLISHED_TYPE } from '@app/modules/integrations';
-import { PersonNotifierPort } from '@app/modules/notifications';
+import { FEEDBACK_WRITTEN_TYPE } from '@app/modules/notifications';
 import { WorkspaceMembershipPort } from '@app/modules/workspace';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
 import { Outbox } from '@app/shared/application/outbox.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Feedback } from '../../domain/entity/feedback.entity';
 import { FeedbackRepository } from '../../domain/repository/feedback-repository.port';
 import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
@@ -52,15 +52,12 @@ export interface OfferFeedbackResult {
  */
 @Injectable()
 export class OfferFeedbackUseCase {
-  private readonly logger = new Logger(OfferFeedbackUseCase.name);
-
   constructor(
     private readonly feedbackRepository: FeedbackRepository,
     private readonly workspaceMembershipPort: WorkspaceMembershipPort,
     private readonly tagsService: TagsService,
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
-    private readonly personNotifierPort: PersonNotifierPort,
     private readonly outbox: Outbox,
   ) {}
 
@@ -108,6 +105,21 @@ export class OfferFeedbackUseCase {
 
     await this.unitOfWork.run(async () => {
       await this.feedbackRepository.save(feedback);
+      // Everyone it was written to, and anyone else it was shared with. A Receiver is never
+      // counted twice: Notifications de-duplicates to the wording that is true of them.
+      await this.outbox.enqueue([
+        {
+          type: FEEDBACK_WRITTEN_TYPE,
+          idempotencyKey: `${FEEDBACK_WRITTEN_TYPE}:${written.id}`,
+          payload: {
+            workspaceId: input.workspaceId,
+            actorAccountId: input.giverAccountId,
+            receiverAccountIds: written.receiverAccountIds,
+            sharedWithAccountIds: visibility.selectedAccountIds(),
+            feedbackId: written.id,
+          },
+        },
+      ]);
       if (visibility.isEveryone()) {
         // Enqueued in the same transaction as the Feedback, so the promise to tell the channel
         // cannot survive a rollback and cannot be lost after a commit (ADR 0076). The channel is
@@ -127,32 +139,6 @@ export class OfferFeedbackUseCase {
         ]);
       }
     });
-    // After the Feedback has committed, and never awaited: giving Feedback must not be held up
-    // by a chat tool, nor fail because one is unreachable (`ADR-0035` §8, design 0021 D5).
-    //
-    // This use case only ever makes `OFFERED` Feedback — an answer to an Ask is made by
-    // `AnswerFeedbackAskUseCase`, and a `CHECK` constraint on the table holds those two apart —
-    // so the two messages cannot overlap: an answered request is #214's, this is #215's.
-    void this.personNotifierPort
-      .feedbackWritten({
-        workspaceId: input.workspaceId,
-        actorAccountId: input.giverAccountId,
-        receiverAccountIds: written.receiverAccountIds,
-        // Whoever the Giver chose may read it, so they are told it was shared with them. A
-        // Receiver is never counted twice: the notifier de-duplicates to the wording that is
-        // true of them.
-        sharedWithAccountIds: visibility.selectedAccountIds(),
-        feedbackId: written.id,
-      })
-      .catch((error: unknown) => {
-        // The port promises not to reject, so this is the belt to its braces.
-        this.logger.warn({
-          event: 'feedback.notify_failed',
-          notification: 'feedbackWritten',
-          error: error instanceof Error ? error.message : 'unknown',
-        });
-      });
-
     return { id: written.id };
   }
 }
