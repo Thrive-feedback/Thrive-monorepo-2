@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const MAX_PAGE_SIZE = 100;
 const DEFAULT_PAGE_SIZE = 20;
-const CURSOR_ROW_ID = z.uuid();
+const cursorRowIdSchema = z.uuid();
 
 /**
  * The paging parameters every collection route takes, with the same names and limits, in every
@@ -41,7 +41,7 @@ export const cursorQueryShape = {
         return null;
       }
       const id = Buffer.from(cursor, 'base64url').toString('utf8');
-      if (!CURSOR_ROW_ID.safeParse(id).success) {
+      if (!cursorRowIdSchema.safeParse(id).success) {
         context.addIssue({ code: 'custom', message: 'Not a cursor.' });
         return z.NEVER;
       }

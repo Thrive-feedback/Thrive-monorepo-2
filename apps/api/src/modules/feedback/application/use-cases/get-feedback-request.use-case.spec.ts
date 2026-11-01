@@ -125,6 +125,42 @@ describe('reading one Feedback Request', () => {
     });
   });
 
+  it('shows the Requester an answer while another Ask is still waiting', async () => {
+    const setUpResult = setUp();
+    const { accountSummaryPort, feedbackRequestQuery, useCase } = setUpResult;
+    benHasAnswered(setUpResult);
+    const row = feedbackRequestQuery.rows[0];
+    if (!row) {
+      throw new Error('The fixture has no Feedback Request.');
+    }
+    feedbackRequestQuery.rows[0] = {
+      ...row,
+      asks: [
+        ...row.asks,
+        { askId: 'ask-for-cara', giverAccountId: BYSTANDER, status: 'PENDING' },
+      ],
+    };
+    accountSummaryPort.summaries.push({
+      accountId: BYSTANDER,
+      email: 'cara@acme.test',
+      fullName: 'Cara Diaz',
+      displayName: 'Cara',
+      slug: null,
+      photoUrl: null,
+    });
+
+    const found = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      callerAccountId: REQUESTER,
+      requestId: REQUEST_ID,
+    });
+
+    expect(found.asks.map((ask) => ask.answer?.message ?? null)).toEqual([
+      'You open strongly and lose the room at the detail.',
+      null,
+    ]);
+  });
+
   it('leaves the Giver unnamed while they have not introduced themselves', async () => {
     const { accountSummaryPort, useCase } = setUp();
     accountSummaryPort.summaries.splice(0, 1, {
