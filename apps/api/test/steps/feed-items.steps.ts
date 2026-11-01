@@ -21,8 +21,8 @@ interface HomeAsk {
   readonly answer: { readonly message: string } | null;
 }
 
-/** What one read of Home to the end was given, page after page, for the step after it. */
-const readToTheEnd = new WeakMap<ThriveWorld, string[]>();
+/** What one read of a list to the end was given, page after page, for the step after it. */
+export const readToTheEnd = new WeakMap<ThriveWorld, string[]>();
 
 function homeItems(world: ThriveWorld): HomeItem[] {
   const items: HomeItem[] | undefined = world.lastResponse?.body?.items;

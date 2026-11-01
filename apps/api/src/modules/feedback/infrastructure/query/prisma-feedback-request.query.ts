@@ -15,6 +15,7 @@ import {
   type FeedbackWithVisibilityRow,
   type FeedItemPageRow,
   type OpenedRequestRow,
+  type ReceivedFeedbackPageRow,
   type WaitingAskPageRow,
   type WorkspaceFeedPageRow,
 } from '../../application/query-port/feedback-request.query-port';
@@ -154,6 +155,26 @@ const FEED_ITEM_FIELDS = {
             },
           },
           ...TAGS_FIELDS,
+        },
+      },
+    },
+  },
+} as const;
+
+/**
+ * A piece a Member received: what Home reads, and the look of the piece and of its request. A
+ * Requester reads every answer to their own request, so the other answers need no check here.
+ */
+const RECEIVED_ITEM_FIELDS = {
+  ...FEEDBACK_WITH_PEOPLE_FIELDS,
+  visibility: true,
+  postcard: true,
+  feedbackAsk: {
+    select: {
+      feedbackRequest: {
+        select: {
+          ...FEED_ITEM_FIELDS.feedbackAsk.select.feedbackRequest.select,
+          postcard: true,
         },
       },
     },
@@ -490,6 +511,59 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
                     answeredAt: ask.feedback.createdAt,
                   },
                 })),
+              }
+            : null,
+        };
+      }),
+      hasMore: records.length > page.limit,
+    };
+  }
+
+  async receivedItemsBy(
+    workspaceId: string,
+    receiverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<ReceivedFeedbackPageRow> {
+    // One row more than asked for, only to tell whether another page follows (ADR 0059).
+    const records =
+      await this.prismaTransactionContext.client.feedback.findMany({
+        where: {
+          AND: [
+            // Through the Receivers, for the reason `receivedBy` gives (ADR 0061).
+            {
+              workspaceId,
+              receivers: { some: { accountId: receiverAccountId } },
+            },
+            olderThan(page.after),
+          ],
+        },
+        orderBy: NEWEST_FIRST,
+        take: page.limit + 1,
+        select: RECEIVED_ITEM_FIELDS,
+      });
+    return {
+      items: records.slice(0, page.limit).map((record) => {
+        const request = record.feedbackAsk?.feedbackRequest;
+        return {
+          ...toFeedbackWithPeopleRow(record),
+          visibility: record.visibility,
+          postcard: toFeedbackPostcardSnapshot(record.origin, record.postcard),
+          request: request
+            ? {
+                message: request.message,
+                tags: tagsOf(request),
+                requesterAccountId: request.requesterAccountId,
+                asks: request.asks.map((ask) => ({
+                  giverAccountId: ask.giverAccountId,
+                  status: ask.status,
+                  answer: ask.feedback && {
+                    message: ask.feedback.message,
+                    tags: tagsOf(ask.feedback),
+                    answeredAt: ask.feedback.createdAt,
+                  },
+                })),
+                postcard: toPostcardSnapshot(request.postcard),
+                answerPostcard: toAnswerPostcardSnapshot(record.postcard),
               }
             : null,
         };

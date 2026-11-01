@@ -34,6 +34,23 @@ const AN_ANSWERS_LOOK = {
   stickers: [{ ...STICKER, side: 'back' }],
 };
 
+interface ListedItem {
+  readonly message: string;
+  readonly postcard: unknown;
+  readonly request: {
+    readonly postcard: unknown;
+    readonly answerPostcard: unknown;
+  } | null;
+}
+
+/** One piece in a list that was just read. */
+function listedItemSaying(world: ThriveWorld, message: string): ListedItem {
+  const items: ListedItem[] = world.lastResponse?.body?.items ?? [];
+  const item = items.find((each) => each.message === message);
+  assert.ok(item, `"${message}" is not in the list.`);
+  return item;
+}
+
 Given(
   '{person} has given {person} Feedback on a postcard: {string}',
   async function (
@@ -113,6 +130,22 @@ Then('{person} sees no postcard', function (this: ThriveWorld, name: string) {
   assert.equal(this.lastResponse?.status, 200, `${name} opening it`);
   assert.equal(this.lastResponse?.body.postcard, null);
 });
+
+Then(
+  '{string} is on the postcard it was written on',
+  function (this: ThriveWorld, message: string) {
+    assert.deepEqual(listedItemSaying(this, message).postcard, A_POSTCARD);
+  },
+);
+
+Then(
+  '{string} is on the postcard of the request, in its own writing',
+  function (this: ThriveWorld, message: string) {
+    const { request } = listedItemSaying(this, message);
+    assert.deepEqual(request?.postcard, A_POSTCARD);
+    assert.deepEqual(request?.answerPostcard, AN_ANSWERS_LOOK);
+  },
+);
 
 Given(
   '{person} has answered on the postcard: {string}',

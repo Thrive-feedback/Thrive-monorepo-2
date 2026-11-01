@@ -218,6 +218,25 @@ export interface FeedItemRow extends FeedbackWithPeopleRow {
   readonly request: FeedItemRequestRow | null;
 }
 
+/** The request an answer was written on, as stored: Home's row and the card it is on. */
+export interface ReceivedRequestRow extends FeedItemRequestRow {
+  readonly postcard: PostcardSnapshot | null;
+  readonly answerPostcard: AnswerPostcardSnapshot | null;
+}
+
+/** One piece of Feedback a Member received, with the card it was written on, as stored. */
+export interface ReceivedFeedbackRow extends FeedbackWithPeopleRow {
+  readonly visibility: VisibilityValue;
+  readonly postcard: PostcardSnapshot | null;
+  readonly request: ReceivedRequestRow | null;
+}
+
+export interface ReceivedFeedbackPageRow {
+  readonly items: readonly ReceivedFeedbackRow[];
+  /** Whether another page follows this one. */
+  readonly hasMore: boolean;
+}
+
 export interface FeedItemPageRow {
   readonly items: readonly FeedItemRow[];
   /** Whether another page follows this one. */
@@ -324,6 +343,16 @@ export abstract class FeedbackRequestQuery {
     show: FeedItemShow,
     page: FeedPageRequest,
   ): Promise<FeedItemPageRow>;
+
+  /**
+   * What was written to one Member past a place in their Received list, newest first, at any
+   * Visibility: the Receiver is an argument, so nobody else's can be read through this.
+   */
+  abstract receivedItemsBy(
+    workspaceId: string,
+    receiverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<ReceivedFeedbackPageRow>;
 
   /** Where one piece of Feedback of this Workspace sits on Home, or `null` if it is not there. */
   abstract feedbackPositionOf(

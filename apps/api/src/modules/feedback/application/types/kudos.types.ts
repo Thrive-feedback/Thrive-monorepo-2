@@ -21,6 +21,14 @@ export interface FeedPosition {
   readonly id: string;
 }
 
+/** Newest first, `id` breaking ties: the order a list of two tables is merged in. */
+export function newestFirst(a: FeedPosition, b: FeedPosition) {
+  return (
+    b.createdAt.getTime() - a.createdAt.getTime() ||
+    (a.id < b.id ? 1 : a.id > b.id ? -1 : 0)
+  );
+}
+
 /** One page of Home: the rows after a place, or the first page, and how many. */
 export interface FeedPageRequest {
   /** Where the last page ended, or `null` for the first page. */

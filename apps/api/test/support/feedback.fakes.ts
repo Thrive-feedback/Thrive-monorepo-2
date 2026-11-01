@@ -13,6 +13,8 @@ import type {
   FeedItemAskRow,
   FeedItemPageRow,
   OpenedRequestRow,
+  ReceivedFeedbackPageRow,
+  ReceivedFeedbackRow,
   WaitingAskPageRow,
   WorkspaceFeedPageRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
@@ -287,6 +289,11 @@ export class FakeFeedbackRepository extends FeedbackRepository {
 }
 
 export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
+  /** What each Member received, whose Receivers say whose it is. */
+  readonly receivedItems: (ReceivedFeedbackRow & {
+    readonly workspaceId: string;
+  })[] = [];
+
   readonly rows: (FeedbackRequestRow & { readonly workspaceId: string })[] = [];
 
   readonly answers: FeedbackAnswerRow[] = [];
@@ -437,14 +444,39 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     return { items: pageOf(feed, page), total: feed.length };
   }
 
+  async receivedItemsBy(
+    workspaceId: string,
+    receiverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<ReceivedFeedbackPageRow> {
+    const rest = this.receivedItems
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          row.receiverAccountIds.includes(receiverAccountId) &&
+          isPast(row, page.after),
+      )
+      .sort(
+        (a, b) =>
+          b.createdAt.getTime() - a.createdAt.getTime() ||
+          b.id.localeCompare(a.id),
+      );
+    return {
+      items: rest.slice(0, page.limit),
+      hasMore: rest.length > page.limit,
+    };
+  }
+
   async feedbackPositionOf(
     workspaceId: string,
     feedbackId: string,
   ): Promise<FeedPosition | null> {
+    const atPlace = (row: FeedPosition & { readonly workspaceId: string }) =>
+      row.workspaceId === workspaceId && row.id === feedbackId;
     return (
-      this.feedbackWithVisibility.find(
-        (row) => row.workspaceId === workspaceId && row.id === feedbackId,
-      ) ?? null
+      this.feedbackWithVisibility.find(atPlace) ??
+      this.receivedItems.find(atPlace) ??
+      null
     );
   }
 
