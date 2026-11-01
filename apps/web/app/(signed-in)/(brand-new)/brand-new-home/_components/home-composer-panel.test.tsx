@@ -219,6 +219,59 @@ describe('HomeComposerPanel', () => {
     expect(refresh).not.toHaveBeenCalled();
   });
 
+  it('starts a card from what is typed by the time it is opened again', async () => {
+    draw();
+    await typeThenChoose('Give feedback');
+    await screen.findByRole('dialog', { name: 'Give feedback' });
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Discard' }),
+    );
+    await waitFor(
+      () => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+      WAITING,
+    );
+
+    await userEvent.type(field(), ' And the team saw it.');
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Give feedback' }),
+    );
+
+    await screen.findByRole('dialog', { name: 'Give feedback' });
+    expect(
+      await screen.findByRole('textbox', { name: 'Your feedback' }),
+    ).toHaveValue('The demo went well. And the team saw it.');
+  });
+
+  it('opens the next card blank once one has gone', async () => {
+    draw();
+    await typeThenChoose('Give kudos');
+    await screen.findByRole('dialog', { name: 'Give kudos' });
+    await userEvent.click(
+      await screen.findByRole('textbox', { name: 'Your Kudos' }),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: /^Send kudos/ }),
+    );
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Back to home' }, WAITING),
+    );
+    await waitFor(
+      () => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+      WAITING,
+    );
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Give feedback' }),
+    );
+
+    await screen.findByRole('dialog', { name: 'Give feedback' });
+    expect(
+      await screen.findByRole('textbox', { name: 'Your feedback' }),
+    ).toHaveValue('');
+  });
+
   it('keeps what was typed when a card fails to go', async () => {
     sendKudosCard.mockResolvedValue({ formError: 'That did not go.' });
     draw();
