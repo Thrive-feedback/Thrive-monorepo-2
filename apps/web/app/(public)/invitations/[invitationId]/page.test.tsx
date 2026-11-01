@@ -38,7 +38,7 @@ const acceptInvitation = vi.fn();
 vi.mock('./_lib/invitation-actions.service', () => ({
   acceptInvitation: (id: string) => acceptInvitation(id),
   signInToAccept: vi.fn(),
-  useAnotherGoogleAccount: vi.fn(),
+  signInWithAnotherGoogleAccount: vi.fn(),
 }));
 
 vi.mock('@/components/atoms/one-time-toast', () => ({

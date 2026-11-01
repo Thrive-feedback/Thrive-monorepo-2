@@ -23,7 +23,7 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
-const { acceptInvitation, signInToAccept, useAnotherGoogleAccount } =
+const { acceptInvitation, signInToAccept, signInWithAnotherGoogleAccount } =
   await import('./invitation-actions.service');
 
 const INVITATION_ID = '0199a0f0-0000-7000-8000-000000000001';
@@ -185,7 +185,7 @@ describe('signing in to accept', () => {
       ),
     );
 
-    await expect(useAnotherGoogleAccount(INVITATION_ID)).rejects.toThrow(
+    await expect(signInWithAnotherGoogleAccount(INVITATION_ID)).rejects.toThrow(
       `redirect:${GOOGLE_URL}`,
     );
     expect(calls).toEqual([
