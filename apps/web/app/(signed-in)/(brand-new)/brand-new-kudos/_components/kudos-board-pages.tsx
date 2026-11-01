@@ -132,14 +132,6 @@ export function KudosBoardPages({
       {/* Held open before there is a bar, so measuring the board moves nothing. The notes teach what
           nothing on a card shows, and only where a mouse can do it and there is room for them. */}
       <div className="flex min-h-11 items-center justify-center lg:grid lg:grid-cols-3">
-        <HandwrittenNote
-          size="md"
-          tilt="left"
-          writes="on-open"
-          className="hidden pointer-fine:lg:block"
-        >
-          double-click to flip one
-        </HandwrittenNote>
         <div className="flex justify-center lg:col-start-2">
           {columns !== null && pageTotal > 1 && (
             <KudosBoardPager
@@ -155,13 +147,14 @@ export function KudosBoardPages({
             />
           )}
         </div>
-        <HandwrittenNote
-          size="md"
-          writes="on-open"
-          className="hidden justify-self-end pointer-fine:lg:block"
-        >
-          go on, drag them around
-        </HandwrittenNote>
+        <div className="hidden flex-col items-end pointer-fine:lg:flex">
+          <HandwrittenNote size="md" tilt="left" writes="on-open">
+            double-click to flip one
+          </HandwrittenNote>
+          <HandwrittenNote size="md" writes="on-open">
+            go on, drag them around
+          </HandwrittenNote>
+        </div>
       </div>
       {reading && (
         <KudosCardReadDialog
