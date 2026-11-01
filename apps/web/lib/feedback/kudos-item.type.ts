@@ -23,10 +23,3 @@ export type KudosItem = {
 
 /** As long as the API lets a Kudos be, counted in the characters a reader sees. */
 export const MAX_KUDOS_LENGTH = 280;
-
-const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-
-/** How long a Kudos is, as the API counts it: trimmed, an emoji or a Thai cluster as one. */
-export function kudosLength(message: string): number {
-  return [...graphemes.segment(message.trim())].length;
-}

@@ -6,7 +6,8 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
 import type { GiveKudosState } from '@/lib/feedback/give-kudos-state.type';
-import { kudosLength, MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
+import { MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
+import { messageLength } from '@/lib/feedback/message-length.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMemberOf } from '@/lib/session/session.service';
 
@@ -14,7 +15,7 @@ const TOO_LONG = `Your Kudos is too long. Keep it to ${MAX_KUDOS_LENGTH} charact
 
 /** The shape the API's own schema accepts, so the browser is never the first to check it. */
 const GiveKudosInput = z.object({
-  message: z.string().refine((message) => kudosLength(message) > 0, {
+  message: z.string().refine((message) => messageLength(message) > 0, {
     message: 'empty',
   }),
 });
@@ -53,7 +54,7 @@ export async function giveKudos(
   if (!input.success) {
     return { fieldErrors: { message: 'Write your Kudos.' } };
   }
-  if (kudosLength(input.data.message) > MAX_KUDOS_LENGTH) {
+  if (messageLength(input.data.message) > MAX_KUDOS_LENGTH) {
     return { fieldErrors: { message: TOO_LONG } };
   }
 
