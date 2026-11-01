@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { mentionedTeammates } from '@/lib/feedback/mentioned-teammates.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import type { Visibility } from '@/lib/feedback/visibility.type';
 
 const names = new Intl.ListFormat('en', { type: 'conjunction' });
 
 /** What the people dialog says under someone a Mention keeps selected. */
 const MENTIONED = 'Mentioned in your message';
-
-/** The Visibility values the hook has to tell apart; the forms name the rest of theirs. */
-type AudienceValue = 'ONLY_ME' | 'SELECTED_PEOPLE' | 'EVERYONE';
 
 /**
  * Who reads a Request message or Offered Feedback, kept in step with who its text mentions (brain
@@ -34,7 +32,7 @@ export function useMentionedAudience({
   /** Who reads it whatever the Visibility: the Receivers, or the Givers asked. */
   readsAnyway: readonly string[];
 }) {
-  const [chosen, setChosen] = useState<AudienceValue>('EVERYONE');
+  const [chosen, setChosen] = useState<Visibility>('EVERYONE');
   const [ticked, setTicked] = useState<ReadonlySet<string>>(new Set());
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -48,7 +46,7 @@ export function useMentionedAudience({
   );
   // Only me with somebody mentioned is never what is sent, even for the render before the
   // message handler has moved the choice on — a Receiver taken off the list can get it here.
-  const visibility: AudienceValue =
+  const visibility: Visibility =
     chosen === 'ONLY_ME' && outsiders.length > 0 ? 'SELECTED_PEOPLE' : chosen;
   const selectedAccountIds: ReadonlySet<string> = new Set([
     ...ticked,
@@ -82,7 +80,7 @@ export function useMentionedAudience({
         );
       }
     },
-    choose(value: AudienceValue) {
+    choose(value: Visibility) {
       setChosen(value);
       setNotice(null);
     },

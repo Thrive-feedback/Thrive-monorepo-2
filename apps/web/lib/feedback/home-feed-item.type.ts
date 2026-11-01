@@ -3,7 +3,7 @@ import type { AskStatus } from './ask-status.constant';
 import type { FeedbackPerson } from './feedback-person.util';
 import type { TextTags } from './text-tags.type';
 
-type FeedItemOnTheWire =
+export type FeedItemOnTheWire =
   components['schemas']['ListFeedItemsResponseDto_Output']['items'][number];
 
 /** Which of what a Member reads on Home: the three choices of its filter, as the API names them. */

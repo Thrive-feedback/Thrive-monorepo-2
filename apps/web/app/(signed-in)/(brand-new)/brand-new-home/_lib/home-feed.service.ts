@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { apiClient } from '@/lib/api-client.service';
 import { toFeedbackPerson } from '@/lib/feedback/feedback-person.util';
 import type {
+  FeedItemOnTheWire,
   HomeFeedPage,
   HomeFeedPerson,
   HomeFeedShow,
@@ -21,12 +22,12 @@ const API_SHOWS: Readonly<Record<BrandNewHomeShow, HomeFeedShow>> = {
   shared: 'SHARED_WITH_ME',
 };
 
-function toHomeFeedPerson(person: {
-  readonly accountId: string;
-  readonly name: string | null;
-  readonly photoUrl: string | null;
-  readonly status: 'ACTIVE' | 'DEACTIVATED';
-}): HomeFeedPerson {
+function toHomeFeedPerson(
+  person: Pick<
+    FeedItemOnTheWire['giver'],
+    'accountId' | 'name' | 'photoUrl' | 'status'
+  >,
+): HomeFeedPerson {
   return { accountId: person.accountId, ...toFeedbackPerson(person) };
 }
 

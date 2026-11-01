@@ -1,3 +1,5 @@
+import type { components } from '@repo/api';
+
 /** Somebody a piece of Feedback names — its Giver or one of its Receivers — as a card shows them. */
 export type FeedbackPerson = {
   /** `null` while they have not introduced themselves. */
@@ -9,11 +11,10 @@ export type FeedbackPerson = {
 };
 
 /** A person as the API sends them, on every route that names one. */
-type PersonOnTheWire = {
-  readonly name: string | null;
-  readonly photoUrl: string | null;
-  readonly status: 'ACTIVE' | 'DEACTIVATED';
-};
+type PersonOnTheWire = Pick<
+  components['schemas']['ListFeedItemsResponseDto_Output']['items'][number]['giver'],
+  'name' | 'photoUrl' | 'status'
+>;
 
 /** One person off the wire, as a card shows them. */
 export function toFeedbackPerson(person: PersonOnTheWire): FeedbackPerson {
