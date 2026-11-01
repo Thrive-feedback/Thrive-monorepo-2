@@ -50,10 +50,13 @@ export class ChangeMemberRoleUseCase {
         if (!changer || !MemberRole.of(changer.role).mayChangeRoles()) {
           throw new NotAllowedToChangeRolesError();
         }
-        const target = await this.membershipQuery.membershipInWorkspace(
-          input.accountId,
-          workspaceId,
-        );
+        const target =
+          input.accountId === input.changerAccountId
+            ? changer
+            : await this.membershipQuery.membershipInWorkspace(
+                input.accountId,
+                workspaceId,
+              );
         if (!target) {
           throw new MemberNotFoundError();
         }
