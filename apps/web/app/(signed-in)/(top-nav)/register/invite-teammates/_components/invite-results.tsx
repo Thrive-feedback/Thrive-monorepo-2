@@ -47,7 +47,10 @@ export function InviteResults({ results, onContinue }: InviteResultsProps) {
       </Text>
       <ul className="flex flex-col gap-2">
         {results.map((result) => (
-          <li key={result.email} className="flex flex-col">
+          <li
+            key={`${result.email}-${result.outcome}`}
+            className="flex flex-col"
+          >
             <Text as="span" variant="body-1" className="break-all">
               {result.email}
             </Text>

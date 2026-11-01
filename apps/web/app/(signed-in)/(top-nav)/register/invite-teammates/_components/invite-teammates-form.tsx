@@ -8,14 +8,14 @@ import type { InviteResult } from '@/app/(signed-in)/(top-nav)/register/invite-t
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { InviteEmailRow } from '@/components/organisms/invite-email-row';
+import {
+  COULD_NOT_SEND_TO_ROW,
+  MAX_INVITES_PER_SEND,
+  roleSentTo,
+} from '@/lib/invitations/invite-emails.util';
 import { useInviteRows } from '@/lib/invitations/use-invite-rows';
 import { ROUTES } from '@/lib/routes.constant';
 import { InviteResults } from './invite-results';
-
-/** The API invites at most this many people per send. */
-const MAX_ROW_COUNT = 10;
-
-const COULD_NOT_SEND_TO_ROW = "Couldn't send. Try again.";
 
 /**
  * One person per row, each with the Role they join with, Member unless the founder picks Admin.
@@ -68,26 +68,19 @@ export function InviteTeammatesForm({ workspaceId }: InviteTeammatesFormProps) {
       inviteRows.replaceWith(
         failed.map((result) => ({
           email: result.email,
-          role:
-            invitations.find(
-              (i) => i.email.toLowerCase() === result.email.toLowerCase(),
-            )?.role ?? 'MEMBER',
+          role: roleSentTo(invitations, result.email),
           errorMessage: COULD_NOT_SEND_TO_ROW,
         })),
       );
     });
   }
 
-  function handleContinue() {
-    router.push(ROUTES.home);
-  }
-
-  function handleSkip() {
+  function handleLeave() {
     router.push(ROUTES.home);
   }
 
   if (isDone) {
-    return <InviteResults results={settled} onContinue={handleContinue} />;
+    return <InviteResults results={settled} onContinue={handleLeave} />;
   }
 
   return (
@@ -115,7 +108,7 @@ export function InviteTeammatesForm({ workspaceId }: InviteTeammatesFormProps) {
             />
           ))}
         </div>
-        {rows.length < MAX_ROW_COUNT && (
+        {rows.length < MAX_INVITES_PER_SEND && (
           <Button
             variant="ghost"
             size="sm"
@@ -129,7 +122,7 @@ export function InviteTeammatesForm({ workspaceId }: InviteTeammatesFormProps) {
         <div className="flex items-start gap-2 text-fg-secondary">
           <InfoIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
           <Text variant="body-2" tone="muted">
-            You can invite up to {MAX_ROW_COUNT} now
+            You can invite up to {MAX_INVITES_PER_SEND} now
             <br />
             invite more anytime from Settings.
           </Text>
@@ -152,7 +145,7 @@ export function InviteTeammatesForm({ workspaceId }: InviteTeammatesFormProps) {
         variant="secondary"
         className="w-full"
         disabled={isSending}
-        onClick={handleSkip}
+        onClick={handleLeave}
       >
         Skip &amp; Done
       </Button>

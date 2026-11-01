@@ -6,7 +6,10 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client.service';
-import type { Invitee } from '@/lib/invitations/invite-emails.util';
+import {
+  type Invitee,
+  MAX_INVITES_PER_SEND,
+} from '@/lib/invitations/invite-emails.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMemberOf } from '@/lib/session/session.service';
 import { checkEmailList, parseEmailList } from './email-list.util';
@@ -118,7 +121,7 @@ export async function resendInvitation(
 /** What to say when the API refused the whole send, by its error code. */
 const INVITE_ERRORS: Readonly<Record<string, string>> = {
   NOT_ALLOWED_TO_INVITE: 'Only Admins can send Invitations.',
-  TOO_MANY_INVITATIONS: 'You can invite up to 10 people at a time.',
+  TOO_MANY_INVITATIONS: `You can invite up to ${MAX_INVITES_PER_SEND} people at a time.`,
 };
 
 const COULD_NOT_INVITE = "We couldn't send your Invitations. Please try again.";
