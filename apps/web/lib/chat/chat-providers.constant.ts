@@ -13,7 +13,7 @@ export type ChatProvider = ConnectionResponse['provider'];
  *
  * It sits in `lib/` rather than beside one screen because two routes now read it: Settings →
  * Workspace, where an Admin connects a Workspace's channel, and Settings → Account, where a
- * Member links their own chat account (`FE_01` R4).
+ * Member links their own chat account.
  *
  * Discord today. Slack is next, and arrives here as a second entry.
  */
@@ -26,9 +26,13 @@ export const CHAT_PROVIDERS = {
 
 export type ChatProviderSegment = keyof typeof CHAT_PROVIDERS;
 
+const SEGMENTS: Readonly<Record<ChatProvider, ChatProviderSegment>> = {
+  DISCORD: 'discord',
+};
+
 /** The segment for a stored provider value, for a link back to the tool's own section. */
 export function segmentOf(provider: ChatProvider): ChatProviderSegment {
-  return provider.toLowerCase() as ChatProviderSegment;
+  return SEGMENTS[provider];
 }
 
 /** What to call the tool on screen. */
@@ -38,7 +42,7 @@ export function labelOf(provider: ChatProvider): string {
 
 /**
  * The tool a URL segment names, or `undefined` when it names none — a dynamic segment is
- * validated before it is used (`FE_11` R4).
+ * validated before it is used.
  */
 export function providerForSegment(
   segment: string,
