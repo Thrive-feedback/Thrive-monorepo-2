@@ -30,6 +30,7 @@ function setUp() {
   const query = new FakeLinkedAccountQuery();
   const repository = new FakeLinkedAccountRepository();
   const discord = new FakeDirectMessenger();
+  const profileNames = new FakeProfileNamePort().withName(ANN, 'Ann');
   const notifier = new ChatPersonNotifier(
     new NotificationRecipients(membership),
     query,
@@ -38,7 +39,7 @@ function setUp() {
     new ChatCopyService(new WebConfig('https://thrive.test')),
     new EventContextService(
       new FakeWorkspaceNamePort().withName(WORKSPACE, 'Acme'),
-      new FakeProfileNamePort().withName(ANN, 'Ann'),
+      profileNames,
     ),
   );
   const linked = (accountId: string, directChannelId: string | null = null) =>
@@ -57,7 +58,16 @@ function setUp() {
       giverAccountIds.map((giver) => [giver, `${ASK}-${giver}`]),
     ),
   });
-  return { membership, query, repository, discord, notifier, linked, asked };
+  return {
+    membership,
+    query,
+    repository,
+    discord,
+    profileNames,
+    notifier,
+    linked,
+    asked,
+  };
 }
 
 describe('messaging the people an Ask is for', () => {
@@ -84,6 +94,14 @@ describe('messaging the people an Ask is for', () => {
 
     expect(discord.opened).toEqual([]);
     expect(discord.posted).toEqual([]);
+  });
+
+  it('does not even read a name when nobody can be reached — the cheap read comes first', async () => {
+    const { notifier, profileNames, asked } = setUp();
+
+    await notifier.askReceived(asked());
+
+    expect(profileNames.calls).toHaveLength(0);
   });
 
   it('never messages the person who did the asking', async () => {

@@ -315,6 +315,7 @@ export class FakeWorkspaceNamePort extends WorkspaceNamePort {
 /** The Display name of whoever caused an event, or `null` before they introduced themselves. */
 export class FakeProfileNamePort extends ProfileNamePort {
   private readonly names = new Map<string, string>();
+  readonly calls: string[] = [];
 
   withName(accountId: string, displayName: string): this {
     this.names.set(accountId, displayName);
@@ -322,6 +323,7 @@ export class FakeProfileNamePort extends ProfileNamePort {
   }
 
   async displayNameOf(accountId: string): Promise<string | null> {
+    this.calls.push(accountId);
     return this.names.get(accountId) ?? null;
   }
 }
