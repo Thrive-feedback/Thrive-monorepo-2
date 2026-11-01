@@ -1,0 +1,9 @@
+/*
+ * A real card drawn small on the index, at the width it has on a page so it lies out as it does
+ * there. `zoom` rather than a scale, because a transform leaves the card's full height in the
+ * layout. Neither a zoom nor a width measured for it has a utility.
+ */
+.cover {
+  width: calc(var(--space-unit) * 180);
+  zoom: 0.37;
+}

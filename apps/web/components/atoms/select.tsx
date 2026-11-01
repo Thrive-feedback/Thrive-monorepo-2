@@ -1,5 +1,6 @@
 'use client';
 
+import { cva, type VariantProps } from 'class-variance-authority';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
 import { Select as SelectPrimitive } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
@@ -18,6 +19,22 @@ import styles from './select.module.css';
  * field stays in view while choosing. Near the bottom of the screen the list scrolls inside
  * itself rather than flipping up.
  */
+
+const trigger = cva(
+  'flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-input border bg-surface-base transition-colors disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-fg-secondary aria-invalid:border-status-error-border data-placeholder:text-fg-disabled',
+  {
+    variants: {
+      variant: {
+        /** A field of a form, as wide as its column. */
+        field: 'w-full border-border-strong px-3 py-2.5 text-body-1',
+        /** A quiet choice beside a heading, as wide as what it says. */
+        inline:
+          'min-h-10 w-fit border-border-muted px-3 py-2 text-body-2 hover:bg-action-neutral-surface-hover',
+      },
+    },
+    defaultVariants: { variant: 'field' },
+  },
+);
 
 export type SelectProps = React.ComponentProps<typeof SelectPrimitive.Root>;
 
@@ -43,9 +60,11 @@ export function SelectValue(props: SelectValueProps) {
 
 export type SelectTriggerProps = React.ComponentPropsWithRef<
   typeof SelectPrimitive.Trigger
->;
+> &
+  VariantProps<typeof trigger>;
 
 export function SelectTrigger({
+  variant,
   className,
   children,
   ...rest
@@ -53,10 +72,7 @@ export function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
-      className={cn(
-        'flex w-full cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-input border border-border-strong bg-surface-base px-3 py-2.5 text-body-1 transition-colors disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-fg-secondary aria-invalid:border-status-error-border data-placeholder:text-fg-disabled',
-        className,
-      )}
+      className={cn(trigger({ variant }), className)}
       {...rest}
     >
       {children}
@@ -69,10 +85,14 @@ export function SelectTrigger({
 
 export type SelectContentProps = React.ComponentPropsWithRef<
   typeof SelectPrimitive.Content
->;
+> & {
+  /** Grows past a narrow trigger, as an `inline` one is, so no item is cut short. */
+  fitsItems?: boolean;
+};
 
 export function SelectContent({
   sideOffset = 4,
+  fitsItems = false,
   className,
   children,
   ...rest
@@ -88,6 +108,7 @@ export function SelectContent({
         className={cn(
           'relative z-50 overflow-hidden rounded-control border border-border-muted bg-surface-base text-fg-primary shadow-med motion-safe:data-[state=closed]:animate-menu-exit motion-safe:data-[state=open]:animate-menu-enter',
           styles.content,
+          fitsItems && styles.fitsItems,
           className,
         )}
         {...rest}

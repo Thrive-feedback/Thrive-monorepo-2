@@ -30,11 +30,12 @@ await import('@/components/organisms/kudos-dialog/kudos-dialog');
 
 const WAITING = { timeout: 5000 };
 
-function draw() {
+function draw(isUnderPostcard = false) {
   render(
     <>
       <HomeComposerPanel
         workspaceId="w-1"
+        isUnderPostcard={isUnderPostcard}
         teammates={[
           {
             accountId: 'mali',
@@ -83,6 +84,28 @@ describe('HomeComposerPanel', () => {
     expect(await screen.findByRole('textbox', { name: message })).toHaveValue(
       'The demo went well.',
     );
+  });
+
+  it('puts the cursor in the field on reaching Home', () => {
+    draw();
+
+    expect(field()).toHaveFocus();
+  });
+
+  it('leaves the cursor with a postcard open over Home', () => {
+    draw(true);
+
+    expect(field()).not.toHaveFocus();
+  });
+
+  it('leaves the keyboard down on a touch screen', () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query === '(pointer: coarse)',
+    }));
+    draw();
+
+    expect(field()).not.toHaveFocus();
+    vi.unstubAllGlobals();
   });
 
   it('sends a Kudos, and goes to the board from it', async () => {

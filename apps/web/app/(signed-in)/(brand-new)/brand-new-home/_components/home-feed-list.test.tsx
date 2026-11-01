@@ -90,6 +90,32 @@ describe('HomeFeedList', () => {
     expect(screen.getByText('First.')).toBeInTheDocument();
   });
 
+  it('draws one card for each piece, in the order given, each by how it came about', () => {
+    const offered = piece('fb-1', 'First.');
+    const requested: HomeFeedItem = {
+      ...piece('fb-2', 'Second.'),
+      origin: 'REQUESTED',
+      request: {
+        message: 'How clear was the plan?',
+        messageTags: NO_TEXT_TAGS,
+        requester: offered.receivers[0] ?? offered.giver,
+        asked: [],
+      },
+    };
+    render(
+      <HomeFeedList
+        initialPage={page([offered, requested], null)}
+        show="all"
+      />,
+    );
+
+    const [first, second] = screen.getAllByRole('listitem');
+    expect(first).toHaveTextContent('First.');
+    expect(first).not.toHaveTextContent('asked:');
+    expect(second).toHaveTextContent('Second.');
+    expect(second).toHaveTextContent('Ben Carter asked:');
+  });
+
   it('leads each card to its postcard, keeping the filter', () => {
     render(
       <HomeFeedList

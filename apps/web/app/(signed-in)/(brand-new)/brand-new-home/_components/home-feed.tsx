@@ -1,9 +1,9 @@
 import { readHomeFeed } from '@/app/(signed-in)/(brand-new)/brand-new-home/_lib/home-feed.service';
 import { SkeletonRegion } from '@/components/atoms/skeleton';
-import { FeedCardListSkeleton } from '@/components/organisms/feed-card/feed-card-list';
-import { FeedEmpty } from '@/components/organisms/feed-card/feed-empty';
+import { FeedCardSkeletonList } from '@/components/organisms/feed-card/feed-card-skeleton';
 import type { BrandNewHomeShow } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { FeedEmpty } from './feed-empty';
 import { HomeFeedList } from './home-feed-list';
 
 export type HomeFeedProps = {
@@ -36,7 +36,7 @@ export async function HomeFeed({ membership, show }: HomeFeedProps) {
 export function HomeFeedSkeleton() {
   return (
     <SkeletonRegion>
-      <FeedCardListSkeleton />
+      <FeedCardSkeletonList />
     </SkeletonRegion>
   );
 }

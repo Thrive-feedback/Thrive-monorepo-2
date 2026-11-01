@@ -1,4 +1,5 @@
 import {
+  cleanup,
   fireEvent,
   render,
   screen,
@@ -300,6 +301,7 @@ describe('PostcardReadDialog', () => {
     await user.tab();
     await user.tab();
     await user.tab();
+    await user.tab();
 
     expect(messageNamed('#Ownership')).toHaveFocus();
   });
@@ -544,9 +546,9 @@ describe('PostcardReadDialog', () => {
       }),
     );
 
-    expect(screen.getByRole('group', { name: 'Answers' })).toHaveClass(
-      'invisible',
-    );
+    expect(
+      screen.getByRole('group', { name: 'Answers' }).parentElement,
+    ).toHaveClass('invisible');
   });
 
   it('starts every opening on the first answer', async () => {
@@ -569,6 +571,50 @@ describe('PostcardReadDialog', () => {
     const sticker = (name: string) =>
       within(back()).queryByRole('img', { name: `${name} sticker` });
     const postmark = () => within(back()).queryByText(/^Posted /);
+
+    it('points at the button by hand, saying what a press does', async () => {
+      const user = userEvent.setup();
+      renderDialog(GIVEN);
+
+      expect(
+        screen
+          .getByText('hide stickers & postmark')
+          .parentElement?.querySelector('svg'),
+      ).toBeInTheDocument();
+
+      await user.click(hide());
+
+      expect(screen.getByText('show stickers & postmark')).toBeInTheDocument();
+    });
+
+    it('points at the pages only when there are other answers', () => {
+      renderDialog(ANSWERED);
+
+      expect(
+        screen
+          .getByText('see the other answers')
+          .parentElement?.querySelector('svg'),
+      ).toBeInTheDocument();
+      cleanup();
+
+      renderDialog(GIVEN);
+
+      expect(
+        screen.queryByText('see the other answers'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('can have the note turned off', async () => {
+      const user = userEvent.setup();
+      renderDialog(GIVEN);
+
+      await user.click(screen.getByRole('button', { name: 'Hide tips' }));
+
+      expect(
+        screen.queryByText('hide stickers & postmark'),
+      ).not.toBeInTheDocument();
+      localStorage.clear();
+    });
 
     it('takes both off the card and leaves the stamp, then puts them back', async () => {
       const user = userEvent.setup();

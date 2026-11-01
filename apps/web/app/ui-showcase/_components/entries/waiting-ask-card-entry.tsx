@@ -3,9 +3,9 @@ import {
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
 import { WaitingAskCard } from '@/components/organisms/feed-card/waiting-ask-card';
-import { WaitingAskNote } from '@/components/organisms/feed-card/waiting-ask-note';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
+import { CardCover } from './card-cover';
 import { SAMPLE_TARGET } from './feed-card-samples.constant';
 
 const AN_ASK: MyAsk = {
@@ -104,5 +104,9 @@ export function WaitingAskCardEntry() {
 }
 
 export function WaitingAskCardPreview() {
-  return <WaitingAskNote lie="level" />;
+  return (
+    <CardCover>
+      <WaitingAskCard ask={AN_ASK} target={SAMPLE_TARGET} />
+    </CardCover>
+  );
 }

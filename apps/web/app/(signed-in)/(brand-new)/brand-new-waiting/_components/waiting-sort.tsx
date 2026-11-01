@@ -38,24 +38,29 @@ export function WaitingSort({ sort }: WaitingSortProps) {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <Text as="span" id={labelId} variant="body-2" tone="muted">
+    <div className="flex shrink-0 items-center gap-2">
+      {/* Beside the title a phone has room for the choice alone; a screen reader still hears this. */}
+      <Text
+        as="span"
+        id={labelId}
+        variant="body-2"
+        tone="muted"
+        className="sr-only md:not-sr-only"
+      >
         Sort by
       </Text>
-      <div className="w-full md:w-48">
-        <Select value={sort} onValueChange={handleValueChange}>
-          <SelectTrigger aria-labelledby={labelId}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {BRAND_NEW_WAITING_SORTS.map((value) => (
-              <SelectItem key={value} value={value}>
-                {SORT_NAMES[value]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Select value={sort} onValueChange={handleValueChange}>
+        <SelectTrigger variant="inline" aria-labelledby={labelId}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent fitsItems align="end">
+          {BRAND_NEW_WAITING_SORTS.map((value) => (
+            <SelectItem key={value} value={value}>
+              {SORT_NAMES[value]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

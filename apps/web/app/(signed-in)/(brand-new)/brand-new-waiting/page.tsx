@@ -38,10 +38,12 @@ export default async function BrandNewWaiting({
   return (
     <AnsweredAsksProvider>
       <div className={cn(BRAND_NEW_COLUMN, 'flex flex-col gap-4')}>
-        <BrandNewPageTitle id={WAITING_HEADING_ID} tabIndex={-1}>
-          Waiting for me
-        </BrandNewPageTitle>
-        <WaitingSort sort={sort} />
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <BrandNewPageTitle id={WAITING_HEADING_ID} tabIndex={-1}>
+            Waiting for me
+          </BrandNewPageTitle>
+          <WaitingSort sort={sort} />
+        </div>
         <Suspense key={sort} fallback={<WaitingAsksSkeleton />}>
           <WaitingAsks membership={session.membership} sort={sort} />
         </Suspense>

@@ -4,10 +4,10 @@ import { BrandNewPageTitle } from '@/app/(signed-in)/(brand-new)/_components/bra
 import { BRAND_NEW_COLUMN } from '@/app/(signed-in)/(brand-new)/_lib/brand-new-column.constant';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { HandwrittenNote } from '@/components/molecules/handwritten-note';
-import { FeedComposerSkeleton } from '@/components/organisms/feed-composer/feed-composer-skeleton';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
+import { FeedComposerSkeleton } from './_components/feed-composer/feed-composer-skeleton';
 import { HomeComposer } from './_components/home-composer';
 import { HomeFeed, HomeFeedSkeleton } from './_components/home-feed';
 import { HomeFeedFilter } from './_components/home-feed-filter';
@@ -64,21 +64,18 @@ export default async function BrandNewHome({
             </HandwrittenNote>
           </div>
           <Suspense fallback={<FeedComposerSkeleton />}>
-            <HomeComposer session={session} />
+            <HomeComposer
+              session={session}
+              isUnderPostcard={feedback !== undefined}
+            />
           </Suspense>
         </div>
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0 flex-1 md:flex-none">
-              <HomeFeedFilter show={show} />
-            </div>
-            <HandwrittenNote
-              size="md"
-              tilt="left"
-              className="hidden shrink-0 md:block"
-            >
+          <div className="flex items-center justify-end gap-3 md:justify-between">
+            <HandwrittenNote size="md" tilt="left" className="hidden md:block">
               what your team's been saying
             </HandwrittenNote>
+            <HomeFeedFilter show={show} />
           </div>
           <Suspense key={show} fallback={<HomeFeedSkeleton />}>
             <HomeFeed membership={session.membership} show={show} />

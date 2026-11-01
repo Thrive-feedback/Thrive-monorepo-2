@@ -2,10 +2,16 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
-import { MiniPostcard } from '@/components/molecules/mini-postcard';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
+import { OfferedFeedbackCard } from '@/components/organisms/feed-card/offered-feedback-card';
+import { CardCover } from './card-cover';
 import { FeedCardCases } from './feed-card-cases';
-import { OFFERED_CASES } from './feed-card-samples.constant';
+import {
+  OFFERED_CASES,
+  SAMPLE_OFFERED,
+  SAMPLE_READER,
+  SAMPLE_TARGET,
+} from './feed-card-samples.constant';
 
 export function OfferedFeedbackCardEntry() {
   return (
@@ -15,7 +21,7 @@ export function OfferedFeedbackCardEntry() {
       origin="thrive"
       source="components/organisms/feed-card/offered-feedback-card.tsx — FeedCardFrame + MiniPostcard + FeedbackText"
       summary="Feedback given without being asked, in Home's feed: who wrote to whom, how it came about, the day and who can read it, the message cut at three lines, and a small postcard in the corner, which opens the postcard."
-      useFor="One piece of Offered Feedback in the Home menu. In a list, use FeedCardList."
+      useFor="One piece of Offered Feedback in the Home menu."
       avoidFor="The whole message, which the postcard shows. /home's lists, which keep FeedbackCard until that page is replaced."
       usage={`import { OfferedFeedbackCard } from '@/components/organisms/feed-card/offered-feedback-card';
 
@@ -61,5 +67,13 @@ export function OfferedFeedbackCardEntry() {
 }
 
 export function OfferedFeedbackCardPreview() {
-  return <MiniPostcard kind="offered" date="2026-10-31T03:00:00.000Z" />;
+  return (
+    <CardCover>
+      <OfferedFeedbackCard
+        item={SAMPLE_OFFERED}
+        readerAccountId={SAMPLE_READER}
+        target={SAMPLE_TARGET}
+      />
+    </CardCover>
+  );
 }

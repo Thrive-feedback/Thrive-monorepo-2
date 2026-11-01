@@ -10,7 +10,6 @@ export type PostcardAnswerPagerProps = {
   count: number;
   /** Who wrote the answer showing, said to a screen reader as the answer changes. */
   giverName: string;
-  className?: string;
   onIndexChange: (index: number) => void;
 };
 
@@ -22,7 +21,6 @@ export function PostcardAnswerPager({
   index,
   count,
   giverName,
-  className,
   onIndexChange,
 }: PostcardAnswerPagerProps) {
   return (
@@ -30,7 +28,7 @@ export function PostcardAnswerPager({
     <div
       role="group"
       aria-label="Answers"
-      className={cn(POSTCARD_BAR, 'gap-0.5', className)}
+      className={cn(POSTCARD_BAR, 'gap-0.5')}
     >
       <Button
         variant="ghost"

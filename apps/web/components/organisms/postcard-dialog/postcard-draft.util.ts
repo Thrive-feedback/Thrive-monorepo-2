@@ -1,4 +1,5 @@
 import { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
+import { CARD_NOTES } from './card-tool-note.constant';
 import type {
   PlacedPostcardSticker,
   PostcardCard,
@@ -136,6 +137,29 @@ export function blankDraft(card: PostcardCard): CardState {
     tone: card.kind === 'answer' ? card.ask.tone : 'cream',
     textStyle: DEFAULT_TEXT_STYLE,
   };
+}
+
+/** What the note under Send says: what stands in its way, first thing first, or that nothing does. */
+export function sendNote(
+  kind: PostcardKind,
+  draft: CardState,
+  visibility: PostcardVisibility,
+  selectedReaders: ReadonlySet<string>,
+) {
+  if (kind !== 'answer' && draft.recipientAccountIds.length === 0) {
+    return kind === 'ask' ? CARD_NOTES.needsAsked : CARD_NOTES.needsReceiver;
+  }
+  if (draft.message.trim() === '') {
+    return CARD_NOTES.needsMessage;
+  }
+  if (
+    kind !== 'answer' &&
+    visibility === SELECTED_PEOPLE &&
+    selectedReaders.size === 0
+  ) {
+    return CARD_NOTES.needsReaders;
+  }
+  return CARD_NOTES.sendReady;
 }
 
 export function isReady(

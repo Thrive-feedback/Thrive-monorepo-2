@@ -57,6 +57,20 @@ export function SelectEntry() {
           description: 'The chosen item, controlled or uncontrolled.',
         },
         {
+          name: 'SelectTrigger variant',
+          type: "'field' | 'inline'",
+          defaultValue: "'field'",
+          description:
+            '`field` in a form, as wide as its column; `inline` for a quiet choice beside a heading, as wide as what it says.',
+        },
+        {
+          name: 'SelectContent fitsItems',
+          type: 'boolean',
+          defaultValue: 'false',
+          description:
+            'Lets the list grow past a narrow trigger, so no item is cut short. Pair it with `inline`.',
+        },
+        {
           name: 'onValueChange',
           type: '(value: string) => void',
           description: 'Called when an item is picked.',
@@ -89,6 +103,21 @@ export function SelectEntry() {
         'Name it with a Label (htmlFor on the trigger id) or aria-label.',
       ]}
     >
+      <StateCell
+        label="Inline"
+        hint="Beside a heading, its list wider than it."
+      >
+        <Select defaultValue="engineering">
+          <SelectTrigger variant="inline" aria-label="Team shown">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent fitsItems align="end">
+            <SelectItem value="design">Design</SelectItem>
+            <SelectItem value="engineering">Engineering</SelectItem>
+            <SelectItem value="everyone">Everyone in the Workspace</SelectItem>
+          </SelectContent>
+        </Select>
+      </StateCell>
       <StateCell label="Placeholder" hint="Open it">
         <Select>
           <SelectTrigger aria-label="Team">

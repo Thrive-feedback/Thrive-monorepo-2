@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useEndlessList } from '@/app/(signed-in)/(brand-new)/_lib/use-endless-list';
 import { readNextHomeFeedPage } from '@/app/(signed-in)/(brand-new)/brand-new-home/_lib/home-feed-actions.service';
-import { FeedCardList } from '@/components/organisms/feed-card/feed-card-list';
+import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { FeedPageFailed } from '@/components/organisms/feed-card/feed-page-failed';
 import type { HomeFeedPage } from '@/lib/feedback/home-feed-item.type';
@@ -31,13 +31,17 @@ export function HomeFeedList({ initialPage, show }: HomeFeedListProps) {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <FeedCardList
-        items={items}
-        readerAccountId={initialPage.readerAccountId}
-        targetFor={(item) => ({
-          href: ROUTES.brandNewHomeFeedback(item.id, show),
-        })}
-      />
+      <ul className="flex flex-col gap-1.5">
+        {items.map((item) => (
+          <li key={item.id}>
+            <FeedCard
+              item={item}
+              readerAccountId={initialPage.readerAccountId}
+              target={{ href: ROUTES.brandNewHomeFeedback(item.id, show) }}
+            />
+          </li>
+        ))}
+      </ul>
       {phase === 'reading' && <FeedCardSkeleton />}
       {phase === 'failed' && <FeedPageFailed onRetry={readNextPage} />}
       <div ref={endRef} aria-hidden="true" />
