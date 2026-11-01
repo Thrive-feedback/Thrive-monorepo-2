@@ -270,6 +270,21 @@ describe('readHomePostcard', () => {
     expect(await readHomePostcard(MEMBERSHIP, FIRST_ANSWER)).toBeNull();
   });
 
+  it('answers nothing once the reader has left the Workspace', async () => {
+    theApiAnswers(
+      {
+        error: {
+          code: 'WORKSPACE_NOT_FOUND',
+          message: 'Not found.',
+          correlationId: 'test',
+        },
+      },
+      { status: 404 },
+    );
+
+    expect(await readHomePostcard(MEMBERSHIP, FIRST_ANSWER)).toBeNull();
+  });
+
   it('does not hide a failure as not found', async () => {
     theApiAnswers({ code: 'INTERNAL' }, { status: 500 });
 
