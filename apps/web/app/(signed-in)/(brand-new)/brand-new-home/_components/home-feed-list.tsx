@@ -6,6 +6,7 @@ import { readNextHomeFeedPage } from '@/app/(signed-in)/(brand-new)/brand-new-ho
 import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { FeedPageFailed } from '@/components/organisms/feed-card/feed-page-failed';
+import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';
 import type { HomeFeedPage } from '@/lib/feedback/home-feed-item.type';
 import { type BrandNewHomeShow, ROUTES } from '@/lib/routes.constant';
 
@@ -16,7 +17,7 @@ export type HomeFeedListProps = {
 };
 
 /**
- * Home's cards, reading the next page as the end of the list comes near. The page keys this by
+ * Home's cards, Feedback and Kudos together, reading the next page as the end of the list comes near. The page keys this by
  * filter, so changing the filter starts again.
  */
 export function HomeFeedList({ initialPage, show }: HomeFeedListProps) {
@@ -34,11 +35,18 @@ export function HomeFeedList({ initialPage, show }: HomeFeedListProps) {
       <ul className="flex flex-col gap-1.5">
         {items.map((item) => (
           <li key={item.id}>
-            <FeedCard
-              item={item}
-              readerAccountId={initialPage.readerAccountId}
-              target={{ href: ROUTES.brandNewHomeFeedback(item.id, show) }}
-            />
+            {item.kind === 'KUDOS' ? (
+              <KudosFeedCard
+                kudos={item}
+                readerAccountId={initialPage.readerAccountId}
+              />
+            ) : (
+              <FeedCard
+                item={item}
+                readerAccountId={initialPage.readerAccountId}
+                target={{ href: ROUTES.brandNewHomeFeedback(item.id, show) }}
+              />
+            )}
           </li>
         ))}
       </ul>

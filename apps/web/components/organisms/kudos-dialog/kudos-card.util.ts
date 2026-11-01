@@ -1,6 +1,20 @@
 import { MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
 
 /**
+ * The date on the back of a card: `1 November 2026`. On the one clock the board's months are read
+ * on, so a card given on the 1st is dated in the month it is filed under (ADR 0076), and the server
+ * and the browser agree on it.
+ */
+const CARD_DATE = new Intl.DateTimeFormat('en-GB', {
+  dateStyle: 'long',
+  timeZone: 'Asia/Bangkok',
+});
+
+export function kudosCardDate(isoDateTime: string): string {
+  return CARD_DATE.format(new Date(isoDateTime));
+}
+
+/**
  * The largest size step that still fits, for a message up to each length: a card never scrolls, so
  * a long message is set smaller. Steps are `POSTCARD_SIZES`', smallest first, and the last entry
  * reaches the limit. Measured on the card on a phone and a wide screen, in all three fonts, on every

@@ -58,6 +58,8 @@ export const ROUTES = {
   },
   /** The Workspace's Kudos, in the new Home. */
   brandNewKudos: '/brand-new-kudos',
+  /** The Kudos board narrowed to one month, `YYYY-MM`. */
+  brandNewKudosMonth: (month: string) => `/brand-new-kudos?month=${month}`,
   /** Every Ask waiting for the person, in the new Home. */
   brandNewWaiting: '/brand-new-waiting',
   /** Waiting for me in one order. */

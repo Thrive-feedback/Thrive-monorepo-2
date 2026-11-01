@@ -2,27 +2,30 @@ import { GlobeIcon, UsersIcon } from 'lucide-react';
 import { Badge } from '@/components/atoms/badge';
 import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';
-import { AvatarName } from '@/components/molecules/avatar-name';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { TargetLink } from '@/components/molecules/target-link';
-import { PeopleDialogButton } from '@/components/organisms/people-dialog-button';
-import { PersonName } from '@/components/organisms/person-name';
 import { cn } from '@/lib/cn.util';
 import type { HomeFeedItem } from '@/lib/feedback/home-feed-item.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
 import styles from './feed-card-frame.module.css';
-import {
-  feedCardGiver,
-  feedCardSentence,
-  NO_NAME_IN_A_SENTENCE,
-  readerFirst,
-} from './feed-card-sentence.util';
+import { FeedCardNote, noteLieOf } from './feed-card-note';
+import { feedCardGiver, feedCardSentence } from './feed-card-sentence.util';
 import { FEED_CARD_SURFACE } from './feed-card-surface.constant';
+import { FeedCardWho } from './feed-card-who';
 import { PendingMiniPostcard } from './pending-mini-postcard';
 
 const ORIGIN_NAMES: Readonly<Record<HomeFeedItem['origin'], string>> = {
   REQUESTED: 'Requested',
   OFFERED: 'Offered',
+};
+
+/**
+ * The note by hand pointing at the small postcard, saying what opening it gives. A card cuts Offered
+ * Feedback at three lines, and shows a request's other answers only as who gave them.
+ */
+const POSTCARD_NOTES: Readonly<Record<HomeFeedItem['origin'], string>> = {
+  REQUESTED: 'All the answers in here',
+  OFFERED: 'Read the whole postcard',
 };
 
 /** Who can read a card, in the Visibility's own words. Text and icon, never the icon alone. */
@@ -47,48 +50,10 @@ export type FeedCardFrameProps = FeedCardProps & {
 };
 
 /**
- * Who a card is for: one person's face and name, the reader as "you", or several people as a small
- * stack, the reader first, which lists them on a press.
- */
-function Receivers({
-  item,
-  readerAccountId,
-}: Pick<FeedCardProps, 'item' | 'readerAccountId'>) {
-  const [onlyReceiver] = item.receivers;
-
-  if (item.receivers.length === 1 && onlyReceiver) {
-    return (
-      <AvatarName
-        name={onlyReceiver.name ?? ''}
-        photoUrl={onlyReceiver.photoUrl}
-        size="sm"
-      >
-        {onlyReceiver.accountId === readerAccountId ? (
-          'you'
-        ) : (
-          <PersonName
-            name={onlyReceiver.name ?? NO_NAME_IN_A_SENTENCE}
-            inactive={onlyReceiver.inactive}
-          />
-        )}
-      </AvatarName>
-    );
-  }
-  return (
-    <span className="inline-flex">
-      <PeopleDialogButton
-        people={readerFirst(item.receivers, readerAccountId)}
-        unnamed={NO_NAME_IN_A_SENTENCE}
-        description={`${feedCardGiver(item.giver, readerAccountId)} gave this Feedback to all of them. Each of them sees who else it was for.`}
-      />
-    </span>
-  );
-}
-
-/**
  * What every Feedback card on Home shares: who wrote to whom, never anonymous (`ADR-0022` in the
  * brain), how it came about, the day and who can read it, and a small postcard in the corner, which
- * is the link to the real one. The rest of the card answers no press.
+ * is the link to the real one, with a note by hand pointing at it where there is room. The rest of
+ * the card answers no press.
  */
 export function FeedCardFrame({
   item,
@@ -108,25 +73,13 @@ export function FeedCardFrame({
         {/* Beside the small postcard, the two stack; on a phone the meta line would not fit
             there, so this falls away and it runs under the postcard instead. */}
         <div className="contents md:flex md:min-w-0 md:flex-col md:gap-1">
-          <Text
-            as="div"
-            variant="subtitle-4"
-            className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 break-words"
-          >
-            <span>
-              {item.giver.accountId === readerAccountId ? (
-                'You'
-              ) : (
-                <PersonName
-                  name={feedCardGiver(item.giver, readerAccountId)}
-                  inactive={item.giver.inactive}
-                />
-              )}
-            </span>
-            <span className="text-fg-secondary">gave feedback</span>
-            <span className="text-action-secondary-hover">to</span>
-            <Receivers item={item} readerAccountId={readerAccountId} />
-          </Text>
+          <FeedCardWho
+            giver={item.giver}
+            receivers={item.receivers}
+            verb="gave feedback"
+            peopleDescription={`${feedCardGiver(item.giver, readerAccountId)} gave this Feedback to all of them. Each of them sees who else it was for.`}
+            readerAccountId={readerAccountId}
+          />
           <Text
             as="div"
             variant="body-3"
@@ -142,18 +95,20 @@ export function FeedCardFrame({
             </Badge>
           </Text>
         </div>
-        <TargetLink
-          target={target}
-          className="group/card-link col-start-3 row-start-1 block"
-        >
-          <span className="sr-only">
-            Open postcard: {feedCardSentence(item, readerAccountId)}
-          </span>
-          <PendingMiniPostcard
-            kind={item.origin === 'REQUESTED' ? 'requested' : 'offered'}
-            date={item.givenAt}
-          />
-        </TargetLink>
+        <div className="col-start-3 row-start-1 flex items-center gap-2">
+          <FeedCardNote lie={noteLieOf(item.id)} className="hidden xl:flex">
+            {POSTCARD_NOTES[item.origin]}
+          </FeedCardNote>
+          <TargetLink target={target} className="group/card-link block">
+            <span className="sr-only">
+              Open postcard: {feedCardSentence(item, readerAccountId)}
+            </span>
+            <PendingMiniPostcard
+              kind={item.origin === 'REQUESTED' ? 'requested' : 'offered'}
+              date={item.givenAt}
+            />
+          </TargetLink>
+        </div>
       </header>
       {children}
     </article>

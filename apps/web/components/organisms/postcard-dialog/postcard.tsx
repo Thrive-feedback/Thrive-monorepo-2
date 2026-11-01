@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { cn } from '@/lib/cn.util';
 import styles from './postcard.module.css';
 import { PostcardCover } from './postcard-cover';
 import type { PostcardSide } from './postcard-draft.type';
 import { PAPER_TONES, type PaperTone } from './postcard-style.constant';
+import { useCardTurn } from './use-card-turn';
 
 const faceClassName =
   'col-start-1 row-start-1 relative flex min-h-96 flex-col overflow-hidden rounded-element border border-border-muted md:aspect-3/2 md:min-h-0';
@@ -41,29 +41,10 @@ export function Postcard({
   areStickersHidden = false,
   onTurned,
 }: PostcardProps) {
-  const [shownSide, setShownSide] = useState(side);
-  const [phase, setPhase] = useState<'still' | 'out' | 'in'>('still');
-
-  // A new side starts the turn; the side showing only changes once the card is edge-on.
-  if (side !== shownSide && phase === 'still') {
-    setPhase('out');
-  }
-
-  function handleAnimationEnd(event: React.AnimationEvent) {
-    if (event.target !== event.currentTarget) {
-      return;
-    }
-    if (phase === 'out') {
-      setShownSide(side);
-      setPhase('in');
-    } else {
-      setPhase('still');
-      // Told to turn again before this turn ended: that one has yet to start.
-      if (side === shownSide) {
-        onTurned?.();
-      }
-    }
-  }
+  const { shownSide, turnClassName, handleAnimationEnd } = useCardTurn(
+    side,
+    onTurned,
+  );
 
   function classNameFor(faceSide: PostcardSide) {
     return cn(
@@ -77,11 +58,7 @@ export function Postcard({
   return (
     <div className={styles.stage}>
       <div
-        className={cn(
-          'grid',
-          phase === 'out' && styles.turnOut,
-          phase === 'in' && styles.turnIn,
-        )}
+        className={cn('grid', turnClassName)}
         onAnimationEnd={handleAnimationEnd}
       >
         <section

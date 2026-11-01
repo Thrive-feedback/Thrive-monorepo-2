@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { POSTCARD_STICKERS } from '@/components/organisms/postcard-dialog/postcard-sticker.constant';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { kudosCardDate } from './kudos-card.util';
 import { KudosDialog, type KudosDialogProps } from './kudos-dialog';
 import {
   KUDOS_TEMPLATE_KEYS,
@@ -129,13 +130,12 @@ describe('KudosDialog', () => {
     expect(message()).toHaveValue('');
   });
 
-  it('has no other side, no stamp, nobody to choose and nobody to share it with', async () => {
+  it('has no stamp, nobody to choose and nobody to share it with', async () => {
     const user = userEvent.setup();
     render(dialog());
 
     await user.click(screen.getByRole('button', { name: 'Done' }));
 
-    expect(screen.queryByRole('button', { name: /Turn over/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /Stamp/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /^Choose who/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /read/i })).toBeNull();
@@ -559,5 +559,76 @@ describe('KudosDialog', () => {
     expect(
       await screen.findByRole('textbox', { name: 'Your Kudos' }),
     ).toHaveValue('');
+  });
+});
+
+describe('turning the Kudos card over', () => {
+  const today = () => kudosCardDate(new Date().toISOString());
+
+  function finishTurning() {
+    const card = screen.getByText(today()).closest('.grid');
+    if (card) {
+      fireEvent.animationEnd(card);
+      fireEvent.animationEnd(card);
+    }
+  }
+
+  async function turnToTheBack(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(
+      screen.getByRole('button', { name: /^Turn over to the back/ }),
+    );
+    finishTurning();
+  }
+
+  it('shows the wordmark and today on the back', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await turnToTheBack(user);
+
+    expect(screen.getByRole('img', { name: 'Thrive' })).toBeVisible();
+    expect(screen.getByText(today())).toBeVisible();
+  });
+
+  it('takes no stickers on the back', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+
+    await turnToTheBack(user);
+
+    expect(screen.getByRole('button', { name: /^Stickers/ })).toBeDisabled();
+  });
+
+  it('keeps what was written while it is turned over', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await write(user, 'Nice work.');
+
+    await turnToTheBack(user);
+    await user.click(
+      screen.getByRole('button', { name: /^Turn over to the front/ }),
+    );
+    finishTurning();
+
+    expect(message()).toHaveValue('Nice work.');
+    expect(
+      screen.getByRole('button', { name: /^Stickers/ }),
+    ).not.toBeDisabled();
+  });
+
+  it('sends from the back, with the words', async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn().mockResolvedValue(true);
+    render(dialog({ onSend }));
+    await write(user, 'Nice work.');
+
+    await turnToTheBack(user);
+    await user.click(sendButton());
+
+    await waitFor(() =>
+      expect(onSend).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Nice work.' }),
+      ),
+    );
   });
 });

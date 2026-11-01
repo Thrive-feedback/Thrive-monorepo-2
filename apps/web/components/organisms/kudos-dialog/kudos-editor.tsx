@@ -1,5 +1,12 @@
 import { ArrowRightIcon } from 'lucide-react';
-import { memo, useCallback, useMemo, useReducer, useRef } from 'react';
+import {
+  memo,
+  useCallback,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { Button } from '@/components/atoms/button';
 import { DialogContent } from '@/components/atoms/dialog';
 import { feedbackTagTriggers } from '@/components/organisms/feedback-tag-triggers.util';
@@ -11,6 +18,7 @@ import {
 import { CardToolNote } from '@/components/organisms/postcard-dialog/card-tool-note';
 import { CARD_NOTES } from '@/components/organisms/postcard-dialog/card-tool-note.constant';
 import postcardStyles from '@/components/organisms/postcard-dialog/postcard.module.css';
+import type { PostcardSide } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import {
   CARD_NOTE_AFTER_TOOLS,
   CARD_NOTE_ARROW_LEFT,
@@ -30,6 +38,7 @@ import { PostcardSticker } from '@/components/organisms/postcard-dialog/postcard
 import { PostcardStickerPicker } from '@/components/organisms/postcard-dialog/postcard-sticker-picker';
 import { CardTextToolbar } from '@/components/organisms/postcard-dialog/postcard-text-toolbar';
 import { PostcardTitleRow } from '@/components/organisms/postcard-dialog/postcard-title-row';
+import { PostcardTurnButton } from '@/components/organisms/postcard-dialog/postcard-turn-button';
 import { useCardStickers } from '@/components/organisms/postcard-dialog/use-card-stickers';
 import { useCardTextTools } from '@/components/organisms/postcard-dialog/use-card-text-tools';
 import { PostcardDrawerContainer } from '@/components/organisms/postcard-dialog/use-postcard-drawer-container';
@@ -39,7 +48,10 @@ import { MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
 import { mentionedTeammates } from '@/lib/feedback/mentioned-teammates.util';
 import { messageLength } from '@/lib/feedback/message-length.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { kudosCardDate } from './kudos-card.util';
+import { KudosCardBack } from './kudos-card-back';
 import { KudosCardFace } from './kudos-card-face';
+import { KudosCardTurn } from './kudos-card-turn';
 import type { KudosDraft } from './kudos-draft.type';
 import { applyKudosChange, blankKudosDraft } from './kudos-draft.util';
 import { KudosMessage } from './kudos-message';
@@ -107,6 +119,8 @@ export function KudosEditor({
     defaultMessage,
     blankKudosDraft,
   );
+  const [side, setSide] = useState<PostcardSide>('front');
+  const [today] = useState(() => kudosCardDate(new Date().toISOString()));
   const { areNotesShown, handleToggleNotes } = useCardNotes();
   const contentRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -187,7 +201,15 @@ export function KudosEditor({
     [],
   );
 
+  function handleTurnOver() {
+    setIsEditingText(false);
+    letGo();
+    setSide(side === 'front' ? 'back' : 'front');
+  }
+
+  // What is pinned to the board is the side with the words on it.
   function handleSend() {
+    setSide('front');
     showStickers();
     void send();
   }
@@ -247,9 +269,11 @@ export function KudosEditor({
             />
 
             <div className="relative flex w-full max-w-90 flex-col gap-3">
-              <CardToolNote hasGone={hasGone} className={MESSAGE_NOTE_PLACE}>
-                {CARD_NOTES.typeKudos}
-              </CardToolNote>
+              {side === 'front' && (
+                <CardToolNote hasGone={hasGone} className={MESSAGE_NOTE_PLACE}>
+                  {CARD_NOTES.typeKudos}
+                </CardToolNote>
+              )}
               <div
                 className={cn(
                   'flex gap-2 self-end lg:absolute lg:top-1/2 lg:left-full lg:ml-6 lg:-translate-y-1/2 lg:flex-col',
@@ -266,10 +290,17 @@ export function KudosEditor({
                       : CARD_NOTES.hideStickers}
                   </CardToolNote>
                 )}
+                <PostcardTurnButton
+                  side={side}
+                  turnToBackHint="Turn over to see the back"
+                  toFrontLabel="Turn over to the front, your words"
+                  toBackLabel="Turn over to the back, the date"
+                  onClick={handleTurnOver}
+                />
                 <PostcardHideButton
                   isHidden={areStickersHidden}
                   what="stickers"
-                  disabled={!hasStickers}
+                  disabled={!hasStickers || side === 'back'}
                   onClick={handleHideStickers}
                 />
                 <CardNotesButton
@@ -278,28 +309,34 @@ export function KudosEditor({
                 />
               </div>
               <div ref={pin.cardRef} className="relative">
-                <KudosCardFace templateKey={draft.templateKey}>
-                  <KudosMessage
-                    ref={messageRef}
-                    message={draft.message}
-                    templateKey={draft.templateKey}
-                    textStyle={draft.textStyle}
-                    triggers={triggers}
-                    onMessageChange={handleMessageChange}
-                    onMessageFocus={handleMessageFocus}
-                  />
-                  {!areStickersHidden &&
-                    draft.stickers.map((sticker) => (
-                      <PostcardSticker
-                        key={sticker.id}
-                        sticker={sticker}
-                        isSelected={sticker.id === selectedId}
-                        onSelect={setSelectedId}
-                        onChange={handleChangeSticker}
-                        onRemove={handleRemoveSticker}
+                <KudosCardTurn
+                  side={side}
+                  front={
+                    <KudosCardFace templateKey={draft.templateKey}>
+                      <KudosMessage
+                        ref={messageRef}
+                        message={draft.message}
+                        templateKey={draft.templateKey}
+                        textStyle={draft.textStyle}
+                        triggers={triggers}
+                        onMessageChange={handleMessageChange}
+                        onMessageFocus={handleMessageFocus}
                       />
-                    ))}
-                </KudosCardFace>
+                      {!areStickersHidden &&
+                        draft.stickers.map((sticker) => (
+                          <PostcardSticker
+                            key={sticker.id}
+                            sticker={sticker}
+                            isSelected={sticker.id === selectedId}
+                            onSelect={setSelectedId}
+                            onChange={handleChangeSticker}
+                            onRemove={handleRemoveSticker}
+                          />
+                        ))}
+                    </KudosCardFace>
+                  }
+                  back={<KudosCardBack date={today} />}
+                />
                 <KudosPin ref={pin.pinRef} />
               </div>
             </div>
@@ -355,6 +392,13 @@ export function KudosEditor({
                       {CARD_NOTES.styleWords}
                     </CardToolNote>
                   )}
+                  {!isEditingText && side === 'back' && (
+                    <CardToolNote
+                      className={cn(CARD_NOTE_BESIDE_TOOLS, 'lg:flex')}
+                    >
+                      {CARD_NOTES.stickersOnFront}
+                    </CardToolNote>
+                  )}
                   {isEditingText && draft.message !== '' && (
                     <CardToolNote
                       className={CARD_NOTE_AFTER_TOOLS}
@@ -377,6 +421,7 @@ export function KudosEditor({
                     ) : (
                       <PostcardStickerPicker
                         count={draft.stickers.length}
+                        disabled={side === 'back'}
                         description={STICKER_HINT}
                         onAddSticker={handleAddSticker}
                       />

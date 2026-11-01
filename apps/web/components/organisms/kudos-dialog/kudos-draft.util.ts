@@ -11,10 +11,8 @@ import {
   type KudosTemplateKey,
   type KudosTextStyle,
   randomKudosTemplateKey,
+  THE_ONE_SIDE,
 } from './kudos-template.constant';
-
-/** The side every sticker is on, since `PostcardSticker` asks and a Kudos card has one. */
-const THE_ONE_SIDE = 'back';
 
 /** The largest size: a short Kudos reads large, and a long one is stepped down from here. */
 const LARGEST_SIZE_STEP = 4;

@@ -12,6 +12,9 @@ export type PostcardTurnButtonProps = {
   side: PostcardSide;
   /** What the tooltip says while the front shows, such as "Turn over to read the back". */
   turnToBackHint: string;
+  /** What a screen reader hears, for a card whose sides are not a picture and a message. */
+  toFrontLabel?: string;
+  toBackLabel?: string;
   onClick: () => void;
 };
 
@@ -19,6 +22,8 @@ export type PostcardTurnButtonProps = {
 export function PostcardTurnButton({
   side,
   turnToBackHint,
+  toFrontLabel = 'Turn over to the front, the picture',
+  toBackLabel = 'Turn over to the back, the message',
   onClick,
 }: PostcardTurnButtonProps) {
   return (
@@ -32,9 +37,7 @@ export function PostcardTurnButton({
         >
           <Rotate3dIcon aria-hidden="true" className="size-4.5" />
           <span className="sr-only">
-            {side === 'back'
-              ? 'Turn over to the front, the picture'
-              : 'Turn over to the back, the message'}
+            {side === 'back' ? toFrontLabel : toBackLabel}
           </span>
         </Button>
       </TooltipTrigger>

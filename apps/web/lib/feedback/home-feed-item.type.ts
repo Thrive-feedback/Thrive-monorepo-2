@@ -1,10 +1,13 @@
 import type { components, operations } from '@repo/api';
+import type { ReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.type';
 import type { AskStatus } from './ask-status.constant';
 import type { FeedbackPerson } from './feedback-person.util';
 import type { TextTags } from './text-tags.type';
 
-export type FeedItemOnTheWire =
-  components['schemas']['ListFeedItemsResponseDto_Output']['items'][number];
+export type FeedItemOnTheWire = Extract<
+  components['schemas']['ListFeedItemsResponseDto_Output']['items'][number],
+  { kind: 'FEEDBACK' }
+>;
 
 /** Which of what a Member reads on Home: the three choices of its filter, as the API names them. */
 export type HomeFeedShow = NonNullable<
@@ -60,9 +63,15 @@ export type HomeFeedItem = {
 };
 
 /** One page of Home. The reader comes with it because no other read says who they are. */
+/** One thing on Home: a piece of Feedback, or a Kudos on its card. */
+export type HomeFeedEntry =
+  | (HomeFeedItem & { readonly kind: 'FEEDBACK' })
+  | (ReadKudos & { readonly kind: 'KUDOS' });
+
 export type HomeFeedPage = {
   readonly readerAccountId: string;
-  readonly items: readonly HomeFeedItem[];
+  /** Newest first. */
+  readonly items: readonly HomeFeedEntry[];
   /** Where the next page starts, or `null` on the last page. */
   readonly nextCursor: string | null;
 };

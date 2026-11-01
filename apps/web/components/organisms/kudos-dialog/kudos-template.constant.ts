@@ -18,6 +18,9 @@ export const KUDOS_TEMPLATE_KEYS = [
 
 export type KudosTemplateKey = (typeof KUDOS_TEMPLATE_KEYS)[number];
 
+/** The side every sticker is on, since `PostcardSticker` asks and a Kudos card has one. */
+export const THE_ONE_SIDE = 'back';
+
 export type KudosInk = CardInk;
 
 export type KudosTextStyle = PostcardTextStyle<KudosInk>;

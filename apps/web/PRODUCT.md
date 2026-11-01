@@ -50,7 +50,8 @@ What works today, per the brain's `STATE.md` (as of 2026-10-24):
   Notification names who did something and links to it, behind a sign-in.
 - **Kudos** (brain `ADR-0043`, proposed; built on a branch, not merged): one message of at most 280
   characters to every teammate it @mentions, read by every Member. Sent from Home's composer, shown in
-  the Workspace feed. Nobody is told they received one.
+  the Workspace feed and on the Kudos board, each on the card it was written on. Nobody is told they
+  received one.
 - **Discord Connection**: an Admin connects a server and picks a channel from Settings → Workspace.
   The channel post (#201, `ADR-0040`: who gave Feedback to whom, and a link) is not built.
 

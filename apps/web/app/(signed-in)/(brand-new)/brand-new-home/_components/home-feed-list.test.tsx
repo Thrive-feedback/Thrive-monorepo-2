@@ -42,7 +42,11 @@ function page(
   items: readonly HomeFeedItem[],
   nextCursor: string | null,
 ): HomeFeedPage {
-  return { readerAccountId: READER, items, nextCursor };
+  return {
+    readerAccountId: READER,
+    items: items.map((item) => ({ kind: 'FEEDBACK' as const, ...item })),
+    nextCursor,
+  };
 }
 
 /** What the list is watching, and a way to bring the end of it into view. */
@@ -245,5 +249,48 @@ describe('HomeFeedList', () => {
 
     expect(screen.getByText('Second.')).toBeInTheDocument();
     expect(screen.queryByText('Just written.')).not.toBeInTheDocument();
+  });
+
+  it('shows a Kudos among the Feedback, each on its own card', () => {
+    render(
+      <HomeFeedList
+        initialPage={{
+          readerAccountId: READER,
+          items: [
+            {
+              kind: 'KUDOS',
+              id: 'k1',
+              giver: {
+                accountId: 'mali',
+                name: 'Mali Chaiyo',
+                photoUrl: null,
+                inactive: false,
+              },
+              recipients: [],
+              message: 'Great launch, everyone.',
+              messageTags: NO_TEXT_TAGS,
+              givenAt: '2026-10-31T03:00:00.000Z',
+              drawing: {
+                templateKey: 'peach-pop',
+                textStyle: {
+                  font: 'modern',
+                  sizeStep: 4,
+                  align: 'center',
+                  ink: 'ink',
+                },
+                stickers: [],
+              },
+            },
+            ...page([piece('f-1', 'Well done.')], null).items,
+          ],
+          nextCursor: null,
+        }}
+        show="all"
+      />,
+    );
+
+    expect(screen.getByText('Great launch, everyone.')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'View kudos' })).toBeVisible();
+    expect(screen.getAllByRole('article')).toHaveLength(2);
   });
 });

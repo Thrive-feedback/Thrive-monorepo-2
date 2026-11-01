@@ -1,10 +1,12 @@
 import 'server-only';
 import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
+import { toReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.util';
 import { apiClient } from '@/lib/api-client.service';
 import { toFeedbackPerson } from '@/lib/feedback/feedback-person.util';
 import type {
   FeedItemOnTheWire,
+  HomeFeedItem,
   HomeFeedPage,
   HomeFeedPerson,
   HomeFeedShow,
@@ -31,6 +33,32 @@ function toHomeFeedPerson(
   return { accountId: person.accountId, ...toFeedbackPerson(person) };
 }
 
+function toHomeFeedItem(feedback: FeedItemOnTheWire): HomeFeedItem {
+  return {
+    id: feedback.id,
+    origin: feedback.origin,
+    giver: toHomeFeedPerson(feedback.giver),
+    receivers: feedback.receivers.map(toHomeFeedPerson),
+    message: feedback.message,
+    messageTags: feedback.tags,
+    givenAt: feedback.createdAt,
+    visibility: feedback.visibility,
+    request: feedback.request && {
+      message: feedback.request.message,
+      messageTags: feedback.request.tags,
+      requester: toHomeFeedPerson(feedback.request.requester),
+      asked: feedback.request.asked.map((ask) => ({
+        person: toHomeFeedPerson(ask.person),
+        status: ask.status,
+        answer: ask.answer && {
+          message: ask.answer.message,
+          messageTags: ask.answer.tags,
+        },
+      })),
+    },
+  };
+}
+
 /**
  * One page of what the signed-in person reads on Home, newest first. Who they are is the API's to
  * decide from the session, so it is not a parameter here, and cannot be. Nothing is cached: the
@@ -53,29 +81,11 @@ export async function readHomeFeed(
   );
   return {
     readerAccountId: page.readerAccountId,
-    items: page.items.map((feedback) => ({
-      id: feedback.id,
-      origin: feedback.origin,
-      giver: toHomeFeedPerson(feedback.giver),
-      receivers: feedback.receivers.map(toHomeFeedPerson),
-      message: feedback.message,
-      messageTags: feedback.tags,
-      givenAt: feedback.createdAt,
-      visibility: feedback.visibility,
-      request: feedback.request && {
-        message: feedback.request.message,
-        messageTags: feedback.request.tags,
-        requester: toHomeFeedPerson(feedback.request.requester),
-        asked: feedback.request.asked.map((ask) => ({
-          person: toHomeFeedPerson(ask.person),
-          status: ask.status,
-          answer: ask.answer && {
-            message: ask.answer.message,
-            messageTags: ask.answer.tags,
-          },
-        })),
-      },
-    })),
+    items: page.items.map((item) =>
+      item.kind === 'KUDOS'
+        ? { kind: item.kind, ...toReadKudos(item) }
+        : { kind: item.kind, ...toHomeFeedItem(item) },
+    ),
     nextCursor: page.nextCursor,
   };
 }

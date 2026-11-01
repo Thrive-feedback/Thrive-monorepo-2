@@ -18,6 +18,8 @@ import { usePostcardDrawerContainer } from './use-postcard-drawer-container';
 export type PostcardStickerPickerProps = {
   /** How many stickers the card carries already, on both sides. */
   count: number;
+  /** Stickers cannot go on the side showing. */
+  disabled?: boolean;
   /** What the drawer says about where a sticker goes. */
   description?: string;
   onAddSticker: (stickerKey: string) => void;
@@ -33,6 +35,7 @@ export type PostcardStickerPickerProps = {
  */
 export function PostcardStickerPicker({
   count,
+  disabled = false,
   description = 'Up to three on your card, on either side. A sticker goes on the side showing; drag it where you like.',
   onAddSticker,
 }: PostcardStickerPickerProps) {
@@ -49,8 +52,8 @@ export function PostcardStickerPicker({
   }
 
   return (
-    <Drawer modal={false} open={isOpen} onOpenChange={setIsOpen}>
-      <DrawerTrigger asChild>
+    <Drawer modal={false} open={isOpen && !disabled} onOpenChange={setIsOpen}>
+      <DrawerTrigger asChild disabled={disabled}>
         <PostcardToolButton data-stickers-tool>
           <StickerIcon aria-hidden="true" className="size-4.5" />
           <span className="max-sm:sr-only">Stickers </span>({count}/

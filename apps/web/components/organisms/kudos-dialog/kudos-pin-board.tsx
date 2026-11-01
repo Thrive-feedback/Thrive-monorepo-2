@@ -1,10 +1,10 @@
 import { useReducedMotion } from 'motion/react';
 import { Button } from '@/components/atoms/button';
 import { POSTCARD_BAR } from '@/components/organisms/postcard-dialog/postcard-editor.constant';
-import { readMotionSteps } from '@/components/organisms/postcard-dialog/postcard-flight.util';
 import { cn } from '@/lib/cn.util';
 import styles from './kudos-card.module.css';
 import { KudosCardFace } from './kudos-card-face';
+import { shakeKudosCard } from './kudos-card-shake.util';
 import {
   KUDOS_TEMPLATE_KEYS,
   type KudosTemplateKey,
@@ -34,27 +34,7 @@ const PLACES: readonly KudosTemplateKey[] = Array.from(
 /** Cards pinned by hand are never quite straight. Whole utilities, in turn. */
 const TILTS = ['-rotate-2', 'rotate-1', '-rotate-1', 'rotate-2'];
 
-/** A little shake that dies away. Only a turn: it held 60 fps with six cards going at once. */
-const SHAKE: Keyframe[] = [
-  { transform: 'rotate(0deg)' },
-  { transform: 'rotate(-2.5deg)', offset: 0.2 },
-  { transform: 'rotate(2deg)', offset: 0.45 },
-  { transform: 'rotate(-1.2deg)', offset: 0.7 },
-  { transform: 'rotate(0.6deg)', offset: 0.85 },
-  { transform: 'rotate(0deg)' },
-];
-
-/** The cards shaking now, so a card passed over twice does not start again. */
-const shaking = new WeakSet<Element>();
-
-/** Read once, at the first shake: the tokens do not change, and reading makes the browser work. */
-let shakeMilliseconds: number | undefined;
-
-/**
- * Shakes the card the cursor has just come onto. It runs to its end whether or not the cursor
- * stays, which a CSS `:hover` cannot: one left at once would snap straight, so a quick pass over the
- * board would look like a twitch. No state, so no card is drawn again.
- */
+/** Shakes the card the cursor has just come onto, and not again until it leaves. */
 function shakeCardUnder(event: React.PointerEvent) {
   const { target, relatedTarget, pointerType } = event;
   if (pointerType !== 'mouse' || !(target instanceof Element)) {
@@ -64,15 +44,9 @@ function shakeCardUnder(event: React.PointerEvent) {
   const isStillOnIt =
     relatedTarget instanceof Node && neighbour?.contains(relatedTarget);
   const card = neighbour?.firstElementChild;
-  if (!card || isStillOnIt || shaking.has(card)) {
-    return;
+  if (card && !isStillOnIt) {
+    shakeKudosCard(card);
   }
-  shakeMilliseconds ??= readMotionSteps(card).duration.slow * 1000;
-  shaking.add(card);
-  card.animate(SHAKE, {
-    duration: shakeMilliseconds,
-    easing: 'ease-in-out',
-  }).onfinish = () => shaking.delete(card);
 }
 
 export type KudosPinBoardProps = {
@@ -84,8 +58,8 @@ export type KudosPinBoardProps = {
 /**
  * What a sent card is pinned to: a small board of cards with one place free, filling the window
  * behind the card, with a veil over it. Nothing here is a real Kudos; it is decoration, and the
- * Kudos Board itself does not exist yet. `use-kudos-pin.ts` moves it. Once the card has landed, a
- * card the cursor passes over gives a little shake.
+ * Kudos board proper is where a sent card is read. `use-kudos-pin.ts` moves it. Once the card has
+ * landed, a card the cursor passes over gives a little shake.
  */
 export function KudosPinBoard({ isSettled, ref }: KudosPinBoardProps) {
   const reduceMotion = useReducedMotion() === true;
