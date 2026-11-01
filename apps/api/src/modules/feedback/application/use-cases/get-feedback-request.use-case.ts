@@ -97,15 +97,20 @@ export class GetFeedbackRequestUseCase {
       value: row.visibility,
       selectedAccountIds: row.selectedAccountIds,
     });
+    const anyAnswered = asks.some(
+      (ask) => !AskStatus.of(ask.status).isPending(),
+    );
     const [people, answerRows] = await Promise.all([
       this.peopleService.peopleIn(input.workspaceId, [
         ...asks.map((ask) => ask.giverAccountId),
         ...(isRequester ? visibility.selectedAccountIds() : []),
       ]),
-      this.feedbackRequestQuery.answersInRequest(
-        input.workspaceId,
-        input.requestId,
-      ),
+      anyAnswered
+        ? this.feedbackRequestQuery.answersInRequest(
+            input.workspaceId,
+            input.requestId,
+          )
+        : [],
     ]);
     const answers = new Map(answerRows.map((answer) => [answer.askId, answer]));
 
