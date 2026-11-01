@@ -757,6 +757,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/kudos/months": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Count the Kudos given in this Workspace, in all and by month */
+        get: operations["KudosController_listKudosMonths"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspaceId}/workspace-goals": {
         parameters: {
             query?: never;
@@ -1718,7 +1735,9 @@ export interface components {
         ListFeedItemsResponseDto_Output: {
             /** Format: uuid */
             readerAccountId: string;
-            items: {
+            items: ({
+                /** @enum {string} */
+                kind: "FEEDBACK";
                 /** Format: uuid */
                 id: string;
                 /** @enum {string} */
@@ -1805,7 +1824,61 @@ export interface components {
                         } | null;
                     }[];
                 } | null;
-            }[];
+            } | {
+                /** Format: uuid */
+                id: string;
+                giver: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                recipients: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                }[];
+                message: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                card: {
+                    templateKey: string;
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick" | "paper";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                } | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** @enum {string} */
+                kind: "KUDOS";
+            })[];
             nextCursor: string | null;
         };
         ListWaitingAsksResponseDto_Output: {
@@ -1874,6 +1947,8 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 };
@@ -1881,6 +1956,8 @@ export interface components {
                     /** Format: uuid */
                     accountId: string;
                     name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
                     /** @enum {string} */
                     status: "ACTIVE" | "DEACTIVATED";
                 }[];
@@ -1917,6 +1994,13 @@ export interface components {
                 createdAt: string;
             }[];
             nextCursor: string | null;
+        };
+        ListKudosMonthsResponseDto_Output: {
+            total: number;
+            months: {
+                month: string;
+                count: number;
+            }[];
         };
         ListWorkspaceGoalsResponseDto_Output: {
             items: {
@@ -4026,6 +4110,7 @@ export interface operations {
             query?: {
                 cursor?: string;
                 limit?: number;
+                month?: string;
             };
             header?: {
                 /** @description The browser's cookie header, forwarded by the web server. */
@@ -4101,6 +4186,44 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    KudosController_listKudosMonths: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListKudosMonthsResponseDto_Output"];
+                };
             };
             /** @description NOT_SIGNED_IN */
             401: {

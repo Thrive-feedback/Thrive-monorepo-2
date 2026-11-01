@@ -138,3 +138,44 @@ Feature: Home
   Scenario: Home refuses a choice it does not offer
     When Ann looks at Home showing "MINE"
     Then Home refuses the choice
+
+  @api
+  Scenario: Kudos sit among the Feedback, newest first
+    Given Ben has given Cara Feedback: "First.", shared with everyone in the Workspace
+    And Ben has given Kudos: "Second."
+    And Ben has given Cara Feedback: "Third.", shared with everyone in the Workspace
+    When Ann looks at All Feedback on Home
+    Then Ann's Home reads "Third." then "Second." then "First."
+
+  @api
+  Scenario: Everyone in the Workspace holds every Kudos
+    Given Ben has given Kudos: "For the whole Workspace."
+    When Ann looks at Everyone in the Workspace on Home
+    Then Ann's Home reads "For the whole Workspace."
+
+  @api
+  Scenario: A Kudos is read on the card it was written on
+    Given Ben has given Kudos on a card: "On a card."
+    When Ann looks at All Feedback on Home
+    Then Ann's Home shows a Kudos on its card
+
+  @api
+  Scenario: Shared with me holds a Kudos that names the reader
+    Given Ben has given Kudos: "@Ann carried the launch."
+    When Ann looks at Shared with me on Home
+    Then Ann's Home holds 1 Kudos
+
+  @api
+  Scenario: Shared with me leaves out a Kudos for the whole Workspace
+    Given Ben has given Kudos: "Great launch, everyone."
+    When Ann looks at Shared with me on Home
+    Then Ann's Home is empty
+
+  @api
+  Scenario: One cursor reads Feedback and Kudos through to the end
+    Given Ben has given Cara Feedback: "First.", shared with everyone in the Workspace
+    And Ben has given Kudos: "Second."
+    And Ben has given Cara Feedback: "Third.", shared with everyone in the Workspace
+    And Ben has given Kudos: "Fourth."
+    When Ann reads Home one item at a time
+    Then Ann read "Fourth." then "Third." then "Second." then "First."

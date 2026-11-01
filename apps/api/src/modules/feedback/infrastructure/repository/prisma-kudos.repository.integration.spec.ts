@@ -3,6 +3,8 @@ import { loadConfiguration } from '@app/config/configuration';
 import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { v7 as uuidv7 } from 'uuid';
+import type { KudosPageRow } from '../../application/query-port/kudos.query-port';
+import type { FeedPosition } from '../../application/types/kudos.types';
 import { Kudos } from '../../domain/entity/kudos.entity';
 import { BoundTags } from '../../domain/value-object/bound-tags.vo';
 import {
@@ -10,6 +12,7 @@ import {
   type KudosCardSnapshot,
 } from '../../domain/value-object/kudos-card.vo';
 import { KudosMessage } from '../../domain/value-object/kudos-message.vo';
+import { KudosMonth } from '../../domain/value-object/kudos-month.vo';
 import { PrismaKudosQuery } from '../query/prisma-kudos.query';
 import { PrismaKudosRepository } from './prisma-kudos.repository';
 
@@ -80,10 +83,11 @@ describe('storing Kudos', () => {
 
     await repository.save(kudos);
 
-    const page = await query.publicIn(workspaceId, {
-      afterId: null,
-      limit: 20,
-    });
+    const page = await query.publicIn(
+      workspaceId,
+      { afterId: null, limit: 20 },
+      null,
+    );
     const snapshot = kudos.snapshot();
     expect(page).toEqual({
       items: [
@@ -112,10 +116,11 @@ describe('storing Kudos', () => {
 
     await repository.save(givenOn(KudosCard.of(CARD), workspaceId, uuidv7()));
 
-    const page = await query.publicIn(workspaceId, {
-      afterId: null,
-      limit: 20,
-    });
+    const page = await query.publicIn(
+      workspaceId,
+      { afterId: null, limit: 20 },
+      null,
+    );
     expect(page.items[0]?.card).toEqual(CARD);
   });
 });
@@ -131,14 +136,16 @@ describe('paging a Workspace’s Kudos by cursor', () => {
     }
     await repository.save(given(uuidv7(), uuidv7()));
 
-    const first = await query.publicIn(workspaceId, {
-      afterId: null,
-      limit: 2,
-    });
-    const second = await query.publicIn(workspaceId, {
-      afterId: first.items.at(-1)?.id ?? null,
-      limit: 2,
-    });
+    const first = await query.publicIn(
+      workspaceId,
+      { afterId: null, limit: 2 },
+      null,
+    );
+    const second = await query.publicIn(
+      workspaceId,
+      { afterId: first.items.at(-1)?.id ?? null, limit: 2 },
+      null,
+    );
 
     expect([...first.items, ...second.items].map((row) => row.id)).toEqual(
       [...ids].reverse(),
@@ -161,11 +168,157 @@ describe('paging a Workspace’s Kudos by cursor', () => {
       },
     });
 
-    const { items } = await query.publicIn(workspaceId, {
-      afterId: null,
-      limit: 20,
-    });
+    const { items } = await query.publicIn(
+      workspaceId,
+      { afterId: null, limit: 20 },
+      null,
+    );
 
     expect(items.map((row) => row.card)).toEqual([null]);
+  });
+});
+
+describe('reading a Workspace’s Kudos by month', () => {
+  /** A Kudos given at this instant, which only a test can choose. */
+  async function givenAt(workspaceId: string, createdAt: string) {
+    const kudos = given(workspaceId, uuidv7());
+    await repository.save(kudos);
+    await prismaService.kudos.update({
+      where: { id: kudos.snapshot().id },
+      data: { createdAt: new Date(createdAt) },
+    });
+    return kudos.snapshot().id;
+  }
+
+  it('reads the morning of the 1st as that month, on the clock everyone shares', async () => {
+    const workspaceId = uuidv7();
+    // 06:00 on 1 November at UTC+7 is still 31 October in UTC.
+    const november = await givenAt(workspaceId, '2026-10-31T23:00:00.000Z');
+    // A second before midnight at UTC+7 is the last of October.
+    const october = await givenAt(workspaceId, '2026-10-31T16:59:59.000Z');
+
+    const inNovember = await query.publicIn(
+      workspaceId,
+      { afterId: null, limit: 20 },
+      KudosMonth.of('2026-11').range(),
+    );
+    const inOctober = await query.publicIn(
+      workspaceId,
+      { afterId: null, limit: 20 },
+      KudosMonth.of('2026-10').range(),
+    );
+
+    expect(inNovember.items.map((row) => row.id)).toEqual([november]);
+    expect(inOctober.items.map((row) => row.id)).toEqual([october]);
+  });
+
+  it('counts each month the same way the filter reads it, newest first', async () => {
+    const workspaceId = uuidv7();
+    await givenAt(workspaceId, '2026-10-31T23:00:00.000Z');
+    await givenAt(workspaceId, '2026-11-02T03:00:00.000Z');
+    await givenAt(workspaceId, '2026-10-31T16:59:59.000Z');
+    await givenAt(uuidv7(), '2026-09-02T03:00:00.000Z');
+
+    expect(await query.monthsIn(workspaceId)).toEqual([
+      { month: '2026-11', count: 2 },
+      { month: '2026-10', count: 1 },
+    ]);
+  });
+
+  it('pages inside a month by the same cursor', async () => {
+    const workspaceId = uuidv7();
+    await givenAt(workspaceId, '2026-09-02T03:00:00.000Z');
+    const older = await givenAt(workspaceId, '2026-10-02T03:00:00.000Z');
+    const newer = await givenAt(workspaceId, '2026-10-03T03:00:00.000Z');
+    const october = KudosMonth.of('2026-10').range();
+
+    const first = await query.publicIn(
+      workspaceId,
+      { afterId: null, limit: 1 },
+      october,
+    );
+    const second = await query.publicIn(
+      workspaceId,
+      { afterId: first.items.at(-1)?.id ?? null, limit: 1 },
+      october,
+    );
+
+    expect(first.items.map((row) => row.id)).toEqual([newer]);
+    expect(first.hasMore).toBe(true);
+    expect(second.items.map((row) => row.id)).toEqual([older]);
+    expect(second.hasMore).toBe(false);
+  });
+});
+
+describe('reading a Workspace’s Kudos on Home', () => {
+  async function givenWith(
+    workspaceId: string,
+    createdAt: string,
+    ...recipients: string[]
+  ) {
+    const kudos = given(workspaceId, ...recipients);
+    await repository.save(kudos);
+    await prismaService.kudos.update({
+      where: { id: kudos.snapshot().id },
+      data: { createdAt: new Date(createdAt) },
+    });
+    return kudos.snapshot().id;
+  }
+
+  it('walks past a place, a tie included, repeating and skipping nothing', async () => {
+    const workspaceId = uuidv7();
+    const oldest = await givenWith(workspaceId, '2026-10-01T03:00:00.000Z');
+    const tied = [
+      await givenWith(workspaceId, '2026-10-02T03:00:00.000Z'),
+      await givenWith(workspaceId, '2026-10-02T03:00:00.000Z'),
+    ].sort();
+
+    const seen: string[] = [];
+    let after: FeedPosition | null = null;
+    for (;;) {
+      const page: KudosPageRow = await query.onHome(
+        workspaceId,
+        { after, limit: 1 },
+        null,
+      );
+      seen.push(...page.items.map((row) => row.id));
+      if (!page.hasMore) {
+        break;
+      }
+      after = page.items.at(-1) ?? null;
+    }
+
+    expect(seen).toEqual([tied[1] as string, tied[0] as string, oldest]);
+  });
+
+  it('narrows to the Kudos that name someone', async () => {
+    const workspaceId = uuidv7();
+    const ben = uuidv7();
+    const namesBen = await givenWith(
+      workspaceId,
+      '2026-10-02T03:00:00.000Z',
+      ben,
+    );
+    await givenWith(workspaceId, '2026-10-02T03:00:00.000Z', uuidv7());
+    await givenWith(workspaceId, '2026-10-02T03:00:00.000Z');
+
+    const { items } = await query.onHome(
+      workspaceId,
+      { after: null, limit: 20 },
+      ben,
+    );
+
+    expect(items.map((row) => row.id)).toEqual([namesBen]);
+  });
+
+  it('knows where a Kudos sits, and only in its own Workspace', async () => {
+    const workspaceId = uuidv7();
+    const id = await givenWith(workspaceId, '2026-10-02T03:00:00.000Z');
+
+    expect(await query.positionOf(workspaceId, id)).toEqual({
+      id,
+      createdAt: new Date('2026-10-02T03:00:00.000Z'),
+    });
+    expect(await query.positionOf(uuidv7(), id)).toBeNull();
   });
 });

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { KudosMonth } from '../../domain/value-object/kudos-month.vo';
 import { KudosQuery } from '../query-port/kudos.query-port';
 import { PeopleService } from '../service/people.service';
 import type {
@@ -10,6 +11,8 @@ export interface ListWorkspaceKudosInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
   readonly workspaceId: string;
   readonly page: CursorPageRequest;
+  /** One month, `YYYY-MM`, or `null` for every Kudos. */
+  readonly month: string | null;
 }
 
 /**
@@ -27,7 +30,11 @@ export class ListWorkspaceKudosUseCase {
   ) {}
 
   async execute(input: ListWorkspaceKudosInput): Promise<WorkspaceKudosView> {
-    const page = await this.kudosQuery.publicIn(input.workspaceId, input.page);
+    const page = await this.kudosQuery.publicIn(
+      input.workspaceId,
+      input.page,
+      input.month === null ? null : KudosMonth.of(input.month).range(),
+    );
     const people = await this.peopleService.peopleIn(
       input.workspaceId,
       page.items.flatMap((kudos) => [
@@ -35,17 +42,11 @@ export class ListWorkspaceKudosUseCase {
         ...kudos.recipientAccountIds,
       ]),
     );
-    const person = (accountId: string) => ({
-      accountId,
-      name: people.nameOf(accountId),
-      status: people.statusOf(accountId),
-    });
-
     return {
       items: page.items.map((kudos) => ({
         id: kudos.id,
-        giver: person(kudos.giverAccountId),
-        recipients: kudos.recipientAccountIds.map(person),
+        giver: people.personOf(kudos.giverAccountId),
+        recipients: kudos.recipientAccountIds.map(people.personOf),
         message: kudos.message,
         tags: kudos.tags,
         card: kudos.card,

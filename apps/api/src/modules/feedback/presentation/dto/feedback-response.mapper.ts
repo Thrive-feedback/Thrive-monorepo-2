@@ -4,6 +4,7 @@ import type {
   PersonView,
   TagsView,
 } from '../../application/types/feedback-request.types';
+import type { KudosView } from '../../application/types/kudos.types';
 import type { KudosCardSnapshot } from '../../domain/value-object/kudos-card.vo';
 import type {
   AnswerPostcardSnapshot,
@@ -17,6 +18,19 @@ export function toPersonResponse(person: PersonView) {
     name: person.name,
     photoUrl: person.photoUrl,
     status: person.status,
+  };
+}
+
+/** One Kudos, on the wire, as its own list and Home both carry it. */
+export function toKudosResponse(kudos: KudosView) {
+  return {
+    id: kudos.id,
+    giver: toPersonResponse(kudos.giver),
+    recipients: kudos.recipients.map(toPersonResponse),
+    message: kudos.message,
+    tags: toTagsResponse(kudos.tags),
+    card: toKudosCardResponse(kudos.card),
+    createdAt: kudos.createdAt.toISOString(),
   };
 }
 

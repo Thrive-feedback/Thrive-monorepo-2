@@ -24,8 +24,13 @@ import type {
   TagsView,
   WaitingAskSort,
 } from '../../application/types/feedback-request.types';
-import type { CursorPageRequest } from '../../application/types/kudos.types';
+import type {
+  CursorPageRequest,
+  FeedPageRequest,
+  FeedPosition,
+} from '../../application/types/kudos.types';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
+import { olderThan } from '../mapper/feed-position.mapper';
 import {
   toAnswerPostcardSnapshot,
   toFeedbackPostcardSnapshot,
@@ -448,17 +453,19 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     workspaceId: string,
     readerAccountId: string,
     show: FeedItemShow,
-    page: CursorPageRequest,
+    page: FeedPageRequest,
   ): Promise<FeedItemPageRow> {
     // One row more than asked for, only to tell whether another page follows (ADR 0059).
     const records =
       await this.prismaTransactionContext.client.feedback.findMany({
-        where: feedItemsWhere(workspaceId, readerAccountId, show),
+        where: {
+          AND: [
+            feedItemsWhere(workspaceId, readerAccountId, show),
+            olderThan(page.after),
+          ],
+        },
         orderBy: NEWEST_FIRST,
         take: page.limit + 1,
-        ...(page.afterId === null
-          ? {}
-          : { cursor: { id: page.afterId }, skip: 1 }),
         select: FEED_ITEM_FIELDS,
       });
     return {
@@ -489,6 +496,16 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       }),
       hasMore: records.length > page.limit,
     };
+  }
+
+  async feedbackPositionOf(
+    workspaceId: string,
+    feedbackId: string,
+  ): Promise<FeedPosition | null> {
+    return this.prismaTransactionContext.client.feedback.findFirst({
+      where: { id: feedbackId, workspaceId },
+      select: { id: true, createdAt: true },
+    });
   }
 
   async feedbackInWorkspace(

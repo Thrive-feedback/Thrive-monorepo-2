@@ -15,6 +15,7 @@ import { GetFeedbackAskUseCase } from './application/use-cases/get-feedback-ask.
 import { GetFeedbackRequestUseCase } from './application/use-cases/get-feedback-request.use-case';
 import { GiveKudosUseCase } from './application/use-cases/give-kudos.use-case';
 import { ListFeedItemsUseCase } from './application/use-cases/list-feed-items.use-case';
+import { ListKudosMonthsUseCase } from './application/use-cases/list-kudos-months.use-case';
 import { ListMyFeedbackAsksUseCase } from './application/use-cases/list-my-feedback-asks.use-case';
 import { ListReceivedFeedbackUseCase } from './application/use-cases/list-received-feedback.use-case';
 import { ListSentFeedbackRequestsUseCase } from './application/use-cases/list-sent-feedback-requests.use-case';
@@ -96,6 +97,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     OfferFeedbackUseCase,
     GiveKudosUseCase,
     ListWorkspaceKudosUseCase,
+    ListKudosMonthsUseCase,
     WorkspaceMemberGuard,
   ],
 })
