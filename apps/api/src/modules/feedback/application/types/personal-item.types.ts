@@ -19,7 +19,8 @@ export interface PersonalRequestView extends FeedItemRequestView {
 
 /**
  * A piece of Feedback in a Member's own list: all a card on Home shows, with the card it was written
- * on, and at any Visibility, because a Receiver owns what was written to them.
+ * on, and at any Visibility, because a Receiver owns what was written to them and a Giver what they
+ * wrote.
  */
 export interface PersonalFeedbackView
   extends Omit<FeedItemView, 'visibility' | 'request'> {

@@ -12,6 +12,8 @@ import type {
   FeedbackWithVisibilityRow,
   FeedItemAskRow,
   FeedItemPageRow,
+  GivenFeedbackPageRow,
+  GivenFeedbackRow,
   OpenedRequestRow,
   ReceivedFeedbackPageRow,
   ReceivedFeedbackRow,
@@ -294,6 +296,11 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     readonly workspaceId: string;
   })[] = [];
 
+  /** What each Member wrote, whose Giver says whose it is. */
+  readonly givenItems: (GivenFeedbackRow & {
+    readonly workspaceId: string;
+  })[] = [];
+
   readonly rows: (FeedbackRequestRow & { readonly workspaceId: string })[] = [];
 
   readonly answers: FeedbackAnswerRow[] = [];
@@ -467,6 +474,29 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     };
   }
 
+  async givenItemsBy(
+    workspaceId: string,
+    giverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<GivenFeedbackPageRow> {
+    const rest = this.givenItems
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          row.giverAccountId === giverAccountId &&
+          isPast(row, page.after),
+      )
+      .sort(
+        (a, b) =>
+          b.createdAt.getTime() - a.createdAt.getTime() ||
+          b.id.localeCompare(a.id),
+      );
+    return {
+      items: rest.slice(0, page.limit),
+      hasMore: rest.length > page.limit,
+    };
+  }
+
   async feedbackPositionOf(
     workspaceId: string,
     feedbackId: string,
@@ -476,6 +506,7 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     return (
       this.feedbackWithVisibility.find(atPlace) ??
       this.receivedItems.find(atPlace) ??
+      this.givenItems.find(atPlace) ??
       null
     );
   }
@@ -720,6 +751,29 @@ export class FakeKudosQuery extends KudosQuery {
           row.workspaceId === workspaceId &&
           (recipientAccountId === null ||
             row.recipientAccountIds.includes(recipientAccountId)) &&
+          isPast(row, page.after),
+      )
+      .sort(
+        (a, b) =>
+          b.createdAt.getTime() - a.createdAt.getTime() ||
+          b.id.localeCompare(a.id),
+      );
+    return {
+      items: rest.slice(0, page.limit),
+      hasMore: rest.length > page.limit,
+    };
+  }
+
+  async givenBy(
+    workspaceId: string,
+    giverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<KudosPageRow> {
+    const rest = this.rows
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          row.giverAccountId === giverAccountId &&
           isPast(row, page.after),
       )
       .sort(

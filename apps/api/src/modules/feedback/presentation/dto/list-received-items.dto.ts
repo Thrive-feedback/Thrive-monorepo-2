@@ -27,7 +27,7 @@ const receivedRequestSchema = feedItemRequestSchema.extend({
 
 /** One piece of Feedback, as on Home, at any Visibility, with the card it was written on. */
 const receivedFeedbackSchema = feedItemSchema.extend({
-  /** Who else may read it. Only me is here: it was written to the caller. */
+  /** Who else may read it. Only me is here: the caller is one of those it is between. */
   visibility: z.enum(VISIBILITIES),
   /** How it looks, or `null` when it was not written on a postcard, or is an answer. */
   postcard: postcardSchema.nullable(),
@@ -35,7 +35,7 @@ const receivedFeedbackSchema = feedItemSchema.extend({
   request: receivedRequestSchema.nullable(),
 });
 
-/** One thing in a Member's own list. */
+/** One thing in a Member's own list, Received or Given. */
 export const personalItemSchema = z.discriminatedUnion('kind', [
   receivedFeedbackSchema,
   kudosFeedItemSchema,

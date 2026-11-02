@@ -16,6 +16,7 @@ import { GetFeedbackAskUseCase } from './application/use-cases/get-feedback-ask.
 import { GetFeedbackRequestUseCase } from './application/use-cases/get-feedback-request.use-case';
 import { GiveKudosUseCase } from './application/use-cases/give-kudos.use-case';
 import { ListFeedItemsUseCase } from './application/use-cases/list-feed-items.use-case';
+import { ListGivenItemsUseCase } from './application/use-cases/list-given-items.use-case';
 import { ListKudosMonthsUseCase } from './application/use-cases/list-kudos-months.use-case';
 import { ListMyFeedbackAsksUseCase } from './application/use-cases/list-my-feedback-asks.use-case';
 import { ListReceivedFeedbackUseCase } from './application/use-cases/list-received-feedback.use-case';
@@ -39,6 +40,7 @@ import { FeedItemsController } from './presentation/feed-items.controller';
 import { FeedbackController } from './presentation/feedback.controller';
 import { FeedbackAskController } from './presentation/feedback-ask.controller';
 import { FeedbackRequestController } from './presentation/feedback-request.controller';
+import { GivenItemsController } from './presentation/given-items.controller';
 import { KudosController } from './presentation/kudos.controller';
 import { ReceivedItemsController } from './presentation/received-items.controller';
 import { SharedFeedbackController } from './presentation/shared-feedback.controller';
@@ -72,6 +74,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     WorkspaceFeedController,
     FeedItemsController,
     ReceivedItemsController,
+    GivenItemsController,
     WaitingAsksController,
     KudosController,
   ],
@@ -93,6 +96,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ListMyFeedbackAsksUseCase,
     ListReceivedFeedbackUseCase,
     ListReceivedItemsUseCase,
+    ListGivenItemsUseCase,
     ListSharedFeedbackUseCase,
     ListWorkspaceFeedUseCase,
     ListFeedItemsUseCase,

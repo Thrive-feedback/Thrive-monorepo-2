@@ -54,6 +54,13 @@ export abstract class KudosQuery {
     recipientAccountId: string | null,
   ): Promise<KudosPageRow>;
 
+  /** The Kudos one Member wrote past a place in the list, newest first, naming anybody or nobody. */
+  abstract givenBy(
+    workspaceId: string,
+    giverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<KudosPageRow>;
+
   /** Where one Kudos of this Workspace sits on Home, or `null` if it is not there. */
   abstract positionOf(
     workspaceId: string,

@@ -1,3 +1,4 @@
+import type { Prisma } from '@app/infrastructure/database/generated/client';
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { Injectable } from '@nestjs/common';
 import {
@@ -14,8 +15,10 @@ import {
   type FeedbackWithPeopleRow,
   type FeedbackWithVisibilityRow,
   type FeedItemPageRow,
+  type GivenFeedbackPageRow,
   type OpenedRequestRow,
   type ReceivedFeedbackPageRow,
+  type ReceivedFeedbackRow,
   type WaitingAskPageRow,
   type WorkspaceFeedPageRow,
 } from '../../application/query-port/feedback-request.query-port';
@@ -175,6 +178,43 @@ const RECEIVED_ITEM_FIELDS = {
         select: {
           ...FEED_ITEM_FIELDS.feedbackAsk.select.feedbackRequest.select,
           postcard: true,
+        },
+      },
+    },
+  },
+} as const;
+
+type ReceivedItemRecord = Prisma.FeedbackGetPayload<{
+  select: typeof RECEIVED_ITEM_FIELDS;
+}>;
+
+/**
+ * A piece a Member wrote: what they would read had they received it, and who may read each answer
+ * beside theirs, which differs by reader here as it never does on Home or in Received.
+ */
+const GIVEN_ITEM_FIELDS = {
+  ...RECEIVED_ITEM_FIELDS,
+  feedbackAsk: {
+    select: {
+      feedbackRequest: {
+        select: {
+          ...RECEIVED_ITEM_FIELDS.feedbackAsk.select.feedbackRequest.select,
+          asks: {
+            orderBy: ASKS_IN_ORDER_ASKED,
+            select: {
+              giverAccountId: true,
+              status: true,
+              feedback: {
+                select: {
+                  message: true,
+                  createdAt: true,
+                  visibility: true,
+                  selectedPeople: SELECTED_PEOPLE_IN_ORDER,
+                  ...TAGS_FIELDS,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -542,30 +582,47 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         select: RECEIVED_ITEM_FIELDS,
       });
     return {
+      items: records.slice(0, page.limit).map(toReceivedFeedbackRow),
+      hasMore: records.length > page.limit,
+    };
+  }
+
+  async givenItemsBy(
+    workspaceId: string,
+    giverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<GivenFeedbackPageRow> {
+    // One row more than asked for, only to tell whether another page follows (ADR 0059).
+    const records =
+      await this.prismaTransactionContext.client.feedback.findMany({
+        where: {
+          AND: [{ workspaceId, giverAccountId }, olderThan(page.after)],
+        },
+        orderBy: NEWEST_FIRST,
+        take: page.limit + 1,
+        select: GIVEN_ITEM_FIELDS,
+      });
+    return {
       items: records.slice(0, page.limit).map((record) => {
-        const request = record.feedbackAsk?.feedbackRequest;
+        const received = toReceivedFeedbackRow(record);
+        const asks = record.feedbackAsk?.feedbackRequest.asks ?? [];
         return {
-          ...toFeedbackWithPeopleRow(record),
-          visibility: record.visibility,
-          postcard: toFeedbackPostcardSnapshot(record.origin, record.postcard),
-          request: request
-            ? {
-                message: request.message,
-                tags: tagsOf(request),
-                requesterAccountId: request.requesterAccountId,
-                asks: request.asks.map((ask) => ({
-                  giverAccountId: ask.giverAccountId,
-                  status: ask.status,
-                  answer: ask.feedback && {
-                    message: ask.feedback.message,
-                    tags: tagsOf(ask.feedback),
-                    answeredAt: ask.feedback.createdAt,
-                  },
-                })),
-                postcard: toPostcardSnapshot(request.postcard),
-                answerPostcard: toAnswerPostcardSnapshot(record.postcard),
-              }
-            : null,
+          ...received,
+          request: received.request && {
+            ...received.request,
+            asks: received.request.asks.map((ask, place) => {
+              const answer = asks[place]?.feedback;
+              return {
+                ...ask,
+                answerAudience: answer
+                  ? {
+                      visibility: answer.visibility,
+                      selectedAccountIds: accountIdsOf(answer.selectedPeople),
+                    }
+                  : null,
+              };
+            }),
+          },
         };
       }),
       hasMore: records.length > page.limit,
@@ -791,6 +848,35 @@ function toAnsweredRequestRow(
     tags: tagsOf(record),
     requesterAccountId: record.requesterAccountId,
     askedAccountIds: record.asks.map((ask) => ask.giverAccountId),
+  };
+}
+
+function toReceivedFeedbackRow(
+  record: ReceivedItemRecord,
+): ReceivedFeedbackRow {
+  const request = record.feedbackAsk?.feedbackRequest;
+  return {
+    ...toFeedbackWithPeopleRow(record),
+    visibility: record.visibility,
+    postcard: toFeedbackPostcardSnapshot(record.origin, record.postcard),
+    request: request
+      ? {
+          message: request.message,
+          tags: tagsOf(request),
+          requesterAccountId: request.requesterAccountId,
+          asks: request.asks.map((ask) => ({
+            giverAccountId: ask.giverAccountId,
+            status: ask.status,
+            answer: ask.feedback && {
+              message: ask.feedback.message,
+              tags: tagsOf(ask.feedback),
+              answeredAt: ask.feedback.createdAt,
+            },
+          })),
+          postcard: toPostcardSnapshot(request.postcard),
+          answerPostcard: toAnswerPostcardSnapshot(record.postcard),
+        }
+      : null,
   };
 }
 
