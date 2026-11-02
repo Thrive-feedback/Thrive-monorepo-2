@@ -10,7 +10,7 @@ import type {
 } from './feedback-request.types';
 
 /** The request an answer was written on: Home's view of it, and the rest of the card it sits on. */
-export interface ReceivedRequestView extends FeedItemRequestView {
+export interface PersonalRequestView extends FeedItemRequestView {
   /** How the card looks, or `null` when the request was not written on a postcard. */
   readonly postcard: PostcardSnapshot | null;
   /** How the answer's own words look, or `null` when it was not written on the postcard. */
@@ -18,23 +18,23 @@ export interface ReceivedRequestView extends FeedItemRequestView {
 }
 
 /**
- * A piece of Feedback in what a Member received: all a card on Home shows, with the card it was
- * written on, and at any Visibility, because a Receiver owns what was written to them.
+ * A piece of Feedback in a Member's own list: all a card on Home shows, with the card it was written
+ * on, and at any Visibility, because a Receiver owns what was written to them.
  */
-export interface ReceivedFeedbackView
+export interface PersonalFeedbackView
   extends Omit<FeedItemView, 'visibility' | 'request'> {
   readonly visibility: VisibilityValue;
   /** How it looks, or `null` when it was not written on a postcard, or is an answer. */
   readonly postcard: PostcardSnapshot | null;
   /** The card an answer is on, or `null` for Feedback given without being asked. */
-  readonly request: ReceivedRequestView | null;
+  readonly request: PersonalRequestView | null;
 }
 
-export type ReceivedItemView = ReceivedFeedbackView | KudosFeedItemView;
+export type PersonalItemView = PersonalFeedbackView | KudosFeedItemView;
 
-/** One page of what a Member received, newest first across both kinds. */
-export interface ReceivedItemsView {
-  readonly items: readonly ReceivedItemView[];
+/** One page of a Member's own list, newest first across both kinds. */
+export interface PersonalItemsView {
+  readonly items: readonly PersonalItemView[];
   /** The id the next page starts after, or `null` on the last page. */
   readonly nextAfterId: string | null;
 }

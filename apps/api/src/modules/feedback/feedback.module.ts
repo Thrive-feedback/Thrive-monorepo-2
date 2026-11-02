@@ -8,6 +8,7 @@ import { Module } from '@nestjs/common';
 import { FeedbackRequestQuery } from './application/query-port/feedback-request.query-port';
 import { KudosQuery } from './application/query-port/kudos.query-port';
 import { PeopleService } from './application/service/people.service';
+import { PersonalItemsService } from './application/service/personal-items.service';
 import { TagsService } from './application/service/tags.service';
 import { AnswerFeedbackAskUseCase } from './application/use-cases/answer-feedback-ask.use-case';
 import { GetFeedbackUseCase } from './application/use-cases/get-feedback.use-case';
@@ -84,6 +85,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     { provide: KudosRepository, useClass: PrismaKudosRepository },
     { provide: KudosQuery, useClass: PrismaKudosQuery },
     PeopleService,
+    PersonalItemsService,
     TagsService,
     SendFeedbackRequestUseCase,
     GetFeedbackRequestUseCase,

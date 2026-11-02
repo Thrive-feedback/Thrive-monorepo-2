@@ -6,6 +6,7 @@ import type {
   TagsView,
 } from '../../application/types/feedback-request.types';
 import type { KudosView } from '../../application/types/kudos.types';
+import type { PersonalItemView } from '../../application/types/personal-item.types';
 import type { KudosCardSnapshot } from '../../domain/value-object/kudos-card.vo';
 import type {
   AnswerPostcardSnapshot,
@@ -147,6 +148,24 @@ export function toFeedItemRequestResponse(request: FeedItemRequestView) {
         answeredAt: ask.answer.answeredAt.toISOString(),
       },
     })),
+  };
+}
+
+/** One thing in a Member's own list, on the wire. */
+export function toPersonalItemResponse(item: PersonalItemView) {
+  if (item.kind === 'KUDOS') {
+    return { kind: item.kind, ...toKudosResponse(item) };
+  }
+  return {
+    kind: item.kind,
+    ...toFeedbackResponse(item),
+    visibility: item.visibility,
+    postcard: toPostcardResponse(item.postcard),
+    request: item.request && {
+      ...toFeedItemRequestResponse(item.request),
+      postcard: toPostcardResponse(item.request.postcard),
+      answerPostcard: toAnswerPostcardResponse(item.request.answerPostcard),
+    },
   };
 }
 
