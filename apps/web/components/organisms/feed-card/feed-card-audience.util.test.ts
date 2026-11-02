@@ -15,25 +15,62 @@ describe('feedCardAudienceOf', () => {
     ['ONLY_ME', 'Only me'],
   ] as const)('names %s for one Receiver', (visibility, label) => {
     expect(
-      feedCardAudienceOf({ visibility, receivers: [person('ann')] }).label,
+      feedCardAudienceOf(
+        { visibility, giver: person('ben'), receivers: [person('ann')] },
+        'ann',
+      ).label,
     ).toBe(label);
   });
 
   it('does not tell a Receiver of several that it was kept to them alone', () => {
     expect(
-      feedCardAudienceOf({
-        visibility: 'ONLY_ME',
-        receivers: [person('ann'), person('ben')],
-      }).label,
+      feedCardAudienceOf(
+        {
+          visibility: 'ONLY_ME',
+          giver: person('cara'),
+          receivers: [person('ann'), person('ben')],
+        },
+        'ann',
+      ).label,
     ).toBe("Only the people it's for");
   });
 
   it('keeps the words of a wider audience, however many it was written to', () => {
     expect(
-      feedCardAudienceOf({
-        visibility: 'EVERYONE',
-        receivers: [person('ann'), person('ben')],
-      }).label,
+      feedCardAudienceOf(
+        {
+          visibility: 'EVERYONE',
+          giver: person('cara'),
+          receivers: [person('ann'), person('ben')],
+        },
+        'ann',
+      ).label,
     ).toBe('Everyone in the Workspace');
+  });
+
+  it('tells the Giver of a private piece it stayed with the person it was for', () => {
+    expect(
+      feedCardAudienceOf(
+        {
+          visibility: 'ONLY_ME',
+          giver: person('ann'),
+          receivers: [person('ben')],
+        },
+        'ann',
+      ).label,
+    ).toBe('Only them');
+  });
+
+  it('says the same of several, which is the word the Giver chose', () => {
+    expect(
+      feedCardAudienceOf(
+        {
+          visibility: 'ONLY_ME',
+          giver: person('ann'),
+          receivers: [person('ben'), person('cara')],
+        },
+        'ann',
+      ).label,
+    ).toBe('Only them');
   });
 });

@@ -2,7 +2,7 @@ import {
   PERSONAL_ITEM_TILE,
   PERSONAL_ITEMS_GRID,
 } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-layout.constant';
-import { Skeleton } from '@/components/atoms/skeleton';
+import { Skeleton, SkeletonRegion } from '@/components/atoms/skeleton';
 import { FeedCardSkeletonList } from '@/components/organisms/feed-card/feed-card-skeleton';
 import type { BrandNewPersonalView } from '@/lib/routes.constant';
 
@@ -45,7 +45,7 @@ export type PersonalItemsSkeletonProps = {
   view: BrandNewPersonalView;
 };
 
-/** What was written to the person, still loading, in the view it will be drawn in. */
+/** A Member's own list, still loading, in the view it will be drawn in. */
 export function PersonalItemsSkeleton({ view }: PersonalItemsSkeletonProps) {
   return view === 'grid' ? (
     <div className="flex flex-col gap-3">
@@ -54,5 +54,18 @@ export function PersonalItemsSkeleton({ view }: PersonalItemsSkeletonProps) {
     </div>
   ) : (
     <FeedCardSkeletonList />
+  );
+}
+
+export type PersonalItemsLoadingProps = {
+  view: BrandNewPersonalView;
+};
+
+/** The list still loading, in the view it will be drawn in, announced as it is. */
+export function PersonalItemsLoading({ view }: PersonalItemsLoadingProps) {
+  return (
+    <SkeletonRegion>
+      <PersonalItemsSkeleton view={view} />
+    </SkeletonRegion>
   );
 }

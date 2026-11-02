@@ -1,11 +1,8 @@
 'use server';
 
-import { z } from 'zod';
 import type { PersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
-import { readNextPageAsMember } from '@/app/(signed-in)/(brand-new)/_lib/read-next-page.service';
+import { readPageAfterCursor } from '@/app/(signed-in)/(brand-new)/_lib/read-next-page.service';
 import { readReceivedItems } from './received-items.service';
-
-const NextPage = z.object({ cursor: z.string().min(1) });
 
 /**
  * The next page of Received, for a list scrolling past the end of what it has. A server action
@@ -17,11 +14,5 @@ const NextPage = z.object({ cursor: z.string().min(1) });
 export async function readNextReceivedPage(
   input: unknown,
 ): Promise<PersonalItemsPage | null> {
-  const parsed = NextPage.safeParse(input);
-  if (!parsed.success) {
-    return null;
-  }
-  return readNextPageAsMember((membership) =>
-    readReceivedItems(membership, parsed.data.cursor),
-  );
+  return readPageAfterCursor(input, readReceivedItems);
 }

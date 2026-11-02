@@ -6,7 +6,7 @@ export type PersonalItemsPageFailedProps = {
   onRetry: () => void;
 };
 
-/** A page of Received that could not be read, with a way to try again. */
+/** A page of a Member's own list that could not be read, with a way to try again. */
 export function PersonalItemsPageFailed({
   onRetry,
 }: PersonalItemsPageFailedProps) {

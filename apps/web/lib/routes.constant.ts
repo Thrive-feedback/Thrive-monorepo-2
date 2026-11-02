@@ -27,12 +27,12 @@ function brandNewHomeShowing(show: BrandNewHomeShow) {
     : `/brand-new-home?show=${show}`;
 }
 
-/** How Received can be laid out. The first is what it opens on. */
+/** How Received and Given can be laid out. The first is what each opens on. */
 export const BRAND_NEW_PERSONAL_VIEWS = ['grid', 'list'] as const;
 
 export type BrandNewPersonalView = (typeof BRAND_NEW_PERSONAL_VIEWS)[number];
 
-/** The view an address names, or the one Received opens on when it names none it knows. */
+/** The view an address names, or the one those pages open on when it names none they know. */
 export function personalViewOf(value: string | null): BrandNewPersonalView {
   return (
     BRAND_NEW_PERSONAL_VIEWS.find((view) => view === value) ??
@@ -45,6 +45,13 @@ function brandNewReceivedViewing(view: BrandNewPersonalView) {
   return view === BRAND_NEW_PERSONAL_VIEWS[0]
     ? '/brand-new-received'
     : `/brand-new-received?view=${view}`;
+}
+
+/** Given laid out one way; `grid` is what it opens on, so it needs no query. */
+function brandNewGivenViewing(view: BrandNewPersonalView) {
+  return view === BRAND_NEW_PERSONAL_VIEWS[0]
+    ? '/brand-new-given'
+    : `/brand-new-given?view=${view}`;
 }
 
 /** The orders Waiting for me can be read in. The first is what it opens on. */
@@ -90,6 +97,18 @@ export const ROUTES = {
     view: BrandNewPersonalView = BRAND_NEW_PERSONAL_VIEWS[0],
   ) => {
     const viewing = brandNewReceivedViewing(view);
+    return `${viewing}${viewing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
+  },
+  /** Everything the person wrote, in the new Home. */
+  brandNewGiven: '/brand-new-given',
+  /** Given laid out one way. */
+  brandNewGivenViewing,
+  /** One piece of Feedback open over Given, which stays laid out as it was. */
+  brandNewGivenFeedback: (
+    feedbackId: string,
+    view: BrandNewPersonalView = BRAND_NEW_PERSONAL_VIEWS[0],
+  ) => {
+    const viewing = brandNewGivenViewing(view);
     return `${viewing}${viewing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
   /** Every Ask waiting for the person, in the new Home. */

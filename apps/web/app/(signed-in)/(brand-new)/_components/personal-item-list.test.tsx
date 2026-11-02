@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
@@ -20,23 +20,28 @@ import type {
 import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import {
-  PersonalItemList as ListReadingWith,
+  PersonalItemList as PersonalItemListOnAnySide,
   type PersonalItemListProps,
 } from './personal-item-list';
-import { PersonalItemsViewToggle } from './personal-items-view-toggle';
+import { PersonalItemsViewToggle as ViewToggleOnAnySide } from './personal-items-view-toggle';
 
 const readNextReceivedPage = vi.fn();
 
-/** The list as Received's page draws it. */
+/** Received's list, as its page draws it. */
 function PersonalItemList({
   initialPage,
 }: Pick<PersonalItemListProps, 'initialPage'>) {
   return (
-    <ListReadingWith
+    <PersonalItemListOnAnySide
       initialPage={initialPage}
+      side="received"
       readNext={readNextReceivedPage}
     />
   );
+}
+
+function PersonalItemsViewToggle() {
+  return <ViewToggleOnAnySide side="received" />;
 }
 
 vi.mock('next/navigation', () => ({
@@ -559,5 +564,197 @@ describe('changing the view of PersonalItemList', () => {
     ).not.toBeInTheDocument();
     expect(screen.getAllByRole('article')).toHaveLength(2);
     expect(readNextReceivedPage).toHaveBeenCalledOnce();
+  });
+});
+
+describe('PersonalItemList, on Given', () => {
+  const GIVER = BEN.accountId;
+  const CARA = { ...ANN, accountId: 'cara', name: 'Cara Diaz' };
+  const DAN = { ...ANN, accountId: 'dan', name: 'Dan Mok' };
+
+  function renderGiven(...items: PersonalItem[]) {
+    return render(
+      <PersonalItemListOnAnySide
+        initialPage={{ ...page(items), readerAccountId: GIVER }}
+        side="given"
+        readNext={readNextReceivedPage}
+      />,
+    );
+  }
+
+  beforeEach(() => {
+    window.history.replaceState(null, '', '/brand-new-given');
+  });
+
+  it('names who a postcard was for, and opens it over Given', () => {
+    renderGiven(postcard('fb-1', 'Clear.'));
+
+    expect(
+      within(screen.getByRole('banner')).getByText('Ann Lee'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /^Postcard to Ann Lee/ }),
+    ).toHaveAttribute('href', '/brand-new-given?feedback=fb-1');
+  });
+
+  it('tells the Giver a private postcard stayed between them and its Receiver', () => {
+    renderGiven(postcard('fb-1', 'Clear.'));
+
+    expect(screen.getByRole('link', { name: /Only them\./ })).toBeVisible();
+  });
+
+  it('names two people by first name', () => {
+    renderGiven(postcard('fb-1', 'Clear.', 'EVERYONE', [ANN, CARA]));
+
+    expect(screen.getByText('Ann & Cara')).toBeInTheDocument();
+  });
+
+  it('counts the people past two', () => {
+    renderGiven(postcard('fb-1', 'Clear.', 'EVERYONE', [ANN, CARA, DAN]));
+
+    expect(screen.getByText('Ann, Cara +1')).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', {
+        name: /^Postcard to Ann Lee, Cara Diaz and/,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('says a Kudos naming nobody is for the whole Workspace', () => {
+    renderGiven({ ...kudos('ku-1', 'Well done, all.'), recipients: [] });
+
+    expect(screen.getByText('The whole Workspace')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^Kudos to the whole Workspace/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('shows no face for a Kudos naming nobody', () => {
+    renderGiven({ ...kudos('ku-1', 'Well done, all.'), recipients: [] });
+
+    const top = within(screen.getByRole('banner'));
+    expect(top.getByText('The whole Workspace')).toBeInTheDocument();
+    expect(top.queryByText('BC')).not.toBeInTheDocument();
+    expect(top.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('opens a Kudos naming nobody on its card', async () => {
+    const user = userEvent.setup();
+    renderGiven({ ...kudos('ku-1', 'Well done, all.'), recipients: [] });
+
+    await user.click(
+      screen.getByRole('button', { name: /^Kudos to the whole Workspace/ }),
+    );
+
+    expect(
+      within(screen.getByRole('dialog')).getByText('the whole Workspace'),
+    ).toBeInTheDocument();
+  });
+
+  it('names the person who asked, on an answer', () => {
+    renderGiven(answer('fb-1', 'Very clear.'));
+
+    expect(
+      within(screen.getByRole('banner')).getByText('Ann Lee'),
+    ).toBeInTheDocument();
+  });
+
+  it('says when the one person it was for has left', () => {
+    renderGiven(
+      postcard('fb-1', 'Clear.', 'EVERYONE', [{ ...ANN, inactive: true }]),
+    );
+
+    expect(
+      within(screen.getByRole('banner')).getByText(/inactive/),
+    ).toBeVisible();
+  });
+
+  it('keeps everything read when the view changes, reading on through its own action', async () => {
+    const user = userEvent.setup();
+    readNextReceivedPage.mockResolvedValue(page([postcard('fb-2', 'Second.')]));
+    const list = () => (
+      <>
+        <ViewToggleOnAnySide side="given" />
+        <PersonalItemListOnAnySide
+          initialPage={{
+            ...page([postcard('fb-1', 'First.')], 'more'),
+            readerAccountId: GIVER,
+          }}
+          side="given"
+          readNext={readNextReceivedPage}
+        />
+      </>
+    );
+    const { rerender } = render(list());
+    await scrollToTheEnd();
+    expect(screen.getAllByRole('article')).toHaveLength(2);
+
+    await user.click(screen.getByRole('button', { name: 'List view' }));
+    rerender(list());
+
+    expect(window.location.search).toBe('?view=list');
+    expect(screen.getAllByRole('article')).toHaveLength(2);
+    expect(readNextReceivedPage).toHaveBeenCalledWith({ cursor: 'more' });
+  });
+
+  describe('as a list', () => {
+    beforeEach(() => {
+      window.history.replaceState(null, '', '/brand-new-given?view=list');
+    });
+
+    function answerBesideOneTheGiverMayNotRead() {
+      const item = answer('fb-1', 'Very clear.');
+      const request = item.request;
+      if (!request) {
+        throw new Error('An answer holds its request.');
+      }
+      return {
+        ...item,
+        request: {
+          ...request,
+          asked: [
+            ...request.asked,
+            { person: CARA, status: 'ANSWERED', answer: null },
+          ],
+        },
+      } as const;
+    }
+
+    it('reads a Kudos naming nobody as Home does', () => {
+      renderGiven({ ...kudos('ku-1', 'Well done, all.'), recipients: [] });
+
+      expect(screen.getByRole('article')).toHaveTextContent(
+        /You\s*gave kudos\s*to\s*the whole Workspace/,
+      );
+    });
+
+    it('opens a postcard over the list', () => {
+      renderGiven(postcard('fb-1', 'Clear.'));
+
+      expect(screen.getByRole('link', { name: /postcard/i })).toHaveAttribute(
+        'href',
+        '/brand-new-given?view=list&feedback=fb-1',
+      );
+    });
+
+    it('counts an answer the Giver may not read as an answer, and offers no way to it', () => {
+      renderGiven(answerBesideOneTheGiverMayNotRead());
+
+      expect(screen.getByText(/^Also asked/)).toHaveTextContent(
+        'Also asked (1 answer)',
+      );
+      expect(
+        screen.queryByRole('button', { name: 'Show answers' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('promises the postcard, not all the answers, when some stay hidden', () => {
+      renderGiven(answerBesideOneTheGiverMayNotRead());
+
+      expect(screen.getByText('Read the whole postcard')).toBeInTheDocument();
+      expect(
+        screen.queryByText('All the answers in here'),
+      ).not.toBeInTheDocument();
+    });
   });
 });
