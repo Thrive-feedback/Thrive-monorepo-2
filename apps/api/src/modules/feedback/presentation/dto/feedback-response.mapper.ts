@@ -151,7 +151,7 @@ export function toFeedItemRequestResponse(request: FeedItemRequestView) {
   };
 }
 
-/** One thing in a Member's own list, on the wire. */
+/** One thing in a Member's own list, Received or Given, on the wire. */
 export function toPersonalItemResponse(item: PersonalItemView) {
   if (item.kind === 'KUDOS') {
     return { kind: item.kind, ...toKudosResponse(item) };

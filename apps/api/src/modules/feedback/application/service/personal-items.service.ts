@@ -82,8 +82,8 @@ function toFeedbackView(
 }
 
 /**
- * One Member's own list: Feedback and Kudos in one order, newest first, each with the card it was
- * written on, under one cursor (ADR 0077, ADR 0080). Which rows are in it
+ * One Member's own list, Received or Given: Feedback and Kudos in one order, newest first, each with
+ * the card it was written on, under one cursor (ADR 0077, ADR 0080, ADR 0081). Which rows are in it
  * is the caller's to read, so this holds nothing about whose list it is.
  */
 @Injectable()

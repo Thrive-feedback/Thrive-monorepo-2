@@ -19,7 +19,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import type { ReceivedFeedbackView } from '../application/types/feedback-request.types';
+import type { PersonalFeedbackView } from '../application/types/feedback-request.types';
 import { GetFeedbackUseCase } from '../application/use-cases/get-feedback.use-case';
 import { ListReceivedFeedbackUseCase } from '../application/use-cases/list-received-feedback.use-case';
 import { OfferFeedbackUseCase } from '../application/use-cases/offer-feedback.use-case';
@@ -46,7 +46,7 @@ import {
 import { WorkspaceMemberGuard } from './workspace-member.guard';
 
 /** One piece of Feedback on the wire, with its date written as the contract declares it. */
-function toResponse(feedback: ReceivedFeedbackView) {
+function toResponse(feedback: PersonalFeedbackView) {
   return {
     id: feedback.id,
     origin: feedback.origin,

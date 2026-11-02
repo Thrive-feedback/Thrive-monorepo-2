@@ -124,6 +124,22 @@ export class PrismaKudosQuery extends KudosQuery {
     return toKudosPage(records, page.limit);
   }
 
+  async givenBy(
+    workspaceId: string,
+    giverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<KudosPageRow> {
+    const records = await this.prismaTransactionContext.client.kudos.findMany({
+      where: {
+        AND: [{ workspaceId, giverAccountId }, olderThan(page.after)],
+      },
+      orderBy: NEWEST_FIRST,
+      take: page.limit + 1,
+      select: KUDOS_FIELDS,
+    });
+    return toKudosPage(records, page.limit);
+  }
+
   async positionOf(
     workspaceId: string,
     kudosId: string,
