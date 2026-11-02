@@ -162,7 +162,7 @@ export interface MyAskListView {
  * governs who *besides* the Giver and the Receivers may read, and a Receiver is never the person
  * it excludes.
  */
-export interface ReceivedFeedbackView {
+export interface PersonalFeedbackView {
   readonly id: string;
   /** Whether it answered an Ask or was given without being asked. */
   readonly origin: FeedbackOrigin;
@@ -237,7 +237,7 @@ export interface OpenedRequestView {
 
 /** The Feedback written to one Member, newest first. */
 export interface ReceivedFeedbackListView {
-  readonly items: readonly ReceivedFeedbackView[];
+  readonly items: readonly PersonalFeedbackView[];
   readonly total: number;
 }
 

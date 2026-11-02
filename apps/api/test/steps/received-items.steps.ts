@@ -23,7 +23,7 @@ function receivedItems(world: ThriveWorld): ReceivedItem[] {
  * The words as a reader sees them. The feature names people; what was sent, and is read back,
  * carries their slugs.
  */
-function messagesRead(world: ThriveWorld): string[] {
+export function messagesRead(world: ThriveWorld): string[] {
   return receivedItems(world).map(({ message, tags }) =>
     tags.mentions.reduce(
       (read, { slug, displayName }) =>

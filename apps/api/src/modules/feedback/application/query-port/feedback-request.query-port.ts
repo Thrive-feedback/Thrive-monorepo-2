@@ -237,6 +237,31 @@ export interface ReceivedFeedbackPageRow {
   readonly hasMore: boolean;
 }
 
+/** One Ask beside a Giver's own answer, and who may read what its Giver wrote. */
+export interface GivenAskRow extends FeedItemAskRow {
+  /** `null` until it is answered. */
+  readonly answerAudience: {
+    readonly visibility: VisibilityValue;
+    readonly selectedAccountIds: readonly string[];
+  } | null;
+}
+
+/** The request a Giver's answer was written on, and each Ask with who may read its answer. */
+export interface GivenRequestRow extends Omit<ReceivedRequestRow, 'asks'> {
+  readonly asks: readonly GivenAskRow[];
+}
+
+/** One piece of Feedback a Member wrote, with the card it was written on, as stored. */
+export interface GivenFeedbackRow extends Omit<ReceivedFeedbackRow, 'request'> {
+  readonly request: GivenRequestRow | null;
+}
+
+export interface GivenFeedbackPageRow {
+  readonly items: readonly GivenFeedbackRow[];
+  /** Whether another page follows this one. */
+  readonly hasMore: boolean;
+}
+
 export interface FeedItemPageRow {
   readonly items: readonly FeedItemRow[];
   /** Whether another page follows this one. */
@@ -353,6 +378,16 @@ export abstract class FeedbackRequestQuery {
     receiverAccountId: string,
     page: FeedPageRequest,
   ): Promise<ReceivedFeedbackPageRow>;
+
+  /**
+   * What one Member wrote past a place in the list, newest first, at every Visibility. Each Ask says
+   * who may read its answer, which is the use case's to apply.
+   */
+  abstract givenItemsBy(
+    workspaceId: string,
+    giverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<GivenFeedbackPageRow>;
 
   /** Where one piece of Feedback of this Workspace sits on Home, or `null` if it is not there. */
   abstract feedbackPositionOf(
