@@ -28,21 +28,21 @@ function brandNewHomeShowing(show: BrandNewHomeShow) {
 }
 
 /** How Received can be laid out. The first is what it opens on. */
-export const BRAND_NEW_RECEIVED_VIEWS = ['grid', 'list'] as const;
+export const BRAND_NEW_PERSONAL_VIEWS = ['grid', 'list'] as const;
 
-export type BrandNewReceivedView = (typeof BRAND_NEW_RECEIVED_VIEWS)[number];
+export type BrandNewPersonalView = (typeof BRAND_NEW_PERSONAL_VIEWS)[number];
 
 /** The view an address names, or the one Received opens on when it names none it knows. */
-export function receivedViewOf(value: string | null): BrandNewReceivedView {
+export function personalViewOf(value: string | null): BrandNewPersonalView {
   return (
-    BRAND_NEW_RECEIVED_VIEWS.find((view) => view === value) ??
-    BRAND_NEW_RECEIVED_VIEWS[0]
+    BRAND_NEW_PERSONAL_VIEWS.find((view) => view === value) ??
+    BRAND_NEW_PERSONAL_VIEWS[0]
   );
 }
 
 /** Received laid out one way; `grid` is what it opens on, so it needs no query. */
-function brandNewReceivedViewing(view: BrandNewReceivedView) {
-  return view === BRAND_NEW_RECEIVED_VIEWS[0]
+function brandNewReceivedViewing(view: BrandNewPersonalView) {
+  return view === BRAND_NEW_PERSONAL_VIEWS[0]
     ? '/brand-new-received'
     : `/brand-new-received?view=${view}`;
 }
@@ -87,7 +87,7 @@ export const ROUTES = {
   /** One piece of Feedback open over Received, which stays laid out as it was. */
   brandNewReceivedFeedback: (
     feedbackId: string,
-    view: BrandNewReceivedView = BRAND_NEW_RECEIVED_VIEWS[0],
+    view: BrandNewPersonalView = BRAND_NEW_PERSONAL_VIEWS[0],
   ) => {
     const viewing = brandNewReceivedViewing(view);
     return `${viewing}${viewing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;

@@ -2,37 +2,40 @@
 
 import { cva } from 'class-variance-authority';
 import { useCallback } from 'react';
-import { useEndlessList } from '@/app/(signed-in)/(brand-new)/_lib/use-endless-list';
 import type {
-  ReceivedItem,
-  ReceivedPage,
-} from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-item.type';
-import { readNextReceivedPage } from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-items-actions.service';
-import { RECEIVED_GRID } from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-layout.constant';
-import { useReceivedView } from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/use-received-view';
+  PersonalItem,
+  PersonalItemsPage,
+} from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
+import { PERSONAL_ITEMS_GRID } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-layout.constant';
+import { useEndlessList } from '@/app/(signed-in)/(brand-new)/_lib/use-endless-list';
+import { usePersonalItemsView } from '@/app/(signed-in)/(brand-new)/_lib/use-personal-items-view';
 import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';
 import { ROUTES } from '@/lib/routes.constant';
-import { ReceivedPageFailed } from './received-page-failed';
-import { ReceivedGridSkeleton } from './received-skeleton';
-import { ReceivedTile } from './received-tile';
+import { PersonalItemTile } from './personal-item-tile';
+import { PersonalItemsPageFailed } from './personal-items-page-failed';
+import { PersonalItemsGridSkeleton } from './personal-items-skeleton';
 
 const column = cva('flex flex-col', {
   variants: { view: { grid: 'gap-3', list: 'gap-1.5' } },
 });
 
 const items = cva('', {
-  variants: { view: { grid: RECEIVED_GRID, list: column({ view: 'list' }) } },
+  variants: {
+    view: { grid: PERSONAL_ITEMS_GRID, list: column({ view: 'list' }) },
+  },
 });
 
-export type ReceivedListProps = {
+export type PersonalItemListProps = {
   /** The page the server read. Later reads of it are ignored: see `useEndlessList`. */
-  initialPage: ReceivedPage;
+  initialPage: PersonalItemsPage;
+  /** The server action that reads the next page. `null` means it could not be read. */
+  readNext: (input: unknown) => Promise<PersonalItemsPage | null>;
 };
 
 type ReceivedCardProps = {
-  item: ReceivedItem;
+  item: PersonalItem;
   readerAccountId: string;
 };
 
@@ -54,18 +57,21 @@ function ReceivedCard({ item, readerAccountId }: ReceivedCardProps) {
  * page as the end comes near. Both views draw the same items from here, so changing the view keeps
  * what has been read.
  */
-export function ReceivedList({ initialPage }: ReceivedListProps) {
-  const view = useReceivedView();
-  const readNext = useCallback(
-    (cursor: string) => readNextReceivedPage({ cursor }),
-    [],
+export function PersonalItemList({
+  initialPage,
+  readNext,
+}: PersonalItemListProps) {
+  const view = usePersonalItemsView();
+  const readNextPageAfter = useCallback(
+    (cursor: string) => readNext({ cursor }),
+    [readNext],
   );
   const {
     items: received,
     phase,
     endRef,
     readNextPage,
-  } = useEndlessList<ReceivedItem>(initialPage, readNext);
+  } = useEndlessList<PersonalItem>(initialPage, readNextPageAfter);
 
   return (
     <div className={column({ view })}>
@@ -73,7 +79,7 @@ export function ReceivedList({ initialPage }: ReceivedListProps) {
         {received.map((item) => (
           <li key={item.id} className="min-w-0">
             {view === 'grid' ? (
-              <ReceivedTile item={item} />
+              <PersonalItemTile item={item} />
             ) : (
               <ReceivedCard
                 item={item}
@@ -84,8 +90,12 @@ export function ReceivedList({ initialPage }: ReceivedListProps) {
         ))}
       </ul>
       {phase === 'reading' &&
-        (view === 'grid' ? <ReceivedGridSkeleton /> : <FeedCardSkeleton />)}
-      {phase === 'failed' && <ReceivedPageFailed onRetry={readNextPage} />}
+        (view === 'grid' ? (
+          <PersonalItemsGridSkeleton />
+        ) : (
+          <FeedCardSkeleton />
+        ))}
+      {phase === 'failed' && <PersonalItemsPageFailed onRetry={readNextPage} />}
       <div ref={endRef} aria-hidden="true" />
     </div>
   );

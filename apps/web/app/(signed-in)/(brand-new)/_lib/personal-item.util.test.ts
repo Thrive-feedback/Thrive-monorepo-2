@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { PersonalItemOnTheWire } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
+import { toPersonalItem } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.util';
 import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import { POSTCARD_TEMPLATES } from '@/components/organisms/postcard-dialog/postcard-template.constant';
-import type { ReceivedItemOnTheWire } from './received-item.type';
-import { toReceivedItem } from './received-item.util';
 
 const NO_TAGS = { workspaceGoals: [], mentions: [] };
 const SENT_ON = '2026-10-31T03:00:00.000Z';
@@ -15,9 +15,9 @@ const BEN = {
 } as const;
 const ANN = { ...BEN, name: 'Ann Lee' };
 
-type FeedbackOnTheWire = Extract<ReceivedItemOnTheWire, { kind: 'FEEDBACK' }>;
+type FeedbackOnTheWire = Extract<PersonalItemOnTheWire, { kind: 'FEEDBACK' }>;
 type KudosCardOnTheWire = Extract<
-  ReceivedItemOnTheWire,
+  PersonalItemOnTheWire,
   { kind: 'KUDOS' }
 >['card'];
 
@@ -38,7 +38,7 @@ const AN_ANSWERS_LOOK: NonNullable<
 
 function feedback(
   overrides: Partial<FeedbackOnTheWire> = {},
-): ReceivedItemOnTheWire {
+): PersonalItemOnTheWire {
   return {
     kind: 'FEEDBACK',
     id: 'feedback-1',
@@ -56,7 +56,7 @@ function feedback(
   };
 }
 
-function kudos(card: KudosCardOnTheWire): ReceivedItemOnTheWire {
+function kudos(card: KudosCardOnTheWire): PersonalItemOnTheWire {
   return {
     kind: 'KUDOS',
     id: 'kudos-1',
@@ -69,9 +69,9 @@ function kudos(card: KudosCardOnTheWire): ReceivedItemOnTheWire {
   };
 }
 
-describe('toReceivedItem', () => {
+describe('toPersonalItem', () => {
   it('keeps the look Feedback was written with', () => {
-    const item = toReceivedItem(feedback({ postcard: A_LOOK }));
+    const item = toPersonalItem(feedback({ postcard: A_LOOK }));
 
     expect(item).toMatchObject({
       kind: 'FEEDBACK',
@@ -81,7 +81,7 @@ describe('toReceivedItem', () => {
   });
 
   it('puts Feedback not written on a postcard on a plain one', () => {
-    const item = toReceivedItem(feedback());
+    const item = toPersonalItem(feedback());
 
     expect(item).toMatchObject({
       kind: 'FEEDBACK',
@@ -96,7 +96,7 @@ describe('toReceivedItem', () => {
   });
 
   it('draws an answer on its request’s card, in its own writing, on the right half', () => {
-    const item = toReceivedItem(
+    const item = toPersonalItem(
       feedback({
         origin: 'REQUESTED',
         postcard: null,
@@ -126,11 +126,11 @@ describe('toReceivedItem', () => {
   });
 
   it('leaves out Feedback with nobody to address the card to', () => {
-    expect(toReceivedItem(feedback({ receivers: [] }))).toBeNull();
+    expect(toPersonalItem(feedback({ receivers: [] }))).toBeNull();
   });
 
   it('keeps a Kudos in the shape every Kudos is read in, on its card', () => {
-    const item = toReceivedItem(
+    const item = toPersonalItem(
       kudos({
         templateKey: 'mint-breeze',
         textStyle: { font: 'classic', sizeStep: 2, align: 'left', ink: 'ink' },

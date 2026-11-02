@@ -12,23 +12,32 @@ import {
   vi,
 } from 'vitest';
 import type {
-  ReceivedFeedback,
-  ReceivedItem,
-  ReceivedKudos,
-  ReceivedPage,
-} from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-item.type';
+  PersonalFeedback,
+  PersonalItem,
+  PersonalItemsPage,
+  PersonalKudos,
+} from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
 import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
-import { ReceivedList } from './received-list';
-import { ReceivedViewToggle } from './received-view-toggle';
+import {
+  PersonalItemList as ListReadingWith,
+  type PersonalItemListProps,
+} from './personal-item-list';
+import { PersonalItemsViewToggle } from './personal-items-view-toggle';
 
 const readNextReceivedPage = vi.fn();
-vi.mock(
-  '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-items-actions.service',
-  () => ({
-    readNextReceivedPage: (input: unknown) => readNextReceivedPage(input),
-  }),
-);
+
+/** The list as Received's page draws it. */
+function PersonalItemList({
+  initialPage,
+}: Pick<PersonalItemListProps, 'initialPage'>) {
+  return (
+    <ListReadingWith
+      initialPage={initialPage}
+      readNext={readNextReceivedPage}
+    />
+  );
+}
 
 vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
@@ -57,9 +66,9 @@ const ANN = {
 function postcard(
   id: string,
   message: string,
-  visibility: ReceivedFeedback['visibility'] = 'ONLY_ME',
+  visibility: PersonalFeedback['visibility'] = 'ONLY_ME',
   receivers: readonly [typeof ANN, ...(typeof ANN)[]] = [ANN],
-): ReceivedFeedback {
+): PersonalFeedback {
   return {
     kind: 'FEEDBACK',
     id,
@@ -88,7 +97,7 @@ function postcard(
 }
 
 /** Ben's answer to what Ann asked him, on the card she asked it on. */
-function answer(id: string, message: string): ReceivedFeedback {
+function answer(id: string, message: string): PersonalFeedback {
   return {
     ...postcard(id, message),
     origin: 'REQUESTED',
@@ -130,7 +139,7 @@ function answer(id: string, message: string): ReceivedFeedback {
   };
 }
 
-function kudos(id: string, message: string): ReceivedKudos {
+function kudos(id: string, message: string): PersonalKudos {
   return {
     kind: 'KUDOS',
     id,
@@ -148,9 +157,9 @@ function kudos(id: string, message: string): ReceivedKudos {
 }
 
 function page(
-  items: readonly ReceivedItem[],
+  items: readonly PersonalItem[],
   nextCursor: string | null = null,
-): ReceivedPage {
+): PersonalItemsPage {
   return { readerAccountId: READER, items, nextCursor };
 }
 
@@ -197,10 +206,10 @@ async function scrollToTheEnd() {
   });
 }
 
-describe('ReceivedList, as a grid', () => {
+describe('PersonalItemList, as a grid', () => {
   it('draws one box for each thing written, each with who wrote it and the words under its card', () => {
     render(
-      <ReceivedList
+      <PersonalItemList
         initialPage={page([
           postcard('fb-1', 'The plan was clear.'),
           kudos('ku-1', 'You carried the launch.'),
@@ -217,7 +226,7 @@ describe('ReceivedList, as a grid', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(Date.parse(GIVEN_AT) + 3 * HOUR);
     render(
-      <ReceivedList
+      <PersonalItemList
         initialPage={page([
           postcard('fb-1', 'First.'),
           kudos('ku-1', 'Second.'),
@@ -238,7 +247,7 @@ describe('ReceivedList, as a grid', () => {
     'names a postcard kept to %s by who can read it, and opens it by address',
     (visibility, label) => {
       render(
-        <ReceivedList
+        <PersonalItemList
           initialPage={page([postcard('fb-1', 'First.', visibility)])}
         />,
       );
@@ -255,7 +264,7 @@ describe('ReceivedList, as a grid', () => {
 
   it('does not tell a Receiver of several that a private postcard is theirs alone', () => {
     render(
-      <ReceivedList
+      <PersonalItemList
         initialPage={page([postcard('fb-1', 'First.', 'ONLY_ME', [ANN, BEN])])}
       />,
     );
@@ -267,7 +276,7 @@ describe('ReceivedList, as a grid', () => {
 
   it('keeps the people named on a small card out of reach, inside the one press', () => {
     render(
-      <ReceivedList
+      <PersonalItemList
         initialPage={page([postcard('fb-1', 'First.', 'ONLY_ME', [ANN, BEN])])}
       />,
     );
@@ -279,7 +288,7 @@ describe('ReceivedList, as a grid', () => {
 
   it('draws an answer on the card it was asked on', () => {
     render(
-      <ReceivedList initialPage={page([answer('fb-1', 'Very clear.')])} />,
+      <PersonalItemList initialPage={page([answer('fb-1', 'Very clear.')])} />,
     );
 
     expect(screen.getByText('How clear was the plan?')).toBeInTheDocument();
@@ -287,7 +296,9 @@ describe('ReceivedList, as a grid', () => {
   });
 
   it('marks a Kudos as one, and offers no address for it', () => {
-    render(<ReceivedList initialPage={page([kudos('ku-1', 'Well done.')])} />);
+    render(
+      <PersonalItemList initialPage={page([kudos('ku-1', 'Well done.')])} />,
+    );
 
     expect(screen.getByText('Kudos')).toBeInTheDocument();
     expect(
@@ -299,36 +310,36 @@ describe('ReceivedList, as a grid', () => {
   });
 
   it('shows the Members and Workspace Goals in the words as they were bound', () => {
-    const tagged: ReceivedFeedback = {
+    const tagged: PersonalFeedback = {
       ...postcard('fb-1', 'Thanks @ben for #launch and #nothing.'),
       messageTags: {
         workspaceGoals: [{ name: 'launch' }],
         mentions: [{ slug: 'ben', displayName: 'Ben' }],
       },
     };
-    render(<ReceivedList initialPage={page([tagged])} />);
+    render(<PersonalItemList initialPage={page([tagged])} />);
 
     expect(wordsUnderTheCard('@Ben')).toBeInTheDocument();
     expect(wordsUnderTheCard('#launch')).toBeInTheDocument();
   });
 
   it('says a Giver who was Deactivated is inactive, and what they wrote stays', () => {
-    const fromSomeoneGone: ReceivedFeedback = {
+    const fromSomeoneGone: PersonalFeedback = {
       ...postcard('fb-1', 'Still here.'),
       giver: { ...BEN, inactive: true },
     };
-    render(<ReceivedList initialPage={page([fromSomeoneGone])} />);
+    render(<PersonalItemList initialPage={page([fromSomeoneGone])} />);
 
     expect(wordsUnderTheCard('Ben Carter (inactive)')).toBeInTheDocument();
     expect(wordsUnderTheCard('Still here.')).toBeInTheDocument();
   });
 
   it('starts the line with a capital for a Giver with no name yet', () => {
-    const fromSomeoneNew: ReceivedFeedback = {
+    const fromSomeoneNew: PersonalFeedback = {
       ...postcard('fb-1', 'Welcome.'),
       giver: { ...BEN, name: null },
     };
-    render(<ReceivedList initialPage={page([fromSomeoneNew])} />);
+    render(<PersonalItemList initialPage={page([fromSomeoneNew])} />);
 
     expect(wordsUnderTheCard('A teammate')).toBeInTheDocument();
   });
@@ -338,7 +349,7 @@ describe('ReceivedList, as a grid', () => {
     ['Kudos', kudos('ku-1', 'Well done.')],
   ])('keeps a %s still as the cursor comes onto it', async (_kind, item) => {
     const user = userEvent.setup();
-    render(<ReceivedList initialPage={page([item])} />);
+    render(<PersonalItemList initialPage={page([item])} />);
 
     await user.hover(
       screen.getByRole(item.kind === 'KUDOS' ? 'button' : 'link'),
@@ -349,7 +360,9 @@ describe('ReceivedList, as a grid', () => {
 
   it('opens a Kudos on the card it was written on, and gives focus back on closing', async () => {
     const user = userEvent.setup();
-    render(<ReceivedList initialPage={page([kudos('ku-1', 'Well done.')])} />);
+    render(
+      <PersonalItemList initialPage={page([kudos('ku-1', 'Well done.')])} />,
+    );
     const box = screen.getByRole('button', { name: /^Kudos from Ben Carter/ });
 
     await user.click(box);
@@ -368,7 +381,7 @@ describe('ReceivedList, as a grid', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(Date.parse(GIVEN_AT) + 30_000);
     const tree = (
-      <ReceivedList initialPage={page([postcard('fb-1', 'First.')])} />
+      <PersonalItemList initialPage={page([postcard('fb-1', 'First.')])} />
     );
     const container = document.createElement('div');
     container.innerHTML = renderToString(tree);
@@ -390,7 +403,7 @@ describe('ReceivedList, as a grid', () => {
   it('reads the next page as the end comes near, after what it has', async () => {
     readNextReceivedPage.mockResolvedValue(page([kudos('ku-2', 'Second.')]));
     render(
-      <ReceivedList
+      <PersonalItemList
         initialPage={page([postcard('fb-1', 'First.')], 'cursor-1')}
       />,
     );
@@ -411,7 +424,7 @@ describe('ReceivedList, as a grid', () => {
       page([kudos('ku-2', 'Second.')]),
     );
     render(
-      <ReceivedList
+      <PersonalItemList
         initialPage={page([postcard('fb-1', 'First.')], 'cursor-1')}
       />,
     );
@@ -428,14 +441,16 @@ describe('ReceivedList, as a grid', () => {
   });
 });
 
-describe('ReceivedList, as a list', () => {
+describe('PersonalItemList, as a list', () => {
   beforeEach(() => {
     goTo('/brand-new-received?view=list');
   });
 
   it('draws a piece of Feedback as it reads on Home, the reader as you', () => {
     render(
-      <ReceivedList initialPage={page([postcard('fb-1', 'First.')], null)} />,
+      <PersonalItemList
+        initialPage={page([postcard('fb-1', 'First.')], null)}
+      />,
     );
 
     expect(screen.getByRole('article')).toHaveTextContent(
@@ -446,7 +461,7 @@ describe('ReceivedList, as a list', () => {
 
   it('draws an answer with what was asked', () => {
     render(
-      <ReceivedList initialPage={page([answer('fb-1', 'Very clear.')])} />,
+      <PersonalItemList initialPage={page([answer('fb-1', 'Very clear.')])} />,
     );
 
     expect(screen.getByText('How clear was the plan?')).toBeInTheDocument();
@@ -455,7 +470,7 @@ describe('ReceivedList, as a list', () => {
 
   it('says when a piece was kept to the reader, which Home never holds', () => {
     render(
-      <ReceivedList
+      <PersonalItemList
         initialPage={page([postcard('fb-1', 'First.', 'ONLY_ME')])}
       />,
     );
@@ -465,7 +480,7 @@ describe('ReceivedList, as a list', () => {
 
   it('does not tell a Receiver of several that a private piece is theirs alone', () => {
     render(
-      <ReceivedList
+      <PersonalItemList
         initialPage={page([postcard('fb-1', 'First.', 'ONLY_ME', [ANN, BEN])])}
       />,
     );
@@ -476,7 +491,9 @@ describe('ReceivedList, as a list', () => {
 
   it('opens a postcard by address, and keeps the list under it', () => {
     render(
-      <ReceivedList initialPage={page([postcard('fb-1', 'First.')], null)} />,
+      <PersonalItemList
+        initialPage={page([postcard('fb-1', 'First.')], null)}
+      />,
     );
 
     expect(screen.getByRole('link', { name: /Open postcard/ })).toHaveAttribute(
@@ -487,7 +504,9 @@ describe('ReceivedList, as a list', () => {
 
   it('draws a Kudos as it reads on Home, opening on the same dialog', async () => {
     const user = userEvent.setup();
-    render(<ReceivedList initialPage={page([kudos('ku-1', 'Well done.')])} />);
+    render(
+      <PersonalItemList initialPage={page([kudos('ku-1', 'Well done.')])} />,
+    );
 
     await user.click(screen.getByRole('button', { name: 'View kudos' }));
 
@@ -499,7 +518,7 @@ describe('ReceivedList, as a list', () => {
   it('keeps reading to the end', async () => {
     readNextReceivedPage.mockResolvedValue(page([postcard('fb-2', 'Second.')]));
     render(
-      <ReceivedList
+      <PersonalItemList
         initialPage={page([postcard('fb-1', 'First.')], 'cursor-1')}
       />,
     );
@@ -510,15 +529,15 @@ describe('ReceivedList, as a list', () => {
   });
 });
 
-describe('changing the view of ReceivedList', () => {
+describe('changing the view of PersonalItemList', () => {
   it('keeps everything read so far, and reads nothing to do it', async () => {
     const user = userEvent.setup();
     readNextReceivedPage.mockResolvedValue(page([kudos('ku-2', 'Second.')]));
     const initialPage = page([postcard('fb-1', 'First.')], 'cursor-1');
     const received = () => (
       <>
-        <ReceivedViewToggle />
-        <ReceivedList initialPage={initialPage} />
+        <PersonalItemsViewToggle />
+        <PersonalItemList initialPage={initialPage} />
       </>
     );
     const { rerender } = render(received());

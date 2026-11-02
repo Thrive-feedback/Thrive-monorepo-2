@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ReceivedViewToggle } from './received-view-toggle';
+import { PersonalItemsViewToggle } from './personal-items-view-toggle';
 
 vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
@@ -19,9 +19,9 @@ function chooser(name: 'Grid view' | 'List view') {
   return screen.getByRole('button', { name });
 }
 
-describe('ReceivedViewToggle', () => {
+describe('PersonalItemsViewToggle', () => {
   it('opens on the grid', () => {
-    render(<ReceivedViewToggle />);
+    render(<PersonalItemsViewToggle />);
 
     expect(chooser('Grid view')).toHaveAttribute('aria-pressed', 'true');
     expect(chooser('List view')).toHaveAttribute('aria-pressed', 'false');
@@ -30,7 +30,7 @@ describe('ReceivedViewToggle', () => {
   it('shows the view the address names', () => {
     goTo('/brand-new-received?view=list');
 
-    render(<ReceivedViewToggle />);
+    render(<PersonalItemsViewToggle />);
 
     expect(chooser('List view')).toHaveAttribute('aria-pressed', 'true');
     expect(chooser('Grid view')).toHaveAttribute('aria-pressed', 'false');
@@ -39,20 +39,20 @@ describe('ReceivedViewToggle', () => {
   it('falls back to the grid for a view the address cannot mean', () => {
     goTo('/brand-new-received?view=table');
 
-    render(<ReceivedViewToggle />);
+    render(<PersonalItemsViewToggle />);
 
     expect(chooser('Grid view')).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('is one named group of choices', () => {
-    render(<ReceivedViewToggle />);
+    render(<PersonalItemsViewToggle />);
 
     expect(screen.getByRole('group', { name: 'View' })).toBeInTheDocument();
   });
 
   it('keeps the choice in the address', async () => {
     const user = userEvent.setup();
-    render(<ReceivedViewToggle />);
+    render(<PersonalItemsViewToggle />);
 
     await user.click(chooser('List view'));
 
@@ -63,7 +63,7 @@ describe('ReceivedViewToggle', () => {
   it('leaves the address as it is when the view showing is pressed again', async () => {
     const user = userEvent.setup();
     goTo('/brand-new-received?view=list');
-    render(<ReceivedViewToggle />);
+    render(<PersonalItemsViewToggle />);
 
     await user.click(chooser('List view'));
 

@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { FeedbackPostcard } from '@/app/(signed-in)/(brand-new)/_components/feedback-postcard';
+import { PersonalItemsHeading } from '@/app/(signed-in)/(brand-new)/_components/personal-items-heading';
 import { BRAND_NEW_COLUMN } from '@/app/(signed-in)/(brand-new)/_lib/brand-new-column.constant';
+import { PersonalItemsSearchParams } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-search-params.schema';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
-import { ReceivedHeading } from './_components/received-heading';
 import {
+  PersonalItemsLoading,
   ReceivedItems,
-  ReceivedItemsLoading,
 } from './_components/received-items';
-import { BrandNewReceivedSearchParams } from './_lib/brand-new-received-search-params.schema';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ type BrandNewReceivedProps = {
 export default async function BrandNewReceived({
   searchParams,
 }: BrandNewReceivedProps) {
-  const { view, feedback } = BrandNewReceivedSearchParams.parse(
+  const { view, feedback } = PersonalItemsSearchParams.parse(
     await searchParams,
   );
   const { membership } = await requireMember();
@@ -42,8 +42,8 @@ export default async function BrandNewReceived({
   return (
     <>
       <div className={cn(BRAND_NEW_COLUMN, 'flex flex-col gap-6')}>
-        <ReceivedHeading />
-        <Suspense fallback={<ReceivedItemsLoading view={view} />}>
+        <PersonalItemsHeading />
+        <Suspense fallback={<PersonalItemsLoading view={view} />}>
           <ReceivedItems membership={membership} />
         </Suspense>
       </div>

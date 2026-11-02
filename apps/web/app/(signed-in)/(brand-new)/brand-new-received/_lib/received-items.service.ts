@@ -1,10 +1,10 @@
 import 'server-only';
 import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
+import type { PersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
+import { toPersonalItem } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.util';
 import { apiClient } from '@/lib/api-client.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import type { ReceivedPage } from './received-item.type';
-import { toReceivedItem } from './received-item.util';
 
 /** A few screens, so the next page is read before anybody reaches the end of this one. */
 const PAGE_SIZE = 20;
@@ -17,7 +17,7 @@ const PAGE_SIZE = 20;
 export async function readReceivedItems(
   membership: CurrentMembership,
   cursor?: string,
-): Promise<ReceivedPage> {
+): Promise<PersonalItemsPage> {
   const page = unwrap(
     await apiClient().GET('/v1/workspaces/{workspaceId}/received-items', {
       params: {
@@ -30,7 +30,7 @@ export async function readReceivedItems(
   );
   return {
     readerAccountId: page.readerAccountId,
-    items: page.items.flatMap((item) => toReceivedItem(item) ?? []),
+    items: page.items.flatMap((item) => toPersonalItem(item) ?? []),
     nextCursor: page.nextCursor,
   };
 }

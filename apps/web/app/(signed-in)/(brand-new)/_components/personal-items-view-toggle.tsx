@@ -1,12 +1,12 @@
 'use client';
 
 import { LayoutGridIcon, ListIcon } from 'lucide-react';
-import { useReceivedView } from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/use-received-view';
+import { usePersonalItemsView } from '@/app/(signed-in)/(brand-new)/_lib/use-personal-items-view';
 import { Toggle } from '@/components/atoms/toggle';
-import { type BrandNewReceivedView, ROUTES } from '@/lib/routes.constant';
+import { type BrandNewPersonalView, ROUTES } from '@/lib/routes.constant';
 
 const VIEWS: readonly {
-  value: BrandNewReceivedView;
+  value: BrandNewPersonalView;
   label: string;
   Icon: typeof ListIcon;
 }[] = [
@@ -19,8 +19,8 @@ const VIEWS: readonly {
  * a reload comes back to it, but changing it reads nothing: both views draw what is already here, so
  * the address changes without a navigation, and everything read so far stays.
  */
-export function ReceivedViewToggle() {
-  const view = useReceivedView();
+export function PersonalItemsViewToggle() {
+  const view = usePersonalItemsView();
 
   return (
     <fieldset className="flex shrink-0 gap-1">
