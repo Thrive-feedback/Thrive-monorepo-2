@@ -1,8 +1,8 @@
 'use server';
 
 import { z } from 'zod';
+import type { PersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
 import { readNextPageAsMember } from '@/app/(signed-in)/(brand-new)/_lib/read-next-page.service';
-import type { ReceivedPage } from './received-item.type';
 import { readReceivedItems } from './received-items.service';
 
 const NextPage = z.object({ cursor: z.string().min(1) });
@@ -16,7 +16,7 @@ const NextPage = z.object({ cursor: z.string().min(1) });
  */
 export async function readNextReceivedPage(
   input: unknown,
-): Promise<ReceivedPage | null> {
+): Promise<PersonalItemsPage | null> {
   const parsed = NextPage.safeParse(input);
   if (!parsed.success) {
     return null;

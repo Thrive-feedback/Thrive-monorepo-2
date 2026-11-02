@@ -1,10 +1,10 @@
 import { memo, useState } from 'react';
 import type {
-  ReceivedFeedback,
-  ReceivedItem,
-  ReceivedKudos,
-} from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-item.type';
-import { RECEIVED_TILE } from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-layout.constant';
+  PersonalFeedback,
+  PersonalItem,
+  PersonalKudos,
+} from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
+import { PERSONAL_ITEM_TILE } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-layout.constant';
 import { Badge } from '@/components/atoms/badge';
 import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';
@@ -25,12 +25,12 @@ import { cn } from '@/lib/cn.util';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
 import { ROUTES } from '@/lib/routes.constant';
 import { timeAgo } from '@/lib/time-ago.util';
+import styles from './personal-item-tile.module.css';
+import { PersonalItemTilePending } from './personal-item-tile-pending';
 import { PostcardMiniature } from './postcard-miniature';
-import styles from './received-tile.module.css';
-import { ReceivedTilePending } from './received-tile-pending';
 
 type TileCornerProps = {
-  item: ReceivedItem;
+  item: PersonalItem;
 };
 
 /** What can be read about who else may read it, in the box's corner. */
@@ -45,7 +45,7 @@ function TileCorner({ item }: TileCornerProps) {
 }
 
 type TileProps = {
-  item: ReceivedItem;
+  item: PersonalItem;
   /** What the press does. */
   target: NavTarget;
   /** What the press says it does, in full. */
@@ -64,7 +64,7 @@ type TileProps = {
  */
 function Tile({ item, target, name, children }: TileProps) {
   return (
-    <article className={RECEIVED_TILE}>
+    <article className={PERSONAL_ITEM_TILE}>
       <header className="flex min-w-0 items-center gap-2">
         <PhotoAvatar
           name={item.giver.name ?? ''}
@@ -99,7 +99,7 @@ function Tile({ item, target, name, children }: TileProps) {
         >
           {children}
         </span>
-        {'href' in target && <ReceivedTilePending />}
+        {'href' in target && <PersonalItemTilePending />}
       </TargetLink>
       <Text as="p" variant="body-2" className="line-clamp-2 break-words">
         <FeedbackText text={item.message} tags={item.messageTags} />
@@ -109,7 +109,7 @@ function Tile({ item, target, name, children }: TileProps) {
 }
 
 type PostcardTileProps = {
-  item: ReceivedFeedback;
+  item: PersonalFeedback;
 };
 
 function PostcardTile({ item }: PostcardTileProps) {
@@ -128,7 +128,7 @@ function PostcardTile({ item }: PostcardTileProps) {
 }
 
 type KudosTileProps = {
-  item: ReceivedKudos;
+  item: PersonalKudos;
 };
 
 function KudosTile({ item }: KudosTileProps) {
@@ -161,17 +161,17 @@ function KudosTile({ item }: KudosTileProps) {
   );
 }
 
-export type ReceivedTileProps = {
-  item: ReceivedItem;
+export type PersonalItemTileProps = {
+  item: PersonalItem;
 };
 
 /**
  * One box in the grid of Received, by what it holds. Each draws a whole card, and an item keeps its
  * identity between renders, so a box is left alone while the list around it changes.
  */
-export const ReceivedTile = memo(function ReceivedTile({
+export const PersonalItemTile = memo(function PersonalItemTile({
   item,
-}: ReceivedTileProps) {
+}: PersonalItemTileProps) {
   return item.kind === 'KUDOS' ? (
     <KudosTile item={item} />
   ) : (

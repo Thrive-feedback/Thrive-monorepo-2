@@ -1,7 +1,7 @@
 import { useLinkStatus } from 'next/link';
 
 /** Tells the box its postcard is on its way, while the page reads it. Only a link's child can tell. */
-export function ReceivedTilePending() {
+export function PersonalItemTilePending() {
   const { pending } = useLinkStatus();
 
   return (

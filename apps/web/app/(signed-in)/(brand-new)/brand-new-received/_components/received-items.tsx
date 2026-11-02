@@ -1,12 +1,13 @@
 import { ApiError } from '@repo/api';
+import { PersonalItemList } from '@/app/(signed-in)/(brand-new)/_components/personal-item-list';
+import { PersonalItemsRetry } from '@/app/(signed-in)/(brand-new)/_components/personal-items-retry';
+import { PersonalItemsSkeleton } from '@/app/(signed-in)/(brand-new)/_components/personal-items-skeleton';
 import { readReceivedItems } from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-items.service';
+import { readNextReceivedPage } from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-items-actions.service';
 import { SkeletonRegion } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import type { BrandNewReceivedView } from '@/lib/routes.constant';
+import type { BrandNewPersonalView } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import { ReceivedItemsRetry } from './received-items-retry';
-import { ReceivedList } from './received-list';
-import { ReceivedItemsSkeleton } from './received-skeleton';
 
 export type ReceivedItemsProps = {
   membership: CurrentMembership;
@@ -28,7 +29,7 @@ export async function ReceivedItems({ membership }: ReceivedItemsProps) {
   const page = await readFirstPage(membership);
 
   if (!page) {
-    return <ReceivedItemsRetry />;
+    return <PersonalItemsRetry />;
   }
   if (page.items.length === 0) {
     return (
@@ -42,18 +43,20 @@ export async function ReceivedItems({ membership }: ReceivedItemsProps) {
       </div>
     );
   }
-  return <ReceivedList initialPage={page} />;
+  return (
+    <PersonalItemList initialPage={page} readNext={readNextReceivedPage} />
+  );
 }
 
-export type ReceivedItemsLoadingProps = {
-  view: BrandNewReceivedView;
+export type PersonalItemsLoadingProps = {
+  view: BrandNewPersonalView;
 };
 
 /** `ReceivedItems` still loading, in the view it will be drawn in. */
-export function ReceivedItemsLoading({ view }: ReceivedItemsLoadingProps) {
+export function PersonalItemsLoading({ view }: PersonalItemsLoadingProps) {
   return (
     <SkeletonRegion>
-      <ReceivedItemsSkeleton view={view} />
+      <PersonalItemsSkeleton view={view} />
     </SkeletonRegion>
   );
 }

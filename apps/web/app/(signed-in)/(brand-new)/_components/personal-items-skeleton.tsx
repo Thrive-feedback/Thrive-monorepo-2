@@ -1,15 +1,15 @@
 import {
-  RECEIVED_GRID,
-  RECEIVED_TILE,
-} from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-layout.constant';
+  PERSONAL_ITEM_TILE,
+  PERSONAL_ITEMS_GRID,
+} from '@/app/(signed-in)/(brand-new)/_lib/personal-items-layout.constant';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { FeedCardSkeletonList } from '@/components/organisms/feed-card/feed-card-skeleton';
-import type { BrandNewReceivedView } from '@/lib/routes.constant';
+import type { BrandNewPersonalView } from '@/lib/routes.constant';
 
 /** A box still loading, part for part, as tall as the one it stands for. */
-function ReceivedTileSkeleton() {
+function PersonalItemTileSkeleton() {
   return (
-    <div className={RECEIVED_TILE}>
+    <div className={PERSONAL_ITEM_TILE}>
       <div className="flex items-center gap-2">
         <Skeleton shape="circle" className="size-8 shrink-0" />
         <div className="flex min-w-0 flex-1 flex-col">
@@ -29,28 +29,28 @@ function ReceivedTileSkeleton() {
 }
 
 /** A row of boxes still loading, spaced as the grid spaces them. */
-export function ReceivedGridSkeleton() {
+export function PersonalItemsGridSkeleton() {
   return (
-    <div className={RECEIVED_GRID}>
-      <ReceivedTileSkeleton />
-      <ReceivedTileSkeleton />
+    <div className={PERSONAL_ITEMS_GRID}>
+      <PersonalItemTileSkeleton />
+      <PersonalItemTileSkeleton />
       <div className="hidden lg:block">
-        <ReceivedTileSkeleton />
+        <PersonalItemTileSkeleton />
       </div>
     </div>
   );
 }
 
-export type ReceivedItemsSkeletonProps = {
-  view: BrandNewReceivedView;
+export type PersonalItemsSkeletonProps = {
+  view: BrandNewPersonalView;
 };
 
 /** What was written to the person, still loading, in the view it will be drawn in. */
-export function ReceivedItemsSkeleton({ view }: ReceivedItemsSkeletonProps) {
+export function PersonalItemsSkeleton({ view }: PersonalItemsSkeletonProps) {
   return view === 'grid' ? (
     <div className="flex flex-col gap-3">
-      <ReceivedGridSkeleton />
-      <ReceivedGridSkeleton />
+      <PersonalItemsGridSkeleton />
+      <PersonalItemsGridSkeleton />
     </div>
   ) : (
     <FeedCardSkeletonList />
