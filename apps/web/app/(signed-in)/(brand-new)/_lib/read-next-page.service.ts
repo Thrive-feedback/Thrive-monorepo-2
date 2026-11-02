@@ -1,6 +1,7 @@
 import 'server-only';
 import { ApiError } from '@repo/api';
 import { redirect } from 'next/navigation';
+import { z } from 'zod';
 import { ROUTES } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { readCurrentMembership } from '@/lib/session/session.service';
@@ -25,4 +26,20 @@ export async function readNextPageAsMember<Page>(
     }
     return null;
   }
+}
+
+const CursorInput = z.object({ cursor: z.string().min(1) });
+
+/** The same, for a list whose browser sends only where it got to, which is checked here. */
+export async function readPageAfterCursor<Page>(
+  input: unknown,
+  read: (membership: CurrentMembership, cursor: string) => Promise<Page>,
+): Promise<Page | null> {
+  const parsed = CursorInput.safeParse(input);
+  if (!parsed.success) {
+    return null;
+  }
+  return readNextPageAsMember((membership) =>
+    read(membership, parsed.data.cursor),
+  );
 }

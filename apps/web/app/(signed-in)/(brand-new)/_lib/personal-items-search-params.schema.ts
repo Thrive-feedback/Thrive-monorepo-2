@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { BRAND_NEW_PERSONAL_VIEWS } from '@/lib/routes.constant';
 
 /**
- * `view` is how Received is laid out, and `feedback` the piece open over it, so a reload or a shared
- * link comes back to the same place. Any other value is ignored.
+ * `view` is how Received or Given is laid out, and `feedback` the piece open over it, so a reload or
+ * a shared link comes back to the same place. Any other value is ignored.
  */
 export const PersonalItemsSearchParams = z.object({
   view: z.enum(BRAND_NEW_PERSONAL_VIEWS).catch(BRAND_NEW_PERSONAL_VIEWS[0]),

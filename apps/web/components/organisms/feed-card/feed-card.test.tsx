@@ -259,6 +259,35 @@ describe('FeedCard', () => {
       ).not.toBeInTheDocument();
     });
 
+    const hidden = (who: typeof DAO): HomeFeedAsk => ({
+      person: who,
+      status: 'ANSWERED',
+      answer: null,
+    });
+
+    it('counts an answer the reader may not read as an answer, beside one they may', async () => {
+      renderCard(withAsked(answered(NOK, 'Mine to read.'), hidden(DAO)));
+
+      expect(screen.getByText(/^Also asked/)).toHaveTextContent(
+        'Also asked (2 answers)',
+      );
+
+      await openAnswers();
+
+      expect(rows()).toHaveLength(2);
+      expect(rows()[0]).toHaveTextContent('Mine to read.');
+      expect(rows()[1]).toHaveTextContent('Dao Prasert');
+      expect(rows()[1]).toHaveTextContent('Answered');
+    });
+
+    it('keeps an answer hidden from someone still waiting', () => {
+      renderCard(withAsked(hidden(DAO), waiting(NOK)));
+
+      expect(screen.getByText(/^Also asked/)).toHaveTextContent(
+        'Also asked (1 answer, 1 pending)',
+      );
+    });
+
     it('lists each name and status on a press of the faces, and no answers', async () => {
       renderCard(REQUESTED);
 

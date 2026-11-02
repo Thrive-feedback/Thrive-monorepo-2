@@ -28,6 +28,14 @@ const POSTCARD_NOTES: Readonly<Record<HomeFeedItem['origin'], string>> = {
   OFFERED: 'Read the whole postcard',
 };
 
+/** The note for this card. A request holding answers the reader may not read cannot promise them. */
+function postcardNoteOf({ origin, request }: HomeFeedItem) {
+  const someAreHidden = request?.asked.some(
+    (ask) => ask.status === 'ANSWERED' && ask.answer === null,
+  );
+  return POSTCARD_NOTES[someAreHidden ? 'OFFERED' : origin];
+}
+
 export type FeedCardProps = {
   item: HomeFeedItem;
   /** Who is reading, so the card can say "You" where it names them. */
@@ -53,7 +61,7 @@ export function FeedCardFrame({
   target,
   children,
 }: FeedCardFrameProps) {
-  const { label, Icon } = feedCardAudienceOf(item);
+  const { label, Icon } = feedCardAudienceOf(item, readerAccountId);
 
   return (
     <article className={FEED_CARD_SURFACE}>
@@ -89,7 +97,7 @@ export function FeedCardFrame({
         </div>
         <div className="col-start-3 row-start-1 flex items-center gap-2">
           <FeedCardNote lie={noteLieOf(item.id)} className="hidden xl:flex">
-            {POSTCARD_NOTES[item.origin]}
+            {postcardNoteOf(item)}
           </FeedCardNote>
           <TargetLink target={target} className="group/card-link block">
             <span className="sr-only">

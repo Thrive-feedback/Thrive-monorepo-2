@@ -1,7 +1,7 @@
 import { PersonalItemsHeading } from '@/app/(signed-in)/(brand-new)/_components/personal-items-heading';
+import { PersonalItemsLoading } from '@/app/(signed-in)/(brand-new)/_components/personal-items-skeleton';
 import { BRAND_NEW_COLUMN } from '@/app/(signed-in)/(brand-new)/_lib/brand-new-column.constant';
 import { cn } from '@/lib/cn.util';
-import { PersonalItemsLoading } from './_components/received-items';
 
 /**
  * Received while the server builds it. The navbar and sidebar stay in place, and the heading is
@@ -11,7 +11,7 @@ import { PersonalItemsLoading } from './_components/received-items';
 export default function BrandNewReceivedLoading() {
   return (
     <div className={cn(BRAND_NEW_COLUMN, 'flex flex-col gap-6')}>
-      <PersonalItemsHeading />
+      <PersonalItemsHeading side="received" />
       <PersonalItemsLoading view="grid" />
     </div>
   );

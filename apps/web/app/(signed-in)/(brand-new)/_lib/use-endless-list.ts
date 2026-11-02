@@ -15,8 +15,8 @@ export type EndlessPage<Item> = {
  * reads the first page again, and that must not move cards under the person. Put `endRef` on an
  * element after the last item.
  *
- * `readNext` answers `null` when the page could not be read. It must keep its identity between
- * renders, or the list watches for its end all over again.
+ * `readNext` answers `null` when the page could not be read. A new identity costs nothing but the
+ * list watching for its end again, which a server action handed down as a prop does each navigation.
  */
 export function useEndlessList<Item>(
   initialPage: EndlessPage<Item>,

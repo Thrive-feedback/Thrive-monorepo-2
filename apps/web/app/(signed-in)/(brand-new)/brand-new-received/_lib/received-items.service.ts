@@ -2,12 +2,10 @@ import 'server-only';
 import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import type { PersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
-import { toPersonalItem } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.util';
+import { toPersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.util';
+import { PERSONAL_ITEMS_PAGE_SIZE } from '@/app/(signed-in)/(brand-new)/_lib/read-first-page.service';
 import { apiClient } from '@/lib/api-client.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-
-/** A few screens, so the next page is read before anybody reaches the end of this one. */
-const PAGE_SIZE = 20;
 
 /**
  * One page of what was written to the signed-in person, newest first. Whose it is is the API's to
@@ -23,14 +21,10 @@ export async function readReceivedItems(
       params: {
         path: { workspaceId: membership.workspace.id },
         header: { cookie: (await headers()).get('cookie') ?? undefined },
-        query: { cursor, limit: PAGE_SIZE },
+        query: { cursor, limit: PERSONAL_ITEMS_PAGE_SIZE },
       },
       cache: 'no-store',
     }),
   );
-  return {
-    readerAccountId: page.readerAccountId,
-    items: page.items.flatMap((item) => toPersonalItem(item) ?? []),
-    nextCursor: page.nextCursor,
-  };
+  return toPersonalItemsPage(page);
 }

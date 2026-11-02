@@ -13,7 +13,6 @@ vi.mock('next/navigation', () => ({
 }));
 vi.mock('./_components/received-items', () => ({
   ReceivedItems: () => <p>What was received</p>,
-  PersonalItemsLoading: () => null,
 }));
 vi.mock('@/app/(signed-in)/(brand-new)/_components/feedback-postcard', () => ({
   FeedbackPostcard: ({

@@ -37,7 +37,7 @@ export function BrandNewSideNav({ waitingCount }: BrandNewSideNavProps) {
     { label: 'Members', Icon: UsersIcon },
     { heading: 'My Feedback' },
     { href: ROUTES.brandNewReceived, label: 'Received', Icon: InboxIcon },
-    { label: 'Given', Icon: SendIcon },
+    { href: ROUTES.brandNewGiven, label: 'Given', Icon: SendIcon },
     { label: 'My requests', Icon: MessageCircleQuestionMarkIcon },
   ];
 

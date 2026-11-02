@@ -25,7 +25,7 @@ export type HomeFeedPerson = FeedbackPerson & {
 export type HomeFeedAsk = {
   readonly person: HomeFeedPerson;
   readonly status: AskStatus;
-  /** Their answer, or `null` while the Ask is waiting. */
+  /** Their answer: `null` while waiting, or when the reader may not read it. `status` tells which. */
   readonly answer: {
     readonly message: string;
     readonly messageTags: TextTags;

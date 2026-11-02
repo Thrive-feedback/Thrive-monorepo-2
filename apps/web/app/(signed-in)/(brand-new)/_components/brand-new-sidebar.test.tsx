@@ -97,7 +97,11 @@ describe('BrandNewSidebar', () => {
       'href',
       ROUTES.brandNewReceived,
     );
-    expect(within(nav).getAllByRole('link')).toHaveLength(4);
+    expect(within(nav).getByRole('link', { name: 'Given' })).toHaveAttribute(
+      'href',
+      ROUTES.brandNewGiven,
+    );
+    expect(within(nav).getAllByRole('link')).toHaveLength(5);
     for (const button of within(nav).getAllByRole('button')) {
       expect(button).toHaveAttribute('aria-disabled', 'true');
     }
