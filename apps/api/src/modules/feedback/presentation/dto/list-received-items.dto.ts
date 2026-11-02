@@ -35,13 +35,17 @@ const receivedFeedbackSchema = feedItemSchema.extend({
   request: receivedRequestSchema.nullable(),
 });
 
+/** One thing in a Member's own list. */
+export const personalItemSchema = z.discriminatedUnion('kind', [
+  receivedFeedbackSchema,
+  kudosFeedItemSchema,
+]);
+
 export const listReceivedItemsResponseSchema = z.object({
   /** Whose list this is, so a reader can tell themselves among the people a piece names. */
   readerAccountId: z.uuid(),
   /** What was written to the caller, newest first. Whose it is is never a query parameter. */
-  items: z.array(
-    z.discriminatedUnion('kind', [receivedFeedbackSchema, kudosFeedItemSchema]),
-  ),
+  items: z.array(personalItemSchema),
   ...cursorResultShape,
 });
 export class ListReceivedItemsResponseDto extends createZodDto(

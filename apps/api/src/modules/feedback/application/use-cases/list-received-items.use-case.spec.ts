@@ -7,6 +7,7 @@ import {
 } from '@test/support/feedback.fakes';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { PeopleService } from '../service/people.service';
+import { PersonalItemsService } from '../service/personal-items.service';
 import { ListReceivedItemsUseCase } from './list-received-items.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -118,7 +119,11 @@ function setUp() {
   const useCase = new ListReceivedItemsUseCase(
     feedbackRequestQuery,
     kudosQuery,
-    new PeopleService(accountSummaryPort, new FakeWorkspaceMembershipPort()),
+    new PersonalItemsService(
+      feedbackRequestQuery,
+      kudosQuery,
+      new PeopleService(accountSummaryPort, new FakeWorkspaceMembershipPort()),
+    ),
   );
   return { accountSummaryPort, feedbackRequestQuery, kudosQuery, useCase };
 }
