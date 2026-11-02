@@ -7,12 +7,15 @@ import type {
   PersonalItemsPage,
 } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
 import { PERSONAL_ITEMS_GRID } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-layout.constant';
+import {
+  PERSONAL_ITEMS_ROUTES,
+  type PersonalItemsSide,
+} from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
 import { useEndlessList } from '@/app/(signed-in)/(brand-new)/_lib/use-endless-list';
 import { usePersonalItemsView } from '@/app/(signed-in)/(brand-new)/_lib/use-personal-items-view';
 import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';
-import { ROUTES } from '@/lib/routes.constant';
 import { PersonalItemTile } from './personal-item-tile';
 import { PersonalItemsPageFailed } from './personal-items-page-failed';
 import { PersonalItemsGridSkeleton } from './personal-items-skeleton';
@@ -30,35 +33,39 @@ const items = cva('', {
 export type PersonalItemListProps = {
   /** The page the server read. Later reads of it are ignored: see `useEndlessList`. */
   initialPage: PersonalItemsPage;
+  /** Which list this is. */
+  side: PersonalItemsSide;
   /** The server action that reads the next page. `null` means it could not be read. */
   readNext: (input: unknown) => Promise<PersonalItemsPage | null>;
 };
 
-type ReceivedCardProps = {
+type PersonalCardProps = {
   item: PersonalItem;
+  side: PersonalItemsSide;
   readerAccountId: string;
 };
 
 /** One thing in the list, as the same thing reads on Home. */
-function ReceivedCard({ item, readerAccountId }: ReceivedCardProps) {
+function PersonalCard({ item, side, readerAccountId }: PersonalCardProps) {
   return item.kind === 'KUDOS' ? (
     <KudosFeedCard kudos={item} readerAccountId={readerAccountId} />
   ) : (
     <FeedCard
       item={item}
       readerAccountId={readerAccountId}
-      target={{ href: ROUTES.brandNewReceivedFeedback(item.id, 'list') }}
+      target={{ href: PERSONAL_ITEMS_ROUTES[side].feedback(item.id, 'list') }}
     />
   );
 }
 
 /**
- * What was written to the person, as a grid of cards or as Home's list of them, reading the next
- * page as the end comes near. Both views draw the same items from here, so changing the view keeps
- * what has been read.
+ * A Member's own list, as a grid of cards or as Home's list of them, reading the next page as the
+ * end comes near. Both views draw the same items from here, so changing the view keeps what has been
+ * read.
  */
 export function PersonalItemList({
   initialPage,
+  side,
   readNext,
 }: PersonalItemListProps) {
   const view = usePersonalItemsView();
@@ -67,7 +74,7 @@ export function PersonalItemList({
     [readNext],
   );
   const {
-    items: received,
+    items: read,
     phase,
     endRef,
     readNextPage,
@@ -76,13 +83,18 @@ export function PersonalItemList({
   return (
     <div className={column({ view })}>
       <ul className={items({ view })}>
-        {received.map((item) => (
+        {read.map((item) => (
           <li key={item.id} className="min-w-0">
             {view === 'grid' ? (
-              <PersonalItemTile item={item} />
-            ) : (
-              <ReceivedCard
+              <PersonalItemTile
                 item={item}
+                side={side}
+                readerAccountId={initialPage.readerAccountId}
+              />
+            ) : (
+              <PersonalCard
+                item={item}
+                side={side}
                 readerAccountId={initialPage.readerAccountId}
               />
             )}

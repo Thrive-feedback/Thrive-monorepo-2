@@ -1,9 +1,13 @@
 'use client';
 
 import { LayoutGridIcon, ListIcon } from 'lucide-react';
+import {
+  PERSONAL_ITEMS_ROUTES,
+  type PersonalItemsSide,
+} from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
 import { usePersonalItemsView } from '@/app/(signed-in)/(brand-new)/_lib/use-personal-items-view';
 import { Toggle } from '@/components/atoms/toggle';
-import { type BrandNewPersonalView, ROUTES } from '@/lib/routes.constant';
+import type { BrandNewPersonalView } from '@/lib/routes.constant';
 
 const VIEWS: readonly {
   value: BrandNewPersonalView;
@@ -14,12 +18,19 @@ const VIEWS: readonly {
   { value: 'list', label: 'List view', Icon: ListIcon },
 ];
 
+export type PersonalItemsViewToggleProps = {
+  /** Whose address to keep the choice in. */
+  side: PersonalItemsSide;
+};
+
 /**
- * Whether Received is a grid of cards or a list like Home's. The choice is kept in the address, so
+ * Whether the list is a grid of cards or a list like Home's. The choice is kept in the address, so
  * a reload comes back to it, but changing it reads nothing: both views draw what is already here, so
  * the address changes without a navigation, and everything read so far stays.
  */
-export function PersonalItemsViewToggle() {
+export function PersonalItemsViewToggle({
+  side,
+}: PersonalItemsViewToggleProps) {
   const view = usePersonalItemsView();
 
   return (
@@ -36,7 +47,7 @@ export function PersonalItemsViewToggle() {
               window.history.replaceState(
                 null,
                 '',
-                ROUTES.brandNewReceivedViewing(value),
+                PERSONAL_ITEMS_ROUTES[side].viewing(value),
               );
             }
           }}

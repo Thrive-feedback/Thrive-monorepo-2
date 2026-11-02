@@ -1,32 +1,18 @@
-import { ApiError } from '@repo/api';
 import { PersonalItemList } from '@/app/(signed-in)/(brand-new)/_components/personal-item-list';
 import { PersonalItemsRetry } from '@/app/(signed-in)/(brand-new)/_components/personal-items-retry';
-import { PersonalItemsSkeleton } from '@/app/(signed-in)/(brand-new)/_components/personal-items-skeleton';
+import { readFirstPage } from '@/app/(signed-in)/(brand-new)/_lib/read-first-page.service';
 import { readReceivedItems } from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-items.service';
 import { readNextReceivedPage } from '@/app/(signed-in)/(brand-new)/brand-new-received/_lib/received-items-actions.service';
-import { SkeletonRegion } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import type { BrandNewPersonalView } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 export type ReceivedItemsProps = {
   membership: CurrentMembership;
 };
 
-async function readFirstPage(membership: CurrentMembership) {
-  try {
-    return await readReceivedItems(membership);
-  } catch (error) {
-    if (!(error instanceof ApiError)) {
-      throw error;
-    }
-    return null;
-  }
-}
-
 /** The first page of Received, read here so the page renders around it while it is in flight. */
 export async function ReceivedItems({ membership }: ReceivedItemsProps) {
-  const page = await readFirstPage(membership);
+  const page = await readFirstPage(() => readReceivedItems(membership));
 
   if (!page) {
     return <PersonalItemsRetry />;
@@ -44,19 +30,10 @@ export async function ReceivedItems({ membership }: ReceivedItemsProps) {
     );
   }
   return (
-    <PersonalItemList initialPage={page} readNext={readNextReceivedPage} />
-  );
-}
-
-export type PersonalItemsLoadingProps = {
-  view: BrandNewPersonalView;
-};
-
-/** `ReceivedItems` still loading, in the view it will be drawn in. */
-export function PersonalItemsLoading({ view }: PersonalItemsLoadingProps) {
-  return (
-    <SkeletonRegion>
-      <PersonalItemsSkeleton view={view} />
-    </SkeletonRegion>
+    <PersonalItemList
+      initialPage={page}
+      side="received"
+      readNext={readNextReceivedPage}
+    />
   );
 }

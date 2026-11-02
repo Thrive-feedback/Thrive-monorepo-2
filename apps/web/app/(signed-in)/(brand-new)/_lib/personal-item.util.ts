@@ -1,6 +1,7 @@
 import type {
   PersonalItem,
   PersonalItemOnTheWire,
+  PersonalItemsPage,
 } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
 import { toPostcardWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
 import {
@@ -37,7 +38,7 @@ function toPostcard(item: FeedbackOnTheWire): ReadPostcard | null {
   };
 }
 
-/** One thing written to the person, as both views of Received show it. */
+/** One thing in a Member's own list, as both views of Received and Given show it. */
 export function toPersonalItem(
   item: PersonalItemOnTheWire,
 ): PersonalItem | null {
@@ -46,4 +47,17 @@ export function toPersonalItem(
   }
   const card = toPostcard(item);
   return card && { kind: item.kind, ...toHomeFeedItem(item), card };
+}
+
+/** One page of a Member's own list as the API sends it, leaving out what cannot be drawn. */
+export function toPersonalItemsPage(page: {
+  readonly readerAccountId: string;
+  readonly items: readonly PersonalItemOnTheWire[];
+  readonly nextCursor: string | null;
+}): PersonalItemsPage {
+  return {
+    readerAccountId: page.readerAccountId,
+    items: page.items.flatMap((item) => toPersonalItem(item) ?? []),
+    nextCursor: page.nextCursor,
+  };
 }

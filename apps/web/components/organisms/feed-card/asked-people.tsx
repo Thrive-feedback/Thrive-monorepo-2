@@ -166,9 +166,10 @@ export type AskedPeopleProps = {
 
 /**
  * Who else a request asked, at the foot of an answer. Every card of a request shows this, so it
- * starts closed: how they stand and a stack of faces, whose press lists each name and status. Whoever
- * reads the card reads all of it, since every answer takes the request's one Visibility (brain
- * `ADR-0050`).
+ * starts closed: how they stand and a stack of faces, whose press lists each name and status. On
+ * Home and in Received the reader reads every answer, since each takes the request's one Visibility
+ * (brain `ADR-0050`). A Giver in Given may not, so an Ask can stand answered with no words to show
+ * (ADR 0081), which is why who answered is read from the status.
  *
  * Opening it reads the answers in place: those who answered first, then those still waiting, two
  * people and two lines each at first. Somebody asked alone has nobody to list, so it draws nothing,
@@ -190,8 +191,8 @@ export function AskedPeople({
     return null;
   }
 
-  const answered = others.filter((ask) => ask.answer !== null);
-  const waiting = others.filter((ask) => ask.answer === null);
+  const answered = others.filter((ask) => ask.status === 'ANSWERED');
+  const waiting = others.filter((ask) => ask.status !== 'ANSWERED');
   const inOrder = [...answered, ...waiting];
   const shown = isShowingEveryone ? inOrder : inOrder.slice(0, PEOPLE_AT_FIRST);
   const hiddenCount = inOrder.length - shown.length;
@@ -223,7 +224,7 @@ export function AskedPeople({
             listLabel="Show who else was asked"
           />
         )}
-        {answered.length > 0 && (
+        {answered.some((ask) => ask.answer !== null) && (
           <TextToggle
             isOpen={isOpen}
             onToggle={() => setIsOpen(!isOpen)}

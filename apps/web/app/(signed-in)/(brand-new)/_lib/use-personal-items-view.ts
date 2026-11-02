@@ -4,7 +4,7 @@ import {
   personalViewOf,
 } from '@/lib/routes.constant';
 
-/** How Received is laid out right now, as the address says. */
+/** How Received or Given is laid out right now, as the address says. */
 export function usePersonalItemsView(): BrandNewPersonalView {
   return personalViewOf(useSearchParams().get('view'));
 }

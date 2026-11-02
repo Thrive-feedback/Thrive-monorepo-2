@@ -12,6 +12,11 @@ const names = new Intl.ListFormat('en-GB', {
   type: 'conjunction',
 });
 
+/** Several people as one phrase, as every card words it. */
+export function listOfNames(people: readonly string[]) {
+  return names.format(people);
+}
+
 /** What a card calls its Giver: the reader as "You". */
 export function feedCardGiver(
   giver: HomeFeedPerson,
