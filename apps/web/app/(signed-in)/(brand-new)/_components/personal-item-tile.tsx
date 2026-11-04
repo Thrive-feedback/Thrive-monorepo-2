@@ -14,6 +14,7 @@ import {
   PERSONAL_ITEMS_ROUTES,
   type PersonalItemsSide,
 } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
+import { useReceivedShow } from '@/app/(signed-in)/(brand-new)/_lib/use-received-show';
 import { Badge } from '@/components/atoms/badge';
 import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';
@@ -179,13 +180,16 @@ type PostcardTileProps = {
 
 function PostcardTile({ item, side, readerAccountId }: PostcardTileProps) {
   const { label } = feedCardAudienceOf(item, readerAccountId);
+  const show = useReceivedShow();
 
   return (
     <Tile
       item={item}
       side={side}
       readerAccountId={readerAccountId}
-      target={{ href: PERSONAL_ITEMS_ROUTES[side].feedback(item.id) }}
+      target={{
+        href: PERSONAL_ITEMS_ROUTES[side].feedback(item.id, 'grid', show),
+      }}
       name={`Postcard ${fromOrTo(item, side)}, ${timeAgo(item.givenAt)}, ${label}. Opens the postcard.`}
     >
       <PostcardMiniature card={item.card} />

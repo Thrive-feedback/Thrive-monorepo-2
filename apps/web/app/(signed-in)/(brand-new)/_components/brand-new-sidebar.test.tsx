@@ -46,7 +46,7 @@ async function draw(waiting: number, path: string = ROUTES.brandNewHome) {
 }
 
 describe('BrandNewSidebar', () => {
-  it('lists where to go in order, with Kudos board under Home and My Feedback over its three', async () => {
+  it('lists where to go in order, with Kudos board under Home and My Feedback over Received and Given', async () => {
     const nav = await draw(0);
 
     expect(
@@ -61,7 +61,6 @@ describe('BrandNewSidebar', () => {
       'My Feedback',
       'Received',
       'Given',
-      'My requests',
     ]);
   });
 

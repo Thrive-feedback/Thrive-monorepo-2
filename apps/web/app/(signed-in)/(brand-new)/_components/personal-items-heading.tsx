@@ -23,7 +23,7 @@ const HEADINGS: Readonly<
 > = {
   received: {
     title: 'Received',
-    description: 'Feedback and kudos people wrote to you.',
+    description: 'Answers to your requests, Feedback given to you, and Kudos.',
   },
   given: {
     title: 'Given',

@@ -5,7 +5,6 @@ import {
   HandHeartIcon,
   HouseIcon,
   InboxIcon,
-  MessageCircleQuestionMarkIcon,
   SendIcon,
   UsersIcon,
 } from 'lucide-react';
@@ -38,7 +37,6 @@ export function BrandNewSideNav({ waitingCount }: BrandNewSideNavProps) {
     { heading: 'My Feedback' },
     { href: ROUTES.brandNewReceived, label: 'Received', Icon: InboxIcon },
     { href: ROUTES.brandNewGiven, label: 'Given', Icon: SendIcon },
-    { label: 'My requests', Icon: MessageCircleQuestionMarkIcon },
   ];
 
   return <SideNav label="Main" items={items} currentHref={pathname} />;

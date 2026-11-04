@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import BrandNewReceived from './page';
 
@@ -8,7 +9,9 @@ const requireMember = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
   requireMember: () => requireMember(),
 }));
+const push = vi.fn();
 vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push }),
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('./_components/received-items', () => ({
@@ -47,6 +50,40 @@ describe('BrandNewReceived', () => {
       screen.getByRole('heading', { level: 1, name: 'Received' }),
     ).toBeInTheDocument();
     expect(screen.getByText('What was received')).toBeInTheDocument();
+  });
+
+  it('offers each kind it can show, with everything chosen at first', async () => {
+    render(await open());
+
+    const kinds = screen.getByRole('group', { name: 'Show' });
+    expect(
+      within(kinds)
+        .getAllByRole('button')
+        .map((chip) => chip.textContent),
+    ).toEqual(['All', 'My requests', 'Given to me', 'Kudos']);
+    expect(within(kinds).getByRole('button', { name: 'All' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('narrows to another kind through the address', async () => {
+    const user = userEvent.setup();
+    render(await open());
+
+    await user.click(screen.getByRole('button', { name: 'My requests' }));
+
+    expect(push).toHaveBeenCalledWith('/brand-new-received?show=requests');
+  });
+
+  it('closes a piece back to the kind it was opened over', async () => {
+    render(await open({ show: 'kudos', view: 'list', feedback: FEEDBACK_ID }));
+
+    expect(
+      screen.getByText(
+        `The postcard ${FEEDBACK_ID}, closing to /brand-new-received?show=kudos&view=list`,
+      ),
+    ).toBeInTheDocument();
   });
 
   it('offers both views', async () => {

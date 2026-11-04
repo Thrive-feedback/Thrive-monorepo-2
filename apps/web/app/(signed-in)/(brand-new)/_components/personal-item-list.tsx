@@ -5,6 +5,7 @@ import { useCallback } from 'react';
 import type {
   PersonalItem,
   PersonalItemsPage,
+  PersonalListItem,
 } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
 import { PERSONAL_ITEMS_GRID } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-layout.constant';
 import {
@@ -13,12 +14,15 @@ import {
 } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
 import { useEndlessList } from '@/app/(signed-in)/(brand-new)/_lib/use-endless-list';
 import { usePersonalItemsView } from '@/app/(signed-in)/(brand-new)/_lib/use-personal-items-view';
+import { useReceivedShow } from '@/app/(signed-in)/(brand-new)/_lib/use-received-show';
 import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';
 import { PersonalItemTile } from './personal-item-tile';
 import { PersonalItemsPageFailed } from './personal-items-page-failed';
 import { PersonalItemsGridSkeleton } from './personal-items-skeleton';
+import { RequestCard } from './request-card';
+import { RequestTile } from './request-tile';
 
 const column = cva('flex flex-col', {
   variants: { view: { grid: 'gap-3', list: 'gap-1.5' } },
@@ -47,15 +51,23 @@ type PersonalCardProps = {
 
 /** One thing in the list, as the same thing reads on Home. */
 function PersonalCard({ item, side, readerAccountId }: PersonalCardProps) {
+  const show = useReceivedShow();
+
   return item.kind === 'KUDOS' ? (
     <KudosFeedCard kudos={item} readerAccountId={readerAccountId} />
   ) : (
     <FeedCard
       item={item}
       readerAccountId={readerAccountId}
-      target={{ href: PERSONAL_ITEMS_ROUTES[side].feedback(item.id, 'list') }}
+      target={{
+        href: PERSONAL_ITEMS_ROUTES[side].feedback(item.id, 'list', show),
+      }}
     />
   );
+}
+
+function idOf(item: PersonalListItem) {
+  return item.id;
 }
 
 /**
@@ -78,14 +90,20 @@ export function PersonalItemList({
     phase,
     endRef,
     readNextPage,
-  } = useEndlessList<PersonalItem>(initialPage, readNextPageAfter);
+  } = useEndlessList<PersonalListItem>(initialPage, readNextPageAfter, idOf);
 
   return (
     <div className={column({ view })}>
       <ul className={items({ view })}>
         {read.map((item) => (
           <li key={item.id} className="min-w-0">
-            {view === 'grid' ? (
+            {item.kind === 'REQUEST' ? (
+              view === 'grid' ? (
+                <RequestTile request={item} />
+              ) : (
+                <RequestCard request={item} />
+              )
+            ) : view === 'grid' ? (
               <PersonalItemTile
                 item={item}
                 side={side}

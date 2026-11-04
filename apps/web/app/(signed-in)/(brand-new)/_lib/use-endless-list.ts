@@ -17,10 +17,14 @@ export type EndlessPage<Item> = {
  *
  * `readNext` answers `null` when the page could not be read. A new identity costs nothing but the
  * list watching for its end again, which a server action handed down as a prop does each navigation.
+ *
+ * A page never adds an item the list already holds, by `idOf`. A list whose items can move up, as a
+ * request in Received does when it is answered, could otherwise draw one twice under one key.
  */
 export function useEndlessList<Item>(
   initialPage: EndlessPage<Item>,
   readNext: (cursor: string) => Promise<EndlessPage<Item> | null>,
+  idOf: (item: Item) => string,
 ) {
   const [items, setItems] = useState(initialPage.items);
   const [cursor, setCursor] = useState(initialPage.nextCursor);
@@ -44,10 +48,13 @@ export function useEndlessList<Item>(
       setPhase('failed');
       return;
     }
-    setItems((read) => [...read, ...page.items]);
+    setItems((read) => {
+      const held = new Set(read.map(idOf));
+      return [...read, ...page.items.filter((item) => !held.has(idOf(item)))];
+    });
     setCursor(page.nextCursor);
     setPhase('idle');
-  }, [cursor, readNext]);
+  }, [cursor, readNext, idOf]);
 
   useEffect(() => {
     const end = endRef.current;

@@ -5,6 +5,10 @@ import { useEndlessList } from './use-endless-list';
 
 const FIRST_PAGE = { items: ['one'], nextCursor: 'cursor-1' };
 
+function itself(item: string) {
+  return item;
+}
+
 class NeverSeesTheEnd {
   observe() {}
   disconnect() {}
@@ -14,11 +18,15 @@ type ListProps = {
   readNext: (
     cursor: string,
   ) => Promise<{ items: string[]; nextCursor: null } | null>;
-  onRejected: (error: unknown) => void;
+  onRejected?: (error: unknown) => void;
 };
 
-function List({ readNext, onRejected }: ListProps) {
-  const { items, phase, readNextPage } = useEndlessList(FIRST_PAGE, readNext);
+function List({ readNext, onRejected = () => {} }: ListProps) {
+  const { items, phase, readNextPage } = useEndlessList(
+    FIRST_PAGE,
+    readNext,
+    itself,
+  );
   return (
     <>
       <p>{items.join()}</p>
@@ -55,5 +63,19 @@ describe('useEndlessList', () => {
 
     expect(onRejected).toHaveBeenCalledExactlyOnceWith(signedOut);
     expect(screen.queryByText('That page failed.')).not.toBeInTheDocument();
+  });
+
+  it('adds only what it does not already hold, when an item has moved onto the next page', async () => {
+    render(
+      <List
+        readNext={vi
+          .fn()
+          .mockResolvedValue({ items: ['one', 'two'], nextCursor: null })}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Read on' }));
+
+    expect(await screen.findByText('one,two')).toBeInTheDocument();
   });
 });
