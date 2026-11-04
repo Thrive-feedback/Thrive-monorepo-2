@@ -1,4 +1,4 @@
-import type { Prisma } from '@app/infrastructure/database/generated/client';
+import { Prisma } from '@app/infrastructure/database/generated/client';
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { Injectable } from '@nestjs/common';
 import {
@@ -19,6 +19,7 @@ import {
   type OpenedRequestRow,
   type ReceivedFeedbackPageRow,
   type ReceivedFeedbackRow,
+  type SentRequestItemPageRow,
   type WaitingAskPageRow,
   type WorkspaceFeedPageRow,
 } from '../../application/query-port/feedback-request.query-port';
@@ -220,6 +221,43 @@ const GIVEN_ITEM_FIELDS = {
     },
   },
 } as const;
+
+/**
+ * A request in its Requester's Received, with every Ask and what each sent back. The Requester reads
+ * every answer to what they asked, so no answer needs its Visibility here.
+ */
+const SENT_REQUEST_ITEM_FIELDS = {
+  id: true,
+  requesterAccountId: true,
+  message: true,
+  postcard: true,
+  visibility: true,
+  createdAt: true,
+  selectedPeople: SELECTED_PEOPLE_IN_ORDER,
+  ...TAGS_FIELDS,
+  asks: {
+    orderBy: ASKS_IN_ORDER_ASKED,
+    select: {
+      giverAccountId: true,
+      status: true,
+      feedback: {
+        select: {
+          id: true,
+          message: true,
+          postcard: true,
+          createdAt: true,
+          ...TAGS_FIELDS,
+        },
+      },
+    },
+  },
+} as const;
+
+/** Where one request sits in its Requester's Received, as the read of positions answers it. */
+interface SentRequestPositionRecord {
+  readonly id: string;
+  readonly latestActivityAt: Date;
+}
 
 /** A request's card and, through its Asks, every answer, each with its own Visibility. */
 const OPENED_REQUEST_FIELDS = {
@@ -559,7 +597,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     };
   }
 
-  async receivedItemsBy(
+  async offeredItemsTo(
     workspaceId: string,
     receiverAccountId: string,
     page: FeedPageRequest,
@@ -572,6 +610,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
             // Through the Receivers, for the reason `receivedBy` gives (ADR 0061).
             {
               workspaceId,
+              origin: 'OFFERED' as const,
               receivers: { some: { accountId: receiverAccountId } },
             },
             olderThan(page.after),
@@ -584,6 +623,72 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     return {
       items: records.slice(0, page.limit).map(toReceivedFeedbackRow),
       hasMore: records.length > page.limit,
+    };
+  }
+
+  async sentRequestItemsBy(
+    workspaceId: string,
+    requesterAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<SentRequestItemPageRow> {
+    const { client } = this.prismaTransactionContext;
+    // A request's place is computed from its answers, which Prisma cannot order by, so the places
+    // are read in SQL and the requests themselves by id, two queries however long the page. Every
+    // answer carries its request's id, so the newest of them is the request's latest activity.
+    const past =
+      page.after === null
+        ? Prisma.empty
+        : Prisma.sql`HAVING (COALESCE(MAX(f."createdAt"), r."createdAt"), r."id") < (${page.after.createdAt}::timestamp(3), ${page.after.id})`;
+    // One row more than asked for, only to tell whether another page follows (ADR 0059).
+    const positions = await client.$queryRaw<SentRequestPositionRecord[]>`
+      SELECT r."id", COALESCE(MAX(f."createdAt"), r."createdAt") AS "latestActivityAt"
+      FROM "feedback_request" r
+      LEFT JOIN "feedback" f ON f."feedbackRequestId" = r."id"
+      WHERE r."workspaceId" = ${workspaceId}
+        AND r."requesterAccountId" = ${requesterAccountId}
+      GROUP BY r."id"
+      ${past}
+      ORDER BY 2 DESC, r."id" DESC
+      LIMIT ${page.limit + 1}
+    `;
+    const shown = positions.slice(0, page.limit);
+    const records = await client.feedbackRequest.findMany({
+      where: { workspaceId, id: { in: shown.map(({ id }) => id) } },
+      select: SENT_REQUEST_ITEM_FIELDS,
+    });
+    const byId = new Map(records.map((record) => [record.id, record]));
+    return {
+      items: shown.flatMap(({ id, latestActivityAt }) => {
+        const record = byId.get(id);
+        if (!record) {
+          return [];
+        }
+        return [
+          {
+            id: record.id,
+            requesterAccountId: record.requesterAccountId,
+            message: record.message,
+            tags: tagsOf(record),
+            visibility: record.visibility,
+            selectedAccountIds: accountIdsOf(record.selectedPeople),
+            postcard: toPostcardSnapshot(record.postcard),
+            createdAt: record.createdAt,
+            latestActivityAt,
+            asks: record.asks.map((ask) => ({
+              giverAccountId: ask.giverAccountId,
+              status: ask.status,
+              answer: ask.feedback && {
+                id: ask.feedback.id,
+                message: ask.feedback.message,
+                tags: tagsOf(ask.feedback),
+                postcard: toAnswerPostcardSnapshot(ask.feedback.postcard),
+                answeredAt: ask.feedback.createdAt,
+              },
+            })),
+          },
+        ];
+      }),
+      hasMore: positions.length > page.limit,
     };
   }
 

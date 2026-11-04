@@ -262,6 +262,44 @@ export interface GivenFeedbackPageRow {
   readonly hasMore: boolean;
 }
 
+/** What one Ask of a Member's own request sent back, as stored. */
+export interface SentRequestAnswerRow {
+  readonly id: string;
+  readonly message: string;
+  readonly tags: TagsView;
+  readonly postcard: AnswerPostcardSnapshot | null;
+  readonly answeredAt: Date;
+}
+
+/** One Ask of a Member's own request, as stored, with its answer once there is one. */
+export interface SentRequestAskRow {
+  readonly giverAccountId: string;
+  readonly status: string;
+  readonly answer: SentRequestAnswerRow | null;
+}
+
+/** One request a Member sent, as their Received holds it. Names are added above this port. */
+export interface SentRequestItemRow {
+  readonly id: string;
+  readonly requesterAccountId: string;
+  readonly message: string;
+  readonly tags: TagsView;
+  readonly visibility: VisibilityValue;
+  readonly selectedAccountIds: readonly string[];
+  readonly postcard: PostcardSnapshot | null;
+  readonly createdAt: Date;
+  /** Its newest answer, or when it was sent while nobody has answered. */
+  readonly latestActivityAt: Date;
+  /** In the order they were asked. */
+  readonly asks: readonly SentRequestAskRow[];
+}
+
+export interface SentRequestItemPageRow {
+  readonly items: readonly SentRequestItemRow[];
+  /** Whether another page follows this one. */
+  readonly hasMore: boolean;
+}
+
 export interface FeedItemPageRow {
   readonly items: readonly FeedItemRow[];
   /** Whether another page follows this one. */
@@ -370,14 +408,27 @@ export abstract class FeedbackRequestQuery {
   ): Promise<FeedItemPageRow>;
 
   /**
-   * What was written to one Member past a place in their Received list, newest first, at any
-   * Visibility: the Receiver is an argument, so nobody else's can be read through this.
+   * The Feedback given to one Member unasked, past a place in their Received list, newest first, at
+   * any Visibility: the Receiver is an argument, so nobody else's can be read through this. Answers
+   * to their requests are not here; each is inside its request (`sentRequestItemsBy`).
    */
-  abstract receivedItemsBy(
+  abstract offeredItemsTo(
     workspaceId: string,
     receiverAccountId: string,
     page: FeedPageRequest,
   ): Promise<ReceivedFeedbackPageRow>;
+
+  /**
+   * The requests one Member sent, past a place in their Received list, each placed at its latest
+   * activity, newest first, with every Ask and every answer. The Requester is an argument, so
+   * nobody else's can be read through this. A request moves up when it is answered, so the place a
+   * page starts from is a position, never a row looked up again.
+   */
+  abstract sentRequestItemsBy(
+    workspaceId: string,
+    requesterAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<SentRequestItemPageRow>;
 
   /**
    * What one Member wrote past a place in the list, newest first, at every Visibility. Each Ask says

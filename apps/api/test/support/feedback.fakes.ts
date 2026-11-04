@@ -17,6 +17,8 @@ import type {
   OpenedRequestRow,
   ReceivedFeedbackPageRow,
   ReceivedFeedbackRow,
+  SentRequestItemPageRow,
+  SentRequestItemRow,
   WaitingAskPageRow,
   WorkspaceFeedPageRow,
 } from '@app/modules/feedback/application/query-port/feedback-request.query-port';
@@ -296,6 +298,11 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     readonly workspaceId: string;
   })[] = [];
 
+  /** What each Member asked for, whose Requester says whose it is. */
+  readonly sentRequests: (SentRequestItemRow & {
+    readonly workspaceId: string;
+  })[] = [];
+
   /** What each Member wrote, whose Giver says whose it is. */
   readonly givenItems: (GivenFeedbackRow & {
     readonly workspaceId: string;
@@ -451,7 +458,7 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     return { items: pageOf(feed, page), total: feed.length };
   }
 
-  async receivedItemsBy(
+  async offeredItemsTo(
     workspaceId: string,
     receiverAccountId: string,
     page: FeedPageRequest,
@@ -460,12 +467,40 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
       .filter(
         (row) =>
           row.workspaceId === workspaceId &&
+          row.origin === 'OFFERED' &&
           row.receiverAccountIds.includes(receiverAccountId) &&
           isPast(row, page.after),
       )
       .sort(
         (a, b) =>
           b.createdAt.getTime() - a.createdAt.getTime() ||
+          b.id.localeCompare(a.id),
+      );
+    return {
+      items: rest.slice(0, page.limit),
+      hasMore: rest.length > page.limit,
+    };
+  }
+
+  async sentRequestItemsBy(
+    workspaceId: string,
+    requesterAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<SentRequestItemPageRow> {
+    const placed = (row: SentRequestItemRow) => ({
+      createdAt: row.latestActivityAt,
+      id: row.id,
+    });
+    const rest = this.sentRequests
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          row.requesterAccountId === requesterAccountId &&
+          isPast(placed(row), page.after),
+      )
+      .sort(
+        (a, b) =>
+          b.latestActivityAt.getTime() - a.latestActivityAt.getTime() ||
           b.id.localeCompare(a.id),
       );
     return {

@@ -729,7 +729,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the Feedback and Kudos written to the caller */
+        /** List the Feedback and Kudos written to the caller, and the requests they sent */
         get: operations["ReceivedItemsController_listReceivedItems"];
         put?: never;
         post?: never;
@@ -2129,6 +2129,118 @@ export interface components {
                 createdAt: string;
                 /** @enum {string} */
                 kind: "KUDOS";
+            } | {
+                /** @enum {string} */
+                kind: "REQUEST";
+                /** Format: uuid */
+                id: string;
+                message: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                /** @enum {string} */
+                visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
+                requester: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                selectedPeople: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                }[];
+                postcard: {
+                    templateKey: string;
+                    /** @enum {string} */
+                    tone: "cream" | "sage" | "blush";
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        /** @enum {string} */
+                        side: "front" | "back";
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                    stampKey: string | null;
+                } | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                latestActivityAt: string;
+                asked: {
+                    person: {
+                        /** Format: uuid */
+                        accountId: string;
+                        name: string | null;
+                        /** Format: uri */
+                        photoUrl: string | null;
+                        /** @enum {string} */
+                        status: "ACTIVE" | "DEACTIVATED";
+                    };
+                    /** @enum {string} */
+                    status: "PENDING" | "ANSWERED";
+                    answer: {
+                        message: string;
+                        tags: {
+                            workspaceGoals: {
+                                name: string;
+                            }[];
+                            mentions: {
+                                slug: string;
+                                displayName: string;
+                            }[];
+                        };
+                        /** Format: date-time */
+                        answeredAt: string;
+                        /** Format: uuid */
+                        id: string;
+                        postcard: {
+                            textStyle: {
+                                /** @enum {string} */
+                                font: "modern" | "classic" | "signature";
+                                sizeStep: number;
+                                /** @enum {string} */
+                                align: "left" | "center" | "right";
+                                /** @enum {string} */
+                                ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                            };
+                            stickers: {
+                                stickerKey: string;
+                                /** @enum {string} */
+                                side: "front" | "back";
+                                x: number;
+                                y: number;
+                                scale: number;
+                                rotation: number;
+                            }[];
+                        } | null;
+                    } | null;
+                }[];
             })[];
             nextCursor: string | null;
         };
@@ -4527,6 +4639,7 @@ export interface operations {
     ReceivedItemsController_listReceivedItems: {
         parameters: {
             query?: {
+                show?: "ALL" | "REQUESTS" | "OFFERED" | "KUDOS";
                 cursor?: string;
                 limit?: number;
             };
