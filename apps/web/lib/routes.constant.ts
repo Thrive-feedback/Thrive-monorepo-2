@@ -40,11 +40,43 @@ export function personalViewOf(value: string | null): BrandNewPersonalView {
   );
 }
 
-/** Received laid out one way; `grid` is what it opens on, so it needs no query. */
-function brandNewReceivedViewing(view: BrandNewPersonalView) {
-  return view === BRAND_NEW_PERSONAL_VIEWS[0]
+/** What Received can be narrowed to, in the order offered. The first is what it opens on. */
+export const BRAND_NEW_RECEIVED_SHOWS = [
+  'all',
+  'requests',
+  'offered',
+  'kudos',
+] as const;
+
+export type BrandNewReceivedShow = (typeof BRAND_NEW_RECEIVED_SHOWS)[number];
+
+/** What an address narrows Received to, or everything when it names nothing it knows. */
+export function receivedShowOf(value: string | null): BrandNewReceivedShow {
+  return (
+    BRAND_NEW_RECEIVED_SHOWS.find((show) => show === value) ??
+    BRAND_NEW_RECEIVED_SHOWS[0]
+  );
+}
+
+/**
+ * Received laid out one way, showing one kind; `grid` and `all` are what it opens on, so neither
+ * needs a query.
+ */
+function brandNewReceivedViewing(
+  view: BrandNewPersonalView,
+  show: BrandNewReceivedShow = BRAND_NEW_RECEIVED_SHOWS[0],
+) {
+  const query = new URLSearchParams();
+  if (show !== BRAND_NEW_RECEIVED_SHOWS[0]) {
+    query.set('show', show);
+  }
+  if (view !== BRAND_NEW_PERSONAL_VIEWS[0]) {
+    query.set('view', view);
+  }
+  const search = query.toString();
+  return search === ''
     ? '/brand-new-received'
-    : `/brand-new-received?view=${view}`;
+    : `/brand-new-received?${search}`;
 }
 
 /** Given laid out one way; `grid` is what it opens on, so it needs no query. */
@@ -89,14 +121,15 @@ export const ROUTES = {
   brandNewKudosMonth: (month: string) => `/brand-new-kudos?month=${month}`,
   /** Everything written to the person, in the new Home. */
   brandNewReceived: '/brand-new-received',
-  /** Received laid out one way. */
+  /** Received laid out one way, showing one kind. */
   brandNewReceivedViewing,
-  /** One piece of Feedback open over Received, which stays laid out as it was. */
+  /** One piece of Feedback open over Received, which stays laid out and narrowed as it was. */
   brandNewReceivedFeedback: (
     feedbackId: string,
     view: BrandNewPersonalView = BRAND_NEW_PERSONAL_VIEWS[0],
+    show: BrandNewReceivedShow = BRAND_NEW_RECEIVED_SHOWS[0],
   ) => {
-    const viewing = brandNewReceivedViewing(view);
+    const viewing = brandNewReceivedViewing(view, show);
     return `${viewing}${viewing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
   /** Everything the person wrote, in the new Home. */

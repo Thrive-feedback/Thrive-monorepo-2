@@ -1,3 +1,4 @@
+import type { AskedPostcard } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
 import styles from '@/components/organisms/postcard-dialog/postcard.module.css';
 import { PostcardPostmarkStill } from '@/components/organisms/postcard-dialog/postcard-postmark-still';
 import type { ReadPostcard } from '@/components/organisms/postcard-dialog/postcard-read.type';
@@ -5,6 +6,10 @@ import {
   PostcardAnsweredBack,
   PostcardGivenBack,
 } from '@/components/organisms/postcard-dialog/postcard-read-back';
+import {
+  PostcardAskReadOnly,
+  PostcardSplitBack,
+} from '@/components/organisms/postcard-dialog/postcard-split-back';
 import {
   PostcardStampBoxReadOnly,
   PostcardStampReadOnly,
@@ -15,7 +20,26 @@ import { cn } from '@/lib/cn.util';
 import miniatureStyles from './postcard-miniature.module.css';
 
 /** What differs by card: how it looks, when it was sent, and what is written on its back. */
-function showing(card: ReadPostcard) {
+function showing(card: ReadPostcard | AskedPostcard) {
+  if (card.kind === 'asked') {
+    return {
+      look: card.ask,
+      sentOn: card.sentOn,
+      stickers: card.ask.stickers,
+      // Nobody has answered, so the right half is as blank as the card the Givers were sent.
+      back: (
+        <PostcardSplitBack
+          ask={
+            <PostcardAskReadOnly
+              ask={card.ask}
+              messageTags={card.messageTags}
+            />
+          }
+          answer={null}
+        />
+      ),
+    };
+  }
   if (card.kind === 'give') {
     return {
       look: card,
@@ -50,7 +74,8 @@ function WritingLines() {
 }
 
 export type PostcardMiniatureProps = {
-  card: ReadPostcard;
+  /** A sent card, or a request nobody has answered yet. */
+  card: ReadPostcard | AskedPostcard;
 };
 
 /**
@@ -79,6 +104,7 @@ export function PostcardMiniature({ card }: PostcardMiniatureProps) {
           <div className="flex min-h-0 flex-1 divide-x divide-border-muted md:hidden">
             <WritingLines />
             {card.kind === 'ask' && <WritingLines />}
+            {card.kind === 'asked' && <span className="flex-1" />}
           </div>
           {look.stampKey ? (
             <PostcardStampReadOnly stampKey={look.stampKey} />

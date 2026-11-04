@@ -79,11 +79,35 @@ describe('readNextReceivedPage', () => {
       }),
     );
 
-    const page = await readNextReceivedPage({ cursor: 'cursor-1' });
+    const page = await readNextReceivedPage('all', { cursor: 'cursor-1' });
 
     expect(asked?.searchParams.get('cursor')).toBe('cursor-1');
+    expect(asked?.searchParams.get('show')).toBe('ALL');
     expect(page?.nextCursor).toBe('cursor-2');
     expect(page?.items.map((item) => item.id)).toEqual([A_KUDOS.id]);
+  });
+
+  it.each([
+    ['requests', 'REQUESTS'],
+    ['offered', 'OFFERED'],
+    ['kudos', 'KUDOS'],
+    ['something it does not offer', 'ALL'],
+  ])('keeps Received narrowed to %s on the next page', async (show, asked) => {
+    let read: string | null | undefined;
+    server.use(
+      http.get(RECEIVED_ITEMS, ({ request }) => {
+        read = new URL(request.url).searchParams.get('show');
+        return HttpResponse.json({
+          readerAccountId: ANN,
+          items: [],
+          nextCursor: null,
+        });
+      }),
+    );
+
+    await readNextReceivedPage(show, { cursor: 'cursor-1' });
+
+    expect(read).toBe(asked);
   });
 
   it.each([
@@ -100,16 +124,16 @@ describe('readNextReceivedPage', () => {
       }),
     );
 
-    expect(await readNextReceivedPage(input)).toBeNull();
+    expect(await readNextReceivedPage('all', input)).toBeNull();
     expect(wasAsked).toBe(false);
   });
 
   it('sends somebody signed out to sign in', async () => {
     readCurrentMembership.mockResolvedValue(null);
 
-    await expect(readNextReceivedPage({ cursor: 'cursor-1' })).rejects.toEqual(
-      new Redirected('/signin'),
-    );
+    await expect(
+      readNextReceivedPage('all', { cursor: 'cursor-1' }),
+    ).rejects.toEqual(new Redirected('/signin'));
   });
 
   it('answers null when the API refuses, so the list can offer to try again', async () => {
@@ -119,6 +143,8 @@ describe('readNextReceivedPage', () => {
       ),
     );
 
-    expect(await readNextReceivedPage({ cursor: 'cursor-1' })).toBeNull();
+    expect(
+      await readNextReceivedPage('all', { cursor: 'cursor-1' }),
+    ).toBeNull();
   });
 });

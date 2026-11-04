@@ -6,6 +6,7 @@ import {
   type PersonalItemsSide,
 } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
 import { usePersonalItemsView } from '@/app/(signed-in)/(brand-new)/_lib/use-personal-items-view';
+import { useReceivedShow } from '@/app/(signed-in)/(brand-new)/_lib/use-received-show';
 import { Toggle } from '@/components/atoms/toggle';
 import type { BrandNewPersonalView } from '@/lib/routes.constant';
 
@@ -32,6 +33,7 @@ export function PersonalItemsViewToggle({
   side,
 }: PersonalItemsViewToggleProps) {
   const view = usePersonalItemsView();
+  const show = useReceivedShow();
 
   return (
     <fieldset className="flex shrink-0 gap-1">
@@ -47,7 +49,7 @@ export function PersonalItemsViewToggle({
               window.history.replaceState(
                 null,
                 '',
-                PERSONAL_ITEMS_ROUTES[side].viewing(value),
+                PERSONAL_ITEMS_ROUTES[side].viewing(value, show),
               );
             }
           }}

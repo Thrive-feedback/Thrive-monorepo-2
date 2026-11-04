@@ -16,6 +16,10 @@ export type HomeFeedListProps = {
   show: BrandNewHomeShow;
 };
 
+function idOf(item: { readonly id: string }) {
+  return item.id;
+}
+
 /**
  * Home's cards, Feedback and Kudos together, reading the next page as the end of the list comes near. The page keys this by
  * filter, so changing the filter starts again.
@@ -28,6 +32,7 @@ export function HomeFeedList({ initialPage, show }: HomeFeedListProps) {
   const { items, phase, endRef, readNextPage } = useEndlessList(
     initialPage,
     readNext,
+    idOf,
   );
 
   return (

@@ -19,6 +19,10 @@ export type WaitingAskListProps = {
   sort: BrandNewWaitingSort;
 };
 
+function askIdOf(ask: MyAsk) {
+  return ask.askId;
+}
+
 /**
  * The cards waiting for the person, reading the next page as the end of the list comes near. An
  * answered card leaves where it stands, so the person keeps their place.
@@ -31,6 +35,7 @@ export function WaitingAskList({ initialPage, sort }: WaitingAskListProps) {
   const { items, phase, hasMore, endRef, readNextPage } = useEndlessList<MyAsk>(
     initialPage,
     readNext,
+    askIdOf,
   );
   const { answered } = useAnsweredAsks();
   const isUnanswered = (ask: MyAsk) => !answered.has(ask.askId);

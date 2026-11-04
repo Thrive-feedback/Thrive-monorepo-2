@@ -5,7 +5,7 @@ import type {
   HomeFeedPerson,
 } from './home-feed-item.type';
 
-function toHomeFeedPerson(
+export function toHomeFeedPerson(
   person: Pick<
     FeedItemOnTheWire['giver'],
     'accountId' | 'name' | 'photoUrl' | 'status'

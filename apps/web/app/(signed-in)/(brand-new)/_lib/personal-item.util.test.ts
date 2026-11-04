@@ -16,6 +16,14 @@ const BEN = {
 const ANN = { ...BEN, name: 'Ann Lee' };
 
 type FeedbackOnTheWire = Extract<PersonalItemOnTheWire, { kind: 'FEEDBACK' }>;
+type AnswerLookOnTheWire = NonNullable<
+  NonNullable<
+    Extract<
+      PersonalItemOnTheWire,
+      { kind: 'REQUEST' }
+    >['asked'][number]['answer']
+  >['postcard']
+>;
 type KudosCardOnTheWire = Extract<
   PersonalItemOnTheWire,
   { kind: 'KUDOS' }
@@ -145,6 +153,75 @@ describe('toPersonalItem', () => {
       message: 'Well done.',
       givenAt: SENT_ON,
       drawing: { templateKey: 'mint-breeze' },
+    });
+  });
+
+  it('draws each answer to a request the Member sent on the card it was sent back on', () => {
+    const answerLook = {
+      textStyle: {
+        font: 'signature',
+        sizeStep: 2,
+        align: 'left',
+        ink: 'navy',
+      },
+      stickers: [],
+    } satisfies AnswerLookOnTheWire;
+    const request: Extract<PersonalItemOnTheWire, { kind: 'REQUEST' }> = {
+      kind: 'REQUEST',
+      id: '0199a0f0-0000-7000-8000-0000000000r1',
+      message: 'How did the demo land?',
+      tags: NO_TAGS,
+      visibility: 'ONLY_ME',
+      requester: ANN,
+      selectedPeople: [],
+      postcard: A_LOOK,
+      createdAt: SENT_ON,
+      latestActivityAt: '2026-11-01T03:00:00.000Z',
+      asked: [
+        {
+          person: BEN,
+          status: 'ANSWERED',
+          answer: {
+            id: '0199a0f0-0000-7000-8000-0000000000a1',
+            message: 'Well paced.',
+            tags: NO_TAGS,
+            postcard: answerLook,
+            answeredAt: '2026-11-01T03:00:00.000Z',
+          },
+        },
+      ],
+    };
+
+    const item = toPersonalItem(request);
+
+    expect(item).toMatchObject({
+      kind: 'REQUEST',
+      sentAt: SENT_ON,
+      card: {
+        kind: 'asked',
+        ask: {
+          message: 'How did the demo land?',
+          requester: { name: 'Ann Lee' },
+        },
+      },
+      asked: [
+        {
+          status: 'ANSWERED',
+          answer: {
+            card: {
+              kind: 'ask',
+              ask: { templateKey: A_LOOK.templateKey },
+              answers: [
+                {
+                  giver: { name: 'Ben Carter' },
+                  message: 'Well paced.',
+                  textStyle: answerLook.textStyle,
+                },
+              ],
+            },
+          },
+        },
+      ],
     });
   });
 });

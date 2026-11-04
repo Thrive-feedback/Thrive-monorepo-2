@@ -5,15 +5,25 @@ import type { PersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/perso
 import { toPersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.util';
 import { PERSONAL_ITEMS_PAGE_SIZE } from '@/app/(signed-in)/(brand-new)/_lib/read-first-page.service';
 import { apiClient } from '@/lib/api-client.service';
+import type { BrandNewReceivedShow } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
+/** What each choice in the address asks the API for. */
+const SHOWS = {
+  all: 'ALL',
+  requests: 'REQUESTS',
+  offered: 'OFFERED',
+  kudos: 'KUDOS',
+} as const satisfies Record<BrandNewReceivedShow, string>;
+
 /**
- * One page of what was written to the signed-in person, newest first. Whose it is is the API's to
+ * One page of what came back to the signed-in person, newest first, narrowed to one kind or not. Whose it is is the API's to
  * decide from the session, so it is not a parameter here, and cannot be. Nothing is cached: a new
  * piece arrives the moment somebody writes one, and one person's must never be served to another.
  */
 export async function readReceivedItems(
   membership: CurrentMembership,
+  show: BrandNewReceivedShow,
   cursor?: string,
 ): Promise<PersonalItemsPage> {
   const page = unwrap(
@@ -21,7 +31,7 @@ export async function readReceivedItems(
       params: {
         path: { workspaceId: membership.workspace.id },
         header: { cookie: (await headers()).get('cookie') ?? undefined },
-        query: { cursor, limit: PERSONAL_ITEMS_PAGE_SIZE },
+        query: { show: SHOWS[show], cursor, limit: PERSONAL_ITEMS_PAGE_SIZE },
       },
       cache: 'no-store',
     }),
