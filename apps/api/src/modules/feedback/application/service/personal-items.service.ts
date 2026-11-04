@@ -4,34 +4,45 @@ import {
   FeedbackRequestQuery,
   type ReceivedFeedbackPageRow,
   type ReceivedFeedbackRow,
+  type SentRequestItemPageRow,
+  type SentRequestItemRow,
 } from '../query-port/feedback-request.query-port';
 import { type KudosPageRow, KudosQuery } from '../query-port/kudos.query-port';
 import type { KudosFeedItemView } from '../types/feed-items.types';
 import type { People } from '../types/feedback-request.types';
 import {
-  type CursorPageRequest,
   type FeedPageRequest,
   type FeedPosition,
   newestFirst,
 } from '../types/kudos.types';
-import type {
-  PersonalFeedbackView,
-  PersonalItemsView,
+import {
+  type PersonalFeedbackView,
+  type PersonalItemsPage,
+  type PersonalItemView,
+  positionOf,
+  type ReceivedItemView,
+  type SentRequestItemView,
 } from '../types/personal-item.types';
 import { PeopleService } from './people.service';
 
 export interface PersonalItemsRead {
   readonly workspaceId: string;
-  readonly page: CursorPageRequest;
-  /** One page of this list's Feedback, past a place in it. */
-  readonly feedback: (
+  /** Where the last page ended, or `null` for the first page. */
+  readonly after: FeedPosition | null;
+  readonly limit: number;
+  /** One page of this list's Feedback, past a place in it, or nothing when it holds none. */
+  readonly feedback?: (
     page: FeedPageRequest,
   ) => Promise<ReceivedFeedbackPageRow>;
   /** One page of this list's Kudos, past the same place. */
-  readonly kudos: (page: FeedPageRequest) => Promise<KudosPageRow>;
+  readonly kudos?: (page: FeedPageRequest) => Promise<KudosPageRow>;
+  /** One page of the requests this list's Member sent, past the same place. */
+  readonly requests?: (
+    page: FeedPageRequest,
+  ) => Promise<SentRequestItemPageRow>;
 }
 
-const NOTHING_MORE: PersonalItemsView = { items: [], nextAfterId: null };
+const NONE = { items: [], hasMore: false } as const;
 
 function everyoneIn(row: ReceivedFeedbackRow): readonly string[] {
   return [
@@ -81,10 +92,39 @@ function toFeedbackView(
   };
 }
 
+function toSentRequestView(
+  row: SentRequestItemRow,
+  people: People,
+): SentRequestItemView {
+  return {
+    kind: 'REQUEST',
+    id: row.id,
+    message: row.message,
+    tags: row.tags,
+    visibility: row.visibility,
+    requester: people.personOf(row.requesterAccountId),
+    selectedPeople: row.selectedAccountIds.map(people.personOf),
+    postcard: row.postcard,
+    createdAt: row.createdAt,
+    latestActivityAt: row.latestActivityAt,
+    asked: row.asks.map((ask) => ({
+      person: people.personOf(ask.giverAccountId),
+      status: AskStatus.of(ask.status).toString(),
+      answer: ask.answer,
+    })),
+  };
+}
+
+/** Newest first by where each item sits, which for a request is its latest activity. */
+function byPosition(a: ReceivedItemView, b: ReceivedItemView) {
+  return newestFirst(positionOf(a), positionOf(b));
+}
+
 /**
- * One Member's own list, Received or Given: Feedback and Kudos in one order, newest first, each with
- * the card it was written on, under one cursor (ADR 0077, ADR 0080, ADR 0081). Which rows are in it
- * is the caller's to read, so this holds nothing about whose list it is.
+ * One Member's own list, Received or Given: Feedback, Kudos and, in Received, the requests the Member
+ * sent, in one order, newest first, each with the card it was written on, under one cursor (ADR
+ * 0077, ADR 0080, ADR 0081, ADR 0082). Which rows are in it is the caller's to read, so this holds
+ * nothing about whose list it is.
  */
 @Injectable()
 export class PersonalItemsService {
@@ -94,21 +134,30 @@ export class PersonalItemsService {
     private readonly peopleService: PeopleService,
   ) {}
 
-  async read(input: PersonalItemsRead): Promise<PersonalItemsView> {
-    const after = await this.positionAfter(input);
-    if (after === undefined) {
-      return NOTHING_MORE;
-    }
-    const page: FeedPageRequest = { after, limit: input.page.limit };
-    const [feedback, kudos] = await Promise.all([
-      input.feedback(page),
-      input.kudos(page),
+  /** A page of a list that holds no requests, which is every list but Received. */
+  read(
+    input: Omit<PersonalItemsRead, 'requests'>,
+  ): Promise<PersonalItemsPage<PersonalItemView>>;
+  read(input: PersonalItemsRead): Promise<PersonalItemsPage<ReceivedItemView>>;
+  async read(
+    input: PersonalItemsRead,
+  ): Promise<PersonalItemsPage<ReceivedItemView>> {
+    const page: FeedPageRequest = { after: input.after, limit: input.limit };
+    const [feedback, kudos, requests] = await Promise.all([
+      input.feedback?.(page) ?? NONE,
+      input.kudos?.(page) ?? NONE,
+      input.requests?.(page) ?? NONE,
     ]);
     const people = await this.peopleService.peopleIn(input.workspaceId, [
       ...feedback.items.flatMap(everyoneIn),
       ...kudos.items.flatMap((each) => [
         each.giverAccountId,
         ...each.recipientAccountIds,
+      ]),
+      ...requests.items.flatMap((each) => [
+        each.requesterAccountId,
+        ...each.selectedAccountIds,
+        ...each.asks.map((ask) => ask.giverAccountId),
       ]),
     ]);
 
@@ -127,32 +176,43 @@ export class PersonalItemsService {
     const feedbackViews = feedback.items.map((row) =>
       toFeedbackView(row, people),
     );
+    const requestViews = requests.items.map((row) =>
+      toSentRequestView(row, people),
+    );
 
-    // Each read holds a page, so this holds one more than a page whenever more remain of either.
-    const merged = [...feedbackViews, ...kudosViews].sort(newestFirst);
-    const items = merged.slice(0, input.page.limit);
+    // Each read holds a page, so this holds one more than a page whenever more remain of any.
+    const merged = [...feedbackViews, ...kudosViews, ...requestViews].sort(
+      byPosition,
+    );
+    const items = merged.slice(0, input.limit);
+    const last = items.at(-1);
     const hasMore =
-      merged.length > items.length || feedback.hasMore || kudos.hasMore;
+      merged.length > items.length ||
+      feedback.hasMore ||
+      kudos.hasMore ||
+      requests.hasMore;
     return {
       items,
-      nextAfterId: hasMore ? (items.at(-1)?.id ?? null) : null,
+      next: hasMore && last ? positionOf(last) : null,
     };
   }
 
   /**
-   * Where the cursor's row sits, which can be in either table. `null` is the first page, and
-   * `undefined` a cursor naming a row that is gone, which ends the list (ADR 0059).
+   * Where the row a cursor names sits, which can be in either table, for a list whose cursor is an
+   * id (ADR 0077). `null` is the first page, and `undefined` a cursor naming a row that is gone,
+   * which ends the list (ADR 0059). Received carries the position itself instead, because a request
+   * moves (ADR 0082).
    */
-  private async positionAfter({
-    workspaceId,
-    page,
-  }: PersonalItemsRead): Promise<FeedPosition | null | undefined> {
-    if (page.afterId === null) {
+  async positionAfter(
+    workspaceId: string,
+    afterId: string | null,
+  ): Promise<FeedPosition | null | undefined> {
+    if (afterId === null) {
       return null;
     }
     const [feedback, kudos] = await Promise.all([
-      this.feedbackRequestQuery.feedbackPositionOf(workspaceId, page.afterId),
-      this.kudosQuery.positionOf(workspaceId, page.afterId),
+      this.feedbackRequestQuery.feedbackPositionOf(workspaceId, afterId),
+      this.kudosQuery.positionOf(workspaceId, afterId),
     ]);
     return feedback ?? kudos ?? undefined;
   }

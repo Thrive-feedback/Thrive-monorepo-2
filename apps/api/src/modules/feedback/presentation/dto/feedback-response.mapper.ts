@@ -6,7 +6,10 @@ import type {
   TagsView,
 } from '../../application/types/feedback-request.types';
 import type { KudosView } from '../../application/types/kudos.types';
-import type { PersonalItemView } from '../../application/types/personal-item.types';
+import type {
+  PersonalItemView,
+  ReceivedItemView,
+} from '../../application/types/personal-item.types';
 import type { KudosCardSnapshot } from '../../domain/value-object/kudos-card.vo';
 import type {
   AnswerPostcardSnapshot,
@@ -166,6 +169,36 @@ export function toPersonalItemResponse(item: PersonalItemView) {
       postcard: toPostcardResponse(item.request.postcard),
       answerPostcard: toAnswerPostcardResponse(item.request.answerPostcard),
     },
+  };
+}
+
+/** One thing in the caller's Received on the wire, a request among them. */
+export function toReceivedItemResponse(item: ReceivedItemView) {
+  if (item.kind !== 'REQUEST') {
+    return toPersonalItemResponse(item);
+  }
+  return {
+    kind: item.kind,
+    id: item.id,
+    message: item.message,
+    tags: toTagsResponse(item.tags),
+    visibility: item.visibility,
+    requester: toPersonResponse(item.requester),
+    selectedPeople: item.selectedPeople.map(toPersonResponse),
+    postcard: toPostcardResponse(item.postcard),
+    createdAt: item.createdAt.toISOString(),
+    latestActivityAt: item.latestActivityAt.toISOString(),
+    asked: item.asked.map((ask) => ({
+      person: toPersonResponse(ask.person),
+      status: ask.status,
+      answer: ask.answer && {
+        id: ask.answer.id,
+        message: ask.answer.message,
+        tags: toTagsResponse(ask.answer.tags),
+        postcard: toAnswerPostcardResponse(ask.answer.postcard),
+        answeredAt: ask.answer.answeredAt.toISOString(),
+      },
+    })),
   };
 }
 

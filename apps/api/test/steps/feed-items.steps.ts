@@ -8,7 +8,9 @@ const readThroughHome = new WeakMap<ThriveWorld, readonly string[]>();
 interface HomeItem {
   readonly message: string;
   readonly visibility: string;
-  readonly request: {
+  /** Received's own requests carry who they asked themselves, with no request above them. */
+  readonly asked?: readonly HomeAsk[];
+  readonly request?: {
     readonly message: string;
     readonly requester: { readonly accountId: string };
     readonly asked: readonly HomeAsk[];
@@ -36,11 +38,15 @@ function homeItemSaying(world: ThriveWorld, message: string): HomeItem {
   return item;
 }
 
-/** One person among those the first answer on Home says were asked. */
+/**
+ * One person among those the first item says were asked: the request an answer on Home answers, or
+ * a request of the reader's own in Received.
+ */
 function askShownFor(world: ThriveWorld, name: string): HomeAsk {
   const [item] = homeItems(world);
-  assert.ok(item?.request, 'That piece answers no request.');
-  const ask = item.request.asked.find(
+  const asked = item?.asked ?? item?.request?.asked;
+  assert.ok(asked, 'That piece answers no request.');
+  const ask = asked.find(
     (each) => each.person.accountId === world.person(name).accountId,
   );
   assert.ok(ask, `${name} is not named as asked.`);

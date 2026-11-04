@@ -43,6 +43,17 @@ interface ListedItem {
   } | null;
 }
 
+/** A request of the reader's own in Received, with every Ask and what each sent back. */
+interface ListedRequest {
+  readonly asked?: readonly {
+    readonly person: { readonly accountId: string };
+    readonly answer: {
+      readonly message: string;
+      readonly postcard: unknown;
+    } | null;
+  }[];
+}
+
 /** One piece in a list that was just read. */
 function listedItemSaying(world: ThriveWorld, message: string): ListedItem {
   const items: ListedItem[] = world.lastResponse?.body?.items ?? [];
@@ -144,6 +155,23 @@ Then(
     const { request } = listedItemSaying(this, message);
     assert.deepEqual(request?.postcard, A_POSTCARD);
     assert.deepEqual(request?.answerPostcard, AN_ANSWERS_LOOK);
+  },
+);
+
+Then(
+  "{person}'s answer {string} is in its own writing",
+  function (this: ThriveWorld, giver: string, message: string) {
+    const items: readonly ListedRequest[] =
+      this.lastResponse?.body?.items ?? [];
+    const answer = items
+      .flatMap((item) => item.asked ?? [])
+      .find(
+        (ask) =>
+          ask.person.accountId === this.person(giver).accountId &&
+          ask.answer?.message === message,
+      )?.answer;
+    assert.ok(answer, `${giver} answered no request in the list "${message}".`);
+    assert.deepEqual(answer.postcard, AN_ANSWERS_LOOK);
   },
 );
 

@@ -1,6 +1,6 @@
 import { type Actor, CurrentActor } from '@app/shared/presentation/actor';
 import { COOKIE_HEADER } from '@app/shared/presentation/dto/cookie-header.dto';
-import { toCursor } from '@app/shared/presentation/dto/page.dto';
+import { toPositionCursor } from '@app/shared/presentation/dto/page.dto';
 import {
   Controller,
   Get,
@@ -19,7 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { ListReceivedItemsUseCase } from '../application/use-cases/list-received-items.use-case';
-import { toPersonalItemResponse } from './dto/feedback-response.mapper';
+import { toReceivedItemResponse } from './dto/feedback-response.mapper';
 import {
   ListReceivedItemsQueryDto,
   ListReceivedItemsResponseDto,
@@ -28,7 +28,8 @@ import { WorkspacePathParamsDto } from './dto/path-params.dto';
 import { WorkspaceMemberGuard } from './workspace-member.guard';
 
 /**
- * What was written to the signed-in Member, as one list paged by one cursor (ADR 0059, ADR 0080).
+ * What came back to the signed-in Member, as one list paged by one cursor (ADR 0059, ADR 0080, ADR
+ * 0082): Feedback given to them, the Kudos that name them, and the requests they sent.
  *
  * Who the caller is comes from the session, so there is no parameter on this route that could name
  * somebody else and read what was written to them.
@@ -43,7 +44,8 @@ export class ReceivedItemsController {
 
   @Get()
   @ApiOperation({
-    summary: 'List the Feedback and Kudos written to the caller',
+    summary:
+      'List the Feedback and Kudos written to the caller, and the requests they sent',
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.OK, type: ListReceivedItemsResponseDto })
@@ -58,12 +60,14 @@ export class ReceivedItemsController {
     const received = await this.listReceivedItemsUseCase.execute({
       workspaceId: params.workspaceId,
       receiverAccountId: actor.accountId,
-      page: { afterId: query.cursor, limit: query.limit },
+      show: query.show,
+      after: query.cursor,
+      limit: query.limit,
     });
     return {
       readerAccountId: actor.accountId,
-      items: received.items.map(toPersonalItemResponse),
-      nextCursor: toCursor(received.nextAfterId),
+      items: received.items.map(toReceivedItemResponse),
+      nextCursor: toPositionCursor(received.next),
     };
   }
 }

@@ -2646,6 +2646,21 @@
             }
           },
           {
+            "name": "show",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ALL",
+              "type": "string",
+              "enum": [
+                "ALL",
+                "REQUESTS",
+                "OFFERED",
+                "KUDOS"
+              ]
+            }
+          },
+          {
             "name": "cursor",
             "required": false,
             "in": "query",
@@ -2695,7 +2710,7 @@
             "description": "WORKSPACE_NOT_FOUND"
           }
         },
-        "summary": "List the Feedback and Kudos written to the caller",
+        "summary": "List the Feedback and Kudos written to the caller, and the requests they sent",
         "tags": [
           "feedback"
         ]
@@ -8931,6 +8946,504 @@
                     "card",
                     "createdAt",
                     "kind"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "REQUEST"
+                      ]
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "tags": {
+                      "type": "object",
+                      "properties": {
+                        "workspaceGoals": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "mentions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "slug": {
+                                "type": "string"
+                              },
+                              "displayName": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "slug",
+                              "displayName"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "workspaceGoals",
+                        "mentions"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "visibility": {
+                      "type": "string",
+                      "enum": [
+                        "ONLY_ME",
+                        "SELECTED_PEOPLE",
+                        "EVERYONE"
+                      ]
+                    },
+                    "requester": {
+                      "type": "object",
+                      "properties": {
+                        "accountId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "photoUrl": {
+                          "type": "string",
+                          "format": "uri",
+                          "nullable": true
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ACTIVE",
+                            "DEACTIVATED"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "accountId",
+                        "name",
+                        "photoUrl",
+                        "status"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "selectedPeople": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "accountId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "name": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "photoUrl": {
+                            "type": "string",
+                            "format": "uri",
+                            "nullable": true
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "ACTIVE",
+                              "DEACTIVATED"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "accountId",
+                          "name",
+                          "photoUrl",
+                          "status"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "postcard": {
+                      "type": "object",
+                      "properties": {
+                        "templateKey": {
+                          "type": "string"
+                        },
+                        "tone": {
+                          "type": "string",
+                          "enum": [
+                            "cream",
+                            "sage",
+                            "blush"
+                          ]
+                        },
+                        "textStyle": {
+                          "type": "object",
+                          "properties": {
+                            "font": {
+                              "type": "string",
+                              "enum": [
+                                "modern",
+                                "classic",
+                                "signature"
+                              ]
+                            },
+                            "sizeStep": {
+                              "type": "number"
+                            },
+                            "align": {
+                              "type": "string",
+                              "enum": [
+                                "left",
+                                "center",
+                                "right"
+                              ]
+                            },
+                            "ink": {
+                              "type": "string",
+                              "enum": [
+                                "ink",
+                                "navy",
+                                "forest",
+                                "plum",
+                                "brick"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "font",
+                            "sizeStep",
+                            "align",
+                            "ink"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "stickers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "stickerKey": {
+                                "type": "string"
+                              },
+                              "side": {
+                                "type": "string",
+                                "enum": [
+                                  "front",
+                                  "back"
+                                ]
+                              },
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "scale": {
+                                "type": "number"
+                              },
+                              "rotation": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "stickerKey",
+                              "side",
+                              "x",
+                              "y",
+                              "scale",
+                              "rotation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "stampKey": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "templateKey",
+                        "tone",
+                        "textStyle",
+                        "stickers",
+                        "stampKey"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "latestActivityAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "asked": {
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "person": {
+                            "type": "object",
+                            "properties": {
+                              "accountId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "name": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "photoUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "nullable": true
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "ACTIVE",
+                                  "DEACTIVATED"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "accountId",
+                              "name",
+                              "photoUrl",
+                              "status"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "PENDING",
+                              "ANSWERED"
+                            ]
+                          },
+                          "answer": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "string"
+                              },
+                              "tags": {
+                                "type": "object",
+                                "properties": {
+                                  "workspaceGoals": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "name"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "mentions": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "slug": {
+                                          "type": "string"
+                                        },
+                                        "displayName": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "slug",
+                                        "displayName"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "workspaceGoals",
+                                  "mentions"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "answeredAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              },
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "postcard": {
+                                "type": "object",
+                                "properties": {
+                                  "textStyle": {
+                                    "type": "object",
+                                    "properties": {
+                                      "font": {
+                                        "type": "string",
+                                        "enum": [
+                                          "modern",
+                                          "classic",
+                                          "signature"
+                                        ]
+                                      },
+                                      "sizeStep": {
+                                        "type": "number"
+                                      },
+                                      "align": {
+                                        "type": "string",
+                                        "enum": [
+                                          "left",
+                                          "center",
+                                          "right"
+                                        ]
+                                      },
+                                      "ink": {
+                                        "type": "string",
+                                        "enum": [
+                                          "ink",
+                                          "navy",
+                                          "forest",
+                                          "plum",
+                                          "brick"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "font",
+                                      "sizeStep",
+                                      "align",
+                                      "ink"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "stickers": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "stickerKey": {
+                                          "type": "string"
+                                        },
+                                        "side": {
+                                          "type": "string",
+                                          "enum": [
+                                            "front",
+                                            "back"
+                                          ]
+                                        },
+                                        "x": {
+                                          "type": "number"
+                                        },
+                                        "y": {
+                                          "type": "number"
+                                        },
+                                        "scale": {
+                                          "type": "number"
+                                        },
+                                        "rotation": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": [
+                                        "stickerKey",
+                                        "side",
+                                        "x",
+                                        "y",
+                                        "scale",
+                                        "rotation"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "textStyle",
+                                  "stickers"
+                                ],
+                                "additionalProperties": false,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "message",
+                              "tags",
+                              "answeredAt",
+                              "id",
+                              "postcard"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "person",
+                          "status",
+                          "answer"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "message",
+                    "tags",
+                    "visibility",
+                    "requester",
+                    "selectedPeople",
+                    "postcard",
+                    "createdAt",
+                    "latestActivityAt",
+                    "asked"
                   ],
                   "additionalProperties": false
                 }

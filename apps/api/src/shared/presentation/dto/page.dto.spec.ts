@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 import { z } from 'zod';
-import { cursorQueryShape, toCursor } from './page.dto';
+import {
+  cursorQueryShape,
+  positionCursorQueryShape,
+  toCursor,
+  toPositionCursor,
+} from './page.dto';
 
 const query = z.object(cursorQueryShape);
+const positionQuery = z.object(positionCursorQueryShape);
 const AN_ID = '0199a0f0-0000-7000-8000-0000000000a1';
 
 describe('cursorQueryShape', () => {
@@ -26,5 +32,29 @@ describe('cursorQueryShape', () => {
 describe('toCursor', () => {
   it('has nothing to name past the last page', () => {
     expect(toCursor(null)).toBeNull();
+  });
+});
+
+describe('positionCursorQueryShape', () => {
+  const place = { createdAt: new Date('2026-11-04T09:30:00.123Z'), id: AN_ID };
+
+  it('reads no cursor as the first page, at the usual size', () => {
+    expect(positionQuery.parse({})).toEqual({ cursor: null, limit: 20 });
+  });
+
+  it('reads back the place it wrote, to the millisecond', () => {
+    expect(
+      positionQuery.parse({ cursor: toPositionCursor(place) }).cursor,
+    ).toEqual(place);
+  });
+
+  it('refuses a cursor that names only a row, as other lists write them', () => {
+    expect(positionQuery.safeParse({ cursor: toCursor(AN_ID) }).success).toBe(
+      false,
+    );
+  });
+
+  it('has nothing to name past the last page', () => {
+    expect(toPositionCursor(null)).toBeNull();
   });
 });

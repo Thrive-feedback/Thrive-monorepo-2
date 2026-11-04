@@ -65,10 +65,18 @@ export class ListGivenItemsUseCase {
     private readonly personalItemsService: PersonalItemsService,
   ) {}
 
-  execute(input: ListGivenItemsInput): Promise<PersonalItemsView> {
-    return this.personalItemsService.read({
+  async execute(input: ListGivenItemsInput): Promise<PersonalItemsView> {
+    const after = await this.personalItemsService.positionAfter(
+      input.workspaceId,
+      input.page.afterId,
+    );
+    if (after === undefined) {
+      return { items: [], nextAfterId: null };
+    }
+    const given = await this.personalItemsService.read({
       workspaceId: input.workspaceId,
-      page: input.page,
+      after,
+      limit: input.page.limit,
       feedback: async (page) => {
         const given = await this.feedbackRequestQuery.givenItemsBy(
           input.workspaceId,
@@ -85,5 +93,6 @@ export class ListGivenItemsUseCase {
       kudos: (page) =>
         this.kudosQuery.givenBy(input.workspaceId, input.giverAccountId, page),
     });
+    return { items: given.items, nextAfterId: given.next?.id ?? null };
   }
 }
