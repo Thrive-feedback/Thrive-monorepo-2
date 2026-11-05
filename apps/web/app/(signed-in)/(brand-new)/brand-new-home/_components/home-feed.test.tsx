@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
+import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
 import { HomeFeed } from './home-feed';
 
 const readHomeFeed = vi.fn();
@@ -25,6 +27,15 @@ const piece = (id: string, giver: string, message: string) => ({
   givenAt: '2026-10-31T03:00:00.000Z',
   visibility: 'EVERYONE',
   request: null,
+  card: {
+    ...PLAIN_POSTCARD,
+    kind: 'give',
+    giver: { name: giver, photoUrl: null },
+    receivers: [{ name: 'Ben', photoUrl: null }],
+    message,
+    messageTags: NO_TEXT_TAGS,
+    sentOn: '2026-10-31T03:00:00.000Z',
+  },
 });
 
 const pageWith = (...items: ReturnType<typeof piece>[]) => ({
@@ -62,7 +73,7 @@ describe('HomeFeed', () => {
     async (show, title) => {
       render(await HomeFeed({ membership: MEMBERSHIP, show }));
 
-      expect(screen.getByText(title)).toBeInTheDocument();
+      expect(screen.getByText(title, PAST_THE_DRAWING)).toBeInTheDocument();
     },
   );
 
@@ -106,7 +117,11 @@ describe('HomeFeed', () => {
     );
     rerender(await HomeFeed({ membership: MEMBERSHIP, show: 'all' }));
 
-    expect(screen.getByText('Their first card')).toBeInTheDocument();
-    expect(screen.queryByText('Somebody else posted')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Their first card', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Somebody else posted', PAST_THE_DRAWING),
+    ).not.toBeInTheDocument();
   });
 });

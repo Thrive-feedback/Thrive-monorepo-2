@@ -47,6 +47,7 @@ const person = (accountId: string, name: string) => ({
 });
 
 const AN_ANSWER = {
+  kind: 'FEEDBACK',
   id: '0199a0f0-0000-7000-8000-0000000000d1',
   origin: 'REQUESTED',
   feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000f1',
@@ -56,10 +57,13 @@ const AN_ANSWER = {
   tags: { workspaceGoals: [], mentions: [] },
   createdAt: '2026-10-31T03:00:00.000Z',
   visibility: 'SELECTED_PEOPLE',
+  postcard: null,
   request: {
     message: 'How clear was the plan?',
     tags: { workspaceGoals: [], mentions: [] },
     requester: person(CARA, 'Cara Diaz'),
+    postcard: null,
+    answerPostcard: null,
     asked: [
       {
         person: person(BEN, 'Ben Carter'),
@@ -122,6 +126,7 @@ describe('readNextHomeFeedPage', () => {
     expect(page?.readerAccountId).toBe(ANN);
     expect(page?.nextCursor).toBe('cursor-2');
     expect(page?.items[0]).toEqual({
+      kind: 'FEEDBACK',
       id: AN_ANSWER.id,
       origin: 'REQUESTED',
       giver: {
@@ -177,6 +182,8 @@ describe('readNextHomeFeedPage', () => {
           },
         ],
       },
+      // An answer is drawn on the halved card its request was.
+      card: expect.objectContaining({ kind: 'ask' }),
     });
   });
 

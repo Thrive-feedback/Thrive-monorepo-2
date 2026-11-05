@@ -1,7 +1,10 @@
-import type { AskedPostcard } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
+import { cva } from 'class-variance-authority';
 import styles from '@/components/organisms/postcard-dialog/postcard.module.css';
 import { PostcardPostmarkStill } from '@/components/organisms/postcard-dialog/postcard-postmark-still';
-import type { ReadPostcard } from '@/components/organisms/postcard-dialog/postcard-read.type';
+import type {
+  AskedPostcard,
+  ReadPostcard,
+} from '@/components/organisms/postcard-dialog/postcard-read.type';
 import {
   PostcardAnsweredBack,
   PostcardGivenBack,
@@ -73,9 +76,27 @@ function WritingLines() {
   );
 }
 
+const stage = cva('', {
+  variants: {
+    size: {
+      /** The width of whatever holds it, as in a box of a grid. */
+      fill: 'w-full',
+      /** In the corner of a card, beside who wrote it. */
+      md: 'w-20 shrink-0',
+      /** Beside what a card is about, where the postcard is what it is for. */
+      lg: 'w-28 shrink-0 lg:w-36',
+    },
+  },
+});
+
 export type PostcardMiniatureProps = {
   /** A sent card, or a request nobody has answered yet. */
   card: ReadPostcard | AskedPostcard;
+  /** How wide it is drawn. The whole card scales to it. */
+  size?: 'fill' | 'md' | 'lg';
+  /** What it opens is on its way: it fades and pulses, so a press does not look lost. */
+  isPending?: boolean;
+  className?: string;
 };
 
 /**
@@ -83,14 +104,27 @@ export type PostcardMiniatureProps = {
  * are the real ones where the card is large enough to keep its layout; the back lays itself out for
  * a phone below `md`, where the card is too small for them anyway, so lines stand in for them there.
  */
-export function PostcardMiniature({ card }: PostcardMiniatureProps) {
+export function PostcardMiniature({
+  card,
+  size = 'fill',
+  isPending = false,
+  className,
+}: PostcardMiniatureProps) {
   const { look, sentOn, stickers, back } = showing(card);
 
   return (
     <div
       aria-hidden="true"
       inert
-      className={cn('w-full', miniatureStyles.stage)}
+      data-pending={isPending || undefined}
+      className={cn(
+        stage({ size }),
+        miniatureStyles.stage,
+        // A pulse only shows from full opacity. With less motion wanted, a still fade says it.
+        isPending &&
+          'opacity-60 motion-safe:animate-pulse motion-safe:opacity-100',
+        className,
+      )}
     >
       <div className={miniatureStyles.sheet}>
         <div

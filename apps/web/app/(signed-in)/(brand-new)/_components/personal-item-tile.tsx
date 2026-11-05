@@ -32,13 +32,13 @@ import { KudosCardReadDialog } from '@/components/organisms/kudos-dialog/kudos-c
 import { KudosCardReadOnly } from '@/components/organisms/kudos-dialog/kudos-card-read-only';
 import { kudosTiltOf } from '@/components/organisms/kudos-dialog/read-kudos.util';
 import { PersonName } from '@/components/organisms/person-name';
+import { PostcardMiniature } from '@/components/organisms/postcard-miniature/postcard-miniature';
 import { cn } from '@/lib/cn.util';
 import type { HomeFeedPerson } from '@/lib/feedback/home-feed-item.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
 import { timeAgo } from '@/lib/time-ago.util';
 import styles from './personal-item-tile.module.css';
 import { PersonalItemTilePending } from './personal-item-tile-pending';
-import { PostcardMiniature } from './postcard-miniature';
 
 type TileCornerProps = {
   item: PersonalItem;

@@ -1,11 +1,13 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
 import type {
   HomeFeedItem,
   HomeFeedPage,
 } from '@/lib/feedback/home-feed-item.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
+import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
 import { HomeFeedList } from './home-feed-list';
 
 const readNextHomeFeedPage = vi.fn();
@@ -35,6 +37,15 @@ function piece(id: string, message: string): HomeFeedItem {
     givenAt: '2026-10-31T03:00:00.000Z',
     visibility: 'SELECTED_PEOPLE',
     request: null,
+    card: {
+      ...PLAIN_POSTCARD,
+      kind: 'give',
+      giver: person('cara', 'Cara Diaz'),
+      receivers: [person('ben', 'Ben Carter')],
+      message,
+      messageTags: NO_TEXT_TAGS,
+      sentOn: '2026-10-31T03:00:00.000Z',
+    },
   };
 }
 
@@ -91,7 +102,7 @@ describe('HomeFeedList', () => {
       />,
     );
 
-    expect(screen.getByText('First.')).toBeInTheDocument();
+    expect(screen.getByText('First.', PAST_THE_DRAWING)).toBeInTheDocument();
   });
 
   it('draws one card for each piece, in the order given, each by how it came about', () => {
@@ -222,7 +233,7 @@ describe('HomeFeedList', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
-    expect(screen.getByText('Second.')).toBeInTheDocument();
+    expect(screen.getByText('Second.', PAST_THE_DRAWING)).toBeInTheDocument();
     expect(
       screen.queryByText("We couldn't load the Feed."),
     ).not.toBeInTheDocument();
@@ -247,8 +258,10 @@ describe('HomeFeedList', () => {
       />,
     );
 
-    expect(screen.getByText('Second.')).toBeInTheDocument();
-    expect(screen.queryByText('Just written.')).not.toBeInTheDocument();
+    expect(screen.getByText('Second.', PAST_THE_DRAWING)).toBeInTheDocument();
+    expect(
+      screen.queryByText('Just written.', PAST_THE_DRAWING),
+    ).not.toBeInTheDocument();
   });
 
   it('shows a Kudos among the Feedback, each on its own card', () => {
@@ -289,7 +302,9 @@ describe('HomeFeedList', () => {
       />,
     );
 
-    expect(screen.getByText('Great launch, everyone.')).toBeVisible();
+    expect(
+      screen.getByText('Great launch, everyone.', PAST_THE_DRAWING),
+    ).toBeVisible();
     expect(screen.getByRole('button', { name: 'View kudos' })).toBeVisible();
     expect(screen.getAllByRole('article')).toHaveLength(2);
   });

@@ -1,9 +1,11 @@
 import 'server-only';
 import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
+import { toFeedbackPostcard } from '@/app/(signed-in)/(brand-new)/_lib/read-postcard.util';
 import { toReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.util';
 import { apiClient } from '@/lib/api-client.service';
 import type {
+  HomeFeedEntry,
   HomeFeedPage,
   HomeFeedShow,
 } from '@/lib/feedback/home-feed-item.type';
@@ -43,11 +45,14 @@ export async function readHomeFeed(
   );
   return {
     readerAccountId: page.readerAccountId,
-    items: page.items.map((item) =>
-      item.kind === 'KUDOS'
-        ? { kind: item.kind, ...toReadKudos(item) }
-        : { kind: item.kind, ...toHomeFeedItem(item) },
-    ),
+    // Feedback on Home is for at least one person, so each has a postcard: nothing is left out.
+    items: page.items.flatMap((item): HomeFeedEntry[] => {
+      if (item.kind === 'KUDOS') {
+        return [{ kind: item.kind, ...toReadKudos(item) }];
+      }
+      const card = toFeedbackPostcard(item);
+      return card ? [{ kind: item.kind, ...toHomeFeedItem(item), card }] : [];
+    }),
     nextCursor: page.nextCursor,
   };
 }

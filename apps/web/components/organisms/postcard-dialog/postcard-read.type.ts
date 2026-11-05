@@ -40,3 +40,12 @@ export type AnsweredPostcard = {
 
 /** A postcard to read: one that was sent, with nothing left to write on it. */
 export type ReadPostcard = GivenPostcard | AnsweredPostcard;
+
+/** A request nobody has answered yet, as its card: the Ask on the left, nothing on the right. */
+export type AskedPostcard = {
+  readonly kind: 'asked';
+  readonly ask: PostcardAsk;
+  readonly messageTags: TextTags;
+  /** When it was sent, as an ISO date. */
+  readonly sentOn: string;
+};

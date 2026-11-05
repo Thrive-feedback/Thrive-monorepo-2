@@ -9,40 +9,14 @@ import type {
 import { toPostcardWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
 import {
   toAskOnPostcard,
-  toGivenPostcard,
+  toFeedbackPostcard,
 } from '@/app/(signed-in)/(brand-new)/_lib/read-postcard.util';
 import { toReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.util';
-import type { ReadPostcard } from '@/components/organisms/postcard-dialog/postcard-read.type';
 import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import {
   toHomeFeedItem,
   toHomeFeedPerson,
 } from '@/lib/feedback/home-feed-item.util';
-
-type FeedbackOnTheWire = Extract<PersonalItemOnTheWire, { kind: 'FEEDBACK' }>;
-
-/** Feedback given unasked is a whole card; an answer is half of the card its request was. */
-function toPostcard(item: FeedbackOnTheWire): ReadPostcard | null {
-  const { request } = item;
-  if (!request) {
-    return toGivenPostcard(item);
-  }
-  return {
-    kind: 'ask',
-    ask: toAskOnPostcard(request),
-    messageTags: request.tags,
-    answers: [
-      {
-        giver: toPostcardWriter(item.giver),
-        message: item.message,
-        messageTags: item.tags,
-        stickers: request.answerPostcard?.stickers ?? [],
-        textStyle: request.answerPostcard?.textStyle ?? DEFAULT_TEXT_STYLE,
-        sentOn: item.createdAt,
-      },
-    ],
-  };
-}
 
 /** A request the Member sent, with each answer on the postcard its Giver sent back. */
 function toPersonalRequest(item: PersonalRequestOnTheWire): PersonalRequest {
@@ -53,6 +27,7 @@ function toPersonalRequest(item: PersonalRequestOnTheWire): PersonalRequest {
     message: item.message,
     messageTags: item.tags,
     visibility: item.visibility,
+    requester: toHomeFeedPerson(item.requester),
     sentAt: item.createdAt,
     card: {
       kind: 'asked',
@@ -98,7 +73,7 @@ export function toPersonalItem(
   if (item.kind === 'KUDOS') {
     return { kind: item.kind, ...toReadKudos(item) };
   }
-  const card = toPostcard(item);
+  const card = toFeedbackPostcard(item);
   const feedback: PersonalItem | null = card && {
     kind: item.kind,
     ...toHomeFeedItem(item),

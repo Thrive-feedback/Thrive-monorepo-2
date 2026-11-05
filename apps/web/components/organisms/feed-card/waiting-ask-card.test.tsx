@@ -2,6 +2,9 @@ import { render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
+import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
+import type { AskedPostcard } from '../postcard-dialog/postcard-read.type';
+import { DEFAULT_TEXT_STYLE } from '../postcard-dialog/postcard-style.constant';
 import { FEED_CARD_NOTE_LIES, noteLieOf } from './feed-card-note';
 import { WaitingAskCard } from './waiting-ask-card';
 
@@ -16,6 +19,21 @@ const ASK: MyAsk = {
   status: 'PENDING',
 };
 
+const CARD: AskedPostcard = {
+  kind: 'asked',
+  ask: {
+    requester: { name: 'Ann Lee', photoUrl: null, inactive: false },
+    templateKey: 'system/postcard_template_1',
+    tone: 'cream',
+    textStyle: DEFAULT_TEXT_STYLE,
+    stickers: [],
+    stampKey: null,
+    message: 'How clear was the migration plan?',
+  },
+  messageTags: NO_TEXT_TAGS,
+  sentOn: '2026-10-31T03:00:00.000Z',
+};
+
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-11-02T03:00:00.000Z'));
@@ -27,7 +45,11 @@ afterEach(() => {
 
 function draw(ask: Partial<MyAsk> = {}) {
   render(
-    <WaitingAskCard ask={{ ...ASK, ...ask }} target={{ href: '/opened' }} />,
+    <WaitingAskCard
+      ask={{ ...ASK, ...ask }}
+      card={CARD}
+      target={{ href: '/opened' }}
+    />,
   );
   return screen.getByRole('article');
 }
@@ -71,8 +93,8 @@ describe('WaitingAskCard', () => {
       }),
     );
 
-    expect(card.getByText('@Ben')).toBeVisible();
-    expect(card.getByText('#Ownership')).toBeVisible();
+    expect(card.getByText('@Ben', PAST_THE_DRAWING)).toBeVisible();
+    expect(card.getByText('#Ownership', PAST_THE_DRAWING)).toBeVisible();
   });
 
   it('still reads for somebody who has not introduced themselves', () => {

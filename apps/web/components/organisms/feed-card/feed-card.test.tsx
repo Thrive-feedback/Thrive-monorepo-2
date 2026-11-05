@@ -8,6 +8,9 @@ import type {
   HomeFeedRequest,
 } from '@/lib/feedback/home-feed-item.type';
 import { NO_TEXT_TAGS, type TextTags } from '@/lib/feedback/text-tags.type';
+import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
+import type { GivenPostcard } from '../postcard-dialog/postcard-read.type';
+import { DEFAULT_TEXT_STYLE } from '../postcard-dialog/postcard-style.constant';
 import { FeedCard } from './feed-card';
 
 const person = (accountId: string, name: string, inactive = false) => ({
@@ -21,6 +24,20 @@ const ANN = person('ann', 'Ann Lee');
 const BEN = person('ben', 'Ben Carter');
 const CARA = person('cara', 'Cara Diaz');
 
+const A_CARD: GivenPostcard = {
+  kind: 'give',
+  giver: CARA,
+  receivers: [BEN],
+  templateKey: 'system/postcard_template_1',
+  tone: 'cream',
+  textStyle: DEFAULT_TEXT_STYLE,
+  stickers: [],
+  stampKey: null,
+  message: 'The second paragraph does the work now.',
+  messageTags: NO_TEXT_TAGS,
+  sentOn: '2026-10-31T03:00:00.000Z',
+};
+
 const OFFERED: HomeFeedItem = {
   id: 'fb-1',
   origin: 'OFFERED',
@@ -31,6 +48,7 @@ const OFFERED: HomeFeedItem = {
   givenAt: '2026-10-31T03:00:00.000Z',
   visibility: 'EVERYONE',
   request: null,
+  card: A_CARD,
 };
 
 const DAO = person('dao', 'Dao Prasert');
@@ -86,33 +104,43 @@ describe('FeedCard', () => {
     renderCard(OFFERED);
 
     const card = screen.getByRole('article');
-    expect(within(card).getByText('Offered')).toBeInTheDocument();
-    expect(within(card).getByText(OFFERED.message)).toBeInTheDocument();
+    expect(
+      within(card).getByText('Offered', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
+    expect(
+      within(card).getByText(OFFERED.message, PAST_THE_DRAWING),
+    ).toBeInTheDocument();
   });
 
   it('shows who it is for with their name beside their face', () => {
     renderCard(OFFERED);
 
-    expect(screen.getByText('Ben Carter')).toBeInTheDocument();
-    expect(screen.getByText('BC')).toBeInTheDocument();
+    expect(
+      screen.getByText('Ben Carter', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
+    expect(screen.getByText('BC', PAST_THE_DRAWING)).toBeInTheDocument();
   });
 
   it('points at the small postcard, by hand, saying what is in it', () => {
     renderCard(OFFERED);
 
-    expect(screen.getByText('Read the whole postcard')).toBeInTheDocument();
+    expect(
+      screen.getByText('Read the whole postcard', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
   });
 
   it('points a request at the answers in its postcard', () => {
     renderCard(REQUESTED);
 
-    expect(screen.getByText('All the answers in here')).toBeInTheDocument();
+    expect(
+      screen.getByText('All the answers in here', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
   });
 
   it('keeps that note out of the link and away from a screen reader', () => {
     renderCard(OFFERED);
 
-    const note = screen.getByText('Read the whole postcard');
+    const note = screen.getByText('Read the whole postcard', PAST_THE_DRAWING);
     expect(screen.getByRole('link')).not.toContainElement(note);
     expect(note.closest('[aria-hidden="true"]')).toBeInTheDocument();
   });
@@ -121,8 +149,10 @@ describe('FeedCard', () => {
     renderCard(OFFERED);
 
     const link = screen.getByRole('link');
-    expect(link).toContainElement(screen.getByText('View postcard'));
-    expect(link).not.toContainElement(screen.getByText(OFFERED.message));
+    expect(link).toHaveAccessibleName(/^Open postcard:/);
+    expect(link).not.toContainElement(
+      screen.getByText(OFFERED.message, PAST_THE_DRAWING),
+    );
     expect(link).not.toHaveClass('after:absolute');
   });
 
@@ -139,16 +169,23 @@ describe('FeedCard', () => {
   it('draws no question on Offered Feedback', () => {
     renderCard(OFFERED);
 
-    expect(screen.queryByText(/asked:/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/asked:/, PAST_THE_DRAWING),
+    ).not.toBeInTheDocument();
   });
 
   it('puts the question above the answer on Requested Feedback', () => {
     renderCard(REQUESTED);
 
     const card = screen.getByRole('article');
-    expect(within(card).getByText('Requested')).toBeInTheDocument();
-    const question = within(card).getByText('How clear was the plan?');
-    const answer = within(card).getByText(REQUESTED.message);
+    expect(
+      within(card).getByText('Requested', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
+    const question = within(card).getByText(
+      'How clear was the plan?',
+      PAST_THE_DRAWING,
+    );
+    const answer = within(card).getByText(REQUESTED.message, PAST_THE_DRAWING);
     expect(question.compareDocumentPosition(answer)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
@@ -169,16 +206,18 @@ describe('FeedCard', () => {
     it('cuts an Offered message at three lines', () => {
       renderCard(OFFERED);
 
-      expect(screen.getByText(OFFERED.message).closest('p')).toHaveClass(
-        'line-clamp-3',
-      );
+      expect(
+        screen.getByText(OFFERED.message, PAST_THE_DRAWING).closest('p'),
+      ).toHaveClass('line-clamp-3');
     });
 
     it('cuts the question at two lines', () => {
       renderCard(REQUESTED);
 
       expect(
-        screen.getByText('How clear was the plan?').closest('p'),
+        screen
+          .getByText('How clear was the plan?', PAST_THE_DRAWING)
+          .closest('p'),
       ).toHaveClass('line-clamp-2');
     });
 
@@ -186,7 +225,8 @@ describe('FeedCard', () => {
       renderCard(REQUESTED);
 
       expect(
-        screen.getByText(REQUESTED.message).closest('p')?.className,
+        screen.getByText(REQUESTED.message, PAST_THE_DRAWING).closest('p')
+          ?.className,
       ).not.toMatch(/line-clamp/);
     });
   });
@@ -245,9 +285,9 @@ describe('FeedCard', () => {
     it('starts closed, with how they stand and their faces', () => {
       renderCard(REQUESTED);
 
-      expect(screen.getByText(/^Also asked/)).toHaveTextContent(
-        'Also asked (1 answer, 1 pending)',
-      );
+      expect(
+        screen.getByText(/^Also asked/, PAST_THE_DRAWING),
+      ).toHaveTextContent('Also asked (1 answer, 1 pending)');
       expect(
         screen.getByRole('button', {
           name: 'Dao Prasert and Nok Wattana. Show who else was asked',
@@ -255,7 +295,7 @@ describe('FeedCard', () => {
       ).toBeInTheDocument();
       expect(screen.queryByRole('list')).not.toBeInTheDocument();
       expect(
-        screen.queryByText('I would add who to call.'),
+        screen.queryByText('I would add who to call.', PAST_THE_DRAWING),
       ).not.toBeInTheDocument();
     });
 
@@ -268,9 +308,9 @@ describe('FeedCard', () => {
     it('counts an answer the reader may not read as an answer, beside one they may', async () => {
       renderCard(withAsked(answered(NOK, 'Mine to read.'), hidden(DAO)));
 
-      expect(screen.getByText(/^Also asked/)).toHaveTextContent(
-        'Also asked (2 answers)',
-      );
+      expect(
+        screen.getByText(/^Also asked/, PAST_THE_DRAWING),
+      ).toHaveTextContent('Also asked (2 answers)');
 
       await openAnswers();
 
@@ -283,9 +323,9 @@ describe('FeedCard', () => {
     it('keeps an answer hidden from someone still waiting', () => {
       renderCard(withAsked(hidden(DAO), waiting(NOK)));
 
-      expect(screen.getByText(/^Also asked/)).toHaveTextContent(
-        'Also asked (1 answer, 1 pending)',
-      );
+      expect(
+        screen.getByText(/^Also asked/, PAST_THE_DRAWING),
+      ).toHaveTextContent('Also asked (1 answer, 1 pending)');
     });
 
     it('lists each name and status on a press of the faces, and no answers', async () => {
@@ -303,7 +343,7 @@ describe('FeedCard', () => {
       expect(nok).toHaveTextContent('Nok Wattana');
       expect(nok).toHaveTextContent('Pending');
       expect(
-        list.queryByText('I would add who to call.'),
+        list.queryByText('I would add who to call.', PAST_THE_DRAWING),
       ).not.toBeInTheDocument();
     });
 
@@ -315,7 +355,7 @@ describe('FeedCard', () => {
       );
 
       const list = within(await screen.findByRole('dialog'));
-      expect(list.getByText('You')).toBeInTheDocument();
+      expect(list.getByText('You', PAST_THE_DRAWING)).toBeInTheDocument();
     });
 
     it('offers no answers to open when nobody else has answered', () => {
@@ -347,7 +387,7 @@ describe('FeedCard', () => {
       expect(nok).toHaveTextContent('Pending');
       expect(
         screen
-          .getByText(REQUESTED.message)
+          .getByText(REQUESTED.message, PAST_THE_DRAWING)
           .compareDocumentPosition(dao as Node),
       ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
 
@@ -387,7 +427,9 @@ describe('FeedCard', () => {
     ])('sums up where the others stand: %s', (_case, others, title) => {
       renderCard(withAsked(...others));
 
-      expect(screen.getByText(/^Also asked/)).toHaveTextContent(title);
+      expect(
+        screen.getByText(/^Also asked/, PAST_THE_DRAWING),
+      ).toHaveTextContent(title);
     });
 
     it('shows @ and # as they were bound', async () => {
@@ -467,7 +509,9 @@ describe('FeedCard', () => {
         renderCard(withAsked(answered(DAO, LONG)));
         await openAnswers();
 
-        expect(screen.getByText(LONG).closest('p')).toHaveClass('line-clamp-2');
+        expect(
+          screen.getByText(LONG, PAST_THE_DRAWING).closest('p'),
+        ).toHaveClass('line-clamp-2');
         const more = screen.getByRole('button', {
           name: 'Read more of what Dao Prasert answered',
         });
@@ -475,9 +519,9 @@ describe('FeedCard', () => {
 
         await userEvent.click(more);
 
-        expect(screen.getByText(LONG).closest('p')).not.toHaveClass(
-          'line-clamp-2',
-        );
+        expect(
+          screen.getByText(LONG, PAST_THE_DRAWING).closest('p'),
+        ).not.toHaveClass('line-clamp-2');
         const less = screen.getByRole('button', {
           name: 'Read less of what Dao Prasert answered',
         });
@@ -485,7 +529,9 @@ describe('FeedCard', () => {
 
         await userEvent.click(less);
 
-        expect(screen.getByText(LONG).closest('p')).toHaveClass('line-clamp-2');
+        expect(
+          screen.getByText(LONG, PAST_THE_DRAWING).closest('p'),
+        ).toHaveClass('line-clamp-2');
       });
     });
 
@@ -496,19 +542,25 @@ describe('FeedCard', () => {
       );
 
       const list = within(await screen.findByRole('dialog'));
-      expect(list.getByText('Mali Sombat (inactive)')).toBeInTheDocument();
+      expect(
+        list.getByText('Mali Sombat (inactive)', PAST_THE_DRAWING),
+      ).toBeInTheDocument();
     });
 
     it('draws nothing when nobody else was asked', () => {
       renderCard(withAsked());
 
-      expect(screen.queryByText(/Also asked/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Also asked/, PAST_THE_DRAWING),
+      ).not.toBeInTheDocument();
     });
 
     it('draws nothing on Offered Feedback', () => {
       renderCard(OFFERED);
 
-      expect(screen.queryByText(/Also asked/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Also asked/, PAST_THE_DRAWING),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -538,25 +590,29 @@ describe('FeedCard', () => {
   it('calls the reader "you" when it is for them alone', () => {
     renderCard({ ...OFFERED, receivers: [ANN] });
 
-    expect(screen.getByText('you')).toBeInTheDocument();
+    expect(screen.getByText('you', PAST_THE_DRAWING)).toBeInTheDocument();
   });
 
   it('calls the reader "You" on what they gave', () => {
     renderCard({ ...OFFERED, giver: ANN });
 
-    expect(screen.getByText('You')).toBeInTheDocument();
+    expect(screen.getByText('You', PAST_THE_DRAWING)).toBeInTheDocument();
   });
 
   it('says who can read it, in words', () => {
     renderCard(OFFERED);
 
-    expect(screen.getByText('Everyone in the Workspace')).toBeInTheDocument();
+    expect(
+      screen.getByText('Everyone in the Workspace', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
   });
 
   it('says so when it was kept to Selected people', () => {
     renderCard({ ...OFFERED, visibility: 'SELECTED_PEOPLE' });
 
-    expect(screen.getByText('Selected people')).toBeInTheDocument();
+    expect(
+      screen.getByText('Selected people', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
   });
 
   it('draws no Reactions', () => {
@@ -567,27 +623,28 @@ describe('FeedCard', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('draws the small postcard with a postmark, and no writing of its own', () => {
-    renderCard(REQUESTED);
+  it('draws the postcard it is on, made small, inside the link that opens it', () => {
+    renderCard(OFFERED);
 
-    expect(screen.getByText('Thrive')).toBeInTheDocument();
-    expect(screen.getByText('31 OCT')).toBeInTheDocument();
-    expect(screen.queryByText('Request')).not.toBeInTheDocument();
-    expect(screen.queryByText('Feedback')).not.toBeInTheDocument();
-    expect(screen.queryByText(/—/)).not.toBeInTheDocument();
-    expect(screen.getByText('View postcard')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: /^Open postcard:/ });
+    expect(within(link).getByText('Stamp')).toBeInTheDocument();
+    expect(within(link).getByText(/^Posted /)).toBeInTheDocument();
   });
 
   it('shows somebody Deactivated as inactive', () => {
     renderCard({ ...OFFERED, giver: person('mali', 'Mali Sombat', true) });
 
-    expect(screen.getByText('Mali Sombat (inactive)')).toBeInTheDocument();
+    expect(
+      screen.getByText('Mali Sombat (inactive)', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
   });
 
   it('never offers the old cue or an edit', () => {
     renderCard(OFFERED);
 
-    expect(screen.queryByText(/edit/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/edit/i, PAST_THE_DRAWING),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('link', { name: 'View postcard' }),
     ).not.toBeInTheDocument();

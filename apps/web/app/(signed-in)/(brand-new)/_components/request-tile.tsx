@@ -12,12 +12,12 @@ import { TimeAgo } from '@/components/atoms/time-ago';
 import { TargetLink } from '@/components/molecules/target-link';
 import { FeedbackText } from '@/components/organisms/feedback-text';
 import { kudosTiltOf } from '@/components/organisms/kudos-dialog/read-kudos.util';
+import { PostcardMiniature } from '@/components/organisms/postcard-miniature/postcard-miniature';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { timeAgo } from '@/lib/time-ago.util';
 import tileStyles from './personal-item-tile.module.css';
 import { PersonalItemTilePending } from './personal-item-tile-pending';
-import { PostcardMiniature } from './postcard-miniature';
 import { RequestTally } from './request-card';
 
 export type RequestTileProps = {

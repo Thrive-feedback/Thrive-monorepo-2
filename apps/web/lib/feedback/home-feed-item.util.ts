@@ -14,11 +14,14 @@ export function toHomeFeedPerson(
   return { accountId: person.accountId, ...toFeedbackPerson(person) };
 }
 
-/** A piece of Feedback as the API sends it, as a card shows it, on Home and wherever else. */
+/**
+ * A piece of Feedback as the API sends it, as a card shows it, on Home and wherever else. The
+ * postcard it is on is the caller's to add, from the card it was written on.
+ */
 export function toHomeFeedItem(
   feedback: Omit<FeedItemOnTheWire, 'visibility'> &
     Pick<HomeFeedItem, 'visibility'>,
-): HomeFeedItem {
+): Omit<HomeFeedItem, 'card'> {
   return {
     id: feedback.id,
     origin: feedback.origin,

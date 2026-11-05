@@ -3,6 +3,7 @@ import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { TargetLink } from '@/components/molecules/target-link';
+import { PendingPostcardMiniature } from '@/components/organisms/postcard-miniature/pending-postcard-miniature';
 import { cn } from '@/lib/cn.util';
 import type { HomeFeedItem } from '@/lib/feedback/home-feed-item.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
@@ -12,7 +13,6 @@ import { FeedCardNote, noteLieOf } from './feed-card-note';
 import { feedCardGiver, feedCardSentence } from './feed-card-sentence.util';
 import { FEED_CARD_SURFACE } from './feed-card-surface.constant';
 import { FeedCardWho } from './feed-card-who';
-import { PendingMiniPostcard } from './pending-mini-postcard';
 
 const ORIGIN_NAMES: Readonly<Record<HomeFeedItem['origin'], string>> = {
   REQUESTED: 'Requested',
@@ -51,9 +51,9 @@ export type FeedCardFrameProps = FeedCardProps & {
 
 /**
  * What every Feedback card on Home shares: who wrote to whom, never anonymous (`ADR-0022` in the
- * brain), how it came about, the day and who can read it, and a small postcard in the corner, which
- * is the link to the real one, with a note by hand pointing at it where there is room. The rest of
- * the card answers no press.
+ * brain), how it came about, the day and who can read it, and the postcard it is on made small in
+ * the corner, which is the link to the whole one, with a note by hand pointing at it where there is
+ * room. The rest of the card answers no press.
  */
 export function FeedCardFrame({
   item,
@@ -103,10 +103,7 @@ export function FeedCardFrame({
             <span className="sr-only">
               Open postcard: {feedCardSentence(item, readerAccountId)}
             </span>
-            <PendingMiniPostcard
-              kind={item.origin === 'REQUESTED' ? 'requested' : 'offered'}
-              date={item.givenAt}
-            />
+            <PendingPostcardMiniature card={item.card} size="md" />
           </TargetLink>
         </div>
       </header>

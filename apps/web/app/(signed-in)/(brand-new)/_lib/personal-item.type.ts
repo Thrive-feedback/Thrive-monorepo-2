@@ -1,7 +1,9 @@
 import type { components } from '@repo/api';
 import type { ReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.type';
-import type { PostcardAsk } from '@/components/organisms/postcard-dialog/postcard-draft.type';
-import type { ReadPostcard } from '@/components/organisms/postcard-dialog/postcard-read.type';
+import type {
+  AskedPostcard,
+  ReadPostcard,
+} from '@/components/organisms/postcard-dialog/postcard-read.type';
 import type { AskStatus } from '@/lib/feedback/ask-status.constant';
 import type {
   HomeFeedItem,
@@ -12,25 +14,13 @@ import type { TextTags } from '@/lib/feedback/text-tags.type';
 export type PersonalItemOnTheWire =
   components['schemas']['ListReceivedItemsResponseDto_Output']['items'][number];
 
-/** A piece of Feedback in Received or Given: what a card on Home shows, and the postcard it is on. */
-export type PersonalFeedback = HomeFeedItem & {
-  readonly kind: 'FEEDBACK';
-  readonly card: ReadPostcard;
-};
+/** A piece of Feedback in Received or Given, as a card on Home shows it. */
+export type PersonalFeedback = HomeFeedItem & { readonly kind: 'FEEDBACK' };
 
 /** A Kudos in Received or Given, on the card it was written on. */
 export type PersonalKudos = ReadKudos & { readonly kind: 'KUDOS' };
 
 export type PersonalItem = PersonalFeedback | PersonalKudos;
-
-/** A request nobody has answered yet, as its card: the Ask on the left, nothing on the right. */
-export type AskedPostcard = {
-  readonly kind: 'asked';
-  readonly ask: PostcardAsk;
-  readonly messageTags: TextTags;
-  /** When it was sent, as an ISO date. */
-  readonly sentOn: string;
-};
 
 /** What one person a Member asked sent back. */
 export type PersonalRequestAnswer = {
@@ -59,6 +49,8 @@ export type PersonalRequest = {
   readonly message: string;
   readonly messageTags: TextTags;
   readonly visibility: PersonalRequestOnTheWire['visibility'];
+  /** The Member who asked, who is always the reader. */
+  readonly requester: HomeFeedPerson;
   readonly sentAt: string;
   /** The request on its own card, before anybody answered it. */
   readonly card: AskedPostcard;

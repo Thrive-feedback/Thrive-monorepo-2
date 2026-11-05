@@ -1,5 +1,6 @@
 import type { components, operations } from '@repo/api';
 import type { ReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.type';
+import type { ReadPostcard } from '@/components/organisms/postcard-dialog/postcard-read.type';
 import type { AskStatus } from './ask-status.constant';
 import type { FeedbackPerson } from './feedback-person.util';
 import type { TextTags } from './text-tags.type';
@@ -63,6 +64,8 @@ export type HomeFeedItem = {
   >['visibility'];
   /** The request an answer responds to; `null` for Offered Feedback. */
   readonly request: HomeFeedRequest | null;
+  /** The postcard it is on, which the card draws small and opens whole. */
+  readonly card: ReadPostcard;
 };
 
 /** One page of Home. The reader comes with it because no other read says who they are. */

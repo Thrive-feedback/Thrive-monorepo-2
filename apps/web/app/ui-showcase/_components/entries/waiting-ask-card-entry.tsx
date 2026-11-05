@@ -6,7 +6,7 @@ import { WaitingAskCard } from '@/components/organisms/feed-card/waiting-ask-car
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { CardCover } from './card-cover';
-import { SAMPLE_TARGET } from './feed-card-samples.constant';
+import { SAMPLE_ASKED_CARD, SAMPLE_TARGET } from './feed-card-samples.constant';
 
 const AN_ASK: MyAsk = {
   askId: 'ask-1',
@@ -50,7 +50,7 @@ export function WaitingAskCardEntry() {
       name="WaitingAskCard"
       level="organism"
       origin="thrive"
-      source="components/organisms/feed-card/waiting-ask-card.tsx — the ground of a feed card + FeedCardNote + PendingMiniPostcard."
+      source="components/organisms/feed-card/waiting-ask-card.tsx — the ground of a feed card + FeedCardNote + PendingPostcardMiniature."
       summary="An Ask waiting for the person: who asked, when, and the Request message, beside the postcard it is answered on and a handwritten note pointing to it."
       useFor="One Ask in the Waiting for me menu of the new Home."
       avoidFor="Feedback already written: use FeedCard. /home's waiting list, which keeps ActivityRow."
@@ -58,6 +58,7 @@ export function WaitingAskCardEntry() {
 
 <WaitingAskCard
   ask={ask}
+  card={ask.card}
   target={{ href: ROUTES.brandNewWaitingAsk(ask.askId) }}
 />`}
       props={[
@@ -65,6 +66,12 @@ export function WaitingAskCardEntry() {
           name: 'ask',
           type: 'MyAsk',
           description: 'One Ask waiting for the person.',
+        },
+        {
+          name: 'card',
+          type: 'AskedPostcard',
+          description:
+            'The card the request was sent on, drawn small, blank where the answer goes.',
         },
         {
           name: 'target',
@@ -87,7 +94,11 @@ export function WaitingAskCardEntry() {
         <ul className="flex w-full max-w-200 flex-col gap-1.5">
           {NOTE_CASES.map((ask) => (
             <li key={ask.askId}>
-              <WaitingAskCard ask={ask} target={SAMPLE_TARGET} />
+              <WaitingAskCard
+                ask={ask}
+                card={SAMPLE_ASKED_CARD}
+                target={SAMPLE_TARGET}
+              />
             </li>
           ))}
         </ul>
@@ -95,7 +106,11 @@ export function WaitingAskCardEntry() {
       {CASES.map(({ label, hint, ask }) => (
         <StateCell key={label} label={label} hint={hint} wide>
           <div className="w-full max-w-180">
-            <WaitingAskCard ask={ask} target={SAMPLE_TARGET} />
+            <WaitingAskCard
+              ask={ask}
+              card={SAMPLE_ASKED_CARD}
+              target={SAMPLE_TARGET}
+            />
           </div>
         </StateCell>
       ))}
@@ -106,7 +121,11 @@ export function WaitingAskCardEntry() {
 export function WaitingAskCardPreview() {
   return (
     <CardCover>
-      <WaitingAskCard ask={AN_ASK} target={SAMPLE_TARGET} />
+      <WaitingAskCard
+        ask={AN_ASK}
+        card={SAMPLE_ASKED_CARD}
+        target={SAMPLE_TARGET}
+      />
     </CardCover>
   );
 }

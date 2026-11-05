@@ -4,26 +4,29 @@ import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { TargetLink } from '@/components/molecules/target-link';
 import { FeedbackText } from '@/components/organisms/feedback-text';
 import { PersonName } from '@/components/organisms/person-name';
+import type { AskedPostcard } from '@/components/organisms/postcard-dialog/postcard-read.type';
+import { PendingPostcardMiniature } from '@/components/organisms/postcard-miniature/pending-postcard-miniature';
 import { cn } from '@/lib/cn.util';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
 import { FeedCardNote, noteLieOf } from './feed-card-note';
 import { NO_NAME_STARTING_A_SENTENCE } from './feed-card-sentence.util';
 import { FEED_CARD_SURFACE } from './feed-card-surface.constant';
-import { PendingMiniPostcard } from './pending-mini-postcard';
 
 export type WaitingAskCardProps = {
   ask: MyAsk;
+  /** The card the request was sent on, still blank where the answer goes. */
+  card: AskedPostcard;
   /** What pressing the small postcard does: it opens the postcard to answer on. */
   target: NavTarget;
 };
 
 /**
  * An Ask waiting for the person, on the ground of a card on Home: who asked, how long ago, and the
- * Request message cut at three lines, beside a large small postcard and a note pointing to it. It says
- * nothing about who else can read the answer.
+ * Request message cut at three lines, beside the card it was sent on, made small, and a note pointing
+ * to it. It says nothing about who else can read the answer.
  */
-export function WaitingAskCard({ ask, target }: WaitingAskCardProps) {
+export function WaitingAskCard({ ask, card, target }: WaitingAskCardProps) {
   const name = ask.requesterName ?? NO_NAME_STARTING_A_SENTENCE;
 
   return (
@@ -64,7 +67,7 @@ export function WaitingAskCard({ ask, target }: WaitingAskCardProps) {
           <span className="sr-only">
             Answer in the postcard: {name} requested feedback from you
           </span>
-          <PendingMiniPostcard kind="requested" date={ask.askedAt} size="lg" />
+          <PendingPostcardMiniature card={card} size="lg" />
         </TargetLink>
       </div>
     </article>
