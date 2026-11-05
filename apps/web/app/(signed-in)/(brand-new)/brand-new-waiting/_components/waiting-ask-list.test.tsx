@@ -1,9 +1,11 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { MyAsk } from '@/lib/feedback/my-ask.type';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
+import type { WaitingAskItem } from '@/app/(signed-in)/(brand-new)/brand-new-waiting/_lib/waiting-asks.service';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { type BrandNewWaitingSort, ROUTES } from '@/lib/routes.constant';
+import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
 import { AnsweredAsksProvider, useAnsweredAsks } from './answered-asks';
 import { WaitingAskList } from './waiting-ask-list';
 
@@ -15,7 +17,7 @@ vi.mock(
   }),
 );
 
-const ask = (askId: string, requesterName: string): MyAsk => ({
+const ask = (askId: string, requesterName: string): WaitingAskItem => ({
   askId,
   message: `Asked by ${requesterName}`,
   messageTags: NO_TEXT_TAGS,
@@ -24,6 +26,16 @@ const ask = (askId: string, requesterName: string): MyAsk => ({
   requesterInactive: false,
   askedAt: '2026-10-31T03:00:00.000Z',
   status: 'PENDING',
+  card: {
+    kind: 'asked',
+    ask: {
+      ...PLAIN_POSTCARD,
+      requester: { name: requesterName, photoUrl: null },
+      message: `Asked by ${requesterName}`,
+    },
+    messageTags: NO_TEXT_TAGS,
+    sentOn: '2026-10-31T03:00:00.000Z',
+  },
 });
 
 /** Stands for the end of the list coming into view. */
@@ -88,8 +100,10 @@ describe('WaitingAskList', () => {
 
     reachTheEnd();
 
-    expect(await screen.findByText('Asked by Ben')).toBeVisible();
-    expect(screen.getByText('Asked by Ann')).toBeVisible();
+    expect(
+      await screen.findByText('Asked by Ben', PAST_THE_DRAWING),
+    ).toBeVisible();
+    expect(screen.getByText('Asked by Ann', PAST_THE_DRAWING)).toBeVisible();
     expect(readNextWaitingAsks).toHaveBeenCalledExactlyOnceWith({
       sort: 'newest',
       cursor: 'cursor-1',
@@ -127,7 +141,9 @@ describe('WaitingAskList', () => {
       await screen.findByRole('button', { name: /try again/i }),
     );
 
-    expect(await screen.findByText('Asked by Ben')).toBeVisible();
+    expect(
+      await screen.findByText('Asked by Ben', PAST_THE_DRAWING),
+    ).toBeVisible();
   });
 
   it('takes an answered card out, wherever it stood', async () => {
@@ -137,16 +153,18 @@ describe('WaitingAskList', () => {
     });
     draw('cursor-1');
     reachTheEnd();
-    await screen.findByText('Asked by Ben');
+    await screen.findByText('Asked by Ben', PAST_THE_DRAWING);
 
     await userEvent.click(
       screen.getByRole('button', { name: 'Ben was answered' }),
     );
 
     await waitFor(() =>
-      expect(screen.queryByText('Asked by Ben')).not.toBeInTheDocument(),
+      expect(
+        screen.queryByText('Asked by Ben', PAST_THE_DRAWING),
+      ).not.toBeInTheDocument(),
     );
-    expect(screen.getByText('Asked by Ann')).toBeVisible();
+    expect(screen.getByText('Asked by Ann', PAST_THE_DRAWING)).toBeVisible();
   });
 
   it('says nothing is waiting once the last one is answered', async () => {
@@ -157,7 +175,7 @@ describe('WaitingAskList', () => {
     );
 
     expect(
-      await screen.findByText('Nothing is waiting for you.'),
+      await screen.findByText('Nothing is waiting for you.', PAST_THE_DRAWING),
     ).toBeVisible();
   });
 
@@ -185,8 +203,12 @@ describe('WaitingAskList', () => {
       </AnsweredAsksProvider>,
     );
 
-    expect(screen.getByText('Asked by Cara')).toBeInTheDocument();
-    expect(screen.queryByText('Asked by Ben')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Asked by Cara', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Asked by Ben', PAST_THE_DRAWING),
+    ).not.toBeInTheDocument();
   });
 
   it('offers to try again when the read itself fails', async () => {
@@ -198,6 +220,8 @@ describe('WaitingAskList', () => {
     expect(
       await screen.findByRole('button', { name: 'Try again' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Asked by Ann')).toBeInTheDocument();
+    expect(
+      screen.getByText('Asked by Ann', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
   });
 });

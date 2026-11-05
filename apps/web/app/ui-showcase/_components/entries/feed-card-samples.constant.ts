@@ -1,4 +1,11 @@
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
 import { standInPhoto } from '@/app/ui-showcase/_lib/stand-in-photo.util';
+import type {
+  AnsweredPostcard,
+  AskedPostcard,
+  GivenPostcard,
+} from '@/components/organisms/postcard-dialog/postcard-read.type';
+import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import type {
   HomeFeedAsk,
   HomeFeedItem,
@@ -39,6 +46,62 @@ export const SAMPLE_TARGET: NavTarget = { href: '#' };
 /** Who reads every sample: the Ann above. */
 export const SAMPLE_READER = ANN.accountId;
 
+/** Any day will do: the showcase reaches no Workspace. */
+const SENT_ON = '2026-10-31T03:00:00.000Z';
+
+/** Feedback given unasked, on a card with a stamp and a sticker. */
+export const SAMPLE_GIVEN_CARD: GivenPostcard = {
+  ...PLAIN_POSTCARD,
+  kind: 'give',
+  tone: 'sage',
+  stampKey: 'system/stamp-02-ocean',
+  stickers: [
+    {
+      stickerKey: 'system/sticker-01-thumbs-up',
+      side: 'back',
+      x: 30,
+      y: 70,
+      scale: 1,
+      rotation: -8,
+    },
+  ],
+  giver: { name: 'Cara Diaz', photoUrl: null, inactive: false },
+  receivers: [{ name: 'Ben Carter', photoUrl: null, inactive: false }],
+  message:
+    'The second paragraph does the work now, and the rest got out of its way. Worth saying what it costs a bit earlier.',
+  messageTags: NO_TEXT_TAGS,
+  sentOn: SENT_ON,
+};
+
+/** A request nobody has answered yet, blank where the answer goes. */
+export const SAMPLE_ASKED_CARD: AskedPostcard = {
+  kind: 'asked',
+  ask: {
+    ...PLAIN_POSTCARD,
+    requester: { name: 'Ann Lee', photoUrl: null, inactive: false },
+    message: 'How clear was the migration plan I shared on Monday?',
+  },
+  messageTags: NO_TEXT_TAGS,
+  sentOn: SENT_ON,
+};
+
+/** That request with one answer written beside it. */
+export const SAMPLE_ANSWERED_CARD: AnsweredPostcard = {
+  kind: 'ask',
+  ask: SAMPLE_ASKED_CARD.ask,
+  messageTags: NO_TEXT_TAGS,
+  answers: [
+    {
+      giver: { name: 'Ben Carter', photoUrl: null, inactive: false },
+      message: 'The order of the steps was clear.',
+      messageTags: NO_TEXT_TAGS,
+      stickers: [],
+      textStyle: DEFAULT_TEXT_STYLE,
+      sentOn: SENT_ON,
+    },
+  ],
+};
+
 export const SAMPLE_OFFERED: HomeFeedItem = {
   id: 'offered',
   origin: 'OFFERED',
@@ -47,9 +110,10 @@ export const SAMPLE_OFFERED: HomeFeedItem = {
   message:
     'The second paragraph does the work now, and the rest got out of its way. Worth saying what it costs a bit earlier.',
   messageTags: NO_TEXT_TAGS,
-  givenAt: '2026-10-31T03:00:00.000Z',
+  givenAt: SENT_ON,
   visibility: 'EVERYONE',
   request: null,
+  card: SAMPLE_GIVEN_CARD,
 };
 
 function answered(
@@ -89,6 +153,7 @@ export const SAMPLE_REQUESTED: HomeFeedItem = {
   message:
     'The order of the steps was clear. What I missed was who to call if step three fails, so I would add one line on that.',
   request: REQUEST,
+  card: SAMPLE_ANSWERED_CARD,
 };
 
 /** Longer than three lines and two, to show where a card cuts it. */

@@ -37,6 +37,8 @@ export type AvatarGroupPerson = {
   readonly isMuted?: boolean;
   /** What the list says about them at the end of their row, such as where they stand. */
   readonly trailing?: React.ReactNode;
+  /** Classes for their face, in the stack and the list, such as a ring saying where they stand. */
+  readonly avatarClassName?: string;
 };
 
 /** What a stack calls somebody, in words. */
@@ -177,6 +179,8 @@ function PeopleList({
   className,
 }: PeopleListProps) {
   const hidden = max === undefined ? [] : people.slice(max);
+  // A ring drawn outside a face would be cut by the next one, so ringed faces stand apart.
+  const isRinged = people.some((person) => person.avatarClassName);
 
   return (
     <Dialog>
@@ -189,13 +193,16 @@ function PeopleList({
           )}
         >
           {/* Overlapped less than the default: at the small size the next face would cover a
-              face's second initial. */}
+              face's second initial. Ringed faces do not overlap at all. */}
           <AvatarGroup
             aria-hidden="true"
             max={max}
             size={size}
             moreTooltip={names.format(hidden.map(labelOf))}
-            className={cn(size === 'sm' && '-space-x-0.5')}
+            className={cn(
+              size === 'sm' && '-space-x-0.5',
+              isRinged && 'space-x-1.5 px-0.5',
+            )}
           >
             {people.map((person) => (
               <Tooltip key={person.id}>
@@ -204,6 +211,7 @@ function PeopleList({
                     name={person.name}
                     photoUrl={person.photoUrl}
                     size={size}
+                    className={person.avatarClassName}
                   />
                 </TooltipTrigger>
                 <TooltipContent>{labelOf(person)}</TooltipContent>
@@ -227,6 +235,7 @@ function PeopleList({
                 name={person.name}
                 photoUrl={person.photoUrl}
                 className="flex flex-1"
+                avatarClassName={person.avatarClassName}
               >
                 <Text
                   as="span"

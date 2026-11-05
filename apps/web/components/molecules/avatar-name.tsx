@@ -17,6 +17,8 @@ export type AvatarNameProps = VariantProps<typeof avatarName> & {
   /** What shows beside the face, where that is more than the name, such as an email under it. */
   children?: React.ReactNode;
   className?: string;
+  /** Classes for the face alone, such as a ring saying where somebody stands. */
+  avatarClassName?: string;
 };
 
 /**
@@ -32,10 +34,16 @@ export function AvatarName({
   size,
   children,
   className,
+  avatarClassName,
 }: AvatarNameProps) {
   return (
     <div className={cn(avatarName({ size }), className)}>
-      <PhotoAvatar name={name} photoUrl={photoUrl} size={size} />
+      <PhotoAvatar
+        name={name}
+        photoUrl={photoUrl}
+        size={size}
+        className={avatarClassName}
+      />
       <div className="min-w-0 flex-1 break-words">
         {children ?? (
           <span className="text-fg-primary text-subtitle-4">{name}</span>

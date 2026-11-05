@@ -115,10 +115,6 @@ import {
   MemberPickerDialogPreview,
 } from '@/app/ui-showcase/_components/entries/member-picker-dialog-entry';
 import {
-  MiniPostcardEntry,
-  MiniPostcardPreview,
-} from '@/app/ui-showcase/_components/entries/mini-postcard-entry';
-import {
   OfferedFeedbackCardEntry,
   OfferedFeedbackCardPreview,
 } from '@/app/ui-showcase/_components/entries/offered-feedback-card-entry';
@@ -134,6 +130,10 @@ import {
   PostcardDialogEntry,
   PostcardDialogPreview,
 } from '@/app/ui-showcase/_components/entries/postcard-dialog-entry';
+import {
+  PostcardMiniatureEntry,
+  PostcardMiniaturePreview,
+} from '@/app/ui-showcase/_components/entries/postcard-miniature-entry';
 import {
   PostcardReadDialogEntry,
   PostcardReadDialogPreview,
@@ -539,11 +539,11 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: HandwrittenNoteEntry,
   },
   {
-    slug: 'mini-postcard',
-    name: 'MiniPostcard',
-    level: 'molecule',
-    Preview: MiniPostcardPreview,
-    Entry: MiniPostcardEntry,
+    slug: 'postcard-miniature',
+    name: 'PostcardMiniature',
+    level: 'organism',
+    Preview: PostcardMiniaturePreview,
+    Entry: PostcardMiniatureEntry,
   },
   {
     slug: 'postcard-dialog',

@@ -3,6 +3,7 @@ import { HttpResponse, http } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { server, TEST_API_BASE_URL } from '@/lib/test/msw-server';
+import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
 
 vi.stubEnv('API_BASE_URL', TEST_API_BASE_URL);
 vi.mock('server-only', () => ({}));
@@ -60,7 +61,9 @@ describe('WaitingAsks', () => {
 
     render(await WaitingAsks({ membership: MEMBERSHIP, sort: 'oldest' }));
 
-    expect(screen.getByText('Nothing is waiting for you.')).toBeVisible();
+    expect(
+      screen.getByText('Nothing is waiting for you.', PAST_THE_DRAWING),
+    ).toBeVisible();
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
   });
 
@@ -71,6 +74,6 @@ describe('WaitingAsks', () => {
 
     expect(askedFor?.get('sort')).toBe('OLDEST');
     expect(askedFor?.has('cursor')).toBe(false);
-    expect(screen.getByText('Asked by Ben')).toBeVisible();
+    expect(screen.getByText('Asked by Ben', PAST_THE_DRAWING)).toBeVisible();
   });
 });

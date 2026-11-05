@@ -2,12 +2,14 @@
 
 import { useCallback } from 'react';
 import { useEndlessList } from '@/app/(signed-in)/(brand-new)/_lib/use-endless-list';
-import type { WaitingAsksPage } from '@/app/(signed-in)/(brand-new)/brand-new-waiting/_lib/waiting-asks.service';
+import type {
+  WaitingAskItem,
+  WaitingAsksPage,
+} from '@/app/(signed-in)/(brand-new)/brand-new-waiting/_lib/waiting-asks.service';
 import { readNextWaitingAsks } from '@/app/(signed-in)/(brand-new)/brand-new-waiting/_lib/waiting-asks-actions.service';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { FeedPageFailed } from '@/components/organisms/feed-card/feed-page-failed';
 import { WaitingAskCard } from '@/components/organisms/feed-card/waiting-ask-card';
-import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import { type BrandNewWaitingSort, ROUTES } from '@/lib/routes.constant';
 import { useAnsweredAsks } from './answered-asks';
 import { WaitingEmpty } from './waiting-empty';
@@ -19,7 +21,7 @@ export type WaitingAskListProps = {
   sort: BrandNewWaitingSort;
 };
 
-function askIdOf(ask: MyAsk) {
+function askIdOf(ask: WaitingAskItem) {
   return ask.askId;
 }
 
@@ -32,13 +34,10 @@ export function WaitingAskList({ initialPage, sort }: WaitingAskListProps) {
     (cursor: string) => readNextWaitingAsks({ sort, cursor }),
     [sort],
   );
-  const { items, phase, hasMore, endRef, readNextPage } = useEndlessList<MyAsk>(
-    initialPage,
-    readNext,
-    askIdOf,
-  );
+  const { items, phase, hasMore, endRef, readNextPage } =
+    useEndlessList<WaitingAskItem>(initialPage, readNext, askIdOf);
   const { answered } = useAnsweredAsks();
-  const isUnanswered = (ask: MyAsk) => !answered.has(ask.askId);
+  const isUnanswered = (ask: WaitingAskItem) => !answered.has(ask.askId);
   const read = items.filter(isUnanswered);
   // Every card read is answered, so what came in meanwhile is worth showing: the page holds it.
   const waiting =
@@ -56,6 +55,7 @@ export function WaitingAskList({ initialPage, sort }: WaitingAskListProps) {
           <li key={ask.askId}>
             <WaitingAskCard
               ask={ask}
+              card={ask.card}
               target={{ href: ROUTES.brandNewWaitingAsk(ask.askId, sort) }}
             />
           </li>

@@ -1,6 +1,6 @@
 /*
  * The postcard a Giver sent back leans as it would on the board, and straightens while its row is
- * pointed at or focused. The lean is per answer, so it arrives as a custom property.
+ * pointed at or its postcard focused. The lean is per answer, so it arrives as a custom property.
  */
 .postcard {
   rotate: var(--request-card-tilt);
@@ -16,14 +16,4 @@
   .postcard {
     transition: none;
   }
-}
-
-/* `::after` carries the press across the whole row, so the ring goes round the row. */
-.press:focus-visible {
-  outline: none;
-}
-
-.press:focus-visible::after {
-  outline: var(--focus-ring-width) solid var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
 }

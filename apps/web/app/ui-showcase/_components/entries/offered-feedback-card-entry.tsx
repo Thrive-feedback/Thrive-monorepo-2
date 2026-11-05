@@ -19,7 +19,7 @@ export function OfferedFeedbackCardEntry() {
       name="OfferedFeedbackCard"
       level="organism"
       origin="thrive"
-      source="components/organisms/feed-card/offered-feedback-card.tsx — FeedCardFrame + FeedCardNote + MiniPostcard + FeedbackText"
+      source="components/organisms/feed-card/offered-feedback-card.tsx — FeedCardFrame + FeedCardNote + PendingPostcardMiniature + FeedbackText"
       summary="Feedback given without being asked, in Home's feed: who wrote to whom, how it came about, the day and who can read it, the message cut at three lines, and a small postcard in the corner, which opens the postcard. On a wide screen a note by hand points to it."
       useFor="One piece of Offered Feedback in the Home menu."
       avoidFor="The whole message, which the postcard shows. /home's lists, which keep FeedbackCard until that page is replaced."

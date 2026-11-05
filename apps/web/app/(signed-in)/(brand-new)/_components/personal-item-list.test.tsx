@@ -19,6 +19,7 @@ import type {
 } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
 import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
+import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
 import {
   PersonalItemList as PersonalItemListOnAnySide,
   type PersonalItemListProps,
@@ -305,7 +306,7 @@ describe('PersonalItemList, as a grid', () => {
       <PersonalItemList initialPage={page([kudos('ku-1', 'Well done.')])} />,
     );
 
-    expect(screen.getByText('Kudos')).toBeInTheDocument();
+    expect(screen.getByText('Kudos', PAST_THE_DRAWING)).toBeInTheDocument();
     expect(
       screen.getByRole('button', {
         name: /^Kudos from Ben Carter, .*\. Opens the kudos card\.$/,
@@ -461,7 +462,7 @@ describe('PersonalItemList, as a list', () => {
     expect(screen.getByRole('article')).toHaveTextContent(
       'Ben Carter gave feedback to you',
     );
-    expect(screen.getByText('First.')).toBeInTheDocument();
+    expect(screen.getByText('First.', PAST_THE_DRAWING)).toBeInTheDocument();
   });
 
   it('draws an answer with what was asked', () => {
@@ -469,8 +470,12 @@ describe('PersonalItemList, as a list', () => {
       <PersonalItemList initialPage={page([answer('fb-1', 'Very clear.')])} />,
     );
 
-    expect(screen.getByText('How clear was the plan?')).toBeInTheDocument();
-    expect(screen.getByText('Very clear.')).toBeInTheDocument();
+    expect(
+      screen.getByText('How clear was the plan?', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Very clear.', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
   });
 
   it('says when a piece was kept to the reader, which Home never holds', () => {
@@ -480,7 +485,7 @@ describe('PersonalItemList, as a list', () => {
       />,
     );
 
-    expect(screen.getByText('Only me')).toBeInTheDocument();
+    expect(screen.getByText('Only me', PAST_THE_DRAWING)).toBeInTheDocument();
   });
 
   it('does not tell a Receiver of several that a private piece is theirs alone', () => {
@@ -491,7 +496,9 @@ describe('PersonalItemList, as a list', () => {
     );
 
     expect(screen.getByText("Only the people it's for")).toBeInTheDocument();
-    expect(screen.queryByText('Only me')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Only me', PAST_THE_DRAWING),
+    ).not.toBeInTheDocument();
   });
 
   it('opens a postcard by address, and keeps the list under it', () => {
@@ -590,7 +597,7 @@ describe('PersonalItemList, on Given', () => {
     renderGiven(postcard('fb-1', 'Clear.'));
 
     expect(
-      within(screen.getByRole('banner')).getByText('Ann Lee'),
+      within(screen.getByRole('banner')).getByText('Ann Lee', PAST_THE_DRAWING),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: /^Postcard to Ann Lee/ }),
@@ -606,13 +613,17 @@ describe('PersonalItemList, on Given', () => {
   it('names two people by first name', () => {
     renderGiven(postcard('fb-1', 'Clear.', 'EVERYONE', [ANN, CARA]));
 
-    expect(screen.getByText('Ann & Cara')).toBeInTheDocument();
+    expect(
+      screen.getByText('Ann & Cara', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
   });
 
   it('counts the people past two', () => {
     renderGiven(postcard('fb-1', 'Clear.', 'EVERYONE', [ANN, CARA, DAN]));
 
-    expect(screen.getByText('Ann, Cara +1')).toBeInTheDocument();
+    expect(
+      screen.getByText('Ann, Cara +1', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('link', {
         name: /^Postcard to Ann Lee, Cara Diaz and/,
@@ -623,7 +634,9 @@ describe('PersonalItemList, on Given', () => {
   it('says a Kudos naming nobody is for the whole Workspace', () => {
     renderGiven({ ...kudos('ku-1', 'Well done, all.'), recipients: [] });
 
-    expect(screen.getByText('The whole Workspace')).toBeInTheDocument();
+    expect(
+      screen.getByText('The whole Workspace', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /^Kudos to the whole Workspace/ }),
     ).toBeInTheDocument();
@@ -633,8 +646,10 @@ describe('PersonalItemList, on Given', () => {
     renderGiven({ ...kudos('ku-1', 'Well done, all.'), recipients: [] });
 
     const top = within(screen.getByRole('banner'));
-    expect(top.getByText('The whole Workspace')).toBeInTheDocument();
-    expect(top.queryByText('BC')).not.toBeInTheDocument();
+    expect(
+      top.getByText('The whole Workspace', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
+    expect(top.queryByText('BC', PAST_THE_DRAWING)).not.toBeInTheDocument();
     expect(top.queryByRole('img')).not.toBeInTheDocument();
   });
 
@@ -647,7 +662,10 @@ describe('PersonalItemList, on Given', () => {
     );
 
     expect(
-      within(screen.getByRole('dialog')).getByText('the whole Workspace'),
+      within(screen.getByRole('dialog')).getByText(
+        'the whole Workspace',
+        PAST_THE_DRAWING,
+      ),
     ).toBeInTheDocument();
   });
 
@@ -655,7 +673,7 @@ describe('PersonalItemList, on Given', () => {
     renderGiven(answer('fb-1', 'Very clear.'));
 
     expect(
-      within(screen.getByRole('banner')).getByText('Ann Lee'),
+      within(screen.getByRole('banner')).getByText('Ann Lee', PAST_THE_DRAWING),
     ).toBeInTheDocument();
   });
 
@@ -665,7 +683,10 @@ describe('PersonalItemList, on Given', () => {
     );
 
     expect(
-      within(screen.getByRole('banner')).getByText(/inactive/),
+      within(screen.getByRole('banner')).getByText(
+        /inactive/,
+        PAST_THE_DRAWING,
+      ),
     ).toBeVisible();
   });
 
@@ -740,9 +761,9 @@ describe('PersonalItemList, on Given', () => {
     it('counts an answer the Giver may not read as an answer, and offers no way to it', () => {
       renderGiven(answerBesideOneTheGiverMayNotRead());
 
-      expect(screen.getByText(/^Also asked/)).toHaveTextContent(
-        'Also asked (1 answer)',
-      );
+      expect(
+        screen.getByText(/^Also asked/, PAST_THE_DRAWING),
+      ).toHaveTextContent('Also asked (1 answer)');
       expect(
         screen.queryByRole('button', { name: 'Show answers' }),
       ).not.toBeInTheDocument();
@@ -751,9 +772,11 @@ describe('PersonalItemList, on Given', () => {
     it('promises the postcard, not all the answers, when some stay hidden', () => {
       renderGiven(answerBesideOneTheGiverMayNotRead());
 
-      expect(screen.getByText('Read the whole postcard')).toBeInTheDocument();
       expect(
-        screen.queryByText('All the answers in here'),
+        screen.getByText('Read the whole postcard', PAST_THE_DRAWING),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText('All the answers in here', PAST_THE_DRAWING),
       ).not.toBeInTheDocument();
     });
   });

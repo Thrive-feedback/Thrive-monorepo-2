@@ -165,7 +165,9 @@ describe('ReceivedItems', () => {
 
     render(await ReceivedItems({ membership: MEMBERSHIP, show: 'requests' }));
 
-    expect(screen.getByText('You asked 2 people')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Show who you asked/ }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Selected people')).toBeInTheDocument();
     // The postcard sent back holds the question too, hidden from a screen reader.
     expect(

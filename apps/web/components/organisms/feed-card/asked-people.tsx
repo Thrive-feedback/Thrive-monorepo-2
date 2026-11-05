@@ -12,6 +12,7 @@ import { PersonName } from '@/components/organisms/person-name';
 import { cn } from '@/lib/cn.util';
 import {
   ASK_STATUS_NAMES,
+  ASK_STATUS_RINGS,
   ASK_STATUS_TONES,
 } from '@/lib/feedback/ask-status.constant';
 import type {
@@ -139,6 +140,7 @@ function AskRow({ ask, readerAccountId }: AskRowProps) {
         photoUrl={ask.person.photoUrl}
         size="sm"
         className="flex items-start"
+        avatarClassName={ASK_STATUS_RINGS[ask.status]}
       >
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <Text as="span" variant="subtitle-4">
@@ -215,6 +217,7 @@ export function AskedPeople({
                 label: ask.person.inactive ? `${name} (inactive)` : name,
                 isMuted: ask.person.inactive,
                 trailing: <AskStatusBadge status={ask.status} />,
+                avatarClassName: ASK_STATUS_RINGS[ask.status],
               };
             })}
             max={MAX_FACES}

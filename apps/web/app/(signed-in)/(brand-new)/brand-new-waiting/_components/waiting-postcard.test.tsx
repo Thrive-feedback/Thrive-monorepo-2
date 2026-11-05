@@ -3,12 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
+import type { WaitingAskItem } from '@/app/(signed-in)/(brand-new)/brand-new-waiting/_lib/waiting-asks.service';
 import { Toaster } from '@/components/atoms/toaster';
 import type { PostcardAsk } from '@/components/organisms/postcard-dialog/postcard-draft.type';
-import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { ROUTES } from '@/lib/routes.constant';
 import { server, TEST_API_BASE_URL } from '@/lib/test/msw-server';
+import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
 
 vi.stubEnv('API_BASE_URL', TEST_API_BASE_URL);
 vi.mock('server-only', () => ({}));
@@ -301,7 +302,7 @@ describe('WaitingPostcard', () => {
       message: 'How clear was the plan?',
     };
 
-    const card = (askId: string, requesterName: string): MyAsk => ({
+    const card = (askId: string, requesterName: string): WaitingAskItem => ({
       askId,
       message: `Asked by ${requesterName}`,
       messageTags: NO_TEXT_TAGS,
@@ -310,6 +311,16 @@ describe('WaitingPostcard', () => {
       requesterInactive: false,
       askedAt: '2026-10-31T03:00:00.000Z',
       status: 'PENDING',
+      card: {
+        kind: 'asked',
+        ask: {
+          ...PLAIN_POSTCARD,
+          requester: { name: requesterName, photoUrl: null },
+          message: `Asked by ${requesterName}`,
+        },
+        messageTags: NO_TEXT_TAGS,
+        sentOn: '2026-10-31T03:00:00.000Z',
+      },
     });
 
     function drawThePage() {
@@ -367,9 +378,13 @@ describe('WaitingPostcard', () => {
       rerender(theListWith(opened));
 
       await waitFor(() =>
-        expect(screen.queryByText('Asked by Ann')).not.toBeInTheDocument(),
+        expect(
+          screen.queryByText('Asked by Ann', PAST_THE_DRAWING),
+        ).not.toBeInTheDocument(),
       );
-      expect(screen.getByText('Asked by Ben')).toBeInTheDocument();
+      expect(
+        screen.getByText('Asked by Ben', PAST_THE_DRAWING),
+      ).toBeInTheDocument();
       expect(screen.getByRole('heading')).toHaveFocus();
     });
 
@@ -379,7 +394,9 @@ describe('WaitingPostcard', () => {
       draw(theListWith(await opening()));
 
       await waitFor(() =>
-        expect(screen.queryByText('Asked by Ann')).not.toBeInTheDocument(),
+        expect(
+          screen.queryByText('Asked by Ann', PAST_THE_DRAWING),
+        ).not.toBeInTheDocument(),
       );
       expect(screen.getByRole('heading')).not.toHaveFocus();
     });
@@ -389,13 +406,19 @@ describe('WaitingPostcard', () => {
 
       await writeAnAnswer();
 
-      expect(screen.getByText('Asked by Ann')).toBeInTheDocument();
+      expect(
+        screen.getByText('Asked by Ann', PAST_THE_DRAWING),
+      ).toBeInTheDocument();
       await waitFor(
         () =>
-          expect(screen.queryByText('Asked by Ann')).not.toBeInTheDocument(),
+          expect(
+            screen.queryByText('Asked by Ann', PAST_THE_DRAWING),
+          ).not.toBeInTheDocument(),
         AFTER_THE_FLIGHT,
       );
-      expect(screen.getByText('Asked by Ben')).toBeInTheDocument();
+      expect(
+        screen.getByText('Asked by Ben', PAST_THE_DRAWING),
+      ).toBeInTheDocument();
       await waitFor(
         () => expect(screen.getByRole('heading')).toHaveFocus(),
         AFTER_THE_FLIGHT,
@@ -450,7 +473,9 @@ describe('WaitingPostcard', () => {
       await waitFor(() =>
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
       );
-      expect(screen.getByText('Asked by Ann')).toBeInTheDocument();
+      expect(
+        screen.getByText('Asked by Ann', PAST_THE_DRAWING),
+      ).toBeInTheDocument();
       expect(refresh).not.toHaveBeenCalled();
     });
   });
