@@ -73,9 +73,15 @@ export interface FeedbackAskPageRow {
   readonly total: number;
 }
 
+/** One Ask waiting on a Member, and the card it was sent on. */
+export interface WaitingAskRow extends FeedbackAskRow {
+  /** How the request looks, or `null` when it was not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
+}
+
 /** One page of the Asks waiting on a Member, and whether another follows. */
 export interface WaitingAskPageRow {
-  readonly items: readonly FeedbackAskRow[];
+  readonly items: readonly WaitingAskRow[];
   readonly hasMore: boolean;
 }
 
@@ -212,13 +218,14 @@ export interface FeedItemRequestRow {
   readonly asks: readonly FeedItemAskRow[];
 }
 
-/** One piece on Home: `request` is `null` for Offered Feedback. */
+/** One piece on Home, with the card it is on: `request` is `null` for Offered Feedback. */
 export interface FeedItemRow extends FeedbackWithPeopleRow {
   readonly visibility: FeedItemVisibility;
-  readonly request: FeedItemRequestRow | null;
+  readonly postcard: PostcardSnapshot | null;
+  readonly request: ReceivedRequestRow | null;
 }
 
-/** The request an answer was written on, as stored: Home's row and the card it is on. */
+/** The request an answer was written on, as stored, and the card it is on. */
 export interface ReceivedRequestRow extends FeedItemRequestRow {
   readonly postcard: PostcardSnapshot | null;
   readonly answerPostcard: AnswerPostcardSnapshot | null;

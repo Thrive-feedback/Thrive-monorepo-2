@@ -40,7 +40,10 @@ export class ListWaitingAsksUseCase {
       asks.items.map((ask) => ask.requesterAccountId),
     );
     return {
-      items: asks.items.map((ask) => toMyAskView(ask, people)),
+      items: asks.items.map((ask) => ({
+        ...toMyAskView(ask, people),
+        postcard: ask.postcard,
+      })),
       nextAfterId: asks.hasMore ? (asks.items.at(-1)?.askId ?? null) : null,
     };
   }

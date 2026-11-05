@@ -143,9 +143,15 @@ export const WAITING_ASK_SORTS = ['NEWEST', 'OLDEST'] as const;
 
 export type WaitingAskSort = (typeof WAITING_ASK_SORTS)[number];
 
+/** One Ask waiting on a Member, as Waiting for me lists it, on the card it was sent on. */
+export interface WaitingAskView extends MyAskView {
+  /** How the request looks, or `null` when it was not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
+}
+
 /** One page of the Asks waiting on one Member, in the order they chose. */
 export interface WaitingAsksView {
-  readonly items: readonly MyAskView[];
+  readonly items: readonly WaitingAskView[];
   /** The id the next page starts after, or `null` on the last page. */
   readonly nextAfterId: string | null;
 }
@@ -306,11 +312,21 @@ export interface FeedItemRequestView {
   readonly requester: PersonView;
   /** In the order they were asked, the Giver of this answer among them. */
   readonly asked: readonly FeedItemAskView[];
+  /** How the card looks, or `null` when the request was not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
+  /** How the answer's own words look, or `null` when it was not written on the postcard. */
+  readonly answerPostcard: AnswerPostcardSnapshot | null;
 }
 
-/** One piece on Home: `request` is `null` for Feedback given without being asked. */
+/**
+ * One piece on Home, with the card it was written on: `request` is `null` for Feedback given
+ * without being asked.
+ */
 export interface FeedItemView extends FeedbackView {
   readonly kind: 'FEEDBACK';
   readonly visibility: FeedItemVisibility;
+  /** How it looks, or `null` when it was not written on a postcard, or is an answer. */
+  readonly postcard: PostcardSnapshot | null;
+  /** The card an answer is on, or `null` for Feedback given without being asked. */
   readonly request: FeedItemRequestView | null;
 }

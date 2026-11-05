@@ -100,6 +100,7 @@ export class ListFeedItemsUseCase {
         tags: feedback.tags,
         createdAt: feedback.createdAt,
         visibility: feedback.visibility,
+        postcard: feedback.postcard,
         request: feedback.request && {
           message: feedback.request.message,
           tags: feedback.request.tags,
@@ -109,6 +110,8 @@ export class ListFeedItemsUseCase {
             status: AskStatus.of(ask.status).toString(),
             answer: ask.answer,
           })),
+          postcard: feedback.request.postcard,
+          answerPostcard: feedback.request.answerPostcard,
         },
       }),
     );

@@ -99,6 +99,50 @@ Given(
   },
 );
 
+Given(
+  '{person} has given {person} Feedback on a postcard: {string}, shared with everyone in the Workspace',
+  async function (
+    this: ThriveWorld,
+    giver: string,
+    receiver: string,
+    message: string,
+  ) {
+    this.succeeded(
+      await giveFeedback(
+        this,
+        giver,
+        receiver,
+        message,
+        { visibility: 'EVERYONE' },
+        A_POSTCARD,
+      ),
+      `${giver} giving ${receiver} Feedback on a postcard for everyone`,
+    );
+  },
+);
+
+Given(
+  '{person} has asked {person} for Feedback on a postcard: {string}, shared with everyone in the Workspace',
+  async function (
+    this: ThriveWorld,
+    requester: string,
+    giver: string,
+    message: string,
+  ) {
+    this.succeeded(
+      await askForFeedback(
+        this,
+        requester,
+        giver,
+        message,
+        { visibility: 'EVERYONE' },
+        A_POSTCARD,
+      ),
+      `${requester} asking ${giver} for Feedback on a postcard for everyone`,
+    );
+  },
+);
+
 When(
   '{person} gives {person} Feedback on a postcard with four stickers: {string}',
   async function (
@@ -126,6 +170,20 @@ When(
       ...A_POSTCARD,
       stickers: FOUR_STICKERS,
     });
+  },
+);
+
+When(
+  '{person} looks at what is waiting for them',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await this.as(
+        name,
+        'GET',
+        `/v1/workspaces/${this.workspaceOf(name)}/waiting-asks`,
+      ),
+      `${name} reading Waiting for me`,
+    );
   },
 );
 

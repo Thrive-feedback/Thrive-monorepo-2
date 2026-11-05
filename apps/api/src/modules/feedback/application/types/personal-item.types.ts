@@ -6,33 +6,19 @@ import type {
 import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
 import type { KudosFeedItemView } from './feed-items.types';
 import type {
-  FeedItemRequestView,
   FeedItemView,
   PersonView,
   TagsView,
 } from './feedback-request.types';
 import type { FeedPosition } from './kudos.types';
 
-/** The request an answer was written on: Home's view of it, and the rest of the card it sits on. */
-export interface PersonalRequestView extends FeedItemRequestView {
-  /** How the card looks, or `null` when the request was not written on a postcard. */
-  readonly postcard: PostcardSnapshot | null;
-  /** How the answer's own words look, or `null` when it was not written on the postcard. */
-  readonly answerPostcard: AnswerPostcardSnapshot | null;
-}
-
 /**
- * A piece of Feedback in a Member's own list: all a card on Home shows, with the card it was written
- * on, and at any Visibility, because a Receiver owns what was written to them and a Giver what they
- * wrote.
+ * A piece of Feedback in a Member's own list: all a card on Home shows, the card it was written on
+ * among it, at any Visibility, because a Receiver owns what was written to them and a Giver what
+ * they wrote.
  */
-export interface PersonalFeedbackView
-  extends Omit<FeedItemView, 'visibility' | 'request'> {
+export interface PersonalFeedbackView extends Omit<FeedItemView, 'visibility'> {
   readonly visibility: VisibilityValue;
-  /** How it looks, or `null` when it was not written on a postcard, or is an answer. */
-  readonly postcard: PostcardSnapshot | null;
-  /** The card an answer is on, or `null` for Feedback given without being asked. */
-  readonly request: PersonalRequestView | null;
 }
 
 export type PersonalItemView = PersonalFeedbackView | KudosFeedItemView;

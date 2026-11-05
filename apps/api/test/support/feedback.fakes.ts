@@ -574,11 +574,18 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
           ...withoutVisibility(row),
           visibility:
             row.visibility === 'EVERYONE' ? 'EVERYONE' : 'SELECTED_PEOPLE',
+          // An answer is written on its request's card, so it has no card of its own.
+          postcard: request ? null : row.postcard,
           request: request && {
             message: request.message,
             tags: request.tags,
             requesterAccountId: request.requesterAccountId,
             asks: this.asksWithAnswersOf(row.feedbackRequestId),
+            postcard:
+              this.rows.find((held) => held.id === row.feedbackRequestId)
+                ?.postcard ?? null,
+            // The fake keeps no look for an answer's words.
+            answerPostcard: null,
           },
         };
       }),

@@ -137,16 +137,20 @@ const WORKSPACE_FEED_FIELDS = {
  * A piece on Home with its Visibility and, through the Ask it answers, the question, every Ask and
  * every answer. Nested for the reason the feed's is. The other answers need no Visibility of their
  * own here: each took the request's, and Only me never reaches Home, so whoever reads this one on
- * Home may read them (brain `ADR-0050`).
+ * Home may read them (brain `ADR-0050`). Received reads the same, and a Requester reads every
+ * answer to their own request, so there the other answers need no check either. The look of the
+ * piece and of its request come with it, so each is drawn on the card it was written on.
  */
 const FEED_ITEM_FIELDS = {
   ...FEEDBACK_WITH_PEOPLE_FIELDS,
   visibility: true,
+  postcard: true,
   feedbackAsk: {
     select: {
       feedbackRequest: {
         select: {
           message: true,
+          postcard: true,
           requesterAccountId: true,
           asks: {
             orderBy: ASKS_IN_ORDER_ASKED,
@@ -165,28 +169,8 @@ const FEED_ITEM_FIELDS = {
   },
 } as const;
 
-/**
- * A piece a Member received: what Home reads, and the look of the piece and of its request. A
- * Requester reads every answer to their own request, so the other answers need no check here.
- */
-const RECEIVED_ITEM_FIELDS = {
-  ...FEEDBACK_WITH_PEOPLE_FIELDS,
-  visibility: true,
-  postcard: true,
-  feedbackAsk: {
-    select: {
-      feedbackRequest: {
-        select: {
-          ...FEED_ITEM_FIELDS.feedbackAsk.select.feedbackRequest.select,
-          postcard: true,
-        },
-      },
-    },
-  },
-} as const;
-
-type ReceivedItemRecord = Prisma.FeedbackGetPayload<{
-  select: typeof RECEIVED_ITEM_FIELDS;
+type FeedItemRecord = Prisma.FeedbackGetPayload<{
+  select: typeof FEED_ITEM_FIELDS;
 }>;
 
 /**
@@ -194,12 +178,12 @@ type ReceivedItemRecord = Prisma.FeedbackGetPayload<{
  * beside theirs, which differs by reader here as it never does on Home or in Received.
  */
 const GIVEN_ITEM_FIELDS = {
-  ...RECEIVED_ITEM_FIELDS,
+  ...FEED_ITEM_FIELDS,
   feedbackAsk: {
     select: {
       feedbackRequest: {
         select: {
-          ...RECEIVED_ITEM_FIELDS.feedbackAsk.select.feedbackRequest.select,
+          ...FEED_ITEM_FIELDS.feedbackAsk.select.feedbackRequest.select,
           asks: {
             orderBy: ASKS_IN_ORDER_ASKED,
             select: {
@@ -438,12 +422,17 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
           id: true,
           status: true,
           createdAt: true,
-          feedbackRequest: REQUEST_OF_ASK,
+          feedbackRequest: {
+            select: { ...REQUEST_OF_ASK.select, postcard: true },
+          },
         },
       });
     const after = records.filter((record) => record.id !== page.afterId);
     return {
-      items: after.slice(0, page.limit).map(toFeedbackAskRow),
+      items: after.slice(0, page.limit).map((record) => ({
+        ...toFeedbackAskRow(record),
+        postcard: toPostcardSnapshot(record.feedbackRequest.postcard),
+      })),
       hasMore: after.length > page.limit,
     };
   }
@@ -568,31 +557,12 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         select: FEED_ITEM_FIELDS,
       });
     return {
-      items: records.slice(0, page.limit).map((record) => {
-        const request = record.feedbackAsk?.feedbackRequest;
-        return {
-          ...toFeedbackWithPeopleRow(record),
-          // Everything `feedItemsWhere` lets through is one of these two.
-          visibility:
-            record.visibility === 'EVERYONE' ? 'EVERYONE' : 'SELECTED_PEOPLE',
-          request: request
-            ? {
-                message: request.message,
-                tags: tagsOf(request),
-                requesterAccountId: request.requesterAccountId,
-                asks: request.asks.map((ask) => ({
-                  giverAccountId: ask.giverAccountId,
-                  status: ask.status,
-                  answer: ask.feedback && {
-                    message: ask.feedback.message,
-                    tags: tagsOf(ask.feedback),
-                    answeredAt: ask.feedback.createdAt,
-                  },
-                })),
-              }
-            : null,
-        };
-      }),
+      items: records.slice(0, page.limit).map((record) => ({
+        ...toReceivedFeedbackRow(record),
+        // Everything `feedItemsWhere` lets through is one of these two.
+        visibility:
+          record.visibility === 'EVERYONE' ? 'EVERYONE' : 'SELECTED_PEOPLE',
+      })),
       hasMore: records.length > page.limit,
     };
   }
@@ -618,7 +588,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         },
         orderBy: NEWEST_FIRST,
         take: page.limit + 1,
-        select: RECEIVED_ITEM_FIELDS,
+        select: FEED_ITEM_FIELDS,
       });
     return {
       items: records.slice(0, page.limit).map(toReceivedFeedbackRow),
@@ -956,9 +926,7 @@ function toAnsweredRequestRow(
   };
 }
 
-function toReceivedFeedbackRow(
-  record: ReceivedItemRecord,
-): ReceivedFeedbackRow {
+function toReceivedFeedbackRow(record: FeedItemRecord): ReceivedFeedbackRow {
   const request = record.feedbackAsk?.feedbackRequest;
   return {
     ...toFeedbackWithPeopleRow(record),

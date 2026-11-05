@@ -19,7 +19,10 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { ListWaitingAsksUseCase } from '../application/use-cases/list-waiting-asks.use-case';
-import { toFeedbackAskResponse } from './dto/feedback-response.mapper';
+import {
+  toFeedbackAskResponse,
+  toPostcardResponse,
+} from './dto/feedback-response.mapper';
 import {
   ListWaitingAsksQueryDto,
   ListWaitingAsksResponseDto,
@@ -60,7 +63,10 @@ export class WaitingAsksController {
       page: { afterId: query.cursor, limit: query.limit },
     });
     return {
-      items: asks.items.map(toFeedbackAskResponse),
+      items: asks.items.map((ask) => ({
+        ...toFeedbackAskResponse(ask),
+        postcard: toPostcardResponse(ask.postcard),
+      })),
       nextCursor: toCursor(asks.nextAfterId),
     };
   }
