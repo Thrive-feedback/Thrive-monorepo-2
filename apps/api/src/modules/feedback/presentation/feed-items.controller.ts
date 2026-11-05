@@ -20,8 +20,7 @@ import {
 import { ZodResponse } from 'nestjs-zod';
 import { ListFeedItemsUseCase } from '../application/use-cases/list-feed-items.use-case';
 import {
-  toFeedbackResponse,
-  toFeedItemRequestResponse,
+  toFeedItemResponse,
   toKudosResponse,
 } from './dto/feedback-response.mapper';
 import {
@@ -66,12 +65,7 @@ export class FeedItemsController {
       items: feedItems.items.map((item) =>
         item.kind === 'KUDOS'
           ? { kind: item.kind, ...toKudosResponse(item) }
-          : {
-              kind: item.kind,
-              ...toFeedbackResponse(item),
-              visibility: item.visibility,
-              request: item.request && toFeedItemRequestResponse(item.request),
-            },
+          : { ...toFeedItemResponse(item), visibility: item.visibility },
       ),
       nextCursor: toCursor(feedItems.nextAfterId),
     };

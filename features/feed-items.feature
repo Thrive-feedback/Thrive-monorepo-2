@@ -112,6 +112,19 @@ Feature: Home
     Then Dan's Home is empty
 
   @api
+  Scenario: Feedback on Home is read on the postcard it was written on
+    Given Ben has given Ann Feedback on a postcard: "On paper.", shared with everyone in the Workspace
+    When Cara looks at All Feedback on Home
+    Then "On paper." is on the postcard it was written on
+
+  @api
+  Scenario: An answer on Home is read on the postcard its Giver sent back
+    Given Ann has asked Ben for Feedback on a postcard: "How clear was the plan?", shared with everyone in the Workspace
+    And Ben has answered on the postcard: "Very clear."
+    When Cara looks at All Feedback on Home
+    Then "Very clear." is on the postcard of the request, in its own writing
+
+  @api
   Scenario: Home says who is reading it and who can read each piece
     Given Ben has given Cara Feedback: "To everyone.", shared with everyone in the Workspace
     And Ben has given Cara Feedback: "Selects Ann.", shared with Ann

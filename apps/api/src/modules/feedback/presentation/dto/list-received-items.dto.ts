@@ -8,11 +8,7 @@ import { RECEIVED_ITEM_SHOWS } from '../../application/types/personal-item.types
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
 import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
 import { answerSchema } from './get-feedback-request.dto';
-import {
-  feedItemRequestSchema,
-  feedItemSchema,
-  kudosFeedItemSchema,
-} from './list-feed-items.dto';
+import { feedItemSchema, kudosFeedItemSchema } from './list-feed-items.dto';
 import { personSchema } from './person.dto';
 import { answerPostcardSchema, postcardSchema } from './postcard.dto';
 import { tagsSchema } from './tags.dto';
@@ -29,22 +25,10 @@ export class ListReceivedItemsQueryDto extends createZodDto(
   listReceivedItemsQuerySchema,
 ) {}
 
-/** The request an answer was written on, as on Home, and the rest of the card it sits on. */
-const receivedRequestSchema = feedItemRequestSchema.extend({
-  /** How the card looks, or `null` when the request was not written on a postcard. */
-  postcard: postcardSchema.nullable(),
-  /** How the answer's own words look, or `null` when it was not written on the postcard. */
-  answerPostcard: answerPostcardSchema.nullable(),
-});
-
-/** One piece of Feedback, as on Home, at any Visibility, with the card it was written on. */
+/** One piece of Feedback, as on Home, at any Visibility. */
 const receivedFeedbackSchema = feedItemSchema.extend({
   /** Who else may read it. Only me is here: the caller is one of those it is between. */
   visibility: z.enum(VISIBILITIES),
-  /** How it looks, or `null` when it was not written on a postcard, or is an answer. */
-  postcard: postcardSchema.nullable(),
-  /** The card an answer is on, or `null` for Feedback given without being asked. */
-  request: receivedRequestSchema.nullable(),
 });
 
 /** One thing in a Member's own list, Received or Given. */

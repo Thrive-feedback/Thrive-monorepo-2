@@ -7501,6 +7501,117 @@
                         "SELECTED_PEOPLE"
                       ]
                     },
+                    "postcard": {
+                      "type": "object",
+                      "properties": {
+                        "templateKey": {
+                          "type": "string"
+                        },
+                        "tone": {
+                          "type": "string",
+                          "enum": [
+                            "cream",
+                            "sage",
+                            "blush"
+                          ]
+                        },
+                        "textStyle": {
+                          "type": "object",
+                          "properties": {
+                            "font": {
+                              "type": "string",
+                              "enum": [
+                                "modern",
+                                "classic",
+                                "signature"
+                              ]
+                            },
+                            "sizeStep": {
+                              "type": "number"
+                            },
+                            "align": {
+                              "type": "string",
+                              "enum": [
+                                "left",
+                                "center",
+                                "right"
+                              ]
+                            },
+                            "ink": {
+                              "type": "string",
+                              "enum": [
+                                "ink",
+                                "navy",
+                                "forest",
+                                "plum",
+                                "brick"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "font",
+                            "sizeStep",
+                            "align",
+                            "ink"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "stickers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "stickerKey": {
+                                "type": "string"
+                              },
+                              "side": {
+                                "type": "string",
+                                "enum": [
+                                  "front",
+                                  "back"
+                                ]
+                              },
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "scale": {
+                                "type": "number"
+                              },
+                              "rotation": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "stickerKey",
+                              "side",
+                              "x",
+                              "y",
+                              "scale",
+                              "rotation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "stampKey": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "templateKey",
+                        "tone",
+                        "textStyle",
+                        "stickers",
+                        "stampKey"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
                     "request": {
                       "type": "object",
                       "properties": {
@@ -7706,13 +7817,217 @@
                             ],
                             "additionalProperties": false
                           }
+                        },
+                        "postcard": {
+                          "type": "object",
+                          "properties": {
+                            "templateKey": {
+                              "type": "string"
+                            },
+                            "tone": {
+                              "type": "string",
+                              "enum": [
+                                "cream",
+                                "sage",
+                                "blush"
+                              ]
+                            },
+                            "textStyle": {
+                              "type": "object",
+                              "properties": {
+                                "font": {
+                                  "type": "string",
+                                  "enum": [
+                                    "modern",
+                                    "classic",
+                                    "signature"
+                                  ]
+                                },
+                                "sizeStep": {
+                                  "type": "number"
+                                },
+                                "align": {
+                                  "type": "string",
+                                  "enum": [
+                                    "left",
+                                    "center",
+                                    "right"
+                                  ]
+                                },
+                                "ink": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ink",
+                                    "navy",
+                                    "forest",
+                                    "plum",
+                                    "brick"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "font",
+                                "sizeStep",
+                                "align",
+                                "ink"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "stickers": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "stickerKey": {
+                                    "type": "string"
+                                  },
+                                  "side": {
+                                    "type": "string",
+                                    "enum": [
+                                      "front",
+                                      "back"
+                                    ]
+                                  },
+                                  "x": {
+                                    "type": "number"
+                                  },
+                                  "y": {
+                                    "type": "number"
+                                  },
+                                  "scale": {
+                                    "type": "number"
+                                  },
+                                  "rotation": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "stickerKey",
+                                  "side",
+                                  "x",
+                                  "y",
+                                  "scale",
+                                  "rotation"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "stampKey": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "templateKey",
+                            "tone",
+                            "textStyle",
+                            "stickers",
+                            "stampKey"
+                          ],
+                          "additionalProperties": false,
+                          "nullable": true
+                        },
+                        "answerPostcard": {
+                          "type": "object",
+                          "properties": {
+                            "textStyle": {
+                              "type": "object",
+                              "properties": {
+                                "font": {
+                                  "type": "string",
+                                  "enum": [
+                                    "modern",
+                                    "classic",
+                                    "signature"
+                                  ]
+                                },
+                                "sizeStep": {
+                                  "type": "number"
+                                },
+                                "align": {
+                                  "type": "string",
+                                  "enum": [
+                                    "left",
+                                    "center",
+                                    "right"
+                                  ]
+                                },
+                                "ink": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ink",
+                                    "navy",
+                                    "forest",
+                                    "plum",
+                                    "brick"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "font",
+                                "sizeStep",
+                                "align",
+                                "ink"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "stickers": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "stickerKey": {
+                                    "type": "string"
+                                  },
+                                  "side": {
+                                    "type": "string",
+                                    "enum": [
+                                      "front",
+                                      "back"
+                                    ]
+                                  },
+                                  "x": {
+                                    "type": "number"
+                                  },
+                                  "y": {
+                                    "type": "number"
+                                  },
+                                  "scale": {
+                                    "type": "number"
+                                  },
+                                  "rotation": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "stickerKey",
+                                  "side",
+                                  "x",
+                                  "y",
+                                  "scale",
+                                  "rotation"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "textStyle",
+                            "stickers"
+                          ],
+                          "additionalProperties": false,
+                          "nullable": true
                         }
                       },
                       "required": [
                         "message",
                         "tags",
                         "requester",
-                        "asked"
+                        "asked",
+                        "postcard",
+                        "answerPostcard"
                       ],
                       "additionalProperties": false,
                       "nullable": true
@@ -7729,6 +8044,7 @@
                     "tags",
                     "createdAt",
                     "visibility",
+                    "postcard",
                     "request"
                   ],
                   "additionalProperties": false
@@ -8161,6 +8477,117 @@
                         "EVERYONE"
                       ]
                     },
+                    "postcard": {
+                      "type": "object",
+                      "properties": {
+                        "templateKey": {
+                          "type": "string"
+                        },
+                        "tone": {
+                          "type": "string",
+                          "enum": [
+                            "cream",
+                            "sage",
+                            "blush"
+                          ]
+                        },
+                        "textStyle": {
+                          "type": "object",
+                          "properties": {
+                            "font": {
+                              "type": "string",
+                              "enum": [
+                                "modern",
+                                "classic",
+                                "signature"
+                              ]
+                            },
+                            "sizeStep": {
+                              "type": "number"
+                            },
+                            "align": {
+                              "type": "string",
+                              "enum": [
+                                "left",
+                                "center",
+                                "right"
+                              ]
+                            },
+                            "ink": {
+                              "type": "string",
+                              "enum": [
+                                "ink",
+                                "navy",
+                                "forest",
+                                "plum",
+                                "brick"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "font",
+                            "sizeStep",
+                            "align",
+                            "ink"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "stickers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "stickerKey": {
+                                "type": "string"
+                              },
+                              "side": {
+                                "type": "string",
+                                "enum": [
+                                  "front",
+                                  "back"
+                                ]
+                              },
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "scale": {
+                                "type": "number"
+                              },
+                              "rotation": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "stickerKey",
+                              "side",
+                              "x",
+                              "y",
+                              "scale",
+                              "rotation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "stampKey": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "templateKey",
+                        "tone",
+                        "textStyle",
+                        "stickers",
+                        "stampKey"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
                     "request": {
                       "type": "object",
                       "properties": {
@@ -8580,117 +9007,6 @@
                       ],
                       "additionalProperties": false,
                       "nullable": true
-                    },
-                    "postcard": {
-                      "type": "object",
-                      "properties": {
-                        "templateKey": {
-                          "type": "string"
-                        },
-                        "tone": {
-                          "type": "string",
-                          "enum": [
-                            "cream",
-                            "sage",
-                            "blush"
-                          ]
-                        },
-                        "textStyle": {
-                          "type": "object",
-                          "properties": {
-                            "font": {
-                              "type": "string",
-                              "enum": [
-                                "modern",
-                                "classic",
-                                "signature"
-                              ]
-                            },
-                            "sizeStep": {
-                              "type": "number"
-                            },
-                            "align": {
-                              "type": "string",
-                              "enum": [
-                                "left",
-                                "center",
-                                "right"
-                              ]
-                            },
-                            "ink": {
-                              "type": "string",
-                              "enum": [
-                                "ink",
-                                "navy",
-                                "forest",
-                                "plum",
-                                "brick"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "font",
-                            "sizeStep",
-                            "align",
-                            "ink"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "stickers": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "stickerKey": {
-                                "type": "string"
-                              },
-                              "side": {
-                                "type": "string",
-                                "enum": [
-                                  "front",
-                                  "back"
-                                ]
-                              },
-                              "x": {
-                                "type": "number"
-                              },
-                              "y": {
-                                "type": "number"
-                              },
-                              "scale": {
-                                "type": "number"
-                              },
-                              "rotation": {
-                                "type": "number"
-                              }
-                            },
-                            "required": [
-                              "stickerKey",
-                              "side",
-                              "x",
-                              "y",
-                              "scale",
-                              "rotation"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "stampKey": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "templateKey",
-                        "tone",
-                        "textStyle",
-                        "stickers",
-                        "stampKey"
-                      ],
-                      "additionalProperties": false,
-                      "nullable": true
                     }
                   },
                   "required": [
@@ -8704,8 +9020,8 @@
                     "tags",
                     "createdAt",
                     "visibility",
-                    "request",
-                    "postcard"
+                    "postcard",
+                    "request"
                   ],
                   "additionalProperties": false
                 },
@@ -9635,6 +9951,117 @@
                         "EVERYONE"
                       ]
                     },
+                    "postcard": {
+                      "type": "object",
+                      "properties": {
+                        "templateKey": {
+                          "type": "string"
+                        },
+                        "tone": {
+                          "type": "string",
+                          "enum": [
+                            "cream",
+                            "sage",
+                            "blush"
+                          ]
+                        },
+                        "textStyle": {
+                          "type": "object",
+                          "properties": {
+                            "font": {
+                              "type": "string",
+                              "enum": [
+                                "modern",
+                                "classic",
+                                "signature"
+                              ]
+                            },
+                            "sizeStep": {
+                              "type": "number"
+                            },
+                            "align": {
+                              "type": "string",
+                              "enum": [
+                                "left",
+                                "center",
+                                "right"
+                              ]
+                            },
+                            "ink": {
+                              "type": "string",
+                              "enum": [
+                                "ink",
+                                "navy",
+                                "forest",
+                                "plum",
+                                "brick"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "font",
+                            "sizeStep",
+                            "align",
+                            "ink"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "stickers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "stickerKey": {
+                                "type": "string"
+                              },
+                              "side": {
+                                "type": "string",
+                                "enum": [
+                                  "front",
+                                  "back"
+                                ]
+                              },
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "scale": {
+                                "type": "number"
+                              },
+                              "rotation": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "stickerKey",
+                              "side",
+                              "x",
+                              "y",
+                              "scale",
+                              "rotation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "stampKey": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "templateKey",
+                        "tone",
+                        "textStyle",
+                        "stickers",
+                        "stampKey"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
                     "request": {
                       "type": "object",
                       "properties": {
@@ -10054,117 +10481,6 @@
                       ],
                       "additionalProperties": false,
                       "nullable": true
-                    },
-                    "postcard": {
-                      "type": "object",
-                      "properties": {
-                        "templateKey": {
-                          "type": "string"
-                        },
-                        "tone": {
-                          "type": "string",
-                          "enum": [
-                            "cream",
-                            "sage",
-                            "blush"
-                          ]
-                        },
-                        "textStyle": {
-                          "type": "object",
-                          "properties": {
-                            "font": {
-                              "type": "string",
-                              "enum": [
-                                "modern",
-                                "classic",
-                                "signature"
-                              ]
-                            },
-                            "sizeStep": {
-                              "type": "number"
-                            },
-                            "align": {
-                              "type": "string",
-                              "enum": [
-                                "left",
-                                "center",
-                                "right"
-                              ]
-                            },
-                            "ink": {
-                              "type": "string",
-                              "enum": [
-                                "ink",
-                                "navy",
-                                "forest",
-                                "plum",
-                                "brick"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "font",
-                            "sizeStep",
-                            "align",
-                            "ink"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "stickers": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "stickerKey": {
-                                "type": "string"
-                              },
-                              "side": {
-                                "type": "string",
-                                "enum": [
-                                  "front",
-                                  "back"
-                                ]
-                              },
-                              "x": {
-                                "type": "number"
-                              },
-                              "y": {
-                                "type": "number"
-                              },
-                              "scale": {
-                                "type": "number"
-                              },
-                              "rotation": {
-                                "type": "number"
-                              }
-                            },
-                            "required": [
-                              "stickerKey",
-                              "side",
-                              "x",
-                              "y",
-                              "scale",
-                              "rotation"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "stampKey": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "templateKey",
-                        "tone",
-                        "textStyle",
-                        "stickers",
-                        "stampKey"
-                      ],
-                      "additionalProperties": false,
-                      "nullable": true
                     }
                   },
                   "required": [
@@ -10178,8 +10494,8 @@
                     "tags",
                     "createdAt",
                     "visibility",
-                    "request",
-                    "postcard"
+                    "postcard",
+                    "request"
                   ],
                   "additionalProperties": false
                 },
@@ -10549,6 +10865,117 @@
                   "type": "string",
                   "format": "date-time",
                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "postcard": {
+                  "type": "object",
+                  "properties": {
+                    "templateKey": {
+                      "type": "string"
+                    },
+                    "tone": {
+                      "type": "string",
+                      "enum": [
+                        "cream",
+                        "sage",
+                        "blush"
+                      ]
+                    },
+                    "textStyle": {
+                      "type": "object",
+                      "properties": {
+                        "font": {
+                          "type": "string",
+                          "enum": [
+                            "modern",
+                            "classic",
+                            "signature"
+                          ]
+                        },
+                        "sizeStep": {
+                          "type": "number"
+                        },
+                        "align": {
+                          "type": "string",
+                          "enum": [
+                            "left",
+                            "center",
+                            "right"
+                          ]
+                        },
+                        "ink": {
+                          "type": "string",
+                          "enum": [
+                            "ink",
+                            "navy",
+                            "forest",
+                            "plum",
+                            "brick"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "font",
+                        "sizeStep",
+                        "align",
+                        "ink"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "stickers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "stickerKey": {
+                            "type": "string"
+                          },
+                          "side": {
+                            "type": "string",
+                            "enum": [
+                              "front",
+                              "back"
+                            ]
+                          },
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          },
+                          "scale": {
+                            "type": "number"
+                          },
+                          "rotation": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "stickerKey",
+                          "side",
+                          "x",
+                          "y",
+                          "scale",
+                          "rotation"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "stampKey": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "templateKey",
+                    "tone",
+                    "textStyle",
+                    "stickers",
+                    "stampKey"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
                 }
               },
               "required": [
@@ -10558,7 +10985,8 @@
                 "tags",
                 "requester",
                 "status",
-                "createdAt"
+                "createdAt",
+                "postcard"
               ],
               "additionalProperties": false
             }

@@ -67,6 +67,12 @@ Feature: Feedback requests
     Then Ben has read what is waiting: "First." then "Second." then "Third."
 
   @api
+  Scenario: Waiting for me shows each Ask on the postcard it was sent on
+    Given Ann has asked Ben for Feedback on a postcard: "How clear was the plan?"
+    When Ben looks at what is waiting for them
+    Then "How clear was the plan?" is on the postcard it was written on
+
+  @api
   Scenario: Waiting for me refuses an order it does not offer
     When Ben asks for what is waiting in an order that does not exist
     Then Waiting for me refuses the request

@@ -1810,6 +1810,30 @@ export interface components {
                 createdAt: string;
                 /** @enum {string} */
                 visibility: "EVERYONE" | "SELECTED_PEOPLE";
+                postcard: {
+                    templateKey: string;
+                    /** @enum {string} */
+                    tone: "cream" | "sage" | "blush";
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        /** @enum {string} */
+                        side: "front" | "back";
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                    stampKey: string | null;
+                } | null;
                 request: {
                     message: string;
                     tags: {
@@ -1857,6 +1881,50 @@ export interface components {
                             answeredAt: string;
                         } | null;
                     }[];
+                    postcard: {
+                        templateKey: string;
+                        /** @enum {string} */
+                        tone: "cream" | "sage" | "blush";
+                        textStyle: {
+                            /** @enum {string} */
+                            font: "modern" | "classic" | "signature";
+                            sizeStep: number;
+                            /** @enum {string} */
+                            align: "left" | "center" | "right";
+                            /** @enum {string} */
+                            ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                        };
+                        stickers: {
+                            stickerKey: string;
+                            /** @enum {string} */
+                            side: "front" | "back";
+                            x: number;
+                            y: number;
+                            scale: number;
+                            rotation: number;
+                        }[];
+                        stampKey: string | null;
+                    } | null;
+                    answerPostcard: {
+                        textStyle: {
+                            /** @enum {string} */
+                            font: "modern" | "classic" | "signature";
+                            sizeStep: number;
+                            /** @enum {string} */
+                            align: "left" | "center" | "right";
+                            /** @enum {string} */
+                            ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                        };
+                        stickers: {
+                            stickerKey: string;
+                            /** @enum {string} */
+                            side: "front" | "back";
+                            x: number;
+                            y: number;
+                            scale: number;
+                            rotation: number;
+                        }[];
+                    } | null;
                 } | null;
             } | {
                 /** Format: uuid */
@@ -1959,6 +2027,30 @@ export interface components {
                 createdAt: string;
                 /** @enum {string} */
                 visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
+                postcard: {
+                    templateKey: string;
+                    /** @enum {string} */
+                    tone: "cream" | "sage" | "blush";
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        /** @enum {string} */
+                        side: "front" | "back";
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                    stampKey: string | null;
+                } | null;
                 request: {
                     message: string;
                     tags: {
@@ -2050,30 +2142,6 @@ export interface components {
                             rotation: number;
                         }[];
                     } | null;
-                } | null;
-                postcard: {
-                    templateKey: string;
-                    /** @enum {string} */
-                    tone: "cream" | "sage" | "blush";
-                    textStyle: {
-                        /** @enum {string} */
-                        font: "modern" | "classic" | "signature";
-                        sizeStep: number;
-                        /** @enum {string} */
-                        align: "left" | "center" | "right";
-                        /** @enum {string} */
-                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
-                    };
-                    stickers: {
-                        stickerKey: string;
-                        /** @enum {string} */
-                        side: "front" | "back";
-                        x: number;
-                        y: number;
-                        scale: number;
-                        rotation: number;
-                    }[];
-                    stampKey: string | null;
                 } | null;
             } | {
                 /** Format: uuid */
@@ -2288,6 +2356,30 @@ export interface components {
                 createdAt: string;
                 /** @enum {string} */
                 visibility: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE";
+                postcard: {
+                    templateKey: string;
+                    /** @enum {string} */
+                    tone: "cream" | "sage" | "blush";
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        /** @enum {string} */
+                        side: "front" | "back";
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                    stampKey: string | null;
+                } | null;
                 request: {
                     message: string;
                     tags: {
@@ -2380,30 +2472,6 @@ export interface components {
                         }[];
                     } | null;
                 } | null;
-                postcard: {
-                    templateKey: string;
-                    /** @enum {string} */
-                    tone: "cream" | "sage" | "blush";
-                    textStyle: {
-                        /** @enum {string} */
-                        font: "modern" | "classic" | "signature";
-                        sizeStep: number;
-                        /** @enum {string} */
-                        align: "left" | "center" | "right";
-                        /** @enum {string} */
-                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
-                    };
-                    stickers: {
-                        stickerKey: string;
-                        /** @enum {string} */
-                        side: "front" | "back";
-                        x: number;
-                        y: number;
-                        scale: number;
-                        rotation: number;
-                    }[];
-                    stampKey: string | null;
-                } | null;
             } | {
                 /** Format: uuid */
                 id: string;
@@ -2490,6 +2558,30 @@ export interface components {
                 status: "PENDING" | "ANSWERED";
                 /** Format: date-time */
                 createdAt: string;
+                postcard: {
+                    templateKey: string;
+                    /** @enum {string} */
+                    tone: "cream" | "sage" | "blush";
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        /** @enum {string} */
+                        side: "front" | "back";
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                    stampKey: string | null;
+                } | null;
             }[];
             nextCursor: string | null;
         };

@@ -198,6 +198,8 @@ describe('reading Home', () => {
         },
         { giverAccountId: DAN, status: 'PENDING', answer: null },
       ],
+      postcard: null,
+      answerPostcard: null,
     });
     expect(page.items[1]?.request).toBeNull();
   });

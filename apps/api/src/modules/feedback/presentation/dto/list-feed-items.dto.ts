@@ -13,6 +13,7 @@ import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
 import { answerSchema } from './get-feedback-request.dto';
 import { kudosSchema } from './list-workspace-kudos.dto';
 import { personSchema } from './person.dto';
+import { answerPostcardSchema, postcardSchema } from './postcard.dto';
 import { tagsSchema } from './tags.dto';
 
 export const listFeedItemsQuerySchema = z.strictObject({
@@ -31,7 +32,10 @@ const feedItemAskSchema = z.object({
   answer: answerSchema.nullable(),
 });
 
-/** What an answer responds to. Whoever may read the answer reads the others asked too. */
+/**
+ * What an answer responds to, and the card it sits on. Whoever may read the answer reads the others
+ * asked too.
+ */
 export const feedItemRequestSchema = z.object({
   /** The Request message. */
   message: z.string(),
@@ -40,6 +44,10 @@ export const feedItemRequestSchema = z.object({
   requester: personSchema,
   /** Everyone asked, in the order they were asked, the Giver of this answer among them. */
   asked: z.array(feedItemAskSchema).min(1),
+  /** How the card looks, or `null` when the request was not written on a postcard. */
+  postcard: postcardSchema.nullable(),
+  /** How the answer's own words look, or `null` when it was not written on the postcard. */
+  answerPostcard: answerPostcardSchema.nullable(),
 });
 
 /**
@@ -63,6 +71,8 @@ export const feedItemSchema = z.object({
   createdAt: z.iso.datetime({ offset: true }),
   /** Who can read it. Only me is never on Home. */
   visibility: z.enum(FEED_ITEM_VISIBILITIES),
+  /** How it looks, or `null` when it was not written on a postcard, or is an answer. */
+  postcard: postcardSchema.nullable(),
   /** The request an answer responds to, or `null` for Feedback given without being asked. */
   request: feedItemRequestSchema.nullable(),
 });

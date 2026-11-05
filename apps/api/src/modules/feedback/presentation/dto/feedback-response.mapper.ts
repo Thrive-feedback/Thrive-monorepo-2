@@ -1,12 +1,14 @@
 import type {
   FeedbackView,
   FeedItemRequestView,
+  FeedItemView,
   MyAskView,
   PersonView,
   TagsView,
 } from '../../application/types/feedback-request.types';
 import type { KudosView } from '../../application/types/kudos.types';
 import type {
+  PersonalFeedbackView,
   PersonalItemView,
   ReceivedItemView,
 } from '../../application/types/personal-item.types';
@@ -136,7 +138,7 @@ export function toFeedbackResponse(feedback: FeedbackView) {
   };
 }
 
-/** The request an answer responds to and everyone it asked, on the wire. */
+/** The request an answer responds to, everyone it asked and the card it is on, on the wire. */
 export function toFeedItemRequestResponse(request: FeedItemRequestView) {
   return {
     message: request.message,
@@ -151,6 +153,21 @@ export function toFeedItemRequestResponse(request: FeedItemRequestView) {
         answeredAt: ask.answer.answeredAt.toISOString(),
       },
     })),
+    postcard: toPostcardResponse(request.postcard),
+    answerPostcard: toAnswerPostcardResponse(request.answerPostcard),
+  };
+}
+
+/**
+ * One piece of Feedback on Home or in a Member's own list, with the card it is on, on the wire. The
+ * caller adds its Visibility, which Home declares narrower than a Member's own list.
+ */
+export function toFeedItemResponse(item: FeedItemView | PersonalFeedbackView) {
+  return {
+    kind: item.kind,
+    ...toFeedbackResponse(item),
+    postcard: toPostcardResponse(item.postcard),
+    request: item.request && toFeedItemRequestResponse(item.request),
   };
 }
 
@@ -159,17 +176,7 @@ export function toPersonalItemResponse(item: PersonalItemView) {
   if (item.kind === 'KUDOS') {
     return { kind: item.kind, ...toKudosResponse(item) };
   }
-  return {
-    kind: item.kind,
-    ...toFeedbackResponse(item),
-    visibility: item.visibility,
-    postcard: toPostcardResponse(item.postcard),
-    request: item.request && {
-      ...toFeedItemRequestResponse(item.request),
-      postcard: toPostcardResponse(item.request.postcard),
-      answerPostcard: toAnswerPostcardResponse(item.request.answerPostcard),
-    },
-  };
+  return { ...toFeedItemResponse(item), visibility: item.visibility };
 }
 
 /** One thing in the caller's Received on the wire, a request among them. */
