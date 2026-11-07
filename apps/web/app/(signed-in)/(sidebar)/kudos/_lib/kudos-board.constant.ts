@@ -26,3 +26,6 @@ export const KUDOS_BOARD_COLUMN =
  */
 export const KUDOS_BOARD_GRID =
   'grid-cols-2 gap-x-4 p-2 md:grid-cols-3 md:gap-x-5 md:p-4 lg:grid-cols-4 xl:grid-cols-5 xl:gap-x-6';
+
+/** The board's edge, with cards on it or none: a hairline as light as a panel's, round at the page's corner. */
+export const KUDOS_BOARD_EDGE = 'rounded-page border border-border-muted';

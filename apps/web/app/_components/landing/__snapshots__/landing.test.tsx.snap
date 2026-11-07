@@ -35,7 +35,7 @@ exports[`Landing > renders the same page 1`] = `
       />
     </div>
     <header
-      class="sticky top-0 z-40 flex h-18 shrink-0 items-center justify-between gap-gap-nav px-inset-container _clearAtTop_b74fbf _glass_b74fbf _neutral_b74fbf"
+      class="z-40 flex h-18 shrink-0 items-center justify-between gap-gap-nav px-inset-container _clearAtTop_b74fbf sticky top-0 _glass_b74fbf _neutral_b74fbf"
     >
       <a
         class="rounded-element"

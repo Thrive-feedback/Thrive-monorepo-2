@@ -2,6 +2,7 @@
 
 import { useCallback, useId, useRef, useState } from 'react';
 import {
+  KUDOS_BOARD_EDGE,
   KUDOS_BOARD_GRID,
   KUDOS_BOARD_READ_SIZE,
   KUDOS_BOARD_ROWS,
@@ -85,7 +86,7 @@ export function KudosBoardPages({
         ref={boardRef}
         aria-label={month ? `Kudos of ${kudosMonthName(month)}` : 'All Kudos'}
         {...swipe}
-        className={cn('touch-pan-y', styles.board)}
+        className={cn('touch-pan-y', KUDOS_BOARD_EDGE, styles.board)}
       >
         <span id={hintId} className="sr-only">
           Press it to read it large, and double-click it to turn it over. The
@@ -94,6 +95,7 @@ export function KudosBoardPages({
         </span>
         <div
           ref={trackRef}
+          data-kudos-board-track
           style={{ '--kudos-board-page': index } as React.CSSProperties}
           className={styles.track}
         >

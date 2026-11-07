@@ -36,7 +36,12 @@ type Gesture = {
   moved: KudosBoardOffset | null;
 };
 
-/** How far a card now `at` this offset can go and stay on the board, in offsets. */
+/**
+ * How far a card now `at` this offset can go and stay on the board, in offsets: inside its edge by
+ * as much as the cards hang in from it, so a card in the hand never meets the edge or has its shadow
+ * cut there. That inset is read from where the strip of pages starts below the board's top, since
+ * the strip moves sideways as pages turn but never up or down.
+ */
 function limitsOf(
   card: HTMLElement,
   board: HTMLElement,
@@ -44,11 +49,13 @@ function limitsOf(
 ): Limits {
   const cardBox = card.getBoundingClientRect();
   const boardBox = board.getBoundingClientRect();
+  const track = card.closest('[data-kudos-board-track]');
+  const inset = track ? track.getBoundingClientRect().top - boardBox.top : 0;
   return {
-    minX: at.x - (cardBox.left - boardBox.left),
-    maxX: at.x + (boardBox.right - cardBox.right),
-    minY: at.y - (cardBox.top - boardBox.top),
-    maxY: at.y + (boardBox.bottom - cardBox.bottom),
+    minX: at.x - (cardBox.left - boardBox.left - inset),
+    maxX: at.x + (boardBox.right - inset - cardBox.right),
+    minY: at.y - (cardBox.top - boardBox.top - inset),
+    maxY: at.y + (boardBox.bottom - inset - cardBox.bottom),
   };
 }
 

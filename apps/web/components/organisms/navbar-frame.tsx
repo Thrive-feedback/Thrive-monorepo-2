@@ -4,19 +4,32 @@ import { cn } from '@/lib/cn.util';
 import styles from './glass.module.css';
 
 const frame = cva(
-  'sticky top-0 z-40 flex h-18 shrink-0 items-center justify-between gap-gap-nav px-inset-container',
+  'z-40 flex h-18 shrink-0 items-center justify-between gap-gap-nav px-inset-container',
   {
     variants: {
       curve: {
         true: styles.curvesDown,
         false: '',
       },
-      clearAtTop: {
-        true: styles.clearAtTop,
-        false: '',
+      /**
+       * What the bar is drawn on. `glass` is frosted, held at the top as the page scrolls under it.
+       * `glassClearAtTop` is the same, but clear while the page sits at its top, for a page whose top
+       * is its own. `clear` has no glass at all and is not held at the top: the page's ground runs
+       * behind it and it scrolls away with the page, so nothing ever passes under a bar that has
+       * nothing to hide it.
+       */
+      surface: {
+        glass: cn('sticky top-0', styles.glass, styles.neutral),
+        glassClearAtTop: cn(
+          styles.clearAtTop,
+          'sticky top-0',
+          styles.glass,
+          styles.neutral,
+        ),
+        clear: 'relative',
       },
     },
-    defaultVariants: { curve: true, clearAtTop: false },
+    defaultVariants: { curve: true, surface: 'glass' },
   },
 );
 
@@ -32,18 +45,16 @@ export type NavbarFrameProps = VariantProps<typeof frame> & {
  * and the caller's controls after it. It knows nothing of the session, so a page that must not
  * ask the API, such as the landing page, can stand on it too. `curve` tucks the page's corners
  * under the bar, for a page drawn as a sheet; a page that runs edge to edge leaves it off.
- * `clearAtTop` keeps the bar clear until the page scrolls, for a page whose top is its own.
+ * `surface` says what the bar is drawn on.
  */
 export function NavbarFrame({
   logoHref,
   curve,
-  clearAtTop,
+  surface,
   children,
 }: NavbarFrameProps) {
   return (
-    <header
-      className={cn(frame({ curve, clearAtTop }), styles.glass, styles.neutral)}
-    >
+    <header className={frame({ curve, surface })}>
       <NavbarLogo href={logoHref} />
       {children}
     </header>

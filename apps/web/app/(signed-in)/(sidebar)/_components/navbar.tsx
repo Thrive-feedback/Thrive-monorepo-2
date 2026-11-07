@@ -6,7 +6,8 @@ import { WorkspaceSelector } from './workspace-selector';
 
 /**
  * Home's navbar: the Member navbar, its logo leading Home, with the Workspace
- * the person is in after it, "Thrive × Acme", from which they switch (brain `ADR-0049`).
+ * the person is in after it, "Thrive × Acme", from which they switch (brain `ADR-0049`). Settings
+ * and the person's avatar are at the foot of the sidebar instead, wherever there is one.
  *
  * Their Workspaces are read only once the membership says someone is in one: for anybody else
  * there are none to read, and the page sends them where they belong.
@@ -16,7 +17,7 @@ export async function Navbar() {
   const workspaces = membership ? await readMyWorkspaces() : null;
 
   return (
-    <MemberNavbar>
+    <MemberNavbar isAccountInSidebar>
       {membership && workspaces && (
         <>
           <XIcon

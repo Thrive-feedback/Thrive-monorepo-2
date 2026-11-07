@@ -10,10 +10,10 @@ import { WaitingAsksSkeleton } from './_components/waiting-asks';
  */
 export default function WaitingLoading() {
   return (
-    <div className={cn(PAGE_COLUMN, 'flex flex-col gap-4')}>
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+    <div className={cn(PAGE_COLUMN, 'flex flex-col gap-11')}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <PageTitle>Waiting for me</PageTitle>
-        <Skeleton className="h-10 w-32 md:w-44" />
+        <Skeleton className="ms-auto h-10 w-32 md:w-44" />
       </div>
       <WaitingAsksSkeleton />
     </div>

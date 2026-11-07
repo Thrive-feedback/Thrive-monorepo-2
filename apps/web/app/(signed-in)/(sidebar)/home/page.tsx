@@ -81,7 +81,7 @@ export default async function Home({ searchParams }: HomeProps) {
           then={showing}
         />
       )}
-      <div className={cn(PAGE_COLUMN, 'flex flex-col gap-8')}>
+      <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-8')}>
         {/* Most people have no Invitation waiting, so no space is held for one while it is read. */}
         <Suspense fallback={null}>
           <InvitationNotices />
@@ -100,7 +100,9 @@ export default async function Home({ searchParams }: HomeProps) {
             />
           </Suspense>
         </div>
-        <div className="flex flex-col gap-4">
+        {/* Grows to the foot of the page, so an empty feed sits in the middle of what is left. The
+            gap clears the note by hand that rises above the first card's small postcard. */}
+        <div className="flex flex-1 flex-col gap-11">
           <div className="flex items-center justify-end gap-3 md:justify-between">
             <HandwrittenNote size="md" tilt="left" className="hidden md:block">
               what your team's been saying

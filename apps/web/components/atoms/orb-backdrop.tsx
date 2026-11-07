@@ -12,6 +12,7 @@ const orb = cva(cn('absolute', styles.orb), {
     tint: {
       primary: cn(styles.primary, 'opacity-25'),
       secondary: cn(styles.secondary, 'opacity-25'),
+      tertiary: cn(styles.tertiary, 'opacity-20'),
       neutral: cn(styles.neutral, 'opacity-10'),
     },
   },
@@ -20,9 +21,10 @@ const orb = cva(cn('absolute', styles.orb), {
 /**
  * Where each orb sits, how deep it is, and its colour. They keep to the margins either side of
  * the page's column. On a long `page` the nearer ones start below the fold so the scroll brings
- * them up; a `screen` that fits the window keeps all of them at its corners, in the brand's two colours
- * only, since the ink's grey haze reads as a smudge without a long page to spread over; where they
- * reach under a panel, its glass catches their colour.
+ * them up; a `screen` that fits the window keeps all of them at its edges, in the three colours of
+ * what Thrive does (giving, asking and thanking) only, since the ink's grey haze reads as a smudge
+ * without a long page to spread over; where they reach under a panel, its glass catches their
+ * colour.
  */
 const ORBS = {
   page: [
@@ -38,8 +40,8 @@ const ORBS = {
   screen: [
     { depth: 'far', tint: 'primary', at: '-top-60 -left-50' },
     { depth: 'mid', tint: 'secondary', at: 'top-1/3 -right-50' },
-    { depth: 'near', tint: 'primary', at: '-bottom-30 -right-10' },
     { depth: 'near', tint: 'secondary', at: '-bottom-50 -left-30' },
+    { depth: 'mid', tint: 'tertiary', at: '-top-60 -right-10' },
   ],
 } as const;
 
@@ -49,9 +51,9 @@ export type OrbBackdropProps = {
 };
 
 /**
- * The signed-out ground: soft circles of light in the brand's purple and orange and in the
- * page's own ink, drifting behind the page at three depths as it scrolls. Pure decoration, fixed
- * behind everything, never in the way of a pointer or a screen reader.
+ * The signed-out ground: soft circles of light in the brand's purple, the blue of asking and the
+ * warm orange, and in the page's own ink, drifting behind the page at three depths as it scrolls.
+ * Pure decoration, fixed behind everything, never in the way of a pointer or a screen reader.
  */
 export function OrbBackdrop({ spread }: OrbBackdropProps) {
   return (

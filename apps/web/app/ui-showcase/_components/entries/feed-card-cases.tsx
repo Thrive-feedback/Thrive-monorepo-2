@@ -1,6 +1,5 @@
 import { StateCell } from '@/app/ui-showcase/_components/showcase-entry';
 import { FeedCard } from '@/components/organisms/feed-card/feed-card';
-import { cn } from '@/lib/cn.util';
 import {
   type FeedCardCase,
   SAMPLE_READER,
@@ -13,9 +12,9 @@ export type FeedCardCasesProps = {
 
 /** One labelled cell for each case a card can be in, as Ann reads it. */
 export function FeedCardCases({ cases }: FeedCardCasesProps) {
-  return cases.map(({ label, hint, item, isNarrow }) => (
+  return cases.map(({ label, hint, item }) => (
     <StateCell key={label} label={label} hint={hint} wide>
-      <div className={cn('w-full', isNarrow ? 'max-w-90' : 'max-w-180')}>
+      <div className="w-full max-w-180">
         <FeedCard
           item={item}
           readerAccountId={SAMPLE_READER}

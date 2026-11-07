@@ -203,8 +203,6 @@ export type FeedCardCase = {
   label: string;
   hint?: string;
   item: HomeFeedItem;
-  /** Drawn at a phone's width. */
-  isNarrow?: boolean;
 };
 
 /**
@@ -254,16 +252,6 @@ export const OFFERED_CASES: readonly FeedCardCase[] = [
       giver: DEACTIVATED,
       receivers: [NOT_INTRODUCED],
     },
-  },
-  {
-    label: 'At a phone’s width, with a very long name',
-    hint: 'Who can read it runs under the small postcard.',
-    item: {
-      ...SAMPLE_OFFERED,
-      giver: LONG_NAME,
-      receivers: [BEN, ANN, DAO],
-    },
-    isNarrow: true,
   },
 ];
 
@@ -401,11 +389,5 @@ export const REQUESTED_CASES: readonly FeedCardCase[] = [
         ],
       },
     },
-  },
-  {
-    label: 'At a phone’s width, with a very long name',
-    hint: 'Who can read it runs under the small postcard.',
-    item: { ...SAMPLE_REQUESTED, giver: LONG_NAME },
-    isNarrow: true,
   },
 ];

@@ -16,7 +16,7 @@ export function RequestedFeedbackCardEntry() {
       level="organism"
       origin="thrive"
       source="components/organisms/feed-card/requested-feedback-card.tsx — FeedCardFrame (FeedCardColumns + FeedCardPreview) + FeedbackText"
-      summary="An answer to a Feedback Request, in Home's feed: the same card as OfferedFeedbackCard, with what was asked above the answer, who else was asked under it, and a small postcard halved as the real one is."
+      summary="An answer to a Feedback Request, in Home's feed: the same card as OfferedFeedbackCard, with what was asked in a panel above the answer, headed Asked and Answered, everyone asked under it (this answer first), and a small postcard halved as the real one is."
       useFor="One answer in the Home menu."
       avoidFor="The landing page's preview of Home, which keeps FeedbackCard. Feedback kept to the person who asked, which is never on Home."
       usage={`import { RequestedFeedbackCard } from '@/components/organisms/feed-card/requested-feedback-card';
@@ -36,8 +36,7 @@ export function RequestedFeedbackCardEntry() {
         {
           name: 'readerAccountId',
           type: 'string',
-          description:
-            'Who is reading, so the card can say "You" and "You asked:".',
+          description: 'Who is reading, so the card can say "You".',
         },
         {
           name: 'target',
@@ -49,7 +48,7 @@ export function RequestedFeedbackCardEntry() {
       accessibility={[
         'The small postcard is the one link on the card, named "Open postcard:" and who wrote to whom.',
         'What was asked is read before the answer, in the order the card shows them.',
-        'The faces under Also asked are one button that speaks every name. The Show and Read buttons say whether they are open, and each Read button names whose answer it opens.',
+        'The faces under Asked are one button that speaks every name. The Show and Read buttons say whether they are open, and each Read button names whose answer it opens.',
         'The small postcard is a drawing, hidden from screen readers, and straightens under keyboard focus as it does under the cursor.',
       ]}
     >

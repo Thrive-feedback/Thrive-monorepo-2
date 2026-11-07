@@ -25,6 +25,10 @@
   --orb-colour: var(--action-secondary);
 }
 
+.tertiary {
+  --orb-colour: var(--action-tertiary);
+}
+
 /* The page's own ink: a light grey haze on the light theme, a soft white on the dark. */
 .neutral {
   --orb-colour: var(--fg-primary);

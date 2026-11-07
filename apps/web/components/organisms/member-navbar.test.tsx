@@ -57,6 +57,27 @@ describe('MemberNavbar', () => {
     ).toHaveAttribute('href', '/settings/account');
   });
 
+  it('keeps Settings and the avatar off a wide screen when the page’s sidebar holds them', async () => {
+    readSession.mockResolvedValue(ANN);
+
+    render(await MemberNavbar({ isAccountInSidebar: true }));
+
+    // A phone has no sidebar, so they stay in the bar there; jsdom cannot apply the breakpoint.
+    expect(
+      screen.getByRole('link', { name: 'Settings' }).parentElement,
+    ).toHaveClass('md:hidden');
+  });
+
+  it('keeps Settings and the avatar at every width where the page has no sidebar', async () => {
+    readSession.mockResolvedValue(ANN);
+
+    render(await MemberNavbar());
+
+    expect(
+      screen.getByRole('link', { name: 'Settings' }).parentElement,
+    ).not.toHaveClass('md:hidden');
+  });
+
   it('has no colour mode switch, since that is in Settings', async () => {
     readSession.mockResolvedValue(ANN);
 

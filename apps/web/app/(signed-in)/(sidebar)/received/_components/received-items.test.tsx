@@ -104,6 +104,7 @@ describe('ReceivedItems', () => {
   });
 
   it('draws what was written', async () => {
+    address = new URLSearchParams({ view: 'grid' });
     theApiAnswers({
       readerAccountId: READER,
       items: [
@@ -181,13 +182,14 @@ describe('ReceivedItems', () => {
       }),
     ).toHaveAttribute(
       'href',
-      `/received?show=requests&view=list&feedback=${A_REQUEST.asked[0]?.answer?.id}`,
+      `/received?show=requests&feedback=${A_REQUEST.asked[0]?.answer?.id}`,
     );
     expect(screen.getByText('Cara Diaz (inactive)')).toBeInTheDocument();
     expect(screen.getByText('Pending')).toBeInTheDocument();
   });
 
   it('draws a request nobody answered in the grid as a box that opens nothing', async () => {
+    address = new URLSearchParams({ view: 'grid' });
     theApiAnswers({
       readerAccountId: READER,
       items: [
@@ -287,26 +289,31 @@ describe('ReceivedItems', () => {
       );
       expect(postcards[0]).toHaveAttribute(
         'href',
-        '/received?show=requests&view=list&feedback=0199a0f0-0000-7000-8000-0000000000a2',
+        '/received?show=requests&feedback=0199a0f0-0000-7000-8000-0000000000a2',
       );
       expect(postcards[1]).toHaveAccessibleName(
         /^Open postcard: answer from Ben Carter/,
       );
       expect(postcards[1]).toHaveAttribute(
         'href',
-        '/received?show=requests&view=list&feedback=0199a0f0-0000-7000-8000-0000000000a1',
+        '/received?show=requests&feedback=0199a0f0-0000-7000-8000-0000000000a1',
       );
     });
 
-    it("points at the newest answer's postcard alone, by hand", async () => {
+    it("points at every answer's postcard by hand on a phone, and only the newest one beside the words", async () => {
       const card = await drawTheList(MANY_ASKED);
 
       const notes = card.getAllByText('Read their postcards');
-      expect(notes).toHaveLength(1);
+      expect(notes).toHaveLength(2);
       const newest = card
         .getByRole('link', { name: /^Open postcard: answer from Dan Moss/ })
         .closest('li');
-      expect(newest).toContainElement(notes[0] ?? null);
+      const [first, second] = notes.map((note) =>
+        note.closest<HTMLElement>('[aria-hidden="true"]'),
+      );
+      expect(newest).toContainElement(first ?? null);
+      expect(first).not.toHaveClass('md:hidden');
+      expect(second).toHaveClass('md:hidden');
     });
 
     it('says nothing of how many answered, which the faces already show', async () => {

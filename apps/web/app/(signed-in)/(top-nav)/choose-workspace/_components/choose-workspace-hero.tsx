@@ -15,7 +15,7 @@ export function ChooseWorkspaceHero() {
       >
         Where to <HandUnderline>today?</HandUnderline>
       </Text>
-      <Text variant="body-1" tone="muted" className="md:text-subtitle-1">
+      <Text variant="body-1" tone="muted">
         You belong to more than one Workspace.
         <br />
         Choose the one to open on this device.

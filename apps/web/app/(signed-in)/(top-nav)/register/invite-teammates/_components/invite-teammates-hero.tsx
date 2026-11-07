@@ -17,8 +17,8 @@ export function InviteTeammatesHero() {
       >
         Thrive is better <HandUnderline>together</HandUnderline>
       </Text>
-      <Text variant="body-1" tone="muted" className="md:text-subtitle-1">
-        Who else deserves a kudo today? Invite them in.
+      <Text variant="body-1" tone="muted">
+        Who else deserves Kudos today? Invite them in.
       </Text>
     </div>
   );

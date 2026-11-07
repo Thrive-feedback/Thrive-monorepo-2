@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { InviteResult } from '@/app/(signed-in)/(top-nav)/register/invite-teammates/_lib/invite-teammates-state.type';
+import { Badge, type BadgeTone } from '@/components/atoms/badge';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 
@@ -8,25 +9,25 @@ export type InviteResultsProps = {
   onContinue: () => void;
 };
 
-/** How each outcome reads beside its address. */
+/** How each outcome reads in the badge under its address, standing on its own. */
 const OUTCOME_TEXT: Readonly<Record<InviteResult['outcome'], string>> = {
   invited: 'Invitation sent',
-  already_member: 'is already in this Workspace',
-  already_invited: 'already has a pending Invitation',
+  already_member: 'Already in this Workspace',
+  already_invited: 'Invitation already pending',
   failed: "Couldn't send",
 };
 
 /**
- * How serious each outcome is, in the status's own colour: sent is success, already in is only
- * information, already invited means no new email went out, and failed is an error. The status
- * colour itself, not its `-fg` role, which is near-black text meant for a status surface. The
- * words above carry the same meaning, so nothing depends on seeing the colour.
+ * How serious each outcome is, as the status badge every screen draws it with: sent is success,
+ * already in is only information, already invited means no new email went out, and failed is an
+ * error. A badge sets its words on the status's own surface, so they read at any size; the status
+ * colour as bare text is too light to. The words carry the meaning, so nothing depends on the colour.
  */
-const OUTCOME_COLOUR: Readonly<Record<InviteResult['outcome'], string>> = {
-  invited: 'text-status-success',
-  already_member: 'text-status-info',
-  already_invited: 'text-status-warning',
-  failed: 'text-status-error',
+const OUTCOME_TONES: Readonly<Record<InviteResult['outcome'], BadgeTone>> = {
+  invited: 'success',
+  already_member: 'info',
+  already_invited: 'warning',
+  failed: 'error',
 };
 
 /**
@@ -49,18 +50,14 @@ export function InviteResults({ results, onContinue }: InviteResultsProps) {
         {results.map((result) => (
           <li
             key={`${result.email}-${result.outcome}`}
-            className="flex flex-col"
+            className="flex flex-col items-start gap-1"
           >
             <Text as="span" variant="body-1" className="break-all">
               {result.email}
             </Text>
-            <Text
-              as="span"
-              variant="body-2"
-              className={OUTCOME_COLOUR[result.outcome]}
-            >
+            <Badge tone={OUTCOME_TONES[result.outcome]}>
               {OUTCOME_TEXT[result.outcome]}
-            </Text>
+            </Badge>
           </li>
         ))}
       </ul>

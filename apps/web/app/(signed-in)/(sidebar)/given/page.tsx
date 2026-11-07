@@ -37,7 +37,8 @@ export default async function Given({ searchParams }: GivenProps) {
 
   return (
     <>
-      <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-6')}>
+      {/* The gap clears the note by hand that rises above the first card's small postcard. */}
+      <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-11')}>
         <PersonalItemsHeading side="given" />
         <Suspense fallback={<PersonalItemsLoading view={view} />}>
           <GivenItems session={session} />

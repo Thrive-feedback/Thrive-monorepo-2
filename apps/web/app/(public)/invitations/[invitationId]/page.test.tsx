@@ -76,9 +76,7 @@ describe('InvitationPage', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Do you want to join?')).toBeInTheDocument();
     expect(screen.getByText('“Acme”')).toHaveClass('text-fg-accent');
-    expect(screen.getByText('som•••@acme.co')).toHaveClass(
-      'text-action-secondary',
-    );
+    expect(screen.getByText('som•••@acme.co')).toHaveClass('text-fg-accent');
     expect(
       screen.getByRole('button', { name: 'Continue with Google' }),
     ).toBeInTheDocument();

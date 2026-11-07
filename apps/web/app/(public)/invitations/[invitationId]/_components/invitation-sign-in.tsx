@@ -20,11 +20,7 @@ export function InvitationSignIn({ invitation }: InvitationSignInProps) {
         <InvitationHeading invitation={invitation} />
         <Text variant="body-2" tone="muted">
           Continue with the Google account for{' '}
-          <Text
-            as="span"
-            variant="body-2"
-            className="font-medium text-action-secondary"
-          >
+          <Text as="span" variant="body-2" tone="brand" className="font-medium">
             {invitation.invitedEmailMasked}
           </Text>
           , the address this invitation was sent to.

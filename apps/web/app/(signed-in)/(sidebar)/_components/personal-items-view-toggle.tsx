@@ -8,16 +8,20 @@ import {
 import { usePersonalItemsView } from '@/app/(signed-in)/(sidebar)/_lib/use-personal-items-view';
 import { useReceivedShow } from '@/app/(signed-in)/(sidebar)/_lib/use-received-show';
 import { Toggle } from '@/components/atoms/toggle';
-import type { PersonalView } from '@/lib/routes.constant';
+import { PERSONAL_VIEWS, type PersonalView } from '@/lib/routes.constant';
 
-const VIEWS: readonly {
-  value: PersonalView;
-  label: string;
-  Icon: typeof ListIcon;
-}[] = [
-  { value: 'grid', label: 'Grid view', Icon: LayoutGridIcon },
-  { value: 'list', label: 'List view', Icon: ListIcon },
-];
+/**
+ * How each view is named and drawn. They are offered in the order of `PERSONAL_VIEWS`, so the view
+ * a page opens on comes first.
+ */
+const VIEW_LOOKS: Readonly<
+  Record<PersonalView, { label: string; Icon: typeof ListIcon }>
+> = {
+  list: { label: 'List view', Icon: ListIcon },
+  grid: { label: 'Grid view', Icon: LayoutGridIcon },
+};
+
+const VIEWS = PERSONAL_VIEWS.map((value) => ({ value, ...VIEW_LOOKS[value] }));
 
 export type PersonalItemsViewToggleProps = {
   /** Whose address to keep the choice in. */

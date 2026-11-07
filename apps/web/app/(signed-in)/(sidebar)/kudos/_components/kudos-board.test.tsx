@@ -98,12 +98,29 @@ function moveButton(giver = 'Mali Chaiyo') {
 }
 
 /** Each box a card is measured in, inside a board of this width. */
+/** How far in from the board's edge its strip of pages, and so its cards, start. */
+const BOARD_INSET = 16;
+
 function measureBoard(boardWidth: number) {
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
     function (this: HTMLElement) {
-      return this.tagName === 'SECTION'
-        ? DOMRect.fromRect({ x: 0, y: 0, width: boardWidth, height: 1000 })
-        : DOMRect.fromRect({ x: 100, y: 100, width: 200, height: 300 });
+      if (this.tagName === 'SECTION') {
+        return DOMRect.fromRect({
+          x: 0,
+          y: 0,
+          width: boardWidth,
+          height: 1000,
+        });
+      }
+      if (this.hasAttribute('data-kudos-board-track')) {
+        return DOMRect.fromRect({
+          x: BOARD_INSET,
+          y: BOARD_INSET,
+          width: boardWidth - BOARD_INSET * 2,
+          height: 1000 - BOARD_INSET * 2,
+        });
+      }
+      return DOMRect.fromRect({ x: 100, y: 100, width: 200, height: 300 });
     },
   );
 }
@@ -524,9 +541,10 @@ describe('moving cards and tidying up', () => {
     expect(tidyUp()).toBeDisabled();
   });
 
-  it('keeps a card on the board', async () => {
+  it('keeps a card on the board, as far in from its edge as the cards hang', async () => {
     const user = userEvent.setup();
-    measureBoard(310);
+    // The card's right side is at 300, so it can go 10px before the inset that starts at 326 - 16.
+    measureBoard(310 + BOARD_INSET);
     draw(pageOf(['k1']));
 
     moveButton().focus();

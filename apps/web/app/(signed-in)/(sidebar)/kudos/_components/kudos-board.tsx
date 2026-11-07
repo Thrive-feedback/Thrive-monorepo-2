@@ -1,4 +1,5 @@
 import {
+  KUDOS_BOARD_EDGE,
   KUDOS_BOARD_GRID,
   KUDOS_BOARD_READ_SIZE,
 } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board.constant';
@@ -34,7 +35,11 @@ export async function KudosBoard({ session, month }: KudosBoardProps) {
   ]);
   const [newest] = firstPage.items;
   if (!newest) {
-    return <KudosBoardEmpty session={session} month={month} />;
+    return (
+      <div className={cn(KUDOS_BOARD_EDGE, styles.emptyBoard)}>
+        <KudosBoardEmpty session={session} month={month} />
+      </div>
+    );
   }
 
   return (
@@ -55,7 +60,7 @@ export async function KudosBoard({ session, month }: KudosBoardProps) {
 export function KudosBoardSkeleton() {
   return (
     <>
-      <div className={styles.board}>
+      <div className={cn(KUDOS_BOARD_EDGE, styles.board)}>
         <div className={styles.track}>
           <div className={cn(KUDOS_BOARD_GRID, styles.page)}>
             {Array.from({ length: KUDOS_BOARD_READ_SIZE }, (_, place) => (

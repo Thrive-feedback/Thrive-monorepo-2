@@ -9,11 +9,11 @@ import type { FeedCardTone } from './feed-card-tone.type';
  * The right column, one width on every card so the lines run straight down a list, with room above
  * and below a small card so those in rows one after another never touch. A row with nothing in it
  * still draws the line, so the line runs unbroken down a card of several rows; on a phone, where the
- * line turns across, such a row has no right column at all, and the small card keeps to the right so
- * its note has room to point at it from the left. It holds that note, which may run past it.
+ * line turns across, such a row has no right column at all, and the small card and its note stand
+ * side by side in the middle of the card. It holds that note, which may run past it.
  */
 const asideColumn = cva(
-  'relative shrink-0 items-center justify-end border-surface-base md:flex md:w-36 md:justify-center md:border-s-2 md:ps-5 lg:w-40',
+  'relative shrink-0 items-center justify-center border-surface-base md:flex md:w-36 md:border-s-2 md:ps-5 lg:w-40',
   {
     variants: {
       isEmpty: {
@@ -41,6 +41,8 @@ export type FeedCardRowProps = {
   aside?: React.ReactNode;
   /** A few words by hand pointing at that card, saying what pressing it gives. */
   note?: string;
+  /** Whether the note is drawn on a phone only, as `FeedCardNote` describes. */
+  isNotePhoneOnly?: boolean;
   /** What it says, in the left column. */
   children: React.ReactNode;
 };
@@ -51,15 +53,29 @@ export type FeedCardRowProps = {
  * what it says. A card about one thing is one row; a card holding several, such as a request and
  * its answers, is a row for each.
  */
-export function FeedCardRow({ tone, aside, note, children }: FeedCardRowProps) {
+export function FeedCardRow({
+  tone,
+  aside,
+  note,
+  isNotePhoneOnly,
+  children,
+}: FeedCardRowProps) {
   const isEmpty = aside === undefined;
 
   return (
     <div className="flex flex-col md:flex-row">
       <div className={mainColumn({ isAsideEmpty: isEmpty })}>{children}</div>
       <div className={asideColumn({ isEmpty })}>
-        {note && <FeedCardNote tone={tone}>{note}</FeedCardNote>}
-        {aside}
+        {/* The note is placed against the small card, not the column, so it points at the card
+            however tall the row beside it grows. */}
+        <div className="relative flex items-center gap-3">
+          {note && (
+            <FeedCardNote tone={tone} isPhoneOnly={isNotePhoneOnly}>
+              {note}
+            </FeedCardNote>
+          )}
+          {aside}
+        </div>
       </div>
     </div>
   );

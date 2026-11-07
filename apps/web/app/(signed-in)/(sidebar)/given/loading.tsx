@@ -2,6 +2,7 @@ import { PersonalItemsHeading } from '@/app/(signed-in)/(sidebar)/_components/pe
 import { PersonalItemsLoading } from '@/app/(signed-in)/(sidebar)/_components/personal-items-skeleton';
 import { PAGE_COLUMN } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
 import { cn } from '@/lib/cn.util';
+import { PERSONAL_VIEWS } from '@/lib/routes.constant';
 
 /**
  * Given while the server builds it. The navbar and sidebar stay in place, and the heading is known
@@ -10,9 +11,9 @@ import { cn } from '@/lib/cn.util';
  */
 export default function GivenLoading() {
   return (
-    <div className={cn(PAGE_COLUMN, 'flex flex-col gap-6')}>
+    <div className={cn(PAGE_COLUMN, 'flex flex-col gap-11')}>
       <PersonalItemsHeading side="given" />
-      <PersonalItemsLoading view="grid" />
+      <PersonalItemsLoading view={PERSONAL_VIEWS[0]} />
     </div>
   );
 }

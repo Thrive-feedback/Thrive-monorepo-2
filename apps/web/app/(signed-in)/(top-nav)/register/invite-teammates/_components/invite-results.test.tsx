@@ -10,19 +10,21 @@ const RESULTS = [
 ] as const;
 
 describe('InviteResults', () => {
-  it('says what happened to each address, in the colour of how serious it is', () => {
+  it('says what happened to each address, in the badge of how serious it is', () => {
     render(<InviteResults results={RESULTS} onContinue={vi.fn()} />);
 
     expect(screen.getByText('Invitation sent')).toHaveClass(
-      'text-status-success',
+      'text-status-success-fg',
     );
-    expect(screen.getByText('is already in this Workspace')).toHaveClass(
-      'text-status-info',
+    expect(screen.getByText('Already in this Workspace')).toHaveClass(
+      'text-status-info-fg',
     );
-    expect(screen.getByText('already has a pending Invitation')).toHaveClass(
-      'text-status-warning',
+    expect(screen.getByText('Invitation already pending')).toHaveClass(
+      'text-status-warning-fg',
     );
-    expect(screen.getByText("Couldn't send")).toHaveClass('text-status-error');
+    expect(screen.getByText("Couldn't send")).toHaveClass(
+      'text-status-error-fg',
+    );
   });
 
   it('moves focus to its heading when it replaces the form', () => {

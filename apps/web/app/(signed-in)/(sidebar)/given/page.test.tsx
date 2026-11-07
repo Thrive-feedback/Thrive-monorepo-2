@@ -55,7 +55,7 @@ describe('Given', () => {
     expect(screen.getByRole('group', { name: 'View' })).toBeInTheDocument();
   });
 
-  it('opens the piece the address names, closing back to the grid', async () => {
+  it('opens the piece the address names, closing back to the list', async () => {
     render(await open({ feedback: FEEDBACK_ID }));
 
     expect(
@@ -63,17 +63,17 @@ describe('Given', () => {
     ).toBeInTheDocument();
   });
 
-  it('closes back to the list when that is what it was opened over', async () => {
-    render(await open({ view: 'list', feedback: FEEDBACK_ID }));
+  it('closes back to the grid when that is what it was opened over', async () => {
+    render(await open({ view: 'grid', feedback: FEEDBACK_ID }));
 
     expect(
       screen.getByText(
-        `The postcard ${FEEDBACK_ID}, closing to /given?view=list`,
+        `The postcard ${FEEDBACK_ID}, closing to /given?view=grid`,
       ),
     ).toBeInTheDocument();
   });
 
-  it('closes back to the grid for a view it does not offer', async () => {
+  it('closes back to the list for a view it does not offer', async () => {
     render(await open({ view: 'table', feedback: FEEDBACK_ID }));
 
     expect(

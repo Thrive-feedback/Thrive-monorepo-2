@@ -41,7 +41,8 @@ export default async function Received({ searchParams }: ReceivedProps) {
 
   return (
     <>
-      <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-6')}>
+      {/* The gap clears the note by hand that rises above the first card's small postcard. */}
+      <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-11')}>
         <div className="flex flex-col gap-4">
           <PersonalItemsHeading side="received" />
           <ReceivedFilter show={show} />

@@ -33,6 +33,13 @@ export function BadgeEntry() {
             'What the label means. Each tone is a surface and a foreground from the tokens.',
         },
         {
+          name: 'edged',
+          type: 'boolean',
+          defaultValue: 'false',
+          description:
+            "Edged in the tone's own colour, for a badge on a tinted ground such as a card in a list, where the soft fill alone fades.",
+        },
+        {
           name: 'asChild',
           type: 'boolean',
           defaultValue: 'false',
@@ -60,6 +67,19 @@ export function BadgeEntry() {
         <Badge tone="warning">Waiting</Badge>
         <Badge tone="error">Withdrawn</Badge>
         <Badge tone="info">Shared</Badge>
+      </StateCell>
+      <StateCell label="Edged, on a tinted card">
+        <div className="flex flex-wrap gap-2 rounded-control bg-action-tertiary/8 p-3">
+          <Badge tone="info" edged>
+            This answer
+          </Badge>
+          <Badge tone="success" edged>
+            Answered
+          </Badge>
+          <Badge tone="warning" edged>
+            Pending
+          </Badge>
+        </div>
       </StateCell>
     </ShowcaseEntry>
   );

@@ -13,8 +13,11 @@ import { RequestTile } from '@/app/(signed-in)/(sidebar)/_components/request-til
 import type { ComposeChoice } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import type { ComposeContext } from '@/app/(signed-in)/(sidebar)/_lib/compose-context.service';
 import { PERSONAL_ITEMS_GRID } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-layout.constant';
+import { FeedEmpty } from '@/app/(signed-in)/(sidebar)/home/_components/feed-empty';
 import { KudosBoardCard } from '@/app/(signed-in)/(sidebar)/kudos/_components/kudos-board-card';
 import { ReceivedFilter } from '@/app/(signed-in)/(sidebar)/received/_components/received-filter';
+import { RECEIVED_EMPTY } from '@/app/(signed-in)/(sidebar)/received/_lib/received-empty.constant';
+import { WaitingEmpty } from '@/app/(signed-in)/(sidebar)/waiting/_components/waiting-empty';
 import {
   SAMPLE_ANSWERED_CARD,
   SAMPLE_ASKED_CARD,
@@ -60,53 +63,23 @@ const SAMPLE_COMPOSE: ComposeContext = {
   writer: { name: 'Ann Lee', photoUrl: null },
 };
 
-/** Each empty place as Received, Given and the Kudos board draw it, with the one thing to do there. */
+/** Each empty place as Received, Given and the Kudos board draw it, with what to do there. */
 const EMPTY_SPECIMENS: readonly (Omit<CardsEmptyProps, 'children'> & {
   state: string;
   usedOn: string;
-  /** The card it offers to write, or nothing for a month with none, which links to every month. */
-  choice: ComposeChoice | null;
+  /** The cards it offers to write; none for a month with none, which links to every month. */
+  choices: readonly ComposeChoice[];
 })[] = [
-  {
-    state: 'All',
-    usedOn: 'Received',
-    art: 'every',
-    title: 'No Feedback for you yet',
-    description: 'When someone gives you feedback, you can read it here.',
-    choice: 'ask',
-  },
-  {
-    state: 'My requests',
-    usedOn: 'Received',
-    art: 'tertiary',
-    title: "You haven't asked anyone yet.",
-    description:
-      'Ask teammates what they think with + in the menu. Your request and every answer to it will be here.',
-    choice: 'ask',
-  },
-  {
-    state: 'Given to me',
-    usedOn: 'Received',
-    art: 'primary',
-    title: 'Nobody has given you feedback unasked yet.',
-    description:
-      'When a teammate gives you feedback without being asked, you can read it here.',
-    choice: 'ask',
-  },
-  {
-    state: 'Kudos',
-    usedOn: 'Received',
-    art: 'secondary',
-    title: 'No Kudos for you yet.',
-    description: 'When a teammate gives you kudos, you can read it here.',
-    choice: 'kudos',
-  },
+  { state: 'All', usedOn: 'Received', ...RECEIVED_EMPTY.all },
+  { state: 'My requests', usedOn: 'Received', ...RECEIVED_EMPTY.requests },
+  { state: 'Given to me', usedOn: 'Received', ...RECEIVED_EMPTY.offered },
+  { state: 'Kudos', usedOn: 'Received', ...RECEIVED_EMPTY.kudos },
   {
     state: 'Nothing given',
     usedOn: 'Given',
     art: 'every',
     title: "You haven't given any Feedback yet.",
-    choice: 'give',
+    choices: ['give'],
   },
   {
     state: 'Nothing on the board',
@@ -114,14 +87,14 @@ const EMPTY_SPECIMENS: readonly (Omit<CardsEmptyProps, 'children'> & {
     art: 'secondary',
     title: 'Nothing on the board yet',
     description: 'The first Kudos anyone gives lands here.',
-    choice: 'kudos',
+    choices: ['kudos'],
   },
   {
     state: 'A month with none',
     usedOn: 'Kudos board',
     art: 'secondary',
     title: 'Nothing here from October 2026',
-    choice: null,
+    choices: [],
   },
 ];
 
@@ -388,7 +361,21 @@ export function CardGallery() {
           ))}
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {EMPTY_SPECIMENS.map(({ state, usedOn, choice, ...empty }) => (
+          <Specimen name="FeedEmpty" state="All, nothing yet" usedOn="Home">
+            <div className="rounded-page border border-border-muted">
+              <FeedEmpty show="all" />
+            </div>
+          </Specimen>
+          <Specimen
+            name="WaitingEmpty"
+            state="Nobody waiting"
+            usedOn="Waiting for me"
+          >
+            <div className="rounded-page border border-border-muted">
+              <WaitingEmpty />
+            </div>
+          </Specimen>
+          {EMPTY_SPECIMENS.map(({ state, usedOn, choices, ...empty }) => (
             <Specimen
               key={state}
               name="CardsEmpty"
@@ -397,12 +384,15 @@ export function CardGallery() {
             >
               <div className="rounded-page border border-border-muted">
                 <CardsEmpty {...empty}>
-                  {choice ? (
-                    <ComposeAction
-                      {...SAMPLE_COMPOSE}
-                      choice={choice}
-                      returnFocusTo="card-gallery-title"
-                    />
+                  {choices.length > 0 ? (
+                    choices.map((choice) => (
+                      <ComposeAction
+                        key={choice}
+                        {...SAMPLE_COMPOSE}
+                        choice={choice}
+                        returnFocusTo="card-gallery-title"
+                      />
+                    ))
                   ) : (
                     <Button asChild>
                       <a href="#card-gallery-title">See every month</a>
@@ -477,21 +467,29 @@ export function CardGallery() {
       </GallerySection>
 
       <GallerySection
-        title="On the old /home"
-        description="The Workspace feed at /home, which the new Home replaces. These cards draw no postcard."
+        title="On the landing page"
+        description="The clickable Home preview on the landing page (FeedbackFeed in landing-home-preview). These cards draw no postcard."
       >
         <div className="flex max-w-180 flex-col gap-6">
           <Specimen
             name="FeedbackCard"
             state="Offered, with Reactions"
-            usedOn="/home"
+            usedOn="Landing page, Home preview"
           >
             <FeedbackCard item={SAMPLE_LEGACY_OFFERED} />
           </Specimen>
-          <Specimen name="FeedbackCard" state="Requested" usedOn="/home">
+          <Specimen
+            name="FeedbackCard"
+            state="Requested"
+            usedOn="Landing page, Home preview"
+          >
             <FeedbackCard item={SAMPLE_LEGACY_REQUESTED} />
           </Specimen>
-          <Specimen name="KudosCard" state="A Kudos" usedOn="/home">
+          <Specimen
+            name="KudosCard"
+            state="A Kudos"
+            usedOn="Landing page, Home preview"
+          >
             <KudosCard item={SAMPLE_LEGACY_KUDOS} />
           </Specimen>
         </div>

@@ -16,7 +16,7 @@ import {
 } from './compose-cards';
 
 export type ComposeActionProps = {
-  /** The card that fills the list this button stands in for. */
+  /** The card this button offers to write. */
   choice: ComposeChoice;
   /** The Workspace the page was drawn for, which a card is sent to. */
   workspaceId: string;
@@ -25,14 +25,20 @@ export type ComposeActionProps = {
   /** The Workspace's active Workspace Goals, by name, offered on `#`. */
   workspaceGoals: readonly string[];
   writer: PostcardWriter;
-  /** The page's title, which focus goes to once a card is sent, because this button is about to go. */
-  returnFocusTo: string;
+  /**
+   * The page's title, which focus goes to once a card is sent, where this button goes with what it
+   * stood in for, as in an empty list. Left out where the button stays, and focus comes back to it.
+   * Every button in an empty list must pass it: one that leaves it out would drop focus to the page
+   * when it goes.
+   */
+  returnFocusTo?: string;
 };
 
 /**
- * The one card an empty list offers to write, in that card's colour, opening it in front of the
- * page. Sending it reads the page again, which now holds it, so the button goes with the empty list;
- * focus then goes to the page's title, as it does when an answered card leaves Waiting for me.
+ * One card to write, offered in that card's colour and opened in front of the page: in an empty list,
+ * where there may be one or two of these, or at the head of the Kudos board. Sending it reads the
+ * page again, which now holds the card; focus then goes to the page's title where the button goes,
+ * as it does when an answered card leaves Waiting for me, and otherwise back to the button.
  */
 export function ComposeAction({
   choice,
@@ -46,7 +52,7 @@ export function ComposeAction({
   const hasSent = useRef(false);
 
   function handleCloseAutoFocus(event: Event) {
-    if (hasSent.current) {
+    if (hasSent.current && returnFocusTo !== undefined) {
       event.preventDefault();
       document.getElementById(returnFocusTo)?.focus({ preventScroll: true });
     }

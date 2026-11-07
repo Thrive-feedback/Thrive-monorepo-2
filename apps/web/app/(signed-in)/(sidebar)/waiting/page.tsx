@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
 import { PAGE_COLUMN } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
+import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 import { cn } from '@/lib/cn.util';
 import { requireMember } from '@/lib/session/session.service';
 import { AnsweredAsksProvider } from './_components/answered-asks';
@@ -35,12 +36,22 @@ export default async function Waiting({ searchParams }: WaitingProps) {
 
   return (
     <AnsweredAsksProvider>
-      <div className={cn(PAGE_COLUMN, 'flex flex-col gap-4')}>
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      {/* The gap clears the note by hand that rises above the first card's small postcard. */}
+      <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-11')}>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <PageTitle id={WAITING_HEADING_ID} tabIndex={-1}>
             Waiting for me
           </PageTitle>
-          <WaitingSort sort={sort} />
+          <HandwrittenNote
+            size="md"
+            writes="on-open"
+            className="hidden -translate-y-1.5 md:block"
+          >
+            they asked for your take
+          </HandwrittenNote>
+          <div className="ms-auto">
+            <WaitingSort sort={sort} />
+          </div>
         </div>
         <Suspense key={sort} fallback={<WaitingAsksSkeleton />}>
           <WaitingAsks membership={session.membership} sort={sort} />

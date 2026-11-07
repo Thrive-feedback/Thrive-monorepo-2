@@ -1,4 +1,4 @@
-import { ROUTES } from '@/lib/routes.constant';
+import { PERSONAL_VIEWS, ROUTES } from '@/lib/routes.constant';
 import type { BellNotification, NotificationType } from './notification.type';
 
 /**
@@ -35,7 +35,7 @@ export const NOTIFICATION_LINES: Readonly<
   ASK_ANSWERED: {
     sentenceFor: (actor) => `${actor} answered your request`,
     // Received has no address for one request, so the bell opens the person's requests.
-    destinationFor: () => ROUTES.receivedViewing('grid', 'requests'),
+    destinationFor: () => ROUTES.receivedViewing(PERSONAL_VIEWS[0], 'requests'),
   },
   FEEDBACK_RECEIVED: {
     sentenceFor: (actor) => `${actor} wrote feedback to you`,

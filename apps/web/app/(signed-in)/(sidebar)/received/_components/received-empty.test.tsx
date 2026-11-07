@@ -49,12 +49,6 @@ describe('ReceivedEmpty', () => {
       'Ask for feedback',
       'bg-action-tertiary',
     ],
-    [
-      'offered',
-      'Nobody has given you feedback unasked yet.',
-      'Ask for feedback',
-      'bg-action-tertiary',
-    ],
     ['kudos', 'No Kudos for you yet.', 'Give kudos', 'bg-action-secondary'],
   ] as const)(
     'says what is missing when narrowed to %s, and offers the one card that fills it, in its colour',
@@ -68,6 +62,27 @@ describe('ReceivedEmpty', () => {
       expect(screen.getByRole('button', { name: button })).toHaveClass(fill);
     },
   );
+
+  it('offers asking and giving, each in its colour, where nobody has given Feedback unasked', async () => {
+    theApiHoldsNoTeammates();
+
+    render(await ReceivedEmpty({ session: SESSION, show: 'offered' }));
+
+    expect(
+      screen.getByRole('heading', {
+        name: 'Nobody has given you feedback unasked yet.',
+      }),
+    ).toBeVisible();
+    expect(
+      screen.getByText(/You can give a teammate feedback unasked too\./),
+    ).toBeVisible();
+    const [ask, give] = screen.getAllByRole('button');
+    expect(ask).toHaveAccessibleName('Ask for feedback');
+    expect(ask).toHaveClass('bg-action-tertiary');
+    expect(give).toHaveAccessibleName('Give feedback');
+    expect(give).toHaveClass('bg-action-primary');
+    expect(screen.getAllByRole('button')).toHaveLength(2);
+  });
 
   it('keeps the blank cards it draws away from a screen reader', async () => {
     theApiHoldsNoTeammates();

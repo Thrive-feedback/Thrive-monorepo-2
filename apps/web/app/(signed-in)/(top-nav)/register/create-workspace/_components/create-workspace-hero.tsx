@@ -17,7 +17,7 @@ export function CreateWorkspaceHero() {
       >
         Welcome! Let’s set up your <HandUnderline>team’s home.</HandUnderline>
       </Text>
-      <Text variant="body-1" tone="muted" className="md:text-subtitle-1">
+      <Text variant="body-1" tone="muted">
         Give your new Workspace a name.
         <br />
         You can invite your team in the next step.

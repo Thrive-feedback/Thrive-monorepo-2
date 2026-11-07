@@ -9,6 +9,10 @@ import {
   KudosBoardMonthFilterSkeleton,
   KudosBoardSkeleton,
 } from './_components/kudos-board';
+import {
+  KudosBoardGive,
+  KudosBoardGiveSkeleton,
+} from './_components/kudos-board-give';
 import { KudosBoardPlacesProvider } from './_components/kudos-board-places';
 import { KudosBoardTidy } from './_components/kudos-board-tidy';
 import {
@@ -57,6 +61,9 @@ export default async function Kudos({ searchParams }: KudosProps) {
               <KudosBoardMonthFilter membership={membership} month={month} />
             </Suspense>
             <KudosBoardTidy />
+            <Suspense fallback={<KudosBoardGiveSkeleton />}>
+              <KudosBoardGive session={session} />
+            </Suspense>
           </div>
         </div>
         <Suspense key={month} fallback={<KudosBoardSkeleton />}>

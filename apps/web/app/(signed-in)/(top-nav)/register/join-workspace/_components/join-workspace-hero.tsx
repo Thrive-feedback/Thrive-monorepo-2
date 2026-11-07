@@ -15,7 +15,7 @@ export function JoinWorkspaceHero() {
       >
         Your team is <HandUnderline>already here.</HandUnderline>
       </Text>
-      <Text variant="body-1" tone="muted" className="md:text-subtitle-1">
+      <Text variant="body-1" tone="muted">
         Choose the Workspace you want to join.
       </Text>
     </div>
