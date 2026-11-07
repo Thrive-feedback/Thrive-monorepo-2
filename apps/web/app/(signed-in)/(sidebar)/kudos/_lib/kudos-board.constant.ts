@@ -14,8 +14,8 @@ export const KUDOS_BOARD_ALL_MONTHS = 'all';
 export const KUDOS_BOARD_HEADING_ID = 'kudos-board-heading';
 
 /**
- * The board takes the whole of the frame under the title, rather than the column the other pages sit in: it
- * fits the window, and a card cannot be opened larger.
+ * The board takes the whole of the frame under the title, rather than the column the other pages
+ * sit in: it fits the window, and a card cannot be opened larger.
  */
 export const KUDOS_BOARD_COLUMN =
   'flex w-full flex-1 flex-col gap-4 px-4 py-5 md:px-6 xl:px-8';

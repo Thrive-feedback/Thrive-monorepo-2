@@ -39,8 +39,9 @@ function drawEverythingAgain() {
 
 /**
  * Puts this browser's session in one of the person's Workspaces — chosen after sign-in, or
- * switched to from Settings or the navbar — and opens its Home, every page drawn afresh, saying once that it switched. Other devices stay where they are. The
- * API checks they are in it. Answers only when it could not switch.
+ * switched to from Settings or the navbar — and opens its Home, every page drawn afresh, saying
+ * once that it switched. Other devices stay where they are. The API checks they are in it.
+ * Answers only when it could not switch.
  */
 export async function switchWorkspace(
   workspaceId: string,

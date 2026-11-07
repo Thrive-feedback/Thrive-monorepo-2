@@ -7,8 +7,9 @@ import { ComposeMenu } from './compose-menu';
 import { SidebarNav } from './sidebar-nav';
 
 /**
- * The sidebar beside Home and its pages: "+" to write something, then where to go. Who a postcard can be for, who
- * signs it, and what `@` and `#` offer on it are read here, so "+" can hand them over.
+ * The sidebar beside Home and its pages: "+" to write something, then where to go. Who a
+ * postcard can be for, who signs it, and what `@` and `#` offer on it are read here, so "+" can
+ * hand them over.
  */
 export async function Sidebar() {
   const session = await requireMember();
