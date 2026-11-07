@@ -96,7 +96,6 @@ export class ChatPersonNotifier extends PersonNotifierPort {
           this.chatCopyService.askAnswered({
             actorName: context.actorName,
             workspaceName: context.workspaceName,
-            feedbackRequestId: event.feedbackRequestId,
           }),
       })),
     );

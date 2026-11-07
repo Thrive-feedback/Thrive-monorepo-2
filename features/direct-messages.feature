@@ -52,7 +52,7 @@ Feature: Being messaged in a chat tool about Feedback
     When Ben answers "You open strongly and lose the room at the detail."
     Then Ann is messaged in Discord about "answered your feedback request"
     And the message names "Acme"
-    And the message links to the request
+    And the message links to the requests they sent
     And no message carries "lose the room"
 
   @api

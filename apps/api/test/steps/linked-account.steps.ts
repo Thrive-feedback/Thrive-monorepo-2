@@ -233,7 +233,7 @@ Then('the message names {string}', function (this: ThriveWorld, name: string) {
 });
 
 Then('the message links to the Ask', function (this: ThriveWorld) {
-  assert.match(messagesSent()[0]?.text ?? '', /\/home\?tab=waiting&ask=/);
+  assert.match(messagesSent()[0]?.text ?? '', /\/waiting\?ask=/);
 });
 
 Then('nobody is messaged in Discord', async function (this: ThriveWorld) {
@@ -251,12 +251,12 @@ Given('the messages sent so far are set aside', async () => {
   harness().directMessenger.posted.length = 0;
 });
 
-Then('the message links to the request', function (this: ThriveWorld) {
-  assert.match(
-    messagesSent()[0]?.text ?? '',
-    /\/home\?tab=my-requests&request=/,
-  );
-});
+Then(
+  'the message links to the requests they sent',
+  function (this: ThriveWorld) {
+    assert.match(messagesSent()[0]?.text ?? '', /\/received\?show=requests/);
+  },
+);
 
 Then(
   'no message carries {string}',

@@ -82,9 +82,7 @@ describe('messaging the people an Ask is for', () => {
     expect(text).toContain('Ann');
     expect(text).toContain('Acme');
     expect(text).toContain('how our standups are going');
-    expect(text).toContain(
-      `https://thrive.test/home?tab=waiting&ask=${ASK}-${BEN}`,
-    );
+    expect(text).toContain(`https://thrive.test/waiting?ask=${ASK}-${BEN}`);
   });
 
   it('says nothing to somebody who has linked no chat account', async () => {
@@ -283,6 +281,8 @@ describe('messaging the Requester when an Ask is answered', () => {
 
     expect(discord.posted).toHaveLength(1);
     expect(discord.posted[0]?.text).toContain('answered your feedback request');
-    expect(discord.posted[0]?.text).toContain('request=request-1');
+    expect(discord.posted[0]?.text).toContain(
+      'https://thrive.test/received?show=requests',
+    );
   });
 });

@@ -9,25 +9,30 @@
  * It sits in `shared/` because two modules now compose such a message — Notifications, for a direct
  * message to one person, and Integrations, for a post into a Workspace's channel.
  *
- * **These paths and the web's `ROUTES` have to agree.** Changing a Home dialog parameter without
- * changing them sends people to a page that ignores it.
+ * **These paths and the web's `ROUTES` have to agree.** Changing a page's address or the parameter
+ * that opens something over it without changing them sends people to a page that ignores it.
  */
 export const WEB_PATHS = {
-  ask: (askId: string) => `/home?tab=waiting&ask=${askId}`,
-  request: (requestId: string) => `/home?tab=my-requests&request=${requestId}`,
+  /** The Ask open on Waiting for me, where it is answered. Matches `ROUTES.waitingAsk`. */
+  ask: (askId: string) => `/waiting?ask=${askId}`,
   /**
-   * No tab: the same Feedback sits on the Workspace feed, Shared with me or Feedback for me
-   * depending on who follows the link, so no tab is true for every reader. Matches
-   * `ROUTES.homeFeedback`.
+   * Received narrowed to the requests the person sent, because **a request has no permalink**:
+   * no page opens one on its own, so the link names the list it is on rather than the request.
+   * Matches `ROUTES.receivedViewing('grid', 'requests')`.
+   */
+  requests: () => '/received?show=requests',
+  /**
+   * Home with the piece open over it. The same Feedback is on Home for some readers and only in
+   * Received for others, but the postcard opens over Home for anyone who may read it. Matches
+   * `ROUTES.homeFeedback(id, 'all')`.
    */
   feedback: (feedbackId: string) => `/home?feedback=${feedbackId}`,
   /**
-   * Home itself, because **a Kudos has no permalink**: there is no route that reads one, and the
-   * web's `ROUTES.homeKudos` is the toast shown after giving one rather than an address for
-   * reading one. The Workspace feed on Home is where it appears. Thin, and it costs less here
-   * than it would for Feedback, because the post already carries the words (brain `ADR-0045`).
+   * The Workspace's Kudos board, because **a Kudos has no permalink**: there is no route that
+   * reads one. The board is where it hangs. Thin, and it costs less here than it would for
+   * Feedback, because the post already carries the words (brain `ADR-0045`).
    */
-  home: () => '/home',
+  kudos: () => '/kudos',
 } as const;
 
 /**
