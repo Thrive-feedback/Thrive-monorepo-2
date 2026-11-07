@@ -23,6 +23,22 @@ describe('BrandNewHomeSearchParams', () => {
     });
   });
 
+  it.each(['signedIn', 'opened', 'left', 'switched'] as const)(
+    'keeps %s=1, so the page can say it once',
+    (flag) => {
+      expect(BrandNewHomeSearchParams.parse({ [flag]: '1' })[flag]).toBe('1');
+    },
+  );
+
+  it.each(['signedIn', 'opened', 'left', 'switched'] as const)(
+    'ignores %s set to anything but 1',
+    (flag) => {
+      expect(
+        BrandNewHomeSearchParams.parse({ [flag]: 'yes' })[flag],
+      ).toBeUndefined();
+    },
+  );
+
   it('ignores a piece that is not an id', () => {
     expect(
       BrandNewHomeSearchParams.parse({ feedback: 'nope' }).feedback,
