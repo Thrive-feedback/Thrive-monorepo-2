@@ -246,7 +246,7 @@ exports[`Landing > renders the same page 1`] = `
               <div
                 aria-label="Tour chapters"
                 aria-orientation="horizontal"
-                class="flex items-center gap-1 overflow-x-auto border-border-subtle border-b _list_ee5b96 mx-auto w-fit max-w-full"
+                class="flex items-center gap-1 overflow-x-auto overflow-y-hidden border-border-subtle border-b _list_ee5b96 mx-auto w-fit max-w-full"
                 data-orientation="horizontal"
                 data-slot="tabs-list"
                 role="tablist"

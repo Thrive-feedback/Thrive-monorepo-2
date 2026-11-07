@@ -8,7 +8,7 @@ import type { AutocompleteTrigger } from './use-tag-autocomplete';
 
 const messageLine = cva('mt-2 text-caption', {
   variants: {
-    invalid: { true: 'text-status-error-fg', false: 'text-fg-secondary' },
+    invalid: { true: 'text-status-error-active', false: 'text-fg-secondary' },
   },
   defaultVariants: { invalid: false },
 });
@@ -57,7 +57,7 @@ export function TextAreaField({
     <div className={cn('flex flex-col', className)}>
       <Label htmlFor={id} className={fieldLabel({ hidden: hideLabel })}>
         {required && (
-          <span aria-hidden="true" className="me-1 text-status-error-fg">
+          <span aria-hidden="true" className="me-1 text-status-error-active">
             *
           </span>
         )}

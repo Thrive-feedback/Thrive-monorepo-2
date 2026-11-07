@@ -103,10 +103,6 @@ import {
   LabelPreview,
 } from '@/app/ui-showcase/_components/entries/label-entry';
 import {
-  LetterEntry,
-  LetterPreview,
-} from '@/app/ui-showcase/_components/entries/letter-entry';
-import {
   LinkEntry,
   LinkPreview,
 } from '@/app/ui-showcase/_components/entries/link-entry';
@@ -635,12 +631,5 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'organism',
     Preview: MemberPickerDialogPreview,
     Entry: MemberPickerDialogEntry,
-  },
-  {
-    slug: 'letter-sheet',
-    name: 'Letter',
-    level: 'organism',
-    Preview: LetterPreview,
-    Entry: LetterEntry,
   },
 ];

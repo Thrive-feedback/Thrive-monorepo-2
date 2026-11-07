@@ -1,13 +1,11 @@
-import { cva, type VariantProps } from 'class-variance-authority';
-import { CheckIcon, ChevronRightIcon } from 'lucide-react';
-import { Button } from '@/components/atoms/button';
+import { ArrowRightIcon } from 'lucide-react';
 import { Text } from '@/components/atoms/text';
-import { WorkspaceTile } from '@/components/molecules/workspace-tile';
+import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 import type { MyWorkspaces } from '@/lib/workspace/my-workspace.type';
 
 export type WorkspaceListProps = {
   workspaces: MyWorkspaces;
-  /** Marked Current and not offered, where the person is in one already. */
+  /** Marked as where the person is and not offered, where they are in one already. */
   currentWorkspaceId?: string;
   /** Set while a choice is on its way, so one click cannot become two. */
   disabled?: boolean;
@@ -15,10 +13,12 @@ export type WorkspaceListProps = {
 };
 
 /**
- * The person's Workspaces by name, the one used last first, each beside a tile of its initials:
- * each they can open is a choice that lifts on hover, the current one is highlighted and marked
- * instead, and those they were Deactivated in are greyed out, labelled Inactive, and offered no
- * way in. Nothing says what Role they have anywhere (brain `ADR-0035`).
+ * The person's Workspaces by name, the one used last first, each name set in the display face as
+ * the navbar sets it, so a Workspace reads the same wherever it is named. The current one sits on
+ * the product's light purple with "you're here" written beside it by hand; each other they can
+ * open is a row whose "Open" and arrow appear on hover or focus, and always on a touch screen,
+ * which has no hover; those they were Deactivated in are greyed, labelled Inactive, and offered
+ * no way in. Nothing says what Role they have anywhere (brain `ADR-0035`).
  */
 export function WorkspaceList({
   workspaces,
@@ -27,78 +27,67 @@ export function WorkspaceList({
   onChoose,
 }: WorkspaceListProps) {
   return (
-    <ul aria-label="Your Workspaces" className="flex flex-col gap-2">
+    <ul aria-label="Your Workspaces" className="flex flex-col gap-1">
       {workspaces.active.map((workspace) =>
         workspace.id === currentWorkspaceId ? (
           <li
             key={workspace.id}
             aria-current="true"
-            className="flex items-center gap-3 rounded-element border border-action-primary-border bg-action-primary-surface px-3 py-2.5"
+            className="flex items-center gap-3 rounded-element bg-action-primary-surface-hover px-4 py-3"
           >
-            <WorkspaceTile name={workspace.name} tone="current" />
-            <Text variant="subtitle-4" className="min-w-0 flex-1 break-all">
+            <Text
+              as="span"
+              variant="subtitle-display-2"
+              className="min-w-0 flex-1 break-words text-action-primary"
+            >
               {workspace.name}
             </Text>
-            <Pill tone="current">
-              <CheckIcon aria-hidden="true" className="size-3.5" />
-              Current
-            </Pill>
+            <span className="sr-only">Current</span>
+            <HandwrittenNote size="md" tilt="left" writes={null}>
+              you&apos;re here
+            </HandwrittenNote>
           </li>
         ) : (
           <li key={workspace.id}>
-            <Button
-              variant="secondary"
+            <button
+              type="button"
               disabled={disabled}
               onClick={() => onChoose(workspace.id)}
-              className="group h-auto w-full justify-start gap-3 px-3 py-2.5 text-start"
+              className="group flex w-full items-center gap-3 rounded-element px-4 py-3 text-start text-fg-primary transition-colors hover:bg-action-neutral-surface focus-visible:bg-action-neutral-surface disabled:pointer-events-none disabled:opacity-60 motion-reduce:transition-none"
             >
-              <WorkspaceTile name={workspace.name} tone="choice" />
-              <span className="min-w-0 flex-1 break-all text-subtitle-4">
+              <Text
+                as="span"
+                variant="subtitle-display-2"
+                className="min-w-0 flex-1 break-words"
+              >
                 {workspace.name}
-              </span>
-              <ChevronRightIcon
+              </Text>
+              <span
                 aria-hidden="true"
-                className="size-4 shrink-0 text-fg-secondary transition-transform group-hover:translate-x-0.5 group-hover:text-action-primary"
-              />
-            </Button>
+                className="flex shrink-0 items-center gap-1 text-action-primary text-body-2 opacity-0 pointer-coarse:opacity-100 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+              >
+                Open
+                <ArrowRightIcon className="size-4 transition-transform group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 motion-reduce:transition-none" />
+              </span>
+            </button>
           </li>
         ),
       )}
       {workspaces.inactive.map((workspace) => (
-        <li
-          key={workspace.id}
-          className="flex items-center gap-3 rounded-element border border-border-subtle border-dashed px-3 py-2.5"
-        >
-          <WorkspaceTile name={workspace.name} tone="inactive" />
+        <li key={workspace.id} className="flex items-center gap-3 px-4 py-3">
           <Text
-            variant="subtitle-4"
+            as="span"
+            variant="subtitle-display-2"
             tone="muted"
-            className="min-w-0 flex-1 break-all"
+            className="min-w-0 flex-1 break-words"
           >
             {workspace.name}
           </Text>
-          <Pill tone="inactive">Inactive</Pill>
+          <Text as="span" variant="body-3" tone="muted" className="shrink-0">
+            Inactive
+          </Text>
         </li>
       ))}
     </ul>
   );
-}
-
-const pill = cva(
-  'flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-body-3',
-  {
-    variants: {
-      tone: {
-        current: 'bg-action-primary text-fg-on-action',
-        inactive: 'bg-surface-subtle text-fg-secondary',
-      },
-    },
-  },
-);
-
-function Pill({
-  tone,
-  children,
-}: Required<VariantProps<typeof pill>> & { children: React.ReactNode }) {
-  return <span className={pill({ tone })}>{children}</span>;
 }

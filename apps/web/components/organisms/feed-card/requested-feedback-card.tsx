@@ -3,7 +3,6 @@ import { FeedbackText } from '@/components/organisms/feedback-text';
 import type { HomeFeedRequest } from '@/lib/feedback/home-feed-item.type';
 import { AskedPeople } from './asked-people';
 import { FeedCardFrame, type FeedCardProps } from './feed-card-frame';
-import { FEED_CARD_KIND_INK } from './feed-card-tone.constant';
 
 type QuestionProps = {
   request: HomeFeedRequest;
@@ -11,13 +10,13 @@ type QuestionProps = {
 
 /**
  * What was asked, set apart from the answer as its own plain panel on a light ground, headed "Asked"
- * in the blue of everything asked, the Request message under it cut at two lines. Who asked is the
+ * in the body ink, the Request message under it cut at two lines. Who asked is the
  * person the card is to, already named above.
  */
 function Question({ request }: QuestionProps) {
   return (
     <div className="flex flex-col gap-1 rounded-control bg-surface-base/70 px-3 py-2">
-      <Text as="p" variant="overline" className={FEED_CARD_KIND_INK.tertiary}>
+      <Text as="p" variant="overline">
         Asked
       </Text>
       <Text as="p" variant="body-2" className="line-clamp-2 break-words">

@@ -9,7 +9,7 @@ import type { AutocompleteTrigger } from './use-tag-autocomplete';
 const GOALS: AutocompleteTrigger = {
   rule: HASHTAG_RULE,
   label: 'Workspace Goals',
-  tone: 'accent',
+  tone: 'info',
   options: [
     { value: 'ownership', label: '#ownership', keywords: ['ownership'] },
   ],
@@ -56,7 +56,7 @@ describe('AutocompleteInput', () => {
       '[data-slot="tag-highlights"]',
     ) as HTMLElement;
     expect(within(highlights).getByText('#ownership')).toHaveClass(
-      'text-fg-accent',
+      'text-status-info-active',
     );
   });
 

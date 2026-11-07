@@ -11,7 +11,7 @@ const TAGS = [
     char: '#',
     value: 'ownership',
     label: '#ownership',
-    tone: 'accent' as const,
+    tone: 'info' as const,
   },
   {
     char: '@',

@@ -19,7 +19,9 @@ describe('FeedbackText', () => {
     expect(screen.getByTestId('feedback')).toHaveTextContent(
       'Great work #ownership with @Cara #notalist @dan',
     );
-    expect(screen.getByText('#ownership')).toHaveClass('text-fg-accent');
+    expect(screen.getByText('#ownership')).toHaveClass(
+      'text-status-info-active',
+    );
     expect(screen.getByText('@Cara')).toHaveClass('text-action-secondary');
   });
 });

@@ -32,7 +32,7 @@ describe('TextAreaField', () => {
             {
               rule: HASHTAG_RULE,
               label: 'Workspace Goals',
-              tone: 'accent',
+              tone: 'info',
               options: [
                 {
                   value: 'ownership',

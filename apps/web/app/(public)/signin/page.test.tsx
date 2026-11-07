@@ -81,7 +81,7 @@ describe('SignInPage', () => {
   it('sends someone already signed in to Home, wherever the link pointed', async () => {
     readSession.mockResolvedValue({ email: 'ann@acme.test', name: 'Ann Lee' });
 
-    await expect(open({ next: '/settings/members' })).rejects.toThrow(
+    await expect(open({ next: '/settings/teammates' })).rejects.toThrow(
       'redirect:/home',
     );
   });

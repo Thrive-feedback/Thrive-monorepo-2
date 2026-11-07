@@ -144,7 +144,7 @@ export function VisibilityPicker<Value extends string>({
           {errorMessage && !errorId && (
             <p
               id={messageId}
-              className="text-input-helper text-status-error-fg"
+              className="text-input-helper text-status-error-active"
             >
               {errorMessage}
             </p>

@@ -21,7 +21,7 @@ export function feedbackTagTriggers(
     {
       rule: HASHTAG_RULE,
       label: 'Workspace Goals',
-      tone: 'accent',
+      tone: 'info',
       options: workspaceGoals.map((name) => ({
         value: name,
         label: `#${name}`,

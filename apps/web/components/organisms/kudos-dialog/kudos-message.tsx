@@ -82,6 +82,7 @@ export function KudosMessage({
         className={cn(
           // The card is the field: the cursor and the text tools show it is being written in.
           'min-h-0 resize-none rounded-none border-0 bg-transparent px-0 py-0 placeholder:opacity-70 focus-visible:outline-hidden',
+          styles.noScrollbar,
           metricsClassName(fitted),
           KUDOS_TEMPLATES[templateKey].caretClassName,
           KUDOS_PLACEHOLDER_INKS[textStyle.ink],

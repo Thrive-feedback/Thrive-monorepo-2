@@ -24,7 +24,7 @@ export function FeedbackText({ text, tags }: FeedbackTextProps) {
           char: '#',
           value: name,
           label: `#${name}`,
-          tone: 'accent' as const,
+          tone: 'info' as const,
         })),
         ...tags.mentions.map(({ slug, displayName }) => ({
           char: '@',

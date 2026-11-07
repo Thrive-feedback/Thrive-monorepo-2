@@ -2,6 +2,22 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { createElement } from 'react';
 import { cn } from '@/lib/cn.util';
 
+/**
+ * Each tone's colour. A status tone takes its status's `-active` shade, the one that reads as text
+ * on the page, so danger is red, success green, info blue and warning yellow; the `-fg` shades are
+ * for words on a status's own tinted surface, such as a toast, and read near-black anywhere else.
+ * Exported so a status said inline (`StatusText`) takes the same colour without a second source.
+ */
+export const TEXT_TONE_CLASSES = {
+  default: '',
+  muted: 'text-fg-secondary',
+  brand: 'text-fg-accent',
+  danger: 'text-status-error-active',
+  success: 'text-status-success-active',
+  info: 'text-status-info-active',
+  warning: 'text-status-warning-active',
+} as const;
+
 const text = cva('', {
   variants: {
     variant: {
@@ -38,15 +54,7 @@ const text = cva('', {
       caption: 'text-caption',
       overline: 'text-overline uppercase',
     },
-    tone: {
-      default: '',
-      muted: 'text-fg-secondary',
-      brand: 'text-fg-accent',
-      danger: 'text-status-error-fg',
-      success: 'text-status-success-fg',
-      info: 'text-status-info-fg',
-      warning: 'text-status-warning-fg',
-    },
+    tone: TEXT_TONE_CLASSES,
   },
   defaultVariants: { variant: 'body-1', tone: 'default' },
 });

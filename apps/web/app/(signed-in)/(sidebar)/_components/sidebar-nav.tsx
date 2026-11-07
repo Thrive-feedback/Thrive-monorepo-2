@@ -33,7 +33,7 @@ export function SidebarNav({ waitingCount }: SidebarNavProps) {
       Icon: ClockIcon,
       count: waitingCount,
     },
-    { label: 'Members', Icon: UsersIcon },
+    { label: 'Teammates', Icon: UsersIcon },
     { heading: 'My Feedback' },
     { href: ROUTES.received, label: 'Received', Icon: InboxIcon },
     { href: ROUTES.given, label: 'Given', Icon: SendIcon },

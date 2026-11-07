@@ -57,19 +57,22 @@ export function InviteEmailRow({
           value={role}
           onChange={onRoleChange}
         />
+        {/* An outlined square as tall as the field beside it, so the row reads as one line of
+            controls; the bin turns red on hover, saying what pressing it does. */}
         {isRemovable && (
           <Button
-            variant="ghost-danger"
+            variant="secondary"
             size="icon"
             aria-label={`Remove ${label.toLowerCase()}`}
             onClick={onRemove}
+            className="size-11 shrink-0 rounded-input text-fg-secondary enabled:hover:text-status-error"
           >
             <Trash2Icon aria-hidden="true" className="size-4" />
           </Button>
         )}
       </div>
       {errorMessage && (
-        <p id={messageId} className="text-caption text-status-error-fg">
+        <p id={messageId} className="text-caption text-status-error-active">
           {errorMessage}
         </p>
       )}

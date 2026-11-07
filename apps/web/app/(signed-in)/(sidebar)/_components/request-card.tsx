@@ -9,6 +9,7 @@ import {
 } from '@/app/(signed-in)/(sidebar)/_lib/request-card.util';
 import { useReceivedShow } from '@/app/(signed-in)/(sidebar)/_lib/use-received-show';
 import { Badge } from '@/components/atoms/badge';
+import { StatusText } from '@/components/atoms/status-text';
 import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';
 import { AvatarGroup } from '@/components/molecules/avatar-group';
@@ -28,15 +29,25 @@ import { PersonName } from '@/components/organisms/person-name';
 import { PendingPostcardMiniature } from '@/components/organisms/postcard-miniature/pending-postcard-miniature';
 import { PostcardMiniature } from '@/components/organisms/postcard-miniature/postcard-miniature';
 import { cn } from '@/lib/cn.util';
-import { ASK_STATUS_RINGS } from '@/lib/feedback/ask-status.constant';
+import {
+  ASK_STATUS_NAMES,
+  ASK_STATUS_RINGS,
+  ASK_STATUS_TONES,
+} from '@/lib/feedback/ask-status.constant';
 import { ROUTES } from '@/lib/routes.constant';
 import { timeAgo } from '@/lib/time-ago.util';
 
-/** Where somebody asked stands, in the word alone: Pending is neutral (design FB-4-S4). */
-const STANDING: Readonly<Record<PersonalRequestAsk['status'], string>> = {
-  PENDING: 'Pending',
-  ANSWERED: 'Answered',
-};
+/**
+ * Where somebody asked stands, in the word and the colour every screen gives it, as text in the
+ * line beside their name, as a requested Feedback card counts them: green answered, yellow pending.
+ */
+function AskStanding({ status }: Pick<PersonalRequestAsk, 'status'>) {
+  return (
+    <StatusText tone={ASK_STATUS_TONES[status]} className="text-body-3">
+      {ASK_STATUS_NAMES[status]}
+    </StatusText>
+  );
+}
 
 type AskedWhoProps = {
   request: PersonalRequest;
@@ -76,11 +87,7 @@ function AskedWho({ request }: AskedWhoProps) {
             label: ask.person.inactive ? `${name} (inactive)` : name,
             isMuted: ask.person.inactive,
             avatarClassName: ASK_STATUS_RINGS[ask.status],
-            trailing: (
-              <Text as="span" variant="body-3" tone="muted">
-                {STANDING[ask.status]}
-              </Text>
-            ),
+            trailing: <AskStanding status={ask.status} />,
           };
         })}
         max={REQUEST_MAX_FACES}
@@ -121,6 +128,11 @@ type AnswerRowProps = {
  * row. The card is padded by 6.25 steps at the sides and 5 at the top and bottom, so the row reaches
  * out by 2.25 at the sides and by 1 at the bottom to leave those 16px. Its corner is the control
  * corner (9px), rounder than the card's less the gap, so the lit row reads as soft.
+ *
+ * Inside it, the face stands as far from the row's left edge as the postcard does from its right,
+ * so the lit row is even on both sides. The postcard is centred in its column, so that distance is
+ * set by the column: 3.5 steps beside the narrower one (`md`), 5.5 beside the wider one (`lg`). On a
+ * phone the postcard drops under the words, and both sides keep the row's own 2.25.
  */
 function AnswerRow({ ask, href, isNewest }: AnswerRowProps) {
   const { answer } = ask;
@@ -129,7 +141,7 @@ function AnswerRow({ ask, href, isNewest }: AnswerRowProps) {
   return (
     <li
       data-feed-card-row
-      className="-mx-2.25 rounded-control px-2.25 transition-colors last:-mb-1 last:pb-1 hover:bg-surface-base/70 has-focus-visible:bg-surface-base/70"
+      className="-mx-2.25 rounded-control px-2.25 transition-colors last:-mb-1 last:pb-1 hover:bg-surface-base/70 has-focus-visible:bg-surface-base/70 md:ps-3.5 lg:ps-5.5"
     >
       <FeedCardRow
         tone="tertiary"
@@ -157,7 +169,8 @@ function AnswerRow({ ask, href, isNewest }: AnswerRowProps) {
               <PersonName name={name} inactive={ask.person.inactive} />
             </Text>
             <Text as="span" variant="body-3" tone="muted">
-              Answered <TimeAgo dateTime={answer.answeredAt} />
+              <AskStanding status="ANSWERED" />{' '}
+              <TimeAgo dateTime={answer.answeredAt} />
             </Text>
           </div>
           <Text
@@ -183,7 +196,8 @@ type PendingRowsProps = {
  */
 function PendingRows({ pending }: PendingRowsProps) {
   return (
-    <li>
+    // Indented by what an answer row adds inside its edge, so every face down the card lines up.
+    <li className="md:ps-1.25 lg:ps-3.25">
       <FeedCardRow tone="tertiary">
         <ul className="flex flex-col gap-3 py-3">
           {pending.map((ask) => (
@@ -202,9 +216,7 @@ function PendingRows({ pending }: PendingRowsProps) {
                       inactive={ask.person.inactive}
                     />
                   </Text>
-                  <Text as="span" variant="body-3" tone="muted">
-                    {STANDING.PENDING}
-                  </Text>
+                  <AskStanding status="PENDING" />
                 </div>
               </AvatarName>
             </li>

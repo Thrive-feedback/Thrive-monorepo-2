@@ -39,7 +39,7 @@ export function TabsList({ className, ...rest }: TabsListProps) {
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        'flex items-center gap-1 overflow-x-auto border-border-subtle border-b',
+        'flex items-center gap-1 overflow-x-auto overflow-y-hidden border-border-subtle border-b',
         styles.list,
         className,
       )}
