@@ -178,11 +178,7 @@ async function main(): Promise<void> {
     teammate,
     'Running the planning meeting',
   );
-  const waitingRequest = await ask(
-    admin,
-    teammate,
-    'How I handled the incident review',
-  );
+  await ask(admin, teammate, 'How I handled the incident review');
   await answer(
     teammate,
     answeredRequest,
@@ -240,20 +236,19 @@ To be them, add this cookie for ${WEB_BASE_URL} in your browser's developer tool
 
 What is on screen:
 
-  My requests     2 sent — "Running the planning meeting" answered by Ben, "How I handled the
-                  incident review" still waiting
-  Waiting for me  2 Asks from Ben to answer, and a third she has already answered
-  Feedback for me 2 pieces — what Ben wrote back, and what he gave her without being asked.
-                  The one she gave Ben is his, not hers
-  Shared with me  1 piece — what Ben wrote to Cara and chose to show Ann. She is neither its
-                  Giver nor its Receiver, which is the whole point of the tab
-  Workspace feed  1 piece — what Cara wrote to Ben and shared with everyone. Every Member of
-                  Acme reads the same feed, and nobody outside it reads any of it
-  The answer      ${WEB_BASE_URL}/home?tab=my-requests&request=${answeredRequest}
-  Still waiting   ${WEB_BASE_URL}/home?tab=my-requests&request=${waitingRequest}
-  Written to her  ${WEB_BASE_URL}/home?tab=received
-  Shared with her ${WEB_BASE_URL}/home?tab=shared
-  The feed        ${WEB_BASE_URL}/home
+  Home            Everyone: what Cara wrote to Ben and shared with everyone. Every Member of
+                  Acme reads the same, and nobody outside it reads any of it. Shared with me:
+                  what Ben wrote to Cara and chose to show Ann. She is neither its Giver nor its
+                  Receiver, which is the whole point of that filter
+  Received        2 requests — "Running the planning meeting" answered by Ben, "How I handled
+                  the incident review" still waiting — and what Ben gave her without being
+                  asked. The one she gave Ben is his, not hers
+  Waiting for me  2 Asks from Ben to answer
+  Home            ${WEB_BASE_URL}/home
+  Shared with her ${WEB_BASE_URL}/home?show=shared
+  Received        ${WEB_BASE_URL}/received
+  Her requests    ${WEB_BASE_URL}/received?show=requests
+  Waiting for me  ${WEB_BASE_URL}/waiting
 
 Run this again for another Workspace with its own people; nothing is overwritten.
 `);
