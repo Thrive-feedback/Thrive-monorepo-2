@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { InvitationNotices } from '@/app/(signed-in)/(brand-new)/_components/invitation-notices';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { AnswerAskViewSkeleton } from '@/components/organisms/answer-ask-view';
 import { FeedbackCardSkeleton } from '@/components/organisms/feedback-card';
@@ -19,7 +20,6 @@ import {
 } from './_components/feedback-request-detail';
 import styles from './_components/home-split.module.css';
 import { HomeTabPanel } from './_components/home-tab-panel';
-import { InvitationNotices } from './_components/invitation-notices';
 import { NewHomeBanner } from './_components/new-home-banner';
 import { WaitingAskList } from './_components/waiting-ask-list';
 import { WorkspaceFeed } from './_components/workspace-feed';
