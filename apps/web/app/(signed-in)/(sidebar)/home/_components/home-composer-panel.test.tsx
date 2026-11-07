@@ -15,7 +15,7 @@ const sendKudosCard = vi.fn();
 const sendPostcardFeedback = vi.fn();
 const sendPostcardRequest = vi.fn();
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service',
+  '@/app/(signed-in)/(sidebar)/_lib/send-postcard-actions.service',
   () => ({
     sendKudosCard: (...args: unknown[]) => sendKudosCard(...args),
     sendPostcardFeedback: (...args: unknown[]) => sendPostcardFeedback(...args),
@@ -128,7 +128,7 @@ describe('HomeComposerPanel', () => {
       'w-1',
       expect.objectContaining({ message: 'The demo went well.' }),
     );
-    expect(push).toHaveBeenCalledExactlyOnceWith(ROUTES.brandNewKudos);
+    expect(push).toHaveBeenCalledExactlyOnceWith(ROUTES.kudos);
     expect(refresh).toHaveBeenCalledOnce();
     await waitFor(() => expect(field()).toHaveValue(''), WAITING);
   });

@@ -140,7 +140,7 @@ describe('FeedbackPostcard', () => {
     rerender(
       <>
         {link}
-        {await reading(ROUTES.brandNewHomeShowing('shared'))}
+        {await reading(ROUTES.homeShowing('shared'))}
       </>,
     );
 
@@ -154,7 +154,7 @@ describe('FeedbackPostcard', () => {
       screen.getByRole('link', { name: 'The card pressed' }),
     ).toHaveFocus();
     expect(replace).toHaveBeenCalledExactlyOnceWith(
-      ROUTES.brandNewHomeShowing('shared'),
+      ROUTES.homeShowing('shared'),
       { scroll: false },
     );
   });
@@ -175,15 +175,15 @@ describe('FeedbackPostcard', () => {
   it('leaves the reader where they were when the postcard is not theirs to open', async () => {
     theApiAnswers({ code: 'FEEDBACK_NOT_FOUND' }, { status: 404 });
 
-    await expect(reading(ROUTES.brandNewHomeShowing('shared'))).rejects.toEqual(
-      new Redirected(ROUTES.brandNewHomeShowing('shared')),
+    await expect(reading(ROUTES.homeShowing('shared'))).rejects.toEqual(
+      new Redirected(ROUTES.homeShowing('shared')),
     );
   });
 
   it('says so and leaves the reader where they were when the postcard could not be read', async () => {
     theApiAnswers({ code: 'INTERNAL' }, { status: 500 });
 
-    render(await reading(ROUTES.brandNewHomeShowing('shared')));
+    render(await reading(ROUTES.homeShowing('shared')));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(toastError).toHaveBeenCalledExactlyOnceWith(
@@ -191,7 +191,7 @@ describe('FeedbackPostcard', () => {
       expect.anything(),
     );
     expect(replace).toHaveBeenCalledExactlyOnceWith(
-      ROUTES.brandNewHomeShowing('shared'),
+      ROUTES.homeShowing('shared'),
       { scroll: false },
     );
   });

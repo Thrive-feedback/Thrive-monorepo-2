@@ -1,13 +1,13 @@
 'use server';
 
 import { z } from 'zod';
-import { readNextPageAsMember } from '@/app/(signed-in)/(brand-new)/_lib/read-next-page.service';
+import { readNextPageAsMember } from '@/app/(signed-in)/(sidebar)/_lib/read-next-page.service';
 import type { HomeFeedPage } from '@/lib/feedback/home-feed-item.type';
-import { BRAND_NEW_HOME_SHOWS } from '@/lib/routes.constant';
+import { HOME_SHOWS } from '@/lib/routes.constant';
 import { readHomeFeed } from './home-feed.service';
 
 const NextPage = z.object({
-  show: z.enum(BRAND_NEW_HOME_SHOWS),
+  show: z.enum(HOME_SHOWS),
   cursor: z.string().min(1),
 });
 

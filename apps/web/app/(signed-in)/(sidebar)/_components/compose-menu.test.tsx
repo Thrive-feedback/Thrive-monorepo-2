@@ -2,8 +2,8 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SentKudosInput } from '@/app/(signed-in)/(brand-new)/_lib/sent-kudos.schema';
-import { SentPostcardInput } from '@/app/(signed-in)/(brand-new)/_lib/sent-postcard.schema';
+import { SentKudosInput } from '@/app/(signed-in)/(sidebar)/_lib/sent-kudos.schema';
+import { SentPostcardInput } from '@/app/(signed-in)/(sidebar)/_lib/sent-postcard.schema';
 import { Toaster } from '@/components/atoms/toaster';
 import { POSTCARD_STAMPS } from '@/components/organisms/postcard-dialog/postcard-stamp.constant';
 import { POSTCARD_STICKERS } from '@/components/organisms/postcard-dialog/postcard-sticker.constant';
@@ -16,14 +16,14 @@ const push = vi.fn();
 vi.mock('next/navigation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('next/navigation')>()),
   useRouter: () => ({ refresh, push }),
-  usePathname: () => ROUTES.brandNewWaiting,
+  usePathname: () => ROUTES.waiting,
 }));
 
 const sendPostcardFeedback = vi.fn();
 const sendPostcardRequest = vi.fn();
 const sendKudosCard = vi.fn();
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service',
+  '@/app/(signed-in)/(sidebar)/_lib/send-postcard-actions.service',
   () => ({
     sendPostcardFeedback: (...args: unknown[]) => sendPostcardFeedback(...args),
     sendPostcardRequest: (...args: unknown[]) => sendPostcardRequest(...args),

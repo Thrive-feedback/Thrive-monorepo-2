@@ -1,15 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { usePersonalItemsView } from '@/app/(signed-in)/(brand-new)/_lib/use-personal-items-view';
+import { usePersonalItemsView } from '@/app/(signed-in)/(sidebar)/_lib/use-personal-items-view';
 import { Toggle } from '@/components/atoms/toggle';
 import {
-  BRAND_NEW_RECEIVED_SHOWS,
-  type BrandNewReceivedShow,
+  RECEIVED_SHOWS,
+  type ReceivedShow,
   ROUTES,
 } from '@/lib/routes.constant';
 
-const SHOW_NAMES: Readonly<Record<BrandNewReceivedShow, string>> = {
+const SHOW_NAMES: Readonly<Record<ReceivedShow, string>> = {
   all: 'All',
   requests: 'My requests',
   offered: 'Given to me',
@@ -17,7 +17,7 @@ const SHOW_NAMES: Readonly<Record<BrandNewReceivedShow, string>> = {
 };
 
 export type ReceivedFilterProps = {
-  show: BrandNewReceivedShow;
+  show: ReceivedShow;
 };
 
 /**
@@ -32,7 +32,7 @@ export function ReceivedFilter({ show }: ReceivedFilterProps) {
   return (
     <fieldset className="flex flex-wrap gap-2">
       <legend className="sr-only">Show</legend>
-      {BRAND_NEW_RECEIVED_SHOWS.map((value) => (
+      {RECEIVED_SHOWS.map((value) => (
         <Toggle
           key={value}
           variant="outline"
@@ -41,7 +41,7 @@ export function ReceivedFilter({ show }: ReceivedFilterProps) {
           pressed={show === value}
           onPressedChange={(pressed) => {
             if (pressed) {
-              router.push(ROUTES.brandNewReceivedViewing(view, value));
+              router.push(ROUTES.receivedViewing(view, value));
             }
           }}
         >

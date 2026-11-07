@@ -3,9 +3,9 @@
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { deliverCard } from '@/app/(signed-in)/(brand-new)/_lib/deliver-card.util';
-import { sendPostcardAnswer } from '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service';
-import { toSentAnswer } from '@/app/(signed-in)/(brand-new)/_lib/sent-postcard.util';
+import { deliverCard } from '@/app/(signed-in)/(sidebar)/_lib/deliver-card.util';
+import { sendPostcardAnswer } from '@/app/(signed-in)/(sidebar)/_lib/send-postcard-actions.service';
+import { toSentAnswer } from '@/app/(signed-in)/(sidebar)/_lib/sent-postcard.util';
 import type {
   PostcardAnswer,
   PostcardAsk,

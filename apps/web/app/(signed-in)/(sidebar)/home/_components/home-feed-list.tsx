@@ -1,19 +1,19 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useEndlessList } from '@/app/(signed-in)/(brand-new)/_lib/use-endless-list';
-import { readNextHomeFeedPage } from '@/app/(signed-in)/(brand-new)/home/_lib/home-feed-actions.service';
+import { useEndlessList } from '@/app/(signed-in)/(sidebar)/_lib/use-endless-list';
+import { readNextHomeFeedPage } from '@/app/(signed-in)/(sidebar)/home/_lib/home-feed-actions.service';
 import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { FeedPageFailed } from '@/components/organisms/feed-card/feed-page-failed';
 import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';
 import type { HomeFeedPage } from '@/lib/feedback/home-feed-item.type';
-import { type BrandNewHomeShow, ROUTES } from '@/lib/routes.constant';
+import { type HomeShow, ROUTES } from '@/lib/routes.constant';
 
 export type HomeFeedListProps = {
   /** The page the server read. Later reads of it are ignored: see `useEndlessList`. */
   initialPage: HomeFeedPage;
-  show: BrandNewHomeShow;
+  show: HomeShow;
 };
 
 function idOf(item: { readonly id: string }) {
@@ -49,7 +49,7 @@ export function HomeFeedList({ initialPage, show }: HomeFeedListProps) {
               <FeedCard
                 item={item}
                 readerAccountId={initialPage.readerAccountId}
-                target={{ href: ROUTES.brandNewHomeFeedback(item.id, show) }}
+                target={{ href: ROUTES.homeFeedback(item.id, show) }}
               />
             )}
           </li>

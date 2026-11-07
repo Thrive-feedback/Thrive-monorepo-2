@@ -30,22 +30,20 @@ export const NOTIFICATION_LINES: Readonly<
 > = {
   ASK_RECEIVED: {
     sentenceFor: (actor) => `${actor} asked you for feedback`,
-    destinationFor: (subjectId) => ROUTES.brandNewWaitingAsk(subjectId),
+    destinationFor: (subjectId) => ROUTES.waitingAsk(subjectId),
   },
   ASK_ANSWERED: {
     sentenceFor: (actor) => `${actor} answered your request`,
     // Received has no address for one request, so the bell opens the person's requests.
-    destinationFor: () => ROUTES.brandNewReceivedViewing('grid', 'requests'),
+    destinationFor: () => ROUTES.receivedViewing('grid', 'requests'),
   },
   FEEDBACK_RECEIVED: {
     sentenceFor: (actor) => `${actor} wrote feedback to you`,
-    destinationFor: (subjectId) =>
-      ROUTES.brandNewHomeFeedback(subjectId, 'all'),
+    destinationFor: (subjectId) => ROUTES.homeFeedback(subjectId, 'all'),
   },
   FEEDBACK_SHARED: {
     sentenceFor: (actor) => `${actor} shared feedback with you`,
-    destinationFor: (subjectId) =>
-      ROUTES.brandNewHomeFeedback(subjectId, 'all'),
+    destinationFor: (subjectId) => ROUTES.homeFeedback(subjectId, 'all'),
   },
 };
 

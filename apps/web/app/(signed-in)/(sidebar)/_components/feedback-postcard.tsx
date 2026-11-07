@@ -1,6 +1,6 @@
 import { ApiError } from '@repo/api';
 import { redirect } from 'next/navigation';
-import { readFeedbackPostcard } from '@/app/(signed-in)/(brand-new)/_lib/feedback-postcard.service';
+import { readFeedbackPostcard } from '@/app/(signed-in)/(sidebar)/_lib/feedback-postcard.service';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { FeedbackPostcardDialog } from './feedback-postcard-dialog';

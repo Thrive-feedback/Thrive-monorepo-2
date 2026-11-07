@@ -233,7 +233,7 @@ describe('sending a postcard of Feedback', () => {
     ).rejects.toMatchObject({ to: '/signin' });
   });
 
-  it('takes the person back to the new Home once they have left the Workspace', async () => {
+  it('takes the person back Home once they have left the Workspace', async () => {
     apiRefuses(FEEDBACK, 'WORKSPACE_NOT_FOUND', 404);
 
     await expect(

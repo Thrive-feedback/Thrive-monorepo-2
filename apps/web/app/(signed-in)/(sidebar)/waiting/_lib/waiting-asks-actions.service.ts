@@ -1,12 +1,12 @@
 'use server';
 
 import { z } from 'zod';
-import { readNextPageAsMember } from '@/app/(signed-in)/(brand-new)/_lib/read-next-page.service';
-import { BRAND_NEW_WAITING_SORTS } from '@/lib/routes.constant';
+import { readNextPageAsMember } from '@/app/(signed-in)/(sidebar)/_lib/read-next-page.service';
+import { WAITING_SORTS } from '@/lib/routes.constant';
 import { readWaitingAsks, type WaitingAsksPage } from './waiting-asks.service';
 
 const NextPage = z.object({
-  sort: z.enum(BRAND_NEW_WAITING_SORTS),
+  sort: z.enum(WAITING_SORTS),
   cursor: z.string().min(1),
 });
 

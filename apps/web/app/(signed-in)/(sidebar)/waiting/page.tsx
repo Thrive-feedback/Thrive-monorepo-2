@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { BrandNewPageTitle } from '@/app/(signed-in)/(brand-new)/_components/brand-new-page-title';
-import { BRAND_NEW_COLUMN } from '@/app/(signed-in)/(brand-new)/_lib/brand-new-column.constant';
+import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
+import { PAGE_COLUMN } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
 import { cn } from '@/lib/cn.util';
 import { requireMember } from '@/lib/session/session.service';
 import { AnsweredAsksProvider } from './_components/answered-asks';
@@ -9,7 +9,7 @@ import { WaitingAsks, WaitingAsksSkeleton } from './_components/waiting-asks';
 import { WAITING_HEADING_ID } from './_components/waiting-heading.constant';
 import { WaitingPostcard } from './_components/waiting-postcard';
 import { WaitingSort } from './_components/waiting-sort';
-import { BrandNewWaitingSearchParams } from './_lib/brand-new-waiting-search-params.schema';
+import { WaitingSearchParams } from './_lib/waiting-search-params.schema';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type BrandNewWaitingProps = {
+type WaitingProps = {
   /** `sort` is the order of the list, and `ask` the Ask open over it. */
   searchParams: Promise<{
     sort?: string | string[];
@@ -29,19 +29,17 @@ type BrandNewWaitingProps = {
  * Every Ask waiting for the person, each a card that opens the postcard it is answered on, named
  * in the address so a reload or a shared link opens it again.
  */
-export default async function BrandNewWaiting({
-  searchParams,
-}: BrandNewWaitingProps) {
-  const { sort, ask } = BrandNewWaitingSearchParams.parse(await searchParams);
+export default async function Waiting({ searchParams }: WaitingProps) {
+  const { sort, ask } = WaitingSearchParams.parse(await searchParams);
   const session = await requireMember();
 
   return (
     <AnsweredAsksProvider>
-      <div className={cn(BRAND_NEW_COLUMN, 'flex flex-col gap-4')}>
+      <div className={cn(PAGE_COLUMN, 'flex flex-col gap-4')}>
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <BrandNewPageTitle id={WAITING_HEADING_ID} tabIndex={-1}>
+          <PageTitle id={WAITING_HEADING_ID} tabIndex={-1}>
             Waiting for me
-          </BrandNewPageTitle>
+          </PageTitle>
           <WaitingSort sort={sort} />
         </div>
         <Suspense key={sort} fallback={<WaitingAsksSkeleton />}>

@@ -59,7 +59,7 @@ export function WaitingAskCardEntry() {
 <WaitingAskCard
   ask={ask}
   card={ask.card}
-  target={{ href: ROUTES.brandNewWaitingAsk(ask.askId) }}
+  target={{ href: ROUTES.waitingAsk(ask.askId) }}
 />`}
       props={[
         {

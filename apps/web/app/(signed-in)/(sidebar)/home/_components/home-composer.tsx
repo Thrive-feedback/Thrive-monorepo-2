@@ -1,4 +1,4 @@
-import { toSessionWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
+import { toSessionWriter } from '@/app/(signed-in)/(sidebar)/_lib/postcard-writer.util';
 import { readTeammates } from '@/lib/feedback/teammates.service';
 import { readWorkspaceGoalNames } from '@/lib/feedback/workspace-goal-names.service';
 import type { MemberAccount } from '@/lib/session/session.service';

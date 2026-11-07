@@ -5,8 +5,8 @@ import {
   ComposeCards,
   useComposeCards,
   warmComposeCards,
-} from '@/app/(signed-in)/(brand-new)/_components/compose-cards';
-import { GIVEN_HEADING_ID } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
+} from '@/app/(signed-in)/(sidebar)/_components/compose-cards';
+import { GIVEN_HEADING_ID } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-side.constant';
 import { Button } from '@/components/atoms/button';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';

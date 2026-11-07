@@ -1,10 +1,8 @@
 import { Text } from '@/components/atoms/text';
-import type { BrandNewHomeShow } from '@/lib/routes.constant';
+import type { HomeShow } from '@/lib/routes.constant';
 
 /** What each choice says when it holds nothing, in the words of the design (`FB-4-S1`). */
-const EMPTY: Readonly<
-  Record<BrandNewHomeShow, { title: string; body?: string }>
-> = {
+const EMPTY: Readonly<Record<HomeShow, { title: string; body?: string }>> = {
   all: {
     title: 'No Feedback to show yet',
     body: 'Feedback shared with you or with the whole Workspace will show up here.',
@@ -15,7 +13,7 @@ const EMPTY: Readonly<
 
 export type FeedEmptyProps = {
   /** What the feed was asked to show. */
-  show: BrandNewHomeShow;
+  show: HomeShow;
 };
 
 /** Home's feed with nothing to show, in the words of the choice that was made. */

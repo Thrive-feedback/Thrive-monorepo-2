@@ -8,7 +8,7 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { KudosBoardPage } from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board.type';
+import type { KudosBoardPage } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board.type';
 import type { ReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { KudosBoardPages } from './kudos-board-pages';
@@ -17,7 +17,7 @@ import { KudosBoardTidy } from './kudos-board-tidy';
 
 const readNextKudosBoardPage = vi.fn();
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board-actions.service',
+  '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board-actions.service',
   () => ({
     readNextKudosBoardPage: (input: unknown) => readNextKudosBoardPage(input),
   }),

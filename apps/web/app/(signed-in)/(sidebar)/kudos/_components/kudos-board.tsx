@@ -1,11 +1,11 @@
 import {
   KUDOS_BOARD_GRID,
   KUDOS_BOARD_READ_SIZE,
-} from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board.constant';
+} from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board.constant';
 import {
   readKudosBoardMonths,
   readKudosBoardPage,
-} from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board.service';
+} from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board.service';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { kudosTiltOf } from '@/components/organisms/kudos-dialog/read-kudos.util';
 import { cn } from '@/lib/cn.util';

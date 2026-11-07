@@ -1,16 +1,16 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useEndlessList } from '@/app/(signed-in)/(brand-new)/_lib/use-endless-list';
+import { useEndlessList } from '@/app/(signed-in)/(sidebar)/_lib/use-endless-list';
 import type {
   WaitingAskItem,
   WaitingAsksPage,
-} from '@/app/(signed-in)/(brand-new)/waiting/_lib/waiting-asks.service';
-import { readNextWaitingAsks } from '@/app/(signed-in)/(brand-new)/waiting/_lib/waiting-asks-actions.service';
+} from '@/app/(signed-in)/(sidebar)/waiting/_lib/waiting-asks.service';
+import { readNextWaitingAsks } from '@/app/(signed-in)/(sidebar)/waiting/_lib/waiting-asks-actions.service';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { FeedPageFailed } from '@/components/organisms/feed-card/feed-page-failed';
 import { WaitingAskCard } from '@/components/organisms/feed-card/waiting-ask-card';
-import { type BrandNewWaitingSort, ROUTES } from '@/lib/routes.constant';
+import { ROUTES, type WaitingSortOrder } from '@/lib/routes.constant';
 import { useAnsweredAsks } from './answered-asks';
 import { WaitingEmpty } from './waiting-empty';
 
@@ -18,7 +18,7 @@ export type WaitingAskListProps = {
   /** The page the server read. Later reads of it are ignored: see `useEndlessList`. */
   initialPage: WaitingAsksPage;
   /** The order it reads in. The page keys this by it, so changing it starts again. */
-  sort: BrandNewWaitingSort;
+  sort: WaitingSortOrder;
 };
 
 function askIdOf(ask: WaitingAskItem) {
@@ -56,7 +56,7 @@ export function WaitingAskList({ initialPage, sort }: WaitingAskListProps) {
             <WaitingAskCard
               ask={ask}
               card={ask.card}
-              target={{ href: ROUTES.brandNewWaitingAsk(ask.askId, sort) }}
+              target={{ href: ROUTES.waitingAsk(ask.askId, sort) }}
             />
           </li>
         ))}

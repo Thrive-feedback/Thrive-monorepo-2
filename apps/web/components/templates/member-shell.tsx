@@ -7,7 +7,7 @@ import { cn } from '@/lib/cn.util';
 const GOOGLE_PHOTOS_ORIGIN = 'https://lh3.googleusercontent.com';
 
 export type MemberShellProps = {
-  /** The bar across the top; the new Home brings its own while it is built beside the old one. */
+  /** The bar across the top, when the pages bring their own rather than the Member navbar. */
   navbar?: React.ReactNode;
   /**
    * The page meets the frame on every side, and each of its columns keeps its own distance from it,

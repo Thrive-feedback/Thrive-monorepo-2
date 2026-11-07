@@ -1,14 +1,14 @@
-import { readWaitingAsks } from '@/app/(signed-in)/(brand-new)/waiting/_lib/waiting-asks.service';
+import { readWaitingAsks } from '@/app/(signed-in)/(sidebar)/waiting/_lib/waiting-asks.service';
 import { SkeletonRegion } from '@/components/atoms/skeleton';
 import { FeedCardSkeletonList } from '@/components/organisms/feed-card/feed-card-skeleton';
-import type { BrandNewWaitingSort } from '@/lib/routes.constant';
+import type { WaitingSortOrder } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { WaitingAskList } from './waiting-ask-list';
 import { WaitingEmpty } from './waiting-empty';
 
 export type WaitingAsksProps = {
   membership: CurrentMembership;
-  sort: BrandNewWaitingSort;
+  sort: WaitingSortOrder;
 };
 
 /** The first page of Waiting for me, read here so the page renders around it. */

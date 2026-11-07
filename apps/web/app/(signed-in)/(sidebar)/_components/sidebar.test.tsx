@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ROUTES } from '@/lib/routes.constant';
-import { BrandNewSidebar } from './brand-new-sidebar';
+import { Sidebar } from './sidebar';
 
 const MEMBERSHIP = { workspace: { id: 'w-1', name: 'Acme' }, role: 'MEMBER' };
 
@@ -21,7 +21,7 @@ vi.mock('@/lib/session/session.service', () => ({
   }),
 }));
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service',
+  '@/app/(signed-in)/(sidebar)/_lib/send-postcard-actions.service',
   () => ({ sendPostcardFeedback: vi.fn(), sendPostcardRequest: vi.fn() }),
 );
 vi.mock('@/lib/feedback/workspace-goal-names.service', () => ({
@@ -41,11 +41,11 @@ async function draw(waiting: number, path: string = ROUTES.home) {
   usePathname.mockReturnValue(path);
   readTeammates.mockResolvedValue([]);
   readWaitingCount.mockResolvedValue(waiting);
-  render(await BrandNewSidebar());
+  render(await Sidebar());
   return screen.getByRole('navigation', { name: 'Main' });
 }
 
-describe('BrandNewSidebar', () => {
+describe('Sidebar', () => {
   it('lists where to go in order, with Kudos board under Home and My Feedback over Received and Given', async () => {
     const nav = await draw(0);
 
@@ -65,7 +65,7 @@ describe('BrandNewSidebar', () => {
   });
 
   it('marks the page that is open, wherever the person went', async () => {
-    const nav = await draw(0, ROUTES.brandNewWaiting);
+    const nav = await draw(0, ROUTES.waiting);
 
     expect(
       within(nav).getByRole('link', { name: 'Waiting for me' }),
@@ -88,17 +88,17 @@ describe('BrandNewSidebar', () => {
     );
     expect(
       within(nav).getByRole('link', { name: 'Waiting for me' }),
-    ).toHaveAttribute('href', ROUTES.brandNewWaiting);
+    ).toHaveAttribute('href', ROUTES.waiting);
     expect(
       within(nav).getByRole('link', { name: 'Kudos board' }),
-    ).toHaveAttribute('href', ROUTES.brandNewKudos);
+    ).toHaveAttribute('href', ROUTES.kudos);
     expect(within(nav).getByRole('link', { name: 'Received' })).toHaveAttribute(
       'href',
-      ROUTES.brandNewReceived,
+      ROUTES.received,
     );
     expect(within(nav).getByRole('link', { name: 'Given' })).toHaveAttribute(
       'href',
-      ROUTES.brandNewGiven,
+      ROUTES.given,
     );
     expect(within(nav).getAllByRole('link')).toHaveLength(5);
     for (const button of within(nav).getAllByRole('button')) {

@@ -11,7 +11,7 @@ vi.mock('next/headers', () => ({
   headers: async () => new Headers({ cookie: 'thrive.session_token=abc' }),
 }));
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/waiting/_lib/waiting-asks-actions.service',
+  '@/app/(signed-in)/(sidebar)/waiting/_lib/waiting-asks-actions.service',
   () => ({ readNextWaitingAsks: vi.fn() }),
 );
 

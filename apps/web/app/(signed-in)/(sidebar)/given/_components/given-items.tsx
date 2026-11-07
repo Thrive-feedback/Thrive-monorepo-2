@@ -1,8 +1,8 @@
-import { PersonalItemList } from '@/app/(signed-in)/(brand-new)/_components/personal-item-list';
-import { PersonalItemsRetry } from '@/app/(signed-in)/(brand-new)/_components/personal-items-retry';
-import { readFirstPage } from '@/app/(signed-in)/(brand-new)/_lib/read-first-page.service';
-import { readGivenItems } from '@/app/(signed-in)/(brand-new)/given/_lib/given-items.service';
-import { readNextGivenPage } from '@/app/(signed-in)/(brand-new)/given/_lib/given-items-actions.service';
+import { PersonalItemList } from '@/app/(signed-in)/(sidebar)/_components/personal-item-list';
+import { PersonalItemsRetry } from '@/app/(signed-in)/(sidebar)/_components/personal-items-retry';
+import { readFirstPage } from '@/app/(signed-in)/(sidebar)/_lib/read-first-page.service';
+import { readGivenItems } from '@/app/(signed-in)/(sidebar)/given/_lib/given-items.service';
+import { readNextGivenPage } from '@/app/(signed-in)/(sidebar)/given/_lib/given-items-actions.service';
 import type { MemberAccount } from '@/lib/session/session.service';
 import { GivenEmpty } from './given-empty';
 

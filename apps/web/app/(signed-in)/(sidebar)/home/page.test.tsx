@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ROUTES } from '@/lib/routes.constant';
-import BrandNewHome from './page';
+import Home from './page';
 
 const FEEDBACK_ID = '0199a0f0-0000-7000-8000-0000000000d1';
 
@@ -9,7 +9,7 @@ const requireMember = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
   requireMember: (signedIn?: string) => requireMember(signedIn),
 }));
-vi.mock('@/app/(signed-in)/(brand-new)/_components/invitation-notices', () => ({
+vi.mock('@/app/(signed-in)/(sidebar)/_components/invitation-notices', () => ({
   InvitationNotices: () => <p>The Invitations waiting</p>,
 }));
 vi.mock('@/components/atoms/one-time-toast', () => ({
@@ -37,7 +37,7 @@ vi.mock('./_components/home-feed', () => ({
   HomeFeed: ({ show }: { show: string }) => <p>The feed, showing {show}</p>,
   HomeFeedSkeleton: () => null,
 }));
-vi.mock('@/app/(signed-in)/(brand-new)/_components/feedback-postcard', () => ({
+vi.mock('@/app/(signed-in)/(sidebar)/_components/feedback-postcard', () => ({
   FeedbackPostcard: ({
     feedbackId,
     closeHref,
@@ -62,10 +62,10 @@ beforeEach(() => {
 });
 
 function open(searchParams: Record<string, string> = {}) {
-  return BrandNewHome({ searchParams: Promise.resolve(searchParams) });
+  return Home({ searchParams: Promise.resolve(searchParams) });
 }
 
-describe('BrandNewHome', () => {
+describe('Home', () => {
   it('lets only a Member in, and is headed Home', async () => {
     render(await open());
 
@@ -100,7 +100,7 @@ describe('BrandNewHome', () => {
     );
     expect(screen.getByRole('status')).toHaveAttribute(
       'data-then',
-      ROUTES.brandNewHomeShowing('shared'),
+      ROUTES.homeShowing('shared'),
     );
   });
 
@@ -153,7 +153,7 @@ describe('BrandNewHome', () => {
 
     expect(
       screen.getByText(
-        `The postcard ${FEEDBACK_ID}, closing to ${ROUTES.brandNewHomeShowing('shared')}`,
+        `The postcard ${FEEDBACK_ID}, closing to ${ROUTES.homeShowing('shared')}`,
       ),
     ).toBeInTheDocument();
     expect(screen.getByText('The feed, showing shared')).toBeInTheDocument();

@@ -1,12 +1,12 @@
 import 'server-only';
 import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
-import { toAskOnPostcard } from '@/app/(signed-in)/(brand-new)/_lib/read-postcard.util';
+import { toAskOnPostcard } from '@/app/(signed-in)/(sidebar)/_lib/read-postcard.util';
 import type { AskedPostcard } from '@/components/organisms/postcard-dialog/postcard-read.type';
 import { apiClient } from '@/lib/api-client.service';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import { toMyAsk } from '@/lib/feedback/my-ask.util';
-import type { BrandNewWaitingSort } from '@/lib/routes.constant';
+import type { WaitingSortOrder } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 /** As on Home: enough to fill a screen and more, so the next page arrives before the end does. */
@@ -28,7 +28,7 @@ export type WaitingAsksPage = {
  */
 export async function readWaitingAsks(
   membership: CurrentMembership,
-  sort: BrandNewWaitingSort,
+  sort: WaitingSortOrder,
   cursor?: string,
 ): Promise<WaitingAsksPage> {
   const cookie = (await headers()).get('cookie') ?? undefined;

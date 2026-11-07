@@ -1,12 +1,12 @@
 import { Suspense } from 'react';
 import {
-  BrandNewPageTitle,
-  type BrandNewPageTitleProps,
-} from '@/app/(signed-in)/(brand-new)/_components/brand-new-page-title';
+  PageTitle,
+  type PageTitleProps,
+} from '@/app/(signed-in)/(sidebar)/_components/page-title';
 import {
   GIVEN_HEADING_ID,
   type PersonalItemsSide,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-items-side.constant';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { PersonalItemsViewToggle } from './personal-items-view-toggle';
@@ -17,7 +17,7 @@ const HEADINGS: Readonly<
     {
       title: string;
       description: string;
-      focusable?: Omit<BrandNewPageTitleProps, 'children'>;
+      focusable?: Omit<PageTitleProps, 'children'>;
     }
   >
 > = {
@@ -48,7 +48,7 @@ export function PersonalItemsHeading({ side }: PersonalItemsHeadingProps) {
   return (
     <div className="flex items-end justify-between gap-4">
       <div className="flex min-w-0 flex-col gap-1">
-        <BrandNewPageTitle {...focusable}>{title}</BrandNewPageTitle>
+        <PageTitle {...focusable}>{title}</PageTitle>
         <Text as="p" variant="body-1" tone="muted">
           {description}
         </Text>

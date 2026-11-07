@@ -1,16 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(sidebar)/_lib/plain-postcard.constant';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
 import { HomeFeed } from './home-feed';
 
 const readHomeFeed = vi.fn();
-vi.mock('@/app/(signed-in)/(brand-new)/home/_lib/home-feed.service', () => ({
+vi.mock('@/app/(signed-in)/(sidebar)/home/_lib/home-feed.service', () => ({
   readHomeFeed: (...args: unknown[]) => readHomeFeed(...args),
 }));
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/home/_lib/home-feed-actions.service',
+  '@/app/(signed-in)/(sidebar)/home/_lib/home-feed-actions.service',
   () => ({ readNextHomeFeedPage: vi.fn() }),
 );
 

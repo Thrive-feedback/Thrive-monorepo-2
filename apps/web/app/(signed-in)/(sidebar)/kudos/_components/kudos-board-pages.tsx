@@ -5,10 +5,10 @@ import {
   KUDOS_BOARD_GRID,
   KUDOS_BOARD_READ_SIZE,
   KUDOS_BOARD_ROWS,
-} from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board.constant';
-import type { KudosBoardPage } from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board.type';
-import { readNextKudosBoardPage } from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board-actions.service';
-import { kudosMonthName } from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board-place.util';
+} from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board.constant';
+import type { KudosBoardPage } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board.type';
+import { readNextKudosBoardPage } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board-actions.service';
+import { kudosMonthName } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board-place.util';
 import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 import { KudosCardReadDialog } from '@/components/organisms/kudos-dialog/kudos-card-read-dialog';
 import type { ReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.type';

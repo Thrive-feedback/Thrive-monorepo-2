@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { BrandNewPageTitle } from '@/app/(signed-in)/(brand-new)/_components/brand-new-page-title';
-import { FeedbackPostcard } from '@/app/(signed-in)/(brand-new)/_components/feedback-postcard';
-import { InvitationNotices } from '@/app/(signed-in)/(brand-new)/_components/invitation-notices';
-import { BRAND_NEW_COLUMN } from '@/app/(signed-in)/(brand-new)/_lib/brand-new-column.constant';
+import { FeedbackPostcard } from '@/app/(signed-in)/(sidebar)/_components/feedback-postcard';
+import { InvitationNotices } from '@/app/(signed-in)/(sidebar)/_components/invitation-notices';
+import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
+import { PAGE_COLUMN } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 import { cn } from '@/lib/cn.util';
@@ -13,7 +13,7 @@ import { FeedComposerSkeleton } from './_components/feed-composer/feed-composer-
 import { HomeComposer } from './_components/home-composer';
 import { HomeFeed, HomeFeedSkeleton } from './_components/home-feed';
 import { HomeFeedFilter } from './_components/home-feed-filter';
-import { BrandNewHomeSearchParams } from './_lib/brand-new-home-search-params.schema';
+import { HomeSearchParams } from './_lib/home-search-params.schema';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type BrandNewHomeProps = {
+type HomeProps = {
   /**
    * `signedIn` is set when Google sent a returning person back here, `opened` when they have just
    * switched to this Workspace from the navbar, `left` when they have just left the one before,
@@ -44,14 +44,12 @@ type BrandNewHomeProps = {
  * mentioned the person to read, in one list under a filter. Pressing a card opens the piece over
  * it, named in the address so a reload or a shared link opens it again.
  */
-export default async function BrandNewHome({
-  searchParams,
-}: BrandNewHomeProps) {
+export default async function Home({ searchParams }: HomeProps) {
   const { signedIn, opened, left, switched, show, feedback } =
-    BrandNewHomeSearchParams.parse(await searchParams);
+    HomeSearchParams.parse(await searchParams);
   const session = await requireMember(signedIn);
   const workspaceName = session.membership.workspace.name;
-  const showing = ROUTES.brandNewHomeShowing(show);
+  const showing = ROUTES.homeShowing(show);
 
   return (
     <>
@@ -83,14 +81,14 @@ export default async function BrandNewHome({
           then={showing}
         />
       )}
-      <div className={cn(BRAND_NEW_COLUMN, 'flex flex-col gap-8')}>
+      <div className={cn(PAGE_COLUMN, 'flex flex-col gap-8')}>
         {/* Most people have no Invitation waiting, so no space is held for one while it is read. */}
         <Suspense fallback={null}>
           <InvitationNotices />
         </Suspense>
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-end gap-x-3">
-            <BrandNewPageTitle>Home</BrandNewPageTitle>
+            <PageTitle>Home</PageTitle>
             <HandwrittenNote size="md" className="-translate-y-1.5">
               say it while it's fresh
             </HandwrittenNote>

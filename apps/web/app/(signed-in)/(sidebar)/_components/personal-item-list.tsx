@@ -6,15 +6,15 @@ import type {
   PersonalItem,
   PersonalItemsPage,
   PersonalListItem,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
-import { PERSONAL_ITEMS_GRID } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-layout.constant';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
+import { PERSONAL_ITEMS_GRID } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-layout.constant';
 import {
   PERSONAL_ITEMS_ROUTES,
   type PersonalItemsSide,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
-import { useEndlessList } from '@/app/(signed-in)/(brand-new)/_lib/use-endless-list';
-import { usePersonalItemsView } from '@/app/(signed-in)/(brand-new)/_lib/use-personal-items-view';
-import { useReceivedShow } from '@/app/(signed-in)/(brand-new)/_lib/use-received-show';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-items-side.constant';
+import { useEndlessList } from '@/app/(signed-in)/(sidebar)/_lib/use-endless-list';
+import { usePersonalItemsView } from '@/app/(signed-in)/(sidebar)/_lib/use-personal-items-view';
+import { useReceivedShow } from '@/app/(signed-in)/(sidebar)/_lib/use-received-show';
 import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';

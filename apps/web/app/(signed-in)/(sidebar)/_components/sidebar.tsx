@@ -1,16 +1,16 @@
-import { toSessionWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
+import { toSessionWriter } from '@/app/(signed-in)/(sidebar)/_lib/postcard-writer.util';
 import { readTeammates } from '@/lib/feedback/teammates.service';
 import { readWaitingCount } from '@/lib/feedback/waiting-count.service';
 import { readWorkspaceGoalNames } from '@/lib/feedback/workspace-goal-names.service';
 import { requireMember } from '@/lib/session/session.service';
-import { BrandNewSideNav } from './brand-new-side-nav';
 import { ComposeMenu } from './compose-menu';
+import { SidebarNav } from './sidebar-nav';
 
 /**
- * The new Home's sidebar: "+" to write something, then where to go. Who a postcard can be for, who
+ * The sidebar beside Home and its pages: "+" to write something, then where to go. Who a postcard can be for, who
  * signs it, and what `@` and `#` offer on it are read here, so "+" can hand them over.
  */
-export async function BrandNewSidebar() {
+export async function Sidebar() {
   const session = await requireMember();
   const { membership, email } = session;
   const [waitingCount, teammates, workspaceGoals] = await Promise.all([
@@ -27,7 +27,7 @@ export async function BrandNewSidebar() {
         workspaceGoals={workspaceGoals}
         writer={toSessionWriter(session)}
       />
-      <BrandNewSideNav waitingCount={waitingCount} />
+      <SidebarNav waitingCount={waitingCount} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(sidebar)/_lib/plain-postcard.constant';
 import { standInPhoto } from '@/app/ui-showcase/_lib/stand-in-photo.util';
 import type {
   AnsweredPostcard,

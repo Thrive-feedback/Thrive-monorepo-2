@@ -1,13 +1,13 @@
 import type {
   PersonalRequest,
   PersonalRequestAsk,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
 import {
   answeredFirst,
   requestAudienceOf,
   tallyOf,
-} from '@/app/(signed-in)/(brand-new)/_lib/request-card.util';
-import { useReceivedShow } from '@/app/(signed-in)/(brand-new)/_lib/use-received-show';
+} from '@/app/(signed-in)/(sidebar)/_lib/request-card.util';
+import { useReceivedShow } from '@/app/(signed-in)/(sidebar)/_lib/use-received-show';
 import { Badge } from '@/components/atoms/badge';
 import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';
@@ -292,11 +292,7 @@ export function RequestCard({ request }: RequestCardProps) {
             <AnswerRow
               key={ask.person.accountId}
               ask={ask}
-              href={ROUTES.brandNewReceivedFeedback(
-                ask.answer.id,
-                'list',
-                show,
-              )}
+              href={ROUTES.receivedFeedback(ask.answer.id, 'list', show)}
             />
           ))}
           {pending.map((ask) => (

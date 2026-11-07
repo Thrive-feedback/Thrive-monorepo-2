@@ -1,7 +1,7 @@
 import 'server-only';
 import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
-import { toFeedbackPostcard } from '@/app/(signed-in)/(brand-new)/_lib/read-postcard.util';
+import { toFeedbackPostcard } from '@/app/(signed-in)/(sidebar)/_lib/read-postcard.util';
 import { toReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.util';
 import { apiClient } from '@/lib/api-client.service';
 import type {
@@ -10,14 +10,14 @@ import type {
   HomeFeedShow,
 } from '@/lib/feedback/home-feed-item.type';
 import { toHomeFeedItem } from '@/lib/feedback/home-feed-item.util';
-import type { BrandNewHomeShow } from '@/lib/routes.constant';
+import type { HomeShow } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 /** A screen and a bit, so the next page is read before anybody reaches the end of this one. */
 const PAGE_SIZE = 20;
 
 /** The address's words for each choice, in the API's. */
-const API_SHOWS: Readonly<Record<BrandNewHomeShow, HomeFeedShow>> = {
+const API_SHOWS: Readonly<Record<HomeShow, HomeFeedShow>> = {
   all: 'ALL',
   everyone: 'EVERYONE',
   shared: 'SHARED_WITH_ME',
@@ -30,7 +30,7 @@ const API_SHOWS: Readonly<Record<BrandNewHomeShow, HomeFeedShow>> = {
  */
 export async function readHomeFeed(
   membership: CurrentMembership,
-  show: BrandNewHomeShow,
+  show: HomeShow,
   cursor?: string,
 ): Promise<HomeFeedPage> {
   const page = unwrap(

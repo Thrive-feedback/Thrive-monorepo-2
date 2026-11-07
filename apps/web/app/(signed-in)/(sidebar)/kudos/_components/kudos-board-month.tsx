@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { KUDOS_BOARD_ALL_MONTHS } from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board.constant';
-import { kudosMonthName } from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board-place.util';
+import { KUDOS_BOARD_ALL_MONTHS } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board.constant';
+import { kudosMonthName } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board-place.util';
 import {
   Select,
   SelectContent,
@@ -31,8 +31,8 @@ export function KudosBoardMonth({ month, months }: KudosBoardMonthProps) {
   function handleValueChange(value: string) {
     router.push(
       value === KUDOS_BOARD_ALL_MONTHS
-        ? ROUTES.brandNewKudos
-        : ROUTES.brandNewKudosMonth(value),
+        ? ROUTES.kudos
+        : ROUTES.kudosMonth(value),
     );
   }
 

@@ -4,14 +4,14 @@ import { LayoutGridIcon, ListIcon } from 'lucide-react';
 import {
   PERSONAL_ITEMS_ROUTES,
   type PersonalItemsSide,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
-import { usePersonalItemsView } from '@/app/(signed-in)/(brand-new)/_lib/use-personal-items-view';
-import { useReceivedShow } from '@/app/(signed-in)/(brand-new)/_lib/use-received-show';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-items-side.constant';
+import { usePersonalItemsView } from '@/app/(signed-in)/(sidebar)/_lib/use-personal-items-view';
+import { useReceivedShow } from '@/app/(signed-in)/(sidebar)/_lib/use-received-show';
 import { Toggle } from '@/components/atoms/toggle';
-import type { BrandNewPersonalView } from '@/lib/routes.constant';
+import type { PersonalView } from '@/lib/routes.constant';
 
 const VIEWS: readonly {
-  value: BrandNewPersonalView;
+  value: PersonalView;
   label: string;
   Icon: typeof ListIcon;
 }[] = [

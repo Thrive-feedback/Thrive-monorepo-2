@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { FeedbackPostcard } from '@/app/(signed-in)/(brand-new)/_components/feedback-postcard';
-import { PersonalItemsHeading } from '@/app/(signed-in)/(brand-new)/_components/personal-items-heading';
-import { PersonalItemsLoading } from '@/app/(signed-in)/(brand-new)/_components/personal-items-skeleton';
-import { BRAND_NEW_COLUMN } from '@/app/(signed-in)/(brand-new)/_lib/brand-new-column.constant';
-import { PersonalItemsSearchParams } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-search-params.schema';
+import { FeedbackPostcard } from '@/app/(signed-in)/(sidebar)/_components/feedback-postcard';
+import { PersonalItemsHeading } from '@/app/(signed-in)/(sidebar)/_components/personal-items-heading';
+import { PersonalItemsLoading } from '@/app/(signed-in)/(sidebar)/_components/personal-items-skeleton';
+import { PAGE_COLUMN } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
+import { PersonalItemsSearchParams } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-search-params.schema';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type BrandNewGivenProps = {
+type GivenProps = {
   /** `view` is how it is laid out, and `feedback` the piece open over it. */
   searchParams: Promise<{
     view?: string | string[];
@@ -29,9 +29,7 @@ type BrandNewGivenProps = {
  * first, as a grid of the real cards or as a list like Home's. Pressing a postcard opens it over
  * them, named in the address so a reload or a shared link opens it again.
  */
-export default async function BrandNewGiven({
-  searchParams,
-}: BrandNewGivenProps) {
+export default async function Given({ searchParams }: GivenProps) {
   const { view, feedback } = PersonalItemsSearchParams.parse(
     await searchParams,
   );
@@ -39,7 +37,7 @@ export default async function BrandNewGiven({
 
   return (
     <>
-      <div className={cn(BRAND_NEW_COLUMN, 'flex flex-col gap-6')}>
+      <div className={cn(PAGE_COLUMN, 'flex flex-col gap-6')}>
         <PersonalItemsHeading side="given" />
         <Suspense fallback={<PersonalItemsLoading view={view} />}>
           <GivenItems session={session} />
@@ -53,7 +51,7 @@ export default async function BrandNewGiven({
             key={feedback}
             membership={session.membership}
             feedbackId={feedback}
-            closeHref={ROUTES.brandNewGivenViewing(view)}
+            closeHref={ROUTES.givenViewing(view)}
           />
         )}
       </Suspense>

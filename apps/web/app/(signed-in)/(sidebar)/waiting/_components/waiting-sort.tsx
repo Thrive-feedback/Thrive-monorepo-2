@@ -11,18 +11,18 @@ import {
 } from '@/components/atoms/select';
 import { Text } from '@/components/atoms/text';
 import {
-  BRAND_NEW_WAITING_SORTS,
-  type BrandNewWaitingSort,
   ROUTES,
+  WAITING_SORTS,
+  type WaitingSortOrder,
 } from '@/lib/routes.constant';
 
-const SORT_NAMES: Readonly<Record<BrandNewWaitingSort, string>> = {
+const SORT_NAMES: Readonly<Record<WaitingSortOrder, string>> = {
   newest: 'Newest first',
   oldest: 'Oldest first',
 };
 
 export type WaitingSortProps = {
-  sort: BrandNewWaitingSort;
+  sort: WaitingSortOrder;
 };
 
 /** The order of Waiting for me, kept in the address, as Home keeps its filter. */
@@ -31,9 +31,9 @@ export function WaitingSort({ sort }: WaitingSortProps) {
   const labelId = useId();
 
   function handleValueChange(value: string) {
-    const chosen = BRAND_NEW_WAITING_SORTS.find((one) => one === value);
+    const chosen = WAITING_SORTS.find((one) => one === value);
     if (chosen) {
-      router.push(ROUTES.brandNewWaitingSorted(chosen));
+      router.push(ROUTES.waitingSorted(chosen));
     }
   }
 
@@ -54,7 +54,7 @@ export function WaitingSort({ sort }: WaitingSortProps) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent fitsItems align="end">
-          {BRAND_NEW_WAITING_SORTS.map((value) => (
+          {WAITING_SORTS.map((value) => (
             <SelectItem key={value} value={value}>
               {SORT_NAMES[value]}
             </SelectItem>

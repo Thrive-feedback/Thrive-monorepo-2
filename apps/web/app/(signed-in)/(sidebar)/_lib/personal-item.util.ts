@@ -5,12 +5,12 @@ import type {
   PersonalListItem,
   PersonalRequest,
   PersonalRequestOnTheWire,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
-import { toPostcardWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
+import { toPostcardWriter } from '@/app/(signed-in)/(sidebar)/_lib/postcard-writer.util';
 import {
   toAskOnPostcard,
   toFeedbackPostcard,
-} from '@/app/(signed-in)/(brand-new)/_lib/read-postcard.util';
+} from '@/app/(signed-in)/(sidebar)/_lib/read-postcard.util';
 import { toReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.util';
 import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import {

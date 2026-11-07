@@ -11,7 +11,7 @@ import { WorkspaceSelector } from './workspace-selector';
  * Their Workspaces are read only once the membership says someone is in one: for anybody else
  * there are none to read, and the page sends them where they belong.
  */
-export async function BrandNewNavbar() {
+export async function Navbar() {
   const membership = await readCurrentMembership();
   const workspaces = membership ? await readMyWorkspaces() : null;
 

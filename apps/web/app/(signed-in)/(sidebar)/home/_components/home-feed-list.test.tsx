@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(sidebar)/_lib/plain-postcard.constant';
 import type {
   HomeFeedItem,
   HomeFeedPage,
@@ -12,7 +12,7 @@ import { HomeFeedList } from './home-feed-list';
 
 const readNextHomeFeedPage = vi.fn();
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/home/_lib/home-feed-actions.service',
+  '@/app/(signed-in)/(sidebar)/home/_lib/home-feed-actions.service',
   () => ({
     readNextHomeFeedPage: (input: unknown) => readNextHomeFeedPage(input),
   }),

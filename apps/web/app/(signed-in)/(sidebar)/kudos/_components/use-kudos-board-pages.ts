@@ -1,6 +1,6 @@
 import { unstable_rethrow } from 'next/navigation';
 import { useRef, useState } from 'react';
-import type { KudosBoardPage } from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board.type';
+import type { KudosBoardPage } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board.type';
 import type { ReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.type';
 
 type Held = {
