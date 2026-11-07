@@ -53,7 +53,7 @@ describe('what a Workspace channel is told about Kudos', () => {
       [
         '**Ann** gave **Ben** kudos',
         '> Carried the launch without being asked.',
-        'https://thrive.test/home',
+        'https://thrive.test/kudos',
       ].join('\n'),
     );
   });
@@ -71,7 +71,7 @@ describe('what a Workspace channel is told about Kudos', () => {
         '**Ann** gave **Ben** kudos',
         '> Shipped it.',
         '> Over the weekend.',
-        'https://thrive.test/home',
+        'https://thrive.test/kudos',
       ].join('\n'),
     );
   });

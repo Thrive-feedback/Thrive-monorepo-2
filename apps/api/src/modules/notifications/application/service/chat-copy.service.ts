@@ -43,14 +43,13 @@ export class ChatCopyService {
   askAnswered(event: {
     readonly actorName: string;
     readonly workspaceName: string;
-    readonly feedbackRequestId: string;
   }): string {
     // Nothing of what was written: a chat client keeps messages on the person's own machine and
     // in the tool's history, and the answer is the part of Feedback people are most careful
     // about. The link does that job, behind a sign-in (#214).
     return [
       `**${event.actorName}** answered your feedback request in *${event.workspaceName}*`,
-      this.linkTo(WEB_PATHS.request(event.feedbackRequestId)),
+      this.linkTo(WEB_PATHS.requests()),
     ].join('\n');
   }
 

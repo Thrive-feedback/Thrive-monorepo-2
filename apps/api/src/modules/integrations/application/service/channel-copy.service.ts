@@ -52,7 +52,7 @@ export class ChannelCopyService {
     return [
       `**${named(event.giverName)}** gave **${given}** kudos`,
       quoted(event.message),
-      this.linkTo(WEB_PATHS.home()),
+      this.linkTo(WEB_PATHS.kudos()),
     ].join('\n');
   }
 
