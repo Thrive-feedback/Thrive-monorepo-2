@@ -61,6 +61,7 @@ export function WaitingPostcardDialog({
   const hasSent = useRef(false);
   const hasTakenItsCardOut = useRef(false);
   const hasLeft = useRef(false);
+  const hasClosed = useRef(false);
   const { markAnswered } = useAnsweredAsks();
 
   async function handleSend(answer: PostcardAnswer) {
@@ -98,6 +99,7 @@ export function WaitingPostcardDialog({
     if (open) {
       return;
     }
+    hasClosed.current = true;
     setClosedAsk(ask);
     router.replace(closeHref, { scroll: false });
     takeItsCardOut();
@@ -105,8 +107,10 @@ export function WaitingPostcardDialog({
 
   // The card that opened this is gone once it is answered, so focus has nowhere to go back to. It
   // goes to the title without scrolling there, so the person stays where they were in the list.
+  // Only when the dialog closed: one taken away because the person left hands focus back a moment
+  // later, on whatever page they went to, and that page's title is not this one's to take.
   function handleCloseAutoFocus(event: Event) {
-    if (hasSent.current) {
+    if (hasSent.current && hasClosed.current) {
       event.preventDefault();
       document
         .getElementById(WAITING_HEADING_ID)
