@@ -6,7 +6,7 @@ import { CardToolNote } from './card-tool-note';
 describe('CardToolNote', () => {
   it.each([
     ['primary', 'text-action-primary-hover'],
-    ['tertiary', 'text-action-tertiary-hover'],
+    ['tertiary', 'text-action-tertiary'],
     ['secondary', 'text-action-secondary-hover'],
   ] as const)(
     'is written in the colour of the kind of card it is beside: %s',

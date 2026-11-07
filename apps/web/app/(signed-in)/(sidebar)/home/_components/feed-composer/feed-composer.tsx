@@ -1,5 +1,10 @@
 import { useMemo } from 'react';
-import { COMPOSE_CHOICE_OUTLINES } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
+import {
+  COMPOSE_CHOICE_OUTLINES,
+  COMPOSE_CHOICE_TITLES,
+  COMPOSE_CHOICES,
+  type ComposeChoice,
+} from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import { Button } from '@/components/atoms/button';
 import { AutocompleteInput } from '@/components/molecules/autocomplete-input';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
@@ -10,8 +15,6 @@ import {
   FEED_COMPOSER_CHOICES,
   FEED_COMPOSER_SURFACE,
 } from './feed-composer.constant';
-
-export type FeedComposerChoice = 'ask' | 'give' | 'kudos';
 
 export type FeedComposerProps = {
   /** Who is writing. */
@@ -24,7 +27,7 @@ export type FeedComposerProps = {
   ref?: React.Ref<HTMLInputElement>;
   onMessageChange: (message: string) => void;
   /** Ask, Give or Kudos was pressed: what is typed goes on that card. */
-  onChoose: (choice: FeedComposerChoice) => void;
+  onChoose: (choice: ComposeChoice) => void;
 };
 
 /**
@@ -67,24 +70,15 @@ export function FeedComposer({
         </div>
       </div>
       <div className={FEED_COMPOSER_CHOICES}>
-        <Button
-          variant={COMPOSE_CHOICE_OUTLINES.ask}
-          onClick={() => onChoose('ask')}
-        >
-          Ask for feedback
-        </Button>
-        <Button
-          variant={COMPOSE_CHOICE_OUTLINES.give}
-          onClick={() => onChoose('give')}
-        >
-          Give feedback
-        </Button>
-        <Button
-          variant={COMPOSE_CHOICE_OUTLINES.kudos}
-          onClick={() => onChoose('kudos')}
-        >
-          Give kudos
-        </Button>
+        {COMPOSE_CHOICES.map((choice) => (
+          <Button
+            key={choice}
+            variant={COMPOSE_CHOICE_OUTLINES[choice]}
+            onClick={() => onChoose(choice)}
+          >
+            {COMPOSE_CHOICE_TITLES[choice]}
+          </Button>
+        ))}
       </div>
     </section>
   );

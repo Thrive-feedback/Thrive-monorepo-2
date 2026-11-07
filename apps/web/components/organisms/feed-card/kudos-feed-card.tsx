@@ -13,7 +13,7 @@ import {
   feedCardGiver,
   NO_NAME_IN_A_SENTENCE,
 } from './feed-card-sentence.util';
-import { FEED_CARD_INK } from './feed-card-tone.constant';
+import { FEED_CARD_KIND_INK } from './feed-card-tone.constant';
 import { FeedCardWho } from './feed-card-who';
 
 export type KudosFeedCardProps = {
@@ -66,7 +66,7 @@ export function KudosFeedCard({ kudos, readerAccountId }: KudosFeedCardProps) {
           tone="muted"
           className="flex flex-wrap items-center gap-x-2 gap-y-1"
         >
-          <span className={cn('font-medium', FEED_CARD_INK.secondary)}>
+          <span className={cn('font-medium', FEED_CARD_KIND_INK.secondary)}>
             Kudos
           </span>
           <span aria-hidden="true">·</span>

@@ -12,13 +12,23 @@ export const FEED_CARD_GROUND: Readonly<Record<FeedCardTone, string>> = {
 };
 
 /**
- * The ink of each kind of card: its colour a shade darker, so words in it read on the card's tinted
- * ground. The word naming the kind and the note pointing at its card are both written in it.
+ * The ink of each kind of card: its colour a shade darker, for the large handwriting beside it, the
+ * note pointing at its card and the title of an empty list. The blue's fill is already that shade.
  */
 export const FEED_CARD_INK: Readonly<Record<FeedCardTone, string>> = {
   primary: 'text-action-primary-hover',
-  tertiary: 'text-action-tertiary-hover',
+  tertiary: 'text-action-tertiary',
   secondary: 'text-action-secondary-hover',
+};
+
+/**
+ * The ink of the small word naming each kind, one step darker again (500) in every colour, so text that
+ * small still reads at 4.5:1 on the card's tinted ground (WCAG AA).
+ */
+export const FEED_CARD_KIND_INK: Readonly<Record<FeedCardTone, string>> = {
+  primary: 'text-action-primary-active',
+  tertiary: 'text-action-tertiary',
+  secondary: 'text-action-secondary-active',
 };
 
 /** The edge of each kind of card where it is drawn as an outline, as in an empty list. */

@@ -35,10 +35,12 @@ const mainColumn = cva(
 );
 
 export type FeedCardRowProps = {
+  /** Which kind of card it is, as a colour, which its note is written in. */
+  tone: FeedCardTone;
   /** The card it is about, made small, centred top to bottom in the right column. */
   aside?: React.ReactNode;
-  /** A note by hand pointing at that card, drawn by `FeedCardNote`. */
-  note?: React.ReactNode;
+  /** A few words by hand pointing at that card, saying what pressing it gives. */
+  note?: string;
   /** What it says, in the left column. */
   children: React.ReactNode;
 };
@@ -49,14 +51,14 @@ export type FeedCardRowProps = {
  * what it says. A card about one thing is one row; a card holding several, such as a request and
  * its answers, is a row for each.
  */
-export function FeedCardRow({ aside, note, children }: FeedCardRowProps) {
+export function FeedCardRow({ tone, aside, note, children }: FeedCardRowProps) {
   const isEmpty = aside === undefined;
 
   return (
     <div className="flex flex-col md:flex-row">
       <div className={mainColumn({ isAsideEmpty: isEmpty })}>{children}</div>
       <div className={asideColumn({ isEmpty })}>
-        {note}
+        {note && <FeedCardNote tone={tone}>{note}</FeedCardNote>}
         {aside}
       </div>
     </div>
@@ -105,10 +107,7 @@ export function FeedCardColumns({
 }: FeedCardColumnsProps) {
   return (
     <FeedCardSurface tone={tone}>
-      <FeedCardRow
-        aside={aside}
-        note={note && <FeedCardNote tone={tone}>{note}</FeedCardNote>}
-      >
+      <FeedCardRow tone={tone} aside={aside} note={note}>
         {children}
       </FeedCardRow>
     </FeedCardSurface>

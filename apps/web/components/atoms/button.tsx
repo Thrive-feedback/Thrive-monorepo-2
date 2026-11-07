@@ -17,7 +17,7 @@ const buttonVariants = cva(
         outlined:
           'border border-action-primary-border bg-action-primary-surface text-action-primary-hover enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
         'outlined-tertiary':
-          'border border-action-tertiary-border bg-action-tertiary-surface text-action-tertiary-hover enabled:active:bg-action-tertiary-surface-hover enabled:hover:bg-action-tertiary-surface-hover',
+          'border border-action-tertiary-border bg-action-tertiary-surface text-action-tertiary enabled:active:bg-action-tertiary-surface-hover enabled:hover:bg-action-tertiary-surface-hover',
         'outlined-highlight':
           'border border-action-secondary-border bg-action-secondary-surface text-action-secondary-hover enabled:active:bg-action-secondary-surface-hover enabled:hover:bg-action-secondary-surface-hover',
         secondary:

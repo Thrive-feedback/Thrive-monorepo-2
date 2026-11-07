@@ -1,5 +1,6 @@
 import type { PersonalRequest } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
 import { PERSONAL_ITEM_TILE } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-layout.constant';
+import { REQUEST_MAX_FACES } from '@/app/(signed-in)/(sidebar)/_lib/request-card.constant';
 import {
   askedLine,
   newestAnswerOf,
@@ -9,17 +10,51 @@ import {
 import { useReceivedShow } from '@/app/(signed-in)/(sidebar)/_lib/use-received-show';
 import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';
+import { AvatarGroup } from '@/components/molecules/avatar-group';
+import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { TargetLink } from '@/components/molecules/target-link';
 import { FeedCardLean } from '@/components/organisms/feed-card/feed-card-preview';
 import { FEED_CARD_GROUND } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import { FeedbackText } from '@/components/organisms/feedback-text';
 import { PostcardMiniature } from '@/components/organisms/postcard-miniature/postcard-miniature';
 import { cn } from '@/lib/cn.util';
+import { ASK_STATUS_RINGS } from '@/lib/feedback/ask-status.constant';
 import { ROUTES } from '@/lib/routes.constant';
 import { timeAgo } from '@/lib/time-ago.util';
 import tileStyles from './personal-item-tile.module.css';
 import { PersonalItemTilePending } from './personal-item-tile-pending';
-import { RequestTally } from './request-card';
+
+type RequestTallyProps = {
+  request: PersonalRequest;
+};
+
+/**
+ * Everyone asked as a row of faces, each ringed by where they stand, and how many answered, in words
+ * neutral at any count. It sits inside a tile that is one press, so the faces are drawn, not a
+ * button of their own.
+ */
+function RequestTally({ request }: RequestTallyProps) {
+  const { answered, asked } = tallyOf(request);
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <AvatarGroup aria-hidden="true" max={REQUEST_MAX_FACES} size="sm">
+        {request.asked.map((ask) => (
+          <PhotoAvatar
+            key={ask.person.accountId}
+            name={ask.person.name ?? ''}
+            photoUrl={ask.person.photoUrl}
+            size="sm"
+            className={ASK_STATUS_RINGS[ask.status]}
+          />
+        ))}
+      </AvatarGroup>
+      <Text as="p" variant="body-3" tone="muted">
+        {answered} of {asked} answered
+      </Text>
+    </div>
+  );
+}
 
 export type RequestTileProps = {
   request: PersonalRequest;

@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { FeedComposer, type FeedComposerChoice } from './feed-composer';
+import type { ComposeChoice } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
+import { FeedComposer } from './feed-composer';
 
 const TEAMMATES = [
   {
@@ -15,11 +16,7 @@ const TEAMMATES = [
   },
 ];
 
-function Composer({
-  onChoose,
-}: {
-  onChoose: (choice: FeedComposerChoice) => void;
-}) {
+function Composer({ onChoose }: { onChoose: (choice: ComposeChoice) => void }) {
   const [message, setMessage] = useState('');
   return (
     <FeedComposer

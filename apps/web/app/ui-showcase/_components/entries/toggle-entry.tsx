@@ -40,6 +40,13 @@ export function ToggleEntry() {
             'Borderless, or with a border like the secondary Button.',
         },
         {
+          name: 'tone',
+          type: "'default' | 'neutral' | 'primary' | 'tertiary' | 'secondary'",
+          defaultValue: "'default'",
+          description:
+            "The colour it takes when pressed. 'default' is the brand's soft fill; the others share one set of steps, for a row of chips in different colours.",
+        },
+        {
           name: 'size',
           type: "'sm' | 'md' | 'lg'",
           defaultValue: "'md'",
@@ -75,6 +82,22 @@ export function ToggleEntry() {
           <StarIcon aria-hidden="true" className="size-4" />
           Starred
         </Toggle>
+      </StateCell>
+      <StateCell label="Tones, pressed">
+        {(['neutral', 'primary', 'tertiary', 'secondary'] as const).map(
+          (tone) => (
+            <Toggle
+              key={tone}
+              variant="outline"
+              size="sm"
+              tone={tone}
+              className="rounded-chip px-3"
+              defaultPressed
+            >
+              {tone}
+            </Toggle>
+          ),
+        )}
       </StateCell>
       <StateCell label="Sizes">
         <Toggle size="sm" variant="outline">

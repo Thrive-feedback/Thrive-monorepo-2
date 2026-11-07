@@ -62,6 +62,12 @@ describe('WaitingAskCard', () => {
     expect(card).toHaveTextContent('How clear was the migration plan?');
   });
 
+  it('names it as an Ask of the reader, beside when it came', () => {
+    const card = within(draw());
+
+    expect(card.getByText('Asked you', PAST_THE_DRAWING)).toBeVisible();
+  });
+
   it('opens the postcard from the small postcard, its one link', () => {
     const card = within(draw());
 

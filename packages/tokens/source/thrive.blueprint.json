@@ -2325,7 +2325,7 @@
         "description": "The fill of a button in the third brand colour, for asking.",
         "light": {
           "trackId": "info",
-          "weight": 400
+          "weight": 500
         },
         "dark": {
           "trackId": "info",
@@ -2338,7 +2338,7 @@
         "description": "The fill under the pointer.",
         "light": {
           "trackId": "info",
-          "weight": 500
+          "weight": 550
         },
         "dark": {
           "trackId": "info",
@@ -2351,7 +2351,7 @@
         "description": "The fill while it is pressed.",
         "light": {
           "trackId": "info",
-          "weight": 550
+          "weight": 600
         },
         "dark": {
           "trackId": "info",
