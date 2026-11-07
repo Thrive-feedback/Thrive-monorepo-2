@@ -32,7 +32,7 @@ import { WorkspaceMemberGuard } from './workspace-member.guard';
 
 /**
  * The Asks still waiting on the caller, paged by cursor (ADR 0059). The offset list on
- * `feedback-asks` stays for `/home` and goes when it does.
+ * `feedback-asks` stays for the sidebar's count of what is waiting.
  *
  * Who the caller is comes from the session, so nothing here can name somebody else's Asks.
  */

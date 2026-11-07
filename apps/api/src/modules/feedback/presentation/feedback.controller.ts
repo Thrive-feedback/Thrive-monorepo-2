@@ -7,7 +7,6 @@ import {
   HttpStatus,
   Param,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -19,9 +18,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import type { PersonalFeedbackView } from '../application/types/feedback-request.types';
 import { GetFeedbackUseCase } from '../application/use-cases/get-feedback.use-case';
-import { ListReceivedFeedbackUseCase } from '../application/use-cases/list-received-feedback.use-case';
 import { OfferFeedbackUseCase } from '../application/use-cases/offer-feedback.use-case';
 import {
   toAnswerPostcardResponse,
@@ -32,10 +29,6 @@ import {
 } from './dto/feedback-response.mapper';
 import { GetFeedbackResponseDto } from './dto/get-feedback.dto';
 import {
-  ListReceivedFeedbackQueryDto,
-  ListReceivedFeedbackResponseDto,
-} from './dto/list-received-feedback.dto';
-import {
   OfferFeedbackRequestDto,
   OfferFeedbackResponseDto,
 } from './dto/offer-feedback.dto';
@@ -45,32 +38,13 @@ import {
 } from './dto/path-params.dto';
 import { WorkspaceMemberGuard } from './workspace-member.guard';
 
-/** One piece of Feedback on the wire, with its date written as the contract declares it. */
-function toResponse(feedback: PersonalFeedbackView) {
-  return {
-    id: feedback.id,
-    origin: feedback.origin,
-    feedbackRequestId: feedback.feedbackRequestId,
-    giverAccountId: feedback.giverAccountId,
-    giverName: feedback.giverName,
-    giverPhotoUrl: feedback.giverPhotoUrl,
-    giverStatus: feedback.giverStatus,
-    otherReceivers: feedback.otherReceivers.map(toPersonResponse),
-    message: feedback.message,
-    tags: toTagsResponse(feedback.tags),
-    createdAt: feedback.createdAt.toISOString(),
-  };
-}
-
 /**
  * Feedback itself, rather than the requests that collect it. A separate resource from
- * `feedback-requests`: Feedback given without being asked has no request at all; the list is
- * everything written to one Member, asked for or not; and one piece is opened by whoever its
- * Visibility lets read it.
+ * `feedback-requests`: Feedback given without being asked has no request at all, and one piece is
+ * opened by whoever its Visibility lets read it.
  *
- * The caller comes from the session — the Giver of what is given, the Receiver the list is
- * scoped by, the reader one piece is checked against — so there is no parameter here that could
- * name anybody else.
+ * The caller comes from the session — the Giver of what is given, the reader one piece is checked
+ * against — so there is no parameter here that could name anybody else.
  */
 @ApiTags('feedback')
 @Controller({ path: 'v1/workspaces/:workspaceId/feedback' })
@@ -78,7 +52,6 @@ function toResponse(feedback: PersonalFeedbackView) {
 export class FeedbackController {
   constructor(
     private readonly offerFeedbackUseCase: OfferFeedbackUseCase,
-    private readonly listReceivedFeedbackUseCase: ListReceivedFeedbackUseCase,
     private readonly getFeedbackUseCase: GetFeedbackUseCase,
   ) {}
 
@@ -110,37 +83,6 @@ export class FeedbackController {
       postcard: body.postcard,
     });
     return { id: given.id };
-  }
-
-  @Get()
-  @ApiOperation({
-    summary: 'List the Feedback written to the caller in this Workspace',
-  })
-  @ApiHeader(COOKIE_HEADER)
-  @ZodResponse({
-    status: HttpStatus.OK,
-    type: ListReceivedFeedbackResponseDto,
-  })
-  @ApiBadRequestResponse({ description: 'REQUEST_INVALID' })
-  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
-  @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
-  async listReceivedFeedback(
-    @CurrentActor() actor: Actor,
-    @Param() params: WorkspacePathParamsDto,
-    @Query() query: ListReceivedFeedbackQueryDto,
-  ) {
-    const page = { page: query.page, pageSize: query.pageSize };
-    const received = await this.listReceivedFeedbackUseCase.execute({
-      workspaceId: params.workspaceId,
-      receiverAccountId: actor.accountId,
-      page,
-    });
-    return {
-      items: received.items.map(toResponse),
-      total: received.total,
-      page: page.page,
-      pageSize: page.pageSize,
-    };
   }
 
   @Get(':feedbackId')

@@ -174,3 +174,12 @@ Then(
     assert.equal(listedPhotoOf(this, name), null);
   },
 );
+
+Then(
+  '{person} is told it cannot be found',
+  function (this: ThriveWorld, _name: string) {
+    // Outside a Workspace, it is not found: the caller learns nothing about it (ADR 0037).
+    assert.equal(this.lastResponse?.status, 404);
+    this.refusedWith('WORKSPACE_NOT_FOUND');
+  },
+);

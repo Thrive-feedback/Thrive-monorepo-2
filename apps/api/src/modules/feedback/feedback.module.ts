@@ -13,18 +13,13 @@ import { TagsService } from './application/service/tags.service';
 import { AnswerFeedbackAskUseCase } from './application/use-cases/answer-feedback-ask.use-case';
 import { GetFeedbackUseCase } from './application/use-cases/get-feedback.use-case';
 import { GetFeedbackAskUseCase } from './application/use-cases/get-feedback-ask.use-case';
-import { GetFeedbackRequestUseCase } from './application/use-cases/get-feedback-request.use-case';
 import { GiveKudosUseCase } from './application/use-cases/give-kudos.use-case';
 import { ListFeedItemsUseCase } from './application/use-cases/list-feed-items.use-case';
 import { ListGivenItemsUseCase } from './application/use-cases/list-given-items.use-case';
 import { ListKudosMonthsUseCase } from './application/use-cases/list-kudos-months.use-case';
 import { ListMyFeedbackAsksUseCase } from './application/use-cases/list-my-feedback-asks.use-case';
-import { ListReceivedFeedbackUseCase } from './application/use-cases/list-received-feedback.use-case';
 import { ListReceivedItemsUseCase } from './application/use-cases/list-received-items.use-case';
-import { ListSentFeedbackRequestsUseCase } from './application/use-cases/list-sent-feedback-requests.use-case';
-import { ListSharedFeedbackUseCase } from './application/use-cases/list-shared-feedback.use-case';
 import { ListWaitingAsksUseCase } from './application/use-cases/list-waiting-asks.use-case';
-import { ListWorkspaceFeedUseCase } from './application/use-cases/list-workspace-feed.use-case';
 import { ListWorkspaceKudosUseCase } from './application/use-cases/list-workspace-kudos.use-case';
 import { OfferFeedbackUseCase } from './application/use-cases/offer-feedback.use-case';
 import { SendFeedbackRequestUseCase } from './application/use-cases/send-feedback-request.use-case';
@@ -43,9 +38,7 @@ import { FeedbackRequestController } from './presentation/feedback-request.contr
 import { GivenItemsController } from './presentation/given-items.controller';
 import { KudosController } from './presentation/kudos.controller';
 import { ReceivedItemsController } from './presentation/received-items.controller';
-import { SharedFeedbackController } from './presentation/shared-feedback.controller';
 import { WaitingAsksController } from './presentation/waiting-asks.controller';
-import { WorkspaceFeedController } from './presentation/workspace-feed.controller';
 import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
 
 /**
@@ -70,8 +63,6 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     FeedbackRequestController,
     FeedbackAskController,
     FeedbackController,
-    SharedFeedbackController,
-    WorkspaceFeedController,
     FeedItemsController,
     ReceivedItemsController,
     GivenItemsController,
@@ -91,14 +82,9 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     PersonalItemsService,
     TagsService,
     SendFeedbackRequestUseCase,
-    GetFeedbackRequestUseCase,
-    ListSentFeedbackRequestsUseCase,
     ListMyFeedbackAsksUseCase,
-    ListReceivedFeedbackUseCase,
     ListReceivedItemsUseCase,
     ListGivenItemsUseCase,
-    ListSharedFeedbackUseCase,
-    ListWorkspaceFeedUseCase,
     ListFeedItemsUseCase,
     ListWaitingAsksUseCase,
     GetFeedbackUseCase,

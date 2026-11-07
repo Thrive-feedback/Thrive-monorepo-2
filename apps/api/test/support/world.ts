@@ -95,6 +95,13 @@ export class ThriveWorld extends World {
     return account;
   }
 
+  /** The account of everyone in this scenario but those named. */
+  everyoneBut(...names: string[]): SignedInAccount[] {
+    return [...this.people.entries()]
+      .filter(([name]) => !names.includes(name))
+      .map(([, account]) => account);
+  }
+
   isSignedIn(name: string): boolean {
     return this.people.has(name);
   }

@@ -31,18 +31,6 @@ Feature: Feedback requests
     And Ben can open the Ask saying "Running the planning meeting"
 
   @api
-  Scenario Outline: Someone who is not part of a Feedback request cannot open it
-    Given Ann has asked Ben for Feedback: "Running the planning meeting"
-    And Cara <relationship>
-    When Cara opens Ann's Feedback request
-    Then Cara is told it cannot be found
-
-    Examples:
-      | relationship                     |
-      | is a Member of Ann's Workspace   |
-      | owns a Workspace called "Globex" |
-
-  @api
   Scenario: The requests a Member has sent are only their own
     Given Cara is a Member of Ann's Workspace
     And Ann has asked Ben for Feedback: "Running the planning meeting"
