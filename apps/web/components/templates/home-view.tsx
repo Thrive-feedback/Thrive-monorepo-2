@@ -3,16 +3,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/atoms/resizable';
-import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import { FeedbackComposerSkeleton } from '@/components/organisms/feedback-composer';
-import { FeedbackFeedSkeleton } from '@/components/organisms/feedback-feed';
-import {
-  type HomeTab,
-  HomeTabs,
-  HomeTabsSkeleton,
-} from '@/components/organisms/home-tabs';
-import { WaitingAskListViewSkeleton } from '@/components/organisms/waiting-ask-list-view';
+import { type HomeTab, HomeTabs } from '@/components/organisms/home-tabs';
 import { cn } from '@/lib/cn.util';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
 import styles from './home-view.module.css';
@@ -119,45 +111,6 @@ export function HomeView({
   );
 }
 
-export type HomeViewSkeletonProps = {
-  /** Gives the split its height, as it does `HomeView`'s. */
-  splitClassName?: string;
-};
-
-/**
- * `HomeView` while the page is still being built, in both layouts: the Workspace's name, the
- * composer, the feed and the tabs in grey, with the words that never change already in place.
- * Which tab is open is not known yet, so each column shows the feed its tabs open on.
- */
-export function HomeViewSkeleton({ splitClassName }: HomeViewSkeletonProps) {
-  return (
-    <HomeLayout
-      sectionHeadingLevel="h2"
-      title={<Skeleton className="w-1/2 text-display-5" />}
-      welcome={
-        <div className="flex flex-col">
-          <WelcomeTo />
-          <Skeleton className="w-1/2 text-display-3" />
-        </div>
-      }
-      composer={<FeedbackComposerSkeleton />}
-      workspaceFeed={<FeedbackFeedSkeleton />}
-      waiting={<WaitingAskListViewSkeleton />}
-      activity={
-        <HomeTabsSkeleton>
-          <FeedbackFeedSkeleton />
-        </HomeTabsSkeleton>
-      }
-      personalActivity={
-        <HomeTabsSkeleton>
-          <FeedbackFeedSkeleton />
-        </HomeTabsSkeleton>
-      }
-      splitClassName={splitClassName}
-    />
-  );
-}
-
 function WelcomeTo() {
   return (
     <Text
@@ -188,7 +141,7 @@ type HomeLayoutProps = {
   splitClassName?: string;
 };
 
-/** Where each part of Home sits in each layout, shared by Home and its skeleton. */
+/** Where each part of Home sits in each layout. */
 function HomeLayout({
   sectionHeadingLevel,
   title,

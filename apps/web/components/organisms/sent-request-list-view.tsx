@@ -9,12 +9,9 @@ import {
 } from '@/lib/feedback/ask-status.constant';
 import type { SentRequest } from '@/lib/feedback/sent-request.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
-import { ActivityRow, ActivityRowSkeleton } from './activity-row';
+import { ActivityRow } from './activity-row';
 import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
-
-/** Enough rows to fill the first screen, without promising how many will come. */
-const PLACEHOLDERS = ['first', 'second', 'third'] as const;
 
 export type SentRequestListViewProps = {
   requests: readonly SentRequest[];
@@ -97,16 +94,5 @@ export function SentRequestListView({
         </li>
       ))}
     </ul>
-  );
-}
-
-/** A `SentRequestListView` still loading, row for row. */
-export function SentRequestListViewSkeleton() {
-  return (
-    <div className="flex flex-col divide-y divide-border-muted">
-      {PLACEHOLDERS.map((placeholder) => (
-        <ActivityRowSkeleton key={placeholder} />
-      ))}
-    </div>
   );
 }

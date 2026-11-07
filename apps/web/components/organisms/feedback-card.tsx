@@ -1,11 +1,9 @@
 import type { BadgeTone } from '@/components/atoms/badge';
-import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { CardStamp } from '@/components/molecules/card-stamp';
 import {
   type AnsweredRequest,
   type FeedItem,
-  REACTIONS,
 } from '@/lib/feedback/feed-item.type';
 import { FeedbackText } from './feedback-text';
 import { GiverToReceivers } from './giver-to-receivers';
@@ -92,41 +90,5 @@ export function FeedbackCard({ item }: FeedbackCardProps) {
       {item.request && <InAnswerTo request={item.request} />}
       <ReactionBar reactions={item.reactions} />
     </article>
-  );
-}
-
-/** A card's opening line and corner still loading: two faces and names, a badge over a day. */
-function CardHeaderSkeleton() {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        <Skeleton shape="circle" className="size-6 shrink-0" />
-        <Skeleton className="w-1/4 text-subtitle-4" />
-        <Skeleton shape="circle" className="size-6 shrink-0" />
-        <Skeleton className="w-1/4 text-subtitle-4" />
-      </div>
-      <div className="flex shrink-0 flex-col items-end gap-0.5">
-        <Skeleton shape="circle" className="h-4 w-16" />
-        <Skeleton className="w-20 text-body-3" />
-      </div>
-    </div>
-  );
-}
-
-/** A `FeedbackCard` still loading, line for line: who to whom, the corner, message, Reactions. */
-export function FeedbackCardSkeleton() {
-  return (
-    <div className="flex flex-col gap-3 py-5">
-      <CardHeaderSkeleton />
-      <div className="flex flex-col">
-        <Skeleton className="text-body-1" />
-        <Skeleton className="w-4/5 text-body-1" />
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {REACTIONS.map(({ emoji }) => (
-          <Skeleton key={emoji} shape="circle" className="h-7 w-12" />
-        ))}
-      </div>
-    </div>
   );
 }
