@@ -12,8 +12,6 @@ import { SessionRefresher } from './session-refresher';
 import { SettingsLink } from './settings-link';
 
 export type MemberNavbarProps = {
-  /** Where the logo leads a signed-in person. */
-  homeHref?: string;
   /** Drawn right after the logo. */
   children?: React.ReactNode;
 };
@@ -26,18 +24,14 @@ export type MemberNavbarProps = {
  * waiting for them, and there is nothing waiting for nobody.
  * This is where a session due a refresh gets one on a Member's pages.
  *
- * The new Home, built beside Home, passes its own `homeHref` for the logo, and the Workspace the
- * person is in as `children`, drawn right after the logo.
+ * Home's pages pass the Workspace the person is in as `children`, drawn right after the logo.
  */
-export async function MemberNavbar({
-  homeHref = ROUTES.home,
-  children,
-}: MemberNavbarProps = {}) {
+export async function MemberNavbar({ children }: MemberNavbarProps = {}) {
   const [session, needsRefresh] = await Promise.all([
     readSession(),
     readSessionNeedsRefresh(),
   ]);
-  const logo = <NavbarLogo href={session ? homeHref : ROUTES.landing} />;
+  const logo = <NavbarLogo href={session ? ROUTES.home : ROUTES.landing} />;
 
   return (
     <header

@@ -100,7 +100,7 @@ beforeEach(() => {
   toastError.mockClear();
 });
 
-function reading(closeHref: string = ROUTES.brandNewHome) {
+function reading(closeHref: string = ROUTES.home) {
   return FeedbackPostcard({
     membership: MEMBERSHIP,
     feedbackId: CARAS_ANSWER,

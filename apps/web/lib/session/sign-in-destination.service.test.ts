@@ -29,8 +29,7 @@ const { SIGN_IN_DESTINATION_COOKIE } = await import(
   './sign-in-destination.constant'
 );
 
-const WAITING_ASK =
-  '/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001';
+const WAITING_ASK = '/waiting?ask=0199a0f0-0000-7000-8000-000000000001';
 
 beforeEach(() => {
   jar.clear();

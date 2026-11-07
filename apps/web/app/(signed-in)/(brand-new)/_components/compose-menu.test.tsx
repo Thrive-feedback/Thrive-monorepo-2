@@ -401,7 +401,7 @@ describe('ComposeMenu', () => {
       ),
     );
 
-    expect(push).toHaveBeenCalledExactlyOnceWith(ROUTES.brandNewHome);
+    expect(push).toHaveBeenCalledExactlyOnceWith(ROUTES.home);
   });
 
   it('says why a Kudos did not go, and keeps it open', async () => {

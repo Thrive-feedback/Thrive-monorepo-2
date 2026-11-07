@@ -39,8 +39,7 @@ describe('SignInPrompt', () => {
   });
 
   it('signs in towards the page the visitor was going to', async () => {
-    const destination =
-      '/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001';
+    const destination = '/waiting?ask=0199a0f0-0000-7000-8000-000000000001';
     render(<SignInPrompt destination={destination} />);
 
     await userEvent

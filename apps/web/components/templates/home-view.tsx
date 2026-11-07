@@ -7,11 +7,14 @@ import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { FeedbackComposerSkeleton } from '@/components/organisms/feedback-composer';
 import { FeedbackFeedSkeleton } from '@/components/organisms/feedback-feed';
-import { HomeTabs, HomeTabsSkeleton } from '@/components/organisms/home-tabs';
+import {
+  type HomeTab,
+  HomeTabs,
+  HomeTabsSkeleton,
+} from '@/components/organisms/home-tabs';
 import { WaitingAskListViewSkeleton } from '@/components/organisms/waiting-ask-list-view';
 import { cn } from '@/lib/cn.util';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
-import type { HomeTab } from '@/lib/routes.constant';
 import styles from './home-view.module.css';
 
 /**

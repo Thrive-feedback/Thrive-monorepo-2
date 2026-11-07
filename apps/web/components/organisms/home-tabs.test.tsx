@@ -1,10 +1,11 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { type HomeTab, ROUTES } from '@/lib/routes.constant';
-import { HomeTabs } from './home-tabs';
+import { type HomeTab, HomeTabs } from './home-tabs';
 
-const linkTo = (tab: HomeTab) => ({ href: ROUTES.homeTab(tab) });
+const linkTo = (tab: HomeTab) => ({
+  href: tab === 'workspace' ? '/home' : `/home?tab=${tab}`,
+});
 
 describe('HomeTabs', () => {
   it('links each tab to its address, in order', () => {

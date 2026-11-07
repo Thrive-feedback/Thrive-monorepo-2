@@ -4,17 +4,6 @@
  *
  * Paths only, never full URLs: the origin is the deployment's, not the code's.
  */
-/** Home's feed tabs, in the order they are drawn. The first is the one Home opens on. */
-export const HOME_TABS = [
-  'workspace',
-  'shared',
-  'my-requests',
-  'waiting',
-  'received',
-] as const;
-
-export type HomeTab = (typeof HOME_TABS)[number];
-
 /** What the new Home's filter can show, in the order offered. The first is what Home opens on. */
 export const BRAND_NEW_HOME_SHOWS = ['all', 'everyone', 'shared'] as const;
 
@@ -22,9 +11,7 @@ export type BrandNewHomeShow = (typeof BRAND_NEW_HOME_SHOWS)[number];
 
 /** The new Home showing one choice of its filter; `all` is what it opens on, so it needs no query. */
 function brandNewHomeShowing(show: BrandNewHomeShow) {
-  return show === BRAND_NEW_HOME_SHOWS[0]
-    ? '/brand-new-home'
-    : `/brand-new-home?show=${show}`;
+  return show === BRAND_NEW_HOME_SHOWS[0] ? '/home' : `/home?show=${show}`;
 }
 
 /** How Received and Given can be laid out. The first is what each opens on. */
@@ -74,16 +61,14 @@ function brandNewReceivedViewing(
     query.set('view', view);
   }
   const search = query.toString();
-  return search === ''
-    ? '/brand-new-received'
-    : `/brand-new-received?${search}`;
+  return search === '' ? '/received' : `/received?${search}`;
 }
 
 /** Given laid out one way; `grid` is what it opens on, so it needs no query. */
 function brandNewGivenViewing(view: BrandNewPersonalView) {
   return view === BRAND_NEW_PERSONAL_VIEWS[0]
-    ? '/brand-new-given'
-    : `/brand-new-given?view=${view}`;
+    ? '/given'
+    : `/given?view=${view}`;
 }
 
 /** The orders Waiting for me can be read in. The first is what it opens on. */
@@ -94,20 +79,17 @@ export type BrandNewWaitingSort = (typeof BRAND_NEW_WAITING_SORTS)[number];
 /** Waiting for me in one order; `newest` is what it opens on, so it needs no query. */
 function brandNewWaitingSorted(sort: BrandNewWaitingSort) {
   return sort === BRAND_NEW_WAITING_SORTS[0]
-    ? '/brand-new-waiting'
-    : `/brand-new-waiting?sort=${sort}`;
+    ? '/waiting'
+    : `/waiting?sort=${sort}`;
 }
 
 export const ROUTES = {
   landing: '/',
   signIn: '/signin',
+  /** Home of the person's Workspace, where a Member lands after signing in. */
   home: '/home',
-  /** The new Home, Feedback written as a letter, built here until it replaces `home`. */
-  home2: '/home-2',
-  /** The Home that replaces `home`, built here page by page; Home links to it until then. */
-  brandNewHome: '/brand-new-home',
-  /** The new Home, saying once that the person has just switched to this Workspace. */
-  brandNewHomeOpened: '/brand-new-home?opened=1',
+  /** Home, saying once that the person has just switched to this Workspace. */
+  homeOpened: '/home?opened=1',
   /** The new Home showing one choice of its filter. */
   brandNewHomeShowing,
   /** One piece of Feedback open over the new Home, which keeps showing what it was showing. */
@@ -116,11 +98,11 @@ export const ROUTES = {
     return `${showing}${showing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
   /** The Workspace's Kudos, in the new Home. */
-  brandNewKudos: '/brand-new-kudos',
+  brandNewKudos: '/kudos',
   /** The Kudos board narrowed to one month, `YYYY-MM`. */
-  brandNewKudosMonth: (month: string) => `/brand-new-kudos?month=${month}`,
+  brandNewKudosMonth: (month: string) => `/kudos?month=${month}`,
   /** Everything written to the person, in the new Home. */
-  brandNewReceived: '/brand-new-received',
+  brandNewReceived: '/received',
   /** Received laid out one way, showing one kind. */
   brandNewReceivedViewing,
   /** One piece of Feedback open over Received, which stays laid out and narrowed as it was. */
@@ -133,7 +115,7 @@ export const ROUTES = {
     return `${viewing}${viewing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
   /** Everything the person wrote, in the new Home. */
-  brandNewGiven: '/brand-new-given',
+  brandNewGiven: '/given',
   /** Given laid out one way. */
   brandNewGivenViewing,
   /** One piece of Feedback open over Given, which stays laid out as it was. */
@@ -145,7 +127,7 @@ export const ROUTES = {
     return `${viewing}${viewing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
   /** Every Ask waiting for the person, in the new Home. */
-  brandNewWaiting: '/brand-new-waiting',
+  brandNewWaiting: '/waiting',
   /** Waiting for me in one order. */
   brandNewWaitingSorted,
   /** One Ask open over Waiting for me, on the postcard it is answered on, keeping its order. */
@@ -156,34 +138,13 @@ export const ROUTES = {
     const sorted = brandNewWaitingSorted(sort);
     return `${sorted}${sorted.includes('?') ? '&' : '?'}ask=${askId}`;
   },
-  /** One tab of Home's feed. `workspace` is the tab Home opens on, so it needs no query. */
-  homeTab: (tab: HomeTab) =>
-    tab === HOME_TABS[0] ? '/home' : `/home?tab=${tab}`,
-  /** Home, saying once that the Feedback the person just gave was sent. */
-  homeGiven: '/home?given=1',
-  /** Home, saying once that the Kudos the person just gave was sent. */
-  homeKudos: '/home?kudos=1',
   /**
    * Home, saying once that what the person just sent was dropped, because the page was drawn for
    * a Workspace they are no longer in: they switched in another tab, or were Deactivated there.
    */
   homeSwitched: '/home?switched=1',
-  /** Home, saying once that the person has just switched to the Workspace it shows. */
-  homeOpened: '/home?opened=1',
   /** Home of the Workspace the person is in now, saying once that they left the one before. */
   homeLeft: '/home?left=1',
-  /** A Feedback Request the person sent, open in a dialog over My requests. */
-  homeRequest: (requestId: string) =>
-    `/home?tab=my-requests&request=${requestId}`,
-  /** One Ask waiting for them, open in a dialog over Waiting for me, where they answer it. */
-  homeAsk: (askId: string) => `/home?tab=waiting&ask=${askId}`,
-  /**
-   * One piece of Feedback, open in a dialog over Home. It names no tab, unlike the two above:
-   * the same Feedback sits on the Workspace feed, on Shared with me or on Feedback for me
-   * depending on who follows the address, so the only tab true for every reader is the one Home
-   * opens on.
-   */
-  homeFeedback: (feedbackId: string) => `/home?feedback=${feedbackId}`,
   settings: {
     /** The settings menu; beside it on a wide screen, the Account section. */
     index: '/settings',

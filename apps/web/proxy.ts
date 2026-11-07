@@ -55,9 +55,14 @@ function spendDestination(request: NextRequest) {
 
 export const config = {
   // Literals, not ROUTES: Next reads the matcher at build time and accepts only constants.
-  // Keep it in step with ROUTES.home, ROUTES.register, ROUTES.settings and ROUTES.chooseWorkspace.
+  // Keep it in step with ROUTES.home, ROUTES.kudos, ROUTES.received, ROUTES.given,
+  // ROUTES.waiting, ROUTES.register, ROUTES.settings and ROUTES.chooseWorkspace.
   matcher: [
     '/home',
+    '/kudos',
+    '/received',
+    '/given',
+    '/waiting',
     '/register/:path*',
     '/choose-workspace',
     '/settings',

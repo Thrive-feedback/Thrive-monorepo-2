@@ -60,7 +60,7 @@ describe('SignInPage', () => {
   });
 
   it('carries the page the visitor was going to into signing in', async () => {
-    const next = '/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001';
+    const next = '/waiting?ask=0199a0f0-0000-7000-8000-000000000001';
 
     await signInFrom({ next });
 

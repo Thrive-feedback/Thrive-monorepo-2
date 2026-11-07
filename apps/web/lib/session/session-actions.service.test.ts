@@ -81,12 +81,12 @@ describe('session actions', () => {
     answerGoogle();
 
     await expect(
-      signIn('/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001'),
+      signIn('/waiting?ask=0199a0f0-0000-7000-8000-000000000001'),
     ).rejects.toThrow('redirect:https://accounts.google.com');
 
     expect(cookieStore.set).toHaveBeenCalledWith(
       'thrive.sign_in_destination',
-      '/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001',
+      '/waiting?ask=0199a0f0-0000-7000-8000-000000000001',
       expect.objectContaining({ httpOnly: true, sameSite: 'lax' }),
     );
   });

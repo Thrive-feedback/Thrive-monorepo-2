@@ -48,7 +48,7 @@ function PersonalItemsViewToggle() {
 vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
   useRouter: () => ({ refresh: vi.fn() }),
-  usePathname: () => '/brand-new-received',
+  usePathname: () => '/received',
   unstable_rethrow: vi.fn(),
 }));
 
@@ -182,7 +182,7 @@ let bringTheEndIntoView: () => void;
 const animate = vi.fn(() => ({ onfinish: null }));
 
 beforeEach(() => {
-  goTo('/brand-new-received');
+  goTo('/received');
   animate.mockClear();
   Element.prototype.animate = animate as never;
   readNextReceivedPage.mockReset();
@@ -264,7 +264,7 @@ describe('PersonalItemList, as a grid', () => {
             `^Postcard from Ben Carter, .*, ${label}\\. Opens the postcard\\.$`,
           ),
         }),
-      ).toHaveAttribute('href', '/brand-new-received?feedback=fb-1');
+      ).toHaveAttribute('href', '/received?feedback=fb-1');
     },
   );
 
@@ -449,7 +449,7 @@ describe('PersonalItemList, as a grid', () => {
 
 describe('PersonalItemList, as a list', () => {
   beforeEach(() => {
-    goTo('/brand-new-received?view=list');
+    goTo('/received?view=list');
   });
 
   it('draws a piece of Feedback as it reads on Home, the reader as you', () => {
@@ -510,7 +510,7 @@ describe('PersonalItemList, as a list', () => {
 
     expect(screen.getByRole('link', { name: /Open postcard/ })).toHaveAttribute(
       'href',
-      '/brand-new-received?view=list&feedback=fb-1',
+      '/received?view=list&feedback=fb-1',
     );
   });
 
@@ -590,7 +590,7 @@ describe('PersonalItemList, on Given', () => {
   }
 
   beforeEach(() => {
-    window.history.replaceState(null, '', '/brand-new-given');
+    window.history.replaceState(null, '', '/given');
   });
 
   it('names who a postcard was for, and opens it over Given', () => {
@@ -601,7 +601,7 @@ describe('PersonalItemList, on Given', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: /^Postcard to Ann Lee/ }),
-    ).toHaveAttribute('href', '/brand-new-given?feedback=fb-1');
+    ).toHaveAttribute('href', '/given?feedback=fb-1');
   });
 
   it('tells the Giver a private postcard stayed between them and its Receiver', () => {
@@ -720,7 +720,7 @@ describe('PersonalItemList, on Given', () => {
 
   describe('as a list', () => {
     beforeEach(() => {
-      window.history.replaceState(null, '', '/brand-new-given?view=list');
+      window.history.replaceState(null, '', '/given?view=list');
     });
 
     function answerBesideOneTheGiverMayNotRead() {
@@ -754,7 +754,7 @@ describe('PersonalItemList, on Given', () => {
 
       expect(screen.getByRole('link', { name: /postcard/i })).toHaveAttribute(
         'href',
-        '/brand-new-given?view=list&feedback=fb-1',
+        '/given?view=list&feedback=fb-1',
       );
     });
 

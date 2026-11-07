@@ -15,7 +15,7 @@ export function KudosFeedCardEntry() {
       source="components/organisms/feed-card/kudos-feed-card.tsx — FeedCardWho + KudosCardReadOnly + KudosCardFace + KudosCardReadDialog"
       summary="One Kudos in Home's feed: who gave it to whom, that it is a Kudos and how long ago, and the whole card in focus on a small board of blurred cards, which a wider screen shows more of. The cursor coming onto the card gives it a little shake. No Reactions yet."
       useFor="One Kudos in the Home menu, between the Feedback."
-      avoidFor="/home's feed, which keeps KudosCard. The Kudos board, which hangs cards of its own."
+      avoidFor="The landing page's preview of Home, which keeps KudosCard. The Kudos board, which hangs cards of its own."
       usage={`import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';
 
 <KudosFeedCard kudos={item} readerAccountId={page.readerAccountId} />`}

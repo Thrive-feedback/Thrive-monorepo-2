@@ -18,9 +18,9 @@ describe('SignInSearchParams', () => {
   it('reads where the person was going, query and all', () => {
     expect(
       SignInSearchParams.parse({
-        next: '/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001',
+        next: '/waiting?ask=0199a0f0-0000-7000-8000-000000000001',
       }).next,
-    ).toBe('/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001');
+    ).toBe('/waiting?ask=0199a0f0-0000-7000-8000-000000000001');
   });
 
   it.each([

@@ -71,16 +71,8 @@ describe('NotificationBell', () => {
   });
 
   it.each([
-    [
-      'ASK_RECEIVED',
-      'Nut asked you for feedback',
-      `/home?tab=waiting&ask=${SUBJECT}`,
-    ],
-    [
-      'ASK_ANSWERED',
-      'Nut answered your request',
-      `/home?tab=my-requests&request=${SUBJECT}`,
-    ],
+    ['ASK_RECEIVED', 'Nut asked you for feedback', `/waiting?ask=${SUBJECT}`],
+    ['ASK_ANSWERED', 'Nut answered your request', '/received?show=requests'],
     [
       'FEEDBACK_RECEIVED',
       'Nut wrote feedback to you',

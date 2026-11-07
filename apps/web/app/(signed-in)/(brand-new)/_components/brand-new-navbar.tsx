@@ -1,12 +1,11 @@
 import { XIcon } from 'lucide-react';
 import { MemberNavbar } from '@/components/organisms/member-navbar';
-import { ROUTES } from '@/lib/routes.constant';
 import { readCurrentMembership } from '@/lib/session/session.service';
 import { readMyWorkspaces } from '@/lib/workspace/my-workspaces.service';
 import { WorkspaceSelector } from './workspace-selector';
 
 /**
- * The new Home's navbar: the Member navbar, its logo leading to the new Home, with the Workspace
+ * Home's navbar: the Member navbar, its logo leading Home, with the Workspace
  * the person is in after it, "Thrive × Acme", from which they switch (brain `ADR-0049`).
  *
  * Their Workspaces are read only once the membership says someone is in one: for anybody else
@@ -17,7 +16,7 @@ export async function BrandNewNavbar() {
   const workspaces = membership ? await readMyWorkspaces() : null;
 
   return (
-    <MemberNavbar homeHref={ROUTES.brandNewHome}>
+    <MemberNavbar>
       {membership && workspaces && (
         <>
           <XIcon
