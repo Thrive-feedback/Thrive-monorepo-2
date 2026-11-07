@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority';
 import { Children } from 'react';
 import {
   Avatar,
@@ -23,6 +24,17 @@ import { AvatarName } from './avatar-name';
 import { PhotoAvatar } from './photo-avatar';
 
 const names = new Intl.ListFormat('en', { type: 'conjunction' });
+
+/**
+ * Every stack of a size overlaps alike, a face ringed by where somebody stands included. A small
+ * face overlaps less, so the next one leaves its second initial readable.
+ */
+const stack = cva('flex *:ring-2 *:ring-surface-base', {
+  variants: {
+    size: { sm: '-space-x-0.5', md: '-space-x-2', lg: '-space-x-2' },
+  },
+  defaultVariants: { size: 'md' },
+});
 
 /** One person in a stack: who they are, and the name their face stands for. */
 export type AvatarGroupPerson = {
@@ -123,7 +135,7 @@ export function AvatarGroup({
     <div
       data-slot="avatar-group"
       role="group"
-      className={cn('flex -space-x-2 *:ring-2 *:ring-surface-base', className)}
+      className={cn(stack({ size }), className)}
       {...rest}
     >
       {shown}
@@ -179,8 +191,6 @@ function PeopleList({
   className,
 }: PeopleListProps) {
   const hidden = max === undefined ? [] : people.slice(max);
-  // A ring drawn outside a face would be cut by the next one, so ringed faces stand apart.
-  const isRinged = people.some((person) => person.avatarClassName);
 
   return (
     <Dialog>
@@ -192,17 +202,11 @@ function PeopleList({
             className,
           )}
         >
-          {/* Overlapped less than the default: at the small size the next face would cover a
-              face's second initial. Ringed faces do not overlap at all. */}
           <AvatarGroup
             aria-hidden="true"
             max={max}
             size={size}
             moreTooltip={names.format(hidden.map(labelOf))}
-            className={cn(
-              size === 'sm' && '-space-x-0.5',
-              isRinged && 'space-x-1.5 px-0.5',
-            )}
           >
             {people.map((person) => (
               <Tooltip key={person.id}>

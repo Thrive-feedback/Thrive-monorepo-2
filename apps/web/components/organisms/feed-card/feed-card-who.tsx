@@ -71,7 +71,10 @@ export type FeedCardWhoProps = {
   readerAccountId: string;
 };
 
-/** A card's opening line on Home, never anonymous (`ADR-0022` in the brain): who did what, to whom. */
+/**
+ * A card's opening line on Home, never anonymous (`ADR-0022` in the brain): who did what, to whom.
+ * Each person in it wears the same small face beside their name.
+ */
 export function FeedCardWho({
   giver,
   receivers,
@@ -85,7 +88,7 @@ export function FeedCardWho({
       variant="subtitle-4"
       className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 break-words"
     >
-      <span>
+      <AvatarName name={giver.name ?? ''} photoUrl={giver.photoUrl} size="sm">
         {giver.accountId === readerAccountId ? (
           'You'
         ) : (
@@ -94,7 +97,7 @@ export function FeedCardWho({
             inactive={giver.inactive}
           />
         )}
-      </span>
+      </AvatarName>
       <span className="text-fg-secondary">{verb}</span>
       <span className="text-action-secondary-hover">to</span>
       <Receivers

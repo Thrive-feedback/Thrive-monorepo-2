@@ -168,8 +168,8 @@ export const ROUTES = {
   uiShowcase: {
     index: '/ui-showcase',
     tokens: '/ui-showcase/tokens',
-    /** A first look at Feedback written as a letter. */
-    letter: '/ui-showcase/letter',
+    /** Every card in the app, side by side. */
+    cards: '/ui-showcase/cards',
     component: (slug: string) => `/ui-showcase/${slug}`,
   },
 } as const;

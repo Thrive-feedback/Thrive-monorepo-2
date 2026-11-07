@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { COMPOSE_CHOICE_OUTLINES } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import { Button } from '@/components/atoms/button';
 import { AutocompleteInput } from '@/components/molecules/autocomplete-input';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
@@ -66,13 +67,22 @@ export function FeedComposer({
         </div>
       </div>
       <div className={FEED_COMPOSER_CHOICES}>
-        <Button variant="secondary" onClick={() => onChoose('ask')}>
+        <Button
+          variant={COMPOSE_CHOICE_OUTLINES.ask}
+          onClick={() => onChoose('ask')}
+        >
           Ask for feedback
         </Button>
-        <Button variant="secondary" onClick={() => onChoose('give')}>
+        <Button
+          variant={COMPOSE_CHOICE_OUTLINES.give}
+          onClick={() => onChoose('give')}
+        >
           Give feedback
         </Button>
-        <Button variant="secondary" onClick={() => onChoose('kudos')}>
+        <Button
+          variant={COMPOSE_CHOICE_OUTLINES.kudos}
+          onClick={() => onChoose('kudos')}
+        >
           Give kudos
         </Button>
       </div>

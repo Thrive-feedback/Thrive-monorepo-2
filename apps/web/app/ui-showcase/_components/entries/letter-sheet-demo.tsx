@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LETTER_TEAMMATES } from '@/app/ui-showcase/letter/_components/letter-teammates.mock';
+import { SAMPLE_TEAMMATES } from '@/app/ui-showcase/_lib/sample-teammates.mock';
 import { Letter, type LetterSide } from '@/components/organisms/letter';
 
 export type LetterSheetDemoProps = {
@@ -34,7 +34,7 @@ export function LetterSheetDemo({
     <div className="w-full max-w-2xl lg:pr-16">
       <Letter
         writing={writing}
-        teammates={LETTER_TEAMMATES}
+        teammates={SAMPLE_TEAMMATES}
         recipientAccountIds={recipientAccountIds}
         feedbackMessage={feedbackMessage}
         requestMessage={requestMessage}

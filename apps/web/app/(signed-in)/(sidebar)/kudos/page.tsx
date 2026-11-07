@@ -35,7 +35,8 @@ type KudosProps = {
  */
 export default async function Kudos({ searchParams }: KudosProps) {
   const { month } = KudosSearchParams.parse(await searchParams);
-  const { membership } = await requireMember();
+  const session = await requireMember();
+  const { membership } = session;
 
   return (
     <KudosBoardPlacesProvider>
@@ -59,7 +60,7 @@ export default async function Kudos({ searchParams }: KudosProps) {
           </div>
         </div>
         <Suspense key={month} fallback={<KudosBoardSkeleton />}>
-          <KudosBoard membership={membership} month={month} />
+          <KudosBoard session={session} month={month} />
         </Suspense>
       </div>
     </KudosBoardPlacesProvider>

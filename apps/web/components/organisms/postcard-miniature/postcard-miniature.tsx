@@ -81,10 +81,8 @@ const stage = cva('', {
     size: {
       /** The width of whatever holds it, as in a box of a grid. */
       fill: 'w-full',
-      /** In the corner of a card, beside who wrote it. */
-      md: 'w-20 shrink-0',
-      /** Beside what a card is about, where the postcard is what it is for. */
-      lg: 'w-28 shrink-0 lg:w-36',
+      /** Beside what a card in a list is about: every card in a list draws it this size. */
+      lg: 'w-28 shrink-0',
     },
   },
 });
@@ -93,7 +91,7 @@ export type PostcardMiniatureProps = {
   /** A sent card, or a request nobody has answered yet. */
   card: ReadPostcard | AskedPostcard;
   /** How wide it is drawn. The whole card scales to it. */
-  size?: 'fill' | 'md' | 'lg';
+  size?: 'fill' | 'lg';
   /** What it opens is on its way: it fades and pulses, so a press does not look lost. */
   isPending?: boolean;
   className?: string;

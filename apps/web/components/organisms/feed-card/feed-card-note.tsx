@@ -1,74 +1,41 @@
-import { cva, type VariantProps } from 'class-variance-authority';
 import { HandArrow } from '@/components/atoms/hand-arrow';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
+import { FEED_CARD_INK } from './feed-card-tone.constant';
+import type { FeedCardTone } from './feed-card-tone.type';
 
 /**
- * How the note lies on the card. Each tilts towards the small postcard from where it sits, so its
- * arrow still points at it: one set low rises, one set high falls.
+ * Where the note sits in the right column. On a phone the small card sits under what the card says,
+ * at the right, so the note waits to its left and points across. Beside the words, the
+ * column is narrow, so the note hangs over its top, past the card's edge, and points down. It is
+ * written in the card's ink.
  */
-const note = cva(
-  'flex shrink-0 items-center gap-1 text-action-secondary-hover',
-  {
-    variants: {
-      lie: {
-        rising: 'translate-y-3 -rotate-6',
-        falling: '-translate-y-3 rotate-6',
-        easingUp: '-translate-x-2 translate-y-2 -rotate-3',
-        easingDown: '-translate-x-3 -translate-y-2 rotate-3',
-        level: '-translate-x-1 -rotate-1',
-      },
-    },
-  },
-);
-
-export type FeedCardNoteLie = NonNullable<VariantProps<typeof note>['lie']>;
-
-/** Every way the note can lie, for a card to take one of. */
-export const FEED_CARD_NOTE_LIES: readonly FeedCardNoteLie[] = [
-  'rising',
-  'falling',
-  'easingUp',
-  'easingDown',
-  'level',
-];
-
-/**
- * The way a card's note lies, picked from its id: it looks picked by hand, yet stays the same for
- * that card on the server, on the client and after a reload.
- */
-export function noteLieOf(id: string): FeedCardNoteLie {
-  // A rolling hash, because ids made moments apart share most of their characters: adding them up
-  // gave a run of neighbours the same note.
-  const hash = [...id].reduce(
-    (total, character) => (total * 31 + (character.codePointAt(0) ?? 0)) >>> 0,
-    0,
-  );
-  return FEED_CARD_NOTE_LIES[hash % FEED_CARD_NOTE_LIES.length] ?? 'level';
-}
+const PLACE =
+  'pointer-events-none absolute start-0 top-1/2 flex -translate-y-1/2 -rotate-3 select-none items-center gap-1 md:start-auto md:-end-2 md:-top-10 md:translate-y-0 md:flex-col md:gap-0';
 
 export type FeedCardNoteProps = {
-  lie: FeedCardNoteLie;
-  /** What opening the postcard gives. */
+  /** Which kind of card it is on, as a colour. */
+  tone: FeedCardTone;
+  /** What pressing the small card gives. */
   children: React.ReactNode;
-  className?: string;
 };
 
 /**
- * A few words by hand beside a card's small postcard, with an arrow to it. It only points the way,
- * so the link names the same thing and a screen reader skips this.
+ * A few words by hand with an arrow, pointing at the small card a card in a list is about, so a
+ * reader sees that it is the thing to press. It only points the way, and the press says the same,
+ * so it is a drawing: inert, and skipped by a screen reader.
  */
-export function FeedCardNote({ lie, children, className }: FeedCardNoteProps) {
+export function FeedCardNote({ tone, children }: FeedCardNoteProps) {
   return (
-    <span aria-hidden="true" className={cn(note({ lie }), className)}>
+    <span aria-hidden="true" inert className={cn(PLACE, FEED_CARD_INK[tone])}>
       <Text
         as="span"
-        variant="subtitle-handwrite-3"
-        className="w-20 text-right lg:w-22"
+        variant="subtitle-handwrite-2"
+        className="w-28 text-right md:w-auto md:whitespace-nowrap md:text-center"
       >
         {children}
       </Text>
-      <HandArrow className="h-4 w-8 lg:h-5 lg:w-12" />
+      <HandArrow className="h-4 w-8 md:rotate-90" />
     </span>
   );
 }

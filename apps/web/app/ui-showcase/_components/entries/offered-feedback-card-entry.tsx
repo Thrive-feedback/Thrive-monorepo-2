@@ -19,8 +19,8 @@ export function OfferedFeedbackCardEntry() {
       name="OfferedFeedbackCard"
       level="organism"
       origin="thrive"
-      source="components/organisms/feed-card/offered-feedback-card.tsx — FeedCardFrame + FeedCardNote + PendingPostcardMiniature + FeedbackText"
-      summary="Feedback given without being asked, in Home's feed: who wrote to whom, how it came about, the day and who can read it, the message cut at three lines, and a small postcard in the corner, which opens the postcard. On a wide screen a note by hand points to it."
+      source="components/organisms/feed-card/offered-feedback-card.tsx — FeedCardFrame (FeedCardColumns + FeedCardPreview) + FeedbackText"
+      summary="Feedback given without being asked, in Home's feed: who wrote to whom, how it came about, the day and who can read it, the message cut at three lines, and beside them a small postcard, leaning, which straightens when pointed at and opens the postcard."
       useFor="One piece of Offered Feedback in the Home menu."
       avoidFor="The whole message, which the postcard shows. The landing page's preview of Home, which keeps FeedbackCard."
       usage={`import { OfferedFeedbackCard } from '@/components/organisms/feed-card/offered-feedback-card';
@@ -52,7 +52,7 @@ export function OfferedFeedbackCardEntry() {
       ]}
       accessibility={[
         'The small postcard is the one link on the card, named "Open postcard:" and who wrote to whom.',
-        '"View postcard" answers keyboard focus as it answers a hover on the small postcard, which is a drawing, hidden from screen readers.',
+        'The small postcard is a drawing, hidden from screen readers, and straightens under keyboard focus as it does under the cursor.',
         'Who can read it is words beside an icon, never the icon alone.',
       ]}
     >

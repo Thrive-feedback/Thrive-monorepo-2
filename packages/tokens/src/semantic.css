@@ -36,6 +36,21 @@
   );
   --action-secondary-fg: var(--secondary-900);
   --action-secondary-border: var(--secondary-500);
+  --action-tertiary: var(--info-400);
+  --action-tertiary-hover: var(--info-500);
+  --action-tertiary-active: var(--info-550);
+  --action-tertiary-surface: color-mix(
+    in oklch,
+    var(--info-50) 20%,
+    transparent
+  );
+  --action-tertiary-surface-hover: color-mix(
+    in oklch,
+    var(--info-100) 70%,
+    transparent
+  );
+  --action-tertiary-fg: var(--info-900);
+  --action-tertiary-border: var(--info-500);
   --action-muted: var(--primary-400);
   --action-neutral: var(--neutral-950);
   --action-neutral-hover: var(--neutral-900);
@@ -75,6 +90,7 @@
   --fg-accent: var(--primary-600);
   --fg-on-action: var(--neutral-50);
   --fg-on-secondary: var(--neutral-950);
+  --fg-on-tertiary: var(--neutral-50);
   --fg-on-neutral: var(--neutral-50);
   --fg-on-success: var(--neutral-950);
   --fg-on-warning: var(--neutral-950);
@@ -533,6 +549,21 @@
   );
   --action-secondary-fg: var(--secondary-100);
   --action-secondary-border: var(--secondary-500);
+  --action-tertiary: var(--info-300) /* blueprint: info-325 */;
+  --action-tertiary-hover: var(--info-200) /* blueprint: info-225 */;
+  --action-tertiary-active: var(--info-150) /* blueprint: info-175 */;
+  --action-tertiary-surface: color-mix(
+    in oklch,
+    var(--info-950) 24%,
+    transparent
+  );
+  --action-tertiary-surface-hover: color-mix(
+    in oklch,
+    var(--info-750) 70%,
+    transparent
+  );
+  --action-tertiary-fg: var(--info-100);
+  --action-tertiary-border: var(--info-500);
   --action-muted: var(--primary-900);
   --action-neutral: var(--neutral-50);
   --action-neutral-hover: var(--neutral-100);
@@ -572,6 +603,7 @@
   --fg-accent: var(--primary-400);
   --fg-on-action: var(--neutral-950);
   --fg-on-secondary: var(--neutral-950);
+  --fg-on-tertiary: var(--neutral-950);
   --fg-on-neutral: var(--neutral-950);
   --fg-on-success: var(--neutral-950);
   --fg-on-warning: var(--neutral-950);

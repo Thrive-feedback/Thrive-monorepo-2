@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { ReadKudos } from '@/components/organisms/kudos-dialog/read-kudos.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { KudosFeedCard } from './kudos-feed-card';
@@ -78,74 +78,40 @@ describe('a Kudos on Home', () => {
     expect(card.querySelector('time')).toBeInTheDocument();
   });
 
-  it('shows the whole card', () => {
+  it('says what was written, once to a screen reader', () => {
     draw(kudos());
 
-    expect(screen.getByText('Thank you for the handover.')).toBeVisible();
+    expect(
+      screen
+        .getAllByText('Thank you for the handover.')
+        .filter((text) => !text.closest('[aria-hidden="true"]')),
+    ).toHaveLength(1);
   });
 
-  it('hangs the cards beside it out of reach of a screen reader', () => {
-    const card = draw(kudos());
-
-    expect(within(card).getAllByRole('button')).toHaveLength(1);
-    expect(screen.getAllByText(/Thank you/)).toHaveLength(1);
-  });
-
-  it('opens large from View kudos', async () => {
+  it('opens large from the small card beside it', async () => {
     const user = userEvent.setup();
     draw(kudos());
 
-    await user.click(screen.getByRole('button', { name: 'View kudos' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Open kudos from Mali Chaiyo' }),
+    );
 
     expect(
       screen.getByRole('dialog', { name: 'Kudos from Mali Chaiyo' }),
     ).toBeVisible();
   });
 
-  describe('as the cursor comes onto the card', () => {
-    function theCard() {
-      return screen
-        .getByText('Thank you for the handover.')
-        .closest('[style*="rotate"]');
-    }
+  it('leans the small card, as every card in a list does', () => {
+    draw(kudos());
 
-    function pressable() {
-      const button = screen
-        .getByText('Thank you for the handover.')
-        .closest('[style*="rotate"]')
-        ?.querySelector(':scope > button');
-      if (!button) {
-        throw new Error('The card has no way to be pressed.');
-      }
-      return button;
-    }
-
-    it('gives a little shake', async () => {
-      const user = userEvent.setup();
-      const animate = vi.fn(() => ({ onfinish: null }));
-      Element.prototype.animate = animate as never;
-      draw(kudos());
-
-      await user.hover(pressable());
-
-      expect(animate).toHaveBeenCalledTimes(1);
-      expect(animate.mock.contexts[0]).toBe(theCard());
+    const button = screen.getByRole('button', {
+      name: 'Open kudos from Mali Chaiyo',
     });
-
-    it('stays still for somebody who asked for less motion', async () => {
-      const user = userEvent.setup();
-      const animate = vi.fn(() => ({ onfinish: null }));
-      Element.prototype.animate = animate as never;
-      vi.spyOn(window, 'matchMedia').mockReturnValue({
-        matches: true,
-      } as MediaQueryList);
-      draw(kudos());
-
-      await user.hover(pressable());
-
-      expect(animate).not.toHaveBeenCalled();
-      vi.restoreAllMocks();
-    });
+    expect(
+      button
+        .querySelector<HTMLElement>('[aria-hidden="true"]')
+        ?.style.getPropertyValue('--feed-card-tilt'),
+    ).toMatch(/deg$/);
   });
 
   it('has no Reactions', () => {

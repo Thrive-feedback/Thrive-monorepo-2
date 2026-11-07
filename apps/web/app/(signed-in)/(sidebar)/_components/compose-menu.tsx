@@ -2,6 +2,10 @@
 
 import { PlusIcon } from 'lucide-react';
 import { useRef } from 'react';
+import {
+  COMPOSE_CHOICE_TITLES,
+  type ComposeChoice,
+} from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import { Button } from '@/components/atoms/button';
 import {
   DropdownMenu,
@@ -10,14 +14,27 @@ import {
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
+import { cn } from '@/lib/cn.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import {
-  COMPOSE_CARD_TITLES,
   ComposeCards,
-  type ComposeChoice,
   useComposeCards,
   warmComposeCards,
 } from './compose-cards';
+
+/** Each choice pointed at, in the colour of the card it writes. */
+const CHOICE_HIGHLIGHTS: Readonly<Record<ComposeChoice, string>> = {
+  ask: 'data-highlighted:bg-action-tertiary-surface',
+  give: 'data-highlighted:bg-action-primary-surface',
+  kudos: 'data-highlighted:bg-action-secondary-surface',
+};
+
+/** The mark beside each choice, so its colour is learnt before the card opens. */
+const CHOICE_DOTS: Readonly<Record<ComposeChoice, string>> = {
+  ask: 'bg-action-tertiary',
+  give: 'bg-action-primary',
+  kudos: 'bg-action-secondary',
+};
 
 const CHOICES: readonly {
   title: string;
@@ -26,17 +43,17 @@ const CHOICES: readonly {
   card: ComposeChoice;
 }[] = [
   {
-    title: COMPOSE_CARD_TITLES.ask,
+    title: COMPOSE_CHOICE_TITLES.ask,
     description: 'Ask teammates what they think.',
     card: 'ask',
   },
   {
-    title: COMPOSE_CARD_TITLES.give,
+    title: COMPOSE_CHOICE_TITLES.give,
     description: "Tell a teammate what you've seen.",
     card: 'give',
   },
   {
-    title: 'Give kudos',
+    title: COMPOSE_CHOICE_TITLES.kudos,
     description: 'Say well done in a few words.',
     card: 'kudos',
   },
@@ -105,18 +122,29 @@ export function ComposeMenu({
             <span className="sr-only">Write something</span>
           </Button>
         </DropdownMenuTrigger>
+        {/* Its items' corners run parallel to its own: 6px in from a 9px corner, each item rounds by
+            the 3px left, where the menu's usual 4px would leave them out of true. */}
         <DropdownMenuContent
           align="start"
-          className="w-72"
+          className="w-72 p-1.5"
           onCloseAutoFocus={handleMenuCloseAutoFocus}
         >
           {CHOICES.map(({ title, description, card }) => (
             <DropdownMenuItem
               key={title}
-              className="flex-col items-start gap-0.5 px-3 py-2.5"
+              className={cn(
+                'flex-col items-start gap-0.5 px-3 py-2.5',
+                CHOICE_HIGHLIGHTS[card],
+              )}
               onSelect={() => handleChoose(card)}
             >
-              <span className="text-fg-primary text-subtitle-4">{title}</span>
+              <span className="flex items-center gap-2 text-fg-primary text-subtitle-4">
+                <span
+                  aria-hidden="true"
+                  className={cn('size-2 rounded-full', CHOICE_DOTS[card])}
+                />
+                {title}
+              </span>
               <span className="text-body-3 text-fg-secondary">
                 {description}
               </span>

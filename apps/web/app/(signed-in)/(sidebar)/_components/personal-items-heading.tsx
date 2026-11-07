@@ -6,6 +6,7 @@ import {
 import {
   GIVEN_HEADING_ID,
   type PersonalItemsSide,
+  RECEIVED_HEADING_ID,
 } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-side.constant';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
@@ -21,14 +22,16 @@ const HEADINGS: Readonly<
     }
   >
 > = {
+  // On both, the first card sent from an empty list replaces the button that opened it, so focus
+  // comes here instead.
   received: {
     title: 'Received',
     description: 'Answers to your requests, Feedback given to you, and Kudos.',
+    focusable: { id: RECEIVED_HEADING_ID, tabIndex: -1 },
   },
   given: {
     title: 'Given',
     description: 'Feedback and kudos you wrote.',
-    // The first card sent replaces the button that opened it, so focus comes here instead.
     focusable: { id: GIVEN_HEADING_ID, tabIndex: -1 },
   },
 };

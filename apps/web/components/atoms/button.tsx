@@ -12,8 +12,14 @@ const buttonVariants = cva(
           'bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover',
         highlight:
           'bg-action-secondary text-fg-on-secondary enabled:active:bg-action-secondary-active enabled:hover:bg-action-secondary-hover',
+        tertiary:
+          'bg-action-tertiary text-fg-on-tertiary enabled:active:bg-action-tertiary-active enabled:hover:bg-action-tertiary-hover',
         outlined:
-          'border border-action-primary-border bg-action-primary-surface text-action-primary enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
+          'border border-action-primary-border bg-action-primary-surface text-action-primary-hover enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
+        'outlined-tertiary':
+          'border border-action-tertiary-border bg-action-tertiary-surface text-action-tertiary-hover enabled:active:bg-action-tertiary-surface-hover enabled:hover:bg-action-tertiary-surface-hover',
+        'outlined-highlight':
+          'border border-action-secondary-border bg-action-secondary-surface text-action-secondary-hover enabled:active:bg-action-secondary-surface-hover enabled:hover:bg-action-secondary-surface-hover',
         secondary:
           'border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface-hover',
         soft: 'bg-action-neutral-surface text-action-primary-fg enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',

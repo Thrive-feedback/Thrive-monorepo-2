@@ -6,6 +6,7 @@ import { GiverToReceivers } from '@/components/organisms/giver-to-receivers';
 import {
   CardNotesButton,
   CardNotesContext,
+  CardNotesToneContext,
   useCardNotes,
 } from '@/components/organisms/postcard-dialog/card-notes';
 import { CardToolNote } from '@/components/organisms/postcard-dialog/card-tool-note';
@@ -82,64 +83,66 @@ function KudosCardReadView({ kudos, onClose }: KudosCardReadViewProps) {
 
   return (
     <CardNotesContext value={areNotesShown}>
-      <div className={POSTCARD_PAGE}>
-        <PostcardTitleRow
-          title={`Kudos from ${kudos.giver.name ?? NO_NAME}`}
-          onClose={onClose}
-          className="max-w-90"
-        />
-
-        <div className="relative flex w-full max-w-90 flex-col gap-3">
-          <div className={POSTCARD_CARD_ACTIONS}>
-            <PostcardTurnButton
-              side={side}
-              turnToBackHint="Turn over to see the day it was given"
-              toFrontLabel="Turn over to the front, the words"
-              toBackLabel="Turn over to the back, the date"
-              onClick={() =>
-                setSide((current) => (current === 'back' ? 'front' : 'back'))
-              }
-            />
-            {hasStickers && (
-              <CardToolNote
-                className={CARD_NOTE_BY_HIDE_BUTTON}
-                arrowClassName={CARD_NOTE_ARROW_LEFT}
-              >
-                {areStickersHidden
-                  ? CARD_NOTES.showStickers
-                  : CARD_NOTES.hideStickers}
-              </CardToolNote>
-            )}
-            <PostcardHideButton
-              isHidden={areStickersHidden}
-              what="stickers"
-              disabled={!hasStickers || side === 'back'}
-              onClick={() => setAreStickersHidden((current) => !current)}
-            />
-            <CardNotesButton
-              areNotesShown={areNotesShown}
-              disabled={!hasStickers}
-              onClick={handleToggleNotes}
-            />
-          </div>
-          <KudosCardReadOnly
-            message={kudos.message}
-            tags={kudos.messageTags}
-            drawing={kudos.drawing}
-            date={kudosCardDate(kudos.givenAt)}
-            side={side}
-            areStickersHidden={areStickersHidden}
+      <CardNotesToneContext value="secondary">
+        <div className={POSTCARD_PAGE}>
+          <PostcardTitleRow
+            title={`Kudos from ${kudos.giver.name ?? NO_NAME}`}
+            onClose={onClose}
+            className="max-w-90"
           />
-          <div className="flex w-fit max-w-full self-center rounded-control bg-surface-raised px-3 py-2 shadow-low">
-            <GiverToReceivers
-              giver={kudos.giver}
-              receivers={kudos.recipients}
-              kind="Kudos"
-              hasAccentedTo
+
+          <div className="relative flex w-full max-w-90 flex-col gap-3">
+            <div className={POSTCARD_CARD_ACTIONS}>
+              <PostcardTurnButton
+                side={side}
+                turnToBackHint="Turn over to see the day it was given"
+                toFrontLabel="Turn over to the front, the words"
+                toBackLabel="Turn over to the back, the date"
+                onClick={() =>
+                  setSide((current) => (current === 'back' ? 'front' : 'back'))
+                }
+              />
+              {hasStickers && (
+                <CardToolNote
+                  className={CARD_NOTE_BY_HIDE_BUTTON}
+                  arrowClassName={CARD_NOTE_ARROW_LEFT}
+                >
+                  {areStickersHidden
+                    ? CARD_NOTES.showStickers
+                    : CARD_NOTES.hideStickers}
+                </CardToolNote>
+              )}
+              <PostcardHideButton
+                isHidden={areStickersHidden}
+                what="stickers"
+                disabled={!hasStickers || side === 'back'}
+                onClick={() => setAreStickersHidden((current) => !current)}
+              />
+              <CardNotesButton
+                areNotesShown={areNotesShown}
+                disabled={!hasStickers}
+                onClick={handleToggleNotes}
+              />
+            </div>
+            <KudosCardReadOnly
+              message={kudos.message}
+              tags={kudos.messageTags}
+              drawing={kudos.drawing}
+              date={kudosCardDate(kudos.givenAt)}
+              side={side}
+              areStickersHidden={areStickersHidden}
             />
+            <div className="flex w-fit max-w-full self-center rounded-control bg-surface-raised px-3 py-2 shadow-low">
+              <GiverToReceivers
+                giver={kudos.giver}
+                receivers={kudos.recipients}
+                kind="Kudos"
+                hasAccentedTo
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </CardNotesToneContext>
     </CardNotesContext>
   );
 }

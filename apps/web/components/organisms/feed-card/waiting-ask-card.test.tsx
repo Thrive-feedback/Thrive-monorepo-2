@@ -5,7 +5,6 @@ import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
 import type { AskedPostcard } from '../postcard-dialog/postcard-read.type';
 import { DEFAULT_TEXT_STYLE } from '../postcard-dialog/postcard-style.constant';
-import { FEED_CARD_NOTE_LIES, noteLieOf } from './feed-card-note';
 import { WaitingAskCard } from './waiting-ask-card';
 
 const ASK: MyAsk = {
@@ -58,7 +57,7 @@ describe('WaitingAskCard', () => {
   it('says who asked, when, and what', () => {
     const card = draw();
 
-    expect(card).toHaveTextContent('Ann Lee requested feedback from you');
+    expect(card).toHaveTextContent('Ann Lee asked you for feedback');
     expect(card).toHaveTextContent('2 days ago');
     expect(card).toHaveTextContent('How clear was the migration plan?');
   });
@@ -69,13 +68,9 @@ describe('WaitingAskCard', () => {
     expect(card.getAllByRole('link')).toHaveLength(1);
     expect(
       card.getByRole('link', {
-        name: 'Answer in the postcard: Ann Lee requested feedback from you',
+        name: 'Answer in the postcard: Ann Lee asked you for feedback',
       }),
     ).toHaveAttribute('href', '/opened');
-  });
-
-  it('points to the small postcard in handwriting', () => {
-    expect(draw()).toHaveTextContent('Answer in the postcard');
   });
 
   it('says nothing about who can read the answer', () => {
@@ -102,33 +97,8 @@ describe('WaitingAskCard', () => {
 
     expect(
       card.getByRole('link', {
-        name: /^Answer in the postcard: .+ requested feedback from you$/,
+        name: /^Answer in the postcard: .+ asked you for feedback$/,
       }),
     ).toBeVisible();
-  });
-});
-
-describe('noteLieOf', () => {
-  it('keeps the same note for the same Ask', () => {
-    expect(noteLieOf('ask-1')).toBe(noteLieOf('ask-1'));
-  });
-
-  it('spreads Asks made moments apart across the ways', () => {
-    const lies = [
-      '01a19257-62f1-7631-b7f6-3b9219d64c02',
-      '01a19257-62fd-703f-9ec7-877ab4e0f6ce',
-      '01a19257-630b-716a-8882-ca70833195f3',
-      '01a19295-8822-70ef-8c79-62c6f3530a08',
-      '01a19182-94a0-7465-a88e-a10a869dc5e1',
-      '01a19182-948b-7a11-9c3e-5d2f0b1e7a44',
-    ].map(noteLieOf);
-
-    expect(new Set(lies).size).toBeGreaterThanOrEqual(3);
-  });
-
-  it('reaches all five ways across a few Asks', () => {
-    const lies = ['ask-1', 'ask-2', 'ask-3', 'ask-4', 'ask-5'].map(noteLieOf);
-
-    expect(new Set(lies)).toEqual(new Set(FEED_CARD_NOTE_LIES));
   });
 });

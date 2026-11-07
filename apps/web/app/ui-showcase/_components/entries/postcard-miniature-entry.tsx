@@ -23,9 +23,9 @@ export function PostcardMiniatureEntry() {
 import { PendingPostcardMiniature } from '@/components/organisms/postcard-miniature/pending-postcard-miniature';
 
 <PostcardMiniature card={item.card} />
-<TargetLink target={target}>
-  <PendingPostcardMiniature card={item.card} size="md" />
-</TargetLink>`}
+<FeedCardPreview id={item.id} target={target} label="Open postcard: …">
+  <PendingPostcardMiniature card={item.card} size="lg" />
+</FeedCardPreview>`}
       props={[
         {
           name: 'card',
@@ -35,10 +35,10 @@ import { PendingPostcardMiniature } from '@/components/organisms/postcard-miniat
         },
         {
           name: 'size',
-          type: "'fill' | 'md' | 'lg'",
+          type: "'fill' | 'lg'",
           defaultValue: "'fill'",
           description:
-            '`fill` takes the width of what holds it; `md` sits in the corner of a card; `lg` sits beside what a card is about.',
+            '`fill` takes the width of what holds it; `lg` is the one size every card in a list draws it at.',
         },
         {
           name: 'isPending',
@@ -53,10 +53,10 @@ import { PendingPostcardMiniature } from '@/components/organisms/postcard-miniat
         'With reduced motion, a pending press fades without pulsing.',
       ]}
     >
-      <StateCell label="Given" hint="Medium, in the corner of a card.">
-        <PostcardMiniatureDemo card={SAMPLE_GIVEN_CARD} size="md" />
+      <StateCell label="Given" hint="The size every card in a list draws it.">
+        <PostcardMiniatureDemo card={SAMPLE_GIVEN_CARD} size="lg" />
       </StateCell>
-      <StateCell label="Answered" hint="Large, beside what a card is about.">
+      <StateCell label="Answered">
         <PostcardMiniatureDemo card={SAMPLE_ANSWERED_CARD} size="lg" />
       </StateCell>
       <StateCell

@@ -3,7 +3,12 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/atoms/dialog';
 import { cn } from '@/lib/cn.util';
-import { CardNotesButton, CardNotesContext, useCardNotes } from './card-notes';
+import {
+  CardNotesButton,
+  CardNotesContext,
+  CardNotesToneContext,
+  useCardNotes,
+} from './card-notes';
 import { CardToolNote } from './card-tool-note';
 import { CARD_NOTES } from './card-tool-note.constant';
 import { Postcard } from './postcard';
@@ -168,68 +173,75 @@ function PostcardReadView({
 
   return (
     <CardNotesContext value={areNotesShown}>
-      <div className={POSTCARD_PAGE}>
-        <PostcardTitleRow title={title} onClose={onClose} />
+      <CardNotesToneContext
+        value={card.kind === 'give' ? 'primary' : 'tertiary'}
+      >
+        <div className={POSTCARD_PAGE}>
+          <PostcardTitleRow title={title} onClose={onClose} />
 
-        <div className={POSTCARD_CARD_COLUMN}>
-          <div className={POSTCARD_CARD_ACTIONS}>
-            <PostcardTurnButton
+          <div className={POSTCARD_CARD_COLUMN}>
+            <div className={POSTCARD_CARD_ACTIONS}>
+              <PostcardTurnButton
+                side={side}
+                turnToBackHint="Turn over to read the back"
+                onClick={() =>
+                  setSide((current) => (current === 'back' ? 'front' : 'back'))
+                }
+              />
+              <CardToolNote
+                className={CARD_NOTE_BY_HIDE_BUTTON}
+                arrowClassName={CARD_NOTE_ARROW_LEFT}
+              >
+                {areMarksHidden ? CARD_NOTES.showMarks : CARD_NOTES.hideMarks}
+              </CardToolNote>
+              <PostcardHideButton
+                isHidden={areMarksHidden}
+                what="stickers and postmark"
+                onClick={() => setAreMarksHidden((current) => !current)}
+              />
+              <CardNotesButton
+                areNotesShown={areNotesShown}
+                onClick={handleToggleNotes}
+              />
+            </div>
+            <Postcard
               side={side}
-              turnToBackHint="Turn over to read the back"
-              onClick={() =>
-                setSide((current) => (current === 'back' ? 'front' : 'back'))
+              tone={look.tone}
+              templateKey={look.templateKey}
+              stickers={{
+                front: stickersOn('front'),
+                back: stickersOn('back'),
+              }}
+              areStickersHidden={areMarksHidden}
+              stamp={
+                <>
+                  {look.stampKey ? (
+                    <PostcardStampReadOnly stampKey={look.stampKey} />
+                  ) : (
+                    <PostcardStampBoxReadOnly />
+                  )}
+                  {!areMarksHidden && <PostcardPostmarkStill date={sentOn} />}
+                </>
               }
-            />
-            <CardToolNote
-              className={CARD_NOTE_BY_HIDE_BUTTON}
-              arrowClassName={CARD_NOTE_ARROW_LEFT}
             >
-              {areMarksHidden ? CARD_NOTES.showMarks : CARD_NOTES.hideMarks}
-            </CardToolNote>
-            <PostcardHideButton
-              isHidden={areMarksHidden}
-              what="stickers and postmark"
-              onClick={() => setAreMarksHidden((current) => !current)}
-            />
-            <CardNotesButton
-              areNotesShown={areNotesShown}
-              onClick={handleToggleNotes}
-            />
+              {back}
+            </Postcard>
           </div>
-          <Postcard
-            side={side}
-            tone={look.tone}
-            templateKey={look.templateKey}
-            stickers={{ front: stickersOn('front'), back: stickersOn('back') }}
-            areStickersHidden={areMarksHidden}
-            stamp={
-              <>
-                {look.stampKey ? (
-                  <PostcardStampReadOnly stampKey={look.stampKey} />
-                ) : (
-                  <PostcardStampBoxReadOnly />
-                )}
-                {!areMarksHidden && <PostcardPostmarkStill date={sentOn} />}
-              </>
-            }
-          >
-            {back}
-          </Postcard>
-        </div>
 
-        {/* Hidden rather than taken out, so the card stays where it is as it turns over. */}
-        {pager && (
-          <div className={cn('relative', side === 'front' && 'invisible')}>
-            <PostcardAnswerPager {...pager} onIndexChange={setAnswerIndex} />
-            <CardToolNote
-              className={CARD_NOTE_AFTER_TOOLS}
-              arrowClassName={CARD_NOTE_ARROW_LEFT}
-            >
-              {CARD_NOTES.otherAnswers}
-            </CardToolNote>
-          </div>
-        )}
-      </div>
+          {/* Hidden rather than taken out, so the card stays where it is as it turns over. */}
+          {pager && (
+            <div className={cn('relative', side === 'front' && 'invisible')}>
+              <PostcardAnswerPager {...pager} onIndexChange={setAnswerIndex} />
+              <CardToolNote
+                className={CARD_NOTE_AFTER_TOOLS}
+                arrowClassName={CARD_NOTE_ARROW_LEFT}
+              >
+                {CARD_NOTES.otherAnswers}
+              </CardToolNote>
+            </div>
+          )}
+        </div>
+      </CardNotesToneContext>
     </CardNotesContext>
   );
 }

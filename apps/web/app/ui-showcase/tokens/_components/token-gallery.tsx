@@ -309,6 +309,37 @@ export function TokenGallery() {
       </Section>
 
       <Section
+        title="Tertiary action"
+        description="The third action ramp, in blue: everything about asking for Feedback, as the brand colour is giving it and the secondary one a Kudos. A button on it takes fg-on-tertiary."
+      >
+        <Swatch name="bg-action-tertiary" usage="ask for feedback">
+          <div className="h-full w-full bg-action-tertiary" />
+        </Swatch>
+        <Swatch name="bg-action-tertiary-hover" usage="hover">
+          <div className="h-full w-full bg-action-tertiary-hover" />
+        </Swatch>
+        <Swatch name="bg-action-tertiary-active" usage="pressed">
+          <div className="h-full w-full bg-action-tertiary-active" />
+        </Swatch>
+        <Swatch name="bg-action-tertiary-surface" usage="a request's wash">
+          <div className="h-full w-full bg-action-tertiary-surface" />
+        </Swatch>
+        <Swatch
+          name="text-action-tertiary-fg / border-action-tertiary-border"
+          usage="text and outline"
+        >
+          <span className="rounded-element border border-action-tertiary-border bg-action-tertiary-surface px-3 py-1.5 text-action-tertiary-fg text-body-2">
+            My requests
+          </span>
+        </Swatch>
+        <Swatch name="text-fg-on-tertiary" usage="a button on the fill">
+          <span className="rounded-button bg-action-tertiary px-3 py-1.5 text-body-2 text-fg-on-tertiary">
+            Ask for feedback
+          </span>
+        </Swatch>
+      </Section>
+
+      <Section
         title="Status"
         description="Each status has a fill for text and icons, and a wash for backgrounds."
       >

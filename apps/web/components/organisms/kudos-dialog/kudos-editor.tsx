@@ -13,6 +13,7 @@ import { feedbackTagTriggers } from '@/components/organisms/feedback-tag-trigger
 import {
   CardNotesButton,
   CardNotesContext,
+  CardNotesToneContext,
   useCardNotes,
 } from '@/components/organisms/postcard-dialog/card-notes';
 import { CardToolNote } from '@/components/organisms/postcard-dialog/card-tool-note';
@@ -238,234 +239,249 @@ export function KudosEditor({
     // (ADR 0066), and it has no transform, so the board and their sheet stay fixed to the window.
     <PostcardDrawerContainer value={contentRef}>
       <CardNotesContext value={areNotesShown}>
-        <DialogContent
-          ref={contentRef}
-          hasCloseButton={false}
-          aria-describedby={undefined}
-          onOpenAutoFocus={handleOpenAutoFocus}
-          onCloseAutoFocus={handleCloseAutoFocus}
-          onEscapeKeyDown={handleEscapeKeyDown}
-          onInteractOutside={(event) => event.preventDefault()}
-          onFocus={handleFocus}
-          overlayClassName={postcardStyles.scrim}
-          className={POSTCARD_SCREEN}
-        >
-          {pin.isOnBoard && (
-            <KudosPinBoard ref={pin.boardRef} isSettled={status === 'pinned'} />
-          )}
-          {status === 'pinned' && (
-            <KudosPinActions
-              ref={backToHomeRef}
-              onGoToBoard={onGoToBoard}
-              onBackToHome={onBackToHome}
-            />
-          )}
-          {/* A card that has been sent is inert from then on, so nothing edits what has gone. */}
-          <div inert={status !== 'writing'} className={POSTCARD_PAGE}>
-            <PostcardTitleRow
-              title={TITLE}
-              onClose={askToClose}
-              className={cn('max-w-90', hasGone && SENT_AWAY)}
-            />
+        <CardNotesToneContext value="secondary">
+          <DialogContent
+            ref={contentRef}
+            hasCloseButton={false}
+            aria-describedby={undefined}
+            onOpenAutoFocus={handleOpenAutoFocus}
+            onCloseAutoFocus={handleCloseAutoFocus}
+            onEscapeKeyDown={handleEscapeKeyDown}
+            onInteractOutside={(event) => event.preventDefault()}
+            onFocus={handleFocus}
+            overlayClassName={postcardStyles.scrim}
+            className={POSTCARD_SCREEN}
+          >
+            {pin.isOnBoard && (
+              <KudosPinBoard
+                ref={pin.boardRef}
+                isSettled={status === 'pinned'}
+              />
+            )}
+            {status === 'pinned' && (
+              <KudosPinActions
+                ref={backToHomeRef}
+                onGoToBoard={onGoToBoard}
+                onBackToHome={onBackToHome}
+              />
+            )}
+            {/* A card that has been sent is inert from then on, so nothing edits what has gone. */}
+            <div inert={status !== 'writing'} className={POSTCARD_PAGE}>
+              <PostcardTitleRow
+                title={TITLE}
+                onClose={askToClose}
+                className={cn('max-w-90', hasGone && SENT_AWAY)}
+              />
 
-            <div className="relative flex w-full max-w-90 flex-col gap-3">
-              {side === 'front' && (
-                <CardToolNote hasGone={hasGone} className={MESSAGE_NOTE_PLACE}>
-                  {CARD_NOTES.typeKudos}
-                </CardToolNote>
-              )}
-              <div
+              <div className="relative flex w-full max-w-90 flex-col gap-3">
+                {side === 'front' && (
+                  <CardToolNote
+                    hasGone={hasGone}
+                    className={MESSAGE_NOTE_PLACE}
+                  >
+                    {CARD_NOTES.typeKudos}
+                  </CardToolNote>
+                )}
+                <div
+                  className={cn(
+                    'flex gap-2 self-end lg:absolute lg:top-1/2 lg:left-full lg:ml-6 lg:-translate-y-1/2 lg:flex-col',
+                    hasGone && SENT_AWAY,
+                  )}
+                >
+                  {hasStickers && (
+                    <CardToolNote
+                      className={cn(CARD_NOTE_BY_HIDE_BUTTON, 'top-0 lg:flex')}
+                      arrowClassName={CARD_NOTE_ARROW_LEFT}
+                    >
+                      {areStickersHidden
+                        ? CARD_NOTES.showStickers
+                        : CARD_NOTES.hideStickers}
+                    </CardToolNote>
+                  )}
+                  <PostcardTurnButton
+                    side={side}
+                    turnToBackHint="Turn over to see the back"
+                    toFrontLabel="Turn over to the front, your words"
+                    toBackLabel="Turn over to the back, the date"
+                    onClick={handleTurnOver}
+                  />
+                  <PostcardHideButton
+                    isHidden={areStickersHidden}
+                    what="stickers"
+                    disabled={!hasStickers || side === 'back'}
+                    onClick={handleHideStickers}
+                  />
+                  <CardNotesButton
+                    areNotesShown={areNotesShown}
+                    onClick={handleToggleNotes}
+                  />
+                </div>
+                <div ref={pin.cardRef} className="relative">
+                  <KudosCardTurn
+                    side={side}
+                    front={
+                      <KudosCardFace templateKey={draft.templateKey}>
+                        <KudosMessage
+                          ref={messageRef}
+                          message={draft.message}
+                          templateKey={draft.templateKey}
+                          textStyle={draft.textStyle}
+                          triggers={triggers}
+                          onMessageChange={handleMessageChange}
+                          onMessageFocus={handleMessageFocus}
+                        />
+                        {!areStickersHidden &&
+                          draft.stickers.map((sticker) => (
+                            <PostcardSticker
+                              key={sticker.id}
+                              sticker={sticker}
+                              isSelected={sticker.id === selectedId}
+                              onSelect={setSelectedId}
+                              onChange={handleChangeSticker}
+                              onRemove={handleRemoveSticker}
+                            />
+                          ))}
+                      </KudosCardFace>
+                    }
+                    back={<KudosCardBack date={today} />}
+                  />
+                  <KudosPin ref={pin.pinRef} />
+                </div>
+              </div>
+
+              <p
                 className={cn(
-                  'flex gap-2 self-end lg:absolute lg:top-1/2 lg:left-full lg:ml-6 lg:-translate-y-1/2 lg:flex-col',
+                  'flex w-full max-w-90 items-baseline gap-3 text-body-3 text-fg-secondary',
                   hasGone && SENT_AWAY,
                 )}
               >
-                {hasStickers && (
+                <span aria-live="polite" className="min-w-0 flex-1">
+                  {recipients.length > 0
+                    ? `For ${NAMES.format(recipients.map(({ name }) => name))}. ${WHO_READS}`
+                    : FOR_EVERYONE}
+                </span>
+                {/* Read out by nobody: it changes on every keystroke, and the field says its limit. */}
+                <span aria-hidden="true" className="shrink-0 tabular-nums">
+                  {messageLength(draft.message)}/{MAX_KUDOS_LENGTH}
+                </span>
+              </p>
+
+              {/* The bars' own focus, their menus' included, keeps the text tools up. */}
+              {/* biome-ignore lint/a11y/noStaticElementInteractions: it only watches focus passing through; every control in it is its own. */}
+              <div
+                onFocus={(event) => event.stopPropagation()}
+                onMouseDown={handleToolbarMouseDown}
+                className={cn(
+                  'flex w-full max-w-full flex-col items-center gap-3',
+                  hasGone && SENT_AWAY,
+                )}
+              >
+                <div className="relative max-w-full">
                   <CardToolNote
-                    className={cn(CARD_NOTE_BY_HIDE_BUTTON, 'top-0 lg:flex')}
-                    arrowClassName={CARD_NOTE_ARROW_LEFT}
+                    className={cn(CARD_NOTE_BESIDE_TOOLS, 'lg:flex')}
                   >
-                    {areStickersHidden
-                      ? CARD_NOTES.showStickers
-                      : CARD_NOTES.hideStickers}
+                    {CARD_NOTES.changeCardStyle}
                   </CardToolNote>
-                )}
-                <PostcardTurnButton
-                  side={side}
-                  turnToBackHint="Turn over to see the back"
-                  toFrontLabel="Turn over to the front, your words"
-                  toBackLabel="Turn over to the back, the date"
-                  onClick={handleTurnOver}
-                />
-                <PostcardHideButton
-                  isHidden={areStickersHidden}
-                  what="stickers"
-                  disabled={!hasStickers || side === 'back'}
-                  onClick={handleHideStickers}
-                />
-                <CardNotesButton
-                  areNotesShown={areNotesShown}
-                  onClick={handleToggleNotes}
-                />
-              </div>
-              <div ref={pin.cardRef} className="relative">
-                <KudosCardTurn
-                  side={side}
-                  front={
-                    <KudosCardFace templateKey={draft.templateKey}>
-                      <KudosMessage
-                        ref={messageRef}
-                        message={draft.message}
-                        templateKey={draft.templateKey}
-                        textStyle={draft.textStyle}
-                        triggers={triggers}
-                        onMessageChange={handleMessageChange}
-                        onMessageFocus={handleMessageFocus}
-                      />
-                      {!areStickersHidden &&
-                        draft.stickers.map((sticker) => (
-                          <PostcardSticker
-                            key={sticker.id}
-                            sticker={sticker}
-                            isSelected={sticker.id === selectedId}
-                            onSelect={setSelectedId}
-                            onChange={handleChangeSticker}
-                            onRemove={handleRemoveSticker}
-                          />
-                        ))}
-                    </KudosCardFace>
-                  }
-                  back={<KudosCardBack date={today} />}
-                />
-                <KudosPin ref={pin.pinRef} />
-              </div>
-            </div>
-
-            <p
-              className={cn(
-                'flex w-full max-w-90 items-baseline gap-3 text-body-3 text-fg-secondary',
-                hasGone && SENT_AWAY,
-              )}
-            >
-              <span aria-live="polite" className="min-w-0 flex-1">
-                {recipients.length > 0
-                  ? `For ${NAMES.format(recipients.map(({ name }) => name))}. ${WHO_READS}`
-                  : FOR_EVERYONE}
-              </span>
-              {/* Read out by nobody: it changes on every keystroke, and the field says its limit. */}
-              <span aria-hidden="true" className="shrink-0 tabular-nums">
-                {messageLength(draft.message)}/{MAX_KUDOS_LENGTH}
-              </span>
-            </p>
-
-            {/* The bars' own focus, their menus' included, keeps the text tools up. */}
-            {/* biome-ignore lint/a11y/noStaticElementInteractions: it only watches focus passing through; every control in it is its own. */}
-            <div
-              onFocus={(event) => event.stopPropagation()}
-              onMouseDown={handleToolbarMouseDown}
-              className={cn(
-                'flex w-full max-w-full flex-col items-center gap-3',
-                hasGone && SENT_AWAY,
-              )}
-            >
-              <div className="relative max-w-full">
-                <CardToolNote className={cn(CARD_NOTE_BESIDE_TOOLS, 'lg:flex')}>
-                  {CARD_NOTES.changeCardStyle}
-                </CardToolNote>
-                <KudosTemplatePicker
-                  templateKey={draft.templateKey}
-                  onTemplateChange={handleTemplateChange}
-                />
-              </div>
-              <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch sm:justify-center">
-                {/* biome-ignore lint/a11y/useSemanticElements: `<fieldset>` groups form fields under a legend; a row of tools is a plain named group. */}
-                <div
-                  ref={toolbarRef}
-                  role="group"
-                  aria-label={isEditingText ? 'Text style' : 'Kudos tools'}
-                  className={cn(POSTCARD_BAR, 'relative')}
-                >
-                  {isEditingText && (
-                    <CardToolNote
-                      className={cn(CARD_NOTE_BESIDE_TOOLS, 'lg:flex')}
-                    >
-                      {CARD_NOTES.styleWords}
-                    </CardToolNote>
-                  )}
-                  {!isEditingText && side === 'back' && (
-                    <CardToolNote
-                      className={cn(CARD_NOTE_BESIDE_TOOLS, 'lg:flex')}
-                    >
-                      {CARD_NOTES.stickersOnFront}
-                    </CardToolNote>
-                  )}
-                  {isEditingText && draft.message !== '' && (
-                    <CardToolNote
-                      className={CARD_NOTE_AFTER_TOOLS}
-                      arrowClassName={CARD_NOTE_ARROW_LEFT}
-                    >
-                      {CARD_NOTES.done}
-                    </CardToolNote>
-                  )}
-                  <div
-                    key={isEditingText ? 'text' : 'card'}
-                    className="flex flex-wrap items-center justify-center gap-0.5 motion-safe:animate-enter"
-                  >
-                    {isEditingText ? (
-                      <KudosTextToolbar
-                        textStyle={draft.textStyle}
-                        inks={KUDOS_TEMPLATES[draft.templateKey].inks}
-                        onTextStyleChange={handleTextStyleChange}
-                        onDone={handleDone}
-                      />
-                    ) : (
-                      <PostcardStickerPicker
-                        count={draft.stickers.length}
-                        disabled={side === 'back'}
-                        description={STICKER_HINT}
-                        onAddSticker={handleAddSticker}
-                      />
-                    )}
-                  </div>
+                  <KudosTemplatePicker
+                    templateKey={draft.templateKey}
+                    onTemplateChange={handleTemplateChange}
+                  />
                 </div>
-                {!isEditingText && (
+                <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch sm:justify-center">
+                  {/* biome-ignore lint/a11y/useSemanticElements: `<fieldset>` groups form fields under a legend; a row of tools is a plain named group. */}
                   <div
-                    className={cn(
-                      POSTCARD_BAR,
-                      'relative justify-center motion-safe:animate-enter',
-                    )}
+                    ref={toolbarRef}
+                    role="group"
+                    aria-label={isEditingText ? 'Text style' : 'Kudos tools'}
+                    className={cn(POSTCARD_BAR, 'relative')}
                   >
-                    <CardToolNote
-                      className={CARD_NOTE_AFTER_TOOLS}
-                      arrowClassName={CARD_NOTE_ARROW_LEFT}
+                    {isEditingText && (
+                      <CardToolNote
+                        className={cn(CARD_NOTE_BESIDE_TOOLS, 'lg:flex')}
+                      >
+                        {CARD_NOTES.styleWords}
+                      </CardToolNote>
+                    )}
+                    {!isEditingText && side === 'back' && (
+                      <CardToolNote
+                        className={cn(CARD_NOTE_BESIDE_TOOLS, 'lg:flex')}
+                      >
+                        {CARD_NOTES.stickersOnFront}
+                      </CardToolNote>
+                    )}
+                    {isEditingText && draft.message !== '' && (
+                      <CardToolNote
+                        className={CARD_NOTE_AFTER_TOOLS}
+                        arrowClassName={CARD_NOTE_ARROW_LEFT}
+                      >
+                        {CARD_NOTES.done}
+                      </CardToolNote>
+                    )}
+                    <div
+                      key={isEditingText ? 'text' : 'card'}
+                      className="flex flex-wrap items-center justify-center gap-0.5 motion-safe:animate-enter"
                     >
-                      {isReady ? CARD_NOTES.sendReady : CARD_NOTES.needsMessage}
-                    </CardToolNote>
-                    <Button
-                      variant="primary"
-                      ref={sendRef}
-                      loading={status === 'posting'}
-                      disabled={hasGone || !isReady}
-                      onClick={handleSend}
-                      className="min-h-11"
-                    >
-                      Send kudos
-                      <ArrowRightIcon aria-hidden="true" className="size-4.5" />
-                    </Button>
+                      {isEditingText ? (
+                        <KudosTextToolbar
+                          textStyle={draft.textStyle}
+                          inks={KUDOS_TEMPLATES[draft.templateKey].inks}
+                          onTextStyleChange={handleTextStyleChange}
+                          onDone={handleDone}
+                        />
+                      ) : (
+                        <PostcardStickerPicker
+                          count={draft.stickers.length}
+                          disabled={side === 'back'}
+                          description={STICKER_HINT}
+                          onAddSticker={handleAddSticker}
+                        />
+                      )}
+                    </div>
                   </div>
-                )}
+                  {!isEditingText && (
+                    <div
+                      className={cn(
+                        POSTCARD_BAR,
+                        'relative justify-center motion-safe:animate-enter',
+                      )}
+                    >
+                      <CardToolNote
+                        className={CARD_NOTE_AFTER_TOOLS}
+                        arrowClassName={CARD_NOTE_ARROW_LEFT}
+                      >
+                        {isReady
+                          ? CARD_NOTES.sendReady
+                          : CARD_NOTES.needsMessage}
+                      </CardToolNote>
+                      <Button
+                        variant="primary"
+                        ref={sendRef}
+                        loading={status === 'posting'}
+                        disabled={hasGone || !isReady}
+                        onClick={handleSend}
+                        className="min-h-11"
+                      >
+                        Send kudos
+                        <ArrowRightIcon
+                          aria-hidden="true"
+                          className="size-4.5"
+                        />
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          <PostcardLeaveDialog
-            {...leaveDialog}
-            hasWritten={
-              draft.message.trim() !== '' || draft.stickers.length > 0
-            }
-            lost="What you wrote will be lost."
-          />
-        </DialogContent>
+            <PostcardLeaveDialog
+              {...leaveDialog}
+              hasWritten={
+                draft.message.trim() !== '' || draft.stickers.length > 0
+              }
+              lost="What you wrote will be lost."
+            />
+          </DialogContent>
+        </CardNotesToneContext>
       </CardNotesContext>
     </PostcardDrawerContainer>
   );

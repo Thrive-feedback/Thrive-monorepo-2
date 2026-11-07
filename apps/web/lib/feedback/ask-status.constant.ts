@@ -20,11 +20,12 @@ export const ASK_STATUS_TONES: Readonly<Record<AskStatus, BadgeTone>> = {
 };
 
 /**
- * Each status as a ring round the face of somebody asked: solid green once they answered, dashed
- * and grey while Pending, which stays neutral (design FB-4-S4). The word says the same beside it, so
- * nothing depends on seeing the ring.
+ * Each status as a ring just inside the edge of the face of somebody asked, in the colours its Badge
+ * has: solid green once they answered, solid yellow while Pending. Inside, so a stack of ringed faces
+ * overlaps as any stack does without the next face covering the ring. The word says the same beside
+ * it, so nothing depends on seeing the ring.
  */
 export const ASK_STATUS_RINGS: Readonly<Record<AskStatus, string>> = {
-  PENDING: 'outline-2 outline-offset-1 outline-border-strong outline-dashed',
-  ANSWERED: 'outline-2 outline-offset-1 outline-solid outline-status-success',
+  PENDING: 'outline-2 -outline-offset-2 outline-solid outline-status-warning',
+  ANSWERED: 'outline-2 -outline-offset-2 outline-solid outline-status-success',
 };

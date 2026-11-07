@@ -12,8 +12,8 @@ export function KudosFeedCardEntry() {
       name="KudosFeedCard"
       level="organism"
       origin="thrive"
-      source="components/organisms/feed-card/kudos-feed-card.tsx — FeedCardWho + KudosCardReadOnly + KudosCardFace + KudosCardReadDialog"
-      summary="One Kudos in Home's feed: who gave it to whom, that it is a Kudos and how long ago, and the whole card in focus on a small board of blurred cards, which a wider screen shows more of. The cursor coming onto the card gives it a little shake. No Reactions yet."
+      source="components/organisms/feed-card/kudos-feed-card.tsx — FeedCardColumns + FeedCardWho + FeedCardPreview + KudosCardReadOnly + KudosCardReadDialog"
+      summary="One Kudos in Home's feed, drawn as every card in a list is: who gave it to whom, that it is a Kudos and how long ago, and the message cut at three lines, with the card it was written on made small and leaning in the column beside them. No Reactions yet."
       useFor="One Kudos in the Home menu, between the Feedback."
       avoidFor="The landing page's preview of Home, which keeps KudosCard. The Kudos board, which hangs cards of its own."
       usage={`import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';
@@ -34,9 +34,8 @@ export function KudosFeedCardEntry() {
         },
       ]}
       accessibility={[
-        'View kudos is the one way in from the keyboard and for a screen reader. Pressing the card does the same for a mouse or a finger.',
-        'The blurred cards are decoration, hidden from screen readers.',
-        'Reduced motion leaves the card still as the cursor arrives.',
+        'The small card is the one button, named "Open kudos from" and who gave it. The card it draws is hidden from screen readers, which read the message beside it.',
+        'With reduced motion, the card straightens without turning.',
       ]}
     >
       {KUDOS_CASES.map(({ label, kudos }) => (

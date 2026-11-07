@@ -33,10 +33,10 @@ export function ButtonEntry() {
       props={[
         {
           name: 'variant',
-          type: "'primary' | 'highlight' | 'outlined' | 'secondary' | 'soft' | 'ghost' | 'danger' | 'ghost-danger'",
+          type: "'primary' | 'highlight' | 'tertiary' | 'outlined' | 'outlined-tertiary' | 'outlined-highlight' | 'secondary' | 'soft' | 'ghost' | 'danger' | 'ghost-danger'",
           defaultValue: "'secondary'",
           description:
-            'How loud the action is. Danger is for actions that destroy something; ghost-danger is the quiet one, such as removing a row.',
+            'How loud the action is. Primary, highlight and tertiary are the three brand colours, one per kind of card: giving Feedback, a Kudos, and asking for Feedback; outlined, outlined-highlight and outlined-tertiary are the same three, quieter, for where all three sit side by side. Danger is for actions that destroy something; ghost-danger is the quiet one, such as removing a row.',
         },
         {
           name: 'size',
@@ -87,7 +87,10 @@ export function ButtonEntry() {
       <StateCell label="Variants" hint="Hover and press them">
         <Button variant="primary">Primary</Button>
         <Button variant="highlight">Highlight</Button>
+        <Button variant="tertiary">Tertiary</Button>
         <Button variant="outlined">Outlined</Button>
+        <Button variant="outlined-tertiary">Outlined tertiary</Button>
+        <Button variant="outlined-highlight">Outlined highlight</Button>
         <Button variant="secondary">Secondary</Button>
         <Button variant="soft">Soft</Button>
         <Button variant="ghost">Ghost</Button>

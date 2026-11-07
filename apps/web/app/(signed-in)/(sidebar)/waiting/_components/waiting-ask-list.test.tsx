@@ -86,7 +86,7 @@ describe('WaitingAskList', () => {
 
     expect(
       screen.getByRole('link', {
-        name: 'Answer in the postcard: Ann requested feedback from you',
+        name: 'Answer in the postcard: Ann asked you for feedback',
       }),
     ).toHaveAttribute('href', ROUTES.waitingAsk('a-1'));
   });
@@ -124,7 +124,7 @@ describe('WaitingAskList', () => {
     );
     expect(
       screen.getByRole('link', {
-        name: 'Answer in the postcard: Ann requested feedback from you',
+        name: 'Answer in the postcard: Ann asked you for feedback',
       }),
     ).toHaveAttribute('href', ROUTES.waitingAsk('a-1', 'oldest'));
   });

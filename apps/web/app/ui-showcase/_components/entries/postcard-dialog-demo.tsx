@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { LETTER_TEAMMATES } from '@/app/ui-showcase/letter/_components/letter-teammates.mock';
+import { SAMPLE_TEAMMATES } from '@/app/ui-showcase/_lib/sample-teammates.mock';
 import { Button } from '@/components/atoms/button';
 import { PostcardDialog } from '@/components/organisms/postcard-dialog/postcard-dialog';
 import { SAMPLE_ASK } from './postcard-samples.mock';
@@ -42,7 +42,7 @@ export function PostcardDialogDemo({
   const common = {
     title,
     writer: WRITER,
-    teammates: LETTER_TEAMMATES,
+    teammates: SAMPLE_TEAMMATES,
     workspaceGoals: SAMPLE_WORKSPACE_GOALS,
     open,
     onOpenChange: setOpen,
@@ -70,7 +70,7 @@ export function PostcardDialogDemo({
           defaultRecipientAccountIds={defaultRecipientAccountIds}
           onSend={async (postcard) => {
             toastSent(
-              LETTER_TEAMMATES.filter((teammate) =>
+              SAMPLE_TEAMMATES.filter((teammate) =>
                 postcard.recipientAccountIds.includes(teammate.accountId),
               ).map((teammate) => teammate.name),
             );

@@ -1819,7 +1819,7 @@ exports[`Landing > renders the same page 1`] = `
                                           </div>
                                           <div
                                             aria-hidden="true"
-                                            class="flex -space-x-2 *:ring-2 *:ring-surface-base shrink-0"
+                                            class="flex *:ring-2 *:ring-surface-base -space-x-2 shrink-0"
                                             data-slot="avatar-group"
                                             role="group"
                                           >

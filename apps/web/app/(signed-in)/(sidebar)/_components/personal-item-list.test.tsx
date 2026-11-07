@@ -520,7 +520,9 @@ describe('PersonalItemList, as a list', () => {
       <PersonalItemList initialPage={page([kudos('ku-1', 'Well done.')])} />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'View kudos' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Open kudos from Ben Carter' }),
+    );
 
     expect(
       screen.getByRole('dialog', { name: 'Kudos from Ben Carter' }),
@@ -559,7 +561,9 @@ describe('changing the view of PersonalItemList', () => {
     rerender(received());
 
     expect(window.location.search).toBe('?view=list');
-    expect(screen.getByRole('button', { name: 'View kudos' })).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: /^Open kudos from/ }),
+    ).toBeVisible();
     expect(screen.getAllByRole('article')).toHaveLength(2);
 
     await user.click(screen.getByRole('button', { name: 'Grid view' }));
@@ -567,7 +571,7 @@ describe('changing the view of PersonalItemList', () => {
 
     expect(window.location.search).toBe('');
     expect(
-      screen.queryByRole('button', { name: 'View kudos' }),
+      screen.queryByRole('button', { name: /^Open kudos from/ }),
     ).not.toBeInTheDocument();
     expect(screen.getAllByRole('article')).toHaveLength(2);
     expect(readNextReceivedPage).toHaveBeenCalledOnce();
@@ -772,11 +776,9 @@ describe('PersonalItemList, on Given', () => {
     it('promises the postcard, not all the answers, when some stay hidden', () => {
       renderGiven(answerBesideOneTheGiverMayNotRead());
 
+      expect(screen.getByText('Read the whole postcard')).toBeInTheDocument();
       expect(
-        screen.getByText('Read the whole postcard', PAST_THE_DRAWING),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByText('All the answers in here', PAST_THE_DRAWING),
+        screen.queryByText('All the answers in here'),
       ).not.toBeInTheDocument();
     });
   });

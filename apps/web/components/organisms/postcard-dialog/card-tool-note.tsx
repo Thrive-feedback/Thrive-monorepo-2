@@ -3,8 +3,9 @@
 import { useContext } from 'react';
 import { HandArrow } from '@/components/atoms/hand-arrow';
 import { HandwrittenNote } from '@/components/molecules/handwritten-note';
+import { FEED_CARD_INK } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import { cn } from '@/lib/cn.util';
-import { CardNotesContext } from './card-notes';
+import { CardNotesContext, CardNotesToneContext } from './card-notes';
 import { SENT_AWAY } from './postcard-editor.constant';
 
 export type CardToolNoteProps = {
@@ -19,7 +20,7 @@ export type CardToolNoteProps = {
 
 /**
  * A word by hand on the overlay beside a card being written, saying how to use one of its tools,
- * with an arrow to that tool. A screen reader skips it: every tool it points at names itself. It
+ * with an arrow to that tool, in the colour of the kind of card it is. A screen reader skips it: every tool it points at names itself. It
  * shows only where there is room beside the card, and not once the writer has turned the notes off.
  */
 export function CardToolNote({
@@ -29,6 +30,7 @@ export function CardToolNote({
   children,
 }: CardToolNoteProps) {
   const areNotesShown = useContext(CardNotesContext);
+  const tone = useContext(CardNotesToneContext);
   if (!areNotesShown) {
     return null;
   }
@@ -40,6 +42,7 @@ export function CardToolNote({
       writes="on-open"
       className={cn(
         'hidden items-center gap-1 lg:flex',
+        FEED_CARD_INK[tone],
         className,
         hasGone && SENT_AWAY,
       )}

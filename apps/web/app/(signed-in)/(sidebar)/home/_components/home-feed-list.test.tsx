@@ -305,7 +305,9 @@ describe('HomeFeedList', () => {
     expect(
       screen.getByText('Great launch, everyone.', PAST_THE_DRAWING),
     ).toBeVisible();
-    expect(screen.getByRole('button', { name: 'View kudos' })).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: /^Open kudos from/ }),
+    ).toBeVisible();
     expect(screen.getAllByRole('article')).toHaveLength(2);
   });
 });

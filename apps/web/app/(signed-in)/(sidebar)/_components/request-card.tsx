@@ -14,25 +14,25 @@ import { TimeAgo } from '@/components/atoms/time-ago';
 import { AvatarGroup } from '@/components/molecules/avatar-group';
 import { AvatarName } from '@/components/molecules/avatar-name';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
-import { TargetLink } from '@/components/molecules/target-link';
 import {
-  FeedCardNote,
-  noteLieOf,
-} from '@/components/organisms/feed-card/feed-card-note';
+  FeedCardRow,
+  FeedCardSurface,
+} from '@/components/organisms/feed-card/feed-card-columns';
+import { FeedCardNote } from '@/components/organisms/feed-card/feed-card-note';
+import { FeedCardPreview } from '@/components/organisms/feed-card/feed-card-preview';
 import {
   NO_NAME_IN_A_SENTENCE,
   NO_NAME_STARTING_A_SENTENCE,
 } from '@/components/organisms/feed-card/feed-card-sentence.util';
-import { FEED_CARD_SURFACE } from '@/components/organisms/feed-card/feed-card-surface.constant';
+import { FEED_CARD_INK } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import { FeedbackText } from '@/components/organisms/feedback-text';
-import { kudosTiltOf } from '@/components/organisms/kudos-dialog/read-kudos.util';
 import { PersonName } from '@/components/organisms/person-name';
+import { PendingPostcardMiniature } from '@/components/organisms/postcard-miniature/pending-postcard-miniature';
 import { PostcardMiniature } from '@/components/organisms/postcard-miniature/postcard-miniature';
 import { cn } from '@/lib/cn.util';
 import { ASK_STATUS_RINGS } from '@/lib/feedback/ask-status.constant';
 import { ROUTES } from '@/lib/routes.constant';
 import { timeAgo } from '@/lib/time-ago.util';
-import styles from './request-card.module.css';
 
 /** Past this many faces, the rest become one "+N", as everywhere a stack of faces is drawn. */
 const MAX_FACES = 4;
@@ -57,12 +57,7 @@ export function RequestTally({ request }: TallyProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-      <AvatarGroup
-        aria-hidden="true"
-        max={MAX_FACES}
-        size="sm"
-        className="space-x-1.5 px-0.5"
-      >
+      <AvatarGroup aria-hidden="true" max={MAX_FACES} size="sm">
         {request.asked.map((ask) => (
           <PhotoAvatar
             key={ask.person.accountId}
@@ -140,92 +135,109 @@ type AnswerRowProps = {
     answer: NonNullable<PersonalRequestAsk['answer']>;
   };
   href: string;
+  /** A note by hand pointing at its postcard: the first answer's alone, so a reader learns to press them. */
+  note?: string;
 };
 
 /**
- * One answer, as a Feedback card shows the people a request asked: who and when, the first three
- * lines, and beside them the postcard they sent back, as small as the one on every other card. The
- * postcard is the press, as that one is, with the same note by hand pointing at it where there is
- * room.
+ * One answer, as a Feedback card shows the people a request asked: who and when, and the first three
+ * lines, with the postcard they sent back in the column beside it, centred on the same line. Pointed
+ * at anywhere, or with its postcard focused, the row lightens towards the page across both columns
+ * and its postcard straightens, so which card is whose is never a guess. Only the postcard is a
+ * press: it opens that answer.
+ *
+ * The lit row's corners run parallel to the card's: it stands 12px inside the card's edge at the
+ * sides, and at the bottom when it is the last row, and its corner is the card's less those 12px.
+ * The card is padded by 6.25 steps, so reaching out by 3.25 leaves the 3 steps (12px) between, and
+ * the control corner (9px) plus those 12px is the page corner (21px) the card has.
  */
-function AnswerRow({ ask, href }: AnswerRowProps) {
+function AnswerRow({ ask, href, note }: AnswerRowProps) {
   const { answer } = ask;
   const name = nameOf(ask);
 
   return (
-    <li className={cn('flex items-start gap-3 md:gap-4', styles.answer)}>
-      <AvatarName
-        name={ask.person.name ?? ''}
-        photoUrl={ask.person.photoUrl}
-        size="sm"
-        className="flex min-w-0 flex-1 items-start"
-        avatarClassName={ASK_STATUS_RINGS.ANSWERED}
-      >
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <Text as="span" variant="subtitle-4">
-            <PersonName name={name} inactive={ask.person.inactive} />
-          </Text>
-          <Text as="span" variant="body-3" tone="muted">
-            Answered <TimeAgo dateTime={answer.answeredAt} />
-          </Text>
-        </div>
-        <Text
-          as="p"
-          variant="body-3"
-          className="mt-1 line-clamp-3 whitespace-pre-line break-words"
-        >
-          <FeedbackText text={answer.message} tags={answer.messageTags} />
-        </Text>
-      </AvatarName>
-      <div className="flex shrink-0 items-center gap-2">
-        <FeedCardNote lie={noteLieOf(answer.id)} className="hidden xl:flex">
-          Read the whole postcard
-        </FeedCardNote>
-        <TargetLink target={{ href }} className="block w-28 lg:w-36">
-          <span className="sr-only" suppressHydrationWarning>
-            Open postcard: answer from {name}, answered{' '}
-            {timeAgo(answer.answeredAt)}.
-          </span>
-          <span
-            style={
-              {
-                '--request-card-tilt': `${kudosTiltOf(answer.id)}deg`,
-              } as React.CSSProperties
-            }
-            className={cn('block', styles.postcard)}
+    <li
+      data-feed-card-row
+      className="-mx-3.25 rounded-control px-3.25 transition-colors last:-mb-3.25 last:pb-3.25 hover:bg-surface-base/70 has-focus-visible:bg-surface-base/70"
+    >
+      <FeedCardRow
+        note={note && <FeedCardNote tone="tertiary">{note}</FeedCardNote>}
+        aside={
+          <FeedCardPreview
+            id={answer.id}
+            target={{ href }}
+            label={`Open postcard: answer from ${name}, answered ${timeAgo(answer.answeredAt)}.`}
           >
-            <PostcardMiniature card={answer.card} />
-          </span>
-        </TargetLink>
-      </div>
+            <PendingPostcardMiniature card={answer.card} size="lg" />
+          </FeedCardPreview>
+        }
+      >
+        <AvatarName
+          name={ask.person.name ?? ''}
+          photoUrl={ask.person.photoUrl}
+          size="sm"
+          className="flex items-start py-3"
+          avatarClassName={ASK_STATUS_RINGS.ANSWERED}
+        >
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <Text as="span" variant="subtitle-4">
+              <PersonName name={name} inactive={ask.person.inactive} />
+            </Text>
+            <Text as="span" variant="body-3" tone="muted">
+              Answered <TimeAgo dateTime={answer.answeredAt} />
+            </Text>
+          </div>
+          <Text
+            as="p"
+            variant="body-3"
+            className="mt-1 line-clamp-3 whitespace-pre-line break-words"
+          >
+            <FeedbackText text={answer.message} tags={answer.messageTags} />
+          </Text>
+        </AvatarName>
+      </FeedCardRow>
     </li>
   );
 }
 
-type PendingRowProps = {
-  ask: PersonalRequestAsk;
+type PendingRowsProps = {
+  pending: readonly PersonalRequestAsk[];
 };
 
-/** Someone still to answer: their name and the word, nothing to press, no time, no colour. */
-function PendingRow({ ask }: PendingRowProps) {
+/**
+ * Everyone still to answer, together after the answers: their face ringed yellow, their name and the
+ * word, nothing to press, no time. With no postcard, they need no row each.
+ */
+function PendingRows({ pending }: PendingRowsProps) {
   return (
     <li>
-      <AvatarName
-        name={ask.person.name ?? ''}
-        photoUrl={ask.person.photoUrl}
-        size="sm"
-        className="flex"
-        avatarClassName={ASK_STATUS_RINGS.PENDING}
-      >
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <Text as="span" variant="subtitle-4">
-            <PersonName name={nameOf(ask)} inactive={ask.person.inactive} />
-          </Text>
-          <Text as="span" variant="body-3" tone="muted">
-            {STANDING.PENDING}
-          </Text>
-        </div>
-      </AvatarName>
+      <FeedCardRow>
+        <ul className="flex flex-col gap-3 py-3">
+          {pending.map((ask) => (
+            <li key={ask.person.accountId}>
+              <AvatarName
+                name={ask.person.name ?? ''}
+                photoUrl={ask.person.photoUrl}
+                size="sm"
+                className="flex"
+                avatarClassName={ASK_STATUS_RINGS.PENDING}
+              >
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <Text as="span" variant="subtitle-4">
+                    <PersonName
+                      name={nameOf(ask)}
+                      inactive={ask.person.inactive}
+                    />
+                  </Text>
+                  <Text as="span" variant="body-3" tone="muted">
+                    {STANDING.PENDING}
+                  </Text>
+                </div>
+              </AvatarName>
+            </li>
+          ))}
+        </ul>
+      </FeedCardRow>
     </li>
   );
 }
@@ -235,32 +247,43 @@ export type RequestCardProps = {
 };
 
 /**
- * A request the Member sent, in Received's list, drawn as every Feedback card is: their face, who
- * they asked, a line saying what it is, when and who can read the answers, then the Request message.
- * Under a dashed rule, how many answered, each answer newest first with the postcard its Giver sent
- * back, and everyone still Pending (design FB-4-S4, brain `ADR-0053`). There is no Reaction, no
- * reminder, and nothing about how long anyone has kept them waiting.
+ * A request the Member sent, in Received's list, in the two columns every card in a list has: they
+ * and who they asked, each with a face, a line saying what it is, when and who can read the answers,
+ * then the Request message. Under it a row for each answer, newest first, with the postcard its Giver
+ * sent back beside it, then everyone still Pending (design FB-4-S4, brain `ADR-0053`); the faces at
+ * the top already say how many answered. While nobody has answered, the request's own card stands beside it,
+ * with nothing to open. There is no Reaction, no reminder, and nothing about how long anyone has kept
+ * them waiting.
  */
 export function RequestCard({ request }: RequestCardProps) {
   const show = useReceivedShow();
   const { label, Icon } = requestAudienceOf(request.visibility);
   const { answers, pending } = answeredFirst(request);
-  const { answered, asked } = tallyOf(request);
 
   return (
-    <article className={FEED_CARD_SURFACE}>
-      <header className="flex items-start gap-3">
-        <PhotoAvatar
-          name={request.requester.name ?? ''}
-          photoUrl={request.requester.photoUrl}
-        />
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
+    <FeedCardSurface tone="tertiary">
+      <FeedCardRow
+        aside={
+          answers.length === 0 ? (
+            <FeedCardPreview id={request.id}>
+              <PostcardMiniature card={request.card} size="lg" />
+            </FeedCardPreview>
+          ) : undefined
+        }
+      >
+        <header className="flex min-w-0 flex-col gap-2">
           <Text
             as="div"
             variant="subtitle-4"
             className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 break-words"
           >
-            <span>You</span>
+            <AvatarName
+              name={request.requester.name ?? ''}
+              photoUrl={request.requester.photoUrl}
+              size="sm"
+            >
+              You
+            </AvatarName>
             <span className="text-fg-secondary">asked</span>
             <AskedWho request={request} />
           </Text>
@@ -270,7 +293,9 @@ export function RequestCard({ request }: RequestCardProps) {
             tone="muted"
             className="flex flex-wrap items-center gap-x-2 gap-y-1"
           >
-            <span className="text-fg-primary">Request</span>
+            <span className={cn('font-medium', FEED_CARD_INK.tertiary)}>
+              Your request
+            </span>
             <span aria-hidden="true">·</span>
             <TimeAgo dateTime={request.sentAt} />
             <Badge tone="outline">
@@ -278,28 +303,26 @@ export function RequestCard({ request }: RequestCardProps) {
               {label}
             </Badge>
           </Text>
-        </div>
-      </header>
-      <Text as="p" variant="body-1" className="whitespace-pre-line break-words">
-        <FeedbackText text={request.message} tags={request.messageTags} />
-      </Text>
-      <div className="flex flex-col gap-3 border-border-muted border-t border-dashed pt-3">
-        <Text as="p" variant="body-3" tone="muted">
-          {answered} of {asked} answered
+        </header>
+        <Text
+          as="p"
+          variant="body-1"
+          className="whitespace-pre-line break-words pb-3"
+        >
+          <FeedbackText text={request.message} tags={request.messageTags} />
         </Text>
-        <ul aria-label="Asked" className="flex flex-col gap-3">
-          {answers.map((ask) => (
-            <AnswerRow
-              key={ask.person.accountId}
-              ask={ask}
-              href={ROUTES.receivedFeedback(ask.answer.id, 'list', show)}
-            />
-          ))}
-          {pending.map((ask) => (
-            <PendingRow key={ask.person.accountId} ask={ask} />
-          ))}
-        </ul>
-      </div>
-    </article>
+      </FeedCardRow>
+      <ul aria-label="Asked" className="flex flex-col">
+        {answers.map((ask, place) => (
+          <AnswerRow
+            key={ask.person.accountId}
+            ask={ask}
+            href={ROUTES.receivedFeedback(ask.answer.id, 'list', show)}
+            note={place === 0 ? 'Read their postcards' : undefined}
+          />
+        ))}
+        {pending.length > 0 && <PendingRows pending={pending} />}
+      </ul>
+    </FeedCardSurface>
   );
 }

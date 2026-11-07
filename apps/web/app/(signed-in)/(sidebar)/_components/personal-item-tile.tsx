@@ -22,15 +22,20 @@ import { PeopleStack } from '@/components/molecules/people-stack';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { TargetLink } from '@/components/molecules/target-link';
 import { feedCardAudienceOf } from '@/components/organisms/feed-card/feed-card-audience.util';
+import { FeedCardLean } from '@/components/organisms/feed-card/feed-card-preview';
 import {
   NO_NAME_IN_A_SENTENCE,
   NO_NAME_STARTING_A_SENTENCE,
 } from '@/components/organisms/feed-card/feed-card-sentence.util';
+import {
+  FEED_CARD_GROUND,
+  FEED_CARD_ORIGIN_TONES,
+} from '@/components/organisms/feed-card/feed-card-tone.constant';
+import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-tone.type';
 import { FeedbackText } from '@/components/organisms/feedback-text';
 import { kudosCardDate } from '@/components/organisms/kudos-dialog/kudos-card.util';
 import { KudosCardReadDialog } from '@/components/organisms/kudos-dialog/kudos-card-read-dialog';
 import { KudosCardReadOnly } from '@/components/organisms/kudos-dialog/kudos-card-read-only';
-import { kudosTiltOf } from '@/components/organisms/kudos-dialog/read-kudos.util';
 import { PersonName } from '@/components/organisms/person-name';
 import { PostcardMiniature } from '@/components/organisms/postcard-miniature/postcard-miniature';
 import { cn } from '@/lib/cn.util';
@@ -103,15 +108,17 @@ type TileProps = {
   target: NavTarget;
   /** What the press says it does, in full. */
   name: string;
+  /** Which kind of card it holds, as a colour. */
+  tone: FeedCardTone;
   /** The real card, made small. */
   children: React.ReactNode;
 };
 
 /**
- * One thing in a Member's own list: who is at the other end of it and how long ago, the real card
- * made small, and the first of the words. The whole box is one press, which opens the card, where
- * the rest can be read. The card leans as it would hanging on the board, and stays still under the
- * cursor.
+ * One thing in a Member's own list, on the ground of its kind's colour: who is at the other end of
+ * it and how long ago, the real card made small, and the first of the words. The whole box is one
+ * press, which opens the card, where the rest can be read. The card leans as it does in a list, and
+ * straightens while the box is pointed at or focused.
  *
  * The hidden name says how long ago, as the visible line does. The server and the browser can read
  * the clock either side of a minute, so the browser keeps what the server wrote.
@@ -122,12 +129,13 @@ function Tile({
   readerAccountId,
   target,
   name,
+  tone,
   children,
 }: TileProps) {
   const people = otherPeopleOn(item, side);
 
   return (
-    <article className={PERSONAL_ITEM_TILE}>
+    <article className={cn(PERSONAL_ITEM_TILE, FEED_CARD_GROUND[tone])}>
       <header className="flex min-w-0 items-center gap-2">
         <TileFaces people={people} />
         <div className="min-w-0 flex-1">
@@ -150,12 +158,9 @@ function Tile({
         <span className="sr-only" suppressHydrationWarning>
           {name}
         </span>
-        <span
-          style={{ rotate: `${kudosTiltOf(item.id)}deg` }}
-          className="flex justify-center p-2"
-        >
+        <FeedCardLean id={item.id} className="flex justify-center p-2">
           {children}
-        </span>
+        </FeedCardLean>
         {'href' in target && <PersonalItemTilePending />}
       </TargetLink>
       <Text as="p" variant="body-2" className="line-clamp-2 break-words">
@@ -191,6 +196,7 @@ function PostcardTile({ item, side, readerAccountId }: PostcardTileProps) {
         href: PERSONAL_ITEMS_ROUTES[side].feedback(item.id, 'grid', show),
       }}
       name={`Postcard ${fromOrTo(item, side)}, ${timeAgo(item.givenAt)}, ${label}. Opens the postcard.`}
+      tone={FEED_CARD_ORIGIN_TONES[item.origin]}
     >
       <PostcardMiniature card={item.card} />
     </Tile>
@@ -214,9 +220,10 @@ function KudosTile({ item, side, readerAccountId }: KudosTileProps) {
         readerAccountId={readerAccountId}
         target={{ onSelect: () => setIsOpen(true) }}
         name={`Kudos ${fromOrTo(item, side)}, ${timeAgo(item.givenAt)}. Opens the kudos card.`}
+        tone="secondary"
       >
         {/* Half as wide, a portrait card stands as tall as a postcard lies, so rows stay level. */}
-        <span aria-hidden="true" className="w-1/2">
+        <span className="w-1/2">
           <KudosCardReadOnly
             message={item.message}
             tags={item.messageTags}
