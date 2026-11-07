@@ -199,3 +199,16 @@
 .pin {
   opacity: 0;
 }
+
+/*
+ * The message field scrolls when what is written outgrows the card, by wheel or touch, but draws
+ * no bar: a scrollbar on the card would sit inside its border, over the picture. Hiding one has no
+ * utility, which is why this is CSS.
+ */
+.noScrollbar {
+  scrollbar-width: none;
+}
+
+.noScrollbar::-webkit-scrollbar {
+  display: none;
+}

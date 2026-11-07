@@ -1,5 +1,8 @@
+'use client';
+
 import { SettingsIcon } from 'lucide-react';
 import NextLink from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Text } from '@/components/atoms/text';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { SideNav } from '@/components/molecules/side-nav';
@@ -16,14 +19,21 @@ export type SidebarAccountProps = {
 /**
  * The foot of the sidebar: Settings, then, under a line, who is signed in, their face, name and
  * address, leading to their Account. The navbar draws these instead on a phone, where there is no
- * sidebar. Settings is never the open page here, since its pages have no sidebar, so nothing is
- * marked current.
+ * sidebar. Settings is marked current on every one of its pages, since they open beside this
+ * sidebar with their own menu; the account card is never marked. It reads the path itself because
+ * the layout around it does not run again when the client navigates between the pages under it.
  */
 export function SidebarAccount({ name, email, photoUrl }: SidebarAccountProps) {
+  const pathname = usePathname();
+  const inSettings =
+    pathname === ROUTES.settings.index ||
+    pathname.startsWith(`${ROUTES.settings.index}/`);
+
   return (
     <div className="flex flex-col gap-3">
       <SideNav
         label="Settings"
+        currentHref={inSettings ? ROUTES.settings.index : undefined}
         items={[
           {
             href: ROUTES.settings.index,

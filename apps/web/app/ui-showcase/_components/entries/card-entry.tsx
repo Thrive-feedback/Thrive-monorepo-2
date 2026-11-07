@@ -2,7 +2,12 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
-import { Card } from '@/components/atoms/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/atoms/card';
 import { Skeleton } from '@/components/atoms/skeleton';
 
 export function CardEntry() {
@@ -10,12 +15,17 @@ export function CardEntry() {
     <ShowcaseEntry
       name="Card"
       level="atom"
-      origin="thrive"
+      origin="shadcn"
       source="components/atoms/card.tsx"
-      summary="A panel of frosted glass, edged by a hairline, with its title at the top. The orbs behind a signed-out screen show through it."
+      summary="shadcn/ui's Card, drawn in Thrive's design system: a panel of frosted glass, edged by a hairline, composed from a header (title, description, action), content and a footer. The orbs behind a signed-out screen show through it."
       useFor="The one panel a step lives in: sign-in, introduce yourself."
       avoidFor="Grouping inside a page that is already a card."
-      usage={`import { Card } from '@/components/atoms/card';
+      usage={`import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/atoms/card';
 
 <Card title="Welcome to Thrive" className="max-w-110">
   …
@@ -43,8 +53,13 @@ export function CardEntry() {
       ]}
     >
       <StateCell label="Default">
-        <Card title="Welcome to Thrive" titleAs="h2">
-          <p className="text-body-2 text-fg-secondary">Body content</p>
+        <Card>
+          <CardHeader>
+            <CardTitle>Welcome to Thrive</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-body-2 text-fg-secondary">Body content</p>
+          </CardContent>
         </Card>
       </StateCell>
     </ShowcaseEntry>
@@ -53,8 +68,13 @@ export function CardEntry() {
 
 export function CardPreview() {
   return (
-    <Card title="Welcome" titleAs="h2" className="w-40">
-      <Skeleton />
+    <Card className="w-40">
+      <CardHeader>
+        <CardTitle>Welcome</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Skeleton />
+      </CardContent>
     </Card>
   );
 }

@@ -27,8 +27,11 @@ const buttonVariants = cva(
           'bg-action-neutral-surface text-fg-accent enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface',
         danger:
           'bg-status-error text-fg-on-error enabled:active:bg-status-error-active enabled:hover:bg-status-error-hover',
+        /** A step that ends something the person can take back, such as Sign out: a caution, not a loss. */
+        warning:
+          'bg-status-warning text-fg-on-warning enabled:active:bg-status-warning-active enabled:hover:bg-status-warning-hover',
         'ghost-danger':
-          'text-status-error-fg enabled:active:bg-status-error-surface-hover enabled:hover:bg-status-error-surface',
+          'text-status-error-active enabled:active:bg-status-error-surface-hover enabled:hover:bg-status-error-surface',
       },
       size: {
         sm: 'px-3 py-2 text-button-sm leading-5',

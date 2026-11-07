@@ -43,7 +43,12 @@ import {
   SAMPLE_WAITING_ASK,
 } from '@/app/ui-showcase/cards/_lib/card-samples.constant';
 import { Button } from '@/components/atoms/button';
-import { Card } from '@/components/atoms/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/atoms/card';
 import { Text } from '@/components/atoms/text';
 import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
@@ -504,10 +509,15 @@ export function CardGallery() {
           state="Default"
           usedOn="Sign-in, onboarding, choose a Workspace"
         >
-          <Card title="Welcome to Thrive" titleAs="h2" className="max-w-110">
-            <Text variant="body-2" tone="muted">
-              A step's form goes here.
-            </Text>
+          <Card className="max-w-110">
+            <CardHeader>
+              <CardTitle>Welcome to Thrive</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Text variant="body-2" tone="muted">
+                A step's form goes here.
+              </Text>
+            </CardContent>
           </Card>
         </Specimen>
       </GallerySection>

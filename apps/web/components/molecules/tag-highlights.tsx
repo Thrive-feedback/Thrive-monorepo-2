@@ -6,7 +6,10 @@ import type { AutocompleteTrigger, TagTone } from './use-tag-autocomplete';
 /** Colour only: a highlight that changed weight or spacing would no longer sit under its text. */
 const highlight = cva('', {
   variants: {
-    tone: { accent: 'text-fg-accent', secondary: 'text-action-secondary' },
+    tone: {
+      info: 'text-status-info-active',
+      secondary: 'text-action-secondary',
+    },
   },
 });
 

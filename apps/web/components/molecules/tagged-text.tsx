@@ -6,7 +6,7 @@ import type { TagTone } from './use-tag-autocomplete';
 const pill = cva('rounded-chip box-decoration-clone px-1', {
   variants: {
     tone: {
-      accent: 'bg-action-primary-surface text-fg-accent',
+      info: 'bg-status-info-surface text-status-info-active',
       secondary: 'bg-action-secondary-surface text-action-secondary',
     },
   },

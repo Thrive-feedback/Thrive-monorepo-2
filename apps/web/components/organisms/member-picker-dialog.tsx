@@ -202,7 +202,7 @@ function MemberPickerBody({
         <p
           id={`${id}-unknown`}
           aria-live="polite"
-          className="text-body-3 text-status-error-fg empty:hidden"
+          className="text-body-3 text-status-error-active empty:hidden"
         >
           {unknown.length > 0 ? `Nobody is ${unknown.join(', ')}.` : ''}
         </p>

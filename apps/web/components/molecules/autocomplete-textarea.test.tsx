@@ -12,7 +12,7 @@ import type { AutocompleteTrigger } from './use-tag-autocomplete';
 const GOALS: AutocompleteTrigger = {
   rule: HASHTAG_RULE,
   label: 'Workspace Goals',
-  tone: 'accent',
+  tone: 'info',
   options: ['ownership', 'ownershic', 'ลูกค้ามาก่อน'].map((name) => ({
     value: name,
     label: `#${name}`,
@@ -317,7 +317,7 @@ describe('AutocompleteTextarea', () => {
     expect(highlights?.textContent).toBe('Go #ownership and #notalist @ann​');
     expect(
       within(highlights as HTMLElement).getByText('#ownership'),
-    ).toHaveClass('text-fg-accent');
+    ).toHaveClass('text-status-info-active');
     expect(within(highlights as HTMLElement).getByText('@ann')).toHaveClass(
       'text-action-secondary',
     );

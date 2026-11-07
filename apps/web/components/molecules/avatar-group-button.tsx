@@ -27,7 +27,7 @@ const addCircle = cva(
     variants: {
       size: { sm: 'size-6', md: 'size-8', lg: 'size-10' },
       invalid: {
-        true: 'border-status-error-border text-status-error-fg',
+        true: 'border-status-error-border text-status-error-active',
         false:
           'border-border-strong text-fg-secondary group-hover:border-action-primary group-hover:text-action-primary group-focus-visible:border-action-primary group-focus-visible:text-action-primary',
       },

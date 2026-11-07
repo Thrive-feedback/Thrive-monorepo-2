@@ -2,8 +2,8 @@
 
 import { ChevronDownIcon } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
-import { Badge } from '@/components/atoms/badge';
 import { link } from '@/components/atoms/link';
+import { StatusText } from '@/components/atoms/status-text';
 import { Text } from '@/components/atoms/text';
 import { AvatarGroup } from '@/components/molecules/avatar-group';
 import { AvatarName } from '@/components/molecules/avatar-name';
@@ -41,39 +41,39 @@ function Standing({ answers, pending }: StandingProps) {
   return (
     <>
       {answers > 0 && (
-        <span className="font-medium text-status-success-active">
+        <StatusText tone={ASK_STATUS_TONES.ANSWERED}>
           {answers} answered
-        </span>
+        </StatusText>
       )}
       {answers > 0 && pending > 0 && ', '}
       {pending > 0 && (
-        <span className="font-medium text-status-warning-active">
+        <StatusText tone={ASK_STATUS_TONES.PENDING}>
           {pending} pending
-        </span>
+        </StatusText>
       )}
     </>
   );
 }
 
-type AskStatusBadgeProps = Pick<HomeFeedAsk, 'status'> & {
+type AskStatusProps = Pick<HomeFeedAsk, 'status'> & {
   /** Whether this Ask is the one the card shows the answer to. */
   isThisCard: boolean;
 };
 
 /**
- * Where one Ask stands, in the word and the colour every screen gives it, edged so it holds its own
- * on the card's tinted ground. The Ask this card answers says so instead, in the blue of everything
- * asked, since its answer is the one already above.
+ * Where one Ask stands, in the word and the colour every screen gives it, as text beside the name,
+ * as the line that counts them says it. The Ask this card answers says so instead, in the blue of
+ * everything asked, since its answer is the one already above.
  */
-function AskStatusBadge({ status, isThisCard }: AskStatusBadgeProps) {
+function AskStatus({ status, isThisCard }: AskStatusProps) {
   return isThisCard ? (
-    <Badge tone="info" edged>
+    <StatusText tone="info" className="text-body-3">
       This answer
-    </Badge>
+    </StatusText>
   ) : (
-    <Badge tone={ASK_STATUS_TONES[status]} edged>
+    <StatusText tone={ASK_STATUS_TONES[status]} className="text-body-3">
       {ASK_STATUS_NAMES[status]}
-    </Badge>
+    </StatusText>
   );
 }
 
@@ -173,7 +173,7 @@ function AskRow({ ask, readerAccountId, isThisCard }: AskRowProps) {
               <PersonName name={name} inactive={ask.person.inactive} />
             )}
           </Text>
-          <AskStatusBadge status={ask.status} isThisCard={isThisCard} />
+          <AskStatus status={ask.status} isThisCard={isThisCard} />
         </div>
         {ask.answer && !isThisCard && (
           <AskAnswer answer={ask.answer} writer={name} />
@@ -251,10 +251,7 @@ export function AskedPeople({
                 label: ask.person.inactive ? `${name} (inactive)` : name,
                 isMuted: ask.person.inactive,
                 trailing: (
-                  <AskStatusBadge
-                    status={ask.status}
-                    isThisCard={isThisCard(ask)}
-                  />
+                  <AskStatus status={ask.status} isThisCard={isThisCard(ask)} />
                 ),
                 avatarClassName: ASK_STATUS_RINGS[ask.status],
               };

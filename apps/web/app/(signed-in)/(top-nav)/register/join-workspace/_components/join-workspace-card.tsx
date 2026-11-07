@@ -1,5 +1,10 @@
 import { toInvitationChoice } from '@/app/(signed-in)/(top-nav)/register/join-workspace/_lib/invitation-choice.util';
-import { Card } from '@/components/atoms/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/atoms/card';
 import type { PendingInvitations } from '@/lib/session/pending-invitation.type';
 import { JoinWorkspaceForm } from './join-workspace-form';
 
@@ -13,12 +18,13 @@ export function JoinWorkspaceCard({ invitations }: JoinWorkspaceCardProps) {
     toInvitationChoice(invitation, now),
   );
   return (
-    <Card
-      title="You were invited"
-      titleAs="h2"
-      className="max-w-110 justify-self-center md:justify-self-end"
-    >
-      <JoinWorkspaceForm choices={choices} />
+    <Card className="max-w-110 justify-self-center md:justify-self-end">
+      <CardHeader>
+        <CardTitle as="h2">You were invited</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <JoinWorkspaceForm choices={choices} />
+      </CardContent>
     </Card>
   );
 }
