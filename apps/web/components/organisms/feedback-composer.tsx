@@ -2,7 +2,6 @@
 
 import { cva } from 'class-variance-authority';
 import { Suspense, use, useEffect, useRef, useState } from 'react';
-import { Skeleton } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
 import type { GiveFeedbackAction } from '@/lib/feedback/give-feedback-state.type';
 import type { GiveKudosAction } from '@/lib/feedback/give-kudos-state.type';
@@ -222,20 +221,4 @@ export function FeedbackComposer({
  */
 function FormSkeleton() {
   return <ComposerLayoutSkeleton />;
-}
-
-/** A `FeedbackComposer` still loading, as it first opens: ready to write, on its first mode. */
-export function FeedbackComposerSkeleton() {
-  return (
-    <div className="flex w-full flex-col rounded-page border border-border-muted">
-      <div className="flex items-end gap-5 border-border-subtle border-b px-5 pt-3 pb-2.5">
-        <Skeleton className="w-28 text-button-sm" />
-        <Skeleton className="w-24 text-button-sm" />
-        <Skeleton className="w-12 text-button-sm" />
-      </div>
-      <div className="p-5">
-        <ComposerLayoutSkeleton />
-      </div>
-    </div>
-  );
 }

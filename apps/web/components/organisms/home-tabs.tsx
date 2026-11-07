@@ -1,13 +1,12 @@
 import { cva } from 'class-variance-authority';
 import NextLink from 'next/link';
-import { Skeleton } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
 import styles from './home-tabs.module.css';
 import { OpenTabInView } from './open-tab-in-view';
 
 /** The tabs, in the order they are drawn. The first is the one they open on. */
-export const HOME_TABS = [
+const HOME_TABS = [
   'workspace',
   'shared',
   'my-requests',
@@ -104,25 +103,6 @@ export function HomeTabs({
           <OpenTabInView key={tab} />
         </div>
       </nav>
-      {children}
-    </div>
-  );
-}
-
-export type HomeTabsSkeletonProps = {
-  children: React.ReactNode;
-};
-
-/**
- * `HomeTabs` still loading, for a page that does not yet know which tab is open: the row of
- * tabs as one line on its baseline, and the panel it is given.
- */
-export function HomeTabsSkeleton({ children }: HomeTabsSkeletonProps) {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="border-border-subtle border-b pb-2.5">
-        <Skeleton className="w-3/4 text-button-sm" />
-      </div>
       {children}
     </div>
   );

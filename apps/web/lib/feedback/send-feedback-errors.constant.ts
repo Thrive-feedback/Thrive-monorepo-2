@@ -4,9 +4,9 @@ import { MAX_MESSAGE_LENGTH } from './message-length.util';
 
 const MAX_MESSAGE_LENGTH_IN_WORDS = MAX_MESSAGE_LENGTH.toLocaleString('en-GB');
 
-export const FEEDBACK_TOO_LONG = `Your feedback is too long. Keep it under ${MAX_MESSAGE_LENGTH_IN_WORDS} characters.`;
+const FEEDBACK_TOO_LONG = `Your feedback is too long. Keep it under ${MAX_MESSAGE_LENGTH_IN_WORDS} characters.`;
 
-export const REQUEST_TOO_LONG = `That request is too long. Keep it under ${MAX_MESSAGE_LENGTH_IN_WORDS} characters.`;
+const REQUEST_TOO_LONG = `That request is too long. Keep it under ${MAX_MESSAGE_LENGTH_IN_WORDS} characters.`;
 
 /** What to say when the API refused a Kudos, by its error code. */
 export const GIVE_KUDOS_ERRORS: Readonly<Record<string, string>> = {

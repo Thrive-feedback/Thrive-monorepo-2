@@ -3,16 +3,13 @@ import { PeopleStack } from '@/components/molecules/people-stack';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { ReceivedFeedback } from '@/lib/feedback/received-feedback.type';
-import { ActivityRow, ActivityRowSkeleton } from './activity-row';
+import { ActivityRow } from './activity-row';
 import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
 import { PersonNameList } from './person-name-list';
 
 /** The reader, named first among everyone it was written to. */
 const YOU = { name: 'you', inactive: false } as const;
-
-/** Enough rows to fill the first screen, without promising how many will come. */
-const PLACEHOLDERS = ['first', 'second', 'third'] as const;
 
 export type ReceivedFeedbackListViewProps = {
   items: readonly ReceivedFeedback[];
@@ -86,16 +83,5 @@ export function ReceivedFeedbackListView({
         </li>
       ))}
     </ul>
-  );
-}
-
-/** A `ReceivedFeedbackListView` still loading: a few rows of from whom and when, and the message. */
-export function ReceivedFeedbackListViewSkeleton() {
-  return (
-    <div className="flex flex-col divide-y divide-border-muted">
-      {PLACEHOLDERS.map((placeholder) => (
-        <ActivityRowSkeleton key={placeholder} />
-      ))}
-    </div>
   );
 }

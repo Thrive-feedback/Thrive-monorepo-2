@@ -1,5 +1,4 @@
 import { ChevronRightIcon } from 'lucide-react';
-import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { TargetLink } from '@/components/molecules/target-link';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
@@ -77,21 +76,5 @@ export function ActivityRow({
       </Text>
       {footer}
     </article>
-  );
-}
-
-/** An `ActivityRow` still loading, line for line. */
-export function ActivityRowSkeleton() {
-  return (
-    <div className="flex flex-col gap-3 py-5">
-      <div className="flex items-center gap-3">
-        <Skeleton shape="circle" className="size-8" />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Skeleton className="w-1/2 text-subtitle-4" />
-          <Skeleton className="w-1/4 text-body-3" />
-        </div>
-      </div>
-      <Skeleton className="w-4/5 text-body-1" />
-    </div>
   );
 }

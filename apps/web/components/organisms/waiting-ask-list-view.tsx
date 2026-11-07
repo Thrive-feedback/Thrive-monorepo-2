@@ -1,18 +1,14 @@
 import { CircleCheckIcon } from 'lucide-react';
 import { useId } from 'react';
 import { Badge } from '@/components/atoms/badge';
-import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { calendarDay } from '@/lib/calendar-day.util';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
-import { ActivityRow, ActivityRowSkeleton } from './activity-row';
+import { ActivityRow } from './activity-row';
 import { FeedbackText } from './feedback-text';
 import { PersonName } from './person-name';
-
-/** Enough rows to fill the first screen, without promising how many will come. */
-const PLACEHOLDERS = ['first', 'second'] as const;
 
 export type WaitingAskListViewProps = {
   asks: readonly MyAsk[];
@@ -91,19 +87,5 @@ export function WaitingAskListView({
         </ul>
       )}
     </section>
-  );
-}
-
-/** A `WaitingAskListView` still loading: its heading, and a couple of rows. */
-export function WaitingAskListViewSkeleton() {
-  return (
-    <div className="flex flex-col gap-1">
-      <Skeleton className="w-1/3 text-subtitle-3" />
-      <div className="flex flex-col divide-y divide-border-muted">
-        {PLACEHOLDERS.map((placeholder) => (
-          <ActivityRowSkeleton key={placeholder} />
-        ))}
-      </div>
-    </div>
   );
 }
