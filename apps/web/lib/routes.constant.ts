@@ -15,7 +15,7 @@ function homeShowing(show: HomeShow) {
 }
 
 /** How Received and Given can be laid out. The first is what each opens on. */
-export const PERSONAL_VIEWS = ['grid', 'list'] as const;
+export const PERSONAL_VIEWS = ['list', 'grid'] as const;
 
 export type PersonalView = (typeof PERSONAL_VIEWS)[number];
 
@@ -35,7 +35,7 @@ export function receivedShowOf(value: string | null): ReceivedShow {
 }
 
 /**
- * Received laid out one way, showing one kind; `grid` and `all` are what it opens on, so neither
+ * Received laid out one way, showing one kind; `list` and `all` are what it opens on, so neither
  * needs a query.
  */
 function receivedViewing(
@@ -53,7 +53,7 @@ function receivedViewing(
   return search === '' ? '/received' : `/received?${search}`;
 }
 
-/** Given laid out one way; `grid` is what it opens on, so it needs no query. */
+/** Given laid out one way; `list` is what it opens on, so it needs no query. */
 function givenViewing(view: PersonalView) {
   return view === PERSONAL_VIEWS[0] ? '/given' : `/given?view=${view}`;
 }

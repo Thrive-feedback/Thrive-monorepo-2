@@ -213,6 +213,10 @@ async function scrollToTheEnd() {
 }
 
 describe('PersonalItemList, as a grid', () => {
+  beforeEach(() => {
+    goTo('/received?view=grid');
+  });
+
   it('draws one box for each thing written, each with who wrote it and the words under its card', () => {
     render(
       <PersonalItemList
@@ -264,7 +268,7 @@ describe('PersonalItemList, as a grid', () => {
             `^Postcard from Ben Carter, .*, ${label}\\. Opens the postcard\\.$`,
           ),
         }),
-      ).toHaveAttribute('href', '/received?feedback=fb-1');
+      ).toHaveAttribute('href', '/received?view=grid&feedback=fb-1');
     },
   );
 
@@ -449,7 +453,7 @@ describe('PersonalItemList, as a grid', () => {
 
 describe('PersonalItemList, as a list', () => {
   beforeEach(() => {
-    goTo('/received?view=list');
+    goTo('/received');
   });
 
   it('draws a piece of Feedback as it reads on Home, the reader as you', () => {
@@ -510,7 +514,7 @@ describe('PersonalItemList, as a list', () => {
 
     expect(screen.getByRole('link', { name: /Open postcard/ })).toHaveAttribute(
       'href',
-      '/received?view=list&feedback=fb-1',
+      '/received?feedback=fb-1',
     );
   });
 
@@ -546,6 +550,7 @@ describe('PersonalItemList, as a list', () => {
 describe('changing the view of PersonalItemList', () => {
   it('keeps everything read so far, and reads nothing to do it', async () => {
     const user = userEvent.setup();
+    goTo('/received?view=grid');
     readNextReceivedPage.mockResolvedValue(page([kudos('ku-2', 'Second.')]));
     const initialPage = page([postcard('fb-1', 'First.')], 'cursor-1');
     const received = () => (
@@ -560,7 +565,7 @@ describe('changing the view of PersonalItemList', () => {
     await user.click(screen.getByRole('button', { name: 'List view' }));
     rerender(received());
 
-    expect(window.location.search).toBe('?view=list');
+    expect(window.location.search).toBe('');
     expect(
       screen.getByRole('button', { name: /^Open kudos from/ }),
     ).toBeVisible();
@@ -569,7 +574,7 @@ describe('changing the view of PersonalItemList', () => {
     await user.click(screen.getByRole('button', { name: 'Grid view' }));
     rerender(received());
 
-    expect(window.location.search).toBe('');
+    expect(window.location.search).toBe('?view=grid');
     expect(
       screen.queryByRole('button', { name: /^Open kudos from/ }),
     ).not.toBeInTheDocument();
@@ -594,7 +599,7 @@ describe('PersonalItemList, on Given', () => {
   }
 
   beforeEach(() => {
-    window.history.replaceState(null, '', '/given');
+    window.history.replaceState(null, '', '/given?view=grid');
   });
 
   it('names who a postcard was for, and opens it over Given', () => {
@@ -605,7 +610,7 @@ describe('PersonalItemList, on Given', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: /^Postcard to Ann Lee/ }),
-    ).toHaveAttribute('href', '/given?feedback=fb-1');
+    ).toHaveAttribute('href', '/given?view=grid&feedback=fb-1');
   });
 
   it('tells the Giver a private postcard stayed between them and its Receiver', () => {
@@ -717,14 +722,14 @@ describe('PersonalItemList, on Given', () => {
     await user.click(screen.getByRole('button', { name: 'List view' }));
     rerender(list());
 
-    expect(window.location.search).toBe('?view=list');
+    expect(window.location.search).toBe('');
     expect(screen.getAllByRole('article')).toHaveLength(2);
     expect(readNextReceivedPage).toHaveBeenCalledWith({ cursor: 'more' });
   });
 
   describe('as a list', () => {
     beforeEach(() => {
-      window.history.replaceState(null, '', '/given?view=list');
+      window.history.replaceState(null, '', '/given');
     });
 
     function answerBesideOneTheGiverMayNotRead() {
@@ -758,7 +763,7 @@ describe('PersonalItemList, on Given', () => {
 
       expect(screen.getByRole('link', { name: /postcard/i })).toHaveAttribute(
         'href',
-        '/given?view=list&feedback=fb-1',
+        '/given?feedback=fb-1',
       );
     });
 
@@ -766,8 +771,8 @@ describe('PersonalItemList, on Given', () => {
       renderGiven(answerBesideOneTheGiverMayNotRead());
 
       expect(
-        screen.getByText(/^Also asked/, PAST_THE_DRAWING),
-      ).toHaveTextContent('Also asked (1 answer)');
+        screen.getByText(/^Asked \d+ people/, PAST_THE_DRAWING),
+      ).toHaveTextContent('Asked 2 people (2 answered)');
       expect(
         screen.queryByRole('button', { name: 'Show answers' }),
       ).not.toBeInTheDocument();

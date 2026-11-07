@@ -30,12 +30,12 @@ export function InvitationHeading({ invitation }: InvitationHeadingProps) {
         {invitation.inviterName ? (
           <span className="break-words">
             “{invitation.inviterName}”{' '}
-            <Text as="span" variant="subtitle-1" tone="muted">
+            <Text as="span" variant="subtitle-3" tone="muted">
               invited you to join
             </Text>
           </span>
         ) : (
-          <Text as="span" variant="subtitle-1" tone="muted">
+          <Text as="span" variant="subtitle-3" tone="muted">
             You've been invited to join
           </Text>
         )}{' '}

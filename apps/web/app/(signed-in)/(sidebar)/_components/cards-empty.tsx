@@ -83,14 +83,19 @@ export type CardsEmptyProps = {
   title: string;
   /** What will be here, and how it gets here. */
   description?: string;
-  /** The one thing to do from here: write the card that fills it, or go where there are some. */
-  children: React.ReactNode;
+  /**
+   * What to do from here, side by side: write the cards that fill it, or go where there are some.
+   * Left out where the page already offers it, such as Home under its composer, or where there is
+   * nothing to do, such as nobody waiting on the person.
+   */
+  children?: React.ReactNode;
 };
 
 /**
- * A place for cards with none in it, drawn alike wherever there is one, Received, Given and the Kudos
- * board: the blank cards it is waiting for, what is not here yet written by hand in their colour,
- * and the one thing to do about it, in the middle of whatever space the page leaves it, both ways.
+ * A place for cards with none in it, drawn alike wherever there is one, Home, Waiting for me,
+ * Received, Given and the Kudos board: the blank cards it is waiting for, what is not here yet written
+ * by hand in their colour, and what to do about it, in the middle of whatever space the page leaves
+ * it, both ways.
  */
 export function CardsEmpty({
   art,
@@ -115,7 +120,11 @@ export function CardsEmpty({
           {description}
         </Text>
       )}
-      <div className="mt-3">{children}</div>
+      {children && (
+        <div className="mt-3 flex flex-wrap justify-center gap-3">
+          {children}
+        </div>
+      )}
     </div>
   );
 }

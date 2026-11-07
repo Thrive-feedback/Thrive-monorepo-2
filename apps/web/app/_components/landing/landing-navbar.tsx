@@ -15,7 +15,7 @@ const { nav } = LANDING_COPY;
  */
 export function LandingNavbar() {
   return (
-    <NavbarFrame curve={false} clearAtTop>
+    <NavbarFrame curve={false} surface="glassClearAtTop">
       <nav aria-label="Main" className="flex items-center gap-gap-nav">
         <LanguageSwitch />
         <ThemeToggle />

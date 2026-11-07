@@ -1,0 +1,9 @@
+/*
+ * The sidebar runs the height of the window under the navbar, held there as the page scrolls, so
+ * its foot, who is signed in, stays in view. That is the window less the sticky offset the layout
+ * gives it (`top-21`) and the space it keeps under itself (`pb-6`): 27 steps. A height from the
+ * window less a sum has no utility.
+ */
+.rail {
+  height: calc(100dvh - var(--space-unit) * 27);
+}

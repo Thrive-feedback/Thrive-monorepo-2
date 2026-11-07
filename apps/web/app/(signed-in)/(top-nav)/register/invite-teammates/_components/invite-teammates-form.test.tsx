@@ -201,9 +201,7 @@ describe('InviteTeammatesForm', () => {
     });
     expect(heading).toHaveFocus();
     expect(screen.getByText('Invitation sent')).toBeInTheDocument();
-    expect(
-      screen.getByText('is already in this Workspace'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Already in this Workspace')).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
   });
 

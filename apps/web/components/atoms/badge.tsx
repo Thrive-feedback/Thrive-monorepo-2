@@ -26,8 +26,37 @@ export const badgeVariants = cva(
         info: 'bg-status-info-surface-hover text-status-info-fg',
         outline: 'border-border-default text-fg-primary',
       },
+      /**
+       * Edged in its tone's own colour, for a badge on a tinted ground such as a card in a list, where
+       * the soft fill alone fades into the ground. The words keep their `-fg` colour on the fill.
+       */
+      edged: {
+        true: '',
+        false: '',
+      },
     },
-    defaultVariants: { tone: 'neutral', size: 'sm' },
+    compoundVariants: [
+      { edged: true, tone: 'neutral', className: 'border-border-strong' },
+      { edged: true, tone: 'brand', className: 'border-action-primary-border' },
+      {
+        edged: true,
+        tone: 'highlight',
+        className: 'border-action-secondary-border',
+      },
+      {
+        edged: true,
+        tone: 'success',
+        className: 'border-status-success-border',
+      },
+      {
+        edged: true,
+        tone: 'warning',
+        className: 'border-status-warning-border',
+      },
+      { edged: true, tone: 'error', className: 'border-status-error-border' },
+      { edged: true, tone: 'info', className: 'border-status-info-border' },
+    ],
+    defaultVariants: { tone: 'neutral', size: 'sm', edged: false },
   },
 );
 
@@ -46,6 +75,7 @@ export type BadgeProps = React.ComponentPropsWithRef<'span'> &
 export function Badge({
   tone,
   size,
+  edged,
   asChild = false,
   className,
   ...rest
@@ -54,7 +84,7 @@ export function Badge({
   return (
     <Comp
       data-slot="badge"
-      className={cn(badgeVariants({ tone, size }), className)}
+      className={cn(badgeVariants({ tone, size, edged }), className)}
       {...rest}
     />
   );

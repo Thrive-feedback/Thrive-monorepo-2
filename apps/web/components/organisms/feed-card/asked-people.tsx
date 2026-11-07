@@ -22,8 +22,11 @@ import type {
 import { feedCardGiver } from './feed-card-sentence.util';
 import { useIsCutOff } from './use-is-cut-off';
 
-/** How many people show before the rest wait behind a press, so a card stays one card's height. */
-const PEOPLE_AT_FIRST = 2;
+/**
+ * How many people show before the rest wait behind a press, so a card stays one card's height: this
+ * card's writer and two more.
+ */
+const PEOPLE_AT_FIRST = 3;
 
 /** Past this many faces, the rest become one "+N", as everywhere a stack of faces is drawn. */
 const MAX_FACES = 4;
@@ -33,13 +36,13 @@ type StandingProps = {
   pending: number;
 };
 
-/** Where the others stand, in a few words: answers in green, those waiting in yellow. */
+/** Where everyone asked stands, in a few words: those who answered in green, those waiting in yellow. */
 function Standing({ answers, pending }: StandingProps) {
   return (
     <>
       {answers > 0 && (
         <span className="font-medium text-status-success-active">
-          {answers} {answers === 1 ? 'answer' : 'answers'}
+          {answers} answered
         </span>
       )}
       {answers > 0 && pending > 0 && ', '}
@@ -52,10 +55,25 @@ function Standing({ answers, pending }: StandingProps) {
   );
 }
 
-/** Where one Ask stands, in the word and the colour every screen gives it. */
-function AskStatusBadge({ status }: Pick<HomeFeedAsk, 'status'>) {
-  return (
-    <Badge tone={ASK_STATUS_TONES[status]}>{ASK_STATUS_NAMES[status]}</Badge>
+type AskStatusBadgeProps = Pick<HomeFeedAsk, 'status'> & {
+  /** Whether this Ask is the one the card shows the answer to. */
+  isThisCard: boolean;
+};
+
+/**
+ * Where one Ask stands, in the word and the colour every screen gives it, edged so it holds its own
+ * on the card's tinted ground. The Ask this card answers says so instead, in the blue of everything
+ * asked, since its answer is the one already above.
+ */
+function AskStatusBadge({ status, isThisCard }: AskStatusBadgeProps) {
+  return isThisCard ? (
+    <Badge tone="info" edged>
+      This answer
+    </Badge>
+  ) : (
+    <Badge tone={ASK_STATUS_TONES[status]} edged>
+      {ASK_STATUS_NAMES[status]}
+    </Badge>
   );
 }
 
@@ -127,10 +145,15 @@ function AskAnswer({ answer, writer }: AskAnswerProps) {
 type AskRowProps = {
   ask: HomeFeedAsk;
   readerAccountId: string;
+  /** Whether this is the Ask the card answers, whose words are already above. */
+  isThisCard: boolean;
 };
 
-/** One person asked: who, where they stand and, once they have answered, what they wrote. */
-function AskRow({ ask, readerAccountId }: AskRowProps) {
+/**
+ * One person asked: who, where they stand and, once they have answered, what they wrote. The Ask
+ * this card answers is named and marked, without its words again.
+ */
+function AskRow({ ask, readerAccountId, isThisCard }: AskRowProps) {
   const name = feedCardGiver(ask.person, readerAccountId);
 
   return (
@@ -150,9 +173,11 @@ function AskRow({ ask, readerAccountId }: AskRowProps) {
               <PersonName name={name} inactive={ask.person.inactive} />
             )}
           </Text>
-          <AskStatusBadge status={ask.status} />
+          <AskStatusBadge status={ask.status} isThisCard={isThisCard} />
         </div>
-        {ask.answer && <AskAnswer answer={ask.answer} writer={name} />}
+        {ask.answer && !isThisCard && (
+          <AskAnswer answer={ask.answer} writer={name} />
+        )}
       </AvatarName>
     </li>
   );
@@ -167,15 +192,18 @@ export type AskedPeopleProps = {
 };
 
 /**
- * Who else a request asked, at the foot of an answer. Every card of a request shows this, so it
- * starts closed: how they stand and a stack of faces, whose press lists each name and status. On
- * Home and in Received the reader reads every answer, since each takes the request's one Visibility
- * (brain `ADR-0050`). A Giver in Given may not, so an Ask can stand answered with no words to show
- * (ADR 0081), which is why who answered is read from the status.
+ * Everyone a request asked, at the foot of one answer to it, the writer of this card first and marked
+ * as this answer, so the count and the faces add up to the whole request and the card's own place in
+ * it is plain. Every card of a request shows this, so it starts closed: how they stand and a stack of
+ * faces, whose press lists each name and status. On Home and in Received the reader reads every
+ * answer, since each takes the request's one Visibility (brain `ADR-0050`). A Giver in Given may not,
+ * so an Ask can stand answered with no words to show (ADR 0081), which is why who answered is read
+ * from the status.
  *
- * Opening it reads the answers in place: those who answered first, then those still waiting, two
- * people and two lines each at first. Somebody asked alone has nobody to list, so it draws nothing,
- * and with no answers to read there is nothing to open.
+ * Opening it reads the other answers in place: this card's writer, then the others who answered,
+ * then those still waiting, three people and two lines each at first. Somebody asked alone has
+ * nobody else to list, so it draws nothing, and with no other answers to read there is nothing to
+ * open.
  */
 export function AskedPeople({
   request,
@@ -186,6 +214,9 @@ export function AskedPeople({
   const [isShowingEveryone, setIsShowingEveryone] = useState(false);
   const labelId = useId();
 
+  const thisCard = request.asked.filter(
+    (ask) => ask.person.accountId === giverAccountId,
+  );
   const others = request.asked.filter(
     (ask) => ask.person.accountId !== giverAccountId,
   );
@@ -193,9 +224,12 @@ export function AskedPeople({
     return null;
   }
 
-  const answered = others.filter((ask) => ask.status === 'ANSWERED');
+  const answeredOthers = others.filter((ask) => ask.status === 'ANSWERED');
   const waiting = others.filter((ask) => ask.status !== 'ANSWERED');
-  const inOrder = [...answered, ...waiting];
+  const inOrder = [...thisCard, ...answeredOthers, ...waiting];
+  const answeredCount = inOrder.length - waiting.length;
+  const isThisCard = (ask: HomeFeedAsk) =>
+    ask.person.accountId === giverAccountId;
   const shown = isShowingEveryone ? inOrder : inOrder.slice(0, PEOPLE_AT_FIRST);
   const hiddenCount = inOrder.length - shown.length;
 
@@ -203,8 +237,8 @@ export function AskedPeople({
     <div className="flex flex-col items-start gap-3 border-border-muted border-t border-dashed pt-3">
       <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1">
         <Text as="p" id={labelId} variant="body-3" tone="muted">
-          Also asked (
-          <Standing answers={answered.length} pending={waiting.length} />)
+          Asked {inOrder.length} people (
+          <Standing answers={answeredCount} pending={waiting.length} />)
         </Text>
         {!isOpen && (
           <AvatarGroup
@@ -216,18 +250,23 @@ export function AskedPeople({
                 photoUrl: ask.person.photoUrl,
                 label: ask.person.inactive ? `${name} (inactive)` : name,
                 isMuted: ask.person.inactive,
-                trailing: <AskStatusBadge status={ask.status} />,
+                trailing: (
+                  <AskStatusBadge
+                    status={ask.status}
+                    isThisCard={isThisCard(ask)}
+                  />
+                ),
                 avatarClassName: ASK_STATUS_RINGS[ask.status],
               };
             })}
             max={MAX_FACES}
             size="sm"
-            listTitle="Also asked"
-            listDescription={`${feedCardGiver(request.requester, readerAccountId)} asked them the same question.`}
-            listLabel="Show who else was asked"
+            listTitle="Asked"
+            listDescription={`${feedCardGiver(request.requester, readerAccountId)} asked each of them this question.`}
+            listLabel="Show everyone asked"
           />
         )}
-        {answered.some((ask) => ask.answer !== null) && (
+        {answeredOthers.some((ask) => ask.answer !== null) && (
           <TextToggle
             isOpen={isOpen}
             onToggle={() => setIsOpen(!isOpen)}
@@ -252,6 +291,7 @@ export function AskedPeople({
                 key={ask.person.accountId}
                 ask={ask}
                 readerAccountId={readerAccountId}
+                isThisCard={isThisCard(ask)}
               />
             ))}
           </ul>

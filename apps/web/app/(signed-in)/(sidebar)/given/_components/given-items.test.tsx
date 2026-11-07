@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { server, TEST_API_BASE_URL } from '@/lib/test/msw-server';
 
 vi.stubEnv('API_BASE_URL', TEST_API_BASE_URL);
@@ -16,11 +16,16 @@ vi.mock(
 // A server component that reads, which a client render cannot await: it has its own suite.
 vi.mock('./given-empty', () => ({ GivenEmpty: () => <p>Nothing given</p> }));
 const refresh = vi.fn();
+let address = new URLSearchParams();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => address,
   unstable_rethrow: vi.fn(),
 }));
+
+afterEach(() => {
+  address = new URLSearchParams();
+});
 
 const { GivenItems } = await import('./given-items');
 
@@ -52,6 +57,7 @@ describe('GivenItems', () => {
   });
 
   it('draws what was written, by who it was for', async () => {
+    address = new URLSearchParams({ view: 'grid' });
     theApiAnswers({
       readerAccountId: READER,
       items: [

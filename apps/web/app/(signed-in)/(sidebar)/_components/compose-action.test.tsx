@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { ComposeAction } from './compose-action';
 
@@ -11,13 +12,30 @@ type DialogStandInProps = {
   onCloseAutoFocus?: (event: Event) => void;
 };
 
-/** A dialog standing in for a card: it says which it is, and can be sent or closed. */
+/**
+ * A dialog standing in for a card: it says which it is, and can be sent or closed. As the real one
+ * does, it remembers what had focus when it opened and gives focus back on closing, unless the
+ * close event's default is prevented.
+ */
 function dialogStandIn(name: string) {
   return function DialogStandIn({
     open,
     onSent,
     onCloseAutoFocus,
   }: DialogStandInProps) {
+    const opener = useRef<Element | null>(null);
+    if (open && opener.current === null) {
+      opener.current = document.activeElement;
+    }
+
+    function close() {
+      const event = new Event('close', { cancelable: true });
+      onCloseAutoFocus?.(event);
+      if (!event.defaultPrevented && opener.current instanceof HTMLElement) {
+        opener.current.focus();
+      }
+    }
+
     return open ? (
       <>
         <p>{name}</p>
@@ -25,15 +43,12 @@ function dialogStandIn(name: string) {
           type="button"
           onClick={() => {
             onSent?.();
-            onCloseAutoFocus?.(new Event('close'));
+            close();
           }}
         >
           Sent
         </button>
-        <button
-          type="button"
-          onClick={() => onCloseAutoFocus?.(new Event('close'))}
-        >
+        <button type="button" onClick={close}>
           Cancelled
         </button>
       </>
@@ -60,7 +75,11 @@ vi.mock('@/app/(signed-in)/(sidebar)/_components/compose-kudos-dialog', () => ({
 
 const HEADING_ID = 'page-heading';
 
-function renderIt(choice: 'ask' | 'give' | 'kudos' = 'ask') {
+function renderIt(
+  choice: 'ask' | 'give' | 'kudos' = 'ask',
+  { returnsFocusToTitle = true }: { returnsFocusToTitle?: boolean } = {},
+) {
+  const returnFocusTo = returnsFocusToTitle ? HEADING_ID : undefined;
   return render(
     <>
       <h1 id={HEADING_ID} tabIndex={-1}>
@@ -72,7 +91,7 @@ function renderIt(choice: 'ask' | 'give' | 'kudos' = 'ask') {
         teammates={[]}
         workspaceGoals={[]}
         writer={{ name: 'Ann Lee', photoUrl: null }}
-        returnFocusTo={HEADING_ID}
+        returnFocusTo={returnFocusTo}
       />
     </>,
   );
@@ -120,5 +139,15 @@ describe('ComposeAction', () => {
     await user.click(screen.getByRole('button', { name: 'Cancelled' }));
 
     expect(screen.getByRole('heading', { name: 'Received' })).not.toHaveFocus();
+  });
+
+  it('leaves focus to the dialog, which gives it back to this button, where the button stays after a send', async () => {
+    const user = userEvent.setup();
+    renderIt('kudos', { returnsFocusToTitle: false });
+    await user.click(screen.getByRole('button', { name: 'Give kudos' }));
+
+    await user.click(screen.getByRole('button', { name: 'Sent' }));
+
+    expect(screen.getByRole('button', { name: 'Give kudos' })).toHaveFocus();
   });
 });

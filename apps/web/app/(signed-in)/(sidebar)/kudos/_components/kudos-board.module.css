@@ -3,13 +3,26 @@
  * page has nothing to scroll. It only ever gets as short as `min-height`, where cards would be too
  * small to read and a scroll is the better of the two.
  */
-.board {
-  --kudos-board-gap: calc(var(--space-unit) * 16);
-
-  position: relative;
+/* The board, with cards on it or none. Its edge is `KUDOS_BOARD_EDGE`. */
+.board,
+.emptyBoard {
   flex: 1 1 0;
   min-height: calc(var(--space-unit) * 112);
+}
+
+.board {
+  --kudos-board-gap: calc(var(--space-unit) * 16);
+  /* How far in from the board's edge the cards sit, so none touches it. */
+  --kudos-board-inset: calc(var(--space-unit) * 4);
+
+  position: relative;
   overflow: hidden;
+}
+
+/* A board with nothing on it holds its empty state in the middle, as an empty list does. */
+.emptyBoard {
+  display: flex;
+  flex-direction: column;
 }
 
 /*
@@ -20,7 +33,7 @@
  */
 .track {
   position: absolute;
-  inset: 0;
+  inset: var(--kudos-board-inset);
   display: grid;
   grid-auto-columns: 100%;
   grid-auto-flow: column;

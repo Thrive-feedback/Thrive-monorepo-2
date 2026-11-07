@@ -73,7 +73,8 @@ export function InvitationJoinForm({
         <Text
           as="span"
           variant="body-2"
-          className="break-all font-medium text-action-secondary"
+          tone="brand"
+          className="break-all font-medium"
         >
           {email}
         </Text>

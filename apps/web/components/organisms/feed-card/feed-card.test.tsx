@@ -165,12 +165,10 @@ describe('FeedCard', () => {
   it('draws no question on Offered Feedback', () => {
     renderCard(OFFERED);
 
-    expect(
-      screen.queryByText(/asked:/, PAST_THE_DRAWING),
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole('article')).not.toHaveTextContent(/asked/i);
   });
 
-  it('puts the question above the answer on Requested Feedback', () => {
+  it('puts the question above the answer on Requested Feedback, headed Asked and Answered', () => {
     renderCard(REQUESTED);
 
     const card = screen.getByRole('article');
@@ -185,17 +183,8 @@ describe('FeedCard', () => {
     expect(question.compareDocumentPosition(answer)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
-    expect(card).toHaveTextContent('Ben Carter asked:');
-  });
-
-  it('says "You asked:" to the person who asked', () => {
-    renderCard({
-      ...REQUESTED,
-      receivers: [ANN],
-      request: { ...QUESTION, requester: ANN },
-    });
-
-    expect(screen.getByRole('article')).toHaveTextContent('You asked:');
+    expect(within(card).getByText('Asked', PAST_THE_DRAWING)).toBeVisible();
+    expect(within(card).getByText('Answered', PAST_THE_DRAWING)).toBeVisible();
   });
 
   describe('how much of the words a card shows', () => {
@@ -266,9 +255,9 @@ describe('FeedCard', () => {
       userEvent.click(screen.getByRole('button', { name: 'Show answers' }));
 
     const rows = () =>
-      within(screen.getByRole('list', { name: /^Also asked/ })).getAllByRole(
-        'listitem',
-      );
+      within(
+        screen.getByRole('list', { name: /^Asked \d+ people/ }),
+      ).getAllByRole('listitem');
 
     const withAsked = (...others: HomeFeedAsk[]): HomeFeedItem => ({
       ...REQUESTED,
@@ -278,15 +267,18 @@ describe('FeedCard', () => {
       },
     });
 
-    it('starts closed, with how they stand and their faces', () => {
+    const standing = () =>
+      screen.getByText(/^Asked \d+ people/, PAST_THE_DRAWING);
+
+    it("starts closed, with how everyone asked stands and their faces, this card's writer first", () => {
       renderCard(REQUESTED);
 
-      expect(
-        screen.getByText(/^Also asked/, PAST_THE_DRAWING),
-      ).toHaveTextContent('Also asked (1 answer, 1 pending)');
+      expect(standing()).toHaveTextContent(
+        'Asked 3 people (2 answered, 1 pending)',
+      );
       expect(
         screen.getByRole('button', {
-          name: 'Dao Prasert and Nok Wattana. Show who else was asked',
+          name: 'Cara Diaz, Dao Prasert, and Nok Wattana. Show everyone asked',
         }),
       ).toBeInTheDocument();
       expect(screen.queryByRole('list')).not.toBeInTheDocument();
@@ -304,36 +296,36 @@ describe('FeedCard', () => {
     it('counts an answer the reader may not read as an answer, beside one they may', async () => {
       renderCard(withAsked(answered(NOK, 'Mine to read.'), hidden(DAO)));
 
-      expect(
-        screen.getByText(/^Also asked/, PAST_THE_DRAWING),
-      ).toHaveTextContent('Also asked (2 answers)');
+      expect(standing()).toHaveTextContent('Asked 3 people (3 answered)');
 
       await openAnswers();
 
-      expect(rows()).toHaveLength(2);
-      expect(rows()[0]).toHaveTextContent('Mine to read.');
-      expect(rows()[1]).toHaveTextContent('Dao Prasert');
-      expect(rows()[1]).toHaveTextContent('Answered');
+      expect(rows()).toHaveLength(3);
+      expect(rows()[1]).toHaveTextContent('Mine to read.');
+      expect(rows()[2]).toHaveTextContent('Dao Prasert');
+      expect(rows()[2]).toHaveTextContent('Answered');
     });
 
     it('keeps an answer hidden from someone still waiting', () => {
       renderCard(withAsked(hidden(DAO), waiting(NOK)));
 
-      expect(
-        screen.getByText(/^Also asked/, PAST_THE_DRAWING),
-      ).toHaveTextContent('Also asked (1 answer, 1 pending)');
+      expect(standing()).toHaveTextContent(
+        'Asked 3 people (2 answered, 1 pending)',
+      );
     });
 
     it('lists each name and status on a press of the faces, and no answers', async () => {
       renderCard(REQUESTED);
 
       await userEvent.click(
-        screen.getByRole('button', { name: /Show who else was asked/ }),
+        screen.getByRole('button', { name: /Show everyone asked/ }),
       );
 
       const list = within(await screen.findByRole('dialog'));
-      expect(list.getByRole('heading')).toHaveTextContent('Also asked');
-      const [dao, nok] = list.getAllByRole('listitem');
+      expect(list.getByRole('heading')).toHaveTextContent('Asked');
+      const [cara, dao, nok] = list.getAllByRole('listitem');
+      expect(cara).toHaveTextContent('Cara Diaz');
+      expect(cara).toHaveTextContent('This answer');
       expect(dao).toHaveTextContent('Dao Prasert');
       expect(dao).toHaveTextContent('Answered');
       expect(nok).toHaveTextContent('Nok Wattana');
@@ -347,7 +339,7 @@ describe('FeedCard', () => {
       renderCard(withAsked(waiting(ANN)));
 
       await userEvent.click(
-        screen.getByRole('button', { name: /Show who else was asked/ }),
+        screen.getByRole('button', { name: /Show everyone asked/ }),
       );
 
       const list = within(await screen.findByRole('dialog'));
@@ -372,10 +364,12 @@ describe('FeedCard', () => {
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(
-        screen.queryByRole('button', { name: /Show who else was asked/ }),
+        screen.queryByRole('button', { name: /Show everyone asked/ }),
       ).not.toBeInTheDocument();
-      const [dao, nok] = rows();
-      expect(rows()).toHaveLength(2);
+      const [cara, dao, nok] = rows();
+      expect(rows()).toHaveLength(3);
+      expect(cara).toHaveTextContent('Cara Diaz');
+      expect(cara).toHaveTextContent('This answer');
       expect(dao).toHaveTextContent('Dao Prasert');
       expect(dao).toHaveTextContent('Answered');
       expect(dao).toHaveTextContent('I would add who to call.');
@@ -404,28 +398,41 @@ describe('FeedCard', () => {
       }
     });
 
-    it('puts those who answered before those still waiting', async () => {
+    it("puts this card's writer first, then those who answered, then those still waiting", async () => {
       renderCard(withAsked(waiting(NOK), answered(DAO, 'Add who to call.')));
       await openAnswers();
 
-      expect(rows()[0]).toHaveTextContent('Dao Prasert');
-      expect(rows()[1]).toHaveTextContent('Nok Wattana');
+      expect(rows()[0]).toHaveTextContent('Cara Diaz');
+      expect(rows()[1]).toHaveTextContent('Dao Prasert');
+      expect(rows()[2]).toHaveTextContent('Nok Wattana');
+    });
+
+    it("marks this card's writer as this answer, without their words again", async () => {
+      renderCard(withAsked(answered(DAO, 'Add who to call.')));
+      await openAnswers();
+
+      const [cara] = rows();
+      expect(cara).toHaveTextContent('This answer');
+      expect(cara).not.toHaveTextContent('It was clear.');
+      expect(cara).not.toHaveTextContent('Answered');
     });
 
     it.each([
       [
         'both',
         [answered(DAO, 'Yes.'), answered(NOK, 'Yes.'), waiting(ANN)],
-        'Also asked (2 answers, 1 pending)',
+        'Asked 4 people (3 answered, 1 pending)',
       ],
-      ['one answer', [answered(DAO, 'Yes.')], 'Also asked (1 answer)'],
-      ['nobody answering', [waiting(DAO)], 'Also asked (1 pending)'],
-    ])('sums up where the others stand: %s', (_case, others, title) => {
+      ['all answered', [answered(DAO, 'Yes.')], 'Asked 2 people (2 answered)'],
+      [
+        'nobody else answering',
+        [waiting(DAO)],
+        'Asked 2 people (1 answered, 1 pending)',
+      ],
+    ])('sums up where everyone asked stands: %s', (_case, others, title) => {
       renderCard(withAsked(...others));
 
-      expect(
-        screen.getByText(/^Also asked/, PAST_THE_DRAWING),
-      ).toHaveTextContent(title);
+      expect(standing()).toHaveTextContent(title);
     });
 
     it('shows @ and # as they were bound', async () => {
@@ -439,7 +446,7 @@ describe('FeedCard', () => {
       );
       await openAnswers();
 
-      const [dao] = rows();
+      const dao = rows()[1];
       expect(dao).toHaveTextContent('@Ann');
       expect(dao).toHaveTextContent('#Ownership');
       expect(dao).not.toHaveTextContent('ann.lee');
@@ -454,7 +461,7 @@ describe('FeedCard', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('opens the people past the first two, and closes them again', async () => {
+    it('opens the people past the first three, and closes them again', async () => {
       renderCard(
         withAsked(
           answered(DAO, 'Add who to call.'),
@@ -464,19 +471,19 @@ describe('FeedCard', () => {
       );
       await openAnswers();
 
-      expect(rows()).toHaveLength(2);
+      expect(rows()).toHaveLength(3);
       const more = screen.getByRole('button', { name: 'Show 1 more' });
       expect(more).toHaveAttribute('aria-expanded', 'false');
 
       await userEvent.click(more);
 
-      expect(rows()).toHaveLength(3);
+      expect(rows()).toHaveLength(4);
       const less = screen.getByRole('button', { name: 'Show less' });
       expect(less).toHaveAttribute('aria-expanded', 'true');
 
       await userEvent.click(less);
 
-      expect(rows()).toHaveLength(2);
+      expect(rows()).toHaveLength(3);
     });
 
     describe('a long answer', () => {
@@ -534,7 +541,7 @@ describe('FeedCard', () => {
     it('shows somebody Deactivated as inactive', async () => {
       renderCard(withAsked(waiting(person('mali', 'Mali Sombat', true))));
       await userEvent.click(
-        screen.getByRole('button', { name: /Show who else was asked/ }),
+        screen.getByRole('button', { name: /Show everyone asked/ }),
       );
 
       const list = within(await screen.findByRole('dialog'));
@@ -547,7 +554,7 @@ describe('FeedCard', () => {
       renderCard(withAsked());
 
       expect(
-        screen.queryByText(/Also asked/, PAST_THE_DRAWING),
+        screen.queryByText(/^Asked \d+ people/, PAST_THE_DRAWING),
       ).not.toBeInTheDocument();
     });
 
@@ -555,7 +562,7 @@ describe('FeedCard', () => {
       renderCard(OFFERED);
 
       expect(
-        screen.queryByText(/Also asked/, PAST_THE_DRAWING),
+        screen.queryByText(/^Asked \d+ people/, PAST_THE_DRAWING),
       ).not.toBeInTheDocument();
     });
   });

@@ -1,10 +1,15 @@
-import { Text } from '@/components/atoms/text';
+import { CardsEmpty } from '@/app/(signed-in)/(sidebar)/_components/cards-empty';
 
-/** Waiting for me with nothing left in it. */
+/**
+ * Waiting for me with nothing left in it, drawn as every empty list is, on the blank card of
+ * everything asked. Nobody waiting is good news, so it asks nothing of the person.
+ */
 export function WaitingEmpty() {
   return (
-    <Text as="p" variant="subtitle-3" className="py-5">
-      Nothing is waiting for you.
-    </Text>
+    <CardsEmpty
+      art="tertiary"
+      title="Nothing is waiting for you."
+      description="When a teammate asks you for feedback, it waits here for your answer."
+    />
   );
 }

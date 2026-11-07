@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority';
 import { NavbarLogo } from '@/components/molecules/navbar-logo';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
@@ -11,9 +12,22 @@ import { NotificationBell } from './notification-bell';
 import { SessionRefresher } from './session-refresher';
 import { SettingsLink } from './settings-link';
 
+/** Settings and the avatar, kept off a wide screen where the page's sidebar holds them instead. */
+const accountGroup = cva('flex items-center gap-gap-nav', {
+  variants: {
+    isAccountInSidebar: { true: 'md:hidden', false: '' },
+  },
+  defaultVariants: { isAccountInSidebar: false },
+});
+
 export type MemberNavbarProps = {
   /** Drawn right after the logo. */
   children?: React.ReactNode;
+  /**
+   * The page has a sidebar that holds Settings and the avatar at its foot, so the navbar draws them
+   * only where the sidebar is not shown: on a phone.
+   */
+  isAccountInSidebar?: boolean;
 };
 
 /**
@@ -24,9 +38,13 @@ export type MemberNavbarProps = {
  * waiting for them, and there is nothing waiting for nobody.
  * This is where a session due a refresh gets one on a Member's pages.
  *
- * Home's pages pass the Workspace the person is in as `children`, drawn right after the logo.
+ * Home's pages pass the Workspace the person is in as `children`, drawn right after the logo, and
+ * keep Settings and the avatar in their sidebar (`isAccountInSidebar`).
  */
-export async function MemberNavbar({ children }: MemberNavbarProps = {}) {
+export async function MemberNavbar({
+  children,
+  isAccountInSidebar = false,
+}: MemberNavbarProps = {}) {
   const [session, needsRefresh] = await Promise.all([
     readSession(),
     readSessionNeedsRefresh(),
@@ -55,12 +73,14 @@ export async function MemberNavbar({ children }: MemberNavbarProps = {}) {
         {session && (
           <>
             <NotificationBell />
-            <SettingsLink />
-            <AccountAvatar
-              name={session.profile?.displayName ?? session.name}
-              email={session.email}
-              photoUrl={session.photoUrl}
-            />
+            <div className={accountGroup({ isAccountInSidebar })}>
+              <SettingsLink />
+              <AccountAvatar
+                name={session.profile?.displayName ?? session.name}
+                email={session.email}
+                photoUrl={session.photoUrl}
+              />
+            </div>
           </>
         )}
       </div>

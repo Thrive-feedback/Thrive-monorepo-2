@@ -28,8 +28,11 @@ export type SideNavProps = {
   /** Names the menu for screen readers, so it is told apart from the navbar. */
   label: string;
   items: readonly SideNavEntry[];
-  /** The item marked as the open page; the caller decides, since it may differ from the path. */
-  currentHref: string;
+  /**
+   * The item marked as the open page; the caller decides, since it may differ from the path. Left
+   * out where none of the items can be the open page.
+   */
+  currentHref?: string;
 };
 
 /**
@@ -84,7 +87,7 @@ export function SideNav({ label, items, currentHref }: SideNavProps) {
 }
 
 const LINK_CLASSES = cn(
-  'flex w-full items-center gap-2.5 rounded-button px-3 py-2 text-start text-button-sm text-fg-secondary hover:bg-action-neutral-surface hover:text-fg-primary',
+  'flex w-full items-center gap-2.5 rounded-button px-3 py-2 text-start text-button-sm text-fg-secondary hover:bg-action-neutral-surface-hover hover:text-fg-primary',
   'max-md:py-3.5',
   'md:aria-[current]:bg-action-primary-surface md:aria-[current]:text-action-primary',
 );
@@ -94,7 +97,7 @@ function SideNavLink({
   currentHref,
 }: {
   item: SideNavItem;
-  currentHref: string;
+  currentHref?: string;
 }) {
   const content = (
     <>

@@ -126,9 +126,9 @@ describe('HomeFeedList', () => {
 
     const [first, second] = screen.getAllByRole('listitem');
     expect(first).toHaveTextContent('First.');
-    expect(first).not.toHaveTextContent('asked:');
+    expect(first).not.toHaveTextContent(/asked/i);
     expect(second).toHaveTextContent('Second.');
-    expect(second).toHaveTextContent('Ben Carter asked:');
+    expect(second).toHaveTextContent('Asked');
   });
 
   it('leads each card to its postcard, keeping the filter', () => {

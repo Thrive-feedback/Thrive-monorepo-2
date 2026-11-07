@@ -15,7 +15,7 @@ export function IntroduceYourselfHero() {
       >
         Let’s make it <HandUnderline>official.</HandUnderline>
       </Text>
-      <Text variant="body-1" tone="muted" className="md:text-subtitle-1">
+      <Text variant="body-1" tone="muted">
         I’m putting the finishing touches on your desk. May I ask how you would
         like to be introduced to the team?
       </Text>

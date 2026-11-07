@@ -16,7 +16,7 @@ export default function HomeLoading() {
         <PageTitle>Home</PageTitle>
         <FeedComposerSkeleton />
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-11">
         <Skeleton className="h-10 w-44 self-end" />
         <HomeFeedSkeleton />
       </div>

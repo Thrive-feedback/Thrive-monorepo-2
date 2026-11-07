@@ -102,8 +102,12 @@ type AnswerRowProps = {
     answer: NonNullable<PersonalRequestAsk['answer']>;
   };
   href: string;
-  /** A note by hand pointing at its postcard: the first answer's alone, so a reader learns to press them. */
-  note?: string;
+  /**
+   * Whether this is the newest answer. Every answer's postcard gets a note by hand on a phone, where
+   * the rows stand far apart; beside the words only the newest one does, so a reader learns to press
+   * them without a note on each.
+   */
+  isNewest: boolean;
 };
 
 /**
@@ -113,23 +117,24 @@ type AnswerRowProps = {
  * and its postcard straightens, so which card is whose is never a guess. Only the postcard is a
  * press: it opens that answer.
  *
- * The lit row's corners run parallel to the card's: it stands 12px inside the card's edge at the
- * sides, and at the bottom when it is the last row, and its corner is the card's less those 12px.
- * The card is padded by 6.25 steps, so reaching out by 3.25 leaves the 3 steps (12px) between, and
- * the control corner (9px) plus those 12px is the page corner (21px) the card has.
+ * The lit row stands 16px inside the card's edge at the sides, and at the bottom when it is the last
+ * row. The card is padded by 6.25 steps at the sides and 5 at the top and bottom, so the row reaches
+ * out by 2.25 at the sides and by 1 at the bottom to leave those 16px. Its corner is the control
+ * corner (9px), rounder than the card's less the gap, so the lit row reads as soft.
  */
-function AnswerRow({ ask, href, note }: AnswerRowProps) {
+function AnswerRow({ ask, href, isNewest }: AnswerRowProps) {
   const { answer } = ask;
   const name = nameOf(ask);
 
   return (
     <li
       data-feed-card-row
-      className="-mx-3.25 rounded-control px-3.25 transition-colors last:-mb-3.25 last:pb-3.25 hover:bg-surface-base/70 has-focus-visible:bg-surface-base/70"
+      className="-mx-2.25 rounded-control px-2.25 transition-colors last:-mb-1 last:pb-1 hover:bg-surface-base/70 has-focus-visible:bg-surface-base/70"
     >
       <FeedCardRow
         tone="tertiary"
-        note={note}
+        note="Read their postcards"
+        isNotePhoneOnly={!isNewest}
         aside={
           <FeedCardPreview
             id={answer.id}
@@ -219,9 +224,9 @@ export type RequestCardProps = {
  * and who they asked, each with a face, a line saying what it is, when and who can read the answers,
  * then the Request message. Under it a row for each answer, newest first, with the postcard its Giver
  * sent back beside it, then everyone still Pending (design FB-4-S4, brain `ADR-0053`); the faces at
- * the top already say how many answered. While nobody has answered, the request's own card stands beside it,
- * with nothing to open. There is no Reaction, no reminder, and nothing about how long anyone has kept
- * them waiting.
+ * the top already say how many answered. While nobody has answered, the request's own card stands
+ * beside it, with nothing to open. There is no Reaction, no reminder, and nothing about how long
+ * anyone has kept them waiting.
  */
 export function RequestCard({ request }: RequestCardProps) {
   const show = useReceivedShow();
@@ -287,7 +292,7 @@ export function RequestCard({ request }: RequestCardProps) {
             key={ask.person.accountId}
             ask={ask}
             href={ROUTES.receivedFeedback(ask.answer.id, 'list', show)}
-            note={place === 0 ? 'Read their postcards' : undefined}
+            isNewest={place === 0}
           />
         ))}
         {pending.length > 0 && <PendingRows pending={pending} />}
