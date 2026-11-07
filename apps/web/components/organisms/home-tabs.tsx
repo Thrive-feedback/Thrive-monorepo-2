@@ -3,9 +3,19 @@ import NextLink from 'next/link';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
 import type { NavTarget } from '@/lib/navigation/nav-target.type';
-import { HOME_TABS, type HomeTab } from '@/lib/routes.constant';
 import styles from './home-tabs.module.css';
 import { OpenTabInView } from './open-tab-in-view';
+
+/** The tabs, in the order they are drawn. The first is the one they open on. */
+export const HOME_TABS = [
+  'workspace',
+  'shared',
+  'my-requests',
+  'waiting',
+  'received',
+] as const;
+
+export type HomeTab = (typeof HOME_TABS)[number];
 
 const TAB_NAMES: Readonly<Record<HomeTab, string>> = {
   workspace: 'Workspace feed',

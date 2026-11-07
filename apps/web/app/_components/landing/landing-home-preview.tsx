@@ -6,6 +6,7 @@ import type { AnswerAskViewProps } from '@/components/organisms/answer-ask-view'
 import { FeedbackComposer } from '@/components/organisms/feedback-composer';
 import { FeedbackFeed } from '@/components/organisms/feedback-feed';
 import type { HomeDialogProps } from '@/components/organisms/home-dialog';
+import type { HomeTab } from '@/components/organisms/home-tabs';
 import { ReceivedFeedbackListView } from '@/components/organisms/received-feedback-list-view';
 import { SentRequestListView } from '@/components/organisms/sent-request-list-view';
 import { WaitingAskListView } from '@/components/organisms/waiting-ask-list-view';
@@ -17,7 +18,6 @@ import type { RequestFeedbackAction } from '@/lib/feedback/request-feedback-stat
 import type { SentRequest } from '@/lib/feedback/sent-request.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { preloadable } from '@/lib/preloadable.util';
-import type { HomeTab } from '@/lib/routes.constant';
 import { whenIdle } from '@/lib/when-idle.util';
 import { LANDING_COPY } from './landing-copy.constant';
 import {

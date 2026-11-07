@@ -25,7 +25,7 @@ export type BrandNewSideNavProps = {
 export function BrandNewSideNav({ waitingCount }: BrandNewSideNavProps) {
   const pathname = usePathname();
   const items: readonly SideNavEntry[] = [
-    { href: ROUTES.brandNewHome, label: 'Home', Icon: HouseIcon },
+    { href: ROUTES.home, label: 'Home', Icon: HouseIcon },
     { href: ROUTES.brandNewKudos, label: 'Kudos board', Icon: HandHeartIcon },
     {
       href: ROUTES.brandNewWaiting,

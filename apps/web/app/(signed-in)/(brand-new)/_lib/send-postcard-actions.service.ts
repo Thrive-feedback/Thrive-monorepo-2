@@ -50,7 +50,7 @@ async function send(
     if (error.code === 'NOT_SIGNED_IN') {
       elsewhere = ROUTES.signIn;
     } else if (error.code === 'WORKSPACE_NOT_FOUND') {
-      elsewhere = ROUTES.brandNewHome;
+      elsewhere = ROUTES.home;
     } else {
       return { formError: refusals[error.code] ?? couldNotSend };
     }

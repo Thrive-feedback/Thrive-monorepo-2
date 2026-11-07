@@ -13,16 +13,8 @@ const SUBJECT = '0199ffff-0000-7000-8000-00000000000a';
  * with the map, key for key.
  */
 const LINES: readonly (readonly [NotificationType, string, string])[] = [
-  [
-    'ASK_RECEIVED',
-    'Ploy asked you for feedback',
-    `/home?tab=waiting&ask=${SUBJECT}`,
-  ],
-  [
-    'ASK_ANSWERED',
-    'Ploy answered your request',
-    `/home?tab=my-requests&request=${SUBJECT}`,
-  ],
+  ['ASK_RECEIVED', 'Ploy asked you for feedback', `/waiting?ask=${SUBJECT}`],
+  ['ASK_ANSWERED', 'Ploy answered your request', '/received?show=requests'],
   [
     'FEEDBACK_RECEIVED',
     'Ploy wrote feedback to you',

@@ -238,7 +238,7 @@ describe('sending a postcard of Feedback', () => {
 
     await expect(
       sendPostcardFeedback(WORKSPACE_ID, aCard()),
-    ).rejects.toMatchObject({ to: '/brand-new-home' });
+    ).rejects.toMatchObject({ to: '/home' });
   });
 });
 

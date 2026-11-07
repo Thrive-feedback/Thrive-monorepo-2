@@ -43,7 +43,7 @@ export type WorkspaceSelectorProps = {
  * The Workspace the person is in, beside the logo, by its name. With nowhere else to go
  * it is only that. With another Workspace to open, it is a quiet button whose border and chevron
  * show on hover or focus, and its menu lists them as the switcher does (brain `ADR-0041` decision 5):
- * the current one ticked, the rest opened at once on the new Home, those the person was
+ * the current one ticked, the rest opened at once on their Home, those the person was
  * Deactivated in greyed and closed, then Create a Workspace, whose form opens in a dialog.
  *
  * A choice keeps the menu open while it is on its way, so one click cannot become two; a refusal
@@ -79,7 +79,7 @@ export function WorkspaceSelector({
 
   function handleSwitch(workspaceId: string) {
     startSwitching(async () => {
-      const result = await switchWorkspace(workspaceId, 'brandNewHome');
+      const result = await switchWorkspace(workspaceId);
       toast.error(result.message);
     });
   }

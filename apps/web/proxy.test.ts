@@ -3,8 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { config, proxy } from './proxy';
 
 const SESSION = 'thrive.session_token=abc';
-const WAITING_ASK =
-  '/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001';
+const WAITING_ASK = '/waiting?ask=0199a0f0-0000-7000-8000-000000000001';
 
 function visit(path: string, cookie?: string) {
   return proxy(
@@ -41,7 +40,7 @@ describe('turning a signed-out visitor away', () => {
     const response = visit(WAITING_ASK);
 
     expect(response.headers.get('location')).toBe(
-      'http://localhost:3001/signin?next=%2Fhome%3Ftab%3Dwaiting%26ask%3D0199a0f0-0000-7000-8000-000000000001',
+      'http://localhost:3001/signin?next=%2Fwaiting%3Fask%3D0199a0f0-0000-7000-8000-000000000001',
     );
   });
 
@@ -109,6 +108,10 @@ describe('what the proxy runs on', () => {
   it('guards the signed-in pages, never sign-in, the public landing page, or the address a chat tool returns an Admin to', () => {
     expect(config.matcher).toEqual([
       '/home',
+      '/kudos',
+      '/received',
+      '/given',
+      '/waiting',
       '/register/:path*',
       '/choose-workspace',
       '/settings',

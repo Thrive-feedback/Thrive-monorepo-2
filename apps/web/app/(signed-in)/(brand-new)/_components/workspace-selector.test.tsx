@@ -1,22 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type {
-  SwitchLanding,
-  SwitchWorkspaceResult,
-} from '@/lib/workspace/workspace-switch-actions.service';
+import type { SwitchWorkspaceResult } from '@/lib/workspace/workspace-switch-actions.service';
 import { WorkspaceSelector } from './workspace-selector';
 
 const switchWorkspace =
-  vi.fn<
-    (
-      workspaceId: string,
-      landing?: SwitchLanding,
-    ) => Promise<SwitchWorkspaceResult>
-  >();
+  vi.fn<(workspaceId: string) => Promise<SwitchWorkspaceResult>>();
 vi.mock('@/lib/workspace/workspace-switch-actions.service', () => ({
-  switchWorkspace: (workspaceId: string, landing?: SwitchLanding) =>
-    switchWorkspace(workspaceId, landing),
+  switchWorkspace: (workspaceId: string) => switchWorkspace(workspaceId),
   createAnotherWorkspace: vi.fn(),
 }));
 
@@ -74,16 +65,13 @@ describe('WorkspaceSelector', () => {
     expect(screen.getByRole('menu')).not.toHaveTextContent(/admin|member/i);
   });
 
-  it('switches at once and lands on the new Home', async () => {
+  it('switches at once', async () => {
     switchWorkspace.mockReturnValue(new Promise(() => {}));
     const user = await openMenu();
 
     await user.click(screen.getByRole('menuitemcheckbox', { name: 'Globex' }));
 
-    expect(switchWorkspace).toHaveBeenCalledExactlyOnceWith(
-      GLOBEX.id,
-      'brandNewHome',
-    );
+    expect(switchWorkspace).toHaveBeenCalledExactlyOnceWith(GLOBEX.id);
   });
 
   it('does nothing when the current Workspace is chosen again', async () => {

@@ -86,8 +86,8 @@ export function ComposeKudosDialog({
   // which keeps its filter.
   function handleBackToHome() {
     handleOpenChange(false);
-    if (pathname !== ROUTES.brandNewHome) {
-      router.push(ROUTES.brandNewHome);
+    if (pathname !== ROUTES.home) {
+      router.push(ROUTES.home);
     }
   }
 

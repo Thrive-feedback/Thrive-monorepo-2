@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { toSignInDestination } from './sign-in-destination.constant';
 
-const WAITING_ASK =
-  '/home?tab=waiting&ask=0199a0f0-0000-7000-8000-000000000001';
+const WAITING_ASK = '/waiting?ask=0199a0f0-0000-7000-8000-000000000001';
 
 describe('toSignInDestination', () => {
   it('is the page the link pointed at, query and all', () => {
@@ -16,7 +15,7 @@ describe('toSignInDestination', () => {
   // Landing on one of these would read as a fresh arrival from Google, and be followed again.
   it.each([
     '/home?signedIn=1',
-    '/home?tab=waiting&signedIn=1',
+    '/waiting?sort=oldest&signedIn=1',
     '/choose-workspace?signedIn=1',
     '/register/introduce-yourself?signedIn=1',
     '/home?signedIn=',
@@ -26,8 +25,8 @@ describe('toSignInDestination', () => {
   });
 
   it('keeps a path whose query only looks like it', () => {
-    expect(toSignInDestination('/home?tab=signedIn')).toBe(
-      '/home?tab=signedIn',
+    expect(toSignInDestination('/home?show=signedIn')).toBe(
+      '/home?show=signedIn',
     );
     expect(toSignInDestination('/signedIn')).toBe('/signedIn');
   });

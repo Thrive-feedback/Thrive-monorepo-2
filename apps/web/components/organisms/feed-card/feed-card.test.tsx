@@ -94,7 +94,7 @@ function renderCard(item: HomeFeedItem, readerAccountId = ANN.accountId) {
     <FeedCard
       item={item}
       readerAccountId={readerAccountId}
-      target={{ href: `/brand-new-home?feedback=${item.id}` }}
+      target={{ href: `/home?feedback=${item.id}` }}
     />,
   );
 }
@@ -163,7 +163,7 @@ describe('FeedCard', () => {
       screen.getByRole('link', {
         name: 'Open postcard: Cara Diaz gave feedback to Ben Carter',
       }),
-    ).toHaveAttribute('href', '/brand-new-home?feedback=fb-1');
+    ).toHaveAttribute('href', '/home?feedback=fb-1');
   });
 
   it('draws no question on Offered Feedback', () => {

@@ -9,8 +9,8 @@ import {
 } from '@/components/atoms/tabs';
 import { Text } from '@/components/atoms/text';
 import glass from '@/components/organisms/glass.module.css';
+import type { HomeTab } from '@/components/organisms/home-tabs';
 import { cn } from '@/lib/cn.util';
-import type { HomeTab } from '@/lib/routes.constant';
 import { LANDING_COPY } from './landing-copy.constant';
 import { LandingHomePreview } from './landing-home-preview';
 import { NotedText } from './landing-note';

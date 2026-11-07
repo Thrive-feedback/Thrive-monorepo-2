@@ -52,8 +52,8 @@ export function WaitingAskCardEntry() {
       origin="thrive"
       source="components/organisms/feed-card/waiting-ask-card.tsx — the ground of a feed card + FeedCardNote + PendingPostcardMiniature."
       summary="An Ask waiting for the person: who asked, when, and the Request message, beside the postcard it is answered on and a handwritten note pointing to it."
-      useFor="One Ask in the Waiting for me menu of the new Home."
-      avoidFor="Feedback already written: use FeedCard. /home's waiting list, which keeps ActivityRow."
+      useFor="One Ask in the Waiting for me menu."
+      avoidFor="Feedback already written: use FeedCard. The landing page's preview of Home, which keeps ActivityRow."
       usage={`import { WaitingAskCard } from '@/components/organisms/feed-card/waiting-ask-card';
 
 <WaitingAskCard

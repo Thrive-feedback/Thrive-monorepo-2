@@ -12,7 +12,7 @@ function goTo(address: string) {
 }
 
 beforeEach(() => {
-  goTo('/brand-new-received');
+  goTo('/received');
 });
 
 function chooser(name: 'Grid view' | 'List view') {
@@ -28,7 +28,7 @@ describe('PersonalItemsViewToggle', () => {
   });
 
   it('shows the view the address names', () => {
-    goTo('/brand-new-received?view=list');
+    goTo('/received?view=list');
 
     render(<PersonalItemsViewToggle side="received" />);
 
@@ -37,7 +37,7 @@ describe('PersonalItemsViewToggle', () => {
   });
 
   it('falls back to the grid for a view the address cannot mean', () => {
-    goTo('/brand-new-received?view=table');
+    goTo('/received?view=table');
 
     render(<PersonalItemsViewToggle side="received" />);
 
@@ -56,24 +56,24 @@ describe('PersonalItemsViewToggle', () => {
 
     await user.click(chooser('List view'));
 
-    expect(window.location.pathname).toBe('/brand-new-received');
+    expect(window.location.pathname).toBe('/received');
     expect(window.location.search).toBe('?view=list');
   });
 
   it("keeps Given's choice in Given's address", async () => {
     const user = userEvent.setup();
-    goTo('/brand-new-given');
+    goTo('/given');
     render(<PersonalItemsViewToggle side="given" />);
 
     await user.click(chooser('List view'));
 
-    expect(window.location.pathname).toBe('/brand-new-given');
+    expect(window.location.pathname).toBe('/given');
     expect(window.location.search).toBe('?view=list');
   });
 
   it('leaves the address as it is when the view showing is pressed again', async () => {
     const user = userEvent.setup();
-    goTo('/brand-new-received?view=list');
+    goTo('/received?view=list');
     render(<PersonalItemsViewToggle side="received" />);
 
     await user.click(chooser('List view'));

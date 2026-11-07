@@ -5,7 +5,7 @@ import { BrandNewSidebar } from './brand-new-sidebar';
 
 const MEMBERSHIP = { workspace: { id: 'w-1', name: 'Acme' }, role: 'MEMBER' };
 
-const usePathname = vi.fn((): string => ROUTES.brandNewHome);
+const usePathname = vi.fn((): string => ROUTES.home);
 vi.mock('next/navigation', () => ({
   usePathname: () => usePathname(),
   useRouter: () => ({ refresh: vi.fn() }),
@@ -37,7 +37,7 @@ vi.mock('@/lib/feedback/teammates.service', () => ({
     readTeammates(membership, ownEmail),
 }));
 
-async function draw(waiting: number, path: string = ROUTES.brandNewHome) {
+async function draw(waiting: number, path: string = ROUTES.home) {
   usePathname.mockReturnValue(path);
   readTeammates.mockResolvedValue([]);
   readWaitingCount.mockResolvedValue(waiting);
@@ -84,7 +84,7 @@ describe('BrandNewSidebar', () => {
     );
     expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute(
       'href',
-      ROUTES.brandNewHome,
+      ROUTES.home,
     );
     expect(
       within(nav).getByRole('link', { name: 'Waiting for me' }),
