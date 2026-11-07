@@ -440,6 +440,19 @@ describe('WaitingPostcard', () => {
       expect(refresh).toHaveBeenCalledOnce();
     });
 
+    it('leaves the cursor alone on the page the person went to after leaving in flight', async () => {
+      const { unmount } = render(drawThePage());
+      await writeAnAnswer();
+      await screen.findByText('Answer sent.', undefined, AFTER_THE_FLIGHT);
+
+      unmount();
+      draw(theListWith());
+      // The dialog hands focus back a moment after it is gone, so the page has to outlast that.
+      await new Promise((settle) => setTimeout(settle, 20));
+
+      expect(screen.getByRole('heading')).not.toHaveFocus();
+    });
+
     it('still takes the card out when the person leaves while it is being sent', async () => {
       let answerGoes = (_outcome: object) => {};
       sendPostcardAnswer.mockReturnValue(
