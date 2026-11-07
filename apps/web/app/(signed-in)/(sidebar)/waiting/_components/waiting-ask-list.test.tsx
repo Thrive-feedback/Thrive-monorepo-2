@@ -1,17 +1,17 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
-import type { WaitingAskItem } from '@/app/(signed-in)/(brand-new)/waiting/_lib/waiting-asks.service';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(sidebar)/_lib/plain-postcard.constant';
+import type { WaitingAskItem } from '@/app/(signed-in)/(sidebar)/waiting/_lib/waiting-asks.service';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
-import { type BrandNewWaitingSort, ROUTES } from '@/lib/routes.constant';
+import { ROUTES, type WaitingSortOrder } from '@/lib/routes.constant';
 import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
 import { AnsweredAsksProvider, useAnsweredAsks } from './answered-asks';
 import { WaitingAskList } from './waiting-ask-list';
 
 const readNextWaitingAsks = vi.fn();
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/waiting/_lib/waiting-asks-actions.service',
+  '@/app/(signed-in)/(sidebar)/waiting/_lib/waiting-asks-actions.service',
   () => ({
     readNextWaitingAsks: (input: unknown) => readNextWaitingAsks(input),
   }),
@@ -61,7 +61,7 @@ function AnsweringBen() {
 function draw(
   nextCursor: string | null,
   items = [ask('a-1', 'Ann')],
-  sort: BrandNewWaitingSort = 'newest',
+  sort: WaitingSortOrder = 'newest',
 ) {
   render(
     <AnsweredAsksProvider>
@@ -88,7 +88,7 @@ describe('WaitingAskList', () => {
       screen.getByRole('link', {
         name: 'Answer in the postcard: Ann requested feedback from you',
       }),
-    ).toHaveAttribute('href', ROUTES.brandNewWaitingAsk('a-1'));
+    ).toHaveAttribute('href', ROUTES.waitingAsk('a-1'));
   });
 
   it('reads the next page as the end comes near, and keeps what it had', async () => {
@@ -126,7 +126,7 @@ describe('WaitingAskList', () => {
       screen.getByRole('link', {
         name: 'Answer in the postcard: Ann requested feedback from you',
       }),
-    ).toHaveAttribute('href', ROUTES.brandNewWaitingAsk('a-1', 'oldest'));
+    ).toHaveAttribute('href', ROUTES.waitingAsk('a-1', 'oldest'));
   });
 
   it('says so when a page could not be read, and tries again on a press', async () => {

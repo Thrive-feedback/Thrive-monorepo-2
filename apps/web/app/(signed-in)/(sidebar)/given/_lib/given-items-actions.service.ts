@@ -1,7 +1,7 @@
 'use server';
 
-import type { PersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
-import { readPageAfterCursor } from '@/app/(signed-in)/(brand-new)/_lib/read-next-page.service';
+import type { PersonalItemsPage } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
+import { readPageAfterCursor } from '@/app/(signed-in)/(sidebar)/_lib/read-next-page.service';
 import { readGivenItems } from './given-items.service';
 
 /**

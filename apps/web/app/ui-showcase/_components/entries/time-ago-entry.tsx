@@ -24,7 +24,7 @@ export function TimeAgoEntry() {
       origin="thrive"
       source="components/atoms/time-ago.tsx"
       summary="How long ago something happened, with the day itself on a hover."
-      useFor="When something happened, on any card of the new Home."
+      useFor="When something happened, on any card of Home."
       avoidFor="A postmark, which prints the day, or a date someone has to act on."
       usage={`import { TimeAgo } from '@/components/atoms/time-ago';
 

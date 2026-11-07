@@ -1,9 +1,9 @@
 import 'server-only';
 import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
-import type { PersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
-import { toPersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.util';
-import { PERSONAL_ITEMS_PAGE_SIZE } from '@/app/(signed-in)/(brand-new)/_lib/read-first-page.service';
+import type { PersonalItemsPage } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
+import { toPersonalItemsPage } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.util';
+import { PERSONAL_ITEMS_PAGE_SIZE } from '@/app/(signed-in)/(sidebar)/_lib/read-first-page.service';
 import { apiClient } from '@/lib/api-client.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 

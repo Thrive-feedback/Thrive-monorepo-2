@@ -28,7 +28,7 @@ export function OfferedFeedbackCardEntry() {
 <OfferedFeedbackCard
   item={item}
   readerAccountId={page.readerAccountId}
-  target={{ href: ROUTES.brandNewHomeFeedback(item.id, show) }}
+  target={{ href: ROUTES.homeFeedback(item.id, show) }}
 />`}
       props={[
         {

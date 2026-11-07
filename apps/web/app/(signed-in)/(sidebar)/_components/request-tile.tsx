@@ -1,12 +1,12 @@
-import type { PersonalRequest } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
-import { PERSONAL_ITEM_TILE } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-layout.constant';
+import type { PersonalRequest } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
+import { PERSONAL_ITEM_TILE } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-layout.constant';
 import {
   askedLine,
   newestAnswerOf,
   requestAudienceOf,
   tallyOf,
-} from '@/app/(signed-in)/(brand-new)/_lib/request-card.util';
-import { useReceivedShow } from '@/app/(signed-in)/(brand-new)/_lib/use-received-show';
+} from '@/app/(signed-in)/(sidebar)/_lib/request-card.util';
+import { useReceivedShow } from '@/app/(signed-in)/(sidebar)/_lib/use-received-show';
 import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';
 import { TargetLink } from '@/components/molecules/target-link';
@@ -68,7 +68,7 @@ export function RequestTile({ request }: RequestTileProps) {
       {newest ? (
         <TargetLink
           target={{
-            href: ROUTES.brandNewReceivedFeedback(newest.id, 'grid', show),
+            href: ROUTES.receivedFeedback(newest.id, 'grid', show),
           }}
           className={cn(
             'block w-full font-normal after:absolute after:inset-0 after:rounded-page',

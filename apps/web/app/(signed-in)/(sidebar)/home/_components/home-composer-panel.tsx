@@ -5,7 +5,7 @@ import {
   ComposeCards,
   useComposeCards,
   warmComposeCards,
-} from '@/app/(signed-in)/(brand-new)/_components/compose-cards';
+} from '@/app/(signed-in)/(sidebar)/_components/compose-cards';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { FeedComposer } from './feed-composer/feed-composer';

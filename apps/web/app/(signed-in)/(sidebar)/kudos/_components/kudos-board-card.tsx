@@ -1,6 +1,6 @@
 import { ArrowRightIcon, UsersIcon } from 'lucide-react';
 import { memo, useRef } from 'react';
-import { kudosCaptionName } from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board-place.util';
+import { kudosCaptionName } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board-place.util';
 import { Text } from '@/components/atoms/text';
 import { AvatarGroup } from '@/components/molecules/avatar-group';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';

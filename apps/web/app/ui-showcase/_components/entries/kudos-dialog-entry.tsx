@@ -24,7 +24,7 @@ export function KudosDialogEntry() {
   open={open}
   onOpenChange={setOpen}
   onSend={(kudos) => giveKudos(kudos)}
-  onGoToBoard={() => router.push(ROUTES.brandNewKudos)}
+  onGoToBoard={() => router.push(ROUTES.kudos)}
   onBackToHome={() => setOpen(false)}
 />`}
       props={[

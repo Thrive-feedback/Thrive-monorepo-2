@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BRAND_NEW_HOME_SHOWS } from '@/lib/routes.constant';
+import { HOME_SHOWS } from '@/lib/routes.constant';
 
 /**
  * Each flag is added by whatever sent the person here, so the page can say once what happened:
@@ -9,11 +9,11 @@ import { BRAND_NEW_HOME_SHOWS } from '@/lib/routes.constant';
  * the feed's filter, and `feedback` the piece open over it, so a reload or a shared link comes
  * back to the same place. Any other value is ignored.
  */
-export const BrandNewHomeSearchParams = z.object({
+export const HomeSearchParams = z.object({
   signedIn: z.literal('1').optional().catch(undefined),
   opened: z.literal('1').optional().catch(undefined),
   left: z.literal('1').optional().catch(undefined),
   switched: z.literal('1').optional().catch(undefined),
-  show: z.enum(BRAND_NEW_HOME_SHOWS).catch(BRAND_NEW_HOME_SHOWS[0]),
+  show: z.enum(HOME_SHOWS).catch(HOME_SHOWS[0]),
   feedback: z.uuid().optional().catch(undefined),
 });

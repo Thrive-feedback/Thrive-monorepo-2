@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { PersonalItemOnTheWire } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
-import { toPersonalItem } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.util';
+import type { PersonalItemOnTheWire } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
+import { toPersonalItem } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.util';
 import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import { POSTCARD_TEMPLATES } from '@/components/organisms/postcard-dialog/postcard-template.constant';
 

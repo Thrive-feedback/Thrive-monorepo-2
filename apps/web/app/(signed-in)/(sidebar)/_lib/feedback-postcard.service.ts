@@ -1,11 +1,11 @@
 import 'server-only';
 import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
-import { toPostcardWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
+import { toPostcardWriter } from '@/app/(signed-in)/(sidebar)/_lib/postcard-writer.util';
 import {
   toAskOnPostcard,
   toGivenPostcard,
-} from '@/app/(signed-in)/(brand-new)/_lib/read-postcard.util';
+} from '@/app/(signed-in)/(sidebar)/_lib/read-postcard.util';
 import { NO_NAME_IN_A_SENTENCE } from '@/components/organisms/feed-card/feed-card-sentence.util';
 import type {
   PostcardReadAnswer,

@@ -10,20 +10,16 @@ import {
   SelectValue,
 } from '@/components/atoms/select';
 import { Text } from '@/components/atoms/text';
-import {
-  BRAND_NEW_HOME_SHOWS,
-  type BrandNewHomeShow,
-  ROUTES,
-} from '@/lib/routes.constant';
+import { HOME_SHOWS, type HomeShow, ROUTES } from '@/lib/routes.constant';
 
-const SHOW_NAMES: Readonly<Record<BrandNewHomeShow, string>> = {
+const SHOW_NAMES: Readonly<Record<HomeShow, string>> = {
   all: 'All Feedback',
   everyone: 'Everyone in the Workspace',
   shared: 'Shared with me',
 };
 
 export type HomeFeedFilterProps = {
-  show: BrandNewHomeShow;
+  show: HomeShow;
 };
 
 /** What the feed shows, kept in the address: a dropdown, not tabs or chips (design `D-016`). */
@@ -32,9 +28,9 @@ export function HomeFeedFilter({ show }: HomeFeedFilterProps) {
   const labelId = useId();
 
   function handleValueChange(value: string) {
-    const chosen = BRAND_NEW_HOME_SHOWS.find((one) => one === value);
+    const chosen = HOME_SHOWS.find((one) => one === value);
     if (chosen) {
-      router.push(ROUTES.brandNewHomeShowing(chosen));
+      router.push(ROUTES.homeShowing(chosen));
     }
   }
 
@@ -48,7 +44,7 @@ export function HomeFeedFilter({ show }: HomeFeedFilterProps) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent fitsItems align="end">
-          {BRAND_NEW_HOME_SHOWS.map((value) => (
+          {HOME_SHOWS.map((value) => (
             <SelectItem key={value} value={value}>
               {SHOW_NAMES[value]}
             </SelectItem>

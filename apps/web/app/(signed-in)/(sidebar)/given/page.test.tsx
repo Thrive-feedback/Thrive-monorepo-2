@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import BrandNewGiven from './page';
+import Given from './page';
 
 const FEEDBACK_ID = '0199a0f0-0000-7000-8000-0000000000d1';
 
@@ -14,7 +14,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('./_components/given-items', () => ({
   GivenItems: () => <p>What was given</p>,
 }));
-vi.mock('@/app/(signed-in)/(brand-new)/_components/feedback-postcard', () => ({
+vi.mock('@/app/(signed-in)/(sidebar)/_components/feedback-postcard', () => ({
   FeedbackPostcard: ({
     feedbackId,
     closeHref,
@@ -35,10 +35,10 @@ beforeEach(() => {
 });
 
 function open(searchParams: Record<string, string> = {}) {
-  return BrandNewGiven({ searchParams: Promise.resolve(searchParams) });
+  return Given({ searchParams: Promise.resolve(searchParams) });
 }
 
-describe('BrandNewGiven', () => {
+describe('Given', () => {
   it('lets only a Member in, and is headed Given', async () => {
     render(await open());
 

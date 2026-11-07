@@ -4,60 +4,49 @@
  *
  * Paths only, never full URLs: the origin is the deployment's, not the code's.
  */
-/** What the new Home's filter can show, in the order offered. The first is what Home opens on. */
-export const BRAND_NEW_HOME_SHOWS = ['all', 'everyone', 'shared'] as const;
+/** What Home's filter can show, in the order offered. The first is what Home opens on. */
+export const HOME_SHOWS = ['all', 'everyone', 'shared'] as const;
 
-export type BrandNewHomeShow = (typeof BRAND_NEW_HOME_SHOWS)[number];
+export type HomeShow = (typeof HOME_SHOWS)[number];
 
-/** The new Home showing one choice of its filter; `all` is what it opens on, so it needs no query. */
-function brandNewHomeShowing(show: BrandNewHomeShow) {
-  return show === BRAND_NEW_HOME_SHOWS[0] ? '/home' : `/home?show=${show}`;
+/** Home showing one choice of its filter; `all` is what it opens on, so it needs no query. */
+function homeShowing(show: HomeShow) {
+  return show === HOME_SHOWS[0] ? '/home' : `/home?show=${show}`;
 }
 
 /** How Received and Given can be laid out. The first is what each opens on. */
-export const BRAND_NEW_PERSONAL_VIEWS = ['grid', 'list'] as const;
+export const PERSONAL_VIEWS = ['grid', 'list'] as const;
 
-export type BrandNewPersonalView = (typeof BRAND_NEW_PERSONAL_VIEWS)[number];
+export type PersonalView = (typeof PERSONAL_VIEWS)[number];
 
 /** The view an address names, or the one those pages open on when it names none they know. */
-export function personalViewOf(value: string | null): BrandNewPersonalView {
-  return (
-    BRAND_NEW_PERSONAL_VIEWS.find((view) => view === value) ??
-    BRAND_NEW_PERSONAL_VIEWS[0]
-  );
+export function personalViewOf(value: string | null): PersonalView {
+  return PERSONAL_VIEWS.find((view) => view === value) ?? PERSONAL_VIEWS[0];
 }
 
 /** What Received can be narrowed to, in the order offered. The first is what it opens on. */
-export const BRAND_NEW_RECEIVED_SHOWS = [
-  'all',
-  'requests',
-  'offered',
-  'kudos',
-] as const;
+export const RECEIVED_SHOWS = ['all', 'requests', 'offered', 'kudos'] as const;
 
-export type BrandNewReceivedShow = (typeof BRAND_NEW_RECEIVED_SHOWS)[number];
+export type ReceivedShow = (typeof RECEIVED_SHOWS)[number];
 
 /** What an address narrows Received to, or everything when it names nothing it knows. */
-export function receivedShowOf(value: string | null): BrandNewReceivedShow {
-  return (
-    BRAND_NEW_RECEIVED_SHOWS.find((show) => show === value) ??
-    BRAND_NEW_RECEIVED_SHOWS[0]
-  );
+export function receivedShowOf(value: string | null): ReceivedShow {
+  return RECEIVED_SHOWS.find((show) => show === value) ?? RECEIVED_SHOWS[0];
 }
 
 /**
  * Received laid out one way, showing one kind; `grid` and `all` are what it opens on, so neither
  * needs a query.
  */
-function brandNewReceivedViewing(
-  view: BrandNewPersonalView,
-  show: BrandNewReceivedShow = BRAND_NEW_RECEIVED_SHOWS[0],
+function receivedViewing(
+  view: PersonalView,
+  show: ReceivedShow = RECEIVED_SHOWS[0],
 ) {
   const query = new URLSearchParams();
-  if (show !== BRAND_NEW_RECEIVED_SHOWS[0]) {
+  if (show !== RECEIVED_SHOWS[0]) {
     query.set('show', show);
   }
-  if (view !== BRAND_NEW_PERSONAL_VIEWS[0]) {
+  if (view !== PERSONAL_VIEWS[0]) {
     query.set('view', view);
   }
   const search = query.toString();
@@ -65,22 +54,18 @@ function brandNewReceivedViewing(
 }
 
 /** Given laid out one way; `grid` is what it opens on, so it needs no query. */
-function brandNewGivenViewing(view: BrandNewPersonalView) {
-  return view === BRAND_NEW_PERSONAL_VIEWS[0]
-    ? '/given'
-    : `/given?view=${view}`;
+function givenViewing(view: PersonalView) {
+  return view === PERSONAL_VIEWS[0] ? '/given' : `/given?view=${view}`;
 }
 
 /** The orders Waiting for me can be read in. The first is what it opens on. */
-export const BRAND_NEW_WAITING_SORTS = ['newest', 'oldest'] as const;
+export const WAITING_SORTS = ['newest', 'oldest'] as const;
 
-export type BrandNewWaitingSort = (typeof BRAND_NEW_WAITING_SORTS)[number];
+export type WaitingSortOrder = (typeof WAITING_SORTS)[number];
 
 /** Waiting for me in one order; `newest` is what it opens on, so it needs no query. */
-function brandNewWaitingSorted(sort: BrandNewWaitingSort) {
-  return sort === BRAND_NEW_WAITING_SORTS[0]
-    ? '/waiting'
-    : `/waiting?sort=${sort}`;
+function waitingSorted(sort: WaitingSortOrder) {
+  return sort === WAITING_SORTS[0] ? '/waiting' : `/waiting?sort=${sort}`;
 }
 
 export const ROUTES = {
@@ -90,52 +75,49 @@ export const ROUTES = {
   home: '/home',
   /** Home, saying once that the person has just switched to this Workspace. */
   homeOpened: '/home?opened=1',
-  /** The new Home showing one choice of its filter. */
-  brandNewHomeShowing,
-  /** One piece of Feedback open over the new Home, which keeps showing what it was showing. */
-  brandNewHomeFeedback: (feedbackId: string, show: BrandNewHomeShow) => {
-    const showing = brandNewHomeShowing(show);
+  /** Home showing one choice of its filter. */
+  homeShowing,
+  /** One piece of Feedback open over Home, which keeps showing what it was showing. */
+  homeFeedback: (feedbackId: string, show: HomeShow) => {
+    const showing = homeShowing(show);
     return `${showing}${showing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
-  /** The Workspace's Kudos, in the new Home. */
-  brandNewKudos: '/kudos',
+  /** The Workspace's Kudos board. */
+  kudos: '/kudos',
   /** The Kudos board narrowed to one month, `YYYY-MM`. */
-  brandNewKudosMonth: (month: string) => `/kudos?month=${month}`,
-  /** Everything written to the person, in the new Home. */
-  brandNewReceived: '/received',
+  kudosMonth: (month: string) => `/kudos?month=${month}`,
+  /** Everything written to the person. */
+  received: '/received',
   /** Received laid out one way, showing one kind. */
-  brandNewReceivedViewing,
+  receivedViewing,
   /** One piece of Feedback open over Received, which stays laid out and narrowed as it was. */
-  brandNewReceivedFeedback: (
+  receivedFeedback: (
     feedbackId: string,
-    view: BrandNewPersonalView = BRAND_NEW_PERSONAL_VIEWS[0],
-    show: BrandNewReceivedShow = BRAND_NEW_RECEIVED_SHOWS[0],
+    view: PersonalView = PERSONAL_VIEWS[0],
+    show: ReceivedShow = RECEIVED_SHOWS[0],
   ) => {
-    const viewing = brandNewReceivedViewing(view, show);
+    const viewing = receivedViewing(view, show);
     return `${viewing}${viewing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
-  /** Everything the person wrote, in the new Home. */
-  brandNewGiven: '/given',
+  /** Everything the person wrote. */
+  given: '/given',
   /** Given laid out one way. */
-  brandNewGivenViewing,
+  givenViewing,
   /** One piece of Feedback open over Given, which stays laid out as it was. */
-  brandNewGivenFeedback: (
+  givenFeedback: (
     feedbackId: string,
-    view: BrandNewPersonalView = BRAND_NEW_PERSONAL_VIEWS[0],
+    view: PersonalView = PERSONAL_VIEWS[0],
   ) => {
-    const viewing = brandNewGivenViewing(view);
+    const viewing = givenViewing(view);
     return `${viewing}${viewing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
-  /** Every Ask waiting for the person, in the new Home. */
-  brandNewWaiting: '/waiting',
+  /** Every Ask waiting for the person. */
+  waiting: '/waiting',
   /** Waiting for me in one order. */
-  brandNewWaitingSorted,
+  waitingSorted,
   /** One Ask open over Waiting for me, on the postcard it is answered on, keeping its order. */
-  brandNewWaitingAsk: (
-    askId: string,
-    sort: BrandNewWaitingSort = BRAND_NEW_WAITING_SORTS[0],
-  ) => {
-    const sorted = brandNewWaitingSorted(sort);
+  waitingAsk: (askId: string, sort: WaitingSortOrder = WAITING_SORTS[0]) => {
+    const sorted = waitingSorted(sort);
     return `${sorted}${sorted.includes('?') ? '&' : '?'}ask=${askId}`;
   },
   /**

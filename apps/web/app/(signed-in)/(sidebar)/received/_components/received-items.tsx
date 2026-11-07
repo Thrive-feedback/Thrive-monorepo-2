@@ -1,15 +1,15 @@
-import { PersonalItemList } from '@/app/(signed-in)/(brand-new)/_components/personal-item-list';
-import { PersonalItemsRetry } from '@/app/(signed-in)/(brand-new)/_components/personal-items-retry';
-import { readFirstPage } from '@/app/(signed-in)/(brand-new)/_lib/read-first-page.service';
-import { readReceivedItems } from '@/app/(signed-in)/(brand-new)/received/_lib/received-items.service';
-import { readNextReceivedPage } from '@/app/(signed-in)/(brand-new)/received/_lib/received-items-actions.service';
+import { PersonalItemList } from '@/app/(signed-in)/(sidebar)/_components/personal-item-list';
+import { PersonalItemsRetry } from '@/app/(signed-in)/(sidebar)/_components/personal-items-retry';
+import { readFirstPage } from '@/app/(signed-in)/(sidebar)/_lib/read-first-page.service';
+import { readReceivedItems } from '@/app/(signed-in)/(sidebar)/received/_lib/received-items.service';
+import { readNextReceivedPage } from '@/app/(signed-in)/(sidebar)/received/_lib/received-items-actions.service';
 import { Text } from '@/components/atoms/text';
-import type { BrandNewReceivedShow } from '@/lib/routes.constant';
+import type { ReceivedShow } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 /** What an empty Received says, for each kind it can be narrowed to. */
 const EMPTY: Readonly<
-  Record<BrandNewReceivedShow, { title: string; description: string }>
+  Record<ReceivedShow, { title: string; description: string }>
 > = {
   all: {
     title: 'No Feedback for you yet',
@@ -34,7 +34,7 @@ const EMPTY: Readonly<
 export type ReceivedItemsProps = {
   membership: CurrentMembership;
   /** The kind it is narrowed to, or all of them. */
-  show: BrandNewReceivedShow;
+  show: ReceivedShow;
 };
 
 /** The first page of Received, read here so the page renders around it while it is in flight. */

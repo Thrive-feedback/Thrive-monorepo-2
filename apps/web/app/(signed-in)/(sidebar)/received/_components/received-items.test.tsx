@@ -11,7 +11,7 @@ vi.mock('next/headers', () => ({
   headers: async () => new Headers({ cookie: 'thrive.session_token=abc' }),
 }));
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/received/_lib/received-items-actions.service',
+  '@/app/(signed-in)/(sidebar)/received/_lib/received-items-actions.service',
   () => ({ readNextReceivedPage: vi.fn() }),
 );
 const refresh = vi.fn();

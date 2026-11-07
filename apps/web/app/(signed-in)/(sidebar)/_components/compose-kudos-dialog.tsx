@@ -1,9 +1,9 @@
 import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
 import { useRef } from 'react';
-import { deliverCard } from '@/app/(signed-in)/(brand-new)/_lib/deliver-card.util';
-import { sendKudosCard } from '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service';
-import { toSentKudos } from '@/app/(signed-in)/(brand-new)/_lib/sent-kudos.util';
+import { deliverCard } from '@/app/(signed-in)/(sidebar)/_lib/deliver-card.util';
+import { sendKudosCard } from '@/app/(signed-in)/(sidebar)/_lib/send-postcard-actions.service';
+import { toSentKudos } from '@/app/(signed-in)/(sidebar)/_lib/sent-kudos.util';
 import type { KudosDraft } from '@/components/organisms/kudos-dialog/kudos-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { ROUTES } from '@/lib/routes.constant';
@@ -79,7 +79,7 @@ export function ComposeKudosDialog({
 
   function handleGoToBoard() {
     handleOpenChange(false);
-    router.push(ROUTES.brandNewKudos);
+    router.push(ROUTES.kudos);
   }
 
   // The dialog can be opened from anywhere the sidebar is. On Home itself going back is closing it,

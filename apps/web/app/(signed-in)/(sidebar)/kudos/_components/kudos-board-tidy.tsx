@@ -1,7 +1,7 @@
 'use client';
 
 import { BrushCleaningIcon } from 'lucide-react';
-import { KUDOS_BOARD_HEADING_ID } from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board.constant';
+import { KUDOS_BOARD_HEADING_ID } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board.constant';
 import { Button } from '@/components/atoms/button';
 import { useKudosBoardPlaces } from './kudos-board-places';
 

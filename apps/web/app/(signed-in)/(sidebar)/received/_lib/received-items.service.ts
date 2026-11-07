@@ -1,11 +1,11 @@
 import 'server-only';
 import { unwrap } from '@repo/api';
 import { headers } from 'next/headers';
-import type { PersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
-import { toPersonalItemsPage } from '@/app/(signed-in)/(brand-new)/_lib/personal-item.util';
-import { PERSONAL_ITEMS_PAGE_SIZE } from '@/app/(signed-in)/(brand-new)/_lib/read-first-page.service';
+import type { PersonalItemsPage } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
+import { toPersonalItemsPage } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.util';
+import { PERSONAL_ITEMS_PAGE_SIZE } from '@/app/(signed-in)/(sidebar)/_lib/read-first-page.service';
 import { apiClient } from '@/lib/api-client.service';
-import type { BrandNewReceivedShow } from '@/lib/routes.constant';
+import type { ReceivedShow } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 
 /** What each choice in the address asks the API for. */
@@ -14,7 +14,7 @@ const SHOWS = {
   requests: 'REQUESTS',
   offered: 'OFFERED',
   kudos: 'KUDOS',
-} as const satisfies Record<BrandNewReceivedShow, string>;
+} as const satisfies Record<ReceivedShow, string>;
 
 /**
  * One page of what came back to the signed-in person, newest first, narrowed to one kind or not. Whose it is is the API's to
@@ -23,7 +23,7 @@ const SHOWS = {
  */
 export async function readReceivedItems(
   membership: CurrentMembership,
-  show: BrandNewReceivedShow,
+  show: ReceivedShow,
   cursor?: string,
 ): Promise<PersonalItemsPage> {
   const page = unwrap(

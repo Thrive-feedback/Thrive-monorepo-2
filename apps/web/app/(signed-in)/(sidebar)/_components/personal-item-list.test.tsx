@@ -16,7 +16,7 @@ import type {
   PersonalItem,
   PersonalItemsPage,
   PersonalKudos,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
 import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';

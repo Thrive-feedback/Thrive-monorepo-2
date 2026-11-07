@@ -1,10 +1,10 @@
 import { ApiError } from '@repo/api';
-import { toSessionWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
-import { readWaitingPostcard } from '@/app/(signed-in)/(brand-new)/waiting/_lib/waiting-postcard.service';
+import { toSessionWriter } from '@/app/(signed-in)/(sidebar)/_lib/postcard-writer.util';
+import { readWaitingPostcard } from '@/app/(signed-in)/(sidebar)/waiting/_lib/waiting-postcard.service';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { readTeammates } from '@/lib/feedback/teammates.service';
 import { readWorkspaceGoalNames } from '@/lib/feedback/workspace-goal-names.service';
-import { type BrandNewWaitingSort, ROUTES } from '@/lib/routes.constant';
+import { ROUTES, type WaitingSortOrder } from '@/lib/routes.constant';
 import type { MemberAccount } from '@/lib/session/session.service';
 import { WaitingAskGone } from './waiting-ask-gone';
 import { WaitingPostcardDialog } from './waiting-postcard-dialog';
@@ -15,7 +15,7 @@ export type WaitingPostcardProps = {
   session: MemberAccount;
   askId: string;
   /** The order of the list behind it, which closing comes back to. */
-  sort: BrandNewWaitingSort;
+  sort: WaitingSortOrder;
 };
 
 /** The reads, with a failure of the API told apart from an Ask there is nothing left to answer. */
@@ -48,7 +48,7 @@ export async function WaitingPostcard({
   askId,
   sort,
 }: WaitingPostcardProps) {
-  const closeHref = ROUTES.brandNewWaitingSorted(sort);
+  const closeHref = ROUTES.waitingSorted(sort);
   const opening = await readOpening(session, askId);
 
   if (opening === 'failed') {

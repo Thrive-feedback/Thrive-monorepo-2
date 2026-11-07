@@ -10,7 +10,7 @@ vi.mock('next/headers', () => ({
   headers: async () => new Headers({ cookie: 'thrive.session_token=abc' }),
 }));
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/given/_lib/given-items-actions.service',
+  '@/app/(signed-in)/(sidebar)/given/_lib/given-items-actions.service',
   () => ({ readNextGivenPage: vi.fn() }),
 );
 // A server component that reads, which a client render cannot await: it has its own suite.

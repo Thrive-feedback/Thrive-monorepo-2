@@ -1,10 +1,10 @@
 import {
   PERSONAL_ITEM_TILE,
   PERSONAL_ITEMS_GRID,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-items-layout.constant';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-items-layout.constant';
 import { Skeleton, SkeletonRegion } from '@/components/atoms/skeleton';
 import { FeedCardSkeletonList } from '@/components/organisms/feed-card/feed-card-skeleton';
-import type { BrandNewPersonalView } from '@/lib/routes.constant';
+import type { PersonalView } from '@/lib/routes.constant';
 
 /** A box still loading, part for part, as tall as the one it stands for. */
 function PersonalItemTileSkeleton() {
@@ -42,7 +42,7 @@ export function PersonalItemsGridSkeleton() {
 }
 
 export type PersonalItemsSkeletonProps = {
-  view: BrandNewPersonalView;
+  view: PersonalView;
 };
 
 /** A Member's own list, still loading, in the view it will be drawn in. */
@@ -58,7 +58,7 @@ export function PersonalItemsSkeleton({ view }: PersonalItemsSkeletonProps) {
 }
 
 export type PersonalItemsLoadingProps = {
-  view: BrandNewPersonalView;
+  view: PersonalView;
 };
 
 /** The list still loading, in the view it will be drawn in, announced as it is. */

@@ -2,8 +2,8 @@ import { render as draw, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
-import type { WaitingAskItem } from '@/app/(signed-in)/(brand-new)/waiting/_lib/waiting-asks.service';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(sidebar)/_lib/plain-postcard.constant';
+import type { WaitingAskItem } from '@/app/(signed-in)/(sidebar)/waiting/_lib/waiting-asks.service';
 import { Toaster } from '@/components/atoms/toaster';
 import type { PostcardAsk } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
@@ -27,13 +27,13 @@ vi.mock('next/navigation', () => ({
 }));
 const sendPostcardAnswer = vi.fn();
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/_lib/send-postcard-actions.service',
+  '@/app/(signed-in)/(sidebar)/_lib/send-postcard-actions.service',
   () => ({
     sendPostcardAnswer: (...args: unknown[]) => sendPostcardAnswer(...args),
   }),
 );
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/waiting/_lib/waiting-asks-actions.service',
+  '@/app/(signed-in)/(sidebar)/waiting/_lib/waiting-asks-actions.service',
   () => ({ readNextWaitingAsks: vi.fn() }),
 );
 
@@ -165,7 +165,7 @@ describe('WaitingPostcard', () => {
     await waitFor(
       () =>
         expect(replace).toHaveBeenCalledExactlyOnceWith(
-          ROUTES.brandNewWaitingSorted('oldest'),
+          ROUTES.waitingSorted('oldest'),
           { scroll: false },
         ),
       AFTER_THE_FLIGHT,
@@ -222,7 +222,7 @@ describe('WaitingPostcard', () => {
 
     await waitFor(() =>
       expect(replace).toHaveBeenCalledExactlyOnceWith(
-        ROUTES.brandNewWaitingSorted('oldest'),
+        ROUTES.waitingSorted('oldest'),
         {
           scroll: false,
         },
@@ -238,7 +238,7 @@ describe('WaitingPostcard', () => {
 
     await waitFor(() =>
       expect(replace).toHaveBeenCalledExactlyOnceWith(
-        ROUTES.brandNewWaitingSorted('oldest'),
+        ROUTES.waitingSorted('oldest'),
         { scroll: false },
       ),
     );
@@ -262,7 +262,7 @@ describe('WaitingPostcard', () => {
 
     await waitFor(() =>
       expect(replace).toHaveBeenCalledExactlyOnceWith(
-        ROUTES.brandNewWaitingSorted('oldest'),
+        ROUTES.waitingSorted('oldest'),
         { scroll: false },
       ),
     );
@@ -288,7 +288,7 @@ describe('WaitingPostcard', () => {
       await screen.findByText("Couldn't open this postcard. Try again."),
     ).toBeInTheDocument();
     expect(replace).toHaveBeenCalledExactlyOnceWith(
-      ROUTES.brandNewWaitingSorted('oldest'),
+      ROUTES.waitingSorted('oldest'),
       {
         scroll: false,
       },
@@ -339,7 +339,7 @@ describe('WaitingPostcard', () => {
           <WaitingPostcardDialog
             workspaceId={WORKSPACE_ID}
             askId={ASK_ID}
-            closeHref={ROUTES.brandNewWaiting}
+            closeHref={ROUTES.waiting}
             ask={ASK_ON_THE_CARD}
             writer={{ name: 'Dao', photoUrl: null }}
             teammates={[]}

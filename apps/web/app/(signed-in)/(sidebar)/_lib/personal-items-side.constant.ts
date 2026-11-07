@@ -1,6 +1,6 @@
 import {
-  type BrandNewPersonalView,
-  type BrandNewReceivedShow,
+  type PersonalView,
+  type ReceivedShow,
   ROUTES,
 } from '@/lib/routes.constant';
 
@@ -18,25 +18,21 @@ export const PERSONAL_ITEMS_ROUTES: Readonly<
   Record<
     PersonalItemsSide,
     {
-      viewing: (
-        view: BrandNewPersonalView,
-        show: BrandNewReceivedShow,
-      ) => string;
+      viewing: (view: PersonalView, show: ReceivedShow) => string;
       feedback: (
         feedbackId: string,
-        view: BrandNewPersonalView,
-        show: BrandNewReceivedShow,
+        view: PersonalView,
+        show: ReceivedShow,
       ) => string;
     }
   >
 > = {
   received: {
-    viewing: ROUTES.brandNewReceivedViewing,
-    feedback: ROUTES.brandNewReceivedFeedback,
+    viewing: ROUTES.receivedViewing,
+    feedback: ROUTES.receivedFeedback,
   },
   given: {
-    viewing: (view) => ROUTES.brandNewGivenViewing(view),
-    feedback: (feedbackId, view) =>
-      ROUTES.brandNewGivenFeedback(feedbackId, view),
+    viewing: (view) => ROUTES.givenViewing(view),
+    feedback: (feedbackId, view) => ROUTES.givenFeedback(feedbackId, view),
   },
 };

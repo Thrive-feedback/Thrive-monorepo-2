@@ -1,8 +1,8 @@
 import 'server-only';
 import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
-import { PLAIN_POSTCARD } from '@/app/(signed-in)/(brand-new)/_lib/plain-postcard.constant';
-import { toPostcardWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
+import { PLAIN_POSTCARD } from '@/app/(signed-in)/(sidebar)/_lib/plain-postcard.constant';
+import { toPostcardWriter } from '@/app/(signed-in)/(sidebar)/_lib/postcard-writer.util';
 import type { PostcardAsk } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import { apiClient } from '@/lib/api-client.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { kudosMonthName } from '@/app/(signed-in)/(brand-new)/kudos/_lib/kudos-board-place.util';
+import { kudosMonthName } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board-place.util';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { ROUTES } from '@/lib/routes.constant';
@@ -24,7 +24,7 @@ export function KudosBoardEmpty({ month }: KudosBoardEmptyProps) {
       </Text>
       {month ? (
         <Button asChild>
-          <Link href={ROUTES.brandNewKudos}>See every month</Link>
+          <Link href={ROUTES.kudos}>See every month</Link>
         </Button>
       ) : (
         <Text as="p" variant="body-2" tone="muted">

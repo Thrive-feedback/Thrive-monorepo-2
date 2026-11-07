@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import BrandNewReceived from './page';
+import Received from './page';
 
 const FEEDBACK_ID = '0199a0f0-0000-7000-8000-0000000000d1';
 
@@ -17,7 +17,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('./_components/received-items', () => ({
   ReceivedItems: () => <p>What was received</p>,
 }));
-vi.mock('@/app/(signed-in)/(brand-new)/_components/feedback-postcard', () => ({
+vi.mock('@/app/(signed-in)/(sidebar)/_components/feedback-postcard', () => ({
   FeedbackPostcard: ({
     feedbackId,
     closeHref,
@@ -38,10 +38,10 @@ beforeEach(() => {
 });
 
 function open(searchParams: Record<string, string> = {}) {
-  return BrandNewReceived({ searchParams: Promise.resolve(searchParams) });
+  return Received({ searchParams: Promise.resolve(searchParams) });
 }
 
-describe('BrandNewReceived', () => {
+describe('Received', () => {
   it('lets only a Member in, and is headed Received', async () => {
     render(await open());
 

@@ -2,7 +2,7 @@ import { GlobeIcon, LockIcon, UsersIcon } from 'lucide-react';
 import type {
   PersonalRequest,
   PersonalRequestAsk,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
 import { NO_NAME_IN_A_SENTENCE } from '@/components/organisms/feed-card/feed-card-sentence.util';
 
 /** Who can read the answers to a request, as its Requester chose, in their own words. */

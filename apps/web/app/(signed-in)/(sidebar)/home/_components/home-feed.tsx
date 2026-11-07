@@ -1,14 +1,14 @@
-import { readHomeFeed } from '@/app/(signed-in)/(brand-new)/home/_lib/home-feed.service';
+import { readHomeFeed } from '@/app/(signed-in)/(sidebar)/home/_lib/home-feed.service';
 import { SkeletonRegion } from '@/components/atoms/skeleton';
 import { FeedCardSkeletonList } from '@/components/organisms/feed-card/feed-card-skeleton';
-import type { BrandNewHomeShow } from '@/lib/routes.constant';
+import type { HomeShow } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { FeedEmpty } from './feed-empty';
 import { HomeFeedList } from './home-feed-list';
 
 export type HomeFeedProps = {
   membership: CurrentMembership;
-  show: BrandNewHomeShow;
+  show: HomeShow;
 };
 
 /** The first page of Home, read here so the page renders around it while it is in flight. */

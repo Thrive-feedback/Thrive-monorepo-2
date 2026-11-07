@@ -3,18 +3,18 @@ import type {
   PersonalFeedback,
   PersonalItem,
   PersonalKudos,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-item.type';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
 import {
   everyoneNamedIn,
   otherPeopleOn,
   tileNamesOf,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-item-people.util';
-import { PERSONAL_ITEM_TILE } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-layout.constant';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-item-people.util';
+import { PERSONAL_ITEM_TILE } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-layout.constant';
 import {
   PERSONAL_ITEMS_ROUTES,
   type PersonalItemsSide,
-} from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
-import { useReceivedShow } from '@/app/(signed-in)/(brand-new)/_lib/use-received-show';
+} from '@/app/(signed-in)/(sidebar)/_lib/personal-items-side.constant';
+import { useReceivedShow } from '@/app/(signed-in)/(sidebar)/_lib/use-received-show';
 import { Badge } from '@/components/atoms/badge';
 import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';

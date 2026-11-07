@@ -1,5 +1,5 @@
 import type { components } from '@repo/api';
-import { toPostcardWriter } from '@/app/(signed-in)/(brand-new)/_lib/postcard-writer.util';
+import { toPostcardWriter } from '@/app/(signed-in)/(sidebar)/_lib/postcard-writer.util';
 import type { PostcardAsk } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type {
   GivenPostcard,

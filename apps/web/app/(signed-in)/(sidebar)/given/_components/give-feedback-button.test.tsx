@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { GIVEN_HEADING_ID } from '@/app/(signed-in)/(brand-new)/_lib/personal-items-side.constant';
+import { GIVEN_HEADING_ID } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-side.constant';
 import { GiveFeedbackButton } from './give-feedback-button';
 
 vi.mock('server-only', () => ({}));
 vi.mock(
-  '@/app/(signed-in)/(brand-new)/_components/compose-postcard-dialog',
+  '@/app/(signed-in)/(sidebar)/_components/compose-postcard-dialog',
   () => ({
     warmPostcardDialog: vi.fn(),
     ComposePostcardDialog: ({
