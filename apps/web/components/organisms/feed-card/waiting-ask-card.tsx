@@ -11,7 +11,7 @@ import type { NavTarget } from '@/lib/navigation/nav-target.type';
 import { FeedCardColumns } from './feed-card-columns';
 import { FeedCardPreview } from './feed-card-preview';
 import { NO_NAME_STARTING_A_SENTENCE } from './feed-card-sentence.util';
-import { FEED_CARD_INK } from './feed-card-tone.constant';
+import { FEED_CARD_KIND_INK } from './feed-card-tone.constant';
 
 export type WaitingAskCardProps = {
   ask: MyAsk;
@@ -64,7 +64,7 @@ export function WaitingAskCard({ ask, card, target }: WaitingAskCardProps) {
           tone="muted"
           className="flex flex-wrap items-center gap-x-2 gap-y-1"
         >
-          <span className={cn('font-medium', FEED_CARD_INK.tertiary)}>
+          <span className={cn('font-medium', FEED_CARD_KIND_INK.tertiary)}>
             Asked you
           </span>
           <span aria-hidden="true">·</span>

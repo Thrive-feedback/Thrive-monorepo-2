@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { usePersonalItemsView } from '@/app/(signed-in)/(sidebar)/_lib/use-personal-items-view';
 import { Toggle } from '@/components/atoms/toggle';
-import { cn } from '@/lib/cn.util';
 import {
   RECEIVED_SHOWS,
   type ReceivedShow,
@@ -22,13 +21,13 @@ const SHOW_NAMES: Readonly<Record<ReceivedShow, string>> = {
  * the cards also finds them: requests in the cool colour, Feedback given unasked in the brand's,
  * Kudos in the warm one. Everything at once holds every colour, so it stays neutral.
  */
-const SHOW_INKS: Readonly<Record<ReceivedShow, string>> = {
-  all: 'data-[state=on]:border-border-strong data-[state=on]:bg-action-neutral-surface-hover data-[state=on]:text-fg-primary',
-  requests:
-    'data-[state=on]:border-action-tertiary-border data-[state=on]:bg-action-tertiary-surface data-[state=on]:text-action-tertiary-hover',
-  offered: '',
-  kudos:
-    'data-[state=on]:border-action-secondary-border data-[state=on]:bg-action-secondary-surface data-[state=on]:text-action-secondary-hover',
+const SHOW_TONES: Readonly<
+  Record<ReceivedShow, 'neutral' | 'primary' | 'tertiary' | 'secondary'>
+> = {
+  all: 'neutral',
+  requests: 'tertiary',
+  offered: 'primary',
+  kudos: 'secondary',
 };
 
 export type ReceivedFilterProps = {
@@ -52,7 +51,8 @@ export function ReceivedFilter({ show }: ReceivedFilterProps) {
           key={value}
           variant="outline"
           size="sm"
-          className={cn('rounded-chip px-3', SHOW_INKS[value])}
+          tone={SHOW_TONES[value]}
+          className="rounded-chip px-3"
           pressed={show === value}
           onPressedChange={(pressed) => {
             if (pressed) {

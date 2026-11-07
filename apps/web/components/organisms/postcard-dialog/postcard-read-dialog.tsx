@@ -25,6 +25,7 @@ import {
   POSTCARD_SCREEN,
 } from './postcard-editor.constant';
 import { PostcardHideButton } from './postcard-hide-button';
+import { POSTCARD_KIND_TONES } from './postcard-kind-tone.constant';
 import { PostcardPostmarkStill } from './postcard-postmark-still';
 import type { ReadPostcard } from './postcard-read.type';
 import { PostcardAnsweredBack, PostcardGivenBack } from './postcard-read-back';
@@ -173,9 +174,7 @@ function PostcardReadView({
 
   return (
     <CardNotesContext value={areNotesShown}>
-      <CardNotesToneContext
-        value={card.kind === 'give' ? 'primary' : 'tertiary'}
-      >
+      <CardNotesToneContext value={POSTCARD_KIND_TONES[card.kind]}>
         <div className={POSTCARD_PAGE}>
           <PostcardTitleRow title={title} onClose={onClose} />
 

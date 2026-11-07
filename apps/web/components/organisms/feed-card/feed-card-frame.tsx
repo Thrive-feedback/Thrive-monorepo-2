@@ -10,7 +10,7 @@ import { FeedCardColumns } from './feed-card-columns';
 import { FeedCardPreview } from './feed-card-preview';
 import { feedCardGiver, feedCardSentence } from './feed-card-sentence.util';
 import {
-  FEED_CARD_INK,
+  FEED_CARD_KIND_INK,
   FEED_CARD_ORIGIN_TONES as ORIGIN_TONES,
 } from './feed-card-tone.constant';
 import { FeedCardWho } from './feed-card-who';
@@ -94,7 +94,7 @@ export function FeedCardFrame({
           <span
             className={cn(
               'font-medium',
-              FEED_CARD_INK[ORIGIN_TONES[item.origin]],
+              FEED_CARD_KIND_INK[ORIGIN_TONES[item.origin]],
             )}
           >
             {ORIGIN_NAMES[item.origin]}

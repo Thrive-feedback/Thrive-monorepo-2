@@ -1,5 +1,7 @@
-/** What a person can choose to write: ask for Feedback, give it, or give a Kudos. */
-export type ComposeChoice = 'ask' | 'give' | 'kudos';
+/** What a person can choose to write, in the order it is offered: ask for Feedback, give it, or give a Kudos. */
+export const COMPOSE_CHOICES = ['ask', 'give', 'kudos'] as const;
+
+export type ComposeChoice = (typeof COMPOSE_CHOICES)[number];
 
 /** What each choice is called wherever it is offered: the menu, Home's composer, an empty list. */
 export const COMPOSE_CHOICE_TITLES: Readonly<Record<ComposeChoice, string>> = {

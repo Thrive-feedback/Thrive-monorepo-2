@@ -2,10 +2,10 @@ import type {
   PersonalRequest,
   PersonalRequestAsk,
 } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
+import { REQUEST_MAX_FACES } from '@/app/(signed-in)/(sidebar)/_lib/request-card.constant';
 import {
   answeredFirst,
   requestAudienceOf,
-  tallyOf,
 } from '@/app/(signed-in)/(sidebar)/_lib/request-card.util';
 import { useReceivedShow } from '@/app/(signed-in)/(sidebar)/_lib/use-received-show';
 import { Badge } from '@/components/atoms/badge';
@@ -13,18 +13,16 @@ import { Text } from '@/components/atoms/text';
 import { TimeAgo } from '@/components/atoms/time-ago';
 import { AvatarGroup } from '@/components/molecules/avatar-group';
 import { AvatarName } from '@/components/molecules/avatar-name';
-import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import {
   FeedCardRow,
   FeedCardSurface,
 } from '@/components/organisms/feed-card/feed-card-columns';
-import { FeedCardNote } from '@/components/organisms/feed-card/feed-card-note';
 import { FeedCardPreview } from '@/components/organisms/feed-card/feed-card-preview';
 import {
   NO_NAME_IN_A_SENTENCE,
   NO_NAME_STARTING_A_SENTENCE,
 } from '@/components/organisms/feed-card/feed-card-sentence.util';
-import { FEED_CARD_INK } from '@/components/organisms/feed-card/feed-card-tone.constant';
+import { FEED_CARD_KIND_INK } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import { FeedbackText } from '@/components/organisms/feedback-text';
 import { PersonName } from '@/components/organisms/person-name';
 import { PendingPostcardMiniature } from '@/components/organisms/postcard-miniature/pending-postcard-miniature';
@@ -34,52 +32,21 @@ import { ASK_STATUS_RINGS } from '@/lib/feedback/ask-status.constant';
 import { ROUTES } from '@/lib/routes.constant';
 import { timeAgo } from '@/lib/time-ago.util';
 
-/** Past this many faces, the rest become one "+N", as everywhere a stack of faces is drawn. */
-const MAX_FACES = 4;
-
 /** Where somebody asked stands, in the word alone: Pending is neutral (design FB-4-S4). */
 const STANDING: Readonly<Record<PersonalRequestAsk['status'], string>> = {
   PENDING: 'Pending',
   ANSWERED: 'Answered',
 };
 
-type TallyProps = {
+type AskedWhoProps = {
   request: PersonalRequest;
 };
-
-/**
- * Everyone asked as a row of faces, each ringed by where they stand, and how many answered, in words
- * neutral at any count. It sits inside a tile that is one press, so the faces are drawn, not a
- * button of their own.
- */
-export function RequestTally({ request }: TallyProps) {
-  const { answered, asked } = tallyOf(request);
-
-  return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-      <AvatarGroup aria-hidden="true" max={MAX_FACES} size="sm">
-        {request.asked.map((ask) => (
-          <PhotoAvatar
-            key={ask.person.accountId}
-            name={ask.person.name ?? ''}
-            photoUrl={ask.person.photoUrl}
-            size="sm"
-            className={ASK_STATUS_RINGS[ask.status]}
-          />
-        ))}
-      </AvatarGroup>
-      <Text as="p" variant="body-3" tone="muted">
-        {answered} of {asked} answered
-      </Text>
-    </div>
-  );
-}
 
 /**
  * Who a request asked, at the end of its opening line: one person's face and name, or several as a
  * small stack, which lists each of them and where they stand on a press.
  */
-function AskedWho({ request }: TallyProps) {
+function AskedWho({ request }: AskedWhoProps) {
   const [only] = request.asked;
 
   if (request.asked.length === 1 && only) {
@@ -116,7 +83,7 @@ function AskedWho({ request }: TallyProps) {
             ),
           };
         })}
-        max={MAX_FACES}
+        max={REQUEST_MAX_FACES}
         size="sm"
         listTitle={`You asked ${request.asked.length} people`}
         listDescription="You asked them the same question."
@@ -161,7 +128,8 @@ function AnswerRow({ ask, href, note }: AnswerRowProps) {
       className="-mx-3.25 rounded-control px-3.25 transition-colors last:-mb-3.25 last:pb-3.25 hover:bg-surface-base/70 has-focus-visible:bg-surface-base/70"
     >
       <FeedCardRow
-        note={note && <FeedCardNote tone="tertiary">{note}</FeedCardNote>}
+        tone="tertiary"
+        note={note}
         aside={
           <FeedCardPreview
             id={answer.id}
@@ -211,7 +179,7 @@ type PendingRowsProps = {
 function PendingRows({ pending }: PendingRowsProps) {
   return (
     <li>
-      <FeedCardRow>
+      <FeedCardRow tone="tertiary">
         <ul className="flex flex-col gap-3 py-3">
           {pending.map((ask) => (
             <li key={ask.person.accountId}>
@@ -263,6 +231,7 @@ export function RequestCard({ request }: RequestCardProps) {
   return (
     <FeedCardSurface tone="tertiary">
       <FeedCardRow
+        tone="tertiary"
         aside={
           answers.length === 0 ? (
             <FeedCardPreview id={request.id}>
@@ -293,7 +262,7 @@ export function RequestCard({ request }: RequestCardProps) {
             tone="muted"
             className="flex flex-wrap items-center gap-x-2 gap-y-1"
           >
-            <span className={cn('font-medium', FEED_CARD_INK.tertiary)}>
+            <span className={cn('font-medium', FEED_CARD_KIND_INK.tertiary)}>
               Your request
             </span>
             <span aria-hidden="true">·</span>

@@ -2,7 +2,6 @@ import { ArrowRightIcon } from 'lucide-react';
 import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { DialogContent } from '@/components/atoms/dialog';
-import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-tone.type';
 import { feedbackTagTriggers } from '@/components/organisms/feedback-tag-triggers.util';
 import { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
 import { cn } from '@/lib/cn.util';
@@ -56,6 +55,7 @@ import {
   STAMP_ID,
 } from './postcard-editor.constant';
 import { PostcardHideButton } from './postcard-hide-button';
+import { POSTCARD_KIND_TONES } from './postcard-kind-tone.constant';
 import { PostcardLeaveDialog, usePostcardLeave } from './postcard-leave-dialog';
 import { PostcardMessage } from './postcard-message';
 import { PostcardPostmark } from './postcard-postmark';
@@ -102,16 +102,6 @@ export type PostcardEditorProps = {
  * callbacks, so a keystroke redraws only this shell, the card's two faces, the message and the bar
  * showing. A sticker dragged redraws none of this: it hands on where it ended.
  */
-/**
- * The colour of the notes beside a card being written: giving Feedback in the brand's purple, and
- * asking for it or answering one in the blue of everything asked for.
- */
-const CARD_NOTE_TONES: Readonly<Record<PostcardCard['kind'], FeedCardTone>> = {
-  give: 'primary',
-  ask: 'tertiary',
-  answer: 'tertiary',
-};
-
 export function PostcardEditor({
   title,
   writer,
@@ -437,7 +427,7 @@ export function PostcardEditor({
     // (ADR 0066), and it has no transform, so their sheet stays fixed to the window.
     <PostcardDrawerContainer value={contentRef}>
       <CardNotesContext value={areNotesShown}>
-        <CardNotesToneContext value={CARD_NOTE_TONES[card.kind]}>
+        <CardNotesToneContext value={POSTCARD_KIND_TONES[card.kind]}>
           <DialogContent
             ref={contentRef}
             hasCloseButton={false}

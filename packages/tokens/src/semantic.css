@@ -36,9 +36,9 @@
   );
   --action-secondary-fg: var(--secondary-900);
   --action-secondary-border: var(--secondary-500);
-  --action-tertiary: var(--info-400);
-  --action-tertiary-hover: var(--info-500);
-  --action-tertiary-active: var(--info-550);
+  --action-tertiary: var(--info-500);
+  --action-tertiary-hover: var(--info-550);
+  --action-tertiary-active: var(--info-600);
   --action-tertiary-surface: color-mix(
     in oklch,
     var(--info-50) 20%,
