@@ -19,7 +19,7 @@ export interface ListWaitingAsksInput {
 
 /**
  * A query: the Asks still waiting on the caller in this Workspace, newest or oldest first, for a
- * list that scrolls without end (ADR 0059). Waiting for me reads this; `/home` still reads the offset list.
+ * list that scrolls without end (ADR 0059). Waiting for me reads this.
  */
 @Injectable()
 export class ListWaitingAsksUseCase {

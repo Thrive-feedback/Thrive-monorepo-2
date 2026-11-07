@@ -4,7 +4,6 @@ import type {
   AnswerPostcardSnapshot,
   PostcardSnapshot,
 } from '../../domain/value-object/postcard.vo';
-import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
 
 /** What a collection route asks for. Declared here, not borrowed from another module. */
 export interface PageRequest {
@@ -58,57 +57,6 @@ export interface AnswerView {
   /** What the answer names. */
   readonly tags: TagsView;
   readonly answeredAt: Date;
-}
-
-/** One Ask as a screen reads it: who was asked, by name, and where it stands. */
-export interface AskView {
-  readonly askId: string;
-  readonly giverAccountId: string;
-  /** `null` while that Member has not introduced themselves. */
-  readonly giverName: string | null;
-  readonly giverStatus: PersonStatus;
-  readonly status: AskStatusValue;
-  /**
-   * What was written, or `null` — because the Ask is still waiting, because this caller may
-   * not read it, or because the view does not carry answers at all, as the list of sent
-   * requests does not. The Receiver reads every answer their request collected; a Giver reads
-   * their own and nobody else's.
-   */
-  readonly answer: AnswerView | null;
-}
-
-/** A Member a request is shared with, by name. */
-export interface SelectedPersonView {
-  readonly accountId: string;
-  /** `null` while that Member has not introduced themselves. */
-  readonly name: string | null;
-  readonly status: PersonStatus;
-}
-
-/** Who besides the Giver and the Requester reads a request's answers. */
-export interface VisibilityView {
-  readonly value: VisibilityValue;
-  /** Empty unless `value` is Selected people. */
-  readonly selectedPeople: readonly SelectedPersonView[];
-}
-
-/** One Feedback Request as a screen reads it. */
-export interface FeedbackRequestView {
-  readonly id: string;
-  readonly message: string;
-  /** How it looks, or `null` when it was not written on a postcard. */
-  readonly postcard: PostcardSnapshot | null;
-  readonly tags: TagsView;
-  /** `null` when the caller is a Giver, who is not told who else reads it (`ADR-0022`). */
-  readonly visibility: VisibilityView | null;
-  readonly asks: readonly AskView[];
-  readonly createdAt: Date;
-}
-
-/** The Requester's own requests, newest first. */
-export interface FeedbackRequestListView {
-  readonly items: readonly FeedbackRequestView[];
-  readonly total: number;
 }
 
 /** One Ask as the Member asked reads it: who wants Feedback, about what. */
@@ -239,45 +187,6 @@ export interface OpenedRequestView {
   /** How the card looks, or `null` when the request was not written on a postcard. */
   readonly postcard: PostcardSnapshot | null;
   readonly answers: readonly OpenedAnswerView[];
-}
-
-/** The Feedback written to one Member, newest first. */
-export interface ReceivedFeedbackListView {
-  readonly items: readonly PersonalFeedbackView[];
-  readonly total: number;
-}
-
-/**
- * The Feedback one Member was selected to read, newest first. Every piece names both people,
- * because the reader is neither of them.
- */
-export interface SharedFeedbackListView {
-  readonly items: readonly FeedbackView[];
-  readonly total: number;
-}
-
-/** The request a piece of Requested Feedback answers, with everyone it names. */
-export interface AnsweredRequestView {
-  readonly message: string;
-  /** What the Request message was bound to when it was sent. */
-  readonly tags: TagsView;
-  readonly requester: PersonView;
-  /** Everyone the request asked, in the order they were asked, whatever became of their Ask. */
-  readonly asked: readonly PersonView[];
-}
-
-/** One piece on the Workspace feed: `request` is `null` for Feedback given without being asked. */
-export interface WorkspaceFeedItemView extends FeedbackView {
-  readonly request: AnsweredRequestView | null;
-}
-
-/**
- * The Feedback of a Workspace that every Member may read, newest first. Every piece names both
- * people: the reader is usually neither of them.
- */
-export interface WorkspaceFeedView {
-  readonly items: readonly WorkspaceFeedItemView[];
-  readonly total: number;
 }
 
 /**

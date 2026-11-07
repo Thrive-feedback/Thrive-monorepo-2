@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { defineParameterType, Then, When } from '@cucumber/cucumber';
+import { readWorkspaceFeed } from '../support/home-reads';
 import type { ThriveWorld } from '../support/world';
 
 interface FeedItem {
@@ -42,11 +43,7 @@ When(
   '{person} looks at the Workspace feed',
   async function (this: ThriveWorld, name: string) {
     this.succeeded(
-      await this.as(
-        name,
-        'GET',
-        `/v1/workspaces/${this.workspaceOf(name)}/feed`,
-      ),
+      await readWorkspaceFeed(this, name, this.workspaceOf(name)),
       `${name} reading their Workspace feed`,
     );
   },
@@ -58,11 +55,7 @@ When(
     if (!this.isSignedIn(outsider)) {
       await this.signIn(outsider);
     }
-    await this.as(
-      outsider,
-      'GET',
-      `/v1/workspaces/${this.workspaceOf(member)}/feed`,
-    );
+    await readWorkspaceFeed(this, outsider, this.workspaceOf(member));
   },
 );
 
@@ -130,7 +123,6 @@ Then(
   'the Workspace feed is empty for {person}',
   function (this: ThriveWorld, _name: string) {
     assert.deepEqual(feedItems(this), []);
-    assert.equal(this.lastResponse?.body.total, 0);
   },
 );
 

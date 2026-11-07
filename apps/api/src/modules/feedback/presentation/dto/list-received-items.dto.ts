@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { RECEIVED_ITEM_SHOWS } from '../../application/types/personal-item.types';
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
 import { VISIBILITIES } from '../../domain/value-object/visibility.vo';
-import { answerSchema } from './get-feedback-request.dto';
+import { answerSchema } from './answer.dto';
 import { feedItemSchema, kudosFeedItemSchema } from './list-feed-items.dto';
 import { personSchema } from './person.dto';
 import { answerPostcardSchema, postcardSchema } from './postcard.dto';

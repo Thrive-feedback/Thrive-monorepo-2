@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { Then, When } from '@cucumber/cucumber';
+import { readSharedWithMe } from '../support/home-reads';
 import type { ThriveWorld } from '../support/world';
 
 interface SharedFeedbackItem {
@@ -19,11 +20,7 @@ When(
   '{person} looks at the Feedback shared with them',
   async function (this: ThriveWorld, name: string) {
     this.succeeded(
-      await this.as(
-        name,
-        'GET',
-        `/v1/workspaces/${this.workspaceOf(name)}/shared-feedback`,
-      ),
+      await readSharedWithMe(this, name),
       `${name} listing the Feedback shared with them`,
     );
   },
@@ -59,7 +56,6 @@ Then(
   '{person} has no Feedback shared with them',
   function (this: ThriveWorld, _name: string) {
     assert.deepEqual(sharedItems(this), []);
-    assert.equal(this.lastResponse?.body.total, 0);
   },
 );
 

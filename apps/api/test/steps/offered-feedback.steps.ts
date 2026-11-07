@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { Given, Then, When } from '@cucumber/cucumber';
+import { readRequestsSent, readWrittenTo } from '../support/home-reads';
 import { giveFeedback, visibilityOf } from '../support/journeys';
 import type { ApiResponse, ThriveWorld } from '../support/world';
 
@@ -100,21 +101,21 @@ Then(
       `${giver} giving Feedback`,
     );
     // Either of them could have been the one asking, so both directions are read.
-    for (const [name, route] of [
-      [giver, 'feedback-requests'],
-      [giver, 'feedback-asks'],
-      [receiver, 'feedback-requests'],
-      [receiver, 'feedback-asks'],
-    ] as const) {
-      const listed = this.succeeded(
+    for (const name of [giver, receiver]) {
+      const sent = this.succeeded(
+        await readRequestsSent(this, name),
+        `${name} listing the requests they sent`,
+      );
+      assert.deepEqual(sent.body.items, [], `${name} has sent a request`);
+      const asked = this.succeeded(
         await this.as(
           name,
           'GET',
-          `/v1/workspaces/${this.workspaceOf(name)}/${route}`,
+          `/v1/workspaces/${this.workspaceOf(name)}/feedback-asks`,
         ),
-        `${name} listing their ${route}`,
+        `${name} listing what they have been asked`,
       );
-      assert.deepEqual(listed.body.items, [], `${name} has ${route}`);
+      assert.deepEqual(asked.body.items, [], `${name} has been asked`);
     }
   },
 );
@@ -185,11 +186,7 @@ Then(
     other: string,
   ) {
     const listed = this.succeeded(
-      await this.as(
-        reader,
-        'GET',
-        `/v1/workspaces/${this.workspaceOf(reader)}/feedback`,
-      ),
+      await readWrittenTo(this, reader),
       `${reader} listing the Feedback written to them`,
     );
     const items: {
@@ -240,11 +237,7 @@ Then(
   '{person} has been given no Feedback',
   async function (this: ThriveWorld, name: string) {
     const listed = this.succeeded(
-      await this.as(
-        name,
-        'GET',
-        `/v1/workspaces/${this.workspaceOf(name)}/feedback`,
-      ),
+      await readWrittenTo(this, name),
       `${name} listing the Feedback written to them`,
     );
     assert.deepEqual(listed.body.items, []);

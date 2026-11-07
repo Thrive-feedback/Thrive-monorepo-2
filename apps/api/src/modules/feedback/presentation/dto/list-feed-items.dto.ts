@@ -10,7 +10,7 @@ import {
 } from '../../application/types/feedback-request.types';
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
 import { ASK_STATUSES } from '../../domain/value-object/ask-status.vo';
-import { answerSchema } from './get-feedback-request.dto';
+import { answerSchema } from './answer.dto';
 import { kudosSchema } from './list-workspace-kudos.dto';
 import { personSchema } from './person.dto';
 import { answerPostcardSchema, postcardSchema } from './postcard.dto';

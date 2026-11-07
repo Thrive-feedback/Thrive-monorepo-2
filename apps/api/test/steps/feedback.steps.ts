@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { defineParameterType, Given, Then, When } from '@cucumber/cucumber';
 import {
+  openTheRequest,
+  readRequestsSent,
+  readWrittenTo,
+} from '../support/home-reads';
+import {
   answerTheirAsk,
   askForFeedback,
   askIdWaitingFor,
@@ -29,6 +34,20 @@ defineParameterType({
   transformer: (names: string) => names.split(' and '),
 });
 
+/**
+ * Everyone in the scenario that `name`'s view of a request must not name: all but them and the
+ * Requester, whom their Ask names.
+ */
+function othersThan(
+  world: ThriveWorld,
+  name: string,
+  body: { requester: { accountId: string } },
+) {
+  return world
+    .everyoneBut(name)
+    .filter((account) => account.accountId !== body.requester.accountId);
+}
+
 /** The answer the `When` step just got, which must have been a success. */
 function lastSucceeded(world: ThriveWorld, what: string) {
   assert.ok(world.lastResponse, 'Nothing was asked of the API.');
@@ -43,16 +62,7 @@ function openFeedback(world: ThriveWorld, name: string, giver: string) {
 }
 
 function openFeedbackRequest(world: ThriveWorld, name: string) {
-  assert.ok(
-    world.feedbackRequest,
-    'No Feedback request was sent in this scenario.',
-  );
-  const { id, workspaceId } = world.feedbackRequest;
-  return world.as(
-    name,
-    'GET',
-    `/v1/workspaces/${workspaceId}/feedback-requests/${id}`,
-  );
+  return openTheRequest(world, name, askIdWaitingFor);
 }
 
 Given(
@@ -100,30 +110,11 @@ Then(
   },
 );
 
-Then(
-  '{person} is told it cannot be found',
-  function (this: ThriveWorld, _name: string) {
-    // Outside the Workspace, the Workspace is not found; inside it but not a party, the request
-    // is not found. Either way the caller learns nothing about it (ADR 0037, ADR 0039).
-    assert.equal(this.lastResponse?.status, 404);
-    assert.ok(
-      ['WORKSPACE_NOT_FOUND', 'FEEDBACK_REQUEST_NOT_FOUND'].includes(
-        this.lastResponse?.body?.error?.code,
-      ),
-      `Expected a not-found refusal, got ${JSON.stringify(this.lastResponse?.body)}`,
-    );
-  },
-);
-
 When(
   '{person} looks at the requests they have sent',
   async function (this: ThriveWorld, name: string) {
     this.succeeded(
-      await this.as(
-        name,
-        'GET',
-        `/v1/workspaces/${this.workspaceOf(name)}/feedback-requests`,
-      ),
+      await readRequestsSent(this, name),
       `${name} listing the requests they sent`,
     );
   },
@@ -338,11 +329,7 @@ When(
   '{person} looks at the Feedback written to them',
   async function (this: ThriveWorld, name: string) {
     this.succeeded(
-      await this.as(
-        name,
-        'GET',
-        `/v1/workspaces/${this.workspaceOf(name)}/feedback`,
-      ),
+      await readWrittenTo(this, name),
       `${name} listing the Feedback written to them`,
     );
   },
@@ -366,7 +353,6 @@ Then(
   '{person} has no Feedback written to them',
   function (this: ThriveWorld, _name: string) {
     assert.deepEqual(this.lastResponse?.body.items, []);
-    assert.equal(this.lastResponse?.body.total, 0);
   },
 );
 
@@ -507,7 +493,14 @@ Then(
       this,
       `${name} opening the Feedback request`,
     );
-    assert.equal(response.body.visibility, null);
+    assert.equal(response.body.visibility, undefined);
+    const shown = JSON.stringify(response.body);
+    for (const other of othersThan(this, name, response.body)) {
+      assert.ok(
+        !shown.includes(other.accountId),
+        `${name} was told somebody else reads it.`,
+      );
+    }
   },
 );
 
@@ -602,12 +595,14 @@ Then(
       this,
       `${name} opening the Feedback request`,
     );
-    assert.deepEqual(
-      response.body.asks.map(
-        (ask: { giverAccountId: string }) => ask.giverAccountId,
-      ),
-      [this.person(name).accountId],
-    );
+    // A Giver reads the request through their own Ask, which names them and the Requester alone.
+    const shown = JSON.stringify(response.body);
+    for (const other of othersThan(this, name, response.body)) {
+      assert.ok(
+        !shown.includes(other.accountId),
+        `${name} was shown somebody else on the request.`,
+      );
+    }
   },
 );
 

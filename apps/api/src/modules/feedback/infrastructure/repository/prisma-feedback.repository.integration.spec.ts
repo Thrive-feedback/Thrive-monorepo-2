@@ -16,7 +16,7 @@ const prismaService = new PrismaService(configuration.database);
 const context = new PrismaTransactionContext(prismaService);
 const repository = new PrismaFeedbackRepository(context);
 const query = new PrismaFeedbackRequestQuery(context);
-const ONE_PAGE = { page: 1, pageSize: 20 };
+const ONE_PAGE = { after: null, limit: 20 };
 
 const written: string[] = [];
 
@@ -107,13 +107,13 @@ describe('storing Offered Feedback', () => {
 
     await repository.save(feedback);
 
-    const received = await query.receivedBy(
+    const received = await query.offeredItemsTo(
       workspaceId,
       receiverAccountId,
       ONE_PAGE,
     );
     const snapshot = feedback.snapshot();
-    expect(received.items).toEqual([
+    expect(received.items).toMatchObject([
       {
         id: snapshot.id,
         origin: 'OFFERED',
@@ -144,7 +144,11 @@ describe('storing Offered Feedback', () => {
     await repository.save(feedback);
 
     for (const reader of [first, second]) {
-      const received = await query.receivedBy(workspaceId, reader, ONE_PAGE);
+      const received = await query.offeredItemsTo(
+        workspaceId,
+        reader,
+        ONE_PAGE,
+      );
       expect(received.items.map((item) => item.receiverAccountIds)).toEqual([
         [second, first],
       ]);
@@ -172,7 +176,7 @@ describe('storing Offered Feedback', () => {
       ),
     );
 
-    const received = await query.receivedBy(
+    const received = await query.offeredItemsTo(
       workspaceId,
       receiverAccountId,
       ONE_PAGE,

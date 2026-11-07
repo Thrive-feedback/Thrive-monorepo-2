@@ -3,11 +3,9 @@ import { COOKIE_HEADER } from '@app/shared/presentation/dto/cookie-header.dto';
 import {
   Body,
   Controller,
-  Get,
   HttpStatus,
   Param,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -19,65 +17,17 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import type { FeedbackRequestView } from '../application/types/feedback-request.types';
-import { GetFeedbackRequestUseCase } from '../application/use-cases/get-feedback-request.use-case';
-import { ListSentFeedbackRequestsUseCase } from '../application/use-cases/list-sent-feedback-requests.use-case';
 import { SendFeedbackRequestUseCase } from '../application/use-cases/send-feedback-request.use-case';
-import {
-  toPostcardResponse,
-  toTagsResponse,
-} from './dto/feedback-response.mapper';
-import { GetFeedbackRequestResponseDto } from './dto/get-feedback-request.dto';
-import {
-  ListSentFeedbackRequestsQueryDto,
-  ListSentFeedbackRequestsResponseDto,
-} from './dto/list-sent-feedback-requests.dto';
-import {
-  FeedbackRequestPathParamsDto,
-  WorkspacePathParamsDto,
-} from './dto/path-params.dto';
+import { WorkspacePathParamsDto } from './dto/path-params.dto';
 import {
   SendFeedbackRequestRequestDto,
   SendFeedbackRequestResponseDto,
 } from './dto/send-feedback-request.dto';
 import { WorkspaceMemberGuard } from './workspace-member.guard';
 
-/** One Feedback Request on the wire, with its dates written as the contract declares them. */
-function toResponse(request: FeedbackRequestView) {
-  return {
-    id: request.id,
-    message: request.message,
-    postcard: toPostcardResponse(request.postcard),
-    tags: toTagsResponse(request.tags),
-    visibility: request.visibility && {
-      value: request.visibility.value,
-      selectedPeople: request.visibility.selectedPeople.map((person) => ({
-        accountId: person.accountId,
-        name: person.name,
-        status: person.status,
-      })),
-    },
-    asks: request.asks.map((ask) => ({
-      askId: ask.askId,
-      giverAccountId: ask.giverAccountId,
-      giverName: ask.giverName,
-      giverStatus: ask.giverStatus,
-      status: ask.status,
-      answer: ask.answer
-        ? {
-            message: ask.answer.message,
-            tags: toTagsResponse(ask.answer.tags),
-            answeredAt: ask.answer.answeredAt.toISOString(),
-          }
-        : null,
-    })),
-    createdAt: request.createdAt.toISOString(),
-  };
-}
-
 /**
- * The Feedback Requests of one Workspace. Who is asking comes from the session and who may
- * read these routes from the guard; neither is ever taken from the body.
+ * Asking for Feedback in one Workspace. Who is asking comes from the session and who may
+ * use this route from the guard; neither is ever taken from the body.
  */
 @ApiTags('feedback')
 @Controller({ path: 'v1/workspaces/:workspaceId/feedback-requests' })
@@ -85,8 +35,6 @@ function toResponse(request: FeedbackRequestView) {
 export class FeedbackRequestController {
   constructor(
     private readonly sendFeedbackRequestUseCase: SendFeedbackRequestUseCase,
-    private readonly getFeedbackRequestUseCase: GetFeedbackRequestUseCase,
-    private readonly listSentFeedbackRequestsUseCase: ListSentFeedbackRequestsUseCase,
   ) {}
 
   @Post()
@@ -120,58 +68,5 @@ export class FeedbackRequestController {
       postcard: body.postcard,
     });
     return { id: sent.id };
-  }
-
-  @Get()
-  @ApiOperation({
-    summary: 'List the Feedback Requests the caller sent in this Workspace',
-  })
-  @ApiHeader(COOKIE_HEADER)
-  @ZodResponse({
-    status: HttpStatus.OK,
-    type: ListSentFeedbackRequestsResponseDto,
-  })
-  @ApiBadRequestResponse({ description: 'REQUEST_INVALID' })
-  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
-  @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
-  async listSentFeedbackRequests(
-    @CurrentActor() actor: Actor,
-    @Param() params: WorkspacePathParamsDto,
-    @Query() query: ListSentFeedbackRequestsQueryDto,
-  ) {
-    const page = { page: query.page, pageSize: query.pageSize };
-    const sent = await this.listSentFeedbackRequestsUseCase.execute({
-      workspaceId: params.workspaceId,
-      requesterAccountId: actor.accountId,
-      page,
-    });
-    return {
-      items: sent.items.map(toResponse),
-      total: sent.total,
-      page: page.page,
-      pageSize: page.pageSize,
-    };
-  }
-
-  @Get(':requestId')
-  @ApiOperation({
-    summary: 'Read one Feedback Request of this Workspace and who was asked',
-  })
-  @ApiHeader(COOKIE_HEADER)
-  @ZodResponse({ status: HttpStatus.OK, type: GetFeedbackRequestResponseDto })
-  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
-  @ApiNotFoundResponse({
-    description: 'WORKSPACE_NOT_FOUND or FEEDBACK_REQUEST_NOT_FOUND',
-  })
-  async getFeedbackRequest(
-    @CurrentActor() actor: Actor,
-    @Param() params: FeedbackRequestPathParamsDto,
-  ) {
-    const request = await this.getFeedbackRequestUseCase.execute({
-      workspaceId: params.workspaceId,
-      callerAccountId: actor.accountId,
-      requestId: params.requestId,
-    });
-    return toResponse(request);
   }
 }

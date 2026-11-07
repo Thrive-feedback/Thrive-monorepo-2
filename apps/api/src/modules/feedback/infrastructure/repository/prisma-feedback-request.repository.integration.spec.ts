@@ -107,7 +107,7 @@ describe('storing a Feedback Request', () => {
 
     const found = await repository.findInWorkspace(workspaceId, id);
     expect(found?.snapshot()).toEqual(request.snapshot());
-    const row = await query.requestInWorkspace(workspaceId, id);
+    const row = await query.openedRequest(workspaceId, id);
     expect(row?.postcard).toEqual(request.snapshot().postcard);
     expect(row?.message).toBe('How was the demo?\n\nBe honest.');
   });
@@ -325,11 +325,11 @@ describe('what an answer is read with', () => {
 
     await repository.saveAnswer(request, feedback);
 
-    const received = await query.receivedBy(workspaceId, requesterAccountId, {
-      page: 1,
-      pageSize: 20,
-    });
-    expect(received.items[0]).toMatchObject({
+    const opened = await query.openedRequest(
+      workspaceId,
+      request.snapshot().id,
+    );
+    expect(opened?.answers[0]).toMatchObject({
       tags: { workspaceGoals: [{ name: 'ownershic' }], mentions: [] },
     });
   });

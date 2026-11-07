@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { FEEDBACK_ORIGINS } from '../../domain/entity/feedback.entity';
-import { answerSchema } from './get-feedback-request.dto';
+import { answerSchema } from './answer.dto';
 import { personSchema } from './person.dto';
 import { answerPostcardSchema, postcardSchema } from './postcard.dto';
 import { tagsSchema } from './tags.dto';
