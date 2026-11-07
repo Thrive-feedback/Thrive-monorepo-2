@@ -1,8 +1,23 @@
-import { Badge } from '@/components/atoms/badge';
+import { Badge, type BadgeTone } from '@/components/atoms/badge';
+import { cn } from '@/lib/cn.util';
 import type {
   AutocompleteOption,
   AutocompleteTrigger,
+  TagTone,
 } from './use-tag-autocomplete';
+
+/**
+ * Each kind of tag's badge, in the colour it takes in the text once picked: a Workspace Goal's `#`
+ * in info blue, a teammate's `@` in the orange of the human voice. The words take the tone's own
+ * colour, as the tag does in text, rather than the near-black a Badge's tone gives them, so the
+ * colour reads at the badges' small size.
+ */
+const SUGGESTION_TONES: Readonly<
+  Record<TagTone, { tone: BadgeTone; ink: string }>
+> = {
+  info: { tone: 'info', ink: 'text-status-info-active' },
+  secondary: { tone: 'highlight', ink: 'text-action-secondary' },
+};
 
 export type TagSuggestionsProps = {
   id: string;
@@ -40,8 +55,9 @@ export function TagSuggestions({
         <Badge
           key={option.value}
           asChild
-          tone={index === active ? 'brand' : 'outline'}
-          className="cursor-pointer"
+          tone={SUGGESTION_TONES[trigger.tone].tone}
+          edged={index === active}
+          className={cn('cursor-pointer', SUGGESTION_TONES[trigger.tone].ink)}
         >
           {/* The keyboard picks from the field, which keeps focus: arrows move, Enter or Tab picks. */}
           {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above */}

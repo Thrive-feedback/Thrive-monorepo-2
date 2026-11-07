@@ -14,7 +14,7 @@ export const DEMO_TRIGGERS: readonly AutocompleteTrigger[] = [
   {
     rule: HASHTAG_RULE,
     label: 'Goals',
-    tone: 'accent',
+    tone: 'info',
     options: ['ownership', 'customer-first', 'ลูกค้ามาก่อน'].map((name) => ({
       value: name,
       label: `#${name}`,

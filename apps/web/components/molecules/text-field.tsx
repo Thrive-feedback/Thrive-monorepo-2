@@ -11,7 +11,7 @@ const labelLine = cva('mb-1 block', {
     size: { sm: 'text-input-label-xs', md: 'text-input-label-sm' },
     tone: {
       default: '',
-      invalid: 'text-status-error-fg',
+      invalid: 'text-status-error-active',
       disabled: 'text-fg-secondary',
     },
   },
@@ -20,7 +20,7 @@ const labelLine = cva('mb-1 block', {
 
 const messageLine = cva('mt-1.5 text-input-helper', {
   variants: {
-    invalid: { true: 'text-status-error-fg', false: 'text-fg-secondary' },
+    invalid: { true: 'text-status-error-active', false: 'text-fg-secondary' },
   },
   defaultVariants: { invalid: false },
 });
@@ -73,7 +73,7 @@ export function TextField({
         })}
       >
         {required && (
-          <span aria-hidden="true" className="me-1 text-status-error-fg">
+          <span aria-hidden="true" className="me-1 text-status-error-active">
             *
           </span>
         )}

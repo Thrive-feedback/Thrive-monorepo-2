@@ -7,7 +7,7 @@ const OWNERSHIP: TextTag = {
   char: '#',
   value: 'ownership',
   label: '#ownership',
-  tone: 'accent',
+  tone: 'info',
 };
 const CARA: TextTag = {
   char: '@',

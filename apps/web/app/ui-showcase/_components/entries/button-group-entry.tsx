@@ -19,7 +19,7 @@ export function ButtonGroupEntry() {
 import { ButtonGroup } from '@/components/atoms/button-group';
 
 <ButtonGroup aria-label="Feedback form">
-  <Button variant="highlight" size="sm" aria-pressed="true">Request feedback</Button>
+  <Button variant="primary" size="sm" aria-pressed="true">Request feedback</Button>
   <Button size="sm" aria-pressed="false">Give feedback</Button>
 </ButtonGroup>`}
       props={[
@@ -43,7 +43,7 @@ import { ButtonGroup } from '@/components/atoms/button-group';
     >
       <StateCell label="One chosen">
         <ButtonGroup aria-label="Feedback form">
-          <Button variant="highlight" size="sm" aria-pressed="true">
+          <Button variant="primary" size="sm" aria-pressed="true">
             Request feedback
           </Button>
           <Button size="sm" aria-pressed="false">
@@ -56,7 +56,7 @@ import { ButtonGroup } from '@/components/atoms/button-group';
           <Button size="sm" aria-pressed="false">
             Shared with me
           </Button>
-          <Button variant="highlight" size="sm" aria-pressed="true">
+          <Button variant="primary" size="sm" aria-pressed="true">
             My requests
           </Button>
           <Button size="sm" aria-pressed="false">
@@ -78,7 +78,7 @@ import { ButtonGroup } from '@/components/atoms/button-group';
 export function ButtonGroupPreview() {
   return (
     <ButtonGroup aria-label="Feedback form">
-      <Button variant="highlight" size="sm">
+      <Button variant="primary" size="sm">
         Request
       </Button>
       <Button size="sm">Give</Button>

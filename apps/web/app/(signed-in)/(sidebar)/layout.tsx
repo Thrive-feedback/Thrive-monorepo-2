@@ -3,9 +3,9 @@ import { Navbar } from './_components/navbar';
 import { Sidebar } from './_components/sidebar';
 
 /**
- * Home and the pages beside it: the Member frame, with its own navbar, and the sidebar set into
- * the frame against its left edge, a column divided from the page by a line as Settings divides
- * its menu, on a screen wide enough for it. A phone gets neither sidebar nor its replacement yet.
+ * Home and the pages beside it, Settings among them: the Member frame, with its own navbar, and
+ * the sidebar set into the frame against its left edge, a column divided from the page by a line,
+ * on a screen wide enough for it. Settings sets its own menu beside it as a second such column. A phone gets neither sidebar nor its replacement yet.
  * The check is in each page, not here, because a layout does not run again when the client
  * navigates between the pages under it.
  *

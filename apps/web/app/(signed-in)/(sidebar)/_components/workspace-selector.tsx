@@ -20,7 +20,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
 import { Text } from '@/components/atoms/text';
-import { WorkspaceTile } from '@/components/molecules/workspace-tile';
 import { CreateWorkspaceForm } from '@/components/organisms/create-workspace-form';
 import { cn } from '@/lib/cn.util';
 import type {
@@ -41,9 +40,10 @@ export type WorkspaceSelectorProps = {
 
 /**
  * The Workspace the person is in, beside the logo, by its name. With nowhere else to go
- * it is only that. With another Workspace to open, it is a quiet button whose border and chevron
- * show on hover or focus, and its menu lists them as the switcher does (brain `ADR-0041` decision 5):
- * the current one ticked, the rest opened at once on their Home, those the person was
+ * it is only that. With another Workspace to open, it is a quiet button with a muted chevron
+ * after the name and a soft ground on hover, and its menu lists them as the switcher does (brain
+ * `ADR-0041` decision 5): each by name in the display face, the current one ticked on the
+ * product's light purple, the rest opened at once on their Home, those the person was
  * Deactivated in greyed and closed, then Create a Workspace, whose form opens in a dialog.
  *
  * A choice keeps the menu open while it is on its way, so one click cannot become two; a refusal
@@ -87,17 +87,14 @@ export function WorkspaceSelector({
   return (
     <>
       <DropdownMenu>
-        {/* The border and the chevron wait a moment before they show, so a pointer passing over
-            on its way elsewhere does not flash them, and go at once; the chevron keeps its room
-            meanwhile, so the name never moves. */}
         <DropdownMenuTrigger
           aria-label={`Workspace: ${current.name}. Switch Workspace`}
-          className="group flex min-w-0 items-center gap-2 rounded-button border border-transparent py-0.5 ps-2 pe-1.5 text-fg-primary transition-colors hover:border-border-default hover:delay-150 focus-visible:border-border-default data-[state=open]:border-border-default data-[state=open]:bg-action-neutral-surface motion-reduce:transition-none"
+          className="group flex min-w-0 items-center gap-1 rounded-button py-0.5 ps-2 pe-1 text-fg-primary transition-colors hover:bg-action-neutral-surface data-[state=open]:bg-action-neutral-surface motion-reduce:transition-none"
         >
           {identity}
           <ChevronDownIcon
             aria-hidden="true"
-            className="size-4 shrink-0 text-fg-secondary opacity-0 transition-opacity group-hover:opacity-100 group-hover:delay-150 group-focus-visible:opacity-100 group-data-[state=open]:opacity-100 motion-reduce:transition-none"
+            className="size-4 shrink-0 text-fg-secondary transition-transform group-data-[state=open]:rotate-180 motion-reduce:transition-none"
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-72">
@@ -107,24 +104,31 @@ export function WorkspaceSelector({
               key={workspace.id}
               checked={workspace.id === current.id}
               disabled={isSwitching}
+              className="data-[state=checked]:bg-action-primary-surface-hover"
               onSelect={() => {
                 if (workspace.id !== current.id) {
                   handleSwitch(workspace.id);
                 }
               }}
             >
-              <WorkspaceTile
-                name={workspace.name}
-                tone={workspace.id === current.id ? 'current' : 'choice'}
-                size="sm"
-              />
-              <span className="min-w-0 flex-1 truncate">{workspace.name}</span>
+              <Text
+                as="span"
+                variant="subtitle-display-3"
+                className="min-w-0 flex-1 truncate"
+              >
+                {workspace.name}
+              </Text>
             </DropdownMenuCheckboxItem>
           ))}
           {workspaces.inactive.map((workspace) => (
             <DropdownMenuItem key={workspace.id} disabled>
-              <WorkspaceTile name={workspace.name} tone="inactive" size="sm" />
-              <span className="min-w-0 flex-1 truncate">{workspace.name}</span>
+              <Text
+                as="span"
+                variant="subtitle-display-3"
+                className="min-w-0 flex-1 truncate"
+              >
+                {workspace.name}
+              </Text>
               <span className="text-body-3">Inactive</span>
             </DropdownMenuItem>
           ))}

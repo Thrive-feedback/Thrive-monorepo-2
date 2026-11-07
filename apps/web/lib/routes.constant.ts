@@ -145,7 +145,7 @@ export const ROUTES = {
     /** The Workspace's Workspace Goals: read by every Member, added, hidden and shown by Admins. */
     workspaceGoals: '/settings/workspace-goals',
     /** Who is in the Workspace, and, for Admins, inviting more and the Invitations still open. */
-    members: '/settings/members',
+    teammates: '/settings/teammates',
     /** The colour mode. */
     appearance: '/settings/appearance',
     /**

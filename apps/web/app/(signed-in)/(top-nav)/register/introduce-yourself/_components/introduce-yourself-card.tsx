@@ -1,5 +1,10 @@
 import { Button } from '@/components/atoms/button';
-import { Card } from '@/components/atoms/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/atoms/card';
 import { Text } from '@/components/atoms/text';
 import { signOut } from '@/lib/session/session-actions.service';
 import { IntroduceYourselfForm } from './introduce-yourself-form';
@@ -15,25 +20,26 @@ export function IntroduceYourselfCard({
   name,
 }: IntroduceYourselfCardProps) {
   return (
-    <Card
-      title="Introduce yourself"
-      titleAs="h2"
-      className="max-w-110 justify-self-center md:justify-self-end"
-    >
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Text variant="body-2" tone="muted">
-          Signed in as{' '}
-          <Text as="span" variant="subtitle-4" tone="brand">
-            {email}
+    <Card className="max-w-110 justify-self-center md:justify-self-end">
+      <CardHeader>
+        <CardTitle as="h2">Introduce yourself</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <Text variant="body-2" tone="muted">
+            Signed in as{' '}
+            <Text as="span" variant="subtitle-4" tone="brand">
+              {email}
+            </Text>
           </Text>
-        </Text>
-        <form action={signOut}>
-          <Button type="submit" size="sm">
-            Not you?
-          </Button>
-        </form>
-      </div>
-      <IntroduceYourselfForm defaultFullName={name} />
+          <form action={signOut}>
+            <Button type="submit" size="sm">
+              Not you?
+            </Button>
+          </form>
+        </div>
+        <IntroduceYourselfForm defaultFullName={name} />
+      </CardContent>
     </Card>
   );
 }

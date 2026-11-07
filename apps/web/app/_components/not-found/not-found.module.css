@@ -1,0 +1,132 @@
+/*
+ * The letter that could not be delivered: what utilities cannot draw. Its paper is the postcard's
+ * own stock (`postcard.module.css`), so only the envelope's shape, its stamp's perforations and the
+ * motion live here.
+ */
+
+/*
+ * The envelope's front, a degree off square, as a letter lies on a table. Its shape is the page's:
+ * the postcard's 3:2, and squarer on a phone, where the address needs the height under the stamp.
+ */
+.envelope {
+  position: relative;
+  rotate: -1.5deg;
+  border-radius: var(--shape-element);
+}
+
+/*
+ * A stamp: its face inset from a margin, and only the margin cut into perforations by a row of
+ * holes along each edge, the face left whole. The margin is a step off the paper in either theme,
+ * so the stamp stands out from the envelope in dark as in light. Two masks, one solid over the
+ * face and one of round holes over the rest, joined, have no utility.
+ */
+.stamp {
+  --hole: calc(var(--space-unit) * 1.25);
+  background-color: color-mix(
+    in oklch,
+    var(--surface-raised),
+    var(--fg-primary) 8%
+  );
+  padding: calc(var(--space-unit) * 1.5);
+  mask:
+    linear-gradient(black 0 0) content-box,
+    radial-gradient(circle at center, transparent 45%, black 47%) 0 0 /
+    var(--hole) var(--hole) round;
+  mask-composite: add;
+}
+
+/*
+ * What holds the stamp: a hairline round its cut edge and the shadow of a stamp stuck on paper.
+ * Outside the mask, so the mask cannot clip them away.
+ */
+.stampEdge {
+  filter: drop-shadow(0 0 0.5px var(--border-strong))
+    drop-shadow(
+      0 1px 1px color-mix(in oklch, var(--fg-primary) 22%, transparent)
+    );
+}
+
+/*
+ * The stamp's face: Thrive's purple with the wordmark reversed out of it, so it reads as a stamp
+ * in either theme. The wordmark takes its colour from `--brand-wordmark`, set here to the ink that
+ * sits on the brand's action colour.
+ */
+.stampFace {
+  --brand-wordmark: var(--fg-on-action);
+  background-color: var(--action-primary);
+  color: var(--fg-on-action);
+}
+
+/*
+ * The cancelling mark lands once, as a rubber stamp does: pressed down past its size and settling
+ * to rest, at a tilt. Already where it ends, so a reduced-motion page shows it struck.
+ */
+.postmark {
+  rotate: -9deg;
+  animation: strike var(--motion-duration-very-slow)
+    var(--motion-ease-smooth-out) var(--motion-duration-medium) both;
+}
+
+@keyframes strike {
+  from {
+    opacity: 0;
+    scale: 1.35;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/*
+ * The address crossed out by hand once the mark has landed, as part of the same arrival: the
+ * stroke revealed left to right across the whole address, however long, as a pen crosses it out.
+ */
+.strike {
+  animation: reveal var(--motion-duration-very-slow) var(--motion-ease-out)
+    calc(var(--motion-duration-very-slow) + var(--motion-duration-medium)) both;
+}
+
+/* The new address, written in as the person picks it: revealed left to right, as a pen moves. */
+.written {
+  animation: reveal var(--motion-duration-very-slow) var(--motion-ease-out) both;
+}
+
+@keyframes reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/*
+ * Re-addressed, it is sent: up and away to the right, turning as it goes, whole until it has left
+ * the window, as a letter does rather than dissolving on the table.
+ */
+.flying {
+  animation: fly var(--motion-duration-very-slow) var(--motion-ease-in-out)
+    forwards;
+}
+
+@keyframes fly {
+  85% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    rotate: 10deg;
+    translate: 90vw -90vh;
+    scale: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .postmark,
+  .strike,
+  .written,
+  .flying {
+    animation: none;
+  }
+}

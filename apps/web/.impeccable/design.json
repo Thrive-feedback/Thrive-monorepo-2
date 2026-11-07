@@ -1,0 +1,552 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-08T00:00:00Z",
+  "title": "Design System: Thrive",
+  "extensions": {
+    "source": "packages/tokens/src (primitives.css, semantic.css, theme.css generated from source/thrive.blueprint.json; supplement.css hand-written). Frontmatter values are the light mode; `dark` below is the data-theme='dark' mode of the same semantic name.",
+    "colorMeta": {
+      "brand-plum": {
+        "role": "primary",
+        "displayName": "Brand Plum",
+        "token": "--action-primary",
+        "canonical": "oklch(63.21% 0.1323 315.35)",
+        "dark": "oklch(72.31% 0.1012 315.44)",
+        "tonalRamp": [
+          "oklch(13.37% 0.0658 315.35)",
+          "oklch(22.29% 0.1096 315.35)",
+          "oklch(41.7% 0.0934 314.77)",
+          "oklch(51.25% 0.1323 315.35)",
+          "oklch(63.21% 0.1323 315.35)",
+          "oklch(72.31% 0.1012 315.44)",
+          "oklch(84.95% 0.11 315.35)",
+          "oklch(92.68% 0.0306 315.9)"
+        ]
+      },
+      "brand-plum-hover": {
+        "role": "primary",
+        "displayName": "Brand Plum Hover",
+        "token": "--action-primary-hover",
+        "canonical": "oklch(57.2% 0.1207 315.54)",
+        "dark": "oklch(84.95% 0.11 315.35)"
+      },
+      "brand-plum-active": {
+        "role": "primary",
+        "displayName": "Brand Plum Active",
+        "token": "--action-primary-active",
+        "canonical": "oklch(51.25% 0.1323 315.35)",
+        "dark": "oklch(89.13% 0.078 315.35)"
+      },
+      "plum-ink": {
+        "role": "primary",
+        "displayName": "Plum Ink",
+        "token": "--fg-accent",
+        "canonical": "oklch(41.7% 0.0934 314.77)",
+        "dark": "oklch(63.21% 0.1323 315.35)"
+      },
+      "human-orange": {
+        "role": "secondary",
+        "displayName": "Human Orange",
+        "token": "--action-secondary",
+        "canonical": "oklch(69.56% 0.1633 40.1)",
+        "dark": "oklch(75% 0.1561 40.1)",
+        "tonalRamp": [
+          "oklch(13.37% 0.0419 40.1)",
+          "oklch(22.29% 0.0698 40.1)",
+          "oklch(41.81% 0.1038 40.27)",
+          "oklch(51.25% 0.1605 40.1)",
+          "oklch(63.22% 0.1497 40.33)",
+          "oklch(69.56% 0.1633 40.1)",
+          "oklch(84.95% 0.0854 40.1)",
+          "oklch(92.5% 0.0397 39.3)"
+        ]
+      },
+      "human-orange-hover": {
+        "role": "secondary",
+        "displayName": "Human Orange Hover",
+        "token": "--action-secondary-hover",
+        "canonical": "oklch(57.18% 0.1369 40.47)",
+        "dark": "oklch(84.95% 0.0854 40.1)"
+      },
+      "human-orange-active": {
+        "role": "secondary",
+        "displayName": "Human Orange Active",
+        "token": "--action-secondary-active",
+        "canonical": "oklch(51.25% 0.1605 40.1)",
+        "dark": "oklch(89.13% 0.0595 40.1)"
+      },
+      "asking-blue": {
+        "role": "tertiary",
+        "displayName": "Asking Blue",
+        "token": "--action-tertiary",
+        "canonical": "oklch(51.25% 0.1665 264.28)",
+        "dark": "oklch(72.36% 0.1378 264.46)",
+        "tonalRamp": [
+          "oklch(13.37% 0.0925 264.28)",
+          "oklch(22.29% 0.1541 264.28)",
+          "oklch(38.99% 0.1665 264.28)",
+          "oklch(47.85% 0.125 264.55)",
+          "oklch(51.25% 0.1665 264.28)",
+          "oklch(63.28% 0.1584 264.15)",
+          "oklch(84.95% 0.074 264.28)",
+          "oklch(92.56% 0.0356 262.82)"
+        ]
+      },
+      "asking-blue-deep": {
+        "role": "tertiary",
+        "displayName": "Asking Blue Deep",
+        "token": "--action-tertiary-hover / --status-info-active",
+        "canonical": "oklch(47.85% 0.125 264.55)",
+        "dark": "oklch(89.13% 0.0526 264.28)"
+      },
+      "stamp-ink-blue": {
+        "role": "tertiary",
+        "displayName": "Stamp-Ink Blue",
+        "token": "--status-info",
+        "canonical": "oklch(63.28% 0.1584 264.15)",
+        "dark": "oklch(72.36% 0.1378 264.46)"
+      },
+      "success-ink": {
+        "role": "status",
+        "displayName": "Success Ink",
+        "token": "--status-success-active",
+        "canonical": "oklch(51.25% 0.1177 150.78)",
+        "dark": "oklch(89.13% 0.1177 150.78)"
+      },
+      "caution-yellow": {
+        "role": "status",
+        "displayName": "Caution Yellow",
+        "token": "--status-warning",
+        "canonical": "oklch(84.95% 0.1407 81.55)",
+        "dark": "oklch(80.21% 0.1407 81.55)"
+      },
+      "warning-ink": {
+        "role": "status",
+        "displayName": "Warning Ink",
+        "token": "--status-warning-active",
+        "canonical": "oklch(69.4% 0.1407 81.55)",
+        "dark": "oklch(92.57% 0.0622 81.15)"
+      },
+      "danger-red": {
+        "role": "status",
+        "displayName": "Danger Red",
+        "token": "--status-error",
+        "canonical": "oklch(63.14% 0.215 17.21)",
+        "dark": "oklch(72.32% 0.1639 17.52)"
+      },
+      "danger-ink": {
+        "role": "status",
+        "displayName": "Danger Ink",
+        "token": "--status-error-active",
+        "canonical": "oklch(47.81% 0.1858 17.39)",
+        "dark": "oklch(89.13% 0.058 11.45)"
+      },
+      "paper-white": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "token": "--surface-base",
+        "canonical": "oklch(100% 0 0)",
+        "dark": "oklch(20.46% 0 0)",
+        "tonalRamp": [
+          "oklch(10.67% 0 0)",
+          "oklch(20.46% 0 0)",
+          "oklch(35.62% 0 0)",
+          "oklch(45.07% 0 0)",
+          "oklch(57.27% 0 0)",
+          "oklch(72.19% 0 0)",
+          "oklch(84.21% 0 0)",
+          "oklch(97.5% 0 0)"
+        ]
+      },
+      "raised-paper": {
+        "role": "neutral",
+        "displayName": "Raised Paper",
+        "token": "--surface-raised",
+        "canonical": "oklch(97.5% 0 0)",
+        "dark": "oklch(26.45% 0 0)"
+      },
+      "subtle-grey": {
+        "role": "neutral",
+        "displayName": "Subtle Grey",
+        "token": "--surface-subtle",
+        "canonical": "oklch(90.06% 0 0)",
+        "dark": "oklch(26.45% 0 0)"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "token": "--fg-primary",
+        "canonical": "oklch(17.3% 0 0)",
+        "dark": "oklch(92.8% 0 0)"
+      },
+      "ink-secondary": {
+        "role": "neutral",
+        "displayName": "Ink Secondary",
+        "token": "--fg-secondary",
+        "canonical": "oklch(35.62% 0 0)",
+        "dark": "oklch(72.19% 0 0)"
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "token": "--fg-muted",
+        "canonical": "oklch(45.07% 0 0)",
+        "dark": "oklch(51.25% 0 0)"
+      },
+      "near-black": {
+        "role": "neutral",
+        "displayName": "Near Black",
+        "token": "--fg-on-secondary / --fg-on-warning",
+        "canonical": "oklch(6.72% 0 0)",
+        "dark": "oklch(6.72% 0 0)"
+      },
+      "rule-default": {
+        "role": "neutral",
+        "displayName": "Rule Default",
+        "token": "--border-default",
+        "canonical": "oklch(57.27% 0 0)",
+        "dark": "oklch(54.17% 0 0)"
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Rule Strong",
+        "token": "--border-strong",
+        "canonical": "oklch(72.19% 0 0)",
+        "dark": "oklch(38.99% 0 0)"
+      },
+      "rule-muted": {
+        "role": "neutral",
+        "displayName": "Rule Muted",
+        "token": "--border-muted",
+        "canonical": "oklch(84.21% 0 0)",
+        "dark": "oklch(35.62% 0 0)"
+      },
+      "focus-plum": {
+        "role": "neutral",
+        "displayName": "Focus Plum",
+        "token": "--focus-ring",
+        "canonical": "oklch(72.31% 0.1012 315.44)",
+        "dark": "oklch(35.71% 0.0804 315)"
+      }
+    },
+    "derivedColors": [
+      {
+        "name": "action surface",
+        "value": "color-mix(in oklch, <hue>-50 20%, transparent)",
+        "purpose": "Outlined button fill, current nav item, tag pill ground."
+      },
+      {
+        "name": "action surface hover",
+        "value": "color-mix(in oklch, <hue>-100 70%, transparent)",
+        "purpose": "Hover fill; filled Badge tones."
+      },
+      {
+        "name": "feed card ground",
+        "value": "bg-action-{primary|tertiary|secondary}/8",
+        "purpose": "The 8% hue ground of a Home card by kind."
+      },
+      {
+        "name": "glass",
+        "value": "color-mix(in oklch, primary-100 65%, transparent); neutral: neutral-50 72%",
+        "purpose": "Navbars, the Member frame (tinted) and Card (neutral)."
+      },
+      {
+        "name": "paper tone",
+        "value": "color-mix(in oklch, status-{warning|success}-border 10%, transparent); blush error-border 8%",
+        "purpose": "Postcard and envelope stock tints: cream, sage, blush."
+      }
+    ],
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display (display-1)",
+        "token": "text-display-1",
+        "purpose": "Page-level statements. 3rem phone, 3.4375rem at 48rem, 4rem at 64rem. Cooper ships only SemiBold; 700 renders it with font-synthesis-weight: none."
+      },
+      "headline": {
+        "displayName": "Display 4",
+        "token": "text-display-4",
+        "purpose": "A standalone page's heading, such as the 404."
+      },
+      "quote": {
+        "displayName": "Quote",
+        "token": "text-quote",
+        "purpose": "A quoted line in the display face."
+      },
+      "title": {
+        "displayName": "Subtitle 2",
+        "token": "text-subtitle-2",
+        "purpose": "CardTitle."
+      },
+      "title-small": {
+        "displayName": "Subtitle 3",
+        "token": "text-subtitle-3",
+        "purpose": "Settings card titles."
+      },
+      "body": {
+        "displayName": "Body 1",
+        "token": "text-body-1",
+        "purpose": "Reading text and input values."
+      },
+      "body-small": {
+        "displayName": "Body 2",
+        "token": "text-body-2",
+        "purpose": "Secondary lines, link rows, card descriptions."
+      },
+      "body-meta": {
+        "displayName": "Body 3",
+        "token": "text-body-3",
+        "purpose": "Card metadata and Settings descriptions."
+      },
+      "label": {
+        "displayName": "Label",
+        "token": "text-label",
+        "purpose": "Control labels."
+      },
+      "button": {
+        "displayName": "Button sm",
+        "token": "text-button-sm",
+        "purpose": "Button sm/md; lg uses button-md (1rem). Buttons fix line height at 1.25rem."
+      },
+      "overline": {
+        "displayName": "Overline",
+        "token": "text-overline",
+        "purpose": "Uppercase field or nav-group label, never a kicker."
+      },
+      "handwrite": {
+        "displayName": "Handwrite 1",
+        "token": "text-subtitle-handwrite-1",
+        "purpose": "Margin notes (lg), a written address, a card's large handwriting."
+      },
+      "handwrite-small": {
+        "displayName": "Handwrite 2",
+        "token": "text-subtitle-handwrite-2",
+        "purpose": "Margin notes (md)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "elevation-low",
+        "value": "0 0.0625rem 0.0625rem 0 color-mix(in oklch, var(--neutral-950) 10%, transparent), 0 0.125rem 0.5rem 0 color-mix(in oklch, var(--neutral-950) 10%, transparent)",
+        "purpose": "Small raised controls. 40% in dark."
+      },
+      {
+        "name": "elevation-med",
+        "value": "0 0.0625rem 0.125rem 0 color-mix(in oklch, var(--neutral-950) 10%, transparent), 0 0.125rem 0.75rem 0 color-mix(in oklch, var(--neutral-950) 10%, transparent)",
+        "purpose": "Card (frosted glass). 40% in dark."
+      },
+      {
+        "name": "elevation-high",
+        "value": "0 0.125rem 0.125rem 0 color-mix(in oklch, var(--neutral-950) 10%, transparent), 0 0.5rem 1.5rem 0 color-mix(in oklch, var(--neutral-950) 10%, transparent)",
+        "purpose": "Postcard stock, dialogs. 40%/55% in dark."
+      },
+      {
+        "name": "paper-lift",
+        "value": "filter: drop-shadow(0 0.0625rem 0.0625rem var(--surface-scrim)) x2, drop-shadow(0 0.125rem 0.375rem var(--surface-scrim)) x2",
+        "purpose": "A stamp or sticker lying on paper; follows its perforated edge (postcard.module.css .lift)."
+      }
+    ],
+    "materials": [
+      {
+        "name": "glass",
+        "value": "backdrop-filter: blur(var(--glass-blur) /* 1.25rem */) saturate(var(--glass-saturate) /* 1.8 */)",
+        "purpose": "Navbars, Member frame, Card."
+      },
+      {
+        "name": "scrim-blur",
+        "value": "0.375rem; deep 0.9375rem",
+        "purpose": "Page behind a dialog; behind a card being written."
+      },
+      {
+        "name": "dot-grid",
+        "value": "radial-gradient(circle, color-mix(in oklch, var(--fg-primary) 4%, transparent) 0.0625rem, transparent 0.09375rem) at 0.75rem",
+        "purpose": "Postcard and envelope stock."
+      }
+    ],
+    "motion": [
+      { "name": "duration-micro", "value": "80ms", "purpose": "Tooltip exit." },
+      {
+        "name": "duration-quick",
+        "value": "150ms",
+        "purpose": "Default transition; overlay exit; postcard turn-out."
+      },
+      {
+        "name": "duration-fast",
+        "value": "250ms",
+        "purpose": "Overlay enter."
+      },
+      {
+        "name": "duration-medium",
+        "value": "350ms",
+        "purpose": "Delays inside a chained arrival."
+      },
+      {
+        "name": "duration-very-slow",
+        "value": "500ms",
+        "purpose": "Postmark strike, handwriting write-on in a dialog, letter flight."
+      },
+      {
+        "name": "ease-smooth-out",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Arrivals and overlays."
+      },
+      {
+        "name": "ease-out",
+        "value": "ease-out",
+        "purpose": "Default transitions, pen reveals."
+      },
+      {
+        "name": "ease-bounce",
+        "value": "cubic-bezier(0.34, 1.36, 0.64, 1)",
+        "purpose": "Available overshoot."
+      },
+      {
+        "name": "scroll-linked",
+        "value": "animation-timeline: scroll()/view()",
+        "purpose": "Orb drift, handwriting write-on, navbar frost; no duration. Off under reduced motion."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "40rem" },
+      { "name": "md", "value": "48rem" },
+      { "name": "lg", "value": "64rem" },
+      { "name": "xl", "value": "80rem" },
+      { "name": "2xl", "value": "96rem" }
+    ],
+    "focus": {
+      "value": "outline: 0.0625rem solid var(--focus-ring); outline-offset: 0.125rem",
+      "purpose": "Every interactive element, from globals.css."
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main product action, in Brand Plum.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Give feedback</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; border: 0; border-radius: var(--shape-button, 0.5625rem); padding: 0.625rem 1rem; font-family: var(--family-main, 'Google Sans', sans-serif); font-size: var(--type-button-sm-size, 0.875rem); font-weight: 600; line-height: 1.25rem; cursor: pointer; transition: background-color 150ms ease-out, color 150ms ease-out; } .ds-btn:focus-visible { outline: 0.0625rem solid var(--focus-ring, oklch(72.31% 0.1012 315.44)); outline-offset: 0.125rem; } .ds-btn-primary { background: var(--action-primary, oklch(63.21% 0.1323 315.35)); color: var(--fg-on-action, #fff); } .ds-btn-primary:hover { background: var(--action-primary-hover, oklch(57.2% 0.1207 315.54)); } .ds-btn-primary:active { background: var(--action-primary-active, oklch(51.25% 0.1323 315.35)); }"
+    },
+    {
+      "name": "Highlight Button",
+      "kind": "button",
+      "refersTo": "button-highlight",
+      "description": "A person's own act, such as sending Kudos, in Human Orange.",
+      "html": "<button class=\"ds-btn-hl\">Send Kudos</button>",
+      "css": ".ds-btn-hl { border: 0; border-radius: var(--shape-button, 0.5625rem); padding: 0.625rem 1rem; font-family: var(--family-main, 'Google Sans', sans-serif); font-size: 0.875rem; font-weight: 600; line-height: 1.25rem; background: var(--action-secondary, oklch(69.56% 0.1633 40.1)); color: var(--fg-on-secondary, oklch(6.72% 0 0)); cursor: pointer; transition: background-color 150ms ease-out; } .ds-btn-hl:hover { background: var(--action-secondary-hover, oklch(57.18% 0.1369 40.47)); } .ds-btn-hl:active { background: var(--action-secondary-active, oklch(51.25% 0.1605 40.1)); } .ds-btn-hl:focus-visible { outline: 0.0625rem solid var(--focus-ring, oklch(72.31% 0.1012 315.44)); outline-offset: 0.125rem; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The default button: white with a neutral edge.",
+      "html": "<button class=\"ds-btn-sec\">Cancel</button>",
+      "css": ".ds-btn-sec { border: 1px solid var(--action-neutral-border, oklch(51.25% 0 0)); border-radius: var(--shape-button, 0.5625rem); padding: 0.625rem 1rem; font-family: var(--family-main, 'Google Sans', sans-serif); font-size: 0.875rem; font-weight: 600; line-height: 1.25rem; background: var(--surface-base, #fff); color: var(--fg-primary, oklch(17.3% 0 0)); cursor: pointer; transition: background-color 150ms ease-out; } .ds-btn-sec:hover { background: var(--action-neutral-surface-hover, color-mix(in oklch, oklch(92.8% 0 0) 70%, transparent)); } .ds-btn-sec:focus-visible { outline: 0.0625rem solid var(--focus-ring, oklch(72.31% 0.1012 315.44)); outline-offset: 0.125rem; }"
+    },
+    {
+      "name": "Warning Button",
+      "kind": "button",
+      "refersTo": "button-warning",
+      "description": "A step that ends something the person can take back, such as Sign out.",
+      "html": "<button class=\"ds-btn-warn\">Sign out</button>",
+      "css": ".ds-btn-warn { border: 0; border-radius: var(--shape-button, 0.5625rem); padding: 0.625rem 1rem; font-family: var(--family-main, 'Google Sans', sans-serif); font-size: 0.875rem; font-weight: 600; line-height: 1.25rem; background: var(--status-warning, oklch(84.95% 0.1407 81.55)); color: var(--fg-on-warning, oklch(6.72% 0 0)); cursor: pointer; transition: background-color 150ms ease-out; } .ds-btn-warn:hover { background: var(--status-warning-hover, oklch(75% 0.1407 81.55)); } .ds-btn-warn:active { background: var(--status-warning-active, oklch(69.4% 0.1407 81.55)); } .ds-btn-warn:focus-visible { outline: 0.0625rem solid var(--focus-ring, oklch(72.31% 0.1012 315.44)); outline-offset: 0.125rem; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Outlined input: Rule Strong edge on white, control corner.",
+      "html": "<input class=\"ds-input\" placeholder=\"name@team.com\" />",
+      "css": ".ds-input { width: 100%; border: 1px solid var(--border-strong, oklch(72.19% 0 0)); border-radius: var(--shape-input, 0.5625rem); padding: 0.5625rem 0.5rem; background: var(--surface-base, #fff); color: var(--fg-primary, oklch(17.3% 0 0)); font-family: var(--family-main, 'Google Sans', sans-serif); font-size: 1rem; line-height: 1.5rem; } .ds-input::placeholder { color: var(--fg-disabled, color-mix(in oklch, oklch(54.17% 0 0) 45%, transparent)); } .ds-input:focus-visible { outline: 0.0625rem solid var(--focus-ring, oklch(72.31% 0.1012 315.44)); outline-offset: 0.125rem; } .ds-input[aria-invalid='true'] { border-color: var(--status-error-border, oklch(51.25% 0.2041 11.45)); }"
+    },
+    {
+      "name": "Side Nav",
+      "kind": "nav",
+      "description": "Side nav rows; the current page in plum on its 20% surface.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item\" aria-current=\"page\" href=\"#\">Home</a><a class=\"ds-nav-item\" href=\"#\">Received</a><a class=\"ds-nav-item\" href=\"#\">Given</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 0.25rem; width: 14rem; } .ds-nav-item { display: flex; align-items: center; gap: 0.625rem; border-radius: var(--shape-button, 0.5625rem); padding: 0.5rem 0.75rem; font-family: var(--family-main, 'Google Sans', sans-serif); font-size: 0.875rem; font-weight: 600; color: var(--fg-secondary, oklch(35.62% 0 0)); text-decoration: none; transition: background-color 150ms ease-out, color 150ms ease-out; } .ds-nav-item:hover { background: var(--action-neutral-surface-hover, color-mix(in oklch, oklch(92.8% 0 0) 70%, transparent)); color: var(--fg-primary, oklch(17.3% 0 0)); } .ds-nav-item[aria-current] { background: var(--action-primary-surface, color-mix(in oklch, oklch(97.49% 0.009 314.78) 20%, transparent)); color: var(--action-primary, oklch(63.21% 0.1323 315.35)); } .ds-nav-item:focus-visible { outline: 0.0625rem solid var(--focus-ring, oklch(72.31% 0.1012 315.44)); outline-offset: 0.125rem; }"
+    },
+    {
+      "name": "Tags and Status Text",
+      "kind": "chip",
+      "description": "A #hashtag in blue, an @mention in orange, a status word in its -active shade, and an info Badge.",
+      "html": "<p class=\"ds-line\">Thanks <span class=\"ds-tag ds-tag-mention\">@Ploy</span> for <span class=\"ds-tag ds-tag-hash\">#onboarding</span>: 2 <span class=\"ds-status-success\">answered</span>, 1 <span class=\"ds-status-info\">pending</span> <span class=\"ds-badge\">Asked</span></p>",
+      "css": ".ds-line { font-family: var(--family-main, 'Google Sans', sans-serif); font-size: 1rem; line-height: 1.5rem; color: var(--fg-primary, oklch(17.3% 0 0)); } .ds-tag { border-radius: 9999px; padding: 0 0.25rem; } .ds-tag-hash { background: var(--status-info-surface, color-mix(in oklch, oklch(97.51% 0.0103 261.79) 20%, transparent)); color: var(--status-info-active, oklch(47.85% 0.125 264.55)); } .ds-tag-mention { background: var(--action-secondary-surface, color-mix(in oklch, oklch(97.55% 0.0095 41.89) 20%, transparent)); color: var(--action-secondary, oklch(69.56% 0.1633 40.1)); } .ds-status-success { font-weight: 500; color: var(--status-success-active, oklch(51.25% 0.1177 150.78)); } .ds-status-info { font-weight: 500; color: var(--status-info-active, oklch(47.85% 0.125 264.55)); } .ds-badge { display: inline-flex; border-radius: 9999px; padding: 0.125rem 0.625rem; font-size: 0.625rem; font-weight: 600; line-height: 0.9375rem; background: var(--status-info-surface-hover, color-mix(in oklch, oklch(92.56% 0.0356 262.82) 26%, transparent)); color: var(--status-info-fg, oklch(11.26% 0.0375 263.12)); border: 1px solid var(--status-info-border, oklch(51.25% 0.1665 264.28)); }"
+    },
+    {
+      "name": "Feed Card",
+      "kind": "card",
+      "refersTo": "card-feed",
+      "description": "A Home card: flat, page corner, its kind's hue at 8% (blue here, for an answer to an Ask).",
+      "html": "<article class=\"ds-feed\"><p class=\"ds-feed-who\">Nok gave feedback to Ploy</p><p class=\"ds-feed-meta\"><span class=\"ds-feed-kind\">Asked for</span> · 2h ago</p><p class=\"ds-feed-body\">The demo landed because you cut the slides to three.</p></article>",
+      "css": ".ds-feed { display: flex; flex-direction: column; gap: 0.75rem; max-width: 32rem; border-radius: var(--shape-page, 1.3125rem); padding: 1.25rem 1.5625rem; background: color-mix(in oklch, var(--action-tertiary, oklch(51.25% 0.1665 264.28)) 8%, transparent); font-family: var(--family-main, 'Google Sans', sans-serif); color: var(--fg-primary, oklch(17.3% 0 0)); } .ds-feed-who { margin: 0; font-size: 1rem; font-weight: 500; } .ds-feed-meta { margin: 0; font-size: 0.75rem; line-height: 1.125rem; color: var(--fg-secondary, oklch(35.62% 0 0)); } .ds-feed-kind { font-weight: 500; color: var(--action-tertiary, oklch(51.25% 0.1665 264.28)); } .ds-feed-body { margin: 0; font-size: 1rem; line-height: 1.5rem; }"
+    },
+    {
+      "name": "Postcard Stock with Postmark",
+      "kind": "custom",
+      "refersTo": "postcard-paper",
+      "description": "Cream postcard stock with its dot grid and high elevation, a margin note in Caveat, and a blue Postmark (simplified; the real one adds an ink-wear filter).",
+      "html": "<div class=\"ds-postcard\"><svg class=\"ds-postmark\" viewBox=\"0 0 112 64\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"84\" cy=\"32\" r=\"27\"/><path d=\"M0 22 q7 -5 14 0 t14 0 t14 0 t14 0\"/><path d=\"M0 32 q7 -5 14 0 t14 0 t14 0 t14 0\"/><path d=\"M0 42 q7 -5 14 0 t14 0 t14 0 t14 0\"/><circle cx=\"84\" cy=\"32\" r=\"15.5\" stroke-width=\"1\"/></g><text x=\"84\" y=\"31\" font-size=\"6\" text-anchor=\"middle\" fill=\"currentColor\">04 OCT</text><text x=\"84\" y=\"38\" font-size=\"6\" text-anchor=\"middle\" fill=\"currentColor\">2026</text></svg><span class=\"ds-note\">you nailed it</span></div>",
+      "css": ".ds-postcard { position: relative; width: 24rem; aspect-ratio: 3 / 2; border-radius: var(--shape-element, 0.1875rem); background-color: var(--surface-raised, oklch(97.5% 0 0)); background-image: radial-gradient(circle, color-mix(in oklch, var(--fg-primary, oklch(17.3% 0 0)) 4%, transparent) 0.0625rem, transparent 0.09375rem), linear-gradient(color-mix(in oklch, var(--status-warning-border, oklch(51.25% 0.1057 81.55)) 10%, transparent) 0 0); background-size: 0.75rem 0.75rem, auto; box-shadow: var(--elevation-high, 0 0.125rem 0.125rem 0 rgb(0 0 0 / 0.1), 0 0.5rem 1.5rem 0 rgb(0 0 0 / 0.1)); } .ds-postmark { position: absolute; top: 1rem; right: 1rem; width: 8rem; color: var(--status-info, oklch(63.28% 0.1584 264.15)); rotate: -9deg; font-family: var(--family-display, Cooper, serif); } .ds-note { position: absolute; left: 1.5rem; bottom: 1.5rem; rotate: -3deg; font-family: var(--family-handwrite, Caveat, cursive); font-size: 1.5625rem; font-weight: 700; line-height: 2.375rem; color: var(--action-secondary-hover, oklch(57.18% 0.1369 40.47)); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Post Between Teammates",
+    "overview": "Thrive's world is correspondence. Feedback is written on postcard stock, stamped, postmarked in worn blue rubber-stamp ink and sent by airmail; people leave notes to each other in the margin in their own hand. The product itself speaks in a calm sans (Google Sans) and a warm, rounded serif display (Cooper) for the moments a page has something to say. Everything sits on a white page that, before a person signs in, has soft orbs of the three product colours drifting behind it; once signed in, the page is held in a frame of brand-tinted frosted glass.\n\nDensity is moderate and list-first: Home, Received and Given are columns of tinted cards, Settings is stacked bordered cards of divided rows. Colour is meaning, not decoration: three hues each own one kind of act (giving, asking, thanking/the human voice), and statuses are coloured words inside a sentence rather than badges beside it. Motion is physical and sparse: a postcard turns over, a postmark strikes, a letter flies off; handwriting writes itself on as it scrolls into view; all of it collapses to an instant under reduced motion.\n\nThe system is generated. Every colour, size, radius, shadow and corner is a token in `packages/tokens`, exported from the design blueprint; light and dark are two modes of the same semantic names, switched by `data-theme` on `<html>`. Components reference semantic roles only.",
+    "keyCharacteristics": [
+      "Three meaning-bearing hues: plum for the product and giving, blue for anything asked, orange for the human voice.",
+      "Paper objects (postcards, envelopes, stamps, postmarks) as the signature material, on white or frosted glass.",
+      "Cooper display for headings and stamped words; Google Sans for everything read; Caveat handwriting for people's asides.",
+      "Status said as a coloured word in the line, never as colour alone.",
+      "Light and dark as token modes; no per-component dark overrides."
+    ],
+    "rules": [
+      {
+        "name": "The Three Voices Rule",
+        "body": "Plum is the product speaking and Feedback given unasked; blue is anything asked, and every #hashtag; orange is a person speaking: @mentions, handwriting, Kudos. Never swap them, and never add a fourth hue for meaning.",
+        "section": "colors"
+      },
+      {
+        "name": "The Status Is a Word Rule",
+        "body": "A status is a word in its `-active` colour inside the line it belongs to (\"2 answered, 1 pending\"), set at weight 500. The `-fg` shades are only for text on that status's own tinted surface.",
+        "section": "colors"
+      },
+      {
+        "name": "The Modes Not Overrides Rule",
+        "body": "Dark mode is the second mode of the same semantic tokens under `data-theme='dark'`. No `dark:` utilities, no literal colours, no hand-added tokens; a value the blueprint lacks goes in `supplement.css` as a request to design.",
+        "section": "colors"
+      },
+      {
+        "name": "The Look Is Not the Level Rule",
+        "body": "`Text` takes a `variant` for how it looks and `as` for what it is; the heading outline follows the page, never the type scale.",
+        "section": "typography"
+      },
+      {
+        "name": "The Handwriting Is a Person Rule",
+        "body": "Caveat is only ever a person's aside or something written by hand. A margin note (HandwrittenNote) is in orange, tilted 3 degrees, and hidden from assistive technology, so it never carries anything the page needs; on a Home card the large handwriting takes its card kind's ink instead.",
+        "section": "typography"
+      },
+      {
+        "name": "The Paper Lifts, the Page Stays Rule",
+        "body": "The page and list cards are flat; only what floats (a dialog, a postcard, a glass card) or lies on paper (a stamp) casts a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do reach for semantic tokens and the atoms (`Text`, `Button`, `Badge`, `StatusText`, `Card`, `Postmark`) before writing a class; every utility is token-backed.",
+      "Do give an act its hue: plum for the product and giving, blue for anything asked and #hashtags, orange for a person's voice, @mentions and Kudos.",
+      "Do say a status as a word in the `-active` shade (`StatusText`, `Text` tones), and use the `-fg` shades only on that status's tinted surface.",
+      "Do set headings in Cooper through the display variants, and pick `as` for the outline separately from `variant` for the look.",
+      "Do use the `warning` button for a reversible ending such as Sign out, and `danger` only for a loss.",
+      "Do reuse postcard stock, the Postmark and the stamp for paper moments, and let paper sit a degree or two off square.",
+      "Do make every motion collapse to its end state under reduced motion."
+    ],
+    "donts": [
+      "Don't write `dark:` utilities or literal colours; dark mode is a token mode under `data-theme='dark'`.",
+      "Don't hand-add tokens to `packages/tokens`; change the blueprint and regenerate, or request a supplement.",
+      "Don't use a `-fg` status shade for text on the page; it reads near-black there.",
+      "Don't write a margin note (HandwrittenNote) in any colour but orange, or use orange for a product action that is not a person's own.",
+      "Don't let handwriting carry information the page needs; it is decorative and hidden from assistive technology.",
+      "Don't set an uppercase overline above a heading as a kicker; overlines label a field or a nav group.",
+      "Don't add a box shadow to list cards or Settings cards; they are flat on their ground."
+    ]
+  }
+}

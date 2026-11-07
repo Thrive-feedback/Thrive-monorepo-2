@@ -12,7 +12,7 @@ export type AutocompleteOption = {
 };
 
 /** How a highlighted tag and its suggestions are coloured. */
-export type TagTone = 'accent' | 'secondary';
+export type TagTone = 'info' | 'secondary';
 
 /** One kind of tag a field completes: how it is written, and what it can be completed to. */
 export type AutocompleteTrigger = {

@@ -42,12 +42,18 @@ const nextConfig: NextConfig = {
       search: '',
     })),
   },
-  // Settings took in the Profile page; old links and bookmarks land on its section.
+  // Settings took in the Profile page, and Members became Teammates; old links and bookmarks land
+  // on the section that replaced them.
   async redirects() {
     return [
       {
         source: '/profile',
         destination: '/settings/account',
+        permanent: false,
+      },
+      {
+        source: '/settings/members',
+        destination: '/settings/teammates',
         permanent: false,
       },
     ];

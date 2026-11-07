@@ -1,6 +1,8 @@
 /*
  * The list still scrolls sideways when the tabs do not fit — by trackpad, touch or the arrow
  * keys — but shows no bar under them. Hiding a scrollbar has no utility, which is why this is CSS.
+ * It never scrolls up and down: a list that scrolls sideways would otherwise also scroll by the
+ * pixel each tab's underline reaches past it (`overflow-y-hidden` on the list).
  */
 .list {
   scrollbar-width: none;

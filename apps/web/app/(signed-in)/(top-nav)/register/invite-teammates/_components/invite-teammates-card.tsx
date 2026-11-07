@@ -1,4 +1,9 @@
-import { Card } from '@/components/atoms/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/atoms/card';
 import { InviteTeammatesForm } from './invite-teammates-form';
 
 export type InviteTeammatesCardProps = {
@@ -8,12 +13,13 @@ export type InviteTeammatesCardProps = {
 
 export function InviteTeammatesCard({ workspaceId }: InviteTeammatesCardProps) {
   return (
-    <Card
-      title="Invite your teammates"
-      titleAs="h2"
-      className="max-w-110 justify-self-center md:justify-self-end"
-    >
-      <InviteTeammatesForm workspaceId={workspaceId} />
+    <Card className="max-w-110 justify-self-center md:justify-self-end">
+      <CardHeader>
+        <CardTitle as="h2">Invite your teammates</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <InviteTeammatesForm workspaceId={workspaceId} />
+      </CardContent>
     </Card>
   );
 }

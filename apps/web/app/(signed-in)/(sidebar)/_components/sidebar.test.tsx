@@ -57,7 +57,7 @@ describe('Sidebar', () => {
       'Home',
       'Kudos board',
       'Waiting for me',
-      'Members',
+      'Teammates',
       'My Feedback',
       'Received',
       'Given',

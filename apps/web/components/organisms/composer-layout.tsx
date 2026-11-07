@@ -45,7 +45,10 @@ export function ComposerLayout({
       <div className="flex flex-col gap-2 border-border-subtle border-t pt-4">
         {/* Above the footer's controls, where a menu opening under them cannot cover it. */}
         {footerError && (
-          <p id={footerErrorId} className="text-body-3 text-status-error-fg">
+          <p
+            id={footerErrorId}
+            className="text-body-3 text-status-error-active"
+          >
             {footerError}
           </p>
         )}

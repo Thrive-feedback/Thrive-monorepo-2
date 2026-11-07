@@ -68,7 +68,7 @@ export function MemberMultiPicker({
       {invalid && (
         <p
           id={messageId}
-          className="mt-1.5 text-input-helper text-status-error-fg"
+          className="mt-1.5 text-input-helper text-status-error-active"
         >
           {errorMessage}
         </p>

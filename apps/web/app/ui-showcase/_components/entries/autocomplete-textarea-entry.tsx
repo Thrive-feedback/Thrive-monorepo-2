@@ -20,7 +20,7 @@ export function AutocompleteTextareaEntry() {
   aria-label="Feedback"
   value={value}
   onChange={(event) => setValue(event.target.value)}
-  triggers={[{ rule: HASHTAG_RULE, label: 'Goals', tone: 'accent', options }]}
+  triggers={[{ rule: HASHTAG_RULE, label: 'Goals', tone: 'info', options }]}
 />`}
       props={[
         {

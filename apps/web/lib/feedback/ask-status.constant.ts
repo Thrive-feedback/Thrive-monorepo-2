@@ -1,5 +1,5 @@
 import type { components } from '@repo/api';
-import type { BadgeTone } from '@/components/atoms/badge';
+import type { StatusTone } from '@/components/atoms/status-text';
 
 /** Where one Ask stands, as the API names it. */
 export type AskStatus =
@@ -11,10 +11,11 @@ export const ASK_STATUS_NAMES: Readonly<Record<AskStatus, string>> = {
 };
 
 /**
- * Each status as a Badge tone for where it stands: waiting or done, the tones Members gives an
- * Invitation too. The word carries the same meaning, so nothing depends on seeing the colour.
+ * Each status as the tone of its word, or of its Badge where one is still drawn: waiting or done,
+ * the tones Teammates gives an Invitation too. The word carries the same meaning, so nothing
+ * depends on seeing the colour.
  */
-export const ASK_STATUS_TONES: Readonly<Record<AskStatus, BadgeTone>> = {
+export const ASK_STATUS_TONES: Readonly<Record<AskStatus, StatusTone>> = {
   PENDING: 'warning',
   ANSWERED: 'success',
 };
