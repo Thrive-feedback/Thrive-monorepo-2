@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { LETTER_TEAMMATES } from '@/app/ui-showcase/letter/_components/letter-teammates.mock';
+import { SAMPLE_TEAMMATES } from '@/app/ui-showcase/_lib/sample-teammates.mock';
 import { Button } from '@/components/atoms/button';
 import { KudosDialog } from '@/components/organisms/kudos-dialog/kudos-dialog';
 
@@ -21,7 +21,7 @@ export function KudosDialogDemo() {
         Give kudos
       </Button>
       <KudosDialog
-        teammates={LETTER_TEAMMATES}
+        teammates={SAMPLE_TEAMMATES}
         workspaceGoals={SAMPLE_WORKSPACE_GOALS}
         open={open}
         onOpenChange={setOpen}

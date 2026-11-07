@@ -39,21 +39,16 @@ const CASES: readonly { label: string; hint?: string; ask: MyAsk }[] = [
   },
 ];
 
-/** One Ask for each way the note lies: an Ask's id picks it. */
-const NOTE_CASES = ['ask-1', 'ask-2', 'ask-3', 'ask-4', 'ask-5'].map(
-  (askId) => ({ ...AN_ASK, askId }),
-);
-
 export function WaitingAskCardEntry() {
   return (
     <ShowcaseEntry
       name="WaitingAskCard"
       level="organism"
       origin="thrive"
-      source="components/organisms/feed-card/waiting-ask-card.tsx — the ground of a feed card + FeedCardNote + PendingPostcardMiniature."
-      summary="An Ask waiting for the person: who asked, when, and the Request message, beside the postcard it is answered on and a handwritten note pointing to it."
-      useFor="One Ask in the Waiting for me menu."
-      avoidFor="Feedback already written: use FeedCard. The landing page's preview of Home, which keeps ActivityRow."
+      source="components/organisms/feed-card/waiting-ask-card.tsx — FeedCardColumns + FeedCardPreview + PendingPostcardMiniature."
+      summary="An Ask waiting for the person, drawn as every card in a list is: who asked, that it is a request and when, beside the postcard it is answered on, leaning, then the Request message cut at three lines."
+      useFor="One Ask in the Waiting for me menu of the new Home."
+      avoidFor="Feedback already written: use FeedCard. /home's waiting list, which keeps ActivityRow."
       usage={`import { WaitingAskCard } from '@/components/organisms/feed-card/waiting-ask-card';
 
 <WaitingAskCard
@@ -82,27 +77,10 @@ export function WaitingAskCardEntry() {
       ]}
       accessibility={[
         'The small postcard is the one link on the card, named "Answer in the postcard:" and who asked.',
-        'The handwritten note only points the way, so it is hidden from screen readers.',
+        'The small postcard straightens under keyboard focus as it does under the cursor.',
         'It says nothing about who else can read the answer.',
       ]}
     >
-      <StateCell
-        label="Five ways the note lies"
-        hint="An Ask's id picks one, so a card keeps its note after a reload."
-        wide
-      >
-        <ul className="flex w-full max-w-200 flex-col gap-1.5">
-          {NOTE_CASES.map((ask) => (
-            <li key={ask.askId}>
-              <WaitingAskCard
-                ask={ask}
-                card={SAMPLE_ASKED_CARD}
-                target={SAMPLE_TARGET}
-              />
-            </li>
-          ))}
-        </ul>
-      </StateCell>
       {CASES.map(({ label, hint, ask }) => (
         <StateCell key={label} label={label} hint={hint} wide>
           <div className="w-full max-w-180">

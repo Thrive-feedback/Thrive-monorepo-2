@@ -31,7 +31,7 @@ beforeEach(() => {
 
 function miniature() {
   const { container } = render(
-    <PendingPostcardMiniature card={GIVEN} size="md" />,
+    <PendingPostcardMiniature card={GIVEN} size="lg" />,
   );
   return container.firstElementChild;
 }

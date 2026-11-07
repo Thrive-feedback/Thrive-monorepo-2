@@ -1,29 +1,31 @@
 import { Skeleton } from '@/components/atoms/skeleton';
-import { FEED_CARD_SURFACE } from './feed-card-surface.constant';
+import { FeedCardColumns } from './feed-card-columns';
 
 /** Enough cards to fill the first screen, without promising how many will come. */
 const PLACEHOLDERS = ['first', 'second', 'third'] as const;
 
-/** A card on Home still loading, line for line: who to whom, the corner, and the message. */
+/** A card in a list still loading, line for line: who to whom, the message, and its card beside them. */
 export function FeedCardSkeleton() {
   return (
-    <div className={FEED_CARD_SURFACE}>
-      <div className="flex items-start gap-3">
-        <Skeleton shape="circle" className="size-8 shrink-0" />
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <Skeleton className="w-3/4 text-subtitle-4" />
-          <Skeleton className="w-1/2 text-body-3" />
-        </div>
+    <FeedCardColumns
+      tone="primary"
+      aside={
         <Skeleton
           shape="card"
-          className="aspect-3/2 h-auto w-20 shrink-0 rounded-inner"
+          className="aspect-3/2 h-auto w-28 rounded-inner"
         />
+      }
+    >
+      <div className="flex items-center gap-2">
+        <Skeleton shape="circle" className="size-6 shrink-0" />
+        <Skeleton className="w-3/4 text-subtitle-4" />
       </div>
+      <Skeleton className="w-1/2 text-body-3" />
       <div className="flex flex-col">
         <Skeleton className="text-body-1" />
         <Skeleton className="w-4/5 text-body-1" />
       </div>
-    </div>
+    </FeedCardColumns>
   );
 }
 

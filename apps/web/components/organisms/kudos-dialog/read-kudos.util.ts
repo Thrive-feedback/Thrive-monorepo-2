@@ -39,27 +39,6 @@ export function kudosTiltOf(id: string): number {
   return TILTS[hashOf(id) % TILTS.length] ?? 0;
 }
 
-/** How many blank cards hang on each side of a Kudos on Home's small board. */
-const NEIGHBOURS_A_SIDE = 2;
-
-/**
- * The blank cards beside a Kudos on Home's small board, furthest left to furthest right, split in
- * half by the Kudos itself. Never its own template, so the card stands out from them, and always the
- * same ones, so nothing changes between reads.
- */
-export function kudosNeighboursOf(id: string, own: KudosTemplateKey) {
-  const others = KUDOS_TEMPLATE_KEYS.filter((key) => key !== own);
-  const start = hashOf(id);
-  const neighbours = Array.from(
-    { length: NEIGHBOURS_A_SIDE * 2 },
-    (_, place) => others[(start + place) % others.length] ?? own,
-  );
-  return {
-    left: neighbours.slice(0, NEIGHBOURS_A_SIDE),
-    right: neighbours.slice(NEIGHBOURS_A_SIDE),
-  };
-}
-
 function templateOf(id: string): KudosTemplateKey {
   return (
     KUDOS_TEMPLATE_KEYS[hashOf(id) % KUDOS_TEMPLATE_KEYS.length] ??

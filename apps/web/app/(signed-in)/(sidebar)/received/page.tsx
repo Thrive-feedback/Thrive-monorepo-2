@@ -36,18 +36,19 @@ export default async function Received({ searchParams }: ReceivedProps) {
   const { view, show, feedback } = ReceivedItemsSearchParams.parse(
     await searchParams,
   );
-  const { membership } = await requireMember();
+  const session = await requireMember();
+  const { membership } = session;
 
   return (
     <>
-      <div className={cn(PAGE_COLUMN, 'flex flex-col gap-6')}>
+      <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-6')}>
         <div className="flex flex-col gap-4">
           <PersonalItemsHeading side="received" />
           <ReceivedFilter show={show} />
         </div>
         {/* Keyed by the choice, so another one starts its own list rather than adding to this one. */}
         <Suspense key={show} fallback={<PersonalItemsLoading view={view} />}>
-          <ReceivedItems membership={membership} show={show} />
+          <ReceivedItems session={session} show={show} />
         </Suspense>
       </div>
       {/* Always there, so a press holds the box's pending mark until the postcard is ready, rather

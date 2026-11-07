@@ -2320,6 +2320,101 @@
         }
       },
       {
+        "id": "action.tertiary",
+        "name": "Action tertiary",
+        "description": "The fill of a button in the third brand colour, for asking.",
+        "light": {
+          "trackId": "info",
+          "weight": 400
+        },
+        "dark": {
+          "trackId": "info",
+          "weight": 325
+        }
+      },
+      {
+        "id": "action.tertiary-hover",
+        "name": "Action tertiary hover",
+        "description": "The fill under the pointer.",
+        "light": {
+          "trackId": "info",
+          "weight": 500
+        },
+        "dark": {
+          "trackId": "info",
+          "weight": 225
+        }
+      },
+      {
+        "id": "action.tertiary-active",
+        "name": "Action tertiary active",
+        "description": "The fill while it is pressed.",
+        "light": {
+          "trackId": "info",
+          "weight": 550
+        },
+        "dark": {
+          "trackId": "info",
+          "weight": 175
+        }
+      },
+      {
+        "id": "action.tertiary-surface",
+        "name": "Action tertiary surface",
+        "description": "The soft ground of an alert, a ghost control or a hovered outline.",
+        "light": {
+          "trackId": "info",
+          "weight": 50,
+          "alpha": 0.2
+        },
+        "dark": {
+          "trackId": "info",
+          "weight": 950,
+          "alpha": 0.24
+        }
+      },
+      {
+        "id": "action.tertiary-surface-hover",
+        "name": "Action tertiary surface hover",
+        "description": "That soft ground, hovered or pressed.",
+        "light": {
+          "trackId": "info",
+          "weight": 100,
+          "alpha": 0.7
+        },
+        "dark": {
+          "trackId": "info",
+          "weight": 750,
+          "alpha": 0.7
+        }
+      },
+      {
+        "id": "action.tertiary-fg",
+        "name": "Action tertiary foreground",
+        "description": "Text and icons on the surface, and on the canvas.",
+        "light": {
+          "trackId": "info",
+          "weight": 900
+        },
+        "dark": {
+          "trackId": "info",
+          "weight": 100
+        }
+      },
+      {
+        "id": "action.tertiary-border",
+        "name": "Action tertiary border",
+        "description": "The edge of an outlined control or an alert.",
+        "light": {
+          "trackId": "info",
+          "weight": 500
+        },
+        "dark": {
+          "trackId": "info",
+          "weight": 500
+        }
+      },
+      {
         "id": "action.muted",
         "name": "Action muted",
         "description": "A quiet fill in the action colour: a tint or a soft badge.",
@@ -2682,6 +2777,19 @@
         "light": {
           "trackId": "neutral",
           "weight": 950
+        },
+        "dark": {
+          "trackId": "neutral",
+          "weight": 950
+        }
+      },
+      {
+        "id": "fg.on-tertiary",
+        "name": "Foreground on tertiary",
+        "description": "Text and icons on the action tertiary fill.",
+        "light": {
+          "trackId": "neutral",
+          "weight": 50
         },
         "dark": {
           "trackId": "neutral",

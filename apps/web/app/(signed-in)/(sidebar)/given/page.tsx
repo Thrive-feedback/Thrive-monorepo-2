@@ -37,7 +37,7 @@ export default async function Given({ searchParams }: GivenProps) {
 
   return (
     <>
-      <div className={cn(PAGE_COLUMN, 'flex flex-col gap-6')}>
+      <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-6')}>
         <PersonalItemsHeading side="given" />
         <Suspense fallback={<PersonalItemsLoading view={view} />}>
           <GivenItems session={session} />

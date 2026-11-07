@@ -1,4 +1,8 @@
 import { memo, useMemo, useState } from 'react';
+import {
+  COMPOSE_CHOICE_TITLES,
+  type ComposeChoice,
+} from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { ComposeKudosDialog, warmKudosDialog } from './compose-kudos-dialog';
@@ -7,14 +11,6 @@ import {
   ComposePostcardDialog,
   warmPostcardDialog,
 } from './compose-postcard-dialog';
-
-/** What a person can choose to write. */
-export type ComposeChoice = ComposeCard | 'kudos';
-
-export const COMPOSE_CARD_TITLES: Readonly<Record<ComposeCard, string>> = {
-  ask: 'Ask for feedback',
-  give: 'Give feedback',
-};
 
 /** Fetches the cards' code ahead of a choice. */
 export function warmComposeCards() {
@@ -100,7 +96,7 @@ export const ComposeCards = memo(function ComposeCards({
           workspaceGoals={workspaceGoals}
           writer={writer}
           card={cards.postcard}
-          title={COMPOSE_CARD_TITLES[cards.postcard]}
+          title={COMPOSE_CHOICE_TITLES[cards.postcard]}
           defaultMessage={defaultMessage}
           open={cards.isPostcardOpen}
           onOpenChange={cards.setIsPostcardOpen}

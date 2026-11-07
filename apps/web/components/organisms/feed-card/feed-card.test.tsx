@@ -124,25 +124,21 @@ describe('FeedCard', () => {
   it('points at the small postcard, by hand, saying what is in it', () => {
     renderCard(OFFERED);
 
-    expect(
-      screen.getByText('Read the whole postcard', PAST_THE_DRAWING),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Read the whole postcard')).toBeInTheDocument();
   });
 
   it('points a request at the answers in its postcard', () => {
     renderCard(REQUESTED);
 
-    expect(
-      screen.getByText('All the answers in here', PAST_THE_DRAWING),
-    ).toBeInTheDocument();
+    expect(screen.getByText('All the answers in here')).toBeInTheDocument();
   });
 
-  it('keeps that note out of the link and away from a screen reader', () => {
+  it('keeps that note out of the link, out of reach and away from a screen reader', () => {
     renderCard(OFFERED);
 
-    const note = screen.getByText('Read the whole postcard', PAST_THE_DRAWING);
+    const note = screen.getByText('Read the whole postcard');
     expect(screen.getByRole('link')).not.toContainElement(note);
-    expect(note.closest('[aria-hidden="true"]')).toBeInTheDocument();
+    expect(note.closest('[inert][aria-hidden="true"]')).toBeInTheDocument();
   });
 
   it('opens the postcard from the small postcard alone', () => {
@@ -179,7 +175,7 @@ describe('FeedCard', () => {
 
     const card = screen.getByRole('article');
     expect(
-      within(card).getByText('Requested', PAST_THE_DRAWING),
+      within(card).getByText('Answer', PAST_THE_DRAWING),
     ).toBeInTheDocument();
     const question = within(card).getByText(
       'How clear was the plan?',

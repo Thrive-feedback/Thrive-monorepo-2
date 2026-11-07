@@ -6,6 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/atoms/tooltip';
+import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-tone.type';
 
 const STORAGE_KEY = 'thrive.card-notes';
 const HIDDEN = 'hidden';
@@ -32,6 +33,13 @@ function rememberAreNotesShown(areShown: boolean) {
 
 /** Whether the notes beside a card are showing, for each `CardToolNote` in it. */
 export const CardNotesContext = createContext(true);
+
+/**
+ * The colour each `CardToolNote` beside a card is written in: the colour of the kind of card it is,
+ * as its button and its cards in a list are. Giving Feedback in the brand's purple, asking for it or
+ * answering in the blue of everything asked for, a Kudos in the warm orange.
+ */
+export const CardNotesToneContext = createContext<FeedCardTone>('secondary');
 
 /** Whether the notes are showing. Someone who turns them off has seen them, so it is remembered. */
 export function useCardNotes() {

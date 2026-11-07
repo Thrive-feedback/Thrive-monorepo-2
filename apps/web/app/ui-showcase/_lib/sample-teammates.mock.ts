@@ -1,7 +1,7 @@
 import type { Teammate } from '@/lib/feedback/teammate.type';
 
 /** Made-up teammates for Selected people: the demo reaches no Workspace to read real ones from. */
-export const LETTER_TEAMMATES: readonly Teammate[] = [
+export const SAMPLE_TEAMMATES: readonly Teammate[] = [
   {
     accountId: 'mali',
     name: 'Mali Sombat',

@@ -22,11 +22,13 @@ export default function SidebarLayout({
   return (
     <MemberShell navbar={<Navbar />} fillsFrame>
       <div className="flex flex-1">
+        {/* The + button at its top sits 12px in from the frame on both sides, so its corner runs
+            parallel to the frame's: the button's 9px and those 12px make the frame's 21px. */}
         <aside
           aria-label="Sidebar"
-          className="hidden w-56 shrink-0 border-border-subtle border-r px-2 py-6 md:block"
+          className="hidden w-56 shrink-0 border-border-subtle border-r px-3 pt-3 pb-6 md:block"
         >
-          <div className="sticky top-24">
+          <div className="sticky top-21">
             <Sidebar />
           </div>
         </aside>

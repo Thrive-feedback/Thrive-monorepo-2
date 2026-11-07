@@ -10,13 +10,14 @@ import { Skeleton } from '@/components/atoms/skeleton';
 import { kudosTiltOf } from '@/components/organisms/kudos-dialog/read-kudos.util';
 import { cn } from '@/lib/cn.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import type { MemberAccount } from '@/lib/session/session.service';
 import styles from './kudos-board.module.css';
 import { KudosBoardEmpty } from './kudos-board-empty';
 import { KudosBoardMonth } from './kudos-board-month';
 import { KudosBoardPages } from './kudos-board-pages';
 
 export type KudosBoardProps = {
-  membership: CurrentMembership;
+  session: MemberAccount;
   /** The month to show, or nothing for every month. */
   month: string | undefined;
 };
@@ -25,14 +26,15 @@ export type KudosBoardProps = {
  * The board's first read, and how many Kudos there are. The pages are keyed by the Kudos they start with,
  * so a new one starts the board again at its first page, wherever it had got to.
  */
-export async function KudosBoard({ membership, month }: KudosBoardProps) {
+export async function KudosBoard({ session, month }: KudosBoardProps) {
+  const { membership } = session;
   const [firstPage, { total, months }] = await Promise.all([
     readKudosBoardPage(membership, month),
     readKudosBoardMonths(membership),
   ]);
   const [newest] = firstPage.items;
   if (!newest) {
-    return <KudosBoardEmpty month={month} />;
+    return <KudosBoardEmpty session={session} month={month} />;
   }
 
   return (
@@ -89,7 +91,11 @@ export function KudosBoardSkeleton() {
   );
 }
 
-export type KudosBoardMonthFilterProps = KudosBoardProps;
+export type KudosBoardMonthFilterProps = {
+  membership: CurrentMembership;
+  /** The month shown, or nothing for every month. */
+  month: string | undefined;
+};
 
 /** The filter, read apart from the board, so it stays put while another month is read. */
 export async function KudosBoardMonthFilter({

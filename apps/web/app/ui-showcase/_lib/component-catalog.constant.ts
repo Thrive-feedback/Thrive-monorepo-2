@@ -637,7 +637,6 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: MemberPickerDialogEntry,
   },
   {
-    // Not `letter`: that address is the letter's first look, a page of its own.
     slug: 'letter-sheet',
     name: 'Letter',
     level: 'organism',

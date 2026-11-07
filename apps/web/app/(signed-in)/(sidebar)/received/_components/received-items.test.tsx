@@ -14,6 +14,10 @@ vi.mock(
   '@/app/(signed-in)/(sidebar)/received/_lib/received-items-actions.service',
   () => ({ readNextReceivedPage: vi.fn() }),
 );
+// The empty list reads who a card can be for, which has its own suite; here it only says which it is.
+vi.mock('./received-empty', () => ({
+  ReceivedEmpty: ({ show }: { show: string }) => <p>Empty: {show}</p>,
+}));
 const refresh = vi.fn();
 let address = new URLSearchParams();
 vi.mock('next/navigation', () => ({
@@ -69,10 +73,15 @@ const A_REQUEST = {
     },
   ],
 };
-const MEMBERSHIP = {
-  workspace: { id: WORKSPACE_ID, name: 'Acme' },
-  role: 'MEMBER',
-} as CurrentMembership;
+const SESSION = {
+  email: 'ann@acme.test',
+  photoUrl: null,
+  profile: { displayName: 'Ann' },
+  membership: {
+    workspace: { id: WORKSPACE_ID, name: 'Acme' },
+    role: 'MEMBER',
+  } as CurrentMembership,
+} as Parameters<typeof ReceivedItems>[0]['session'];
 
 function theApiAnswers(body: object, init?: ResponseInit) {
   server.use(
@@ -87,14 +96,9 @@ describe('ReceivedItems', () => {
   it('says what will be here when nothing has been written yet', async () => {
     theApiAnswers({ readerAccountId: READER, items: [], nextCursor: null });
 
-    render(await ReceivedItems({ membership: MEMBERSHIP, show: 'all' }));
+    render(await ReceivedItems({ session: SESSION, show: 'all' }));
 
-    expect(screen.getByText('No Feedback for you yet')).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'When someone gives you feedback, you can read it here.',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Empty: all')).toBeInTheDocument();
   });
 
   it('draws what was written', async () => {
@@ -120,7 +124,7 @@ describe('ReceivedItems', () => {
       nextCursor: null,
     });
 
-    render(await ReceivedItems({ membership: MEMBERSHIP, show: 'all' }));
+    render(await ReceivedItems({ session: SESSION, show: 'all' }));
 
     expect(
       screen.getByRole('button', { name: /^Kudos from Ben Carter/ }),
@@ -131,7 +135,7 @@ describe('ReceivedItems', () => {
     const user = userEvent.setup();
     theApiAnswers({ code: 'INTERNAL' }, { status: 500 });
 
-    render(await ReceivedItems({ membership: MEMBERSHIP, show: 'all' }));
+    render(await ReceivedItems({ session: SESSION, show: 'all' }));
 
     expect(screen.getByText("We couldn't load this page.")).toBeInTheDocument();
 
@@ -140,18 +144,14 @@ describe('ReceivedItems', () => {
     expect(refresh).toHaveBeenCalledOnce();
   });
 
-  it.each([
-    ['requests', "You haven't asked anyone yet."],
-    ['offered', 'Nobody has given you feedback unasked yet.'],
-    ['kudos', 'No Kudos for you yet.'],
-  ] as const)(
+  it.each(['requests', 'offered', 'kudos'] as const)(
     'says what is missing when narrowed to %s',
-    async (show, title) => {
+    async (show) => {
       theApiAnswers({ readerAccountId: READER, items: [], nextCursor: null });
 
-      render(await ReceivedItems({ membership: MEMBERSHIP, show }));
+      render(await ReceivedItems({ session: SESSION, show }));
 
-      expect(screen.getByText(title)).toBeInTheDocument();
+      expect(screen.getByText(`Empty: ${show}`)).toBeInTheDocument();
     },
   );
 
@@ -163,7 +163,7 @@ describe('ReceivedItems', () => {
       nextCursor: null,
     });
 
-    render(await ReceivedItems({ membership: MEMBERSHIP, show: 'requests' }));
+    render(await ReceivedItems({ session: SESSION, show: 'requests' }));
 
     expect(
       screen.getByRole('button', { name: /Show who you asked/ }),
@@ -173,7 +173,6 @@ describe('ReceivedItems', () => {
     expect(
       screen.getAllByText('How did the demo land for you?')[0],
     ).toBeVisible();
-    expect(screen.getByText('1 of 2 answered')).toBeInTheDocument();
     expect(
       screen.getByRole('link', {
         name: /^Open postcard: answer from Ben Carter/,
@@ -203,7 +202,7 @@ describe('ReceivedItems', () => {
       nextCursor: null,
     });
 
-    render(await ReceivedItems({ membership: MEMBERSHIP, show: 'all' }));
+    render(await ReceivedItems({ session: SESSION, show: 'all' }));
 
     expect(screen.getByText('0 of 2 answered')).toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();

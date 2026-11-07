@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { KUDOS_TEMPLATE_KEYS } from './kudos-template.constant';
-import {
-  kudosDrawingOf,
-  kudosNeighboursOf,
-  kudosTiltOf,
-} from './read-kudos.util';
+import { kudosDrawingOf, kudosTiltOf } from './read-kudos.util';
 
 const IDS = Array.from(
   { length: 24 },
@@ -73,26 +69,5 @@ describe('the card a Kudos is drawn on', () => {
 
     expect(KUDOS_TEMPLATE_KEYS).toContain(drawing.templateKey);
     expect(drawing.textStyle).toEqual(CARD.textStyle);
-  });
-});
-
-describe('the cards beside a Kudos on Home', () => {
-  it('are never its own template, or each other', () => {
-    for (const templateKey of KUDOS_TEMPLATE_KEYS) {
-      for (const id of IDS) {
-        const { left, right } = kudosNeighboursOf(id, templateKey);
-        const all = [...left, ...right];
-
-        expect(all).toHaveLength(4);
-        expect(all).not.toContain(templateKey);
-        expect(new Set(all).size).toBe(4);
-      }
-    }
-  });
-
-  it('are always the same ones for one Kudos', () => {
-    expect(kudosNeighboursOf('kudos-1', 'sky-note')).toEqual(
-      kudosNeighboursOf('kudos-1', 'sky-note'),
-    );
   });
 });

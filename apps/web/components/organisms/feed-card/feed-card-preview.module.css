@@ -1,0 +1,22 @@
+/*
+ * A card in a list leans its small card as it would hang on the board, and straightens it while the
+ * press holding it is pointed at or focused, which is how a reader sees it opens. A row marked
+ * `data-feed-card-row`, such as one answer on a request, straightens its card while any of it is
+ * pointed at, so the row and its card are seen as one. The lean is per card, so it arrives as a
+ * custom property.
+ */
+.leaning {
+  rotate: var(--feed-card-tilt);
+  transition: rotate var(--motion-duration-fast) var(--motion-ease-smooth-out);
+}
+
+:is(a, button):is(:hover, :focus-visible) > .leaning,
+[data-feed-card-row]:is(:hover, :has(:focus-visible)) .leaning {
+  rotate: 0deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaning {
+    transition: none;
+  }
+}
