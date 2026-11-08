@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/atoms/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -86,7 +87,7 @@ export function WorkspaceSwitcher({
           Switch Workspace
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent hasCloseButton={false}>
         {view.step === 'create' && (
           <>
             <DialogHeader>
@@ -99,10 +100,9 @@ export function WorkspaceSwitcher({
             <CreateWorkspaceForm
               action={createAnotherWorkspace}
               submitLabel="Create and open"
+              onCancel={() => setView(LIST)}
+              cancelLabel="Back"
             />
-            <Button variant="ghost" onClick={() => setView(LIST)}>
-              Back to your Workspaces
-            </Button>
           </>
         )}
         {view.step === 'confirm' && (
@@ -152,6 +152,11 @@ export function WorkspaceSwitcher({
                 Create a Workspace
               </button>
             </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button>Close</Button>
+              </DialogClose>
+            </DialogFooter>
           </>
         )}
       </DialogContent>

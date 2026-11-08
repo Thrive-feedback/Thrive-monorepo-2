@@ -22,14 +22,14 @@ describe('SettingsPanes', () => {
       [...menu.querySelectorAll('a')].map((link) => link.getAttribute('href')),
     ).toEqual([
       '/settings/account',
-      '/settings/appearance',
       '/settings/workspace',
       '/settings/workspace-goals',
       '/settings/teammates',
+      '/settings/appearance',
     ]);
   });
 
-  it("groups the Workspace's own sections under a Workspace heading, as the main menu groups My Feedback", () => {
+  it("groups the Workspace's own sections under a Workspace heading, and Appearance under Other", () => {
     render(<SettingsPanes>section</SettingsPanes>);
 
     const menu = screen.getByRole('navigation', { name: 'Settings sections' });
@@ -37,11 +37,12 @@ describe('SettingsPanes', () => {
       [...menu.querySelectorAll('li')].map((item) => item.textContent),
     ).toEqual([
       'Account',
-      'Appearance',
       'Workspace',
       'General',
       'Goals',
       'Teammates',
+      'Other',
+      'Appearance',
     ]);
   });
 

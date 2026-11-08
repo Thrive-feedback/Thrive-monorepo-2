@@ -1,6 +1,11 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LinkedAccountList } from './linked-account-list';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
 
 const readLinkedAccounts = vi.fn();
 vi.mock(
@@ -29,15 +34,19 @@ async function renderList() {
 }
 
 describe('LinkedAccountList', () => {
-  it('names every chat tool a Member can link, with nothing linked', async () => {
+  it('names every chat tool a Member can link, with the button to link it', async () => {
     readLinkedAccounts.mockResolvedValue([]);
 
     await renderList();
 
     expect(screen.getByText('Discord')).toBeInTheDocument();
+    expect(screen.getByText('Not linked')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Link Discord' }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Manage Discord link' }),
+    ).toBeNull();
   });
 
   it('says what linking turns on, before it is pressed', async () => {
@@ -46,59 +55,27 @@ describe('LinkedAccountList', () => {
     await renderList();
 
     // Linking is the switch — there are no preferences to find afterwards, so the row has to
-    // say what it does before somebody presses it (brain `ADR-0035` §6).
-    expect(
-      screen.getByText(/Thrive will message you there/),
-    ).toBeInTheDocument();
+    // say what it does before somebody presses it (brain `ADR-0035` §6), behind its ⓘ.
+    await userEvent
+      .setup()
+      .hover(screen.getByRole('button', { name: 'About Discord' }));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Get a direct message in Discord when someone asks you for Feedback, answers your request, or writes Feedback to you. Works once your Workspace has connected Discord.',
+    );
   });
 
-  it('shows which account is linked, and when', async () => {
+  it('says only that it is linked, with the rest in its menu', async () => {
     readLinkedAccounts.mockResolvedValue([DISCORD]);
 
     await renderList();
 
-    expect(screen.getByText(/Linked as ann#0001/)).toBeInTheDocument();
-  });
-
-  it('says a link alone is not enough without the Workspace connecting the tool', async () => {
-    readLinkedAccounts.mockResolvedValue([DISCORD]);
-
-    await renderList();
-
+    expect(screen.getByText('Linked')).toHaveClass(
+      'text-status-success-active',
+    );
+    expect(screen.queryByText(/ann#0001/)).toBeNull();
     expect(
-      screen.getByText(/Workspace also has to have connected/),
+      screen.getByRole('button', { name: 'Manage Discord link' }),
     ).toBeInTheDocument();
-  });
-
-  it('offers unlinking only once something is linked', async () => {
-    readLinkedAccounts.mockResolvedValue([]);
-    await renderList();
-
-    expect(
-      screen.queryByRole('button', { name: 'Unlink Discord' }),
-    ).not.toBeInTheDocument();
-  });
-
-  it('offers changing and unlinking when something is linked', async () => {
-    readLinkedAccounts.mockResolvedValue([DISCORD]);
-
-    await renderList();
-
-    expect(
-      screen.getByRole('button', { name: 'Change Discord account' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Unlink Discord' }),
-    ).toBeInTheDocument();
-  });
-
-  it('shows nothing linked when the read fails, rather than breaking Settings', async () => {
-    readLinkedAccounts.mockResolvedValue([]);
-
-    await renderList();
-
-    expect(
-      screen.getByRole('button', { name: 'Link Discord' }),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Link Discord' })).toBeNull();
   });
 });

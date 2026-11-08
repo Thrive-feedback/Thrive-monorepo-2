@@ -1,5 +1,6 @@
 'use client';
 
+import { cva, type VariantProps } from 'class-variance-authority';
 import { CheckIcon } from 'lucide-react';
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
@@ -89,21 +90,38 @@ export function DropdownMenuLabel({
   );
 }
 
+const menuItem = cva(
+  'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element px-2 py-2 text-body-2 outline-hidden transition-colors data-disabled:pointer-events-none data-disabled:text-fg-secondary',
+  {
+    variants: {
+      tone: {
+        default: 'data-highlighted:bg-action-primary-surface',
+        /**
+         * An item that takes something away, such as Deactivate: said in red, and red behind it
+         * while pointed at, in a tint that still reads on the dark theme.
+         */
+        danger:
+          'text-status-error-active data-highlighted:bg-status-error-surface-hover',
+      },
+    },
+    defaultVariants: { tone: 'default' },
+  },
+);
+
 export type DropdownMenuItemProps = React.ComponentPropsWithRef<
   typeof DropdownMenuPrimitive.Item
->;
+> &
+  VariantProps<typeof menuItem>;
 
 export function DropdownMenuItem({
+  tone,
   className,
   ...rest
 }: DropdownMenuItemProps) {
   return (
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"
-      className={cn(
-        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element px-2 py-2 text-body-2 outline-hidden transition-colors data-disabled:pointer-events-none data-highlighted:bg-action-primary-surface data-disabled:text-fg-secondary',
-        className,
-      )}
+      className={cn(menuItem({ tone }), className)}
       {...rest}
     />
   );

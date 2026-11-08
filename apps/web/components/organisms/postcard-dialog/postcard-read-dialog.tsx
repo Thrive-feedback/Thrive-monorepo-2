@@ -14,7 +14,7 @@ import { CARD_NOTES } from './card-tool-note.constant';
 import { Postcard } from './postcard';
 import styles from './postcard.module.css';
 import { PostcardAnswerPager } from './postcard-answer-pager';
-import type { PostcardSide } from './postcard-draft.type';
+import type { PostcardSide, PostcardWriter } from './postcard-draft.type';
 import {
   CARD_NOTE_AFTER_TOOLS,
   CARD_NOTE_ARROW_LEFT,
@@ -41,6 +41,8 @@ import { usePostcardOpener } from './use-postcard-opener';
 export type PostcardReadDialogProps = {
   /** What is being read, above the card: "Feedback from Ann". */
   title: string;
+  /** Whoever the title names, whose face goes before it. Left out when it names nobody. */
+  person?: PostcardWriter;
   card: ReadPostcard;
   /** Which answer shows as it opens, counting from 0, on a request's card. */
   initialAnswerIndex?: number;
@@ -64,6 +66,7 @@ export type PostcardReadDialogProps = {
  */
 export function PostcardReadDialog({
   title,
+  person,
   card,
   initialAnswerIndex = 0,
   open,
@@ -83,6 +86,7 @@ export function PostcardReadDialog({
       >
         <PostcardReadView
           title={title}
+          person={person}
           card={card}
           initialAnswerIndex={initialAnswerIndex}
           onClose={() => onOpenChange(false)}
@@ -133,6 +137,7 @@ function showing(card: ReadPostcard, answerIndex: number) {
 
 type PostcardReadViewProps = {
   title: string;
+  person?: PostcardWriter;
   card: ReadPostcard;
   initialAnswerIndex: number;
   onClose: () => void;
@@ -144,6 +149,7 @@ type PostcardReadViewProps = {
  */
 function PostcardReadView({
   title,
+  person,
   card,
   initialAnswerIndex,
   onClose,
@@ -176,7 +182,7 @@ function PostcardReadView({
     <CardNotesContext value={areNotesShown}>
       <CardNotesToneContext value={POSTCARD_KIND_TONES[card.kind]}>
         <div className={POSTCARD_PAGE}>
-          <PostcardTitleRow title={title} onClose={onClose} />
+          <PostcardTitleRow title={title} person={person} onClose={onClose} />
 
           <div className={POSTCARD_CARD_COLUMN}>
             <div className={POSTCARD_CARD_ACTIONS}>

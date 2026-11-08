@@ -2,6 +2,7 @@ import type { PersonalRequest } from '@/app/(signed-in)/(sidebar)/_lib/personal-
 import { PERSONAL_ITEM_TILE } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-layout.constant';
 import { REQUEST_MAX_FACES } from '@/app/(signed-in)/(sidebar)/_lib/request-card.constant';
 import {
+  answeredFirst,
   askedLine,
   newestAnswerOf,
   requestAudienceOf,
@@ -23,6 +24,10 @@ import { ROUTES } from '@/lib/routes.constant';
 import { timeAgo } from '@/lib/time-ago.util';
 import tileStyles from './personal-item-tile.module.css';
 import { PersonalItemTilePending } from './personal-item-tile-pending';
+import stackStyles from './request-tile.module.css';
+
+/** Earlier answers drawn under the newest. Past two, a deeper stack reads no differently. */
+const MAX_CARDS_BEHIND = 2;
 
 type RequestTallyProps = {
   request: PersonalRequest;
@@ -63,7 +68,8 @@ export type RequestTileProps = {
 /**
  * A request the Member sent, as one box in Received's grid, on the colour of everything asked for:
  * how many answered among the faces of everyone asked, when it was sent, and its card made small,
- * leaning, showing its newest answer. Pressing it opens that answer's postcard, where the others can
+ * leaning, showing its newest answer, with up to two earlier answers stacked under it when there
+ * are more. Pressing it opens that answer's postcard, where the others can
  * be paged through, and pointing at it straightens the card. A request nobody has answered has
  * nothing to open, so it is a plain box, not a button, and its card stays leaning.
  */
@@ -72,9 +78,26 @@ export function RequestTile({ request }: RequestTileProps) {
   const newest = newestAnswerOf(request);
   const { Icon, label } = requestAudienceOf(request.visibility);
   const { answered, asked } = tallyOf(request);
+  // Deepest first, so each one is drawn over the one behind it.
+  const behind = answeredFirst(request)
+    .answers.slice(1, 1 + MAX_CARDS_BEHIND)
+    .map((ask, index) => ({ ask, depth: index + 1 }))
+    .reverse();
   const card = (
-    <FeedCardLean id={request.id} className="flex justify-center p-2">
-      <PostcardMiniature card={newest?.card ?? request.card} />
+    <FeedCardLean id={request.id} className="relative flex justify-center p-2">
+      {behind.map(({ ask, depth }) => (
+        <span
+          key={ask.answer.id}
+          data-stack-depth={depth}
+          className={stackStyles.behind}
+        >
+          <PostcardMiniature card={ask.answer.card} />
+        </span>
+      ))}
+      <PostcardMiniature
+        card={newest?.card ?? request.card}
+        className={stackStyles.top}
+      />
     </FeedCardLean>
   );
 

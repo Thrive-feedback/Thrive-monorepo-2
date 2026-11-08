@@ -40,8 +40,9 @@ export type WorkspaceSelectorProps = {
 
 /**
  * The Workspace the person is in, beside the logo, by its name. With nowhere else to go
- * it is only that. With another Workspace to open, it is a quiet button with a muted chevron
- * after the name and a soft ground on hover, and its menu lists them as the switcher does (brain
+ * it is only that. With another Workspace to open, it is a quiet button: the name alone at rest,
+ * then a muted chevron after it and a soft ground while pointed at, focused or open (always on a
+ * touch screen, which has no pointing), and its menu lists them as the switcher does (brain
  * `ADR-0041` decision 5): each by name in the display face, the current one ticked on the
  * product's light purple, the rest opened at once on their Home, those the person was
  * Deactivated in greyed and closed, then Create a Workspace, whose form opens in a dialog.
@@ -94,7 +95,7 @@ export function WorkspaceSelector({
           {identity}
           <ChevronDownIcon
             aria-hidden="true"
-            className="size-4 shrink-0 text-fg-secondary transition-transform group-data-[state=open]:rotate-180 motion-reduce:transition-none"
+            className="size-4 shrink-0 text-fg-secondary opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100 group-data-[state=open]:rotate-180 group-data-[state=open]:opacity-100 motion-reduce:transition-none pointer-coarse:opacity-100"
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-72">
@@ -140,7 +141,7 @@ export function WorkspaceSelector({
         </DropdownMenuContent>
       </DropdownMenu>
       <Dialog open={creating} onOpenChange={setCreating}>
-        <DialogContent>
+        <DialogContent hasCloseButton={false}>
           <DialogHeader>
             <DialogTitle>Create a Workspace</DialogTitle>
             <DialogDescription>
@@ -151,6 +152,7 @@ export function WorkspaceSelector({
           <CreateWorkspaceForm
             action={createAnotherWorkspace}
             submitLabel="Create and open"
+            onCancel={() => setCreating(false)}
           />
         </DialogContent>
       </Dialog>

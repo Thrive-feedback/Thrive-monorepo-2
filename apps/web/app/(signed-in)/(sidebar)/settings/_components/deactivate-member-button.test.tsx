@@ -166,4 +166,26 @@ describe('DeactivateMemberButton', () => {
     expect(leaveWorkspace).toHaveBeenCalledWith(WORKSPACE_ID, 'a-2');
     expect(deactivateMember).not.toHaveBeenCalled();
   });
+  it('answers the only Admin with why they cannot leave, and leaves nothing', async () => {
+    const user = userEvent.setup();
+    render(
+      <DeactivateMemberButton
+        workspaceId={WORKSPACE_ID}
+        accountId="a-1"
+        name="Ann"
+        workspaceName="Acme"
+        isSelf
+        isLastAdmin
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Leave Workspace' }));
+    expect(
+      screen.getByRole('dialog', { name: "You're the only Admin" }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Got it' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(leaveWorkspace).not.toHaveBeenCalled();
+  });
 });

@@ -1,12 +1,9 @@
-import { EyeOffIcon } from 'lucide-react';
 import { mayManageWorkspaceGoals } from '@/app/(signed-in)/(sidebar)/settings/workspace-goals/_lib/workspace-goal-access.util';
-import { hashtagOf } from '@/app/(signed-in)/(sidebar)/settings/workspace-goals/_lib/workspace-goal-name.util';
 import { readWorkspaceGoals } from '@/app/(signed-in)/(sidebar)/settings/workspace-goals/_lib/workspace-goals.service';
-import { Badge } from '@/components/atoms/badge';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
-import { cn } from '@/lib/cn.util';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { GoalHashtag } from './goal-hashtag';
 import { WorkspaceGoalActions } from './workspace-goal-actions';
 
 /** Enough rows to fill the first screen, without promising how many will come. */
@@ -17,9 +14,9 @@ export type WorkspaceGoalListProps = {
 };
 
 /**
- * The Workspace's Workspace Goals, one row each: `#name` as a badge in the info blue a hashtag
- * takes everywhere, over its description. An Admin sees the hidden ones too, as a grey outline with
- * a closed eye and "Hidden", and has a menu on each to hide or show it again; anyone else reads the
+ * The Workspace's Workspace Goals, one row each: the hashtag drawn as Feedback draws it, over its
+ * description. An Admin sees the hidden ones too, as plain grey text with "Hidden" before the
+ * description, since nothing can tag them any more, and has a menu on each to hide or show it again; anyone else reads the
  * active ones and nothing more. There is no rename
  * and no delete. It reads its own data, so the page renders around it while the read is in flight.
  */
@@ -33,7 +30,7 @@ export async function WorkspaceGoalList({
     return (
       <Text variant="body-2" tone="muted" className="py-4">
         {canManage
-          ? 'No Workspace Goals yet. Add your first one below.'
+          ? 'No Workspace Goals yet. Add your first one with Add a Workspace Goal.'
           : "Your Admins haven't set any Workspace Goals yet."}
       </Text>
     );
@@ -46,32 +43,17 @@ export async function WorkspaceGoalList({
         return (
           <li
             key={workspaceGoal.id}
-            className="flex items-center gap-3 border-border-subtle border-b py-3 last:border-b-0"
+            className="flex items-center gap-3 border-border-subtle border-b py-4 last:border-b-0"
           >
-            <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
-              <span className="flex flex-wrap items-center gap-2">
-                <Badge
-                  size="md"
-                  tone={hidden ? 'outline' : 'info'}
-                  className={cn(
-                    'break-all',
-                    hidden ? 'text-fg-secondary' : 'text-status-info-active',
-                  )}
-                >
-                  {hidden && (
-                    <EyeOffIcon aria-hidden="true" className="size-3.5" />
-                  )}
-                  {hashtagOf(workspaceGoal.name)}
-                </Badge>
-                {hidden && (
-                  <Text as="span" variant="body-3" tone="muted">
-                    Hidden
-                  </Text>
-                )}
-              </span>
-              {workspaceGoal.description && (
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <Text as="span" variant="subtitle-4" className="break-all">
+                <GoalHashtag name={workspaceGoal.name} isHidden={hidden} />
+              </Text>
+              {(hidden || workspaceGoal.description) && (
                 <Text as="span" variant="body-3" tone="muted">
-                  {workspaceGoal.description}
+                  {[hidden && 'Hidden', workspaceGoal.description]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </Text>
               )}
             </div>
@@ -97,7 +79,7 @@ export function WorkspaceGoalListSkeleton() {
       {PLACEHOLDERS.map((placeholder) => (
         <div
           key={placeholder}
-          className="flex flex-col items-start gap-1 border-border-subtle border-b py-3 last:border-b-0"
+          className="flex flex-col items-start gap-1 border-border-subtle border-b py-4 last:border-b-0"
         >
           <Skeleton shape="control" className="h-8 w-32 rounded-chip" />
           <Skeleton className="w-64 text-body-3" />

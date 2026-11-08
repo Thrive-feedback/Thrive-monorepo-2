@@ -45,18 +45,43 @@ async function renderList() {
 }
 
 describe('InvitationList', () => {
-  it('shows where each stands, the Role it joins with, who sent it, when, and when it expires or expired', async () => {
+  it('shows each address and where it stands, and nothing more', async () => {
     readInvitations.mockResolvedValue([CAT, DAN]);
 
     await renderList();
 
     const [cat, dan] = screen.getAllByRole('listitem');
-    expect(cat).toHaveTextContent(
-      'Pending · as Member · sent by Ann on 6 Oct 2026 · expires 13 Oct 2026',
+    expect(cat).toHaveTextContent(/^cat@acme\.testPending$/);
+    expect(dan).toHaveTextContent(/^dan@acme\.testExpired$/);
+  });
+
+  it('shows the rest under Information: the Role, who sent it, when, and when it expires', async () => {
+    readInvitations.mockResolvedValue([CAT, DAN]);
+    const user = userEvent.setup();
+
+    await renderList();
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Manage Invitation to dan@acme.test',
+      }),
     );
-    expect(dan).toHaveTextContent(
-      'Expired · as Admin · sent by ben@acme.test on 1 Oct 2026 · expired 8 Oct 2026',
-    );
+    await user.click(screen.getByRole('menuitem', { name: 'Information' }));
+
+    const details = screen.getByRole('dialog', { name: 'dan@acme.test' });
+    expect(details).toHaveTextContent('StatusExpired');
+    expect(details).toHaveTextContent('Joins asAdmin');
+    expect(details).toHaveTextContent('Sent byben@acme.test');
+    expect(details).toHaveTextContent('Sent1 Oct 2026');
+    expect(details).toHaveTextContent('Expired8 Oct 2026');
+
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(
+      screen.getByRole('button', {
+        name: 'Manage Invitation to dan@acme.test',
+      }),
+    ).toHaveFocus();
   });
 
   it('colours each status by where it stands', async () => {
@@ -89,7 +114,7 @@ describe('InvitationList', () => {
     );
     expect(
       screen.getAllByRole('menuitem').map((item) => item.textContent),
-    ).toEqual(['Resend', 'Revoke']);
+    ).toEqual(['Information', 'Resend', 'Revoke']);
   });
 
   it('says so when nobody is waiting', async () => {

@@ -4,7 +4,8 @@
  * request to design to add it there (`FE_03` R6, R9) — not a place to add more.
  *
  * Motion (transitions.dev's scale, until design owns one), a stroke width for the focus ring, two content widths, a monospace family, the
- * wordmark's colour in each theme, and the blur behind a dialog or under a glass bar are what
+ * wordmark's colour in each theme, the ground of a disabled control (whose blueprint value
+ * vanishes on a dark dialog), and the blur behind a dialog or under a glass bar are what
  * today's screens use that the blueprint does not describe.
  */
 :root {
@@ -60,11 +61,19 @@
 
   /* The wordmark's own colour, exported from the design's logo page: near-black on light. */
   --brand-wordmark: #1f1e1c;
+
+  /* The ground of a control that cannot be used yet. On light it is the subtle surface, as the
+     blueprint's disabled buttons are drawn. */
+  --action-disabled-surface: var(--surface-subtle);
 }
 
 /* The wordmark is white on the dark theme (Figma, Thrive · node 17348:15047). */
 :root[data-theme='dark'] {
   --brand-wordmark: var(--neutral-50);
+  /* On dark the subtle surface is the same grey as a dialog (both neutral-750), so a disabled
+     button in a dialog lost its ground entirely. One step lighter reads on the page (neutral-800)
+     and on a dialog alike. */
+  --action-disabled-surface: var(--neutral-700);
 }
 
 /*

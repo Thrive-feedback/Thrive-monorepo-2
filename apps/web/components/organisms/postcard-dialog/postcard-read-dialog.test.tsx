@@ -158,6 +158,51 @@ function Opened({ card }: { card: ReadPostcard }) {
 }
 
 describe('PostcardReadDialog', () => {
+  it('sets the face of whoever the title names just before their name, and names the dialog by the words alone', () => {
+    render(
+      <PostcardReadDialog
+        title="Feedback from Ann Lee"
+        person={{ name: 'Ann Lee', photoUrl: null }}
+        card={GIVEN}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    const title = screen.getByRole('heading', {
+      name: 'Feedback from Ann Lee',
+    });
+    // The face's initials sit between "from" and the name.
+    expect(title).toHaveTextContent(/^Feedback from ALAnn Lee$/);
+    expect(
+      screen.getByRole('dialog', { name: 'Feedback from Ann Lee' }),
+    ).toBeInTheDocument();
+  });
+
+  it('draws no face when the title does not say the name', () => {
+    render(
+      <PostcardReadDialog
+        title="Your Feedback"
+        person={{ name: 'Ann Lee', photoUrl: null }}
+        card={GIVEN}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole('heading', { name: 'Your Feedback' }),
+    ).toHaveTextContent(/^Your Feedback$/);
+  });
+
+  it('draws no face when the title names nobody', () => {
+    renderDialog(GIVEN);
+
+    expect(
+      screen.getByRole('heading', { name: 'Feedback from Ann' }),
+    ).toHaveTextContent(/^Feedback from Ann$/);
+  });
+
   it('shows given Feedback on its back: who it is from and for, and the message with its tags', () => {
     renderDialog(GIVEN);
 

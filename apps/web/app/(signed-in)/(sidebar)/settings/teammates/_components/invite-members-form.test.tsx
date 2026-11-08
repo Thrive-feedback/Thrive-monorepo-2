@@ -253,3 +253,46 @@ describe('inviting from a pasted list', () => {
     expect(box()).toHaveValue('ben@acme.test');
   });
 });
+
+describe('telling whatever holds the form that a send went out', () => {
+  beforeEach(() => {
+    inviteMembers.mockReset();
+  });
+
+  it('says so when every address was sent to', async () => {
+    const user = userEvent.setup();
+    const onSent = vi.fn();
+    inviteMembers.mockResolvedValue({
+      results: [{ email: 'ben@acme.test', outcome: 'invited' }],
+    });
+    render(<InviteMembersForm workspaceId={WORKSPACE_ID} onSent={onSent} />);
+
+    await user.type(
+      screen.getByRole('textbox', { name: 'Email address 1' }),
+      'ben@acme.test',
+    );
+    await user.click(sendButton());
+
+    await vi.waitFor(() => expect(onSent).toHaveBeenCalledOnce());
+  });
+
+  it('says nothing while an address could not go out, so it can be sent again', async () => {
+    const user = userEvent.setup();
+    const onSent = vi.fn();
+    inviteMembers.mockResolvedValue({
+      results: [{ email: 'cara@acme.test', outcome: 'failed' }],
+    });
+    render(<InviteMembersForm workspaceId={WORKSPACE_ID} onSent={onSent} />);
+
+    await user.type(
+      screen.getByRole('textbox', { name: 'Email address 1' }),
+      'cara@acme.test',
+    );
+    await user.click(sendButton());
+
+    expect(
+      await screen.findByDisplayValue('cara@acme.test'),
+    ).toBeInTheDocument();
+    expect(onSent).not.toHaveBeenCalled();
+  });
+});

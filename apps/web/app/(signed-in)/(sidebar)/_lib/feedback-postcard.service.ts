@@ -7,6 +7,7 @@ import {
   toGivenPostcard,
 } from '@/app/(signed-in)/(sidebar)/_lib/read-postcard.util';
 import { NO_NAME_IN_A_SENTENCE } from '@/components/organisms/feed-card/feed-card-sentence.util';
+import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type {
   PostcardReadAnswer,
   ReadPostcard,
@@ -18,6 +19,11 @@ import type { CurrentMembership } from '@/lib/session/current-account.type';
 /** A postcard to read, and what the dialog shows it under. */
 export type OpenedFeedbackPostcard = {
   readonly title: string;
+  /**
+   * Whoever the title names, or `null` when it names nobody: "Your Feedback", or somebody with no
+   * name yet, whose initials would stand for "a teammate" rather than for them.
+   */
+  readonly person: PostcardWriter | null;
   readonly card: ReadPostcard;
   /** Which answer the card pressed was, on a request's card. */
   readonly answerIndex: number;
@@ -52,11 +58,15 @@ export async function readFeedbackPostcard(
       if (!card) {
         return null;
       }
+      const isOwn = feedback.giver.accountId === feedback.readerAccountId;
       return {
-        title:
-          feedback.giver.accountId === feedback.readerAccountId
-            ? 'Your Feedback'
-            : `Feedback from ${feedback.giver.name ?? NO_NAME_IN_A_SENTENCE}`,
+        title: isOwn
+          ? 'Your Feedback'
+          : `Feedback from ${feedback.giver.name ?? NO_NAME_IN_A_SENTENCE}`,
+        person:
+          isOwn || !feedback.giver.name
+            ? null
+            : toPostcardWriter(feedback.giver),
         answerIndex: 0,
         card,
       };
@@ -76,12 +86,17 @@ export async function readFeedbackPostcard(
     if (!first) {
       return null;
     }
+    const isOwnRequest =
+      request.requester.accountId === feedback.readerAccountId;
     return {
       // Not the Giver's: the pager changes who is showing under a title that stays.
-      title:
-        request.requester.accountId === feedback.readerAccountId
-          ? 'Feedback for you'
-          : `Feedback for ${request.requester.name ?? NO_NAME_IN_A_SENTENCE}`,
+      title: isOwnRequest
+        ? 'Feedback for you'
+        : `Feedback for ${request.requester.name ?? NO_NAME_IN_A_SENTENCE}`,
+      person:
+        isOwnRequest || !request.requester.name
+          ? null
+          : toPostcardWriter(request.requester),
       answerIndex: Math.max(
         request.answers.findIndex((answer) => answer.id === feedback.id),
         0,

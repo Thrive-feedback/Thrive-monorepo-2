@@ -170,6 +170,10 @@ export const ROUTES = {
     tokens: '/ui-showcase/tokens',
     /** Every card in the app, side by side. */
     cards: '/ui-showcase/cards',
+    /** Every notification Thrive sends, with what raises it and where pressing it leads. */
+    notifications: '/ui-showcase/notifications',
+    /** Settings rows that need a link, a Connection or an Invitation, on sample data. */
+    settings: '/ui-showcase/settings',
     component: (slug: string) => `/ui-showcase/${slug}`,
   },
 } as const;

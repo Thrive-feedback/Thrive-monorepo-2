@@ -81,15 +81,29 @@ describe('AddWorkspaceGoalForm', () => {
     },
   );
 
-  it('asks for a name when none was written', async () => {
-    const user = userEvent.setup();
+  it('waits for a name before it can be added, without scolding an empty field', () => {
     render(<AddWorkspaceGoalForm workspaceId={WORKSPACE_ID} />);
 
-    await user.click(
+    expect(
       screen.getByRole('button', { name: 'Add Workspace Goal' }),
-    );
+    ).toBeDisabled();
+    expect(nameField()).not.toHaveAccessibleDescription('Give it a name.');
+  });
 
-    expect(nameField()).toHaveAccessibleDescription('Give it a name.');
+  it('says what is wrong with a name as it is typed, and stays disabled until it is right', async () => {
+    const user = userEvent.setup();
+    render(<AddWorkspaceGoalForm workspaceId={WORKSPACE_ID} />);
+    const add = screen.getByRole('button', { name: 'Add Workspace Goal' });
+
+    await user.type(nameField(), 'own ership');
+
+    expect(nameField()).toHaveAccessibleDescription('Use - instead of spaces.');
+    expect(add).toBeDisabled();
+
+    await user.clear(nameField());
+    await user.type(nameField(), 'ownership');
+
+    expect(add).toBeEnabled();
   });
 
   it('shows under the name that it is already taken, keeping what was written', async () => {
@@ -130,5 +144,24 @@ describe('AddWorkspaceGoalForm', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Only Admins can add Workspace Goals.',
     );
+  });
+});
+
+describe('telling whatever holds the form that a Goal was added', () => {
+  it('says so after the toast', async () => {
+    const user = userEvent.setup();
+    const onAdded = vi.fn();
+    addWorkspaceGoal.mockResolvedValue({ ok: true });
+    render(
+      <AddWorkspaceGoalForm workspaceId={WORKSPACE_ID} onAdded={onAdded} />,
+    );
+
+    await user.type(nameField(), 'ownership');
+    await user.click(
+      screen.getByRole('button', { name: 'Add Workspace Goal' }),
+    );
+
+    expect(toast.success).toHaveBeenCalledWith('#ownership added');
+    expect(onAdded).toHaveBeenCalledOnce();
   });
 });

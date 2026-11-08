@@ -2,11 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { ReadPostcard } from '@/components/organisms/postcard-dialog/postcard-read.type';
 import { PostcardReadDialog } from '@/components/organisms/postcard-dialog/postcard-read-dialog';
 
 export type FeedbackPostcardDialogProps = {
   title: string;
+  /** Whoever the title names, whose face goes before it. */
+  person?: PostcardWriter;
   card: ReadPostcard;
   answerIndex: number;
   /** Where closing it goes: the list it was opened from, as it was showing. */
@@ -21,6 +24,7 @@ export type FeedbackPostcardDialogProps = {
  */
 export function FeedbackPostcardDialog({
   title,
+  person,
   card,
   answerIndex,
   closeHref,
@@ -32,6 +36,7 @@ export function FeedbackPostcardDialog({
     <PostcardReadDialog
       open={closedCard !== card}
       title={title}
+      person={person}
       card={card}
       initialAnswerIndex={answerIndex}
       onOpenChange={(open) => {

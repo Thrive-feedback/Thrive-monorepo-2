@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import Teammates from './page';
 
@@ -41,10 +41,14 @@ describe('Teammates', () => {
 
     render(await Teammates());
 
-    // Invite people is offered beside the title; its card stays shut until it is pressed.
+    // Invite people sits in the Members card's title row; its form waits in a dialog until pressed.
+    const members = screen.getByRole('region', {
+      name: 'Everyone in Acme Corp',
+    });
     expect(
-      screen.getByRole('button', { name: 'Invite people' }),
+      within(members).getByRole('button', { name: 'Invite people' }),
     ).toBeInTheDocument();
+    expect(screen.queryByText('invite form')).toBeNull();
     expect(
       screen
         .getAllByRole('heading', { level: 2 })
@@ -53,7 +57,6 @@ describe('Teammates', () => {
     expect(
       screen.getByText('members, with ann@acme.test marked'),
     ).toBeInTheDocument();
-    expect(screen.getByText('invite form')).toBeInTheDocument();
     expect(screen.getByText('open invitations')).toBeInTheDocument();
   });
 

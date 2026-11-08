@@ -1,0 +1,47 @@
+/*
+ * A request with several answers draws them as a stack: the newest on top, up to two earlier ones
+ * behind it, each turned its own way and nudged out from under it. Pointing at the tile, which
+ * straightens the top card, fans the ones behind a little further, so the stack reads as more than
+ * one card in hand. Turns and offsets are per depth, so they arrive as custom properties; the
+ * motion is the one every leaning card shares.
+ */
+.behind {
+  position: absolute;
+  inset: calc(var(--spacing) * 2);
+  rotate: var(--stack-turn);
+  translate: var(--stack-shift);
+  transition:
+    rotate var(--motion-duration-fast) var(--motion-ease-smooth-out),
+    translate var(--motion-duration-fast) var(--motion-ease-smooth-out);
+}
+
+.behind[data-stack-depth='1'] {
+  --stack-turn: 5deg;
+  --stack-shift: calc(var(--spacing) * 2) calc(var(--spacing) * -1);
+}
+
+.behind[data-stack-depth='2'] {
+  --stack-turn: -6deg;
+  --stack-shift: calc(var(--spacing) * -2) calc(var(--spacing) * -1.5);
+}
+
+:is(a, button):is(:hover, :focus-visible) .behind[data-stack-depth='1'] {
+  --stack-turn: 8deg;
+  --stack-shift: calc(var(--spacing) * 3.5) calc(var(--spacing) * -1.5);
+}
+
+:is(a, button):is(:hover, :focus-visible) .behind[data-stack-depth='2'] {
+  --stack-turn: -9deg;
+  --stack-shift: calc(var(--spacing) * -3.5) calc(var(--spacing) * -2);
+}
+
+/* The top card lies over the ones behind it. */
+.top {
+  position: relative;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .behind {
+    transition: none;
+  }
+}

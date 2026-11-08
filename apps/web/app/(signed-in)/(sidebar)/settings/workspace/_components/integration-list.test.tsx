@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { IntegrationList, IntegrationListSkeleton } from './integration-list';
 
@@ -17,6 +18,10 @@ vi.mock(
 );
 
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
 
 const ADMIN: CurrentMembership = {
   workspace: { id: 'w-1', name: 'Acme Corp' },
@@ -48,88 +53,57 @@ describe('IntegrationList', () => {
     expect(screen.getByText('Discord')).toBeInTheDocument();
   });
 
-  it('shows the channel and server it posts in, with who connected it and when', async () => {
-    readConnections.mockResolvedValue([DISCORD]);
-
-    await renderList();
-
-    expect(screen.getByText(/#standups in Acme HQ/)).toHaveTextContent(
-      '#standups in Acme HQ · connected by Ann · 18 Oct 2026',
-    );
-  });
-
-  it('says what connecting would do while nothing is connected', async () => {
+  it('says what connecting would do while nothing is connected, and offers an Admin the way', async () => {
     readConnections.mockResolvedValue([]);
 
     await renderList();
 
-    expect(
-      screen.getByText(
-        'Not connected. Feedback shown to the whole Workspace can be announced in one channel.',
-      ),
-    ).toBeInTheDocument();
-  });
-
-  it('offers an Admin the way to connect a tool that is not connected', async () => {
-    readConnections.mockResolvedValue([]);
-
-    await renderList();
-
+    expect(screen.getByText('Not connected')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Connect Discord' }),
     ).toBeInTheDocument();
-  });
-
-  it('tells every Member that disconnecting also stops their own messages', async () => {
-    readConnections.mockResolvedValue([DISCORD]);
-
-    await renderList(MEMBER);
-
-    expect(
-      screen.getByText(
-        /Disconnecting stops this channel hearing about Feedback/,
-      ),
-    ).toHaveTextContent(
-      'stops Thrive messaging anyone who linked their own account',
+    await userEvent
+      .setup()
+      .hover(screen.getByRole('button', { name: 'About Discord' }));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Thrive posts Kudos, and Feedback shared with everyone in the Workspace, in one Discord channel an Admin picks. It also lets teammates who link their own Discord get direct messages.',
     );
   });
 
-  it('offers an Admin the way to disconnect what is connected', async () => {
-    readConnections.mockResolvedValue([DISCORD]);
-
-    await renderList();
-
-    expect(
-      screen.getByRole('button', { name: 'Disconnect Discord' }),
-    ).toBeInTheDocument();
-  });
-
-  it('offers nothing to disconnect when nothing is connected', async () => {
+  it('offers a Member nothing to connect', async () => {
     readConnections.mockResolvedValue([]);
 
-    await renderList();
+    await renderList(MEMBER);
 
     expect(
-      screen.queryByRole('button', { name: 'Disconnect Discord' }),
-    ).not.toBeInTheDocument();
+      screen.queryByRole('button', { name: 'Connect Discord' }),
+    ).toBeNull();
   });
 
-  it('offers an Admin the way to change one that is', async () => {
+  it('says only that it is connected, with where it posts in its menu', async () => {
     readConnections.mockResolvedValue([DISCORD]);
 
     await renderList();
 
+    expect(screen.getByText('Connected')).toHaveClass(
+      'text-status-success-active',
+    );
+    expect(screen.queryByText(/#standups/)).toBeNull();
     expect(
-      screen.getByRole('button', { name: 'Change Discord connection' }),
+      screen.getByRole('button', { name: 'Manage Discord connection' }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Connect Discord' }),
+    ).toBeNull();
   });
 
-  it('shows a Member where their Workspace posts, and no way to change it', async () => {
+  it('gives a Member the menu too, so they can see where their Workspace posts', async () => {
     readConnections.mockResolvedValue([DISCORD]);
 
     await renderList(MEMBER);
 
-    expect(screen.getByText(/#standups in Acme HQ/)).toBeInTheDocument();
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Manage Discord connection' }),
+    ).toBeInTheDocument();
   });
 });

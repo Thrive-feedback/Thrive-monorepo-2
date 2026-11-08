@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/atoms/dialog';
+import { OnlyAdminDialog } from './only-admin-dialog';
 
 type DeactivateTarget = {
   /** The Workspace the page was drawn for; acting is refused once the person is no longer in it. */
@@ -30,37 +31,59 @@ type DeactivateTarget = {
 };
 
 export type DeactivateMemberButtonProps = DeactivateTarget & {
-  /** Set for the Workspace's only active Admin, who cannot leave. */
-  disabled?: boolean;
-  /** The id of the text saying why it is disabled, or what it does. */
+  /**
+   * The Workspace's only active Admin, who cannot be Deactivated: pressing says why instead of
+   * asking.
+   */
+  isLastAdmin?: boolean;
+  /** The id of the text saying what it does. */
   describedById?: string;
 };
 
 /**
  * Ends someone's access to the Workspace, or the person's own, which is leaving, from a button of
- * its own, as Leave Workspace does. The question it asks is `DeactivateMemberDialog`'s.
+ * its own, as Leave Workspace does. The question it asks is `DeactivateMemberDialog`'s; for the
+ * only Admin it answers with `OnlyAdminDialog` instead, so the button never sits greyed out with no
+ * way to learn why.
  */
 export function DeactivateMemberButton({
-  disabled = false,
+  isLastAdmin = false,
   describedById,
   ...target
 }: DeactivateMemberButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { isSelf = false, name } = target;
+  const { isSelf = false, name, workspaceName } = target;
+  const trigger = (
+    <DialogTrigger asChild>
+      <Button
+        variant={isSelf ? 'danger' : 'ghost-danger'}
+        size="sm"
+        aria-label={isSelf ? undefined : `Deactivate ${name}`}
+        aria-describedby={describedById}
+      >
+        {isSelf ? 'Leave Workspace' : 'Deactivate'}
+      </Button>
+    </DialogTrigger>
+  );
+
+  if (isLastAdmin) {
+    return (
+      <OnlyAdminDialog
+        name={name}
+        workspaceName={workspaceName}
+        isSelf={isSelf}
+        blocked="leave"
+        open={isOpen}
+        onOpenChange={setIsOpen}
+      >
+        {trigger}
+      </OnlyAdminDialog>
+    );
+  }
 
   return (
     <DeactivateMemberDialog {...target} open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant={isSelf ? 'danger' : 'ghost-danger'}
-          size="sm"
-          disabled={disabled}
-          aria-label={isSelf ? undefined : `Deactivate ${name}`}
-          aria-describedby={describedById}
-        >
-          {isSelf ? 'Leave Workspace' : 'Deactivate'}
-        </Button>
-      </DialogTrigger>
+      {trigger}
     </DeactivateMemberDialog>
   );
 }

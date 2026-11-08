@@ -494,6 +494,10 @@ function theme(): string {
   for (const role of project.semantics) {
     lines.push(`--color-${cssName(role.id)}: var(--${cssName(role.id)});`);
   }
+  // A role the blueprint does not have yet, set by hand in `supplement.css`.
+  lines.push(
+    '--color-action-disabled-surface: var(--action-disabled-surface);',
+  );
   lines.push('');
   for (const token of project.radius.tokens) {
     lines.push(`--radius-${token.id}: var(--shape-${token.id});`);

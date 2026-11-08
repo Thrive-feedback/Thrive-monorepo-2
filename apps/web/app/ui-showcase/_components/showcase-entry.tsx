@@ -1,3 +1,4 @@
+import { GallerySection } from '@/app/ui-showcase/_components/gallery-section';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
 import { CodeBlock } from './code-block';
@@ -70,39 +71,27 @@ export function ShowcaseEntry({
         </div>
       </dl>
 
-      <div className="flex flex-col gap-3">
-        <Text variant="subtitle-2" as="h2">
-          States
-        </Text>
+      <GallerySection title="States">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {children}
         </div>
-      </div>
+      </GallerySection>
 
-      <div className="flex flex-col gap-3">
-        <Text variant="subtitle-2" as="h2">
-          Usage
-        </Text>
+      <GallerySection title="Usage">
         <CodeBlock code={usage} label={`${name} usage`} />
-      </div>
+      </GallerySection>
 
-      <div className="flex flex-col gap-3">
-        <Text variant="subtitle-2" as="h2">
-          Props
-        </Text>
+      <GallerySection title="Props">
         <PropsTable caption={`${name} props`} rows={props} />
-      </div>
+      </GallerySection>
 
-      <div className="flex flex-col gap-3">
-        <Text variant="subtitle-2" as="h2">
-          Accessibility
-        </Text>
+      <GallerySection title="Accessibility">
         <ul className="flex list-disc flex-col gap-1 ps-5 text-body-2 text-fg-secondary">
           {accessibility.map((note) => (
             <li key={note}>{note}</li>
           ))}
         </ul>
-      </div>
+      </GallerySection>
     </article>
   );
 }

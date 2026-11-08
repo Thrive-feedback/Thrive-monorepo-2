@@ -1,6 +1,7 @@
+import { GallerySection } from '@/app/ui-showcase/_components/gallery-section';
+import { ShowcasePage } from '@/app/ui-showcase/_components/showcase-page';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Spinner } from '@/components/atoms/spinner';
-import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
 import { Palette } from './palette';
 
@@ -98,19 +99,10 @@ const TYPE_STYLES = [
 
 function TypeScale() {
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <Text variant="subtitle-1" as="h2">
-          Type
-        </Text>
-        <Text variant="body-2" tone="muted">
-          One utility per type role in the blueprint, each carrying size, line
-          height, letter spacing and weight, and stepping up at the tablet and
-          desktop breakpoints. A utility cannot carry a family, so display,
-          handwrite and code roles also need their font class — or use the Text
-          component, which adds it. Resize the window to see the steps.
-        </Text>
-      </div>
+    <GallerySection
+      title="Type"
+      description="One utility per type role in the blueprint, each carrying size, line height, letter spacing and weight, and stepping up at the tablet and desktop breakpoints. A utility cannot carry a family, so display, handwrite and code roles also need their font class — or use the Text component, which adds it. Resize the window to see the steps."
+    >
       <ul className="flex flex-col divide-y divide-border-default rounded-surface border border-border-default">
         {TYPE_STYLES.map(({ role, className }) => (
           <li
@@ -127,7 +119,7 @@ function TypeScale() {
           </li>
         ))}
       </ul>
-    </section>
+    </GallerySection>
   );
 }
 
@@ -141,19 +133,11 @@ function Section({
   children: React.ReactNode;
 }>) {
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <Text variant="subtitle-1" as="h2">
-          {title}
-        </Text>
-        <Text variant="body-2" tone="muted">
-          {description}
-        </Text>
-      </div>
+    <GallerySection title={title} description={description}>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {children}
       </div>
-    </section>
+    </GallerySection>
   );
 }
 
@@ -175,18 +159,16 @@ function Swatch({
 
 export function TokenGallery() {
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-12 px-4 py-12">
-      <header className="flex flex-col gap-2">
-        <Text variant="h5" as="h1">
-          Design tokens
-        </Text>
-        <Text tone="muted" className="max-w-2xl">
+    <ShowcasePage
+      title="Design tokens"
+      description={
+        <>
           The semantic layer: every colour, radius, shadow and family a
           component is allowed to reference, generated from the design's
           blueprint. Switch the theme in the navbar to see the dark mode.
-        </Text>
-      </header>
-
+        </>
+      }
+    >
       <Palette />
 
       <Section
@@ -532,6 +514,6 @@ export function TokenGallery() {
       </Section>
 
       <TypeScale />
-    </main>
+    </ShowcasePage>
   );
 }
