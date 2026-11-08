@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { FakeClock } from '@test/support/clock.fake';
 import {
   FakeAccountBySlugPort,
   FakeActiveWorkspaceGoalPort,
@@ -13,6 +14,7 @@ import {
   KudosMessageEmptyError,
 } from '../../domain/feedback-request.errors';
 import type { KudosCardSnapshot } from '../../domain/value-object/kudos-card.vo';
+import { SummaryRefreshService } from '../service/summary-refresh.service';
 import { TagsService } from '../service/tags.service';
 import { GiveKudosUseCase } from './give-kudos.use-case';
 
@@ -22,6 +24,9 @@ const ANN = 'account-ann';
 const BEN = 'account-ben';
 const CARA = 'account-cara';
 const DAN = 'account-dan';
+
+/** Fixed, so the period a refresh names does not move with the calendar. */
+const NOW = new Date('2026-11-08T09:00:00.000Z');
 
 function setUp() {
   const kudosRepository = new FakeKudosRepository();
@@ -47,6 +52,7 @@ function setUp() {
     new FakeIdGenerator(KUDOS_ID),
     unitOfWork,
     outbox,
+    new SummaryRefreshService(outbox, new FakeClock(NOW)),
   );
   return { kudosRepository, unitOfWork, useCase, outbox };
 }

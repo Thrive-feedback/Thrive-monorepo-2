@@ -5,10 +5,12 @@ import { OutboxRelay } from '@app/infrastructure/outbox/outbox-relay.service';
 import { ChatInstaller } from '@app/modules/integrations/application/port/chat-installer.port';
 import { AccountLinker } from '@app/modules/notifications/application/port/account-linker.port';
 import { DirectMessenger } from '@app/modules/notifications/application/port/direct-messenger.port';
+import { AiCompleter } from '@app/shared/application/ai-completer.port';
 import { ChatPoster } from '@app/shared/application/chat-poster.port';
 import { EmailSender } from '@app/shared/application/email-sender.port';
 import { After, AfterAll, Before, BeforeAll } from '@cucumber/cucumber';
 import { Test } from '@nestjs/testing';
+import { FakeAiCompleter } from './ai.fake';
 import { FakeEmailSender } from './email-sender.fake';
 import { harness, setHarness } from './harness';
 import { FakeChatInstaller, FakeChatPoster } from './integrations.fakes';
@@ -30,6 +32,12 @@ BeforeAll({ timeout: BOOT_TIMEOUT_MS }, async () => {
   process.env.DISCORD_CLIENT_ID ??= 'not-used-by-the-scenarios';
   process.env.DISCORD_CLIENT_SECRET ??= 'not-used-by-the-scenarios';
   process.env.DISCORD_BOT_TOKEN ??= 'not-used-by-the-scenarios';
+  // And the model provider's, which the configuration also requires at boot (ADR 0077). The
+  // completer is replaced below, so no scenario depends on what a model would have answered.
+  process.env.AI_PROVIDER_ENDPOINT ??= 'https://ai.thrive.test/v1';
+  process.env.AI_PROVIDER_API_KEY ??= 'not-used-by-the-scenarios';
+  process.env.AI_PROVIDER_MODEL ??= 'not-used-by-the-scenarios';
+  process.env.AI_PROVIDER_LABEL ??= 'SCENARIOS';
 
   const emailSender = new FakeEmailSender();
   const chatInstaller = new FakeChatInstaller().withChannels(
@@ -39,6 +47,7 @@ BeforeAll({ timeout: BOOT_TIMEOUT_MS }, async () => {
   const chatPoster = new FakeChatPoster();
   const accountLinker = new FakeAccountLinker();
   const directMessenger = new FakeDirectMessenger();
+  const aiCompleter = new FakeAiCompleter();
   // Imported only now, so the placeholders above are in place before the configuration loads.
   const { AppModule } = await import('@app/app.module');
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
@@ -52,6 +61,8 @@ BeforeAll({ timeout: BOOT_TIMEOUT_MS }, async () => {
     .useValue(accountLinker)
     .overrideProvider(DirectMessenger)
     .useValue(directMessenger)
+    .overrideProvider(AiCompleter)
+    .useValue(aiCompleter)
     .compile();
   const app = moduleRef.createNestApplication();
   // Port 0: the system picks a free one, so a running dev server is never in the way.
@@ -67,6 +78,7 @@ BeforeAll({ timeout: BOOT_TIMEOUT_MS }, async () => {
     chatPoster,
     accountLinker,
     directMessenger,
+    aiCompleter,
     prismaService: app.get(PrismaService),
     auth: app.get(AUTH),
     configuration: app.get(CONFIGURATION),
@@ -82,6 +94,7 @@ Before(function (this: ThriveWorld) {
     chatPoster,
     accountLinker,
     directMessenger,
+    aiCompleter,
   } = harness();
   // The application boots once for the whole run, so the fakes it holds are returned to how
   // they started rather than carrying one scenario's setup into the next.
@@ -89,6 +102,7 @@ Before(function (this: ThriveWorld) {
   chatPoster.reset();
   accountLinker.reset();
   directMessenger.reset();
+  aiCompleter.reset();
   this.fixtures = new WorkspaceFixtures(prismaService, auth, configuration);
 });
 

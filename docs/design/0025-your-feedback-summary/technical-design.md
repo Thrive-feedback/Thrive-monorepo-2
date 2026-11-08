@@ -8,7 +8,10 @@ port). **Not** on `0078`/`0079`, deferred the same day
 not an exception to it
 **Evidence:** `docs/design/0024` §12 and §11 below. Everything claimed here was measured against a
 real provider on synthetic data, 2026-10-31
-**Status:** draft, 2026-10-31 · **Author:** naroebordin (with Claude)
+**Status:** built, 2026-11-08 · **Author:** naroebordin (with Claude)
+**Amended while building** (2026-11-08), in three places, each marked below: D4's idempotency key
+was wrong and is replaced by ADR 0084, §5's 204 is a nullable body instead, and D5's sources carry
+the **kind** of each message beside its id. Everything else shipped as written.
 **Conventions:** `GEN_01`–`GEN_08` (P0) · `GEN_09` · `GEN_11` · `GEN_14` · `GEN_16` · `GEN_17` ·
 `BE_01`–`BE_06` · `BE_08`–`BE_13` · `BE_15` · `BE_20` · `BE_21` · `FE_01`–`FE_11` · interpreting
 `todo` entries `BE_14`, `BE_16`, `BE_17`, `BE_18`, `BE_22` (§10)
@@ -85,8 +88,8 @@ depends on the deferred tagging), export and sharing, and any Admin surface.
 | **D1** | **It lives in the Feedback module** | its own module; the Insights context | Derived from `feedback`, `feedback_receiver` and `kudos` — Feedback's own tables — and nothing else. A separate module would need a cross-module read per generation (`BE_03` R7). Insights means aggregates about a Workspace, which this is not. Revisit if a summary ever spans Goals |
 | **D2** | **One stored row per `(accountId, workspaceId, period)`** | one current row per Member; generating on demand | The period is what makes "what changed" possible later with no migration, and it is how the cadence de-duplicates (D4). A single current row overwrites history that costs nothing to keep |
 | **D3** | **The row stores the sections *and* the source ids behind each point** | prose only | D5. Provenance is the groundedness check, the injection defence and the eval's mechanism at once, for one array per point |
-| **D4** | **Regeneration is enqueued, never on the read path.** New Feedback or Kudos enqueues `summaries.refresh:<accountId>:<workspaceId>:<period>`; opening a stale page enqueues the same key | a cron; generating on first view; `@nestjs/schedule` | **No scheduler exists and `BE_18` is `todo`** — the outbox drains what was *enqueued*, and nothing enqueues periodic work. These two seams give a real cadence with no new infrastructure, and the outbox's unique `idempotencyKey` collapses a burst of five into **one** regeneration per period for free (ADR 0076 D10). Cost: behind by up to one drain, which is why the page says when it was written |
-| **D5** | **Every point cites the Feedback it came from; the page links to them** | prose with no provenance | Three jobs at once: a Member can check any sentence; an injected claim arrives **visibly attached to the message that carried it**, so it reads as a colleague's words rather than Thrive's; and groundedness becomes mechanical. §11 shows it also fails to catch meaning inversion, so it is necessary and not sufficient |
+| **D4** | **Regeneration is enqueued, never on the read path.** New Feedback or Kudos enqueues `summaries.refresh:<accountId>:<workspaceId>:<period>`; opening a stale page enqueues the same key | a cron; generating on first view; `@nestjs/schedule` | **No scheduler exists and `BE_18` is `todo`** — the outbox drains what was *enqueued*, and nothing enqueues periodic work. These two seams give a real cadence with no new infrastructure. Cost: behind by up to one drain, which is why the page says when it was written. **Amended 2026-11-08 (ADR 0084):** the key named here was wrong. An `idempotencyKey` is unique until the delivered row is swept a week later, so a key naming only the period would have bought one summary a quarter and silently dropped every later request. The key is `feedback.summary_refresh:<accountId>:<sourceId>` — the Member and the newest message the summary must account for — which collapses what should collapse and lets new Feedback through |
+| **D5** | **Every point cites the Feedback it came from; the page links to them.** **Amended 2026-11-08:** a source is `{ id, kind }`, not an id alone — the page cannot tell a Feedback id from a Kudos id, and the two are read in different places, so a link built from an id alone sends half of them nowhere. The kind is the use case's to add from the corpus it sent, never the model's to be trusted with | prose with no provenance | Three jobs at once: a Member can check any sentence; an injected claim arrives **visibly attached to the message that carried it**, so it reads as a colleague's words rather than Thrive's; and groundedness becomes mechanical. §11 shows it also fails to catch meaning inversion, so it is necessary and not sufficient |
 | **D6** | **Every section may be empty, and empty is a correct answer** | `areas_to_improve` required non-empty | **A required non-empty array is an instruction to invent**, and a manufactured criticism of a real person in Thrive's voice is the worst thing this could do. **Measured (§11): 30 praise-only items produced `areas_to_improve: []`.** Given permission to say nothing, it says nothing |
 | **D7** | **No summary below a floor of distinct source items** (start at 3) | summarising whatever exists | A summary of one message is that message, reworded and less accurate. Below the floor the page shows the Feedback itself, which is better in every way |
 | **D8** | **The route reads the caller's own summary and cannot name anybody** — `GET …/me/summary` | `/summaries/{accountId}` with a guard | `ADR-0051` d7 becomes a property of the API's **shape**, not a check somebody could widen later. Same reasoning as design 0022 D11 |
@@ -187,11 +190,17 @@ One migration, additive, no backfill (`BE_15`).
 ```
 GET /v1/workspaces/{workspaceId}/me/summary?period=2026-Q4
 
-200 { period, generatedAt, isStale, sourceCount, language,
-      themes[], strengths[], areas_to_improve[], suggested_actions[] }
-204 — below the floor (D7), or nothing written yet; the web shows the Feedback list instead
+200 { summary: { period, generatedAt, isStale, sourceCount, language,
+                 themes[], strengths[], areas_to_improve[], suggested_actions[] } }
+200 { summary: null } — below the floor (D7), or nothing written yet; the web shows the Feedback list instead
 401 NOT_SIGNED_IN · 404 WORKSPACE_NOT_FOUND
 ```
+
+**Amended 2026-11-08:** this said `204`. A nullable body ships instead, for two reasons found while
+building it. `ZodResponse` ties one schema to one handler, which is what keeps the contract, the
+types and the runtime agreeing (`GEN_08`), and it cannot type a handler that answers with a body or
+with nothing. And the generated client gives `data: undefined` for a 204, which a caller cannot tell
+from a failure without reading the status by hand. Nothing about the feature turns on it.
 
 **No `accountId` anywhere in the surface** (D8). `isStale` lets the page say "written last night,
 newer feedback has arrived since" rather than pretending to be live. `WorkspaceMemberGuard` applies

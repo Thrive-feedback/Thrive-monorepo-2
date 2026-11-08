@@ -10,6 +10,7 @@ import {
   type KudosCardSnapshot,
 } from '../../domain/value-object/kudos-card.vo';
 import { KudosMessage } from '../../domain/value-object/kudos-message.vo';
+import { SummaryRefreshService } from '../service/summary-refresh.service';
 import { TagsService } from '../service/tags.service';
 
 export interface GiveKudosInput {
@@ -50,6 +51,7 @@ export class GiveKudosUseCase {
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
     private readonly outbox: Outbox,
+    private readonly summaryRefresh: SummaryRefreshService,
   ) {}
 
   async execute(input: GiveKudosInput): Promise<GiveKudosResult> {
@@ -89,6 +91,13 @@ export class GiveKudosUseCase {
           },
         },
       ]);
+      // A Kudos naming nobody is for the whole Workspace and is in nobody's own Feedback, so
+      // it leaves every summary as it was (ADR 0074).
+      await this.summaryRefresh.askFor({
+        workspaceId: input.workspaceId,
+        accountIds: given.recipientAccountIds,
+        sourceId: given.id,
+      });
     });
 
     return { id: given.id };

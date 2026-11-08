@@ -8,7 +8,11 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { outboxModule } from './infrastructure/outbox/outbox.module';
-import { FeedbackModule } from './modules/feedback';
+import {
+  FeedbackModule,
+  FeedbackSummaryOutboxHandler,
+  SUMMARY_REFRESH_TYPE,
+} from './modules/feedback';
 import { IdentityModule } from './modules/identity';
 import {
   ChannelAnnouncementOutboxHandler,
@@ -38,21 +42,24 @@ import { SharedModule } from './shared/shared.module';
     // The composition root is where handlers are named, so the relay imports no module and no
     // module imports the relay (ADR 0076 D1).
     outboxModule({
-      imports: [IntegrationsModule, NotificationsModule],
+      imports: [IntegrationsModule, NotificationsModule, FeedbackModule],
       handlers: {
         inject: [
           ChannelAnnouncementOutboxHandler,
           PersonNotificationOutboxHandler,
+          FeedbackSummaryOutboxHandler,
         ],
         useFactory: (
           announcements: ChannelAnnouncementOutboxHandler,
           notifications: PersonNotificationOutboxHandler,
+          summaries: FeedbackSummaryOutboxHandler,
         ) => [
           { type: FEEDBACK_PUBLISHED_TYPE, handler: announcements },
           { type: KUDOS_GIVEN_TYPE, handler: announcements },
           { type: ASK_RECEIVED_TYPE, handler: notifications },
           { type: ASK_ANSWERED_TYPE, handler: notifications },
           { type: FEEDBACK_WRITTEN_TYPE, handler: notifications },
+          { type: SUMMARY_REFRESH_TYPE, handler: summaries },
         ],
       },
     }),

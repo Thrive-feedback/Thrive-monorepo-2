@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { FakeClock } from '@test/support/clock.fake';
 import {
   aTagsService,
   FakeFeedbackRepository,
@@ -17,6 +18,7 @@ import {
   ReceiverNotInWorkspaceError,
   SelectedPersonNotInWorkspaceError,
 } from '../feedback-request.errors';
+import { SummaryRefreshService } from '../service/summary-refresh.service';
 import {
   type OfferFeedbackInput,
   OfferFeedbackUseCase,
@@ -43,6 +45,9 @@ function offering(
   };
 }
 
+/** Fixed, so the period a refresh names does not move with the calendar. */
+const NOW = new Date('2026-11-08T09:00:00.000Z');
+
 function setUp() {
   const feedbackRepository = new FakeFeedbackRepository();
   const unitOfWork = new FakeUnitOfWork();
@@ -54,6 +59,7 @@ function setUp() {
     new FakeIdGenerator(FEEDBACK_ID),
     unitOfWork,
     outbox,
+    new SummaryRefreshService(outbox, new FakeClock(NOW)),
   );
   return {
     feedbackRepository,

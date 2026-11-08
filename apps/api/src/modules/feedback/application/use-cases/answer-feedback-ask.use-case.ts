@@ -12,6 +12,7 @@ import {
 } from '../../domain/value-object/postcard.vo';
 import { isEveryone } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
+import { SummaryRefreshService } from '../service/summary-refresh.service';
 import { TagsService } from '../service/tags.service';
 
 export interface AnswerFeedbackAskInput {
@@ -49,6 +50,7 @@ export class AnswerFeedbackAskUseCase {
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
     private readonly outbox: Outbox,
+    private readonly summaryRefresh: SummaryRefreshService,
   ) {}
 
   async execute(
@@ -118,6 +120,12 @@ export class AnswerFeedbackAskUseCase {
           },
         ]);
       }
+      // The answer is Feedback written to whoever asked for it, so their summary is now behind.
+      await this.summaryRefresh.askFor({
+        workspaceId: input.workspaceId,
+        accountIds: written.receiverAccountIds,
+        sourceId: written.id,
+      });
       return {
         feedbackId: written.id,
         feedbackRequestId: asked.id,
