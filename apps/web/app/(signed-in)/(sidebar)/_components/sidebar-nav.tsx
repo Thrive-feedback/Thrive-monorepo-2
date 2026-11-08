@@ -6,6 +6,7 @@ import {
   HouseIcon,
   InboxIcon,
   SendIcon,
+  SparklesIcon,
   UsersIcon,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -35,6 +36,7 @@ export function SidebarNav({ waitingCount }: SidebarNavProps) {
     },
     { label: 'Teammates', Icon: UsersIcon },
     { heading: 'My Feedback' },
+    { href: ROUTES.dashboard, label: 'Your dashboard', Icon: SparklesIcon },
     { href: ROUTES.received, label: 'Received', Icon: InboxIcon },
     { href: ROUTES.given, label: 'Given', Icon: SendIcon },
   ];

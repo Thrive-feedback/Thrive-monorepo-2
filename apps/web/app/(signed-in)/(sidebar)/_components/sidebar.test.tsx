@@ -59,6 +59,7 @@ describe('Sidebar', () => {
       'Waiting for me',
       'Teammates',
       'My Feedback',
+      'Your dashboard',
       'Received',
       'Given',
     ]);
@@ -100,7 +101,10 @@ describe('Sidebar', () => {
       'href',
       ROUTES.given,
     );
-    expect(within(nav).getAllByRole('link')).toHaveLength(5);
+    expect(
+      within(nav).getByRole('link', { name: 'Your dashboard' }),
+    ).toHaveAttribute('href', ROUTES.dashboard);
+    expect(within(nav).getAllByRole('link')).toHaveLength(6);
     for (const button of within(nav).getAllByRole('button')) {
       expect(button).toHaveAttribute('aria-disabled', 'true');
     }
