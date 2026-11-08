@@ -53,6 +53,22 @@ export class ChatConfig {
   ) {}
 }
 
+/**
+ * Whichever model endpoint answers today. Every value here is vendor-shaped and none has a
+ * default: a default endpoint is a wrong production target nobody notices, and a default model
+ * is a silent price and quality change on the day the config is mistyped (ADR 0077).
+ */
+export class AiConfig {
+  constructor(
+    /** An OpenAI-compatible base URL; `/chat/completions` is appended to it. */
+    readonly endpoint: string,
+    readonly apiKey: string,
+    readonly model: string,
+    /** Only ever a log field, so a log stays readable after a provider swap. */
+    readonly label: string,
+  ) {}
+}
+
 export class WebConfig {
   constructor(
     /** Where a link sent to a person points: the web app they open, not this API. */
@@ -66,6 +82,7 @@ export interface Configuration {
   readonly auth: AuthConfig;
   readonly email: EmailConfig;
   readonly chat: ChatConfig;
+  readonly ai: AiConfig;
   readonly web: WebConfig;
 }
 
@@ -113,6 +130,12 @@ export function loadConfiguration(
       parsed.data.DISCORD_CLIENT_ID,
       parsed.data.DISCORD_CLIENT_SECRET,
       parsed.data.DISCORD_BOT_TOKEN,
+    ),
+    ai: new AiConfig(
+      parsed.data.AI_PROVIDER_ENDPOINT,
+      parsed.data.AI_PROVIDER_API_KEY,
+      parsed.data.AI_PROVIDER_MODEL,
+      parsed.data.AI_PROVIDER_LABEL,
     ),
     // The auth URL is already the web origin (ADR 0027), so a second variable would only be
     // one that could disagree with it.

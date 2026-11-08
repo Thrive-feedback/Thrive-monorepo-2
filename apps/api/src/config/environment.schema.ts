@@ -75,6 +75,15 @@ export const environmentSchema = z.object({
   DISCORD_CLIENT_ID: z.string().min(1),
   DISCORD_CLIENT_SECRET: z.string().min(1),
   DISCORD_BOT_TOKEN: z.string().min(1),
+
+  // Whichever model endpoint answers today (ADR 0077). Required at boot like Resend's and
+  // Discord's credentials: a half-configured AI feature is worse than a refused boot, and a
+  // default endpoint or model is a wrong production target nobody notices. The label names the
+  // provider in logs and nowhere else, so no code above the AI module holds a vendor name.
+  AI_PROVIDER_ENDPOINT: z.url(),
+  AI_PROVIDER_API_KEY: z.string().min(1),
+  AI_PROVIDER_MODEL: z.string().min(1),
+  AI_PROVIDER_LABEL: z.string().min(1),
 });
 
 export type Environment = z.infer<typeof environmentSchema>;

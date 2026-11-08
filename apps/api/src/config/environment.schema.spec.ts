@@ -13,6 +13,10 @@ const validEnvironment = {
   DISCORD_CLIENT_ID: 'discord-client-id',
   DISCORD_CLIENT_SECRET: 'discord-client-secret',
   DISCORD_BOT_TOKEN: 'discord-bot-token',
+  AI_PROVIDER_ENDPOINT: 'https://models.thrive.example/v1',
+  AI_PROVIDER_API_KEY: 'ai-provider-key',
+  AI_PROVIDER_MODEL: 'a-model',
+  AI_PROVIDER_LABEL: 'A_PROVIDER',
 };
 
 function failedPaths(env: Record<string, string | undefined>): string[] {
@@ -71,6 +75,23 @@ describe('environmentSchema', () => {
       ]);
     },
   );
+
+  it.each([
+    'AI_PROVIDER_ENDPOINT',
+    'AI_PROVIDER_API_KEY',
+    'AI_PROVIDER_MODEL',
+    'AI_PROVIDER_LABEL',
+  ])('refuses a missing %s, rather than defaulting a provider', (name) => {
+    expect(failedPaths({ ...validEnvironment, [name]: undefined })).toEqual([
+      name,
+    ]);
+  });
+
+  it('refuses a model endpoint that does not parse', () => {
+    expect(
+      failedPaths({ ...validEnvironment, AI_PROVIDER_ENDPOINT: 'models' }),
+    ).toEqual(['AI_PROVIDER_ENDPOINT']);
+  });
 
   it('refuses a From address that is not an email address', () => {
     expect(
