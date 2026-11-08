@@ -16,7 +16,7 @@ import { WorkspaceSwitcherLoader } from './workspace-switcher-loader';
 
 const CONNECTIONS = 'Connections';
 const CONNECTIONS_DESCRIPTION =
-  'Chat tools this Workspace is connected to. Every Member can see them; only an Admin can connect or disconnect one.';
+  'Chat tools where Thrive posts for the whole Workspace. Everyone can see them; only Admins can connect or disconnect one.';
 const WORKSPACE_NAME = 'Workspace name';
 
 export type WorkspaceSectionProps = {

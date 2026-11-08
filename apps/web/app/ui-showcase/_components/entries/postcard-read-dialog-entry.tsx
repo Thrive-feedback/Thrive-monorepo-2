@@ -28,7 +28,8 @@ export function PostcardReadDialogEntry() {
       usage={`import { PostcardReadDialog } from '@/components/organisms/postcard-dialog/postcard-read-dialog';
 
 <PostcardReadDialog
-  title="Feedback from Ann"
+  title="Feedback from Ann Lee"
+  person={{ name: 'Ann Lee', photoUrl }}
   card={card}
   open={open}
   onOpenChange={setOpen}
@@ -38,6 +39,12 @@ export function PostcardReadDialogEntry() {
           name: 'title',
           type: 'string',
           description: 'What is being read, above the card.',
+        },
+        {
+          name: 'person',
+          type: 'PostcardWriter',
+          description:
+            'Whoever the title names; their face goes just before their name in it. Leave it out when the title names nobody, such as "Your Feedback".',
         },
         {
           name: 'card',
@@ -72,7 +79,8 @@ export function PostcardReadDialogEntry() {
         hint="One full back, with stickers on both sides and a tag in the message."
       >
         <PostcardReadDialogDemo
-          title="Feedback from Ann"
+          title="Feedback from Ann Lee"
+          person={SAMPLE_GIVEN.giver}
           label="Given to one person"
           card={SAMPLE_GIVEN}
         />
@@ -82,7 +90,8 @@ export function PostcardReadDialogEntry() {
         hint="Their faces fold into one stack, which names them when pressed."
       >
         <PostcardReadDialogDemo
-          title="Feedback from Ann"
+          title="Feedback from Ann Lee"
+          person={SAMPLE_GIVEN.giver}
           label="Given to three people"
           card={SAMPLE_GIVEN_TO_SEVERAL}
         />
@@ -92,7 +101,8 @@ export function PostcardReadDialogEntry() {
         hint="The box printed for a stamp stays, under the postmark."
       >
         <PostcardReadDialogDemo
-          title="Feedback from Ann"
+          title="Feedback from Ann Lee"
+          person={SAMPLE_GIVEN.giver}
           label="Sent with no stamp"
           card={SAMPLE_GIVEN_UNSTAMPED}
         />
@@ -102,7 +112,8 @@ export function PostcardReadDialogEntry() {
         hint="It scrolls inside the card, which keeps its size."
       >
         <PostcardReadDialogDemo
-          title="Feedback from Ann"
+          title="Feedback from Ann Lee"
+          person={SAMPLE_GIVEN.giver}
           label="A long message"
           card={SAMPLE_GIVEN_LONG}
         />
@@ -112,7 +123,8 @@ export function PostcardReadDialogEntry() {
         hint="As a Giver reads it: the Ask on the left, their own answer on the right."
       >
         <PostcardReadDialogDemo
-          title="Your answer to Mali"
+          title="Your answer to Mali Sombat"
+          person={SAMPLE_ANSWERED.ask.requester}
           label="One answer"
           card={SAMPLE_ANSWERED}
         />
@@ -122,7 +134,8 @@ export function PostcardReadDialogEntry() {
         hint="It scrolls inside its half, which keeps its size."
       >
         <PostcardReadDialogDemo
-          title="Your answer to Mali"
+          title="Your answer to Mali Sombat"
+          person={SAMPLE_ANSWERED.ask.requester}
           label="A long request"
           card={SAMPLE_ANSWERED_LONG_ASK}
         />

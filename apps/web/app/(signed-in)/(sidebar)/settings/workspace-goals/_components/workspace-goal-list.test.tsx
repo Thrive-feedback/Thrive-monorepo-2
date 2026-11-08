@@ -57,6 +57,14 @@ describe('WorkspaceGoalList', () => {
 
     const [hidden, active] = screen.getAllByRole('listitem');
     expect(hidden).toHaveTextContent('#ownershicHidden');
+    // Nothing can tag a hidden one, so it is plain grey text; an active one is drawn as Feedback
+    // draws a hashtag.
+    expect(within(hidden as HTMLElement).getByText('#ownershic')).toHaveClass(
+      'text-fg-secondary',
+    );
+    expect(within(active as HTMLElement).getByText('#ownership')).toHaveClass(
+      'bg-status-info-surface',
+    );
     const user = userEvent.setup();
     await user.click(
       within(hidden as HTMLElement).getByRole('button', {
@@ -85,7 +93,9 @@ describe('WorkspaceGoalList', () => {
     );
 
     expect(
-      screen.getByText('No Workspace Goals yet. Add your first one below.'),
+      screen.getByText(
+        'No Workspace Goals yet. Add your first one with Add a Workspace Goal.',
+      ),
     ).toBeInTheDocument();
   });
 

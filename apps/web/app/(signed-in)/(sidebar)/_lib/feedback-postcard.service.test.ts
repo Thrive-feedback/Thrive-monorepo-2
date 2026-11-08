@@ -105,6 +105,7 @@ describe('readFeedbackPostcard', () => {
     const postcard = await readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER);
 
     expect(postcard?.title).toBe('Feedback from Ben Carter');
+    expect(postcard?.person).toMatchObject({ name: 'Ben Carter' });
     expect(postcard?.card).toMatchObject({
       kind: 'give',
       templateKey: LOOK.templateKey,
@@ -120,6 +121,7 @@ describe('readFeedbackPostcard', () => {
     const postcard = await readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER);
 
     expect(postcard?.title).toBe('Your Feedback');
+    expect(postcard?.person).toBeNull();
   });
 
   it('draws what was not written on a postcard on a plain one', async () => {
@@ -142,6 +144,7 @@ describe('readFeedbackPostcard', () => {
     const postcard = await readFeedbackPostcard(MEMBERSHIP, SECOND_ANSWER);
 
     expect(postcard?.title).toBe('Feedback for Cara Diaz');
+    expect(postcard?.person).toMatchObject({ name: 'Cara Diaz' });
     expect(postcard?.answerIndex).toBe(1);
     expect(postcard?.card).toMatchObject({
       kind: 'ask',
@@ -229,6 +232,7 @@ describe('readFeedbackPostcard', () => {
     const postcard = await readFeedbackPostcard(MEMBERSHIP, SECOND_ANSWER);
 
     expect(postcard?.title).toBe('Feedback for you');
+    expect(postcard?.person).toBeNull();
   });
 
   it('calls somebody with no name yet a teammate, and keeps who was Deactivated', async () => {
@@ -241,6 +245,8 @@ describe('readFeedbackPostcard', () => {
     const postcard = await readFeedbackPostcard(MEMBERSHIP, FIRST_ANSWER);
 
     expect(postcard?.title).toBe('Feedback from a teammate');
+    // No face for a name the title does not say: its initials would read "AT".
+    expect(postcard?.person).toBeNull();
     expect(postcard?.card).toMatchObject({
       giver: { name: 'A teammate' },
       receivers: [{ name: 'Cara Diaz', inactive: true }],

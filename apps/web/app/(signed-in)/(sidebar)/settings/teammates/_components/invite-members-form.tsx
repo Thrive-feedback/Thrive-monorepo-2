@@ -13,6 +13,7 @@ import type {
   InviteMembersState,
 } from '@/app/(signed-in)/(sidebar)/settings/teammates/_lib/invite-members-state.type';
 import { Button } from '@/components/atoms/button';
+import { DialogFooter } from '@/components/atoms/dialog';
 import {
   Tabs,
   TabsContent,
@@ -52,6 +53,10 @@ function summaryOf(results: readonly InviteMemberResult[]): string {
 export type InviteMembersFormProps = {
   /** The Workspace the page was drawn for; sending is refused once the person is no longer in it. */
   workspaceId: string;
+  /** After a send that reached every address, so whatever holds the form can put it away. */
+  onSent?: () => void;
+  /** Leaving without sending; draws Cancel beside Send Invitations. */
+  onCancel?: () => void;
 };
 
 /**
@@ -65,7 +70,11 @@ export type InviteMembersFormProps = {
  * those; the rest clear. The new Invitations appear under Invitations, which the action draws
  * again.
  */
-export function InviteMembersForm({ workspaceId }: InviteMembersFormProps) {
+export function InviteMembersForm({
+  workspaceId,
+  onSent,
+  onCancel,
+}: InviteMembersFormProps) {
   const [formError, setFormError] = useState<string>();
   const [isSending, startSending] = useTransition();
 
@@ -91,6 +100,9 @@ export function InviteMembersForm({ workspaceId }: InviteMembersFormProps) {
         summaryOf(sent.results),
       );
       onFailed(failed);
+      if (failed.length === 0) {
+        onSent?.();
+      }
     });
   }
 
@@ -102,10 +114,10 @@ export function InviteMembersForm({ workspaceId }: InviteMembersFormProps) {
           <TabsTrigger value="list">Paste a list</TabsTrigger>
         </TabsList>
         <TabsContent value="one-by-one">
-          <OneByOne isSending={isSending} onSend={send} />
+          <OneByOne isSending={isSending} onSend={send} onCancel={onCancel} />
         </TabsContent>
         <TabsContent value="list">
-          <PasteAList isSending={isSending} onSend={send} />
+          <PasteAList isSending={isSending} onSend={send} onCancel={onCancel} />
         </TabsContent>
       </Tabs>
       {formError && (
@@ -123,10 +135,43 @@ type ModeProps = {
     invitations: Invitee[],
     onFailed: (failed: readonly InviteMemberResult[]) => void,
   ) => void;
+  onCancel?: () => void;
 };
 
+type SendActionsProps = {
+  isSending: boolean;
+  /** Only One by one waits for an address before it can send. */
+  isReady?: boolean;
+  onCancel?: () => void;
+};
+
+/** Cancel and Send Invitations at the end of the form, as a dialog's actions sit. */
+function SendActions({
+  isSending,
+  isReady = true,
+  onCancel,
+}: SendActionsProps) {
+  return (
+    <DialogFooter className="pt-2">
+      {onCancel && (
+        <Button disabled={isSending} onClick={onCancel}>
+          Cancel
+        </Button>
+      )}
+      <Button
+        type="submit"
+        variant="primary"
+        loading={isSending}
+        disabled={!isReady}
+      >
+        Send Invitations
+      </Button>
+    </DialogFooter>
+  );
+}
+
 /** A row per person, each with their own Role. */
-function OneByOne({ isSending, onSend }: ModeProps) {
+function OneByOne({ isSending, onSend, onCancel }: ModeProps) {
   const inviteRows = useInviteRows();
   const { rows } = inviteRows;
 
@@ -166,7 +211,7 @@ function OneByOne({ isSending, onSend }: ModeProps) {
       ))}
       {rows.length < MAX_INVITES_PER_SEND && (
         <Button
-          variant="ghost"
+          variant="soft"
           size="sm"
           className="w-fit"
           onClick={inviteRows.add}
@@ -175,21 +220,17 @@ function OneByOne({ isSending, onSend }: ModeProps) {
           Add another
         </Button>
       )}
-      <Button
-        type="submit"
-        variant="primary"
-        loading={isSending}
-        disabled={!inviteRows.hasAnyEmail}
-        className="w-fit"
-      >
-        Send Invitations
-      </Button>
+      <SendActions
+        isSending={isSending}
+        isReady={inviteRows.hasAnyEmail}
+        onCancel={onCancel}
+      />
     </form>
   );
 }
 
 /** Addresses typed into one box, all sent with the one Role beside it. */
-function PasteAList({ isSending, onSend }: ModeProps) {
+function PasteAList({ isSending, onSend, onCancel }: ModeProps) {
   const [text, setText] = useState('');
   const [role, setRole] = useState<MemberRole>('MEMBER');
   const [fieldError, setFieldError] = useState<string>();
@@ -234,14 +275,7 @@ function PasteAList({ isSending, onSend }: ModeProps) {
         </Text>
         <RoleSelect label="Role for everyone" value={role} onChange={setRole} />
       </div>
-      <Button
-        type="submit"
-        variant="primary"
-        loading={isSending}
-        className="w-fit"
-      >
-        Send Invitations
-      </Button>
+      <SendActions isSending={isSending} onCancel={onCancel} />
     </form>
   );
 }

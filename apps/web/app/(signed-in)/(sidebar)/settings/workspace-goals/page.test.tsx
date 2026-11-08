@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import WorkspaceGoals from './page';
 
@@ -36,10 +36,12 @@ describe('Workspace Goals', () => {
     render(await WorkspaceGoals());
 
     expect(screen.getByText('workspace goals')).toBeInTheDocument();
+    // Offered in the Goals card's title row; its form waits in a dialog until pressed.
+    const goals = screen.getByRole('region', { name: 'Workspace Goals' });
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Add a Workspace Goal' }),
+      within(goals).getByRole('button', { name: 'Add a Workspace Goal' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('add form')).toBeInTheDocument();
+    expect(screen.queryByText('add form')).toBeNull();
   });
 
   it('shows a Member the list with no way to add one', async () => {
@@ -48,6 +50,8 @@ describe('Workspace Goals', () => {
     render(await WorkspaceGoals());
 
     expect(screen.getByText('workspace goals')).toBeInTheDocument();
-    expect(screen.queryByText('add form')).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Add a Workspace Goal' }),
+    ).toBeNull();
   });
 });

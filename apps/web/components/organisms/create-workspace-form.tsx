@@ -2,6 +2,7 @@
 
 import { startTransition, useActionState, useState } from 'react';
 import { Button } from '@/components/atoms/button';
+import { DialogFooter } from '@/components/atoms/dialog';
 import { Text } from '@/components/atoms/text';
 import { TextField } from '@/components/molecules/text-field';
 import { TeamSizeOptions } from '@/components/organisms/team-size-options';
@@ -16,6 +17,14 @@ export type CreateWorkspaceFormProps = {
   action: CreateWorkspaceAction;
   /** The submit button's words, where they should say what happens next. */
   submitLabel?: string;
+  /**
+   * Leaving without creating, for a form inside a dialog: draws the way out beside the submit
+   * button at the dialog's end, as every Settings dialog does. Without it the form stands alone on
+   * a page, and its one button spans the width.
+   */
+  onCancel?: () => void;
+  /** The way out's words, where Cancel would not say where it leads. */
+  cancelLabel?: string;
 };
 
 /**
@@ -30,6 +39,8 @@ export type CreateWorkspaceFormProps = {
 export function CreateWorkspaceForm({
   action,
   submitLabel = 'Create Workspace',
+  onCancel,
+  cancelLabel = 'Cancel',
 }: CreateWorkspaceFormProps) {
   const [workspaceName, setWorkspaceName] = useState('');
   const [teamSize, setTeamSize] = useState<TeamSize | null>(null);
@@ -72,14 +83,25 @@ export function CreateWorkspaceForm({
           {state.formError}
         </Text>
       )}
-      <Button
-        type="submit"
-        variant="primary"
-        disabled={!canCreate}
-        className="mt-2 w-full"
-      >
-        {submitLabel}
-      </Button>
+      {onCancel ? (
+        <DialogFooter className="pt-2">
+          <Button disabled={isCreating} onClick={onCancel}>
+            {cancelLabel}
+          </Button>
+          <Button type="submit" variant="primary" disabled={!canCreate}>
+            {submitLabel}
+          </Button>
+        </DialogFooter>
+      ) : (
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={!canCreate}
+          className="mt-2 w-full"
+        >
+          {submitLabel}
+        </Button>
+      )}
     </form>
   );
 }

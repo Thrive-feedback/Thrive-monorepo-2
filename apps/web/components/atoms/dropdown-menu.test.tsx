@@ -121,4 +121,24 @@ describe('DropdownMenuCheckboxItem', () => {
     expect(onValueChange).toHaveBeenCalledWith('sage');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
+  it('runs a danger item like any other', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="Manage Ann">…</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem tone="danger" onSelect={onSelect}>
+            Deactivate
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Manage Ann' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Deactivate' }));
+
+    expect(onSelect).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
 });

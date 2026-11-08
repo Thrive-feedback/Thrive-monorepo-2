@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { LeaveWorkspaceRow } from './leave-workspace-row';
 
@@ -41,17 +42,27 @@ describe('LeaveWorkspaceRow', () => {
     );
   });
 
-  it('does not let the only Admin leave, and says why', async () => {
+  it('answers the only Admin pressing Leave with why they cannot, and does not ask to leave', async () => {
     readMembers.mockResolvedValue([ANN, BEN]);
     const membership = { workspace: WORKSPACE, role: 'ADMIN' } as const;
+    const user = userEvent.setup();
 
     render(await LeaveWorkspaceRow({ membership, ownEmail: 'ann@acme.test' }));
 
     const leave = screen.getByRole('button', { name: 'Leave Workspace' });
-    expect(leave).toBeDisabled();
-    expect(leave).toHaveAccessibleDescription(
-      "You're the only Admin of Acme Corp. Make someone else an Admin first to leave.",
+    expect(leave).toBeEnabled();
+    expect(leave).not.toHaveAccessibleDescription();
+
+    await user.click(leave);
+
+    expect(
+      screen.getByRole('dialog', { name: "You're the only Admin" }),
+    ).toHaveTextContent(
+      'Acme Corp always needs at least one Admin. Make someone else an Admin first, then you can leave.',
     );
+    expect(
+      screen.queryByRole('button', { name: 'Leave Acme Corp' }),
+    ).toBeNull();
   });
 
   it('lets an Admin leave while another Admin stays', async () => {

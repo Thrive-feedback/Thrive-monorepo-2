@@ -4,6 +4,7 @@ import { EllipsisIcon, UserMinusIcon, UserPlusIcon } from 'lucide-react';
 import { useOptimistic, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { DeactivateMemberDialog } from '@/app/(signed-in)/(sidebar)/settings/_components/deactivate-member-button';
+import { OnlyAdminDialog } from '@/app/(signed-in)/(sidebar)/settings/_components/only-admin-dialog';
 import { changeMemberRole } from '@/app/(signed-in)/(sidebar)/settings/teammates/_lib/member-role-actions.service';
 import { Button } from '@/components/atoms/button';
 import {
@@ -152,7 +153,7 @@ export function MemberActions({
           <ManageTrigger name={name} ref={menuButtonRef} />
           <DropdownMenuContent>
             <DropdownMenuItem
-              className="text-status-error data-highlighted:bg-status-error-surface"
+              tone="danger"
               onSelect={() =>
                 setQuestion(
                   isSelf && isLastAdmin ? 'last-admin-leaving' : 'deactivate',
@@ -167,37 +168,18 @@ export function MemberActions({
       ) : (
         <NoMenu />
       )}
-      <Dialog
+      <OnlyAdminDialog
+        name={name}
+        workspaceName={workspaceName}
+        isSelf={isSelf}
+        blocked={question === 'last-admin-leaving' ? 'leave' : 'demote'}
         open={question === 'last-admin' || question === 'last-admin-leaving'}
         onOpenChange={closeQuestion}
-      >
-        <DialogContent
-          hasCloseButton={false}
-          onCloseAutoFocus={(event) => {
-            // Opened from the menu, whose item is gone by then: focus goes back to its button.
-            if (question === 'last-admin-leaving' && menuButtonRef.current) {
-              event.preventDefault();
-              menuButtonRef.current.focus();
-            }
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>
-              {isSelf ? "You're the only Admin" : `${name} is the only Admin`}
-            </DialogTitle>
-            <DialogDescription>
-              {`${workspaceName} always needs at least one Admin. Make someone else an Admin first, then ${
-                isSelf ? 'you' : 'they'
-              } can ${question === 'last-admin-leaving' ? 'leave' : 'become a Member'}.`}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="primary">Got it</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        // Opened from the menu, whose item is gone by then: focus goes back to its button.
+        returnFocusTo={
+          question === 'last-admin-leaving' ? menuButtonRef : undefined
+        }
+      />
       <Dialog open={question === 'demote-self'} onOpenChange={closeQuestion}>
         <DialogContent hasCloseButton={false}>
           <DialogHeader>

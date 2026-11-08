@@ -26,32 +26,37 @@ const UNLINK_ERRORS: Readonly<Record<string, string>> = {
 const COULD_NOT_UNLINK =
   "We couldn't unlink that chat tool. Please try again in a moment.";
 
-/**
- * What an action answers when it could not do what was asked. Beginning a link answers only
- * this, because a success has already navigated away to the chat tool.
- */
+/** What an action answers when it could not do what was asked. */
 export type AccountLinkActionResult = {
   readonly ok: false;
   readonly message: string;
 };
+
+/**
+ * Where to send the person to prove which account is theirs, or why not. The page opens it in a
+ * tab of its own, so Thrive stays where it was.
+ */
+export type BeginLinkResult =
+  | { readonly ok: true; readonly authorizeUrl: string }
+  | AccountLinkActionResult;
 
 /** Unlinking stays on the page, so it says when it worked as well as when it did not. */
 export type UnlinkResult = { readonly ok: true } | AccountLinkActionResult;
 
 /**
  * Starts linking the person's own account in a chat tool: asks the API where to send them, and
- * sends them there.
+ * answers that address for the page to open.
  *
  * Who is linking comes from the session, never from this call, so nobody can start a link on
  * anybody else's behalf. The address carries a signed value bound to them and to that tool,
  * which is what stops a crafted link attaching somebody else's chat account to their Thrive
  * Account.
  *
- * Answers only when it fails — on success the person is already on their way to the tool.
+ * Somebody no longer signed in is sent to sign in, in this tab.
  */
 export async function beginAccountLink(
   segment: string,
-): Promise<AccountLinkActionResult> {
+): Promise<BeginLinkResult> {
   const provider = providerForSegment(segment);
   if (!provider) {
     return { ok: false, message: COULD_NOT_BEGIN };
@@ -73,8 +78,7 @@ export async function beginAccountLink(
     }
     return { ok: false, message: BEGIN_ERRORS[error.code] ?? COULD_NOT_BEGIN };
   }
-  // Outside the catch: `redirect` works by throwing, so catching around it would swallow it.
-  redirect(authorizeUrl);
+  return { ok: true, authorizeUrl };
 }
 
 /**

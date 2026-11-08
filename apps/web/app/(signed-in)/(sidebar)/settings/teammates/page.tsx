@@ -22,8 +22,8 @@ export const metadata: Metadata = {
 /**
  * Who is in the person's Workspace, for every Member: themselves first, then everyone else, then
  * those who left or were deactivated; and, for Admins, a form to invite more and the Invitations
- * still open — Pending or Expired — to resend or revoke. Invite people sits beside the title and
- * opens its card above everyone, since inviting is what an Admin mostly comes here for. The lists
+ * still open — Pending or Expired — to resend or revoke. Invite people sits at the end of the
+ * Members card's title, beside the people it adds to, and opens the form in a dialog. The lists
  * read their own data, so each fills in when its read returns.
  */
 export default async function Teammates() {
@@ -33,12 +33,15 @@ export default async function Teammates() {
 
   return (
     <>
-      {canManageInvitations ? (
-        <InvitePeople workspaceId={membership.workspace.id} />
-      ) : (
-        <SettingsSectionHead href={ROUTES.settings.teammates} />
-      )}
-      <MemberListCard workspaceName={membership.workspace.name}>
+      <SettingsSectionHead href={ROUTES.settings.teammates} />
+      <MemberListCard
+        workspaceName={membership.workspace.name}
+        action={
+          canManageInvitations && (
+            <InvitePeople workspaceId={membership.workspace.id} />
+          )
+        }
+      >
         <Suspense fallback={<MemberListSkeleton />}>
           <MemberList membership={membership} ownEmail={session.email} />
         </Suspense>

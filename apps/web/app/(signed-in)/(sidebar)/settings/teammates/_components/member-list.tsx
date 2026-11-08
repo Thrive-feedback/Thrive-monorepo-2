@@ -111,7 +111,7 @@ const LIST = 'flex flex-col divide-y divide-border-subtle';
  * One row's height and spacing, shared by the row and its placeholder so nothing moves on arrival:
  * tall enough for an Admin's Role select, so a row with only a badge stands as tall.
  */
-const ROW = 'flex min-h-18 items-center gap-3 py-3';
+const ROW = 'flex min-h-18 items-center gap-3 py-4';
 
 type MemberRowProps = {
   member: WorkspaceMember;

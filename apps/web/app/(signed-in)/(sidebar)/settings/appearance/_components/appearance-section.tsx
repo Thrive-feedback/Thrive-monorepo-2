@@ -26,12 +26,5 @@ export function AppearanceSectionSkeleton() {
 }
 
 function ThemeRow({ children }: { children: React.ReactNode }) {
-  return (
-    <SettingRow
-      label="Theme"
-      description="System follows your device's light or dark setting. Your choice is saved in this browser."
-    >
-      {children}
-    </SettingRow>
-  );
+  return <SettingRow label="Theme">{children}</SettingRow>;
 }

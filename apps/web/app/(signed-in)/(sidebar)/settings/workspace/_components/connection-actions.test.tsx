@@ -1,12 +1,17 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DisconnectIntegrationButton } from './disconnect-integration-button';
+import { ConnectionActions } from './connection-actions';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
 
 const disconnectIntegration = vi.fn();
 vi.mock(
   '@/app/(signed-in)/(sidebar)/settings/workspace/_lib/integration-actions.service',
   () => ({
+    beginInstall: vi.fn(),
     disconnectIntegration: (segment: string) => disconnectIntegration(segment),
   }),
 );
@@ -20,35 +25,76 @@ beforeEach(() => {
   toast.error.mockReset();
 });
 
-function renderButton() {
+const CONNECTION = {
+  provider: 'DISCORD',
+  spaceName: 'Acme HQ',
+  channelName: 'standups',
+  connectedBy: 'Ann',
+  connectedAt: '2026-10-24T03:00:00.000Z',
+} as const;
+
+function renderMenu(mayManage = true) {
   render(
-    <DisconnectIntegrationButton
+    <ConnectionActions
       segment="discord"
       label="Discord"
-      channelName="standups"
+      connection={CONNECTION}
+      mayManage={mayManage}
     />,
   );
 }
 
-async function openTheQuestion() {
+async function openTheMenu(mayManage = true) {
   const user = userEvent.setup();
-  renderButton();
-  await user.click(screen.getByRole('button', { name: 'Disconnect Discord' }));
+  renderMenu(mayManage);
+  await user.click(
+    screen.getByRole('button', { name: 'Manage Discord connection' }),
+  );
+  return user;
+}
+
+async function openTheQuestion() {
+  const user = await openTheMenu();
+  await user.click(screen.getByRole('menuitem', { name: 'Disconnect' }));
   return user;
 }
 
 /** The one inside the question, not the one that opened it. */
 function confirmButton() {
-  return within(screen.getByRole('alertdialog')).getByRole('button', {
+  return within(screen.getByRole('dialog')).getByRole('button', {
     name: 'Disconnect',
   });
 }
 
-describe('DisconnectIntegrationButton', () => {
+describe('ConnectionActions', () => {
+  it('shows an Admin where it posts, and lets them change or disconnect it', async () => {
+    const user = await openTheMenu();
+
+    expect(
+      screen.getAllByRole('menuitem').map((item) => item.textContent),
+    ).toEqual(['Information', 'Change', 'Disconnect']);
+
+    await user.click(screen.getByRole('menuitem', { name: 'Information' }));
+
+    const details = screen.getByRole('dialog', { name: 'Discord' });
+    expect(details).toHaveTextContent('Channel#standups');
+    expect(details).toHaveTextContent('ServerAcme HQ');
+    expect(details).toHaveTextContent('Connected byAnn');
+    expect(details).toHaveTextContent('Connected24 Oct 2026');
+  });
+
+  it('lets a Member read where it posts, and nothing more', async () => {
+    await openTheMenu(false);
+
+    expect(
+      screen.getAllByRole('menuitem').map((item) => item.textContent),
+    ).toEqual(['Information']);
+  });
+
   it('asks first, and says that direct messages stop too', async () => {
     await openTheQuestion();
 
-    const dialog = screen.getByRole('alertdialog', {
+    const dialog = screen.getByRole('dialog', {
       name: 'Disconnect Discord?',
     });
     expect(dialog).toHaveTextContent(
@@ -60,7 +106,7 @@ describe('DisconnectIntegrationButton', () => {
     await openTheQuestion();
 
     expect(
-      screen.getByRole('alertdialog', { name: 'Disconnect Discord?' }),
+      screen.getByRole('dialog', { name: 'Disconnect Discord?' }),
     ).toHaveTextContent('#standups will stop hearing about Feedback');
   });
 
@@ -68,7 +114,7 @@ describe('DisconnectIntegrationButton', () => {
     await openTheQuestion();
 
     expect(
-      screen.getByRole('alertdialog', { name: 'Disconnect Discord?' }),
+      screen.getByRole('dialog', { name: 'Disconnect Discord?' }),
     ).toHaveTextContent(
       'Connecting again means authorising Thrive in Discord from the start',
     );

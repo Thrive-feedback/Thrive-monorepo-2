@@ -21,6 +21,7 @@ function AccountItems() {
       <DropdownMenuItem disabled>Billing</DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem>Sign out</DropdownMenuItem>
+      <DropdownMenuItem tone="danger">Delete account</DropdownMenuItem>
     </DropdownMenuContent>
   );
 }
@@ -74,6 +75,13 @@ export function DropdownMenuEntry() {
           type: 'boolean',
           defaultValue: 'false',
           description: 'An item that cannot be picked now.',
+        },
+        {
+          name: 'DropdownMenuItem tone',
+          type: "'default' | 'danger'",
+          defaultValue: "'default'",
+          description:
+            'danger for an item that takes something away, such as Deactivate: red, with red behind it while pointed at.',
         },
       ]}
       accessibility={[

@@ -49,6 +49,7 @@ export async function FeedbackPostcard({
   return (
     <FeedbackPostcardDialog
       title={postcard.title}
+      person={postcard.person ?? undefined}
       card={postcard.card}
       answerIndex={postcard.answerIndex}
       closeHref={closeHref}

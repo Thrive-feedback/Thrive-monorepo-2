@@ -11,7 +11,7 @@ export const inputVariants = cva(
     variants: {
       variant: {
         outlined:
-          'border-border-strong bg-surface-base disabled:bg-surface-subtle aria-invalid:border-status-error-border',
+          'border-border-strong bg-surface-base disabled:bg-action-disabled-surface aria-invalid:border-status-error-border',
         filled:
           'border-transparent bg-action-neutral-surface aria-invalid:bg-status-error-surface',
         standard:

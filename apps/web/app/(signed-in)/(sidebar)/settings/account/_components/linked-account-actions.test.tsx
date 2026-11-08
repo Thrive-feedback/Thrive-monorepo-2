@@ -1,7 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { UnlinkAccountButton } from './unlink-account-button';
+import { LinkedAccountActions } from './linked-account-actions';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
 
 const unlinkAccount = vi.fn();
 vi.mock(
@@ -27,23 +31,47 @@ beforeEach(() => {
   failure.mockReset();
 });
 
-function renderButton() {
+const LINK = {
+  provider: 'DISCORD',
+  externalUsername: 'ann#0001',
+  linkedAt: '2026-10-24T03:00:00.000Z',
+} as const;
+
+async function openTheMenu() {
+  const user = userEvent.setup();
   render(
-    <UnlinkAccountButton
-      segment="discord"
-      label="Discord"
-      externalUsername="ann#0001"
-    />,
+    <LinkedAccountActions segment="discord" label="Discord" link={LINK} />,
   );
+  await user.click(screen.getByRole('button', { name: 'Manage Discord link' }));
+  return user;
 }
 
-describe('UnlinkAccountButton', () => {
-  it('asks first, naming what stops and what does not', async () => {
-    renderButton();
+async function openTheQuestion() {
+  const user = await openTheMenu();
+  await user.click(screen.getByRole('menuitem', { name: 'Unlink' }));
+  return user;
+}
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Unlink Discord' }),
+describe('LinkedAccountActions', () => {
+  it('shows which account is linked and since when, and offers to change or unlink it', async () => {
+    const user = await openTheMenu();
+
+    expect(
+      screen.getAllByRole('menuitem').map((item) => item.textContent),
+    ).toEqual(['Information', 'Change', 'Unlink']);
+
+    await user.click(screen.getByRole('menuitem', { name: 'Information' }));
+
+    const details = screen.getByRole('dialog', { name: 'Discord' });
+    expect(details).toHaveTextContent('Accountann#0001');
+    expect(details).toHaveTextContent('Linked24 Oct 2026');
+    expect(details).toHaveTextContent(
+      'They reach you once your Workspace has connected Discord.',
     );
+  });
+
+  it('asks first, naming what stops and what does not', async () => {
+    await openTheQuestion();
 
     expect(
       screen.getByText(/stop messaging you in Discord/),
@@ -54,11 +82,7 @@ describe('UnlinkAccountButton', () => {
 
   it('unlinks on confirming, and says so', async () => {
     unlinkAccount.mockResolvedValue({ ok: true });
-    renderButton();
-
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Unlink Discord' }),
-    );
+    await openTheQuestion();
     await userEvent.click(
       screen.getAllByRole('button', { name: 'Unlink' }).at(-1) as HTMLElement,
     );
@@ -68,11 +92,7 @@ describe('UnlinkAccountButton', () => {
   });
 
   it('leaves the link alone when the person backs out', async () => {
-    renderButton();
-
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Unlink Discord' }),
-    );
+    await openTheQuestion();
     await userEvent.click(screen.getByRole('button', { name: 'Stay linked' }));
 
     expect(unlinkAccount).not.toHaveBeenCalled();
@@ -80,11 +100,7 @@ describe('UnlinkAccountButton', () => {
 
   it('says what went wrong when it could not unlink', async () => {
     unlinkAccount.mockResolvedValue({ ok: false, message: 'Nope.' });
-    renderButton();
-
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Unlink Discord' }),
-    );
+    await openTheQuestion();
     await userEvent.click(
       screen.getAllByRole('button', { name: 'Unlink' }).at(-1) as HTMLElement,
     );

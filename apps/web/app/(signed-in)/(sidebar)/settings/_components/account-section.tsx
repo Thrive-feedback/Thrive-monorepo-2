@@ -16,11 +16,10 @@ import { SettingsCard } from './settings-card';
 const PROFILE = 'Profile';
 const LINKED_ACCOUNTS = 'Linked Accounts';
 const LINKED_DESCRIPTION =
-  'Your own chat accounts, where Thrive can message you.';
+  'Your own chat accounts, where Thrive sends you direct messages.';
 const DISPLAY_NAME = 'Display name';
 const EMAIL = 'Email';
 const SIGN_OUT = 'Sign out';
-const SIGN_OUT_DESCRIPTION = 'Sign out of Thrive on this device.';
 
 export type AccountSectionProps = {
   session: MemberAccount;
@@ -59,7 +58,7 @@ export function AccountSection({ session }: AccountSectionProps) {
         <LinkedAccountList />
       </SettingsCard>
       <SettingsCard>
-        <SettingRow label={SIGN_OUT} description={SIGN_OUT_DESCRIPTION}>
+        <SettingRow label={SIGN_OUT}>
           <SignOutForm variant="warning" />
         </SettingRow>
       </SettingsCard>
@@ -85,7 +84,7 @@ export function AccountSectionSkeleton() {
         ))}
       </SettingsCard>
       <SettingsCard>
-        <SettingRow label={SIGN_OUT} description={SIGN_OUT_DESCRIPTION}>
+        <SettingRow label={SIGN_OUT}>
           <Skeleton shape="control" className="h-9.5 w-20 rounded-button" />
         </SettingRow>
       </SettingsCard>

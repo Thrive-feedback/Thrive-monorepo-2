@@ -9,36 +9,42 @@ vi.mock(
 );
 
 describe('InvitePeople', () => {
-  it('keeps the invite card shut until asked for', () => {
+  it('keeps the form shut until asked for', () => {
     render(<InvitePeople workspaceId="w-1" />);
 
     expect(
       screen.getByRole('button', { name: 'Invite people' }),
-    ).toHaveAttribute('aria-expanded', 'false');
-    expect(
-      screen.queryByRole('heading', { level: 2, name: 'Invite people' }),
-    ).toBeNull();
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('opens the card and takes focus to it, then gives focus back on closing', async () => {
+  it('opens the form in a dialog named for it, and gives focus back on closing', async () => {
     const user = userEvent.setup();
     render(<InvitePeople workspaceId="w-1" />);
-    const toggle = screen.getByRole('button', { name: 'Invite people' });
+    const trigger = screen.getByRole('button', { name: 'Invite people' });
 
-    await user.click(toggle);
+    await user.click(trigger);
 
-    expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    const title = screen.getByRole('heading', {
-      level: 2,
-      name: 'Invite people',
-    });
-    await waitFor(() => expect(title).toHaveFocus());
-
-    await user.click(
-      screen.getByRole('button', { name: 'Close Invite people' }),
+    const dialog = screen.getByRole('dialog', { name: 'Invite people' });
+    expect(dialog).toHaveAccessibleDescription(
+      'They get an email with a link to join. An Invitation lasts a week.',
     );
+    expect(screen.getByRole('tab', { name: 'One by one' })).toBeInTheDocument();
 
-    expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    expect(toggle).toHaveFocus();
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+  it('closes on Cancel, and gives focus back', async () => {
+    const user = userEvent.setup();
+    render(<InvitePeople workspaceId="w-1" />);
+    const trigger = screen.getByRole('button', { name: 'Invite people' });
+    await user.click(trigger);
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await waitFor(() => expect(trigger).toHaveFocus());
   });
 });

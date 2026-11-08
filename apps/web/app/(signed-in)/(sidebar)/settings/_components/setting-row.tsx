@@ -1,10 +1,22 @@
+import { InfoIcon } from 'lucide-react';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/atoms/tooltip';
 
 export type SettingRowProps = {
   label: string;
-  /** A muted line under the label, saying what the control does. */
-  description?: string;
+  /** A muted line under the label, saying what the control does or where the setting stands. */
+  description?: React.ReactNode;
+  /**
+   * More about the setting than its description holds, behind an ⓘ after the label: shown on
+   * hover or keyboard focus, and read out as the ⓘ's description. On a touch screen, where a
+   * tooltip never opens, it is written out under the description instead.
+   */
+  info?: string;
   /** Gives the description an id, for a control it explains to point at. */
   descriptionId?: string;
   /** The control, on the right of a wide row and under the label on a narrow one. */
@@ -20,22 +32,64 @@ export function SettingRow({
   label,
   description,
   descriptionId,
+  info,
   children,
 }: SettingRowProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 py-4">
       <div className="flex min-w-0 flex-1 basis-64 flex-col gap-1">
-        <Text as="p" variant="subtitle-4">
-          {label}
-        </Text>
+        <span className="flex items-center gap-1">
+          <Text as="p" variant="subtitle-4">
+            {label}
+          </Text>
+          {info && <SettingInfo label={label} info={info} />}
+        </span>
         {description && (
           <Text as="p" id={descriptionId} variant="body-3" tone="muted">
             {description}
           </Text>
         )}
+        {info && (
+          // A touch screen never opens a tooltip, so there the ⓘ hides and its words are written out.
+          <Text
+            as="p"
+            variant="body-3"
+            tone="muted"
+            className="hidden pointer-coarse:block"
+          >
+            {info}
+          </Text>
+        )}
       </div>
       {children}
     </div>
+  );
+}
+
+type SettingInfoProps = {
+  label: string;
+  info: string;
+};
+
+/**
+ * The ⓘ after a setting's label and what it says. A plain button rather than the icon `Button`,
+ * which is a filled circle the height of a control and would stand taller than the label it
+ * follows.
+ */
+function SettingInfo({ label, info }: SettingInfoProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          aria-label={`About ${label}`}
+          className="inline-flex cursor-help items-center justify-center rounded-full p-1 text-fg-secondary transition-colors hover:text-fg-primary pointer-coarse:hidden"
+        >
+          <InfoIcon aria-hidden="true" className="size-4" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{info}</TooltipContent>
+    </Tooltip>
   );
 }
 

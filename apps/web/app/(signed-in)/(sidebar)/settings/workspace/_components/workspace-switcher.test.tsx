@@ -142,9 +142,7 @@ describe('WorkspaceSwitcher', () => {
       screen.getByRole('textbox', { name: 'Workspace name' }),
     ).toBeInTheDocument();
 
-    await user.click(
-      screen.getByRole('button', { name: 'Back to your Workspaces' }),
-    );
+    await user.click(screen.getByRole('button', { name: 'Back' }));
 
     expect(
       screen.getByRole('list', { name: 'Your Workspaces' }),

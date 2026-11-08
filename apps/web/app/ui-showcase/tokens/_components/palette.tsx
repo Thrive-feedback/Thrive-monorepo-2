@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { GallerySection } from '@/app/ui-showcase/_components/gallery-section';
 import { Text } from '@/components/atoms/text';
 
 const STEPS = [
@@ -63,18 +64,10 @@ export function Palette() {
   }, []);
 
   return (
-    <section aria-labelledby="palette-heading" className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <Text variant="subtitle-1" as="h2" id="palette-heading">
-          Palette
-        </Text>
-        <Text variant="body-2" tone="muted">
-          The primitive ramps behind every role, 25 to 975, derived from each
-          seed colour in the blueprint. Components never use these directly —
-          pick a role from the sections below. The number is the step; hover a
-          swatch for its value.
-        </Text>
-      </div>
+    <GallerySection
+      title="Palette"
+      description="The primitive ramps behind every role, 25 to 975, derived from each seed colour in the blueprint. Components never use these directly — pick a role from the sections below. The number is the step; hover a swatch for its value."
+    >
       <div className="flex flex-col gap-3">
         {RAMPS.map((name) => (
           <div
@@ -107,6 +100,6 @@ export function Palette() {
           </div>
         ))}
       </div>
-    </section>
+    </GallerySection>
   );
 }

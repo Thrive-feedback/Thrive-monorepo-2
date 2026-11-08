@@ -92,6 +92,7 @@
   --color-status-info-fg: var(--status-info-fg);
   --color-status-info-border: var(--status-info-border);
   --color-fg-muted: var(--fg-muted);
+  --color-action-disabled-surface: var(--action-disabled-surface);
 
   --radius-none: var(--shape-none);
   --radius-inner: var(--shape-inner);

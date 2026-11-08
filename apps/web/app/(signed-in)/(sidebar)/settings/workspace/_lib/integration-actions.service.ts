@@ -61,21 +61,30 @@ export type IntegrationActionResult = {
   readonly message: string;
 };
 
+/**
+ * Where to send the Admin to authorise Thrive, or why not. The page opens it in a tab of its own,
+ * so Thrive stays where it was.
+ */
+export type BeginInstallResult =
+  | { readonly ok: true; readonly authorizeUrl: string }
+  | IntegrationActionResult;
+
 /** Disconnecting stays on the page, so it says when it worked as well as when it did not. */
 export type DisconnectResult = { readonly ok: true } | IntegrationActionResult;
 
 /**
- * Starts connecting a chat tool: asks the API where to send the Admin, and sends them there.
+ * Starts connecting a chat tool: asks the API where to send the Admin, and answers that address
+ * for the page to open.
  *
  * The Workspace is the one the session belongs to, never one the browser names, and the API
  * checks they may connect it. The address the browser goes to carries a signed value that the
  * tool hands back, which is how Thrive recognises its own install on the way in.
  *
- * Answers only when it fails — on success the person is already on their way to the tool.
+ * Somebody no longer signed in is sent to sign in, in this tab.
  */
 export async function beginInstall(
   segment: string,
-): Promise<IntegrationActionResult> {
+): Promise<BeginInstallResult> {
   const provider = providerForSegment(segment);
   if (!provider) {
     return { ok: false, message: COULD_NOT_BEGIN };
@@ -107,8 +116,7 @@ export async function beginInstall(
     }
     return { ok: false, message: BEGIN_ERRORS[error.code] ?? COULD_NOT_BEGIN };
   }
-  // Outside the catch: `redirect` works by throwing, so catching around it would swallow it.
-  redirect(authorizeUrl);
+  return { ok: true, authorizeUrl };
 }
 
 /**

@@ -28,6 +28,8 @@ import {
   SAMPLE_TARGET,
 } from '@/app/ui-showcase/_components/entries/feed-card-samples.constant';
 import { SAMPLE_KUDOS } from '@/app/ui-showcase/_components/entries/kudos-samples.constant';
+import { GallerySection } from '@/app/ui-showcase/_components/gallery-section';
+import { ShowcasePage } from '@/app/ui-showcase/_components/showcase-page';
 import {
   SAMPLE_BOARD_KUDOS,
   SAMPLE_LEGACY_KUDOS,
@@ -130,28 +132,6 @@ function Specimen({ name, state, usedOn, children }: SpecimenProps) {
   );
 }
 
-type GallerySectionProps = {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-};
-
-function GallerySection({ title, description, children }: GallerySectionProps) {
-  return (
-    <section className="flex flex-col gap-4">
-      <header className="flex flex-col gap-1 border-border-default border-b pb-3">
-        <Text variant="subtitle-2" as="h2">
-          {title}
-        </Text>
-        <Text variant="body-2" tone="muted" className="max-w-2xl">
-          {description}
-        </Text>
-      </header>
-      {children}
-    </section>
-  );
-}
-
 /** The board's cards wait for a drag or a press, which here go nowhere. */
 function ignore() {}
 
@@ -189,18 +169,17 @@ function BoardCards() {
  */
 export function CardGallery() {
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-14 px-4 py-12">
-      <header className="flex flex-col gap-2">
-        <Text variant="h5" as="h1" id="card-gallery-title" tabIndex={-1}>
-          Cards
-        </Text>
-        <Text tone="muted" className="max-w-2xl">
+    <ShowcasePage
+      title="Cards"
+      titleId="card-gallery-title"
+      description={
+        <>
           Every card in the app, side by side: the real components on sample
           data, at the width each one has where it appears. Pressing a card goes
           nowhere.
-        </Text>
-      </header>
-
+        </>
+      }
+    >
       <GallerySection
         title="In a list"
         description="Home's feed, Waiting for me, and Received and Given in list view. These sit in one column, so they should share a ground, padding, header and type."
@@ -521,6 +500,6 @@ export function CardGallery() {
           </Card>
         </Specimen>
       </GallerySection>
-    </main>
+    </ShowcasePage>
   );
 }

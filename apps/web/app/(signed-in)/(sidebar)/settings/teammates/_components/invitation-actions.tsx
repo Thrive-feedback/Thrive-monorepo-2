@@ -1,7 +1,14 @@
 'use client';
 
-import { EllipsisIcon, MailIcon, MailXIcon } from 'lucide-react';
+import { EllipsisIcon, InfoIcon, MailIcon, MailXIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { DetailsDialog } from '@/app/(signed-in)/(sidebar)/settings/_components/details-dialog';
+import {
+  INVITATION_EXPIRY_LABELS,
+  INVITATION_STATUS_NAMES,
+  INVITATION_STATUS_TONES,
+} from '@/app/(signed-in)/(sidebar)/settings/teammates/_lib/invitation-status.constant';
+import type { OpenInvitation } from '@/app/(signed-in)/(sidebar)/settings/teammates/_lib/open-invitation.type';
 import { Button } from '@/components/atoms/button';
 import {
   DropdownMenu,
@@ -10,33 +17,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
+import { StatusText } from '@/components/atoms/status-text';
+import { calendarDay } from '@/lib/calendar-day.util';
+import { ROLE_NAMES } from '@/lib/session/role-names.constant';
 import { ResendInvitationDialog } from './resend-invitation-dialog';
 import { RevokeInvitationDialog } from './revoke-invitation-dialog';
 
 export type InvitationActionsProps = {
   /** The Workspace the page was drawn for; acting is refused once the person is no longer in it. */
   workspaceId: string;
-  invitationId: string;
-  /** The address it was sent to, which names the menu and every question it asks. */
-  email: string;
+  /** The Invitation, whose address names the menu and every question it asks. */
+  invitation: OpenInvitation;
 };
 
 /**
  * An Admin's hold on one open Invitation: one quiet menu, as a teammate's row has, so the list
- * reads as who was invited and where each stands, and its two actions wait until asked for.
- * Resend sends the email again; Revoke, in red, ends it. Each asks first.
+ * reads as who was invited and where each stands. Information shows the rest: the Role they join
+ * with, who sent it, when, and when it expires. Resend sends the email again; Revoke, in red, ends
+ * it. Each asks first.
  */
 export function InvitationActions({
   workspaceId,
-  invitationId,
-  email,
+  invitation,
 }: InvitationActionsProps) {
-  const [question, setQuestion] = useState<'resend' | 'revoke'>();
+  const [question, setQuestion] = useState<'details' | 'resend' | 'revoke'>();
   const closeQuestion = (open: boolean) => !open && setQuestion(undefined);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const invitation = {
+  const { email, status } = invitation;
+  const target = {
     workspaceId,
-    invitationId,
+    invitationId: invitation.invitationId,
     email,
     returnFocusTo: menuButtonRef,
   };
@@ -55,13 +65,17 @@ export function InvitationActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
+          <DropdownMenuItem onSelect={() => setQuestion('details')}>
+            <InfoIcon aria-hidden="true" className="size-4" />
+            Information
+          </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setQuestion('resend')}>
             <MailIcon aria-hidden="true" className="size-4" />
             Resend
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            className="text-status-error-active data-highlighted:bg-status-error-surface"
+            tone="danger"
             onSelect={() => setQuestion('revoke')}
           >
             <MailXIcon aria-hidden="true" className="size-4" />
@@ -69,13 +83,47 @@ export function InvitationActions({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <DetailsDialog
+        title={email}
+        rows={[
+          {
+            label: 'Status',
+            value: (
+              <StatusText tone={INVITATION_STATUS_TONES[status]}>
+                {INVITATION_STATUS_NAMES[status]}
+              </StatusText>
+            ),
+          },
+          { label: 'Joins as', value: ROLE_NAMES[invitation.role] },
+          { label: 'Sent by', value: invitation.invitedBy },
+          {
+            label: 'Sent',
+            value: (
+              <time dateTime={invitation.invitedAt}>
+                {calendarDay(invitation.invitedAt)}
+              </time>
+            ),
+          },
+          {
+            label: INVITATION_EXPIRY_LABELS[status],
+            value: (
+              <time dateTime={invitation.expiresAt}>
+                {calendarDay(invitation.expiresAt)}
+              </time>
+            ),
+          },
+        ]}
+        open={question === 'details'}
+        onOpenChange={closeQuestion}
+        returnFocusTo={menuButtonRef}
+      />
       <ResendInvitationDialog
-        {...invitation}
+        {...target}
         open={question === 'resend'}
         onOpenChange={closeQuestion}
       />
       <RevokeInvitationDialog
-        {...invitation}
+        {...target}
         open={question === 'revoke'}
         onOpenChange={closeQuestion}
       />

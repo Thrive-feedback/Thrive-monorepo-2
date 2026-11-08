@@ -17,8 +17,8 @@ const DESCRIPTION_ID = 'leave-workspace-description';
 
 /**
  * Leaving, as a setting row like Sign out: Deactivating yourself, which ends your access and
- * keeps your Feedback. The only Admin cannot leave, and the row says why instead. It reads the
- * Members Members already read in this request.
+ * keeps your Feedback. The only Admin cannot leave: the button still presses, and says why in a
+ * dialog rather than on the row. It reads the Members Members already read in this request.
  */
 export async function LeaveWorkspaceRow({
   membership,
@@ -38,7 +38,7 @@ export async function LeaveWorkspaceRow({
       label={LABEL}
       description={
         isLastAdmin
-          ? `You're the only Admin of ${workspaceName}. Make someone else an Admin first to leave.`
+          ? undefined
           : `You won't be able to open ${workspaceName} again. The Feedback you gave and received stays, with “(inactive)” after your name.`
       }
       descriptionId={DESCRIPTION_ID}
@@ -49,8 +49,8 @@ export async function LeaveWorkspaceRow({
         name={self.name ?? self.email}
         workspaceName={workspaceName}
         isSelf
-        disabled={isLastAdmin}
-        describedById={DESCRIPTION_ID}
+        isLastAdmin={isLastAdmin}
+        describedById={isLastAdmin ? undefined : DESCRIPTION_ID}
       />
     </SettingRow>
   );

@@ -27,18 +27,13 @@ export const ACCOUNT_SECTION: SettingsSection = {
 };
 
 /**
- * The menu, in order, grouped as the main sidebar groups My Feedback: first what is the person's
- * own, then, under a Workspace heading, what belongs to the Workspace they are in. A heading holds
- * every item after it, so the person's own sections come first.
+ * The menu, in order, grouped as the main sidebar groups My Feedback: the person's Account first,
+ * then, under a Workspace heading, what belongs to the Workspace they are in, and under Other what
+ * belongs to neither, such as how the app looks on this device. A heading holds every item after
+ * it until the next one, so Account, under none, comes first.
  */
 export const SETTINGS_MENU: readonly (SettingsSection | SideNavHeading)[] = [
   ACCOUNT_SECTION,
-  {
-    href: ROUTES.settings.appearance,
-    label: 'Appearance',
-    Icon: PaletteIcon,
-    note: 'easy on the eyes',
-  },
   { heading: 'Workspace' },
   {
     href: ROUTES.settings.workspace,
@@ -57,6 +52,13 @@ export const SETTINGS_MENU: readonly (SettingsSection | SideNavHeading)[] = [
     label: 'Teammates',
     Icon: UsersIcon,
     note: "who's on the team",
+  },
+  { heading: 'Other' },
+  {
+    href: ROUTES.settings.appearance,
+    label: 'Appearance',
+    Icon: PaletteIcon,
+    note: 'easy on the eyes',
   },
 ];
 

@@ -37,8 +37,15 @@ async function openDialog() {
   render(
     <InvitationActions
       workspaceId={WORKSPACE_ID}
-      invitationId={INVITATION_ID}
-      email="cat@acme.test"
+      invitation={{
+        invitationId: INVITATION_ID,
+        email: 'cat@acme.test',
+        role: 'MEMBER',
+        status: 'PENDING',
+        invitedBy: 'Ann',
+        invitedAt: '2026-10-06T03:00:00.000Z',
+        expiresAt: '2026-10-13T03:00:00.000Z',
+      }}
     />,
   );
   // It is asked for from the Invitation's menu.

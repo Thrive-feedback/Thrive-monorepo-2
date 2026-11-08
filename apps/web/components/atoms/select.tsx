@@ -21,7 +21,7 @@ import styles from './select.module.css';
  */
 
 const trigger = cva(
-  'flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-input border bg-surface-base transition-colors disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-fg-secondary aria-invalid:border-status-error-border data-placeholder:text-fg-disabled',
+  'flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-input border bg-surface-base transition-colors disabled:cursor-not-allowed disabled:bg-action-disabled-surface disabled:text-fg-secondary aria-invalid:border-status-error-border data-placeholder:text-fg-disabled',
   {
     variants: {
       variant: {

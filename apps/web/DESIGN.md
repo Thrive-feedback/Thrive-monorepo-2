@@ -300,7 +300,7 @@ Solid, quiet and rounded; colour says what kind of act it is.
 - **Outlined variants:** the hue's border, its 20% surface, and its text; hover moves to the 70% surface tint.
 - **Secondary (default):** white with a neutral border and Ink text. **Soft / Ghost:** no edge, plum text.
 - **Warning / Danger / Ghost-danger:** yellow for something reversible, red for a loss, red text alone for a quiet destructive link.
-- **States:** colour transitions only (150ms ease-out); disabled is Subtle Grey with secondary text; `loading` keeps the label and swaps in a spinner.
+- **States:** colour transitions only (150ms ease-out); disabled is Subtle Grey with secondary text (`action-disabled-surface`: on dark one step lighter, so it still reads inside a dialog); `loading` keeps the label and swaps in a spinner.
 
 ### Chips and tags
 - **Badge:** fully round, tag type (sm) or body-2 (md, for a name). Filled tones use the `-surface-hover` tint with the `-fg` text; `edged` adds the tone's border on a tinted ground; `outline` is a neutral edge.
@@ -316,7 +316,7 @@ A status word inline, in its tone's `-active` colour at weight 500, the size of 
 
 ### Inputs / Fields
 - **Style:** control corner; outlined (Rule Strong edge on white), filled (neutral surface) or subtle (Subtle Grey); value type body (md) or body-small (sm).
-- **Focus:** the global ring. **Error:** `aria-invalid` turns the edge to the error border. **Disabled:** Subtle Grey fill, secondary text.
+- **Focus:** the global ring. **Error:** `aria-invalid` turns the edge to the error border. **Disabled:** Subtle Grey fill (`action-disabled-surface`, one step lighter on dark so it reads inside a dialog), secondary text.
 
 ### Navigation
 - **Side nav:** rows in button-sm type, Ink Secondary, control corner; hover gives the neutral surface tint and Ink; the current page (from 48rem) is Brand Plum text on the plum 20% surface. Groups are headed by an uppercase overline over a subtle rule.
