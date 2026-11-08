@@ -82,6 +82,8 @@ export const ROUTES = {
     const showing = homeShowing(show);
     return `${showing}${showing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
+  /** What the Feedback written to the person adds up to, read by them and nobody else. */
+  dashboard: '/dashboard',
   /** The Workspace's Kudos board. */
   kudos: '/kudos',
   /** The Kudos board narrowed to one month, `YYYY-MM`. */
