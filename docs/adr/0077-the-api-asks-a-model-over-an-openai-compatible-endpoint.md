@@ -1,6 +1,6 @@
 # 0077 — The API asks a model over an OpenAI-compatible endpoint, behind a port, bound to no provider
 
-Status:   proposed
+Status:   accepted
 Date:     2026-10-31
 Deciders: naroebordin
 

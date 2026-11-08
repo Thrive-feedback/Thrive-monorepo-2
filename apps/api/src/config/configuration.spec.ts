@@ -18,6 +18,10 @@ function parseOrigins(value: string): readonly string[] | undefined {
     DISCORD_CLIENT_ID: 'discord-client-id',
     DISCORD_CLIENT_SECRET: 'discord-client-secret',
     DISCORD_BOT_TOKEN: 'discord-bot-token',
+    AI_PROVIDER_ENDPOINT: 'https://models.thrive.example/v1',
+    AI_PROVIDER_API_KEY: 'ai-provider-key',
+    AI_PROVIDER_MODEL: 'a-model',
+    AI_PROVIDER_LABEL: 'A_PROVIDER',
   });
 
   return parsed.success ? parsed.data.CORS_ALLOWED_ORIGINS : undefined;
