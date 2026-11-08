@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { FakeClock } from '@test/support/clock.fake';
 import {
   aTagsService,
   FakeFeedbackRequestRepository,
@@ -16,6 +17,7 @@ import { BoundTags } from '../../domain/value-object/bound-tags.vo';
 import { RequestMessage } from '../../domain/value-object/request-message.vo';
 import { Visibility } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
+import { SummaryRefreshService } from '../service/summary-refresh.service';
 import { AnswerFeedbackAskUseCase } from './answer-feedback-ask.use-case';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000w1';
@@ -29,6 +31,9 @@ const ANN = 'account-ann';
 const BEN = 'account-ben';
 const CARA = 'account-cara';
 const WRITTEN = 'You open strongly and lose the room at the detail.';
+
+/** Fixed, so the period a refresh names does not move with the calendar. */
+const NOW = new Date('2026-11-08T09:00:00.000Z');
 
 async function setUp(visibility: Visibility = Visibility.onlyMe()) {
   const feedbackRequestRepository = new FakeFeedbackRequestRepository();
@@ -51,6 +56,7 @@ async function setUp(visibility: Visibility = Visibility.onlyMe()) {
     new FakeIdGenerator(FEEDBACK_ID, SECOND_FEEDBACK_ID),
     unitOfWork,
     outbox,
+    new SummaryRefreshService(outbox, new FakeClock(NOW)),
   );
   return {
     feedbackRequestRepository,

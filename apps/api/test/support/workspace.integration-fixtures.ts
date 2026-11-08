@@ -177,6 +177,11 @@ export class WorkspaceFixtures {
       where: { workspaceId: { in: workspaceIds } },
     });
     await this.prismaService.workspace.deleteMany({ where: workspaces });
+    // And a summary, which names its Member and Workspace by id and is reached by neither of
+    // the deletes above.
+    await this.prismaService.feedbackSummary.deleteMany({
+      where: { accountId: { in: this.accountIds } },
+    });
     // And a Linked Account, which names its Account by id and belongs to no Workspace at all,
     // so nothing above reaches it.
     await this.prismaService.linkedAccount.deleteMany({

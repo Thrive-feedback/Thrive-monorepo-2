@@ -2,6 +2,7 @@ import type { Configuration } from '@app/config/configuration';
 import type { Auth } from '@app/infrastructure/auth/auth';
 import type { PrismaService } from '@app/infrastructure/database/prisma.service';
 import type { INestApplication } from '@nestjs/common';
+import type { FakeAiCompleter } from './ai.fake';
 import type { FakeEmailSender } from './email-sender.fake';
 import type { FakeChatInstaller, FakeChatPoster } from './integrations.fakes';
 import type {
@@ -25,6 +26,8 @@ export interface Harness {
   readonly accountLinker: FakeAccountLinker;
   /** Where a scenario reads the direct messages Thrive sent; nothing reaches Discord. */
   readonly directMessenger: FakeDirectMessenger;
+  /** What the model answers in a scenario; nothing reaches a provider. */
+  readonly aiCompleter: FakeAiCompleter;
   readonly prismaService: PrismaService;
   readonly auth: Auth;
   readonly configuration: Configuration;

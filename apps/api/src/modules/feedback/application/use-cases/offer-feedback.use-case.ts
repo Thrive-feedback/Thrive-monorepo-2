@@ -17,6 +17,7 @@ import {
   ReceiverNotInWorkspaceError,
   SelectedPersonNotInWorkspaceError,
 } from '../feedback-request.errors';
+import { SummaryRefreshService } from '../service/summary-refresh.service';
 import { TagsService } from '../service/tags.service';
 
 export interface OfferFeedbackInput {
@@ -59,6 +60,7 @@ export class OfferFeedbackUseCase {
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
     private readonly outbox: Outbox,
+    private readonly summaryRefresh: SummaryRefreshService,
   ) {}
 
   async execute(input: OfferFeedbackInput): Promise<OfferFeedbackResult> {
@@ -138,6 +140,14 @@ export class OfferFeedbackUseCase {
           },
         ]);
       }
+      // Everyone it was written to now has a summary that is behind by this message. Not the
+      // people it was shared with: a summary is written from the Feedback somebody *received*,
+      // and being allowed to read a message is not being written to (design 0025 D11).
+      await this.summaryRefresh.askFor({
+        workspaceId: input.workspaceId,
+        accountIds: written.receiverAccountIds,
+        sourceId: written.id,
+      });
     });
     return { id: written.id };
   }

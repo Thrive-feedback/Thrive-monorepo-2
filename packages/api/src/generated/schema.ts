@@ -242,6 +242,228 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/feedback-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask a Member of this Workspace for Feedback with a Request message, choosing who else reads the answers */
+        post: operations["FeedbackRequestController_sendFeedbackRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/feedback-asks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Asks waiting for the caller to answer */
+        get: operations["FeedbackAskController_listMyFeedbackAsks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/feedback-asks/{askId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one Ask waiting for the caller: who asked, and about what */
+        get: operations["FeedbackAskController_getFeedbackAsk"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/feedback-asks/{askId}/answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer an Ask waiting for the caller, in one free-text answer, on its postcard or not */
+        post: operations["FeedbackAskController_answerFeedbackAsk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Give one or more Members of this Workspace Feedback without being asked for it */
+        post: operations["FeedbackController_offerFeedback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/feedback/{feedbackId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one piece of Feedback, if its Visibility lets the caller read it */
+        get: operations["FeedbackController_getFeedback"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/me/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read my own summary of the Feedback I received */
+        get: operations["FeedbackSummaryController_getMySummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/feed-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List what the caller reads on Home */
+        get: operations["FeedItemsController_listFeedItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/received-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Feedback and Kudos written to the caller, and the requests they sent */
+        get: operations["ReceivedItemsController_listReceivedItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/given-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Feedback and Kudos the caller wrote */
+        get: operations["GivenItemsController_listGivenItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/waiting-asks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Asks still waiting for the caller */
+        get: operations["WaitingAsksController_listWaitingAsks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/kudos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Kudos given in this Workspace */
+        get: operations["KudosController_listWorkspaceKudos"];
+        put?: never;
+        /** Give Kudos to the Members of this Workspace it @mentions, or to all of them */
+        post: operations["KudosController_giveKudos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/kudos/months": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Count the Kudos given in this Workspace, in all and by month */
+        get: operations["KudosController_listKudosMonths"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sessions/google": {
         parameters: {
             query?: never;
@@ -550,211 +772,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/workspaces/{workspaceId}/feedback-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Ask a Member of this Workspace for Feedback with a Request message, choosing who else reads the answers */
-        post: operations["FeedbackRequestController_sendFeedbackRequest"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/feedback-asks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the Asks waiting for the caller to answer */
-        get: operations["FeedbackAskController_listMyFeedbackAsks"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/feedback-asks/{askId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read one Ask waiting for the caller: who asked, and about what */
-        get: operations["FeedbackAskController_getFeedbackAsk"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/feedback-asks/{askId}/answers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Answer an Ask waiting for the caller, in one free-text answer, on its postcard or not */
-        post: operations["FeedbackAskController_answerFeedbackAsk"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/feedback": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Give one or more Members of this Workspace Feedback without being asked for it */
-        post: operations["FeedbackController_offerFeedback"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/feedback/{feedbackId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read one piece of Feedback, if its Visibility lets the caller read it */
-        get: operations["FeedbackController_getFeedback"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/feed-items": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List what the caller reads on Home */
-        get: operations["FeedItemsController_listFeedItems"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/received-items": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the Feedback and Kudos written to the caller, and the requests they sent */
-        get: operations["ReceivedItemsController_listReceivedItems"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/given-items": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the Feedback and Kudos the caller wrote */
-        get: operations["GivenItemsController_listGivenItems"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/waiting-asks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the Asks still waiting for the caller */
-        get: operations["WaitingAsksController_listWaitingAsks"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/kudos": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the Kudos given in this Workspace */
-        get: operations["KudosController_listWorkspaceKudos"];
-        put?: never;
-        /** Give Kudos to the Members of this Workspace it @mentions, or to all of them */
-        post: operations["KudosController_giveKudos"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/workspaces/{workspaceId}/kudos/months": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Count the Kudos given in this Workspace, in all and by month */
-        get: operations["KudosController_listKudosMonths"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/workspaces/{workspaceId}/workspace-goals": {
         parameters: {
             query?: never;
@@ -895,170 +912,6 @@ export interface components {
         };
         UnreadCountResponseDto_Output: {
             count: number;
-        };
-        StartGoogleSignInRequestDto: {
-            /** Format: uuid */
-            invitationId?: string;
-        };
-        StartGoogleSignInResponseDto_Output: {
-            /** Format: uri */
-            url: string;
-        };
-        GetCurrentSessionResponseDto_Output: {
-            account: {
-                /** Format: uuid */
-                accountId: string;
-                /** Format: email */
-                email: string;
-                name: string;
-                /** Format: uri */
-                photoUrl: string | null;
-                profile: {
-                    fullName: string;
-                    displayName: string;
-                    slug: string;
-                } | null;
-            } | null;
-            needsRefresh: boolean;
-        };
-        CreateProfileRequestDto: {
-            fullName: string;
-            displayName: string;
-        };
-        CreateProfileResponseDto_Output: {
-            /** Format: uuid */
-            id: string;
-        };
-        CreateWorkspaceRequestDto: {
-            name: string;
-            /** @enum {string|null} */
-            teamSize?: "JUST_ME" | "FROM_2_TO_10" | "FROM_11_TO_50" | "OVER_50" | null;
-        };
-        CreateWorkspaceResponseDto_Output: {
-            /** Format: uuid */
-            id: string;
-        };
-        GetCurrentMembershipResponseDto_Output: {
-            membership: {
-                workspace: {
-                    /** Format: uuid */
-                    id: string;
-                    name: string;
-                };
-                /** @enum {string} */
-                role: "ADMIN" | "MEMBER";
-            } | null;
-        };
-        ListMyMembershipsResponseDto_Output: {
-            items: {
-                workspace: {
-                    /** Format: uuid */
-                    id: string;
-                    name: string;
-                };
-                /** @enum {string} */
-                role: "ADMIN" | "MEMBER";
-            }[];
-            total: number;
-            page: number;
-            pageSize: number;
-        };
-        ListWorkspaceMembersResponseDto_Output: {
-            items: {
-                /** Format: uuid */
-                accountId: string;
-                email: string;
-                fullName: string | null;
-                displayName: string | null;
-                slug: string | null;
-                /** Format: uri */
-                photoUrl: string | null;
-                /** @enum {string} */
-                role: "ADMIN" | "MEMBER";
-            }[];
-            total: number;
-            page: number;
-            pageSize: number;
-        };
-        ChangeMemberRoleRequestDto: {
-            /** @enum {string} */
-            role: "ADMIN" | "MEMBER";
-        };
-        ListWorkspaceInvitationsResponseDto_Output: {
-            items: {
-                /** Format: uuid */
-                invitationId: string;
-                email: string;
-                /** @enum {string} */
-                role: "ADMIN" | "MEMBER";
-                /** @enum {string} */
-                status: "PENDING" | "EXPIRED";
-                /** Format: date-time */
-                invitedAt: string;
-                /** Format: date-time */
-                expiresAt: string;
-                invitedBy: {
-                    email: string;
-                    displayName: string | null;
-                };
-            }[];
-            total: number;
-            page: number;
-            pageSize: number;
-        };
-        SendInvitationsRequestDto: {
-            invitations: {
-                email: string;
-                /** @enum {string} */
-                role: "ADMIN" | "MEMBER";
-            }[];
-        };
-        SendInvitationsResponseDto_Output: {
-            results: ({
-                email: string;
-                /** @enum {string} */
-                outcome: "invited";
-                /** Format: uuid */
-                invitationId: string;
-                /** Format: date-time */
-                expiresAt: string;
-            } | {
-                email: string;
-                /** @enum {string} */
-                outcome: "already_member" | "already_invited" | "failed";
-            })[];
-        };
-        ResendInvitationResponseDto_Output: {
-            /** Format: uuid */
-            invitationId: string;
-            /** Format: date-time */
-            expiresAt: string;
-        };
-        ListMyInvitationsResponseDto_Output: {
-            items: {
-                /** Format: uuid */
-                invitationId: string;
-                workspace: {
-                    /** Format: uuid */
-                    id: string;
-                    name: string;
-                    memberCount: number;
-                };
-                /** Format: date-time */
-                invitedAt: string;
-                /** Format: date-time */
-                expiresAt: string;
-            }[];
-            total: number;
-            page: number;
-            pageSize: number;
-        };
-        GetInvitationResponseDto_Output: {
-            workspaceName: string;
-            inviterName?: string;
-            invitedEmailMasked: string;
-            /** @enum {string} */
-            status: "PENDING" | "EXPIRED" | "ACCEPTED" | "REVOKED";
         };
         SendFeedbackRequestRequestDto: {
             message: string;
@@ -1396,6 +1249,53 @@ export interface components {
                             rotation: number;
                         }[];
                     } | null;
+                }[];
+            } | null;
+        };
+        FeedbackSummaryResponseDto_Output: {
+            summary: {
+                period: string;
+                /** Format: date-time */
+                generatedAt: string;
+                isStale: boolean;
+                sourceCount: number;
+                /** @enum {string} */
+                language: "th" | "en" | "mixed";
+                themes: {
+                    point: string;
+                    sources: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "FEEDBACK" | "KUDOS";
+                    }[];
+                }[];
+                strengths: {
+                    point: string;
+                    sources: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "FEEDBACK" | "KUDOS";
+                    }[];
+                }[];
+                areas_to_improve: {
+                    point: string;
+                    sources: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "FEEDBACK" | "KUDOS";
+                    }[];
+                }[];
+                suggested_actions: {
+                    point: string;
+                    sources: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "FEEDBACK" | "KUDOS";
+                    }[];
                 }[];
             } | null;
         };
@@ -2307,6 +2207,170 @@ export interface components {
                 count: number;
             }[];
         };
+        StartGoogleSignInRequestDto: {
+            /** Format: uuid */
+            invitationId?: string;
+        };
+        StartGoogleSignInResponseDto_Output: {
+            /** Format: uri */
+            url: string;
+        };
+        GetCurrentSessionResponseDto_Output: {
+            account: {
+                /** Format: uuid */
+                accountId: string;
+                /** Format: email */
+                email: string;
+                name: string;
+                /** Format: uri */
+                photoUrl: string | null;
+                profile: {
+                    fullName: string;
+                    displayName: string;
+                    slug: string;
+                } | null;
+            } | null;
+            needsRefresh: boolean;
+        };
+        CreateProfileRequestDto: {
+            fullName: string;
+            displayName: string;
+        };
+        CreateProfileResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
+        };
+        CreateWorkspaceRequestDto: {
+            name: string;
+            /** @enum {string|null} */
+            teamSize?: "JUST_ME" | "FROM_2_TO_10" | "FROM_11_TO_50" | "OVER_50" | null;
+        };
+        CreateWorkspaceResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
+        };
+        GetCurrentMembershipResponseDto_Output: {
+            membership: {
+                workspace: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                };
+                /** @enum {string} */
+                role: "ADMIN" | "MEMBER";
+            } | null;
+        };
+        ListMyMembershipsResponseDto_Output: {
+            items: {
+                workspace: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                };
+                /** @enum {string} */
+                role: "ADMIN" | "MEMBER";
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        ListWorkspaceMembersResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                accountId: string;
+                email: string;
+                fullName: string | null;
+                displayName: string | null;
+                slug: string | null;
+                /** Format: uri */
+                photoUrl: string | null;
+                /** @enum {string} */
+                role: "ADMIN" | "MEMBER";
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        ChangeMemberRoleRequestDto: {
+            /** @enum {string} */
+            role: "ADMIN" | "MEMBER";
+        };
+        ListWorkspaceInvitationsResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                invitationId: string;
+                email: string;
+                /** @enum {string} */
+                role: "ADMIN" | "MEMBER";
+                /** @enum {string} */
+                status: "PENDING" | "EXPIRED";
+                /** Format: date-time */
+                invitedAt: string;
+                /** Format: date-time */
+                expiresAt: string;
+                invitedBy: {
+                    email: string;
+                    displayName: string | null;
+                };
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        SendInvitationsRequestDto: {
+            invitations: {
+                email: string;
+                /** @enum {string} */
+                role: "ADMIN" | "MEMBER";
+            }[];
+        };
+        SendInvitationsResponseDto_Output: {
+            results: ({
+                email: string;
+                /** @enum {string} */
+                outcome: "invited";
+                /** Format: uuid */
+                invitationId: string;
+                /** Format: date-time */
+                expiresAt: string;
+            } | {
+                email: string;
+                /** @enum {string} */
+                outcome: "already_member" | "already_invited" | "failed";
+            })[];
+        };
+        ResendInvitationResponseDto_Output: {
+            /** Format: uuid */
+            invitationId: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        ListMyInvitationsResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                invitationId: string;
+                workspace: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    memberCount: number;
+                };
+                /** Format: date-time */
+                invitedAt: string;
+                /** Format: date-time */
+                expiresAt: string;
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        GetInvitationResponseDto_Output: {
+            workspaceName: string;
+            inviterName?: string;
+            invitedEmailMasked: string;
+            /** @enum {string} */
+            status: "PENDING" | "EXPIRED" | "ACCEPTED" | "REVOKED";
+        };
         ListWorkspaceGoalsResponseDto_Output: {
             items: {
                 /** Format: uuid */
@@ -2970,6 +3034,673 @@ export interface operations {
                 content?: never;
             };
             /** @description WORKSPACE_NOT_FOUND or NOTIFICATION_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedbackRequestController_sendFeedbackRequest: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendFeedbackRequestRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendFeedbackRequestResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, POSTCARD_INVALID, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedbackAskController_listMyFeedbackAsks: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                status?: "PENDING" | "ANSWERED";
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListMyFeedbackAsksResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedbackAskController_getFeedbackAsk: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                askId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetFeedbackAskResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or FEEDBACK_ASK_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedbackAskController_answerFeedbackAsk: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                askId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerFeedbackAskRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerFeedbackAskResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG or POSTCARD_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or FEEDBACK_ASK_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ASK_ALREADY_ANSWERED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedbackController_offerFeedback: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfferFeedbackRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfferFeedbackResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, POSTCARD_INVALID, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedbackController_getFeedback: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                feedbackId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetFeedbackResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or FEEDBACK_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedbackSummaryController_getMySummary: {
+        parameters: {
+            query?: {
+                period?: string;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackSummaryResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedItemsController_listFeedItems: {
+        parameters: {
+            query?: {
+                show?: "ALL" | "EVERYONE" | "SHARED_WITH_ME";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListFeedItemsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReceivedItemsController_listReceivedItems: {
+        parameters: {
+            query?: {
+                show?: "ALL" | "REQUESTS" | "OFFERED" | "KUDOS";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListReceivedItemsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GivenItemsController_listGivenItems: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListGivenItemsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WaitingAsksController_listWaitingAsks: {
+        parameters: {
+            query?: {
+                sort?: "NEWEST" | "OLDEST";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListWaitingAsksResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    KudosController_listWorkspaceKudos: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+                month?: string;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListWorkspaceKudosResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    KudosController_giveKudos: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GiveKudosRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GiveKudosResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, KUDOS_MESSAGE_EMPTY, KUDOS_MESSAGE_TOO_LONG or KUDOS_CARD_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    KudosController_listKudosMonths: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListKudosMonthsResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3785,626 +4516,6 @@ export interface operations {
             };
             /** @description INVITATION_EXPIRED, INVITATION_REVOKED or INVITATION_ALREADY_ACCEPTED */
             409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FeedbackRequestController_sendFeedbackRequest: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SendFeedbackRequestRequestDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SendFeedbackRequestResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID, REQUEST_MESSAGE_EMPTY, REQUEST_MESSAGE_TOO_LONG, POSTCARD_INVALID, CANNOT_ASK_YOURSELF, GIVER_ALREADY_ASKED, GIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FeedbackAskController_listMyFeedbackAsks: {
-        parameters: {
-            query?: {
-                page?: number;
-                pageSize?: number;
-                status?: "PENDING" | "ANSWERED";
-            };
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListMyFeedbackAsksResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FeedbackAskController_getFeedbackAsk: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-                askId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GetFeedbackAskResponseDto_Output"];
-                };
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND or FEEDBACK_ASK_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FeedbackAskController_answerFeedbackAsk: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-                askId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AnswerFeedbackAskRequestDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AnswerFeedbackAskResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG or POSTCARD_INVALID */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND or FEEDBACK_ASK_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description ASK_ALREADY_ANSWERED */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FeedbackController_offerFeedback: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OfferFeedbackRequestDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OfferFeedbackResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID, FEEDBACK_MESSAGE_EMPTY, FEEDBACK_MESSAGE_TOO_LONG, POSTCARD_INVALID, CANNOT_GIVE_YOURSELF_FEEDBACK, NO_RECEIVERS, RECEIVER_ALREADY_NAMED, RECEIVER_NOT_IN_WORKSPACE, NO_PEOPLE_SELECTED, PEOPLE_SELECTED_FOR_ANOTHER_VISIBILITY, PERSON_ALREADY_SELECTED, CANNOT_SELECT_YOURSELF, CANNOT_SELECT_THE_RECEIVER, MENTIONED_PERSON_LEFT_OUT or SELECTED_PERSON_NOT_IN_WORKSPACE */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FeedbackController_getFeedback: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-                feedbackId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GetFeedbackResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND or FEEDBACK_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FeedItemsController_listFeedItems: {
-        parameters: {
-            query?: {
-                show?: "ALL" | "EVERYONE" | "SHARED_WITH_ME";
-                cursor?: string;
-                limit?: number;
-            };
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListFeedItemsResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ReceivedItemsController_listReceivedItems: {
-        parameters: {
-            query?: {
-                show?: "ALL" | "REQUESTS" | "OFFERED" | "KUDOS";
-                cursor?: string;
-                limit?: number;
-            };
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListReceivedItemsResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    GivenItemsController_listGivenItems: {
-        parameters: {
-            query?: {
-                cursor?: string;
-                limit?: number;
-            };
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListGivenItemsResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    WaitingAsksController_listWaitingAsks: {
-        parameters: {
-            query?: {
-                sort?: "NEWEST" | "OLDEST";
-                cursor?: string;
-                limit?: number;
-            };
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListWaitingAsksResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    KudosController_listWorkspaceKudos: {
-        parameters: {
-            query?: {
-                cursor?: string;
-                limit?: number;
-                month?: string;
-            };
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListWorkspaceKudosResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    KudosController_giveKudos: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GiveKudosRequestDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GiveKudosResponseDto_Output"];
-                };
-            };
-            /** @description REQUEST_INVALID, KUDOS_MESSAGE_EMPTY, KUDOS_MESSAGE_TOO_LONG or KUDOS_CARD_INVALID */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    KudosController_listKudosMonths: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description The browser's cookie header, forwarded by the web server. */
-                cookie?: string;
-            };
-            path: {
-                workspaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListKudosMonthsResponseDto_Output"];
-                };
-            };
-            /** @description NOT_SIGNED_IN */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description WORKSPACE_NOT_FOUND */
-            404: {
                 headers: {
                     [name: string]: unknown;
                 };

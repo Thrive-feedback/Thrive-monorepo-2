@@ -605,3 +605,34 @@ model OutboxMessage {
   @@unique([idempotencyKey])
   @@map("outbox_message")
 }
+
+/// A model's summary of the Feedback one Member received in one period, for that Member's eyes
+/// only (brain ADR-0051 d7). Derived, regenerable, and personal data about the person it
+/// describes.
+model FeedbackSummary {
+  id              String   @id
+  /// personal · the Member the summary is about, and the only person who may read it. No foreign
+  /// key: Accounts are Identity's.
+  accountId       String
+  /// Workspace's id, held without a foreign key (BE_03 R7), as on Feedback.
+  workspaceId     String
+  /// internal · the period covered, as `YYYY-Qn`.
+  period          String
+  /// personal · the sections, and the id of every source behind each point (design 0025 D3, D5).
+  /// Ids only — never a copy of anybody's message.
+  content         Json
+  /// internal · which prompt wrote it, so a prompt change regenerates lazily rather than by
+  /// backfill (design 0025 D10).
+  promptVersion   Int
+  /// internal · how many source items it was written from, for the floor below which a summary
+  /// is worse than the list it replaces (design 0025 D7).
+  sourceCount     Int
+  /// internal · the newest source at generation time. Anything newer means this is stale.
+  sourceWatermark DateTime
+  generatedAt     DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([accountId, workspaceId, period])
+  @@map("feedback_summary")
+}
