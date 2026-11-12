@@ -4,7 +4,7 @@ import { LANDING_COPY } from './landing-copy.constant';
 
 export function LandingFooter() {
   return (
-    <footer className="border-border-subtle border-t px-inset-container py-8">
+    <footer className="px-6 py-8 sm:px-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
         <NavbarLogo />
         <Text variant="body-2" tone="muted">

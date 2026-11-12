@@ -7,23 +7,32 @@ related_targets: ["app/_components/landing/landing.tsx"]
 
 ## Scope
 
-The public landing page at `/`. Mode: **Persuade**. The visitor is **anyone who leads a team**, anywhere: a founder, a team lead, someone in HR, the head of a student project (brain `ADR-0038`). The action is Get started, which leads to Google sign-in. Proof is the clickable Home preview and four worked Moments; the page cites no research and names no country, culture or price. Constraints: English shown, with an inert EN / TH switch until #48; the existing Thrive design system; every word is `ADR-0038`'s *The words, as agreed*.
+The public landing page at `/`. Mode: **Persuade**. The visitor is **anyone who leads a team**, anywhere: a founder, a team lead, someone in HR, the head of a student project (brain `ADR-0038`). The action is Get started, which leads to Google sign-in. Proof is a desk of three real cards the visitor can write on (nothing is sent), four Moments shown on the cards they would be written on, and a made-up team's Kudos board; the page cites no research and names no country, culture or price. Constraints: English shown, with no language switch until #48 brings Thai; the Thrive design system in `packages/tokens` and DESIGN.md; the words are `ADR-0038`'s *The words, as agreed* as amended by `ADR-0054`.
 
 ## Direction contract
 
-THESIS: "Feedback while it still matters." The page owns timing: ask, give unasked or say thanks right after it happens, instead of waiting for the review, the retro or the final grade. It refuses the category default of a hero over a grid of icon cards, grey boxed sections and a label above every heading.
+THESIS: "Feedback while it still matters", told as post between teammates. The page shows the product as the cards it is written on, not as a screenshot of an app: a visitor writes one before signing in. It refuses the category default of a centred hero over a product-window screenshot, a grid of icon cards and grey boxed sections.
 
-OWN-WORLD: a white `surface-base` canvas with soft brand-coloured orbs drifting behind it, hairlines in `border-muted`, Cooper display for statements, Google Sans for everything else, Caveat for the margin notes in the readable secondary. Purple `action-primary` is the only action colour. Two full-width bands: the light secondary tint (`action-secondary-surface-hover`) behind Why it works, lavender behind the way in. The tour stands on the untinted frosted glass of the app's bars (`glass.module.css`, `.neutral`). No cards except the preview window and the Moments' speech bubbles.
+OWN-WORLD: the white `surface-base` page with the brand orbs drifting behind it. Paper objects lie on it a few degrees off square: postcard stock with ruled backs, Kudos cards in their templates, perforated stamps, blue rubber-stamp Postmarks, an envelope. Cooper for statements, Google Sans for reading, Caveat in orange for teammates' notes. Plum is the only action colour; blue owns asking, orange owns Kudos and the human voice. Sections alternate between the plain page and a full-width band of a hue's light tint, its top and bottom edges perforated like a sheet of stamps, so a visitor always sees where one section ends: blue behind the Moments, the secondary tint behind Why it works, lavender behind the envelope.
 
-STORY: the visitor reads the promise, tries Home as a founder without signing up, sees four moments that shouldn't wait told as short exchanges, understands why feedback goes missing and what Thrive does about each reason, sees what a team can do, recognises themselves as whoever leads the team, and signs in with Google.
+STORY: the visitor reads the promise and sees three cards spread under it. They pick one and write a postcard or a Kudos (nothing is sent). They then:
+- read two moments that shouldn't wait, each on its postcard, which opens to read
+- see the team's Kudos board, where their own Kudos is pinned
+- read why feedback goes missing and what Thrive does about it, each reason on a card as the app's lists draw one, beside the postcard that does what Thrive does about it
+- read what a team can do, each feature on a card as the app's lists draw one
+- open an envelope addressed to whoever leads the team, which holds the reasons to go first and the way in
 
-FIRST VIEWPORT: the glass navbar with EN / TH, the colour mode and Sign in; a centred display-1 headline "Feedback while it still matters." with a hand-drawn underline under "still matters." and the note "not six months later"; a muted two-sentence lead; one primary Get started button with a quiet "See it in action" link; a sign-in note; the top of the tour at the fold.
+FIRST VIEWPORT: the glass navbar with colour mode and Sign in. Below it, centred: the display-1 headline "Feedback while / it still matters." with the hand-drawn underline under "still matters." and the note "not six months later"; the muted lead; one primary Get started; the sign-in note. Under them, the desk, spread across the width:
+- A fan of three cards: one in front, full size, and one either side of it, smaller, lifted and leaning away behind it; arrows either side of the note below turn the fan. The card in front lies square and grows a little when pointed at; a card at the side, pressed, turns to the front and then opens. The Kudos card starts in front, with an answered Ask postcard (left) and a Given postcard (right) behind it, both turned to their written backs, with the postmark struck on the stamp and never through the writing. Postcard stock has only cream, sage and blush; each card wears its act's hue on its label (blue asks, plum gives, orange thanks) and is a button that opens the real writing dialog.
+- Between the two arrows, centred below: the kind of card in front, written by hand ("Say thanks" to begin with), and the caption (amended 2026-11-12).
+- On a phone the postcards lie along the top, labels showing, and the Kudos stands in front of them, lower down.
+- Amended 2026-11-12: the first build put the words beside the desk; the user picked the centred spread from a canvas of two layouts and moved the Kudos to the middle.
 
-FORM: pinned by the user, in their words: "I need the landing page more clear and modern on the minimal theme like https://fastwork.com/selling", then "I need the design align to our design system too." That pin is the authority that replaced the concept-seed roll; seed key: none (user-pinned). The words and sections are pinned by `ADR-0038`. Signature interaction: four tour chapters on the shared Tabs above the live preview, which switch its tab and follow it.
+FORM: pinned by the user in a grill round on 2026-11-12, with structure, order and interaction chosen option by option; no concept-seed roll (seed key: none, user-pinned). The signature interaction is writing a real card on the desk; a Kudos lands pinned on the page's board, labelled as only on this page.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
 ## Unresolved
 
-- DESIGN.md is missing for the whole web app. This page extends the incumbent system and does not author it. Offer `/impeccable document` afterwards.
-- Thai (#48, #233–#235) is not built; the TH button is disabled until it is.
+- Thai (#48, #233–#235) is not built; the TH button stays disabled.
+- The landing board does not drag; the `/kudos` drag hook would first have to move out of its route in its own change.

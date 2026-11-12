@@ -162,8 +162,9 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build --affected
         env:
-          # The web build writes the API's address into its callback rewrite, and the postcard
-          # pictures' host into the browser's code. CI deploys nothing, so any well-formed
-          # values will do.
+          # The web build writes the API's address into its callback rewrite, the postcard
+          # pictures' host into the browser's code, and the site's own address into its
+          # metadata. CI deploys nothing, so any well-formed values will do.
           API_BASE_URL: http://localhost:3000
           NEXT_PUBLIC_POSTCARD_STORAGE_HOST: storage.thrive.test
+          WEB_URL: http://localhost:3001

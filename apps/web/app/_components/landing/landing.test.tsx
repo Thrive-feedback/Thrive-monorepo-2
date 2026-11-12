@@ -1,9 +1,6 @@
 import { render } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { Landing } from './landing';
-
-// The preview's dialog asks for the router, which only matters when it closes to an address.
-vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: vi.fn() }) }));
 
 describe('Landing', () => {
   /*

@@ -14,9 +14,7 @@ import {
   SAMPLE_KUDOS,
   SAMPLE_KUDOS_TO_THE_READER,
 } from '@/app/ui-showcase/_components/entries/kudos-samples.constant';
-import type { FeedItem } from '@/lib/feedback/feed-item.type';
 import type { HomeFeedPerson } from '@/lib/feedback/home-feed-item.type';
-import type { KudosItem } from '@/lib/feedback/kudos-item.type';
 import type { MyAsk } from '@/lib/feedback/my-ask.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 
@@ -181,44 +179,3 @@ export const SAMPLE_BOARD_KUDOS = [
   SAMPLE_KUDOS_TO_THE_READER,
   ...KUDOS_CASES.slice(2, 3).map(({ kudos }) => kudos),
 ];
-
-/** What the old `/home` feed reads for one piece of Feedback. */
-export const SAMPLE_LEGACY_OFFERED: FeedItem = {
-  id: 'legacy-offered',
-  giverName: 'Cara Diaz',
-  giverPhotoUrl: null,
-  giverInactive: false,
-  receivers: [{ name: 'Ben Carter', photoUrl: null, inactive: false }],
-  origin: 'OFFERED',
-  message: SAMPLE_OFFERED.message,
-  messageTags: NO_TEXT_TAGS,
-  givenAt: SENT_ON,
-  reactions: { '👏': ['Ann Lee', 'Dao Prasert'] },
-  request: null,
-};
-
-export const SAMPLE_LEGACY_REQUESTED: FeedItem = {
-  ...SAMPLE_LEGACY_OFFERED,
-  id: 'legacy-requested',
-  origin: 'REQUESTED',
-  message: SAMPLE_REQUESTED.message,
-  reactions: {},
-  request: {
-    message: 'How clear was the migration plan I shared on Monday?',
-    messageTags: NO_TEXT_TAGS,
-    requester: { name: 'Ben Carter', photoUrl: null, inactive: false },
-    asked: [
-      { name: 'Cara Diaz', photoUrl: null, inactive: false },
-      { name: 'Dao Prasert', photoUrl: null, inactive: false },
-    ],
-  },
-};
-
-export const SAMPLE_LEGACY_KUDOS: KudosItem = {
-  id: 'legacy-kudos',
-  giver: { name: 'Mali Chaiyo', inactive: false },
-  recipients: [{ name: 'Ben Wong', inactive: false }],
-  message: SAMPLE_KUDOS.message,
-  messageTags: NO_TEXT_TAGS,
-  givenAt: SENT_ON,
-};

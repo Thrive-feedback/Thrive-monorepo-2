@@ -116,6 +116,9 @@ module.exports = {
         // a guardrail that answers differently depending on whether someone has built
         // is worse than one that does not look at a generated file nobody writes.
         '^apps/web/next-env\\.d\\.ts$',
+        // A build's output, `.next`, holds generated and copied code — a standalone build copies
+        // the app's own sources there — so cruising it reports another file's violations.
+        '(^|/)\\.next/',
       ].join('|'),
     },
     // The fixtures under `scripts/arch-fixtures/` are cruised with their own directory as

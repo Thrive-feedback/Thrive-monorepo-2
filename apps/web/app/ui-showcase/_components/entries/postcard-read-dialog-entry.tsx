@@ -24,7 +24,7 @@ export function PostcardReadDialogEntry() {
       source="components/organisms/postcard-dialog/postcard-read-dialog.tsx — Dialog + Postcard + PostcardAnswerPager, on the parts PostcardDialog writes with"
       summary="A postcard that has been sent, in front of the page, looking as it did when it was written, with its postmark in the corner and nothing left to change. A button beside Turn over clears the stickers and the postmark away for a moment, with a note by hand pointing at it; the stamp stays. A button under it turns the note off."
       useFor="Reading Feedback or an answered Feedback Request that was written on a postcard."
-      avoidFor="Writing one; use PostcardDialog. A list of Feedback; use FeedbackCard."
+      avoidFor="Writing one; use PostcardDialog. A list of Feedback; use FeedCard."
       usage={`import { PostcardReadDialog } from '@/components/organisms/postcard-dialog/postcard-read-dialog';
 
 <PostcardReadDialog

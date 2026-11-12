@@ -14,6 +14,11 @@ export type KudosDialogProps = {
   /** What is already written as it opens, as typed before choosing this card. */
   defaultMessage?: string;
   open: boolean;
+  /**
+   * Whether Close and Escape ask before throwing the card away: `true` unless a page holds
+   * nothing worth keeping, as the landing page's made-up team does.
+   */
+  asksBeforeClosing?: boolean;
   onOpenChange: (open: boolean) => void;
   /**
    * Send was pressed: everything on the card. The dialog sends nothing itself. Resolve `true` once
@@ -42,7 +47,7 @@ export type KudosDialogProps = {
  * it.
  *
  * Every opening is a new card, holding only what the caller says was typed first. Closing — Close
- * or Escape — always asks first, and nothing outside the card closes it. Sent, the card is pinned
+ * or Escape — asks first unless `asksBeforeClosing` is off, and nothing outside the card closes it. Sent, the card is pinned
  * to a board, which stays with a way on from it until the Giver takes one.
  */
 export function KudosDialog({
@@ -55,6 +60,7 @@ export function KudosDialog({
   onGoToBoard,
   onBackToHome,
   onCloseAutoFocus,
+  asksBeforeClosing,
 }: KudosDialogProps) {
   const openings = useOpenings(open);
 
@@ -70,6 +76,7 @@ export function KudosDialog({
         onGoToBoard={onGoToBoard}
         onBackToHome={onBackToHome}
         onCloseAutoFocus={onCloseAutoFocus}
+        asksBeforeClosing={asksBeforeClosing}
       />
     </Dialog>
   );

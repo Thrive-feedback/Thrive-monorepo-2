@@ -41,6 +41,13 @@ import { PendingPostcardMiniature } from '@/components/organisms/postcard-miniat
             '`fill` takes the width of what holds it; `lg` is the one size every card in a list draws it at.',
         },
         {
+          name: 'hasWords',
+          type: 'boolean',
+          defaultValue: 'true',
+          description:
+            'Whether its real words are drawn from `md` up; `false` draws lines at every width, for a caller that shows it only below `md`.',
+        },
+        {
           name: 'isPending',
           type: 'boolean',
           defaultValue: 'false',
@@ -69,6 +76,16 @@ import { PendingPostcardMiniature } from '@/components/organisms/postcard-miniat
         <div className="w-72">
           <PostcardMiniatureDemo card={SAMPLE_GIVEN_CARD} />
         </div>
+      </StateCell>
+      <StateCell
+        label="Lines only"
+        hint="hasWords={false}: lines at every width."
+      >
+        <PostcardMiniatureDemo
+          card={SAMPLE_GIVEN_CARD}
+          size="lg"
+          hasWords={false}
+        />
       </StateCell>
       <StateCell label="Pending">
         <PostcardMiniatureDemo card={SAMPLE_GIVEN_CARD} size="lg" isPending />

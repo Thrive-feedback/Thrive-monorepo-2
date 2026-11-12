@@ -32,9 +32,6 @@ import { GallerySection } from '@/app/ui-showcase/_components/gallery-section';
 import { ShowcasePage } from '@/app/ui-showcase/_components/showcase-page';
 import {
   SAMPLE_BOARD_KUDOS,
-  SAMPLE_LEGACY_KUDOS,
-  SAMPLE_LEGACY_OFFERED,
-  SAMPLE_LEGACY_REQUESTED,
   SAMPLE_MY_REQUEST,
   SAMPLE_MY_REQUEST_ALL_ANSWERED,
   SAMPLE_MY_REQUEST_MANY_ANSWERS,
@@ -56,8 +53,6 @@ import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';
 import { WaitingAskCard } from '@/components/organisms/feed-card/waiting-ask-card';
-import { FeedbackCard } from '@/components/organisms/feedback-card';
-import { KudosCard } from '@/components/organisms/kudos-card';
 import { kudosCardDate } from '@/components/organisms/kudos-dialog/kudos-card.util';
 import { KudosCardReadOnly } from '@/components/organisms/kudos-dialog/kudos-card-read-only';
 import { PostcardMiniature } from '@/components/organisms/postcard-miniature/postcard-miniature';
@@ -446,35 +441,6 @@ export function CardGallery() {
               date={kudosCardDate(SAMPLE_KUDOS.givenAt)}
               side="back"
             />
-          </Specimen>
-        </div>
-      </GallerySection>
-
-      <GallerySection
-        title="On the landing page"
-        description="The clickable Home preview on the landing page (FeedbackFeed in landing-home-preview). These cards draw no postcard."
-      >
-        <div className="flex max-w-180 flex-col gap-6">
-          <Specimen
-            name="FeedbackCard"
-            state="Offered, with Reactions"
-            usedOn="Landing page, Home preview"
-          >
-            <FeedbackCard item={SAMPLE_LEGACY_OFFERED} />
-          </Specimen>
-          <Specimen
-            name="FeedbackCard"
-            state="Requested"
-            usedOn="Landing page, Home preview"
-          >
-            <FeedbackCard item={SAMPLE_LEGACY_REQUESTED} />
-          </Specimen>
-          <Specimen
-            name="KudosCard"
-            state="A Kudos"
-            usedOn="Landing page, Home preview"
-          >
-            <KudosCard item={SAMPLE_LEGACY_KUDOS} />
           </Specimen>
         </div>
       </GallerySection>

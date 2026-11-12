@@ -1,0 +1,354 @@
+/*
+ * The landing page's paper, where utilities cannot draw it: how far each card leans as it lies on
+ * the page, how a card on the desk lifts to be picked up, and the letter rising out of its
+ * envelope. The paper itself is the postcard's own stock (`postcard.module.css`).
+ */
+
+/* Post lies a degree or two off square, each piece its own way. */
+.leanLeft {
+  rotate: -2deg;
+}
+
+.leanRight {
+  rotate: 1.5deg;
+}
+
+/*
+ * A card on the desk is picked up when pointed at or focused: it rises and straightens a little,
+ * so it reads as something to take. Its lean is kept as a custom property, so the lift can halve it.
+ */
+.deskCard {
+  --lean: 0deg;
+
+  rotate: var(--lean);
+  transition:
+    translate var(--motion-duration-medium) var(--motion-ease-out),
+    rotate var(--motion-duration-medium) var(--motion-ease-out),
+    scale var(--motion-duration-medium) var(--motion-ease-out);
+}
+
+.deskCard.leanLeft {
+  --lean: -6deg;
+}
+
+.deskCard.leanRight {
+  --lean: 4deg;
+}
+
+.deskCard:hover,
+.deskCard:focus-visible {
+  translate: 0 calc(var(--space-unit) * -2);
+  rotate: calc(var(--lean) / 2);
+}
+
+.deskCard:active {
+  translate: 0 calc(var(--space-unit) * -1);
+}
+
+/*
+ * The card in front of the fan lies square to the page, and is taken from where it lies: pointed
+ * at or focused it grows a little toward the reader instead of rising, and settles back pressed.
+ */
+.deskCard.deskFront {
+  --lean: 0deg;
+}
+
+.deskCard.deskFront:hover,
+.deskCard.deskFront:focus-visible {
+  translate: none;
+  scale: 1.04;
+}
+
+.deskCard.deskFront:active {
+  translate: none;
+  scale: 1.02;
+}
+
+/*
+ * A heading's note just over the last word of its first line, starting a third of the way into
+ * the word and resting on the tops of its letters, running on past it into the margin. It is drawn here from `data-note` rather than written into the
+ * heading, so the heading's text is its own words alone, for a search engine as for anyone. The
+ * empty alternative after the slash keeps assistive technology from reading it, as it skips every
+ * handwritten note, where the browser knows that form. Set as
+ * `HandwrittenNote` sets one (the handwriting face at its large size, the secondary ink, tilted, and
+ * written on as it scrolls into view), and only from `lg` up, where the margin has room for it.
+ */
+.cornerNote::after {
+  content: attr(data-note);
+  position: absolute;
+  top: 0;
+  left: 33.333%;
+  display: none;
+  translate: 0 -10%;
+  rotate: 3deg;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--family-handwrite);
+  font-size: var(--type-subtitle-handwrite-1-size);
+  line-height: var(--type-subtitle-handwrite-1-leading);
+  letter-spacing: var(--type-subtitle-handwrite-1-tracking);
+  font-weight: var(--type-subtitle-handwrite-1-weight);
+  color: var(--action-secondary-hover);
+}
+
+@media (width >= 64rem) {
+  .cornerNote::after {
+    display: block;
+  }
+}
+
+@supports (content: 'a' / '') {
+  .cornerNote::after {
+    content: attr(data-note) / '';
+  }
+}
+
+@keyframes write-on {
+  from {
+    clip-path: inset(-0.5em 100% -0.5em -0.5em);
+  }
+  to {
+    clip-path: inset(-0.5em -0.5em -0.5em -0.5em);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .cornerNote::after {
+      animation: write-on linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 20%;
+    }
+  }
+}
+
+/*
+ * The fan on the desk: every card is centred on the desk, then moved to its place by a transform,
+ * so turning the fan animates transforms only. The desk is a size container, so a side card's
+ * offset is a share of the desk's width (`cqw`), not of the card's own. Side cards are smaller and
+ * tucked behind the one in front and lifted a little, so their labels clear it; the left one is
+ * furthest back, so a card crossing from one side to the other passes behind the new front card.
+ */
+.fanCard {
+  --spread: 28cqw;
+  --side: 0.75;
+  --lift: 8cqw;
+
+  translate: -50% -50%;
+  transition:
+    translate var(--motion-duration-very-slow) var(--motion-ease-smooth-out),
+    scale var(--motion-duration-very-slow) var(--motion-ease-smooth-out);
+}
+
+@media (width >= 48rem) {
+  .fanCard {
+    --spread: 30cqw;
+    --side: 0.8;
+    --lift: 3cqw;
+  }
+}
+
+.fanFront {
+  z-index: 30;
+}
+
+.fanLeft {
+  z-index: 10;
+  translate: calc(-50% - var(--spread)) calc(-50% - var(--lift));
+  scale: var(--side);
+}
+
+.fanRight {
+  z-index: 20;
+  translate: calc(-50% + var(--spread)) calc(-50% - var(--lift));
+  scale: var(--side);
+}
+
+/*
+ * A tinted band's top and bottom edges, perforated as a sheet of stamps is: a row of round bites
+ * along each, cut by a mask of repeating circles, each mask covering its own half of the band. A
+ * mask shows what lies under its black, so the black is an instruction, not a colour.
+ */
+.perforated {
+  --bite: calc(var(--space-unit) * 1.5);
+  --pitch: calc(var(--space-unit) * 5);
+
+  mask:
+    radial-gradient(circle var(--bite) at 50% 0, transparent 98%, black) 0 0 /
+    var(--pitch) 51% repeat-x,
+    radial-gradient(circle var(--bite) at 50% 100%, transparent 98%, black) 0
+    100% / var(--pitch) 51% repeat-x;
+}
+
+/*
+ * Post lying loose on the desk beside the letter, tossed down further off square than post set
+ * out, and each at its own angle, so the two sides never mirror each other.
+ */
+.strewnSteepLeft {
+  rotate: -11deg;
+}
+
+.strewnEasyLeft {
+  rotate: -3deg;
+}
+
+.strewnMidLeft {
+  rotate: -7deg;
+}
+
+.strewnEasyRight {
+  rotate: 4deg;
+}
+
+.strewnSteepRight {
+  rotate: 9deg;
+}
+
+/* A Moment's card rises a little when pointed at or focused, so it reads as something to pick up. */
+.momentCard {
+  transition: translate var(--motion-duration-medium) var(--motion-ease-out);
+}
+
+.momentCard:hover,
+.momentCard:focus-visible {
+  translate: 0 calc(var(--space-unit) * -1.5);
+}
+
+/* A Kudos on the board lifts off its pin when pointed at, as the app's board does. */
+.pinned {
+  transition: translate var(--motion-duration-medium) var(--motion-ease-out);
+}
+
+li:hover > figure > .pinned {
+  translate: 0 calc(var(--space-unit) * -1.5);
+}
+
+/* The label on the visitor's own Kudos, stuck across its top like a strip of tape. */
+.tape {
+  rotate: -3deg;
+  box-shadow: var(--elevation-low);
+}
+
+/* A rubber stamp is never struck straight. */
+.postmark {
+  rotate: -9deg;
+}
+
+/*
+ * The envelope lies a degree off square; the letter in it, half that the other way. Both cast the
+ * high lift laid twice, deeper than any card lying flat; the tokens go no higher than the high lift.
+ */
+.envelope {
+  /* The paper is white in either mode, so what is printed on it takes the paper's ink: the
+     wordmark is dark, and the stamp's perforated margin is the paper itself. */
+  --brand-wordmark: var(--fg-on-paper);
+  --surface-base: var(--surface-paper);
+
+  rotate: -1deg;
+  box-shadow: var(--elevation-high), var(--elevation-high);
+}
+
+.letter {
+  rotate: 0.5deg;
+  box-shadow: var(--elevation-high), var(--elevation-high);
+}
+
+/*
+ * Airmail stripes around the envelope's edge, red and blue with the paper between them, as real
+ * airmail is. The envelope is white in either mode, so the stripes take the 500 steps the border
+ * roles hold in both, never a fill that pales in dark mode. A mask keeps the stripes to a frame: what lies under its black shows, so
+ * the black is an instruction, not a colour. A repeating gradient has no utility.
+ */
+.envelope::before {
+  --stripe: calc(var(--space-unit) * 3);
+
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: calc(var(--space-unit) * 2);
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--status-error-border) 0 var(--stripe),
+    transparent var(--stripe) calc(var(--stripe) * 2),
+    var(--action-tertiary-border) calc(var(--stripe) * 2)
+      calc(var(--stripe) * 3),
+    transparent calc(var(--stripe) * 3) calc(var(--stripe) * 4)
+  );
+  mask:
+    linear-gradient(black 0 0) content-box,
+    linear-gradient(black 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/*
+ * The envelope's flap, opened and standing up behind the letter: the inside of the paper, a
+ * shade darker than its face, leaning with the envelope from its top edge, and lined with a
+ * plum tissue printed with small dots, as good stationery is.
+ */
+.flap {
+  rotate: -1deg;
+  transform-origin: bottom center;
+  background-color: color-mix(
+    in oklch,
+    var(--fg-on-paper) 6%,
+    var(--surface-paper)
+  );
+  clip-path: polygon(0 100%, 47% 3%, 50% 0, 53% 3%, 100% 100%);
+}
+
+.flap::before {
+  --liner-inset: calc(var(--space-unit) * 3);
+
+  content: '';
+  position: absolute;
+  inset: var(--liner-inset) calc(var(--liner-inset) * 2) 0;
+  background-color: color-mix(
+    in oklch,
+    var(--action-primary) 22%,
+    var(--surface-paper)
+  );
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--action-primary) 40%, transparent)
+      calc(var(--space-unit) * 0.375),
+    transparent calc(var(--space-unit) * 0.5)
+  );
+  background-size: calc(var(--space-unit) * 3) calc(var(--space-unit) * 3);
+  clip-path: polygon(0 100%, 50% 0, 100% 100%);
+}
+
+/*
+ * The letter rises out of the envelope as the section scrolls into view, drawn up by the scroll
+ * itself rather than played once. Where scroll timelines are missing, or less motion is wanted,
+ * it is already out. It starts low by less than the envelope covers, so none of it shows beneath.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .letter {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+  }
+}
+
+@keyframes rise {
+  from {
+    translate: 0 calc(var(--space-unit) * 32);
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deskCard,
+  .fanCard,
+  .momentCard,
+  .pinned {
+    transition: none;
+  }
+}

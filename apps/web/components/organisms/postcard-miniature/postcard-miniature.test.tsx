@@ -74,6 +74,12 @@ describe('PostcardMiniature', () => {
     expect(screen.getByText('The plan was clear.')).toBeInTheDocument();
   });
 
+  it('draws lines alone, never the words, for a caller that shows it only on a phone', () => {
+    render(<PostcardMiniature card={GIVEN} hasWords={false} />);
+
+    expect(screen.queryByText(GIVEN.message)).toBeNull();
+  });
+
   it('draws an answer on its halved back, the Ask beside it', () => {
     render(<PostcardMiniature card={ANSWERED} />);
 

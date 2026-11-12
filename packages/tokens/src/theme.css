@@ -46,6 +46,7 @@
   --color-surface-glass-neutral: var(--surface-glass-neutral);
   --color-surface-skeleton: var(--surface-skeleton);
   --color-surface-track: var(--surface-track);
+  --color-surface-paper: var(--surface-paper);
   --color-border-default: var(--border-default);
   --color-border-subtle: var(--border-subtle);
   --color-border-muted: var(--border-muted);
@@ -92,6 +93,8 @@
   --color-status-info-fg: var(--status-info-fg);
   --color-status-info-border: var(--status-info-border);
   --color-fg-muted: var(--fg-muted);
+  --color-fg-on-paper: var(--fg-on-paper);
+  --color-fg-on-paper-secondary: var(--fg-on-paper-secondary);
   --color-action-disabled-surface: var(--action-disabled-surface);
 
   --radius-none: var(--shape-none);

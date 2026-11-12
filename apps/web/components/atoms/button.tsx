@@ -7,31 +7,33 @@ const buttonVariants = cva(
   'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary',
   {
     variants: {
+      // Hover and pressed fills wait on `not-disabled:`, not `enabled:`: `:enabled` matches form
+      // controls only, so an `asChild` link would never change under the pointer.
       variant: {
         primary:
-          'bg-action-primary text-fg-on-action enabled:active:bg-action-primary-active enabled:hover:bg-action-primary-hover',
+          'bg-action-primary text-fg-on-action not-disabled:hover:bg-action-primary-hover not-disabled:active:bg-action-primary-active',
         highlight:
-          'bg-action-secondary text-fg-on-secondary enabled:active:bg-action-secondary-active enabled:hover:bg-action-secondary-hover',
+          'bg-action-secondary text-fg-on-secondary not-disabled:hover:bg-action-secondary-hover not-disabled:active:bg-action-secondary-active',
         tertiary:
-          'bg-action-tertiary text-fg-on-tertiary enabled:active:bg-action-tertiary-active enabled:hover:bg-action-tertiary-hover',
+          'bg-action-tertiary text-fg-on-tertiary not-disabled:hover:bg-action-tertiary-hover not-disabled:active:bg-action-tertiary-active',
         outlined:
-          'border border-action-primary-border bg-action-primary-surface text-action-primary-hover enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
+          'border border-action-primary-border bg-action-primary-surface text-action-primary-hover not-disabled:hover:bg-action-primary-surface-hover not-disabled:active:bg-action-primary-surface-hover',
         'outlined-tertiary':
-          'border border-action-tertiary-border bg-action-tertiary-surface text-action-tertiary enabled:active:bg-action-tertiary-surface-hover enabled:hover:bg-action-tertiary-surface-hover',
+          'border border-action-tertiary-border bg-action-tertiary-surface text-action-tertiary not-disabled:hover:bg-action-tertiary-surface-hover not-disabled:active:bg-action-tertiary-surface-hover',
         'outlined-highlight':
-          'border border-action-secondary-border bg-action-secondary-surface text-action-secondary-hover enabled:active:bg-action-secondary-surface-hover enabled:hover:bg-action-secondary-surface-hover',
+          'border border-action-secondary-border bg-action-secondary-surface text-action-secondary-hover not-disabled:hover:bg-action-secondary-surface-hover not-disabled:active:bg-action-secondary-surface-hover',
         secondary:
-          'border border-action-neutral-border bg-surface-base text-fg-primary enabled:active:bg-action-neutral-surface-hover enabled:hover:bg-action-neutral-surface-hover',
-        soft: 'bg-action-neutral-surface text-action-primary-fg enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover',
+          'border border-action-neutral-border bg-surface-base text-fg-primary not-disabled:hover:bg-action-neutral-surface-hover not-disabled:active:bg-action-neutral-surface-hover',
+        soft: 'bg-action-neutral-surface text-action-primary-fg not-disabled:hover:bg-action-primary-surface-hover not-disabled:active:bg-action-primary-surface-hover',
         ghost:
-          'bg-action-neutral-surface text-fg-accent enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface',
+          'bg-action-neutral-surface text-fg-accent not-disabled:hover:bg-action-primary-surface not-disabled:active:bg-action-primary-surface-hover',
         danger:
-          'bg-status-error text-fg-on-error enabled:active:bg-status-error-active enabled:hover:bg-status-error-hover',
+          'bg-status-error text-fg-on-error not-disabled:hover:bg-status-error-hover not-disabled:active:bg-status-error-active',
         /** A step that ends something the person can take back, such as Sign out: a caution, not a loss. */
         warning:
-          'bg-status-warning text-fg-on-warning enabled:active:bg-status-warning-active enabled:hover:bg-status-warning-hover',
+          'bg-status-warning text-fg-on-warning not-disabled:hover:bg-status-warning-hover not-disabled:active:bg-status-warning-active',
         'ghost-danger':
-          'text-status-error-active enabled:active:bg-status-error-surface-hover enabled:hover:bg-status-error-surface',
+          'text-status-error-active not-disabled:hover:bg-status-error-surface not-disabled:active:bg-status-error-surface-hover',
       },
       size: {
         sm: 'px-3 py-2 text-button-sm leading-5',

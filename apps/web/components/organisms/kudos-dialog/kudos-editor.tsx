@@ -91,6 +91,8 @@ export type KudosEditorProps = {
   workspaceGoals: readonly string[];
   /** What is already written as it opens. Read once: the card owns it from then on. */
   defaultMessage: string;
+  /** Whether Close and Escape ask before leaving; `KudosDialog` says. */
+  asksBeforeClosing?: boolean;
   onSend: (kudos: KudosDraft) => Promise<boolean>;
   /** The writer chose to leave: the dialog should close. */
   onClose: () => void;
@@ -114,6 +116,7 @@ export function KudosEditor({
   onGoToBoard,
   onBackToHome,
   onCloseAutoFocus,
+  asksBeforeClosing = true,
 }: KudosEditorProps) {
   const [draft, change] = useReducer(
     applyKudosChange,
@@ -175,6 +178,7 @@ export function KudosEditor({
       letGo();
       onClose();
     },
+    asksBeforeClosing,
   });
 
   const triggers = useMemo(

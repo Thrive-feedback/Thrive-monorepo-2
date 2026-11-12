@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { Caveat, Google_Sans } from 'next/font/google';
 import localFont from 'next/font/local';
 import { Toaster } from '@/components/atoms/toaster';
+import { SITE_NAME } from '@/lib/site.constant';
 import { THEME_INIT_SCRIPT } from '@/lib/theme.constant';
+import { webUrl } from '@/lib/web-url.util';
 import './globals.css';
 
 /**
@@ -42,10 +44,15 @@ const cooper = localFont({
   variable: '--font-cooper',
 });
 
+/**
+ * `metadataBase` lets every route name its canonical link and preview image by path; they are
+ * written out on the site's one configured address.
+ */
 export const metadata: Metadata = {
+  metadataBase: webUrl(),
   title: {
-    default: 'Thrive',
-    template: '%s · Thrive',
+    default: SITE_NAME,
+    template: `%s · ${SITE_NAME}`,
   },
   description: 'Ask for, give and act on feedback.',
 };

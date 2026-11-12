@@ -2135,7 +2135,7 @@
         "description": "The fill of a primary button or an active control.",
         "light": {
           "trackId": "primary",
-          "weight": 400
+          "weight": 450
         },
         "dark": {
           "trackId": "primary",
@@ -2148,7 +2148,7 @@
         "description": "The fill under the pointer.",
         "light": {
           "trackId": "primary",
-          "weight": 450
+          "weight": 500
         },
         "dark": {
           "trackId": "primary",
@@ -2161,7 +2161,7 @@
         "description": "The fill while it is pressed.",
         "light": {
           "trackId": "primary",
-          "weight": 500
+          "weight": 550
         },
         "dark": {
           "trackId": "primary",
@@ -2647,6 +2647,19 @@
         "dark": {
           "trackId": "neutral",
           "weight": 750
+        }
+      },
+      {
+        "id": "surface.paper",
+        "name": "Surface paper",
+        "description": "Paper that stays white in either mode, as real stationery does: the envelope that closes the landing page.",
+        "light": {
+          "trackId": "neutral",
+          "weight": 25
+        },
+        "dark": {
+          "trackId": "neutral",
+          "weight": 25
         }
       },
       {
@@ -3265,6 +3278,32 @@
         "dark": {
           "trackId": "neutral",
           "weight": 500
+        }
+      },
+      {
+        "id": "fg.on-paper",
+        "name": "Foreground on paper",
+        "description": "Writing on surface paper: the ink stays dark in either mode, so it reads on the white.",
+        "light": {
+          "trackId": "neutral",
+          "weight": 825
+        },
+        "dark": {
+          "trackId": "neutral",
+          "weight": 825
+        }
+      },
+      {
+        "id": "fg.on-paper-secondary",
+        "name": "Foreground on paper secondary",
+        "description": "Supporting writing on surface paper, such as a From or To line.",
+        "light": {
+          "trackId": "neutral",
+          "weight": 650
+        },
+        "dark": {
+          "trackId": "neutral",
+          "weight": 650
         }
       }
     ],

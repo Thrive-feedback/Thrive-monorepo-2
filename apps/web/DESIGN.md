@@ -2,9 +2,9 @@
 name: Thrive
 description: Feedback while it still matters, written and sent like post between teammates.
 colors:
-  brand-plum: "oklch(63.21% 0.1323 315.35)"
-  brand-plum-hover: "oklch(57.2% 0.1207 315.54)"
-  brand-plum-active: "oklch(51.25% 0.1323 315.35)"
+  brand-plum: "oklch(57.2% 0.1207 315.54)"
+  brand-plum-hover: "oklch(51.25% 0.1323 315.35)"
+  brand-plum-active: "oklch(47.77% 0.1046 315.14)"
   plum-ink: "oklch(41.7% 0.0934 314.77)"
   human-orange: "oklch(69.56% 0.1633 40.1)"
   human-orange-hover: "oklch(57.18% 0.1369 40.47)"
@@ -279,6 +279,8 @@ Mobile first, with breakpoints at 40, 48, 64, 80 and 96rem. Spacing is a 0.25rem
 
 Signed-in pages sit inside a glass frame with a side nav; their lists are single columns of cards. Signed-out and standalone pages (sign-in, invitations, 404) centre one column on the orb ground, with the wordmark top-left at the container inset.
 
+The landing page is the signed-out page that runs long. Its sections share one frame: a display-2 heading (with an optional muted subtitle-1 lead and a margin note), then the content below it or, split, beside it from 48rem, all within 64rem. Each section stands on its own full-width band (5rem of padding above and below, 8rem from 48rem; 1.5rem at the sides on a phone, 2.5rem from 40rem), and the bands alternate between the plain page and a hue's light surface tint (`-surface-hover`: blue at half strength behind the Moments, the secondary tint behind Why it works, the primary tint behind the closing letter), so a visitor always sees where one section ends. A tinted band's top and bottom edges are perforated like a sheet of stamps: round bites 0.375rem across every 1.25rem, cut by a mask. Never boxed grey panels. The hero is centred, its cards spread under it.
+
 ## Elevation & Depth
 
 A hybrid. Depth comes mostly from material: frosted glass (a 1.25rem blur, saturate 1.8) over the page or the orbs, and tinted grounds. Three soft shadow steps, tinted from the neutral ramp (10% in light mode, 40 to 55% in dark), lift things that float: `shadow-med` on a `Card`, `shadow-high` on postcard stock and dialogs, `shadow-low` on small raised controls. Paper lying on paper (a stamp, a sticker) casts a drop-shadow that follows its perforated edge instead of a box shadow. Dialogs blur the page behind them (0.375rem, or 0.9375rem behind a card being written).
@@ -288,14 +290,14 @@ A hybrid. Depth comes mostly from material: frosted glass (a 1.25rem blur, satur
 
 ## Shapes
 
-Corners come in named roles. Buttons and inputs use the control corner (0.5625rem); chips, badges, tag pills and icon buttons are fully round; cards, Settings cards and feed cards use the page corner (1.3125rem), which is also what `rounded-surface` reaches at 64rem (the container corner, 0.2813rem, below it). Paper objects are nearly square: postcards and envelopes use the element corner (0.1875rem), and stamps have perforated edges cut by a mask. Paper may sit a degree or two off square (an envelope at -1.5 degrees, a postmark struck at -9 degrees, notes at 3 degrees).
+Corners come in named roles. Buttons and inputs use the control corner (0.5625rem); chips, badges, tag pills and icon buttons are fully round; cards, Settings cards and feed cards use the page corner (1.3125rem), which is also what `rounded-surface` reaches at 64rem (the container corner, 0.2813rem, below it). Paper objects are nearly square: postcards and envelopes use the element corner (0.1875rem), and stamps have perforated edges cut by a mask. Paper may sit a degree or two off square (an envelope at -1.5 degrees, a postmark struck at -9 degrees, notes at 3 degrees). Post lying on a page leans each piece its own way (-2 and 1.5 degrees); only cards at the sides of the desk's fan, which are there to be picked up, lean further (-6 and 4 degrees), and the card in front lies square.
 
 ## Components
 
 ### Buttons
 Solid, quiet and rounded; colour says what kind of act it is.
 - **Shape:** control corner (0.5625rem); icon buttons are 2.25rem circles.
-- **Primary:** Brand Plum with white text, for the main product action; sizes sm, md (0.625rem by 1rem) and lg (0.875rem by 1.375rem, button-md type).
+- **Primary:** Brand Plum with white text (4.7:1, so AA at every size), for the main product action; sizes sm, md (0.625rem by 1rem) and lg (0.875rem by 1.375rem, button-md type).
 - **Highlight / Tertiary:** orange (near-black text) for a person's act such as Kudos; blue (white text) for asking.
 - **Outlined variants:** the hue's border, its 20% surface, and its text; hover moves to the 70% surface tint.
 - **Secondary (default):** white with a neutral border and Ink text. **Soft / Ghost:** no edge, plum text.
@@ -325,7 +327,7 @@ A status word inline, in its tone's `-active` colour at weight 500, the size of 
 - **Focus (everything):** one hairline ring, 0.0625rem of Focus Plum at a 0.125rem offset.
 
 ### Postcard stock (signature)
-Raised Paper under a 10% tone tint (cream from the warning border, sage from success, blush from error at 8%), a 0.75rem dot grid in the ink at 4%, `shadow-high`. Written postcards carry ruled lines spaced by the text's line height. Envelopes (the 404) reuse this stock.
+Raised Paper under a 10% tone tint (cream from the warning border, sage from success, blush from error at 8%), a 0.75rem dot grid in the ink at 4%, `shadow-high`. Written postcards carry ruled lines spaced by the text's line height. The 404's envelope reuses this stock; the landing page's envelope is Surface Paper instead.
 
 ### Postmark (signature)
 A rubber-stamp mark in Stamp-Ink Blue: two rings, words curved between them in Cooper, two lines in the centre, three cancelling waves, roughened by an ink-wear filter seeded so no two strike alike. By default it reads "Thrive" over "Team" around the day it was posted; it may carry its own words and centre lines (the 404's "Address / Unknown", "NO. 404"). `trail="left"` lands the waves beside a stamp it dates; `trail="right"` runs them across a stamp to cancel it. Decorative and hidden from screen readers.
@@ -335,9 +337,25 @@ A perforated postage stamp on its own paper, a drop-shadow lift following the bi
 
 ### Handwritten note
 Caveat in Human Orange Hover, tilted 3 degrees left or right, written on as it scrolls into view (or once after a dialog opens), static where the motion grammar calls for it; often paired with a hand-drawn arrow.
+- **At a heading's corner:** from 64rem, a note on a display heading is anchored just past the last word of the heading's first line (0.75rem clear of it, raised a third of its height), never to the heading's box, which runs the column's width however the line wraps. Below 64rem it sits under the heading, or is left out.
+
+### Card on a desk
+Real cards fanned on a desk, each a button that opens the dialog the app writes it in: one in front, full size (a postcard half the desk's width from 48rem, three fifths below it; a Kudos a third, two fifths below), and one either side of it at 0.8 (0.75 below 48rem), tucked behind, lifted a little and leaning away. The Kudos starts in front, an answered Ask and Feedback given unasked either side by their written backs. Two secondary icon buttons with arrows turn the fan, either side of a handwritten note in the blue of asking naming the card in front (its label's words, subtitle-handwrite-1, display-4 from 48rem, written afresh at each turn) over the muted caption; they bring the card on that side to the front (very slow duration, smooth ease-out, transforms only; at once under reduced motion). A card to the right wears its chip at its right corner; below 40rem a card behind shows only its chip's icon. From 48rem a postcard is the full read card (postmark on the stamp) laid out at 42rem and scaled down whole; below it, the miniature with lines for words. Each wears `shadow-high` and a label chip across its top-left edge: an edged md Badge in its act's hue (info for an Ask, brand for giving, highlight for Kudos) with a small line icon, lifted by `shadow-low`; the chip's words are the button's name. On the landing page the chip is solid: its tint laid over the base surface, so nothing on the card shows through. The card in front lies square to the page: pointed at or focused it grows to 1.04, pressed to 1.02, and a press opens it. A card at the side, pointed at or focused, rises 0.5rem and straightens to half its lean (medium duration, ease-out); pressed, it turns to the front, and opens once the turn is done (at once under reduced motion). The same chip names the kind of a card shown on a page without being a button.
+
+### Pinned board
+Kudos cards in their templates hung on a grid inside the board's edge, as the app's `/kudos` board draws it (page corner, Rule Muted hairline, the cards well clear of it), each at the tilt its id gives it (as the app's `/kudos` board does), `shadow-high`, captioned beneath in muted body-3 ("From ... to ..."); pointed at, a card lifts 0.375rem off its pin. A card the visitor wrote carries a strip of tape across its top: base-surface paper, -3 degrees, `shadow-low`, with a pin icon.
+
+### Reason card
+A card as the app's lists draw one (`FeedCardSurface` and `FeedCardRow`): the page corner, its voice's 8% tint over the base surface, flat and square. On the left, read as an answered card is: the problem in subtitle-3 and what it costs in muted body-2, in a panel of its own (control corner, base surface at 70%), then Thrive's wordmark over what Thrive does about it in body-1. On the right, behind a line in the page's colour, the postcard that does it made small, with a note by hand in the card's voice pointing at it, as a list card keeps its small postcard. Cards in a list take the three voices in turn: plum, blue, orange.
+
+### Feature card
+A card as the app's lists draw one (`FEED_CARD_SURFACE`): the page corner, over the base surface, in its act's 8% tint (blue asks, plum gives and chooses who reads, orange thanks); a tool that is not an act stands on the base surface with a Rule Muted hairline. A line icon at 1.5rem in the card's ink (`FEED_CARD_INK`), then the name in subtitle-2 over what it is for in muted body-2. Six in a grid: three across from 64rem, two from 40rem, one below.
+
+### Envelope and letter
+An airmail envelope of Surface Paper, white stationery that stays white in either mode, with its words in Ink on Paper and Ink on Paper Secondary, which stay dark on it. It is as tall as a postcard for its width (3:2, at least 15rem; element corner, the high lift laid twice, -1 degree), edged in 0.5rem airmail stripes, red and blue with the paper between them (the error and info border steps, 500 in either mode, so they stay strong on the always-white paper), and its opened flap stands up behind the letter, a shade darker than its face and lined with plum dotted tissue. It carries a "From" overline over the Thrive wordmark (in the paper's ink), a "To" overline, one of the app's own stamps (`PostcardStampReadOnly`, the balloon) with its perforated margin in the paper, a Postmark cancelling it (`trail="right"`) and the address written by hand over a Rule Strong line. A white letter (the high lift laid twice, 0.5 degree) stands out of it, its foot behind the envelope's top edge; its three points are steps in an ordered list, each numbered by hand ("step 1") in the blue of asking. Where scroll timelines exist and motion is welcome, the letter rises 8rem out of the envelope with the section's scroll (entry to 40% cover), drawn by the scroll rather than played once; otherwise it is already out. The envelope itself stays still.
 
 ### Orb backdrop
-The signed-out ground: soft radial orbs of plum, orange and blue (20 to 25% opacity), with grey ones on a long page only, fixed behind the page and drifting at three depths with scroll.
+The signed-out ground: soft radial orbs of plum, orange and blue (20 to 25% opacity), with blue opening every page at its top right, fixed behind the page and drifting at three depths with scroll.
 
 ## Do's and Don'ts
 
