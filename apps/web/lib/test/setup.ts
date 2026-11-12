@@ -10,6 +10,8 @@ const TOAST_EXIT_MS = 250;
 // Next writes this into the build; tests have no build, so they get a fixed host of their own.
 // It is set before any test file is imported, because the template, stamp and sticker catalogs read it then.
 process.env.NEXT_PUBLIC_POSTCARD_STORAGE_HOST ??= 'storage.thrive.test';
+// The same for the site's own address, which the root layout's and the pages' metadata read then.
+process.env.WEB_URL ??= 'https://thrive.test';
 
 // Test globals are off, so Testing Library cannot register its own cleanup; without this,
 // one test's rendered tree leaks into the next.

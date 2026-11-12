@@ -4,20 +4,32 @@ import { redirect } from 'next/navigation';
 import { ROUTES } from '@/lib/routes.constant';
 import { readSession } from '@/lib/session/session.service';
 import { hasSessionCookie } from '@/lib/session/session-cookie.constant';
+import { SITE_NAME } from '@/lib/site.constant';
 import { Landing } from './_components/landing/landing';
 import { LANDING_COPY } from './_components/landing/landing-copy.constant';
+import { LandingStructuredData } from './_components/landing-structured-data';
 
 const { title, description } = LANDING_COPY.meta;
 
 /**
  * The title is absolute, skipping the layout's "· Thrive" template, since it already leads with
- * the name. Indexable: this is the page a founder searching for Thrive should find.
+ * the name. Indexable: this is the page a founder searching for Thrive should find. Its canonical
+ * address and its previews' are paths, written out on the site's address by the root layout; the
+ * preview image is `opengraph-image.tsx` beside this file.
  */
 export const metadata: Metadata = {
   title: { absolute: title },
   description,
+  alternates: { canonical: ROUTES.landing },
   robots: { index: true, follow: true },
-  openGraph: { title, description },
+  openGraph: {
+    type: 'website',
+    url: ROUTES.landing,
+    siteName: SITE_NAME,
+    title,
+    description,
+  },
+  twitter: { card: 'summary_large_image', title, description },
 };
 
 /**
@@ -30,5 +42,10 @@ export default async function LandingPage() {
   if (hasSessionCookie(await cookies()) && (await readSession())) {
     redirect(ROUTES.home);
   }
-  return <Landing />;
+  return (
+    <>
+      <LandingStructuredData />
+      <Landing />
+    </>
+  );
 }

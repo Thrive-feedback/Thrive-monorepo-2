@@ -6,9 +6,9 @@
  */
 :root {
   /* Colour roles. */
-  --action-primary: var(--primary-400);
-  --action-primary-hover: var(--primary-450);
-  --action-primary-active: var(--primary-500);
+  --action-primary: var(--primary-450);
+  --action-primary-hover: var(--primary-500);
+  --action-primary-active: var(--primary-550);
   --action-primary-surface: color-mix(
     in oklch,
     var(--primary-50) 20%,
@@ -80,6 +80,7 @@
   );
   --surface-skeleton: color-mix(in oklch, var(--neutral-100) 70%, transparent);
   --surface-track: var(--neutral-200);
+  --surface-paper: var(--neutral-25);
   --border-default: var(--neutral-450);
   --border-subtle: color-mix(in oklch, var(--neutral-300) 12%, transparent);
   --border-muted: var(--neutral-200);
@@ -150,6 +151,8 @@
   --status-info-fg: var(--info-900);
   --status-info-border: var(--info-500);
   --fg-muted: var(--neutral-550);
+  --fg-on-paper: var(--neutral-825);
+  --fg-on-paper-secondary: var(--neutral-650);
 
   /* Elevation, tinted with the blueprint's shadow colour. */
   --elevation-low:
@@ -593,6 +596,7 @@
   );
   --surface-skeleton: color-mix(in oklch, var(--neutral-700) 60%, transparent);
   --surface-track: var(--neutral-750);
+  --surface-paper: var(--neutral-25);
   --border-default: var(--neutral-475);
   --border-subtle: color-mix(in oklch, var(--neutral-650) 70%, transparent);
   --border-muted: var(--neutral-650);
@@ -667,6 +671,8 @@
   --status-info-fg: var(--info-100);
   --status-info-border: var(--info-500);
   --fg-muted: var(--neutral-500);
+  --fg-on-paper: var(--neutral-825);
+  --fg-on-paper-secondary: var(--neutral-650);
   --elevation-low:
     0 0.0625rem 0.0625rem 0
     color-mix(in oklch, var(--neutral-950) 40%, transparent),

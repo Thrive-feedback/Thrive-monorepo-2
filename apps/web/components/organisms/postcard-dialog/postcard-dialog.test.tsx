@@ -58,6 +58,7 @@ function dialog(
       title: string;
       open: boolean;
       onOpenChange: (open: boolean) => void;
+      asksBeforeClosing: boolean;
     }
   > = {},
 ) {
@@ -688,6 +689,36 @@ describe('PostcardDialog', () => {
 
     await user.click(within(confirm).getByRole('button', { name: 'Close' }));
 
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('closes at once, without asking, where a page says nothing on it is worth keeping', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(dialog({ onOpenChange, asksBeforeClosing: false }));
+
+    await user.type(message(), 'Half a thought');
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Close without sending?' }),
+    ).toBeNull();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('closes on Escape too without asking, where a page says nothing on it is worth keeping', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(dialog({ onOpenChange, asksBeforeClosing: false }));
+
+    await user.type(message(), 'Half a thought');
+    // The first Escape leaves the text tools; the second closes the card.
+    await user.keyboard('{Escape}');
+    await user.keyboard('{Escape}');
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Close without sending?' }),
+    ).toBeNull();
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 

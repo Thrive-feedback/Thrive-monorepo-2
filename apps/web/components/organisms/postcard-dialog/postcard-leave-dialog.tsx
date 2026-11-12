@@ -16,18 +16,25 @@ export type UsePostcardLeaveOptions = {
   isWriting: boolean;
   /** Where focus goes if the control that asked has gone. */
   fallbackRef: React.RefObject<HTMLElement | null>;
+  /**
+   * Whether closing asks first, `true` unless a page says otherwise: the landing page's cards hold
+   * nothing worth keeping, so they close at once.
+   */
+  asksBeforeClosing?: boolean;
   /** The writer chose to leave. */
   onLeave: () => void;
 };
 
 /**
- * Leaving a card: closing always asks first. Keep writing puts the cursor back where it was, and
- * leaving leaves it to the card's own close, since nothing here is a `DialogTrigger`.
+ * Leaving a card: closing asks first, unless `asksBeforeClosing` is off and it simply closes. Keep
+ * writing puts the cursor back where it was, and leaving leaves it to the card's own close, since
+ * nothing here is a `DialogTrigger`.
  */
 export function usePostcardLeave({
   isWriting,
   fallbackRef,
   onLeave,
+  asksBeforeClosing = true,
 }: UsePostcardLeaveOptions) {
   const [isOpen, setIsOpen] = useState(false);
   const askedFromRef = useRef<HTMLElement | null>(null);
@@ -35,6 +42,10 @@ export function usePostcardLeave({
 
   function askToClose() {
     if (!isWriting) {
+      return;
+    }
+    if (!asksBeforeClosing) {
+      onLeave();
       return;
     }
     askedFromRef.current = focusedControl();

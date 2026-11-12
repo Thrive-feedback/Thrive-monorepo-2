@@ -48,7 +48,7 @@ What works today, per the brain's `STATE.md` (as of 2026-10-24):
   them, answered their request, or wrote or shared Feedback with them. A Member who links their own
   Discord account gets the same three as direct messages. Neither carries anybody's words: a
   Notification names who did something and links to it, behind a sign-in.
-- **Kudos** (brain `ADR-0043`, proposed; built on a branch, not merged): one message of at most 280
+- **Kudos** (brain `ADR-0043`, proposed; built): one message of at most 280
   characters to every teammate it @mentions, read by every Member. Sent from Home's composer, shown in
   the Workspace feed and on the Kudos board, each on the card it was written on. Nobody is told they
   received one.
@@ -68,16 +68,18 @@ say "user".
 ## Brand Commitments
 
 - English by default and Thai as well, across the web app (`ADR-0038`); Thai is not built yet (#48,
-  #233–#235), so the landing page shows an inert EN / TH switch. Thai is written natively, feature
+  #233–#235), so the landing page shows no language switch until it is (`ADR-0054`). Thai is written natively, feature
   names stay English.
-- The landing page's words are `ADR-0038`'s *The words, as agreed*; change them there first.
+- The landing page's words are `ADR-0038`'s *The words, as agreed*, as `ADR-0054` amends them;
+  change them there first.
 - Use the design system in `packages/tokens`, generated from the Blueprint export. Never hand-add
   tokens.
 
 ## Evidence on Hand
 
-The landing page cites no research (`ADR-0038`, decision 12). Its proof is the clickable Home
-preview and four worked Moments, which are illustrations, not customers.
+The landing page cites no research (`ADR-0038`, decision 12). Its proof (`ADR-0054`) is a desk of
+real cards a visitor can write on, two worked Moments on their postcards and a made-up team's Kudos
+board: illustrations, not customers.
 
 There are no customers, testimonials, usage counts or prices. Never invent them.
 

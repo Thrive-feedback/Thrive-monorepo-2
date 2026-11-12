@@ -40,6 +40,13 @@ export function BadgeEntry() {
             "Edged in the tone's own colour, for a badge on a tinted ground such as a card in a list, where the soft fill alone fades.",
         },
         {
+          name: 'solid',
+          type: 'boolean',
+          defaultValue: 'false',
+          description:
+            "The tone's tint laid over the base surface, so nothing under the badge shows through, for a label across a card's edge.",
+        },
+        {
           name: 'asChild',
           type: 'boolean',
           defaultValue: 'false',
@@ -78,6 +85,22 @@ export function BadgeEntry() {
           </Badge>
           <Badge tone="warning" edged>
             Pending
+          </Badge>
+        </div>
+      </StateCell>
+      <StateCell
+        label="Solid, across a card's edge"
+        hint="The colour under it never shows through."
+      >
+        <div className="flex flex-wrap gap-2 rounded-control bg-linear-to-r from-action-primary to-action-tertiary p-3">
+          <Badge tone="info" edged solid>
+            Ask how it went
+          </Badge>
+          <Badge tone="brand" edged solid>
+            Give feedback unasked
+          </Badge>
+          <Badge tone="highlight" edged solid>
+            Say thanks
           </Badge>
         </div>
       </StateCell>

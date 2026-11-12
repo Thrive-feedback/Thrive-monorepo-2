@@ -92,6 +92,11 @@ export type PostcardMiniatureProps = {
   card: ReadPostcard | AskedPostcard;
   /** How wide it is drawn. The whole card scales to it. */
   size?: 'fill' | 'lg';
+  /**
+   * Whether its real words are drawn from `md` up; `false` draws lines at every width, for a
+   * caller that shows this card only below `md` and something else above it.
+   */
+  hasWords?: boolean;
   /** What it opens is on its way: it fades and pulses, so a press does not look lost. */
   isPending?: boolean;
   className?: string;
@@ -105,6 +110,7 @@ export type PostcardMiniatureProps = {
 export function PostcardMiniature({
   card,
   size = 'fill',
+  hasWords = true,
   isPending = false,
   className,
 }: PostcardMiniatureProps) {
@@ -132,8 +138,15 @@ export function PostcardMiniature({
             PAPER_TONES[look.tone].className,
           )}
         >
-          <div className="hidden min-h-0 flex-1 flex-col md:flex">{back}</div>
-          <div className="flex min-h-0 flex-1 divide-x divide-border-muted md:hidden">
+          {hasWords && (
+            <div className="hidden min-h-0 flex-1 flex-col md:flex">{back}</div>
+          )}
+          <div
+            className={cn(
+              'flex min-h-0 flex-1 divide-x divide-border-muted',
+              hasWords && 'md:hidden',
+            )}
+          >
             <WritingLines />
             {card.kind === 'ask' && <WritingLines />}
             {card.kind === 'asked' && <span className="flex-1" />}

@@ -22,7 +22,7 @@ export function OfferedFeedbackCardEntry() {
       source="components/organisms/feed-card/offered-feedback-card.tsx — FeedCardFrame (FeedCardColumns + FeedCardPreview) + FeedbackText"
       summary="Feedback given without being asked, in Home's feed: who wrote to whom, how it came about, the day and who can read it, the message cut at three lines, and beside them a small postcard, leaning, which straightens when pointed at and opens the postcard."
       useFor="One piece of Offered Feedback in the Home menu."
-      avoidFor="The whole message, which the postcard shows. The landing page's preview of Home, which keeps FeedbackCard."
+      avoidFor="The whole message, which the postcard shows."
       usage={`import { OfferedFeedbackCard } from '@/components/organisms/feed-card/offered-feedback-card';
 
 <OfferedFeedbackCard

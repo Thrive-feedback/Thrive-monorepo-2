@@ -1,18 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Text } from '@/components/atoms/text';
 import { HandwrittenNote } from '@/components/molecules/handwritten-note';
-import { cn } from '@/lib/cn.util';
 import { NotedText } from './landing-note';
-
-const section = cva('mx-auto grid w-full max-w-5xl gap-10', {
-  variants: {
-    layout: {
-      stacked: 'md:gap-14',
-      split: 'md:grid-cols-2 md:gap-gap-grid',
-    },
-  },
-  defaultVariants: { layout: 'stacked' },
-});
 
 const header = cva('relative flex max-w-2xl flex-col gap-4', {
   variants: {
@@ -24,38 +13,23 @@ const header = cva('relative flex max-w-2xl flex-col gap-4', {
   defaultVariants: { align: 'start' },
 });
 
-/**
- * Under the heading, until `lg` moves it to the heading's corner; a split section keeps it under
- * the heading, since its own column sits where the corner would be.
- */
-const notePlacement = cva('', {
-  variants: {
-    layout: {
-      stacked: 'lg:hidden',
-      split: '',
-    },
-  },
-  defaultVariants: { layout: 'stacked' },
-});
-
-export type LandingSectionProps = VariantProps<typeof header> &
-  VariantProps<typeof section> & {
-    /** Names the heading, which in turn names the section for assistive technology. */
-    id: string;
-    title: string;
-    lead?: string;
-    /** A handwritten aside for the heading. */
-    note?: string;
-    className?: string;
-    children: React.ReactNode;
-  };
+export type LandingSectionProps = VariantProps<typeof header> & {
+  /** Names the heading, which in turn names the section for assistive technology. */
+  id: string;
+  title: string;
+  lead?: string;
+  /**
+   * A handwritten aside for the heading: at the corner of its first line from `lg` up, under the
+   * heading below that.
+   */
+  note?: string;
+  children: React.ReactNode;
+};
 
 /**
  * One section of the landing page: an `h2` set in the display face, an optional lead and
- * handwritten note, then the
- * section's own content, below it or, `split`, beside it from `md` up. Sections are told apart by
- * space and hairlines rather than panels, so every section shares this frame and steps down the
- * page at one rhythm.
+ * handwritten note, then the section's own content below it. Every section shares this frame; the
+ * band it stands on (`LandingBand`) is what tells it apart from the next.
  */
 export function LandingSection({
   id,
@@ -63,8 +37,6 @@ export function LandingSection({
   lead,
   note,
   align,
-  layout,
-  className,
   children,
 }: LandingSectionProps) {
   const headingId = `${id}-title`;
@@ -72,7 +44,7 @@ export function LandingSection({
     <section
       id={id}
       aria-labelledby={headingId}
-      className={cn(section({ layout }), className)}
+      className="mx-auto grid w-full max-w-5xl gap-10 md:gap-14"
     >
       <header className={header({ align })}>
         <Text
@@ -81,21 +53,16 @@ export function LandingSection({
           variant="display-2"
           className="text-balance"
         >
-          {note && layout !== 'split' ? (
-            <NotedText text={title} note={note} />
-          ) : (
-            title
-          )}
+          {note ? <NotedText text={title} note={note} /> : title}
         </Text>
         {lead && (
-          <Text variant="subtitle-1" tone="muted">
+          // A lead runs a few lines under its heading; balanced, so none ends on one word.
+          <Text variant="subtitle-1" tone="muted" className="text-balance">
             {lead}
           </Text>
         )}
         {note && (
-          <HandwrittenNote className={notePlacement({ layout })}>
-            {note}
-          </HandwrittenNote>
+          <HandwrittenNote className="lg:hidden">{note}</HandwrittenNote>
         )}
       </header>
       {children}

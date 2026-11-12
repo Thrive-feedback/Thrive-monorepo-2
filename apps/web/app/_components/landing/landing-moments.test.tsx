@@ -1,10 +1,11 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { LandingMoments } from './landing-moments';
 
 function moments() {
   return within(
-    screen.getByRole('region', { name: 'Four moments that shouldn’t wait' }),
+    screen.getByRole('region', { name: 'Two moments that shouldn’t wait' }),
   ).getAllByRole('listitem');
 }
 
@@ -15,37 +16,50 @@ function moment(index: number) {
 }
 
 describe('LandingMoments', () => {
-  it('tells four moments, each headed by when it happened', () => {
+  it('tells two moments, each headed by when it happened', () => {
     render(<LandingMoments />);
 
-    expect(moments()).toHaveLength(4);
+    expect(moments()).toHaveLength(2);
     expect(
-      screen.getByRole('heading', {
-        name: '10 minutes after the investor pitch',
-      }),
+      screen.getByRole('heading', { name: 'Right after sprint planning' }),
     ).toBeInTheDocument();
   });
 
-  it('tells two asks, one feedback given unasked and one Kudos', () => {
+  it('tells one ask and one feedback given unasked', () => {
     render(<LandingMoments />);
 
     expect(
       moments().map(
-        (item) => within(item).getByText(/^(Asked|Gave|Kudos)$/).textContent,
+        (item) => within(item).getByText(/^(Asked|Gave)$/).textContent,
       ),
-    ).toEqual(['Asked', 'Asked', 'Gave', 'Kudos']);
+    ).toEqual(['Asked', 'Gave']);
   });
 
-  it('shows what came back for asks and feedback, and nothing back for Kudos', () => {
+  it('shows what came back for both', () => {
     render(<LandingMoments />);
 
-    const pitch = moment(0);
-    const rehearsal = moment(2);
-    const kudos = moment(3);
-    expect(within(pitch).getByText('What came back')).toBeInTheDocument();
-    expect(within(rehearsal).getByText('What came back')).toBeInTheDocument();
-    expect(within(kudos).getByText('Kudos')).toBeInTheDocument();
-    expect(within(kudos).queryByText('What came back')).toBeNull();
+    expect(within(moment(0)).getByText('What came back')).toBeInTheDocument();
+    expect(within(moment(1)).getByText('What came back')).toBeInTheDocument();
+  });
+
+  it('opens a Moment’s card to read, titled as the app titles a card it reads', async () => {
+    const user = userEvent.setup();
+    render(<LandingMoments />);
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Read the card: Right after sprint planning',
+      }),
+    );
+
+    expect(
+      // The dialog's code is fetched on the press, which a busy run can slow past the default wait.
+      await screen.findByRole(
+        'dialog',
+        { name: /Feedback from Ben Carter/ },
+        { timeout: 5000 },
+      ),
+    ).toBeInTheDocument();
   });
 
   it('closes on what each moment waits for without Thrive', () => {
@@ -53,7 +67,7 @@ describe('LandingMoments', () => {
 
     expect(
       screen.getByText(
-        'Without Thrive, each of these waits for the review, the retro or the final grade.',
+        'Without Thrive, both wait for the review, the retro or the final grade.',
       ),
     ).toBeInTheDocument();
   });

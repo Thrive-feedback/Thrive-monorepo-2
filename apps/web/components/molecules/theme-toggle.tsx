@@ -20,7 +20,7 @@ export function ThemeToggle() {
       size="icon"
       aria-label="Dark theme"
       aria-pressed={isDark}
-      className="text-action-primary enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface-hover aria-pressed:text-action-secondary aria-pressed:enabled:active:bg-action-secondary-surface-hover aria-pressed:enabled:hover:bg-action-secondary-surface-hover"
+      className="text-action-primary not-disabled:hover:bg-action-primary-surface-hover not-disabled:active:bg-action-primary-surface-hover aria-pressed:text-action-secondary aria-pressed:not-disabled:active:bg-action-secondary-surface-hover aria-pressed:not-disabled:hover:bg-action-secondary-surface-hover"
       onClick={() => setPreference(isDark ? 'light' : 'dark')}
     >
       {isDark ? (

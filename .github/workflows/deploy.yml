@@ -38,6 +38,8 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: thrive-feedback
+  # The site's address: the smoke test reaches it, and the web image has it written in at build
+  # time for canonical links, the sitemap, robots rules and social previews.
   WEB_URL: https://thriveteam.app
   # A workspace token has no project of its own, so every Railway command names the project
   # and environment it means. A project id identifies, it does not authorise — the token in
@@ -132,6 +134,7 @@ jobs:
           build-args: |
             API_BASE_URL=${{ env.API_BASE_URL }}
             NEXT_PUBLIC_POSTCARD_STORAGE_HOST=${{ env.NEXT_PUBLIC_POSTCARD_STORAGE_HOST }}
+            WEB_URL=${{ env.WEB_URL }}
           cache-from: type=gha,scope=${{ matrix.app }}
           # Layer blobs are keyed by digest across scopes, so the api and web jobs can race to
           # reserve the same one and the loser fails with "failed to reserve cache". The cache

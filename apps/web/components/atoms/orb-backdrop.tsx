@@ -13,28 +13,25 @@ const orb = cva(cn('absolute', styles.orb), {
       primary: cn(styles.primary, 'opacity-25'),
       secondary: cn(styles.secondary, 'opacity-25'),
       tertiary: cn(styles.tertiary, 'opacity-20'),
-      neutral: cn(styles.neutral, 'opacity-10'),
     },
   },
 });
 
 /**
  * Where each orb sits, how deep it is, and its colour. They keep to the margins either side of
- * the page's column. On a long `page` the nearer ones start below the fold so the scroll brings
- * them up; a `screen` that fits the window keeps all of them at its edges, in the three colours of
- * what Thrive does (giving, asking and thanking) only, since the ink's grey haze reads as a smudge
- * without a long page to spread over; where they reach under a panel, its glass catches their
- * colour.
+ * the page's column, in the three colours of what Thrive does (giving, asking and thanking) only:
+ * a haze of the page's own ink reads as a smudge. On a long `page` the nearer ones start below the fold so
+ * the scroll brings them up, and the blue of asking opens it at the top right as it opens a
+ * `screen`; a `screen` that fits the window keeps all of them at its edges, and where they reach
+ * under a panel, its glass catches their colour.
  */
 const ORBS = {
   page: [
     { depth: 'far', tint: 'primary', at: '-top-40 -left-40' },
+    { depth: 'mid', tint: 'tertiary', at: '-top-60 -right-10' },
     { depth: 'mid', tint: 'secondary', at: 'top-1/4 -right-40' },
-    { depth: 'far', tint: 'neutral', at: 'top-1/2 -left-60' },
-    { depth: 'near', tint: 'primary', at: 'top-3/4 -right-20' },
-    { depth: 'mid', tint: 'neutral', at: 'top-full -right-60' },
+    { depth: 'mid', tint: 'tertiary', at: 'top-full -right-60' },
     { depth: 'near', tint: 'secondary', at: 'top-full -left-20' },
-    { depth: 'near', tint: 'neutral', at: 'top-3/2 left-1/3' },
     { depth: 'mid', tint: 'primary', at: 'top-3/2 -left-40' },
   ],
   screen: [
@@ -52,7 +49,7 @@ export type OrbBackdropProps = {
 
 /**
  * The signed-out ground: soft circles of light in the brand's purple, the blue of asking and the
- * warm orange, and in the page's own ink, drifting behind the page at three depths as it scrolls.
+ * warm orange, drifting behind the page at three depths as it scrolls.
  * Pure decoration, fixed behind everything, never in the way of a pointer or a screen reader.
  */
 export function OrbBackdrop({ spread }: OrbBackdropProps) {

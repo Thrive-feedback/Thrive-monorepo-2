@@ -6,7 +6,8 @@
 # Built from the repository root:
 #
 #   docker build -f apps/web/Dockerfile --build-arg API_BASE_URL=http://localhost:3000 \
-#     --build-arg NEXT_PUBLIC_POSTCARD_STORAGE_HOST=rygqsihgowwdtakedrxl.supabase.co -t thrive-web .
+#     --build-arg NEXT_PUBLIC_POSTCARD_STORAGE_HOST=rygqsihgowwdtakedrxl.supabase.co \
+#     --build-arg WEB_URL=http://localhost:3001 -t thrive-web .
 #
 # Size budget: 360 MB. Most of it is the Node base image; the application's own traced
 # server and static assets are about 65 MB. A change past 360 MB needs a reason stated in
@@ -45,6 +46,12 @@ ENV API_BASE_URL=${API_BASE_URL}
 ARG NEXT_PUBLIC_POSTCARD_STORAGE_HOST
 ENV NEXT_PUBLIC_POSTCARD_STORAGE_HOST=${NEXT_PUBLIC_POSTCARD_STORAGE_HOST}
 
+# The address the site is reached at, for canonical links, the sitemap, robots rules and social
+# previews. The build reads it for the pages it renders ahead; the runner below reads it for every
+# page rendered on request. Moving the site means a rebuild. Not a secret.
+ARG WEB_URL
+ENV WEB_URL=${WEB_URL}
+
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN bun run --cwd apps/web build
 
@@ -58,6 +65,13 @@ RUN addgroup --system --gid 1001 thrive \
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# The site's own address again. A server value without `NEXT_PUBLIC_` is read when a page is
+# rendered, not written into the code, and an `ENV` does not carry from one stage to the next, so
+# the image that runs takes it from the same build argument. Without it every page rendered on
+# request fails, since the root layout's metadata names it.
+ARG WEB_URL
+ENV WEB_URL=${WEB_URL}
 
 # Standalone output carries its own traced dependencies, so no install runs in this stage
 # and no package manager survives into it. Static assets and public files sit outside that

@@ -24,6 +24,11 @@ type PostcardDialogCommonProps = {
   /** The Workspace's active Workspace Goals, by name, offered on `#`. */
   workspaceGoals: readonly string[];
   open: boolean;
+  /**
+   * Whether Close and Escape ask before throwing the card away: `true` unless a page holds
+   * nothing worth keeping, as the landing page's made-up team does.
+   */
+  asksBeforeClosing?: boolean;
   onOpenChange: (open: boolean) => void;
   /**
    * Closed. Focus goes back to whatever had it when the card opened; prevent the default to send
@@ -74,8 +79,8 @@ export type PostcardDialogProps = PostcardDialogCommonProps &
  *   right under the writer's name.
  *
  * Every opening is a new card, whatever was on the last one, holding only what the caller says
- * was typed first. Closing — Close or Escape —
- * always asks first, and nothing outside the card closes it.
+ * was typed first. Closing — Close or Escape — asks first unless `asksBeforeClosing` is off, and
+ * nothing outside the card closes it.
  */
 export function PostcardDialog(props: PostcardDialogProps) {
   const {
@@ -86,6 +91,7 @@ export function PostcardDialog(props: PostcardDialogProps) {
     open,
     onOpenChange,
     onCloseAutoFocus,
+    asksBeforeClosing,
   } = props;
   const card: PostcardCard =
     props.kind === 'answer'
@@ -119,6 +125,7 @@ export function PostcardDialog(props: PostcardDialogProps) {
         card={card}
         onClose={() => onOpenChange(false)}
         onCloseAutoFocus={onCloseAutoFocus}
+        asksBeforeClosing={asksBeforeClosing}
       />
     </Dialog>
   );

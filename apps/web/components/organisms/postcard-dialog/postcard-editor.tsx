@@ -87,6 +87,8 @@ export type PostcardEditorProps = {
   title: string;
   writer: PostcardWriter;
   card: PostcardCard;
+  /** Whether Close and Escape ask before leaving; `PostcardDialog` says. */
+  asksBeforeClosing?: boolean;
   /** The writer chose to leave, or the card has been sent: the dialog should close. */
   onClose: () => void;
   onCloseAutoFocus?: (event: Event) => void;
@@ -108,6 +110,7 @@ export function PostcardEditor({
   card,
   onClose,
   onCloseAutoFocus,
+  asksBeforeClosing = true,
 }: PostcardEditorProps) {
   const [draft, change] = useReducer(applyChange, card, blankDraft);
   // The kind is fixed for each editor (the dialog keys it), and only who it is for is read once,
@@ -237,6 +240,7 @@ export function PostcardEditor({
       letGo();
       onClose();
     },
+    asksBeforeClosing,
   });
 
   const handleRecipientsChange = useCallback(

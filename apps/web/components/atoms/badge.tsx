@@ -34,6 +34,16 @@ export const badgeVariants = cva(
         true: '',
         false: '',
       },
+      /**
+       * Solid for a badge laid over something with a pattern or words of its own, such as a label
+       * across a card's edge: the tone's tint is laid as an image over the base surface, so nothing
+       * under the badge shows through it, as a toast lays its status over its card. Two background
+       * colours on one element would leave stylesheet order to pick the winner.
+       */
+      solid: {
+        true: 'bg-surface-base bg-linear-to-r',
+        false: '',
+      },
     },
     compoundVariants: [
       { edged: true, tone: 'neutral', className: 'border-border-strong' },
@@ -55,8 +65,55 @@ export const badgeVariants = cva(
       },
       { edged: true, tone: 'error', className: 'border-status-error-border' },
       { edged: true, tone: 'info', className: 'border-status-info-border' },
+      {
+        solid: true,
+        tone: 'neutral',
+        className:
+          'from-action-neutral-surface-hover to-action-neutral-surface-hover',
+      },
+      {
+        solid: true,
+        tone: 'brand',
+        className:
+          'from-action-primary-surface-hover to-action-primary-surface-hover',
+      },
+      {
+        solid: true,
+        tone: 'highlight',
+        className:
+          'from-action-secondary-surface-hover to-action-secondary-surface-hover',
+      },
+      {
+        solid: true,
+        tone: 'success',
+        className:
+          'from-status-success-surface-hover to-status-success-surface-hover',
+      },
+      {
+        solid: true,
+        tone: 'warning',
+        className:
+          'from-status-warning-surface-hover to-status-warning-surface-hover',
+      },
+      {
+        solid: true,
+        tone: 'error',
+        className:
+          'from-status-error-surface-hover to-status-error-surface-hover',
+      },
+      {
+        solid: true,
+        tone: 'info',
+        className:
+          'from-status-info-surface-hover to-status-info-surface-hover',
+      },
     ],
-    defaultVariants: { tone: 'neutral', size: 'sm', edged: false },
+    defaultVariants: {
+      tone: 'neutral',
+      size: 'sm',
+      edged: false,
+      solid: false,
+    },
   },
 );
 
@@ -76,6 +133,7 @@ export function Badge({
   tone,
   size,
   edged,
+  solid,
   asChild = false,
   className,
   ...rest
@@ -84,7 +142,7 @@ export function Badge({
   return (
     <Comp
       data-slot="badge"
-      className={cn(badgeVariants({ tone, size, edged }), className)}
+      className={cn(badgeVariants({ tone, size, edged, solid }), className)}
       {...rest}
     />
   );

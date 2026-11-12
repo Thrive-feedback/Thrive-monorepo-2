@@ -18,7 +18,7 @@ export function RequestedFeedbackCardEntry() {
       source="components/organisms/feed-card/requested-feedback-card.tsx — FeedCardFrame (FeedCardColumns + FeedCardPreview) + FeedbackText"
       summary="An answer to a Feedback Request, in Home's feed: the same card as OfferedFeedbackCard, with what was asked in a panel above the answer, headed Asked and Answered, everyone asked under it (this answer first), and a small postcard halved as the real one is."
       useFor="One answer in the Home menu."
-      avoidFor="The landing page's preview of Home, which keeps FeedbackCard. Feedback kept to the person who asked, which is never on Home."
+      avoidFor="Feedback kept to the person who asked, which is never on Home."
       usage={`import { RequestedFeedbackCard } from '@/components/organisms/feed-card/requested-feedback-card';
 
 <RequestedFeedbackCard

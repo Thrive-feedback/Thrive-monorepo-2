@@ -1,6 +1,10 @@
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { defineConfig, type ViteUserConfig } from 'vitest/config';
+import {
+  configDefaults,
+  defineConfig,
+  type ViteUserConfig,
+} from 'vitest/config';
 
 /**
  * The shared base for component suites.
@@ -20,6 +24,9 @@ export function reactTestConfig(
       // Tests import `describe` and `it` like any other module; nothing is injected as a global.
       globals: false,
       setupFiles: options.setupFiles ?? [],
+      // A Next.js standalone build copies the app's sources, tests included, into `.next`; those
+      // copies cannot resolve their imports, so a build output is never searched for tests.
+      exclude: [...configDefaults.exclude, '**/.next/**'],
       css: false,
       // Shuffled so no test can come to depend on another running first.
       sequence: { shuffle: true },

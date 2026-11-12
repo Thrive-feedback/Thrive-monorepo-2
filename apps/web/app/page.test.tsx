@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import LandingPage from './page';
+import { LANDING_COPY } from './_components/landing/landing-copy.constant';
+import LandingPage, { metadata } from './page';
 
 const readSession = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
@@ -62,23 +63,11 @@ describe('LandingPage', () => {
     }
   });
 
-  it('takes a visitor from the promise to the tour of Home', async () => {
+  it('lays the cards to try beside the promise, keeping the page to one h1', async () => {
     render(await LandingPage());
 
-    expect(
-      screen.getByRole('link', { name: 'See it in action' }),
-    ).toHaveAttribute('href', '#tour');
-    expect(
-      screen.getByRole('region', { name: 'Try it, then sign in' }),
-    ).toHaveAttribute('id', 'tour');
-  });
-
-  it('shows a preview of Home under the promise, keeping the page to one h1', async () => {
-    render(await LandingPage());
-
-    expect(
-      screen.getByRole('region', { name: 'Preview of Thrive Home' }),
-    ).toBeInTheDocument();
+    const desk = screen.getByRole('region', { name: 'Try it, then sign in' });
+    expect(desk).toBeInTheDocument();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
   });
 
@@ -87,23 +76,21 @@ describe('LandingPage', () => {
 
     for (const name of [
       'Try it, then sign in',
-      'Four moments that shouldn’t wait',
+      'Two moments that shouldn’t wait',
+      'Say thanks where the whole team can see it',
       'Honest feedback starts with a question.',
-      'Everything you need to start. Nothing you don’t.',
-      'Made for whoever leads the team',
-      'Start the conversation your team is waiting for.',
+      'Everything Thrive does',
+      'Whoever leads the team',
     ]) {
       expect(screen.getByRole('region', { name })).toBeInTheDocument();
     }
   });
 
-  it('offers Thai as coming, without pretending it can be chosen', async () => {
+  it('shows no language switch until Thai exists', async () => {
     render(await LandingPage());
 
-    const thai = screen.getByRole('button', { name: 'TH' });
-    expect(thai).toBeDisabled();
-    expect(thai).toHaveAccessibleDescription('Thai is coming soon');
-    expect(screen.getByText('EN')).toHaveAttribute('aria-current', 'true');
+    expect(screen.queryByRole('group', { name: 'Language' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'TH' })).toBeNull();
   });
 
   it('no longer points visitors at the component showcase or the API reference', async () => {
@@ -111,5 +98,27 @@ describe('LandingPage', () => {
 
     expect(screen.queryByRole('link', { name: /components/i })).toBeNull();
     expect(screen.queryByRole('link', { name: /API reference/i })).toBeNull();
+  });
+});
+
+describe('the landing page’s metadata', () => {
+  it('names one canonical address and is indexable', () => {
+    expect(metadata.alternates?.canonical).toBe('/');
+    expect(metadata.robots).toEqual({ index: true, follow: true });
+  });
+
+  it('previews a shared link with the same title and description as the page', () => {
+    expect(metadata.openGraph).toMatchObject({
+      type: 'website',
+      url: '/',
+      siteName: 'Thrive',
+      title: LANDING_COPY.meta.title,
+      description: LANDING_COPY.meta.description,
+    });
+    expect(metadata.twitter).toMatchObject({
+      card: 'summary_large_image',
+      title: LANDING_COPY.meta.title,
+      description: LANDING_COPY.meta.description,
+    });
   });
 });
