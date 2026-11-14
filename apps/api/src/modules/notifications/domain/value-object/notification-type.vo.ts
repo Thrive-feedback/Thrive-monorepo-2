@@ -1,20 +1,21 @@
 import { NotificationTypeNotSupportedError } from '../notifications.errors';
 
 /**
- * The things a Member is told about (glossary: Notification). Four values for the three events
+ * The things a Member is told about (glossary: Notification). Five values for the four events
  * Thrive raises, because Feedback written to somebody and Feedback shared with them are the same
  * event seen from two sides and read as two different sentences.
  *
  * The type also says what kind of thing a Notification points at: the kind `subjectId` names
  * follows from it — an Ask for `ASK_RECEIVED`, a Feedback Request for `ASK_ANSWERED`, a piece of
- * Feedback for the other two — so a stored row needs no second column to say which it was
- * (design 0022 D4).
+ * Feedback for `FEEDBACK_RECEIVED` and `FEEDBACK_SHARED`, a Kudos for `KUDOS_RECEIVED` — so a
+ * stored row needs no second column to say which it was (design 0022 D4).
  */
 export const NOTIFICATION_TYPES = [
   'ASK_RECEIVED',
   'ASK_ANSWERED',
   'FEEDBACK_RECEIVED',
   'FEEDBACK_SHARED',
+  'KUDOS_RECEIVED',
 ] as const;
 
 export type NotificationTypeValue = (typeof NOTIFICATION_TYPES)[number];

@@ -554,12 +554,12 @@ model Notification {
   workspaceId        String
   /// Who is being told. No foreign key: Accounts are Identity's.
   recipientAccountId String
-  /// ASK_RECEIVED, ASK_ANSWERED, FEEDBACK_RECEIVED or FEEDBACK_SHARED. Text rather than a
+  /// ASK_RECEIVED, ASK_ANSWERED, FEEDBACK_RECEIVED, FEEDBACK_SHARED or KUDOS_RECEIVED. Text rather than a
   /// database enum, as every other value this application keys a registry or a copy map by is.
   type               String
   /// Who did the thing. Never the recipient — nobody is told about their own action.
   actorAccountId     String
-  /// The Ask, Feedback Request or Feedback it names. Which of the three it is follows from
+  /// The Ask, Feedback Request, Feedback or Kudos it names. Which of them it is follows from
   /// `type`, each of which has exactly one kind of subject, so a second column would hold a
   /// value derivable from the first (design 0022 D4). No foreign key: they are Feedback's.
   subjectId          String

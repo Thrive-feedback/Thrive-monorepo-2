@@ -29,7 +29,7 @@ const notificationSchema = z.object({
     photoUrl: z.url().nullable(),
   }),
   /**
-   * The Ask, Feedback Request or Feedback this is about, raw. Which of the three it is follows
+   * The Ask, Feedback Request, Feedback or Kudos this is about, raw. Which of them it is follows
    * from `type`, and the web turns the pair into a link — nothing here is read from Feedback,
    * so a subject that has gone is followed to the ordinary not-found rather than filtered out.
    */

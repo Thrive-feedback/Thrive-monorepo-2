@@ -216,3 +216,45 @@ describe('telling the Workspace channel about a Kudos', () => {
     );
   });
 });
+
+describe('telling the people a Kudos names', () => {
+  const RECEIVED = 'notifications.kudos_received';
+
+  it('tells everyone it names, in person, and that every Member can read it', async () => {
+    const { useCase, outbox } = setUp();
+
+    await useCase.execute(giving('@ben and @cara carried the launch.'));
+
+    expect(outbox.ofType(RECEIVED)).toHaveLength(1);
+    // Keyed by the Kudos, so a retried give tells each person once.
+    expect(outbox.ofType(RECEIVED)[0]?.idempotencyKey).toBe(
+      `${RECEIVED}:${KUDOS_ID}`,
+    );
+    expect(outbox.ofType(RECEIVED)[0]?.payload).toEqual({
+      workspaceId: WORKSPACE_ID,
+      actorAccountId: ANN,
+      audience: 'EVERYONE',
+      recipientAccountIds: [BEN, CARA],
+      kudosId: KUDOS_ID,
+    });
+  });
+
+  it('carries none of the words to a bell or a direct message', async () => {
+    const { useCase, outbox } = setUp();
+
+    await useCase.execute(giving('@ben carried the launch.'));
+
+    expect(JSON.stringify(outbox.ofType(RECEIVED)[0]?.payload)).not.toContain(
+      'carried the launch',
+    );
+  });
+
+  it('tells nobody in person about a Kudos for the whole Workspace', async () => {
+    const { useCase, outbox } = setUp();
+
+    await useCase.execute(giving('Thank you all for the launch.'));
+
+    // Every Member reads it on the board; telling all of them would fill every bell.
+    expect(outbox.ofType(RECEIVED)).toEqual([]);
+  });
+});

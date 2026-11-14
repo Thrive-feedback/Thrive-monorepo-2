@@ -33,6 +33,12 @@ export const WEB_PATHS = {
    * Feedback, because the post already carries the words (brain `ADR-0045`).
    */
   kudos: () => '/kudos',
+  /**
+   * Received narrowed to the Kudos given to the person, for the same reason as `requests`: a
+   * Kudos has no permalink, so a message telling somebody they were given one opens the list it
+   * is on. Matches `ROUTES.receivedViewing(PERSONAL_VIEWS[0], 'kudos')`, the list.
+   */
+  kudosForMe: () => '/received?show=kudos',
 } as const;
 
 /**

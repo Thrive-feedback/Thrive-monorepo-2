@@ -9,6 +9,7 @@ import {
   type AskAnswered,
   type AskReceived,
   type FeedbackWritten,
+  type KudosReceived,
   type PersonEvent,
   PersonNotifierPort,
 } from '../port/person-notifier.port';
@@ -125,6 +126,23 @@ export class FanOutPersonNotifier extends PersonNotifierPort {
         subjectId: event.feedbackId,
       })),
       () => this.chatPersonNotifier.feedbackWritten(event),
+    );
+  }
+
+  async kudosReceived(event: KudosReceived): Promise<void> {
+    const recipients = await this.notificationRecipients.of({
+      workspaceId: event.workspaceId,
+      actorAccountId: event.actorAccountId,
+      candidates: event.recipientAccountIds,
+    });
+    await this.fanOut(
+      event,
+      recipients.map((recipientAccountId) => ({
+        recipientAccountId,
+        type: 'KUDOS_RECEIVED' as const,
+        subjectId: event.kudosId,
+      })),
+      () => this.chatPersonNotifier.kudosReceived(event),
     );
   }
 

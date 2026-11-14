@@ -12,7 +12,7 @@ export interface NotificationToRecord {
   readonly recipientAccountId: string;
   readonly type: NotificationTypeValue;
   readonly actorAccountId: string;
-  /** The Ask, Feedback Request or Feedback this is about; which of them follows from `type`. */
+  /** The Ask, Feedback Request, Feedback or Kudos this is about; which follows from `type`. */
   readonly subjectId: string;
   /** Who can read what it names; `null` when the event that raised it did not say. */
   readonly audience: NotificationAudience | null;

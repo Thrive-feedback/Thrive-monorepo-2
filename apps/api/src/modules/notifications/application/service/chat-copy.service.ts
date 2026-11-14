@@ -68,6 +68,18 @@ export class ChatCopyService {
     );
   }
 
+  kudosReceived(event: {
+    readonly actorName: string;
+    readonly workspaceName: string;
+  }): string {
+    // Nothing of what was written, as for every message to one person: the link reads it, behind
+    // a sign-in. The channel post is the one place a Kudos's words travel (brain `ADR-0045`).
+    return [
+      `**${event.actorName}** gave you kudos in *${event.workspaceName}*`,
+      this.linkTo(WEB_PATHS.kudosForMe()),
+    ].join('\n');
+  }
+
   private linkTo(path: string): string {
     return webUrl(this.webConfig.origin, path);
   }

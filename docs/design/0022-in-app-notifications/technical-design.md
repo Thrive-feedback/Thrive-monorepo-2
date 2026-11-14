@@ -48,7 +48,7 @@ browser (§2 D9).
 | D1 | **In-app lives in `modules/notifications/`** — the module `0021` D1 creates, beside `LinkedAccount` | a second module; putting it in Feedback | `domain-map.md` gives Notifications one bounded context owning `Notification`, `Reminder`, `Channel`, `Preference`. Two modules for one context is the thing `BE_03` exists to prevent |
 | D2 | **One row per recipient per event.** The row *is* the in-app Notification and the fan-out unit | one row per event plus a recipients join table | Every event here already enumerates its recipients at the moment it happens. A join table buys a saving at 1–5 recipients and costs a second read on the hottest query in the feature — the unread count |
 | D3 | **The row stores ids and a type — and, since D16, the subject's audience. Never prose, never Feedback's words.** Names are resolved at read time through `AccountSummaryPort.summariesOf`, once per page | storing the rendered sentence; storing an excerpt of the Request message | `requirement.md` rule 2. A stored sentence is a second copy of words `ADR 0054` deliberately keeps in one place, it freezes a name that may change, and it would make a future redaction unenforceable. Resolving costs one extra call per page, not per row (`BE_06` R9, the `PeopleService` pattern) |
-| D4 | **The subject is one `subjectId`; its kind is implied by `type`** | a polymorphic `(subjectKind, subjectId)` pair | Four types, each with exactly one kind of subject: `ASK_RECEIVED`→Ask, `ASK_ANSWERED`→Feedback Request, `FEEDBACK_RECEIVED`/`FEEDBACK_SHARED`→Feedback. A second column would hold a value derivable from the first |
+| D4 | **The subject is one `subjectId`; its kind is implied by `type`** | a polymorphic `(subjectKind, subjectId)` pair | Five types, each with exactly one kind of subject: `ASK_RECEIVED`→Ask, `ASK_ANSWERED`→Feedback Request, `FEEDBACK_RECEIVED`/`FEEDBACK_SHARED`→Feedback, `KUDOS_RECEIVED`→Kudos (D18). A second column would hold a value derivable from the first |
 | D5 | **Written after the subject's transaction commits, in Notifications' own transaction** | inside the Feedback use case's `UnitOfWork` | `AGENTS.md` §6 hard rule: no cross-module transaction. Not negotiable, whatever it costs. What it costs is §10 R1: a crash between the two loses the Notification, which is exactly the gap `BE_17`'s outbox exists to close and which this design accepts and names |
 | D6 | **The row write is `await`ed and its failure swallowed**, unlike the chat message, which stays fire-and-forget | fire-and-forget for both (`0021` D5); awaiting both | They are different risks. The row is one local Postgres insert, ~1 ms, and losing it means the person is **never told by any channel**. The chat call is two HTTPS round trips to a third party that may be down. So: `await` the row inside a `try/catch` that logs and returns; leave chat as `0021` wrote it. **Cost, stated:** ~1–3 ms added to the p50 of three write endpoints, measurable before and after with the existing suites |
 | D7 | **Fan-out is one `createMany`**, not a call per recipient | `Promise.allSettled` over inserts | A request asking five people is one round trip, not five. This is also why D2's shape pays: the recipients are already in hand |
@@ -62,10 +62,11 @@ browser (§2 D9).
 | D15 | **Read state is one nullable `readAt`** | separate `seenAt` and `readAt` | One bell, one question: is there anything I have not dealt with. `requirement.md` §7 question 5 settles *when* it is set; this settles that there is one of it |
 | D16 | **The row keeps who can read its subject, as `audience`** (`ONLY_ME` · `SELECTED_PEOPLE` · `EVERYONE`, nullable), written with the row from the event's payload. The bell draws it as an icon at the end of the line. **A Giver is sent it only when the request is `EVERYONE`**: a Giver is told that the answer goes on the Workspace feed and nothing else of who reads it (brain `ADR-0022` decision 2, `ADR-0046` decision 4), which is all the Ask they open says (`onWorkspaceFeed`). The Requester, a Receiver and a Selected person are sent it whatever it is — each can already read it | reading Feedback's Visibility at list time; leaving the icon out | The one fact about a subject this module copies, and it may: no use case changes a Visibility once written, so the copy cannot go stale. Reading it at list time would make Notifications depend on Feedback, which already depends on Notifications. Feedback translates its `VisibilityValue` through an exhaustive map (`feedback/application/service/notification-audience.mapper.ts`), so a new Visibility fails to compile until mapped. **Costs, stated:** Feedback must send it on every event; it is **optional for good**, on the port and in the outbox payloads, because a Giver's line usually has none; a value the handler does not know is read as none rather than refusing the message. **No backfill** (owner's decision, 2026-11-14): a backfill would cross Feedback's tables (`BE_15` R2), so rows written before the column hold `NULL` and draw no icon. Rollback is `DROP COLUMN "audience"`, safe once the code that reads it is rolled back |
 | D17 | **The bell line shows the actor's photo**: `actor.photoUrl` on the list response, from the same `AccountSummaryPort.summariesOf` call that names them, so still one call per page | a second lookup for photos | The face is read with the name, and both are resolved at read time for the reason D3 gives |
+| D18 | **A Kudos is the fifth kind, `KUDOS_RECEIVED`**: each Member it @mentions gets a line and, if linked, a direct message; a Kudos naming nobody tells nobody. Audience `EVERYONE`; the line opens Received showing Kudos; neither carries its words. Feedback enqueues `notifications.kudos_received` only when the Kudos names somebody. The web leaves out a kind it has no sentence for, and the API counts only kinds it lists, so the next kind is additive | telling every Member of a Kudos for the whole Workspace; bell only; opening the Kudos board | ADR 0086. A Kudos for everybody is read on the board by everybody, and telling all of them would fill every bell; the person praised by name is the one being told something happened to them |
 
 **Not approved yet — this document is the review. D12 and D14 are the two to argue with.**
 
-**D16 and D17 were decided by the owner on 2026-11-14** (the audience, the Giver rule, no backfill, the photo); they are not open.
+**D16, D17 and D18 were decided by the owner on 2026-11-14** (the audience, the Giver rule, no backfill, the photo, the Kudos kind); they are not open.
 
 ## 3. Domain model
 
@@ -75,7 +76,7 @@ Added to the module `0021` creates. Nothing in `0021`'s tree is moved.
 modules/notifications/
   domain/
     entity/notification.entity.ts              a Notification: recipient, type, actor, subject, readAt
-    value-object/notification-type.vo.ts       D4 — ASK_RECEIVED · ASK_ANSWERED · FEEDBACK_RECEIVED · FEEDBACK_SHARED
+    value-object/notification-type.vo.ts       D4 — ASK_RECEIVED · ASK_ANSWERED · FEEDBACK_RECEIVED · FEEDBACK_SHARED · KUDOS_RECEIVED (D18)
     value-object/notification-audience.vo.ts   D16 — ONLY_ME · SELECTED_PEOPLE · EVERYONE, and a stored value read back
     repository/notification-repository.port.ts recordAll(…) · markRead(…) · markAllRead(…)
     notifications.errors.ts                    (exists — NOTIFICATION_NOT_FOUND added)
@@ -222,6 +223,7 @@ should be done about it before then**.
 | `ASK_ANSWERED` | "Ploy answered your request in Thrive Team" | "Ploy answered your request" | `ROUTES.homeRequest(subjectId)` |
 | `FEEDBACK_RECEIVED` | "Nut wrote feedback to you in Thrive Team" | "Nut wrote feedback to you" | `ROUTES.homeFeedback(subjectId)` — **does not exist, §10 R4** |
 | `FEEDBACK_SHARED` | "Nut shared feedback with you in Thrive Team" | "Nut shared feedback with you" | same |
+| `KUDOS_RECEIVED` (D18) | "Nut gave you kudos in Thrive Team" — none of its words | "Nut gave you kudos" | `ROUTES.receivedViewing('list', 'kudos')` |
 
 The Workspace's name is in the chat copy and not the in-app copy, for the reason `0021` D11 gave: a chat
 conversation carries messages from every Workspace somebody belongs to, and a bell does not — it is
@@ -266,11 +268,11 @@ model Notification {
   workspaceId        String
   /// Who is being told. No foreign key: Accounts are Identity's (BE_03 R7).
   recipientAccountId String
-  /// ASK_RECEIVED · ASK_ANSWERED · FEEDBACK_RECEIVED · FEEDBACK_SHARED.
+  /// ASK_RECEIVED · ASK_ANSWERED · FEEDBACK_RECEIVED · FEEDBACK_SHARED · KUDOS_RECEIVED (D18).
   type               String
   /// Who did the thing. Never the recipient — nobody is told about their own action.
   actorAccountId     String
-  /// The Ask, Feedback Request or Feedback it names. Which of those it is, is implied by `type`.
+  /// The Ask, Feedback Request, Feedback or Kudos it names. Which of those it is, is implied by `type`.
   /// No foreign key: they are Feedback's.
   subjectId          String
   /// Null until the Member opens it or marks everything read. The unread count is a count of these.
@@ -310,6 +312,7 @@ No new configuration. No new dependency.
 | Unit | D16: the audience reaches the row; an event without one, or with one it does not know, records none | `fan-out-person-notifier.adapter.spec.ts`, `person-notification-outbox.adapter.spec.ts`, `notification-audience.vo.spec.ts` |
 | Integration | D16: the audience round-trips, and a row without one reads as none | `prisma-notification.repository.integration.spec.ts` |
 | Gherkin | `@api` D16: through the real outbox, each kind's line says who can read it, and a Giver's says it only for Everyone | `features/notifications.feature` |
+| Unit + Gherkin | D18: a Kudos tells each Member it names, never its giver or a Deactivated Member, says EVERYONE, carries none of its words; one naming nobody tells nobody | `give-kudos`, `fan-out-person-notifier`, `chat-person-notifier`, `person-notification-outbox` specs; `features/notifications.feature` |
 | Web | the bell renders a count, the panel renders each type's sentence and destination, empty state, mark-all-read; the face, the dot in its kind's colour and the audience icon | `notification-bell.test.tsx`, `notification-copy.test.ts`, `notification-actions.service.test.ts` (`FE_14`) |
 
 Nothing here reaches a chat tool; the chat collaborator is faked, as `0021` fakes every `ChatProvider`.

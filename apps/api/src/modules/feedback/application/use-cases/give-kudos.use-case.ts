@@ -1,4 +1,5 @@
 import { KUDOS_GIVEN_TYPE } from '@app/modules/integrations';
+import { KUDOS_RECEIVED_TYPE } from '@app/modules/notifications';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
 import { Outbox } from '@app/shared/application/outbox.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
@@ -10,6 +11,7 @@ import {
   type KudosCardSnapshot,
 } from '../../domain/value-object/kudos-card.vo';
 import { KudosMessage } from '../../domain/value-object/kudos-message.vo';
+import { KUDOS_AUDIENCE } from '../service/notification-audience.mapper';
 import { SummaryRefreshService } from '../service/summary-refresh.service';
 import { TagsService } from '../service/tags.service';
 
@@ -34,11 +36,13 @@ export interface GiveKudosResult {
  * recipients, and binding only ever finds active Members of this Workspace, so a slug naming a
  * stranger names nobody.
  *
- * **The Workspace's channel is told, and nobody else is.** A Kudos posted to a connected channel
- * carries its message, unlike Feedback, because it has no Visibility to respect — every Member
- * reads every Kudos already — and praise without its words says only that praise happened
- * somewhere else (brain `ADR-0045`). The bell line and the direct message for a Kudos are still
- * not built (ADR 0060).
+ * **The Workspace's channel is told, and so are the people it names.** A Kudos posted to a
+ * connected channel carries its message, unlike Feedback, because it has no Visibility to respect
+ * — every Member reads every Kudos already — and praise without its words says only that praise
+ * happened somewhere else (brain `ADR-0045`). Each Member it @mentions gets a bell line and, if
+ * they linked a chat tool, a direct message, neither carrying its words. A Kudos naming nobody is
+ * for the whole Workspace and tells nobody in person: telling every Member would fill every bell
+ * (ADR 0086).
  *
  * What a Kudos *is* has no brain ADR: ADR 0060 cites `ADR-0043` for it and that record was never
  * written. The glossary's Kudos row is the nearest thing until somebody writes it.
@@ -91,6 +95,23 @@ export class GiveKudosUseCase {
           },
         },
       ]);
+      // The people it names are told in person. Nobody is for a Kudos given to the whole
+      // Workspace, which every Member already reads on the board (ADR 0086).
+      if (given.recipientAccountIds.length > 0) {
+        await this.outbox.enqueue([
+          {
+            type: KUDOS_RECEIVED_TYPE,
+            idempotencyKey: `${KUDOS_RECEIVED_TYPE}:${given.id}`,
+            payload: {
+              workspaceId: given.workspaceId,
+              actorAccountId: given.giverAccountId,
+              audience: KUDOS_AUDIENCE,
+              recipientAccountIds: given.recipientAccountIds,
+              kudosId: given.id,
+            },
+          },
+        ]);
+      }
       // A Kudos naming nobody is for the whole Workspace and is in nobody's own Feedback, so
       // it leaves every summary as it was (ADR 0074).
       await this.summaryRefresh.askFor({

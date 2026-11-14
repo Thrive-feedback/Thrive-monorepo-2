@@ -3,6 +3,7 @@ import {
   type AskAnswered,
   type AskReceived,
   type FeedbackWritten,
+  type KudosReceived,
   PersonNotifierPort,
 } from '@app/modules/notifications';
 import {
@@ -222,6 +223,7 @@ export class FakePersonNotifier extends PersonNotifierPort {
   readonly asksReceived: AskReceived[] = [];
   readonly asksAnswered: AskAnswered[] = [];
   readonly feedbackWritten_: FeedbackWritten[] = [];
+  readonly kudosReceived_: KudosReceived[] = [];
   private rejecting = false;
 
   /** The port promises never to reject. This is for proving the caller survives it anyway. */
@@ -242,6 +244,11 @@ export class FakePersonNotifier extends PersonNotifierPort {
 
   async feedbackWritten(event: FeedbackWritten): Promise<void> {
     this.feedbackWritten_.push(event);
+    this.refuseIfAsked();
+  }
+
+  async kudosReceived(event: KudosReceived): Promise<void> {
+    this.kudosReceived_.push(event);
     this.refuseIfAsked();
   }
 

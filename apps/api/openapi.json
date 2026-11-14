@@ -3332,7 +3332,8 @@
                     "ASK_RECEIVED",
                     "ASK_ANSWERED",
                     "FEEDBACK_RECEIVED",
-                    "FEEDBACK_SHARED"
+                    "FEEDBACK_SHARED",
+                    "KUDOS_RECEIVED"
                   ]
                 },
                 "actor": {

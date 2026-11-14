@@ -3,7 +3,10 @@ import { NotificationTypeNotSupportedError } from '../notifications.errors';
 import { NotificationType } from './notification-type.vo';
 
 describe('the kind of thing somebody is told about', () => {
-  it('accepts each of the four things Thrive tells people about', () => {
+  it('accepts each of the five things Thrive tells people about', () => {
+    expect(NotificationType.of('KUDOS_RECEIVED').toString()).toBe(
+      'KUDOS_RECEIVED',
+    );
     expect(NotificationType.of('ASK_RECEIVED').toString()).toBe('ASK_RECEIVED');
     expect(NotificationType.of('ASK_ANSWERED').toString()).toBe('ASK_ANSWERED');
     expect(NotificationType.of('FEEDBACK_RECEIVED').toString()).toBe(

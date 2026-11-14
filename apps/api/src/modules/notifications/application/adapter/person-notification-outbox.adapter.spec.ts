@@ -8,6 +8,7 @@ import {
   ASK_ANSWERED_TYPE,
   ASK_RECEIVED_TYPE,
   FEEDBACK_WRITTEN_TYPE,
+  KUDOS_RECEIVED_TYPE,
   PersonNotificationOutboxHandler,
 } from './person-notification-outbox.adapter';
 
@@ -43,6 +44,27 @@ describe('draining a notification', () => {
 
     expect(personNotifier.asksReceived).toHaveLength(1);
     expect(personNotifier.asksReceived[0]?.giverAccountIds).toEqual([BEN]);
+  });
+
+  it('tells the people a Kudos names, and that every Member can read it', async () => {
+    const { handler, personNotifier } = setUp();
+
+    await handler.handle(
+      message(KUDOS_RECEIVED_TYPE, {
+        workspaceId: WORKSPACE,
+        actorAccountId: ANN,
+        audience: 'EVERYONE',
+        recipientAccountIds: [BEN],
+        kudosId: 'kudos-1',
+      }),
+    );
+
+    expect(personNotifier.kudosReceived_).toHaveLength(1);
+    expect(personNotifier.kudosReceived_[0]).toMatchObject({
+      recipientAccountIds: [BEN],
+      kudosId: 'kudos-1',
+      audience: 'EVERYONE',
+    });
   });
 
   it('passes on who can read what the line names', async () => {

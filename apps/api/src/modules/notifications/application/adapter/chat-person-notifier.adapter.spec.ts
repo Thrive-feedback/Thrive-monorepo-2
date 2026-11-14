@@ -265,6 +265,40 @@ describe('messaging somebody Feedback was written to', () => {
   });
 });
 
+describe('messaging somebody given Kudos', () => {
+  it('names who gave it and the Workspace, links to their Kudos, and carries none of the words', async () => {
+    const { notifier, discord, linked } = setUp();
+    linked(BEN);
+
+    await notifier.kudosReceived({
+      workspaceId: WORKSPACE,
+      actorAccountId: ANN,
+      recipientAccountIds: [BEN],
+      kudosId: 'kudos-1',
+    });
+
+    expect(discord.posted).toHaveLength(1);
+    // Two lines: who and where, then the link. The event carries no words, so none can travel.
+    expect(discord.posted[0]?.text).toBe(
+      '**Ann** gave you kudos in *Acme*\nhttps://thrive.test/received?show=kudos',
+    );
+  });
+
+  it('never messages the person who gave it', async () => {
+    const { notifier, discord, linked } = setUp();
+    linked(ANN);
+
+    await notifier.kudosReceived({
+      workspaceId: WORKSPACE,
+      actorAccountId: ANN,
+      recipientAccountIds: [ANN],
+      kudosId: 'kudos-1',
+    });
+
+    expect(discord.posted).toEqual([]);
+  });
+});
+
 describe('messaging the Requester when an Ask is answered', () => {
   it('tells only the Requester, and carries none of the answer', async () => {
     const { notifier, discord, linked } = setUp();
