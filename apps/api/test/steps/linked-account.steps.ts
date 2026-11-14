@@ -275,5 +275,9 @@ Then(
 );
 
 Then('the message links to the Feedback', function (this: ThriveWorld) {
-  assert.match(messagesSent()[0]?.text ?? '', /\/home\?feedback=/);
+  // Written to them, so it opens where they read it: Received, showing Feedback given unasked.
+  assert.match(
+    messagesSent()[0]?.text ?? '',
+    /\/received\?show=offered&feedback=/,
+  );
 });

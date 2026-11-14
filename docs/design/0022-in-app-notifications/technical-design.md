@@ -218,8 +218,8 @@ should be done about it before then**.
 | --- | --- | --- | --- |
 | `ASK_RECEIVED` | "Nut asked you for feedback in Thrive Team — On: how our standups are going" | "Nut asked you for feedback" | `ROUTES.homeAsk(subjectId)` |
 | `ASK_ANSWERED` | "Ploy answered your request in Thrive Team" | "Ploy answered your request" | `ROUTES.homeRequest(subjectId)` |
-| `FEEDBACK_RECEIVED` | "Nut wrote feedback to you in Thrive Team" | "Nut wrote feedback to you" | `ROUTES.homeFeedback(subjectId)` — **does not exist, §10 R4** |
-| `FEEDBACK_SHARED` | "Nut shared feedback with you in Thrive Team" | "Nut shared feedback with you" | same |
+| `FEEDBACK_RECEIVED` | "Nut wrote feedback to you in Thrive Team" | "Nut wrote feedback to you" | `ROUTES.receivedFeedback(subjectId, 'list', 'offered')` — Received showing Feedback given to them, the postcard open (owner, 2026-11-14) |
+| `FEEDBACK_SHARED` | "Nut shared feedback with you in Thrive Team" | "Nut shared feedback with you" | `ROUTES.homeFeedback(subjectId, 'all')` — it is not in their Received |
 | `KUDOS_RECEIVED` (D18) | "Nut gave you kudos in Thrive Team" — none of its words | "Nut gave you kudos" | `ROUTES.receivedViewing('list', 'kudos')` |
 
 The Workspace's name is in the chat copy and not the in-app copy, for the reason `0021` D11 gave: a chat

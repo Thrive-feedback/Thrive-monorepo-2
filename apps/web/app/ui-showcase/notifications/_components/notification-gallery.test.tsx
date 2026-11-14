@@ -21,7 +21,10 @@ describe('NotificationGallery', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('/waiting?ask={id}')).toBeInTheDocument();
     expect(screen.getByText('/received?show=requests')).toBeInTheDocument();
-    expect(screen.getAllByText('/home?feedback={id}')).toHaveLength(2);
+    expect(screen.getByText('/home?feedback={id}')).toBeInTheDocument();
+    expect(
+      screen.getByText('/received?show=offered&feedback={id}'),
+    ).toBeInTheDocument();
   });
 
   it('shows the panel with nothing in it, as every empty place for cards is drawn', () => {

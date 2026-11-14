@@ -77,7 +77,7 @@ describe('NotificationBell', () => {
     [
       'FEEDBACK_RECEIVED',
       'Nut wrote feedback to you',
-      `/home?feedback=${SUBJECT}`,
+      `/received?show=offered&feedback=${SUBJECT}`,
     ],
     [
       'FEEDBACK_SHARED',
