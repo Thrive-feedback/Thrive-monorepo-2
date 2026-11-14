@@ -91,7 +91,7 @@ export function DropdownMenuLabel({
 }
 
 const menuItem = cva(
-  'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element px-2 py-2 text-body-2 outline-hidden transition-colors data-disabled:pointer-events-none data-disabled:text-fg-secondary',
+  'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element px-2 py-2 text-body-2 transition-colors focus-visible:z-10 data-disabled:pointer-events-none data-disabled:text-fg-secondary',
   {
     variants: {
       tone: {
@@ -129,7 +129,7 @@ export function DropdownMenuItem({
 
 /** The look shared by the items that are on or off: checkbox and radio. */
 const SELECTABLE_ITEM =
-  'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element py-2 pr-9 pl-2 text-body-2 outline-hidden transition-colors data-disabled:pointer-events-none data-highlighted:bg-action-primary-surface data-[state=checked]:text-action-primary data-disabled:text-fg-secondary';
+  'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element py-2 pr-9 pl-2 text-body-2 transition-colors focus-visible:z-10 data-disabled:pointer-events-none data-highlighted:bg-action-primary-surface data-[state=checked]:text-action-primary data-disabled:text-fg-secondary';
 
 /** The tick at the end of an item that is on. */
 function SelectedTick() {

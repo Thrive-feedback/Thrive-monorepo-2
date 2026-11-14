@@ -143,15 +143,42 @@ describe('NotificationBell', () => {
     ['FEEDBACK_SHARED', /shared feedback with you/, 'bg-action-primary'],
     ['KUDOS_RECEIVED', /gave you kudos/, 'bg-action-secondary'],
   ] as const)(
-    'marks an unread %s line with a dot in the colour of the card it opens',
+    'marks a %s line in the colour of the card it opens: its dot, ringed while unread, and its highlight',
     async (type, name, fill) => {
-      listMyNotifications.mockResolvedValue([aNotification({ type })]);
+      const ring = fill.replace('bg-', 'outline-');
+      listMyNotifications.mockResolvedValue([
+        aNotification({ type }),
+        aNotification({
+          id: '0199ffff-0000-7000-8000-000000000008',
+          type,
+          isRead: true,
+        }),
+      ]);
 
       await openTheBell();
 
-      const line = await screen.findByRole('menuitem', { name });
+      const [unread, read] = await screen.findAllByRole('menuitem', { name });
       // The dot is drawn for the eye alone; the line says "Unread" in words as well.
-      expect(line.querySelector('[aria-hidden="true"]')).toHaveClass(fill);
+      const unreadDot = unread?.querySelector('[aria-hidden="true"]');
+      const readDot = read?.querySelector('[aria-hidden="true"]');
+      // A ring a gap away from the dot: the width and the offset are the gap the eye reads.
+      expect(unreadDot).toHaveClass(
+        fill,
+        ring,
+        'outline-2',
+        'outline-offset-2',
+      );
+      // Read, the dot stays in its colour and only the ring goes.
+      expect(readDot).toHaveClass(fill);
+      expect(readDot).not.toHaveClass(ring);
+      // Pointed at or focused, either line is tinted in the same colour, not the menu's own.
+      const highlight = `data-highlighted:${fill}-surface-hover`;
+      for (const line of [unread, read]) {
+        expect(line).toHaveClass(highlight);
+        expect(line).not.toHaveClass(
+          'data-highlighted:bg-action-primary-surface',
+        );
+      }
     },
   );
 
@@ -178,6 +205,24 @@ describe('NotificationBell', () => {
       .getAllByRole('menuitem')
       .filter((item) => item.textContent !== 'Mark all as read');
     expect(lines).toHaveLength(1);
+  });
+
+  it('sets an unread line in bold as well as ringing its dot, so the ring is never the only cue', async () => {
+    // The orange ring is below 3:1 on the panel, so it must stay a second cue (WCAG 1.4.11).
+    listMyNotifications.mockResolvedValue([
+      aNotification({ type: 'KUDOS_RECEIVED' }),
+      aNotification({
+        id: '0199ffff-0000-7000-8000-000000000007',
+        type: 'KUDOS_RECEIVED',
+        isRead: true,
+      }),
+    ]);
+
+    await openTheBell();
+
+    const [unread, read] = await screen.findAllByText('Nut gave you kudos');
+    expect(unread).toHaveClass('font-semibold');
+    expect(read).not.toHaveClass('font-semibold');
   });
 
   it('says in words when there is nothing, rather than showing an empty box', async () => {

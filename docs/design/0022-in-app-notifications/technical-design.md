@@ -231,7 +231,7 @@ already inside one (`requirement.md` rule 5).
 | Where | What |
 | --- | --- |
 | `components/organisms/notification-bell.tsx` | client component in `MemberNavbar`; the count, the panel, *Mark all as read*. `FE_02`, `FE_08` |
-| `components/organisms/notification-row.tsx` | one line: unread dot in its kind's colour (blue for an ask and its answer, purple for Feedback written or shared), the actor's photo or initials, sentence, relative time |
+| `components/organisms/notification-row.tsx` | one line: a dot in its kind's colour (blue for an ask and its answer, purple for Feedback written or shared, orange for Kudos), ringed in that colour while unread and tinted with it while pointed at or focused, the actor's photo or initials, sentence, relative time |
 | `lib/notifications/notification-actions.service.ts` | the server actions D10 needs, shaped like `session-actions.service.ts` |
 | `lib/notifications/notification-copy.ts` | D12 — `type` → sentence and `ROUTES` destination, in one map |
 | `lib/routes.constant.ts` | `homeFeedback(feedbackId)`, once §10 R4 is resolved |
