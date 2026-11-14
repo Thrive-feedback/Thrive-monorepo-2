@@ -1,7 +1,10 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { NotificationsProvider } from '@/components/organisms/notifications-provider';
+import type { BellNotification } from '@/lib/notifications/notification.type';
 import { ROUTES } from '@/lib/routes.constant';
+import { answerTheBell, unreadLines } from '@/lib/test/bell-notifications';
 import { ComposeMenu } from './compose-menu';
 import { TabBar } from './tab-bar';
 
@@ -20,22 +23,31 @@ vi.mock(
   }),
 );
 
+vi.mock(
+  '@/lib/notifications/notification-actions.service',
+  async () => (await import('@/lib/test/bell-notifications')).BELL_ACTIONS,
+);
+
 function draw(
   path: string = ROUTES.home,
-  waitingCount = 0,
+  waiting = 0,
   showsDashboard = true,
+  extra: BellNotification[] = [],
 ) {
   usePathname.mockReturnValue(path);
+  answerTheBell([...unreadLines('ASK_RECEIVED', waiting), ...extra]);
   render(
-    <TabBar waitingCount={waitingCount} showsDashboard={showsDashboard}>
-      <ComposeMenu
-        workspaceId="workspace-acme"
-        teammates={[]}
-        workspaceGoals={[]}
-        writer={{ name: 'Ann', photoUrl: null }}
-        placement="tab-bar"
-      />
-    </TabBar>,
+    <NotificationsProvider>
+      <TabBar showsDashboard={showsDashboard}>
+        <ComposeMenu
+          workspaceId="workspace-acme"
+          teammates={[]}
+          workspaceGoals={[]}
+          writer={{ name: 'Ann', photoUrl: null }}
+          placement="tab-bar"
+        />
+      </TabBar>
+    </NotificationsProvider>,
   );
   return screen.getByRole('navigation', { name: 'Main' });
 }
@@ -73,12 +85,41 @@ describe('TabBar', () => {
     ).toHaveAttribute('href', ROUTES.waiting);
   });
 
-  it('reads the count of Asks waiting after Waiting for me, as the sidebar does', () => {
+  it('reads the count of unread Asks after Waiting for me, as the sidebar does', async () => {
     const nav = draw(ROUTES.home, 3);
 
     expect(
-      within(nav).getByRole('link', { name: 'Waiting for me 3' }),
+      await within(nav).findByRole('link', {
+        name: /^Waiting for me ?, 3 unread$/,
+      }),
     ).toBeVisible();
+  });
+
+  it('draws a count past ninety-nine as 99+, and says the real number', async () => {
+    const nav = draw(ROUTES.home, 150);
+
+    const waiting = await within(nav).findByRole('link', {
+      name: /^Waiting for me ?, 150 unread$/,
+    });
+    expect(within(waiting).getByText('99+')).toBeVisible();
+  });
+
+  it('shows what Received holds of the bell on More, and beside Received inside it', async () => {
+    const user = userEvent.setup();
+    const nav = draw(ROUTES.home, 0, true, [
+      ...unreadLines('ASK_ANSWERED', 1),
+      ...unreadLines('KUDOS_RECEIVED', 1),
+    ]);
+    // Drawn on More's icon and read after its name, saying where they are, as Waiting's is.
+    const more = await within(nav).findByRole('button', {
+      name: /^More ?, 2 unread in Received$/,
+    });
+
+    await user.click(more);
+
+    expect(
+      await screen.findByRole('menuitem', { name: /^Received ?, 2 unread$/ }),
+    ).toBeInTheDocument();
   });
 
   it('marks the page that is open, and More only on a page it opens', () => {

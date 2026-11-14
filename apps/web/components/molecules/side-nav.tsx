@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority';
 import type { LucideIcon } from 'lucide-react';
 import NextLink from 'next/link';
-import { Badge } from '@/components/atoms/badge';
+import { CountBadge } from '@/components/atoms/badge';
 import {
   Tooltip,
   TooltipContent,
@@ -14,7 +14,10 @@ export type SideNavItem = {
   readonly href: string;
   readonly label: string;
   readonly Icon: LucideIcon;
-  /** How many things wait behind the item, shown beside its label. Nothing shows at zero. */
+  /**
+   * How many unread things wait behind the item, shown beside its label and said after it, as
+   * `, 2 unread`. Nothing shows at zero.
+   */
   readonly count?: number;
   /** Items that belong to this one, listed under it with a branch line to each. */
   readonly children?: readonly SideNavItem[];
@@ -125,10 +128,10 @@ const foldedAway = cva('', {
 });
 
 /** Beside the label, or folded, small on the icon's corner. */
-const sideNavCount = cva('tabular-nums', {
+const sideNavCount = cva('', {
   variants: {
     foldsToIcons: {
-      true: 'max-xl:absolute max-xl:-top-1.5 max-xl:right-0 max-xl:px-1.5',
+      true: 'max-xl:absolute max-xl:-top-1.5 max-xl:right-0',
       false: '',
     },
   },
@@ -165,11 +168,10 @@ function SideNavLink({
       >
         {label}
       </span>
-      {count !== undefined && count > 0 && (
-        <Badge tone="brand" className={sideNavCount({ foldsToIcons })}>
-          {count}
-        </Badge>
-      )}
+      <CountBadge
+        count={count ?? 0}
+        className={sideNavCount({ foldsToIcons })}
+      />
     </>
   );
 

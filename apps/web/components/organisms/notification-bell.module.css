@@ -1,0 +1,8 @@
+/*
+ * The panel is never taller than the room the window has for it, and its lines scroll inside it
+ * under a header that stays put. Radix measures that room and hands it over as a variable; a
+ * measured size has no utility, which is why this is CSS.
+ */
+.panel {
+  max-height: var(--radix-dropdown-menu-content-available-height);
+}

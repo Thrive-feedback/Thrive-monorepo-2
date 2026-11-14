@@ -25,3 +25,9 @@ export type BellNotification = {
   readonly createdAt: string;
   readonly isRead: boolean;
 };
+
+/** One page of lines, and how many there are in all, so the bell knows whether to ask for more. */
+export type NotificationsPage = {
+  readonly items: readonly BellNotification[];
+  readonly total: number;
+};

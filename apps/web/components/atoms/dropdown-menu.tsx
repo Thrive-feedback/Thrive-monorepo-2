@@ -95,7 +95,12 @@ const menuItem = cva(
   {
     variants: {
       tone: {
-        default: 'data-highlighted:bg-action-primary-surface',
+        /**
+         * Pointed at or focused: a grey step, seen on the panel and never mistaken for an item
+         * that is chosen, which a menu marks in the brand's tint. A line that opens a kind of card
+         * takes that kind's colour instead.
+         */
+        default: 'data-highlighted:bg-action-neutral-surface-hover',
         /**
          * An item that takes something away, such as Deactivate: said in red, and red behind it
          * while pointed at, in a tint that still reads on the dark theme.
@@ -129,7 +134,7 @@ export function DropdownMenuItem({
 
 /** The look shared by the items that are on or off: checkbox and radio. */
 const SELECTABLE_ITEM =
-  'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element py-2 pr-9 pl-2 text-body-2 transition-colors focus-visible:z-10 data-disabled:pointer-events-none data-highlighted:bg-action-primary-surface data-[state=checked]:text-action-primary data-disabled:text-fg-secondary';
+  'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-element py-2 pr-9 pl-2 text-body-2 transition-colors focus-visible:z-10 data-disabled:pointer-events-none data-highlighted:bg-action-neutral-surface-hover data-[state=checked]:text-action-primary data-disabled:text-fg-secondary';
 
 /** The tick at the end of an item that is on. */
 function SelectedTick() {
@@ -169,6 +174,17 @@ export function DropdownMenuCheckboxItem({
       <SelectedTick />
       {children}
     </DropdownMenuPrimitive.CheckboxItem>
+  );
+}
+
+export type DropdownMenuGroupProps = React.ComponentPropsWithRef<
+  typeof DropdownMenuPrimitive.Group
+>;
+
+/** Items that belong together, such as a list under its own label: a screen reader hears them so. */
+export function DropdownMenuGroup(props: DropdownMenuGroupProps) {
+  return (
+    <DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />
   );
 }
 

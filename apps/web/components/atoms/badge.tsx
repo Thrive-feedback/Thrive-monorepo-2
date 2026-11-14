@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Slot } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
+import { countLabel } from '@/lib/count-label.util';
 
 /**
  * Exported so a link or button can wear a badge's look without being one. Every filled tone
@@ -24,6 +25,8 @@ export const badgeVariants = cva(
         warning: 'bg-status-warning-surface-hover text-status-warning-fg',
         error: 'bg-status-error-surface-hover text-status-error-fg',
         info: 'bg-status-info-surface-hover text-status-info-fg',
+        /** A count waiting on the person, such as the bell's unread number: solid, to be seen. */
+        attention: 'bg-attention text-attention-fg',
         outline: 'border-border-default text-fg-primary',
       },
       /**
@@ -65,6 +68,7 @@ export const badgeVariants = cva(
       },
       { edged: true, tone: 'error', className: 'border-status-error-border' },
       { edged: true, tone: 'info', className: 'border-status-info-border' },
+      { edged: true, tone: 'attention', className: 'border-attention' },
       {
         solid: true,
         tone: 'neutral',
@@ -107,6 +111,11 @@ export const badgeVariants = cva(
         className:
           'from-status-info-surface-hover to-status-info-surface-hover',
       },
+      {
+        solid: true,
+        tone: 'attention',
+        className: 'from-attention to-attention',
+      },
     ],
     defaultVariants: {
       tone: 'neutral',
@@ -145,5 +154,75 @@ export function Badge({
       className={cn(badgeVariants({ tone, size, edged, solid }), className)}
       {...rest}
     />
+  );
+}
+
+export type CountBadgeProps = {
+  /** How many. Nothing is drawn at zero. */
+  count: number;
+  /**
+   * What a screen reader hears after the number, as `, 3 unread`: the badge itself is hidden from
+   * it, so the count is read once, in words, after whatever it sits beside. `null` where the name
+   * of what it sits on already says it, such as a button labelled with the count, or where the
+   * words go elsewhere, through {@link CountSaid}.
+   */
+  said?: string | null;
+  className?: string;
+};
+
+/**
+ * How many things are waiting on the person, in the red that asks for them: a small solid badge
+ * with the number, `99+` past ninety-nine, and the real number in words. Every count in the
+ * navigation and the bell is one of these, so they read, look and cap alike.
+ */
+export function CountBadge({
+  count,
+  said = 'unread',
+  className,
+}: CountBadgeProps) {
+  if (count <= 0) {
+    return null;
+  }
+  return (
+    <>
+      <span
+        data-slot="badge"
+        aria-hidden="true"
+        className={cn(
+          badgeVariants({ tone: 'attention' }),
+          'px-1.5 tabular-nums',
+          className,
+        )}
+      >
+        {countLabel(count)}
+      </span>
+      {said !== null && <SpokenCount count={count} said={said} />}
+    </>
+  );
+}
+
+export type CountSaidProps = {
+  count: number;
+  /** What a screen reader hears after the number. */
+  said?: string;
+};
+
+/**
+ * A {@link CountBadge}'s words alone, as `, 3 unread`, for where the badge is drawn somewhere
+ * other than after the name it counts for, such as on an icon above its label.
+ */
+export function CountSaid({ count, said = 'unread' }: CountSaidProps) {
+  if (count <= 0) {
+    return null;
+  }
+  return <SpokenCount count={count} said={said} />;
+}
+
+/** The words both say: `, 3 unread`, for assistive technology alone. */
+function SpokenCount({ count, said }: { count: number; said: string }) {
+  return (
+    <span className="sr-only">
+      , {count} {said}
+    </span>
   );
 }

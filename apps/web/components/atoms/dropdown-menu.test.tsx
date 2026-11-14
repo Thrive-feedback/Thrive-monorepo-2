@@ -64,6 +64,10 @@ describe('DropdownMenu', () => {
     const profile = screen.getByRole('menuitem', { name: 'Profile' });
     expect(profile).toHaveFocus();
     expect(profile).not.toHaveClass('outline-hidden');
+    // Pointed at or focused, a grey step that reads on the panel, not the brand's chosen tint.
+    expect(profile).toHaveClass(
+      'data-highlighted:bg-action-neutral-surface-hover',
+    );
   });
 
   it('marks an item that cannot be picked', async () => {

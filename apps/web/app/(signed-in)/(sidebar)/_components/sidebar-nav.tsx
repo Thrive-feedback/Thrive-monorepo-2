@@ -12,11 +12,10 @@ import {
 import { usePathname } from 'next/navigation';
 import { isSettingsPath } from '@/app/(signed-in)/(sidebar)/_lib/settings-path.util';
 import { SideNav, type SideNavEntry } from '@/components/molecules/side-nav';
+import { useUnreadCounts } from '@/components/organisms/notifications-provider';
 import { ROUTES } from '@/lib/routes.constant';
 
 export type SidebarNavProps = {
-  /** How many Asks are waiting for the person, because that number is what makes them open it. */
-  waitingCount: number;
   /** Whether Your dashboard is switched on for this deployment (ADR 0087). */
   showsDashboard: boolean;
 };
@@ -25,9 +24,13 @@ export type SidebarNavProps = {
  * Where to go from Home. In Settings, below `xl`, it folds to its icons beside Settings' own menu.
  * It reads the path itself because the layout around it does not run again when the client
  * navigates between the pages under it.
+ *
+ * Waiting for me and Received carry how many unread lines of theirs the bell holds, read from the
+ * bell's own poll, so a line read in the bell takes the number here down with it.
  */
-export function SidebarNav({ waitingCount, showsDashboard }: SidebarNavProps) {
+export function SidebarNav({ showsDashboard }: SidebarNavProps) {
   const pathname = usePathname();
+  const unread = useUnreadCounts();
   const items: readonly SideNavEntry[] = [
     { href: ROUTES.home, label: 'Home', Icon: HouseIcon },
     { href: ROUTES.kudos, label: 'Kudos board', Icon: HandHeartIcon },
@@ -35,7 +38,7 @@ export function SidebarNav({ waitingCount, showsDashboard }: SidebarNavProps) {
       href: ROUTES.waiting,
       label: 'Waiting for me',
       Icon: ClockIcon,
-      count: waitingCount,
+      count: unread.waiting,
     },
     { href: ROUTES.teammates, label: 'Teammates', Icon: UsersIcon },
     { heading: 'My Feedback' },
@@ -48,7 +51,12 @@ export function SidebarNav({ waitingCount, showsDashboard }: SidebarNavProps) {
           },
         ]
       : []),
-    { href: ROUTES.received, label: 'Received', Icon: InboxIcon },
+    {
+      href: ROUTES.received,
+      label: 'Received',
+      Icon: InboxIcon,
+      count: unread.received,
+    },
     { href: ROUTES.given, label: 'Given', Icon: SendIcon },
   ];
 

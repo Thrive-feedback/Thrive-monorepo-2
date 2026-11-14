@@ -1,4 +1,8 @@
-import { PERSONAL_VIEWS, ROUTES } from '@/lib/routes.constant';
+import {
+  PERSONAL_VIEWS,
+  type ReceivedShow,
+  ROUTES,
+} from '@/lib/routes.constant';
 import type { BellNotification, NotificationType } from './notification.type';
 
 /**
@@ -8,11 +12,22 @@ import type { BellNotification, NotificationType } from './notification.type';
  */
 const SOMEBODY = 'Somebody';
 
+/**
+ * Where in the navigation an unread line is counted: beside Waiting for me, or on one of
+ * Received's chips (and so on Received itself, which adds its chips up).
+ */
+export type UnreadPlace = 'waiting' | Exclude<ReceivedShow, 'all'>;
+
 type NotificationLineTemplate = {
   /** The whole sentence, with whoever did it already in it. */
   readonly sentenceFor: (actor: string) => string;
   /** Where pressing the line lands, as a path in this app. */
   readonly destinationFor: (subjectId: string) => string;
+  /**
+   * Where an unread line of this kind is counted, which is the page its destination opens, or
+   * `null` for a kind that opens somewhere carrying no count.
+   */
+  readonly countedIn: UnreadPlace | null;
 };
 
 /**
@@ -31,26 +46,32 @@ export const NOTIFICATION_LINES: Readonly<
   ASK_RECEIVED: {
     sentenceFor: (actor) => `${actor} asked you for feedback`,
     destinationFor: (subjectId) => ROUTES.waitingAsk(subjectId),
+    countedIn: 'waiting',
   },
   ASK_ANSWERED: {
     sentenceFor: (actor) => `${actor} answered your request`,
     // Received has no address for one request, so the bell opens the person's requests.
     destinationFor: () => ROUTES.receivedViewing(PERSONAL_VIEWS[0], 'requests'),
+    countedIn: 'requests',
   },
   FEEDBACK_RECEIVED: {
     sentenceFor: (actor) => `${actor} wrote feedback to you`,
     // Received showing Feedback given unasked, the only kind this is, with the postcard open.
     destinationFor: (subjectId) =>
       ROUTES.receivedFeedback(subjectId, PERSONAL_VIEWS[0], 'offered'),
+    countedIn: 'offered',
   },
   FEEDBACK_SHARED: {
     sentenceFor: (actor) => `${actor} shared feedback with you`,
     destinationFor: (subjectId) => ROUTES.homeFeedback(subjectId, 'all'),
+    // Home carries no count: it is in the bell's number only.
+    countedIn: null,
   },
   KUDOS_RECEIVED: {
     sentenceFor: (actor) => `${actor} gave you kudos`,
     // A Kudos has no address of its own, so the bell opens the Kudos given to the person.
     destinationFor: () => ROUTES.receivedViewing(PERSONAL_VIEWS[0], 'kudos'),
+    countedIn: 'kudos',
   },
 };
 

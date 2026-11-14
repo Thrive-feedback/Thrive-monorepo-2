@@ -142,7 +142,9 @@ describe('ComposeMenu', () => {
     expect(kudos).toHaveClass(
       'data-highlighted:bg-action-secondary-surface-hover',
     );
-    expect(ask).not.toHaveClass('data-highlighted:bg-action-primary-surface');
+    expect(ask).not.toHaveClass(
+      'data-highlighted:bg-action-neutral-surface-hover',
+    );
   });
 
   it('opens the postcard titled by the choice, with the focus on the card', async () => {

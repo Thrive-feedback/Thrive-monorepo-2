@@ -96,6 +96,8 @@
   --color-fg-on-paper: var(--fg-on-paper);
   --color-fg-on-paper-secondary: var(--fg-on-paper-secondary);
   --color-action-disabled-surface: var(--action-disabled-surface);
+  --color-attention: var(--attention);
+  --color-attention-fg: var(--attention-fg);
 
   --radius-none: var(--shape-none);
   --radius-inner: var(--shape-inner);

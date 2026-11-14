@@ -15,8 +15,8 @@ vi.mock('next/headers', () => ({
 }));
 
 const {
-  listMyNotifications,
   countUnreadNotifications,
+  listMyNotifications,
   markAllNotificationsRead,
   markNotificationRead,
 } = await import('./notification-actions.service');
@@ -123,6 +123,62 @@ describe('what each action costs the person waiting', () => {
 });
 
 describe('reading the bell', () => {
+  it('asks for the page it is given, as many lines to a page as the API gives at once', async () => {
+    let query = new URLSearchParams();
+    server.use(
+      http.get(
+        `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/notifications`,
+        ({ request }) => {
+          query = new URL(request.url).searchParams;
+          return HttpResponse.json({
+            items: [],
+            total: 250,
+            page: 3,
+            pageSize: 100,
+          });
+        },
+      ),
+    );
+
+    expect(await listMyNotifications(3)).toEqual({ items: [], total: 250 });
+    expect(query.get('page')).toBe('3');
+    expect(query.get('pageSize')).toBe('100');
+  });
+
+  it('asks for the newest page when given none', async () => {
+    let page: string | null = null;
+    server.use(
+      http.get(
+        `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/notifications`,
+        ({ request }) => {
+          page = new URL(request.url).searchParams.get('page');
+          return HttpResponse.json({
+            items: [],
+            total: 0,
+            page: 1,
+            pageSize: 100,
+          });
+        },
+      ),
+    );
+
+    await listMyNotifications();
+
+    expect(page).toBe('1');
+  });
+
+  it.each([0, -1, 1.5, Number.NaN])(
+    'asks nothing for page %s, which no bell would send',
+    async (page) => {
+      await expect(listMyNotifications(page)).resolves.toBeNull();
+      expect(asked).toEqual([]);
+    },
+  );
+
+  it('answers how many are unread', async () => {
+    await expect(countUnreadNotifications()).resolves.toBe(2);
+  });
+
   it('turns each line the API sends into what the bell draws, face included', async () => {
     server.use(
       http.get(
@@ -162,26 +218,29 @@ describe('reading the bell', () => {
       ),
     );
 
-    expect(await listMyNotifications()).toEqual([
-      {
-        id: NOTIFICATION_ID,
-        type: 'FEEDBACK_SHARED',
-        actorName: 'Ann Lee',
-        actorPhotoUrl: 'https://lh3.example/a=s96-c',
-        subjectId: '0199a0f0-0000-7000-8000-0000000000d1',
-        createdAt: '2026-11-14T03:00:00.000Z',
-        isRead: false,
-      },
-      {
-        id: '0199a0f0-0000-7000-8000-0000000000b2',
-        type: 'ASK_RECEIVED',
-        actorName: null,
-        actorPhotoUrl: null,
-        subjectId: '0199a0f0-0000-7000-8000-0000000000d2',
-        createdAt: '2026-11-13T03:00:00.000Z',
-        isRead: true,
-      },
-    ]);
+    expect(await listMyNotifications()).toEqual({
+      total: 2,
+      items: [
+        {
+          id: NOTIFICATION_ID,
+          type: 'FEEDBACK_SHARED',
+          actorName: 'Ann Lee',
+          actorPhotoUrl: 'https://lh3.example/a=s96-c',
+          subjectId: '0199a0f0-0000-7000-8000-0000000000d1',
+          createdAt: '2026-11-14T03:00:00.000Z',
+          isRead: false,
+        },
+        {
+          id: '0199a0f0-0000-7000-8000-0000000000b2',
+          type: 'ASK_RECEIVED',
+          actorName: null,
+          actorPhotoUrl: null,
+          subjectId: '0199a0f0-0000-7000-8000-0000000000d2',
+          createdAt: '2026-11-13T03:00:00.000Z',
+          isRead: true,
+        },
+      ],
+    });
   });
 });
 
@@ -201,6 +260,7 @@ describe('when the session has expired', () => {
     // `readCurrentMembership` answers null for no Workspace and for no session alike. Somebody
     // whose session has expired must not be left pressing a bell that can never work.
     await expect(listMyNotifications()).rejects.toThrow(/NEXT_REDIRECT/);
+    await expect(countUnreadNotifications()).rejects.toThrow(/NEXT_REDIRECT/);
     await expect(markAllNotificationsRead()).rejects.toThrow(/NEXT_REDIRECT/);
   });
 });

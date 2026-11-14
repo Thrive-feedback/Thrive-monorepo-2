@@ -2,7 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { usePersonalItemsView } from '@/app/(signed-in)/(sidebar)/_lib/use-personal-items-view';
+import { CountBadge } from '@/components/atoms/badge';
 import { Toggle } from '@/components/atoms/toggle';
+import { useUnreadCounts } from '@/components/organisms/notifications-provider';
 import {
   RECEIVED_SHOWS,
   type ReceivedShow,
@@ -37,11 +39,13 @@ export type ReceivedFilterProps = {
 /**
  * What Received shows, as a row of chips with one pressed, kept in the address so a reload or a
  * shared link keeps it. Each choice reads its own list from the server, so choosing one navigates,
- * keeping how the list is laid out.
+ * keeping how the list is laid out. Each chip but All carries how many of its kind are unread in
+ * the bell.
  */
 export function ReceivedFilter({ show }: ReceivedFilterProps) {
   const router = useRouter();
   const view = usePersonalItemsView();
+  const unread = useUnreadCounts();
 
   return (
     <fieldset className="flex flex-wrap gap-2">
@@ -61,6 +65,8 @@ export function ReceivedFilter({ show }: ReceivedFilterProps) {
           }}
         >
           {SHOW_NAMES[value]}
+          {/* All would only repeat the sidebar's number, so it carries none. */}
+          {value !== 'all' && <CountBadge count={unread[value]} />}
         </Toggle>
       ))}
     </fieldset>

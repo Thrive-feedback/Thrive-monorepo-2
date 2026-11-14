@@ -1,3 +1,4 @@
+import { NotificationsProvider } from '@/components/organisms/notifications-provider';
 import { MemberShell } from '@/components/templates/member-shell';
 import { Navbar } from './_components/navbar';
 import { Sidebar } from './_components/sidebar';
@@ -21,13 +22,17 @@ export default function SidebarLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <MemberShell navbar={<Navbar />} fillsFrame>
-      <div className="flex flex-1">
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col pb-16 md:pb-0">
-          {children}
+    // One read of what the person has been told, for the bell in the navbar and the counts in the
+    // sidebar and the tab bar alike.
+    <NotificationsProvider>
+      <MemberShell navbar={<Navbar />} fillsFrame>
+        <div className="flex flex-1">
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col pb-16 md:pb-0">
+            {children}
+          </div>
         </div>
-      </div>
-    </MemberShell>
+      </MemberShell>
+    </NotificationsProvider>
   );
 }

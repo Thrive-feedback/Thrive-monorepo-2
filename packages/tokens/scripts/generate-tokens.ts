@@ -498,6 +498,8 @@ function theme(): string {
   lines.push(
     '--color-action-disabled-surface: var(--action-disabled-surface);',
   );
+  lines.push('--color-attention: var(--attention);');
+  lines.push('--color-attention-fg: var(--attention-fg);');
   lines.push('');
   for (const token of project.radius.tokens) {
     lines.push(`--radius-${token.id}: var(--shape-${token.id});`);

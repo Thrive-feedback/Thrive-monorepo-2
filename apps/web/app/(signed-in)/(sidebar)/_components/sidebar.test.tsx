@@ -1,7 +1,10 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { NotificationsProvider } from '@/components/organisms/notifications-provider';
+import type { BellNotification } from '@/lib/notifications/notification.type';
 import { ROUTES } from '@/lib/routes.constant';
+import { answerTheBell, unreadLines } from '@/lib/test/bell-notifications';
 import { Sidebar } from './sidebar';
 
 const MEMBERSHIP = { workspace: { id: 'w-1', name: 'Acme' }, role: 'MEMBER' };
@@ -28,10 +31,10 @@ vi.mock(
 vi.mock('@/lib/feedback/workspace-goal-names.service', () => ({
   readWorkspaceGoalNames: async () => [],
 }));
-const readWaitingCount = vi.fn();
-vi.mock('@/lib/feedback/waiting-count.service', () => ({
-  readWaitingCount: (membership: unknown) => readWaitingCount(membership),
-}));
+vi.mock(
+  '@/lib/notifications/notification-actions.service',
+  async () => (await import('@/lib/test/bell-notifications')).BELL_ACTIONS,
+);
 const readTeammates = vi.fn();
 vi.mock('@/lib/feedback/teammates.service', () => ({
   readTeammates: (membership: unknown, ownEmail: string) =>
@@ -47,12 +50,13 @@ async function draw(
   waiting: number,
   path: string = ROUTES.home,
   showsDashboard = true,
+  extra: BellNotification[] = [],
 ) {
   usePathname.mockReturnValue(path);
   readTeammates.mockResolvedValue([]);
-  readWaitingCount.mockResolvedValue(waiting);
   readFeatureFlags.mockResolvedValue({ showsDashboard });
-  render(await Sidebar());
+  answerTheBell([...unreadLines('ASK_RECEIVED', waiting), ...extra]);
+  render(<NotificationsProvider>{await Sidebar()}</NotificationsProvider>);
   return within(sidebar()).getByRole('navigation', { name: 'Main' });
 }
 
@@ -160,12 +164,37 @@ describe('Sidebar', () => {
     expect(within(nav).queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('counts the Asks waiting for the person, in the Workspace they are in', async () => {
+  it('counts the unread Asks in the bell beside Waiting for me, in red', async () => {
     const nav = await draw(3);
 
-    expect(readWaitingCount).toHaveBeenLastCalledWith(MEMBERSHIP);
+    const waiting = await within(nav).findByRole('link', {
+      name: /^Waiting for me ?, 3 unread$/,
+    });
+    expect(within(waiting).getByText('3')).toHaveClass('bg-attention');
+  });
+
+  it('draws a count past ninety-nine as 99+, and says the real number', async () => {
+    const nav = await draw(120);
+
+    const waiting = await within(nav).findByRole('link', {
+      name: /^Waiting for me ?, 120 unread$/,
+    });
+    expect(within(waiting).getByText('99+')).toBeVisible();
+  });
+
+  it('counts what Received holds of the bell beside Received: answers, Feedback and Kudos', async () => {
+    const nav = await draw(0, ROUTES.home, true, [
+      ...unreadLines('ASK_ANSWERED', 1),
+      ...unreadLines('FEEDBACK_RECEIVED', 1),
+      ...unreadLines('KUDOS_RECEIVED', 2),
+      // Read on Home, so not Received's to count.
+      ...unreadLines('FEEDBACK_SHARED', 1),
+    ]);
+
     expect(
-      within(nav).getByRole('link', { name: 'Waiting for me 3' }),
+      await within(nav).findByRole('link', {
+        name: /^Received ?, 4 unread$/,
+      }),
     ).toBeVisible();
   });
 
@@ -180,6 +209,9 @@ describe('Sidebar', () => {
   it('keeps every place named in Settings, where it folds to its icons, and names an icon pointed at', async () => {
     const user = userEvent.setup();
     const nav = await draw(2, ROUTES.settings.index);
+    await within(nav).findByRole('link', {
+      name: /^Waiting for me ?, 2 unread$/,
+    });
 
     expect(
       within(nav)
@@ -188,7 +220,7 @@ describe('Sidebar', () => {
     ).toEqual([
       'Home',
       'Kudos board',
-      'Waiting for me2',
+      'Waiting for me2, 2 unread',
       'Teammates',
       'My Feedback',
       'Your dashboard',
