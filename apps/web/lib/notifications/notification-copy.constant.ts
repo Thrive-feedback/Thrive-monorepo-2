@@ -47,8 +47,10 @@ export const NOTIFICATION_LINES: Readonly<
   },
 };
 
-/** One line, ready to draw: what it says and where it goes. */
+/** One line, ready to draw: who it names, what it says and where it goes. */
 export type NotificationLine = {
+  /** The name the sentence uses, so a face drawn beside it shows the same person's initials. */
+  readonly actor: string;
   readonly sentence: string;
   readonly destination: string;
 };
@@ -58,11 +60,11 @@ export function notificationLine(
   notification: Pick<BellNotification, 'type' | 'actorName' | 'subjectId'>,
 ): NotificationLine {
   const template = NOTIFICATION_LINES[notification.type];
-  const actor = notification.actorName?.trim();
+  const named = notification.actorName?.trim();
+  const actor = named === undefined || named === '' ? SOMEBODY : named;
   return {
-    sentence: template.sentenceFor(
-      actor === undefined || actor === '' ? SOMEBODY : actor,
-    ),
+    actor,
+    sentence: template.sentenceFor(actor),
     destination: template.destinationFor(notification.subjectId),
   };
 }

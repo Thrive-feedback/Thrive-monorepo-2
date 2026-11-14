@@ -122,6 +122,74 @@ describe('what each action costs the person waiting', () => {
   });
 });
 
+describe('reading the bell', () => {
+  it('turns each line the API sends into what the bell draws, face and audience included', async () => {
+    server.use(
+      http.get(
+        `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/notifications`,
+        () =>
+          HttpResponse.json({
+            items: [
+              {
+                id: NOTIFICATION_ID,
+                type: 'FEEDBACK_SHARED',
+                actor: {
+                  accountId: '0199a0f0-0000-7000-8000-0000000000c1',
+                  name: 'Ann Lee',
+                  photoUrl: 'https://lh3.example/a=s96-c',
+                },
+                subjectId: '0199a0f0-0000-7000-8000-0000000000d1',
+                createdAt: '2026-11-14T03:00:00.000Z',
+                readAt: null,
+                audience: 'SELECTED_PEOPLE',
+              },
+              {
+                id: '0199a0f0-0000-7000-8000-0000000000b2',
+                type: 'ASK_RECEIVED',
+                actor: {
+                  accountId: '0199a0f0-0000-7000-8000-0000000000c2',
+                  name: null,
+                  photoUrl: null,
+                },
+                subjectId: '0199a0f0-0000-7000-8000-0000000000d2',
+                createdAt: '2026-11-13T03:00:00.000Z',
+                readAt: '2026-11-13T04:00:00.000Z',
+                // Written before the audience was recorded.
+                audience: null,
+              },
+            ],
+            total: 2,
+            page: 1,
+            pageSize: 10,
+          }),
+      ),
+    );
+
+    expect(await listMyNotifications()).toEqual([
+      {
+        id: NOTIFICATION_ID,
+        type: 'FEEDBACK_SHARED',
+        actorName: 'Ann Lee',
+        actorPhotoUrl: 'https://lh3.example/a=s96-c',
+        subjectId: '0199a0f0-0000-7000-8000-0000000000d1',
+        createdAt: '2026-11-14T03:00:00.000Z',
+        isRead: false,
+        audience: 'SELECTED_PEOPLE',
+      },
+      {
+        id: '0199a0f0-0000-7000-8000-0000000000b2',
+        type: 'ASK_RECEIVED',
+        actorName: null,
+        actorPhotoUrl: null,
+        subjectId: '0199a0f0-0000-7000-8000-0000000000d2',
+        createdAt: '2026-11-13T03:00:00.000Z',
+        isRead: true,
+        audience: null,
+      },
+    ]);
+  });
+});
+
 describe('when the session has expired', () => {
   beforeEach(() => {
     server.use(

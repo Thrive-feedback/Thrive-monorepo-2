@@ -81,6 +81,12 @@ export type CardsEmptyProps = {
   art: CardsEmptyArt;
   /** What is not here yet, written by hand. */
   title: string;
+  /**
+   * The element the title is. A heading where the empty place is a page or a region of one; a
+   * paragraph inside a menu, where ARIA allows no heading and the page's outline should not
+   * gain one, such as the bell's panel.
+   */
+  titleAs?: 'h2' | 'p';
   /** What will be here, and how it gets here. */
   description?: string;
   /**
@@ -93,13 +99,14 @@ export type CardsEmptyProps = {
 
 /**
  * A place for cards with none in it, drawn alike wherever there is one, Home, Waiting for me,
- * Received, Given and the Kudos board: the blank cards it is waiting for, what is not here yet written
- * by hand in their colour, and what to do about it, in the middle of whatever space the page leaves
- * it, both ways.
+ * Received, Given, the Kudos board and the bell: the blank cards it is waiting for, what is not
+ * here yet written by hand in their colour, and what to do about it, in the middle of whatever
+ * space the page leaves it, both ways.
  */
 export function CardsEmpty({
   art,
   title,
+  titleAs = 'h2',
   description,
   children,
 }: CardsEmptyProps) {
@@ -109,7 +116,7 @@ export function CardsEmpty({
         <Art art={art} />
       </div>
       <Text
-        as="h2"
+        as={titleAs}
         variant="subtitle-handwrite-1"
         className={art === 'every' ? 'text-fg-primary' : FEED_CARD_INK[art]}
       >

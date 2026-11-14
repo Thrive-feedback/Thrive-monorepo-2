@@ -31,6 +31,13 @@ export const FEED_CARD_KIND_INK: Readonly<Record<FeedCardTone, string>> = {
   secondary: 'text-action-secondary-active',
 };
 
+/** Each kind's colour at full strength, for a mark as small as a dot that stands for it. */
+export const FEED_CARD_FILL: Readonly<Record<FeedCardTone, string>> = {
+  primary: 'bg-action-primary',
+  tertiary: 'bg-action-tertiary',
+  secondary: 'bg-action-secondary',
+};
+
 /** The edge of each kind of card where it is drawn as an outline, as in an empty list. */
 export const FEED_CARD_EDGE: Readonly<Record<FeedCardTone, string>> = {
   primary: 'border-action-primary-border',

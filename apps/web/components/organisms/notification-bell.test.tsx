@@ -25,9 +25,11 @@ function aNotification(
     id: '0199ffff-0000-7000-8000-000000000001',
     type: 'ASK_RECEIVED',
     actorName: 'Nut',
+    actorPhotoUrl: null,
     subjectId: SUBJECT,
     createdAt: FIVE_MINUTES_AGO,
     isRead: false,
+    audience: null,
     ...overrides,
   };
 }
@@ -121,12 +123,83 @@ describe('NotificationBell', () => {
     expect(line).toHaveTextContent('Unread');
   });
 
-  it('says in a sentence when there is nothing, rather than showing an empty box', async () => {
+  it('shows the face of who did it, by their initials when they have no photo', async () => {
+    listMyNotifications.mockResolvedValue([
+      aNotification({ actorName: 'Nut Somchai' }),
+    ]);
+
+    await openTheBell();
+
+    const line = await screen.findByRole('menuitem', {
+      name: /Nut Somchai asked you for feedback/,
+    });
+    expect(line).toHaveTextContent('NS');
+  });
+
+  it.each([
+    ['EVERYONE', 'Everyone in the Workspace'],
+    ['SELECTED_PEOPLE', 'Selected people'],
+    // The person told is never the one "me" of Only me, and the bell cannot tell how many it
+    // was for, so it says the one thing true either way.
+    ['ONLY_ME', "Only the people it's for"],
+  ] as const)(
+    'says a line leading to something %s can read is visible to %s',
+    async (audience, label) => {
+      listMyNotifications.mockResolvedValue([
+        aNotification({ type: 'FEEDBACK_RECEIVED', audience }),
+      ]);
+
+      await openTheBell();
+
+      const line = await screen.findByRole('menuitem', {
+        name: /wrote feedback to you/,
+      });
+      expect(line).toHaveTextContent(`Visible to ${label}`);
+    },
+  );
+
+  it.each([
+    ['ASK_RECEIVED', /asked you for feedback/, 'bg-action-tertiary'],
+    ['ASK_ANSWERED', /answered your request/, 'bg-action-tertiary'],
+    ['FEEDBACK_RECEIVED', /wrote feedback to you/, 'bg-action-primary'],
+    ['FEEDBACK_SHARED', /shared feedback with you/, 'bg-action-primary'],
+  ] as const)(
+    'marks an unread %s line with a dot in the colour of the card it opens',
+    async (type, name, fill) => {
+      listMyNotifications.mockResolvedValue([aNotification({ type })]);
+
+      await openTheBell();
+
+      const line = await screen.findByRole('menuitem', { name });
+      // The dot is drawn for the eye alone; the line says "Unread" in words as well.
+      expect(line.querySelector('[aria-hidden="true"]')).toHaveClass(fill);
+    },
+  );
+
+  it('says nothing about who can read it on a line written before that was recorded', async () => {
+    listMyNotifications.mockResolvedValue([aNotification({ audience: null })]);
+
+    await openTheBell();
+
+    const line = await screen.findByRole('menuitem', {
+      name: /asked you for feedback/,
+    });
+    expect(line).not.toHaveTextContent('Visible to');
+  });
+
+  it('says in words when there is nothing, rather than showing an empty box', async () => {
     listMyNotifications.mockResolvedValue([]);
 
     await openTheBell();
 
-    expect(await screen.findByText(/Nothing yet\./)).toBeInTheDocument();
+    expect(await screen.findByText('Nothing yet')).toBeInTheDocument();
+    // Inside the menu, where ARIA allows no heading, and the page's outline gains none.
+    expect(
+      screen.queryByRole('heading', { name: 'Nothing yet' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/When somebody asks you for feedback/),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
   });
 

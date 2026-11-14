@@ -47,7 +47,7 @@ browser (§2 D9).
 | --- | --- | --- | --- |
 | D1 | **In-app lives in `modules/notifications/`** — the module `0021` D1 creates, beside `LinkedAccount` | a second module; putting it in Feedback | `domain-map.md` gives Notifications one bounded context owning `Notification`, `Reminder`, `Channel`, `Preference`. Two modules for one context is the thing `BE_03` exists to prevent |
 | D2 | **One row per recipient per event.** The row *is* the in-app Notification and the fan-out unit | one row per event plus a recipients join table | Every event here already enumerates its recipients at the moment it happens. A join table buys a saving at 1–5 recipients and costs a second read on the hottest query in the feature — the unread count |
-| D3 | **The row stores ids and a type. Never prose, never Feedback's words.** Names are resolved at read time through `AccountSummaryPort.summariesOf`, once per page | storing the rendered sentence; storing an excerpt of the Request message | `requirement.md` rule 2. A stored sentence is a second copy of words `ADR 0054` deliberately keeps in one place, it freezes a name that may change, and it would make a future redaction unenforceable. Resolving costs one extra call per page, not per row (`BE_06` R9, the `PeopleService` pattern) |
+| D3 | **The row stores ids and a type — and, since D16, the subject's audience. Never prose, never Feedback's words.** Names are resolved at read time through `AccountSummaryPort.summariesOf`, once per page | storing the rendered sentence; storing an excerpt of the Request message | `requirement.md` rule 2. A stored sentence is a second copy of words `ADR 0054` deliberately keeps in one place, it freezes a name that may change, and it would make a future redaction unenforceable. Resolving costs one extra call per page, not per row (`BE_06` R9, the `PeopleService` pattern) |
 | D4 | **The subject is one `subjectId`; its kind is implied by `type`** | a polymorphic `(subjectKind, subjectId)` pair | Four types, each with exactly one kind of subject: `ASK_RECEIVED`→Ask, `ASK_ANSWERED`→Feedback Request, `FEEDBACK_RECEIVED`/`FEEDBACK_SHARED`→Feedback. A second column would hold a value derivable from the first |
 | D5 | **Written after the subject's transaction commits, in Notifications' own transaction** | inside the Feedback use case's `UnitOfWork` | `AGENTS.md` §6 hard rule: no cross-module transaction. Not negotiable, whatever it costs. What it costs is §10 R1: a crash between the two loses the Notification, which is exactly the gap `BE_17`'s outbox exists to close and which this design accepts and names |
 | D6 | **The row write is `await`ed and its failure swallowed**, unlike the chat message, which stays fire-and-forget | fire-and-forget for both (`0021` D5); awaiting both | They are different risks. The row is one local Postgres insert, ~1 ms, and losing it means the person is **never told by any channel**. The chat call is two HTTPS round trips to a third party that may be down. So: `await` the row inside a `try/catch` that logs and returns; leave chat as `0021` wrote it. **Cost, stated:** ~1–3 ms added to the p50 of three write endpoints, measurable before and after with the existing suites |
@@ -60,8 +60,12 @@ browser (§2 D9).
 | D13 | **No `NotificationChannel` interface yet.** The adapter writes the row, then hands to chat, in sequence | a channel registry, mirroring `0021` D3's provider registry | Honest inconsistency, deliberately taken. `0021` D3 took a registry because the second **provider** is named, dated and decided (Slack). The second **channel** — email — has no card and no date. Two concrete steps in one adapter is not an abstraction problem; it becomes one when email lands, and that is when the interface is worth writing. `PROJECT.md` §2 |
 | D14 | **The table is built with the bell, not at #213** | writing rows at #213 with nothing reading them | A schema designed with no screen to check it against is how the shape gets wrong, and it is a table with no consumer (`PROJECT.md` §2). What #213 **must** do instead is §11: lock the port signature, so Feedback's three call sites are written once |
 | D15 | **Read state is one nullable `readAt`** | separate `seenAt` and `readAt` | One bell, one question: is there anything I have not dealt with. `requirement.md` §7 question 5 settles *when* it is set; this settles that there is one of it |
+| D16 | **The row keeps who can read its subject, as `audience`** (`ONLY_ME` · `SELECTED_PEOPLE` · `EVERYONE`, nullable), written with the row from the event's payload. The bell draws it as an icon at the end of the line. **A Giver is sent it only when the request is `EVERYONE`**: a Giver is told that the answer goes on the Workspace feed and nothing else of who reads it (brain `ADR-0022` decision 2, `ADR-0046` decision 4), which is all the Ask they open says (`onWorkspaceFeed`). The Requester, a Receiver and a Selected person are sent it whatever it is — each can already read it | reading Feedback's Visibility at list time; leaving the icon out | The one fact about a subject this module copies, and it may: no use case changes a Visibility once written, so the copy cannot go stale. Reading it at list time would make Notifications depend on Feedback, which already depends on Notifications. Feedback translates its `VisibilityValue` through an exhaustive map (`feedback/application/service/notification-audience.mapper.ts`), so a new Visibility fails to compile until mapped. **Costs, stated:** Feedback must send it on every event; it is **optional for good**, on the port and in the outbox payloads, because a Giver's line usually has none; a value the handler does not know is read as none rather than refusing the message. **No backfill** (owner's decision, 2026-11-14): a backfill would cross Feedback's tables (`BE_15` R2), so rows written before the column hold `NULL` and draw no icon. Rollback is `DROP COLUMN "audience"`, safe once the code that reads it is rolled back |
+| D17 | **The bell line shows the actor's photo**: `actor.photoUrl` on the list response, from the same `AccountSummaryPort.summariesOf` call that names them, so still one call per page | a second lookup for photos | The face is read with the name, and both are resolved at read time for the reason D3 gives |
 
 **Not approved yet — this document is the review. D12 and D14 are the two to argue with.**
+
+**D16 and D17 were decided by the owner on 2026-11-14** (the audience, the Giver rule, no backfill, the photo); they are not open.
 
 ## 3. Domain model
 
@@ -72,6 +76,7 @@ modules/notifications/
   domain/
     entity/notification.entity.ts              a Notification: recipient, type, actor, subject, readAt
     value-object/notification-type.vo.ts       D4 — ASK_RECEIVED · ASK_ANSWERED · FEEDBACK_RECEIVED · FEEDBACK_SHARED
+    value-object/notification-audience.vo.ts   D16 — ONLY_ME · SELECTED_PEOPLE · EVERYONE, and a stored value read back
     repository/notification-repository.port.ts recordAll(…) · markRead(…) · markAllRead(…)
     notifications.errors.ts                    (exists — NOTIFICATION_NOT_FOUND added)
   application/
@@ -96,6 +101,9 @@ modules/notifications/
 `fan-out-person-notifier.adapter.ts` **replaces** `0021`'s `chat-person-notifier.adapter.ts` as the thing
 bound to `PersonNotifierPort`; the chat half becomes a collaborator it calls, unchanged in behaviour.
 That is the whole structural change, and it is behind a published port, so Feedback does not see it.
+
+D16 adds one file on Feedback's side, `feedback/application/service/notification-audience.mapper.ts`,
+which translates a Visibility into the `NotificationAudience` type Notifications' barrel publishes.
 
 ## 4. How it fits together
 
@@ -166,7 +174,7 @@ FanOutPersonNotifier.askAnswered(event)
 GET /v1/workspaces/{workspaceId}/notifications?page&pageSize      ← WorkspaceMemberGuard (BE_21 R3)
   query.forRecipient(workspaceId, actor.accountId, page)          the caller, always — D11
   AccountSummaryPort.summariesOf(unique actor ids)                one call per page — D3
-  → { items: [{ id, type, actor: { accountId, name }, subjectId, createdAt, readAt }], total, page, pageSize }
+  → { items: [{ id, type, actor: { accountId, name, photoUrl }, subjectId, createdAt, readAt, audience }], total, page, pageSize }
 
 GET …/notifications/unread-count   → { count }
 POST …/notifications/{id}/read     → 204   refuses an id that is not the caller's: NOTIFICATION_NOT_FOUND
@@ -224,7 +232,7 @@ already inside one (`requirement.md` rule 5).
 | Where | What |
 | --- | --- |
 | `components/organisms/notification-bell.tsx` | client component in `MemberNavbar`; the count, the panel, *Mark all as read*. `FE_02`, `FE_08` |
-| `components/molecules/notification-row.tsx` | one line: actor, sentence, relative time, unread dot |
+| `components/organisms/notification-row.tsx` | one line: unread dot in its kind's colour (blue for an ask and its answer, purple for Feedback written or shared), the actor's photo or initials, sentence, relative time, and at the end an icon for who can read what it leads to |
 | `lib/notifications/notification-actions.service.ts` | the server actions D10 needs, shaped like `session-actions.service.ts` |
 | `lib/notifications/notification-copy.ts` | D12 — `type` → sentence and `ROUTES` destination, in one map |
 | `lib/routes.constant.ts` | `homeFeedback(feedbackId)`, once §10 R4 is resolved |
@@ -234,16 +242,21 @@ The panel is built from `components/atoms/dropdown-menu.tsx` and the count from
 is **not** installed; adding it is `bunx --bun shadcn@latest add popover` plus the rewrite to token
 utilities every component here gets (`PROJECT.md` §4), and it is a choice for whoever builds this, not
 one this document should make. Either way the new components are shown at `/ui-showcase` like every
-other (`FE_13`). Empty state is a sentence, not a blank box (`requirement.md` §4 step 10).
+other (`FE_13`). Empty state is not a blank box (`requirement.md` §4 step 10): it is `CardsEmpty`,
+the same blank cards and handwritten title every empty place for cards draws, with a sentence under it.
+The icon at the end of a line is D16's `audience`, drawn with the feed cards' icons; Only me reads as
+"Only the people it's for", since the person told is never the one "me" it names.
 
 ## 6. Schema and migration
 
-One table, one migration, no existing table touched. `GEN_11`: UUIDv7 id.
+One table, two migrations, no other table touched: the first creates it, and D16's adds one
+nullable column to it. `GEN_11`: UUIDv7 id.
 
 ```prisma
-/// One thing one Member is told about, inside Thrive. It is a pointer, never a copy: it names who
-/// did something and which Ask, Feedback Request or Feedback it concerns, and carries none of the
-/// words — following it, behind a sign-in, is how those are read (requirement.md rule 2).
+/// One thing one Member is told about, inside Thrive. It is a pointer, not a copy of what it names:
+/// it names who did something and which Ask, Feedback Request or Feedback it concerns, keeps who
+/// can read that subject (D16), and carries none of the words — following it, behind a sign-in, is
+/// how those are read (requirement.md rule 2).
 /// Written after the thing it is about has committed, in this module's own transaction: a
 /// cross-module transaction is forbidden (AGENTS.md §6), so a crash in between loses it. That is
 /// accepted and is what BE_17's outbox would close.
@@ -262,6 +275,10 @@ model Notification {
   subjectId          String
   /// Null until the Member opens it or marks everything read. The unread count is a count of these.
   readAt             DateTime?
+  /// D16 — ONLY_ME, SELECTED_PEOPLE or EVERYONE, as fixed when written. Null when the person told
+  /// may not know it, and on rows written before it was recorded (migration
+  /// 20261114040825_add_notification_audience, no backfill).
+  audience           String?
   createdAt          DateTime  @default(now())
 
   /// One line per person per thing: a retried or double-submitted write cannot make two.
@@ -289,7 +306,11 @@ No new configuration. No new dependency.
 | **Integration** | **the unique index holds — the same `(recipient, type, subject)` inserted twice yields one row** (D8), against real Postgres | `prisma-notification.repository.integration.spec.ts` (`BE_12`) |
 | Integration | `markAllRead` touches only the caller's rows in only that Workspace | same |
 | Gherkin | `@api`: three events produce three Notifications; the count falls on read; another Member's are unreachable | `features/notifications.feature` (`BE_13`, `GEN_10`) — the file `0021` creates |
-| Web | the bell renders a count, the panel renders each type's sentence and destination, empty state, mark-all-read | `notification-bell.test.tsx`, `notification-copy.test.ts` (`FE_14`) |
+| Unit | D16: a Giver is sent `EVERYONE` and nothing else; the Requester, a Receiver and a Selected person are sent the Visibility | the three Feedback use-case specs |
+| Unit | D16: the audience reaches the row; an event without one, or with one it does not know, records none | `fan-out-person-notifier.adapter.spec.ts`, `person-notification-outbox.adapter.spec.ts`, `notification-audience.vo.spec.ts` |
+| Integration | D16: the audience round-trips, and a row without one reads as none | `prisma-notification.repository.integration.spec.ts` |
+| Gherkin | `@api` D16: through the real outbox, each kind's line says who can read it, and a Giver's says it only for Everyone | `features/notifications.feature` |
+| Web | the bell renders a count, the panel renders each type's sentence and destination, empty state, mark-all-read; the face, the dot in its kind's colour and the audience icon | `notification-bell.test.tsx`, `notification-copy.test.ts`, `notification-actions.service.test.ts` (`FE_14`) |
 
 Nothing here reaches a chat tool; the chat collaborator is faked, as `0021` fakes every `ChatProvider`.
 
