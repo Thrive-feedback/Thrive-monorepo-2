@@ -1,4 +1,4 @@
-import { CardsEmpty } from '@/app/(signed-in)/(sidebar)/_components/cards-empty';
+import { CardsEmpty } from '@/components/organisms/cards-empty';
 
 /**
  * Waiting for me with nothing left in it, drawn as every empty list is, on the blank card of

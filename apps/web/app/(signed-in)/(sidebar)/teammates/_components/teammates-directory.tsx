@@ -3,7 +3,6 @@
 import { SearchIcon } from 'lucide-react';
 import NextLink from 'next/link';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { CardsEmpty } from '@/app/(signed-in)/(sidebar)/_components/cards-empty';
 import {
   ComposeCards,
   useComposeCards,
@@ -18,6 +17,7 @@ import {
 import { Button } from '@/components/atoms/button';
 import { Input } from '@/components/atoms/input';
 import { Text } from '@/components/atoms/text';
+import { CardsEmpty } from '@/components/organisms/cards-empty';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { ROUTES } from '@/lib/routes.constant';

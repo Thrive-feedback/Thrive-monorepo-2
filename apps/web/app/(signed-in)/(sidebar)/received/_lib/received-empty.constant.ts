@@ -1,5 +1,5 @@
-import type { CardsEmptyArt } from '@/app/(signed-in)/(sidebar)/_components/cards-empty';
 import type { ComposeChoice } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
+import type { CardsEmptyArt } from '@/components/organisms/cards-empty';
 import type { ReceivedShow } from '@/lib/routes.constant';
 
 /**
