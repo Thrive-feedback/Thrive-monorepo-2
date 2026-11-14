@@ -58,8 +58,14 @@ export class ChatConfig {
  * default: a default endpoint is a wrong production target nobody notices, and a default model
  * is a silent price and quality change on the day the config is mistyped (ADR 0077).
  */
+/**
+ * Whichever model endpoint answers today, or **nothing at all** where a deployment has no
+ * provider yet (ADR 0085). Every value here is vendor-shaped and none has a default: a default
+ * endpoint is a wrong production target nobody notices, and a default model is a silent price and
+ * quality change on the day the config is mistyped.
+ */
 export class AiConfig {
-  constructor(
+  private constructor(
     /** An OpenAI-compatible base URL; `/chat/completions` is appended to it. */
     readonly endpoint: string,
     readonly apiKey: string,
@@ -67,7 +73,37 @@ export class AiConfig {
     /** Only ever a log field, so a log stays readable after a provider swap. */
     readonly label: string,
   ) {}
+
+  /** A provider to ask. The environment schema has already refused a half-set one. */
+  static configured(details: {
+    readonly endpoint: string;
+    readonly apiKey: string;
+    readonly model: string;
+    readonly label: string;
+  }): AiConfig {
+    return new AiConfig(
+      details.endpoint,
+      details.apiKey,
+      details.model,
+      details.label,
+    );
+  }
+
+  /**
+   * No provider. Everything that would ask a model is switched off, and says so — rather than
+   * asking an endpoint that does not exist and failing once per attempt.
+   */
+  static readonly none = null;
 }
+
+/** What the application is given: a provider, or nothing to ask. */
+export type AiSetting = AiConfig | null;
+
+/**
+ * Injection token for {@link AiSetting}. A symbol rather than the class, because the value may be
+ * `null` and a class token promises an instance.
+ */
+export const AI_SETTING = Symbol('AI_SETTING');
 
 export class WebConfig {
   constructor(
@@ -82,8 +118,36 @@ export interface Configuration {
   readonly auth: AuthConfig;
   readonly email: EmailConfig;
   readonly chat: ChatConfig;
-  readonly ai: AiConfig;
+  readonly ai: AiSetting;
   readonly web: WebConfig;
+}
+
+/**
+ * A provider, or nothing. The schema refuses a half-set one, so one value standing is enough to
+ * know all four do.
+ */
+function aiSettingOf(environment: {
+  AI_PROVIDER_ENDPOINT?: string;
+  AI_PROVIDER_API_KEY?: string;
+  AI_PROVIDER_MODEL?: string;
+  AI_PROVIDER_LABEL?: string;
+}): AiSetting {
+  const { AI_PROVIDER_ENDPOINT, AI_PROVIDER_API_KEY } = environment;
+  const { AI_PROVIDER_MODEL, AI_PROVIDER_LABEL } = environment;
+  if (
+    AI_PROVIDER_ENDPOINT === undefined ||
+    AI_PROVIDER_API_KEY === undefined ||
+    AI_PROVIDER_MODEL === undefined ||
+    AI_PROVIDER_LABEL === undefined
+  ) {
+    return AiConfig.none;
+  }
+  return AiConfig.configured({
+    endpoint: AI_PROVIDER_ENDPOINT,
+    apiKey: AI_PROVIDER_API_KEY,
+    model: AI_PROVIDER_MODEL,
+    label: AI_PROVIDER_LABEL,
+  });
 }
 
 /** Injection token for the whole parsed configuration, from which each namespace is projected. */
@@ -131,12 +195,7 @@ export function loadConfiguration(
       parsed.data.DISCORD_CLIENT_SECRET,
       parsed.data.DISCORD_BOT_TOKEN,
     ),
-    ai: new AiConfig(
-      parsed.data.AI_PROVIDER_ENDPOINT,
-      parsed.data.AI_PROVIDER_API_KEY,
-      parsed.data.AI_PROVIDER_MODEL,
-      parsed.data.AI_PROVIDER_LABEL,
-    ),
+    ai: aiSettingOf(parsed.data),
     // The auth URL is already the web origin (ADR 0027), so a second variable would only be
     // one that could disagree with it.
     web: new WebConfig(new URL(parsed.data.BETTER_AUTH_URL).origin),

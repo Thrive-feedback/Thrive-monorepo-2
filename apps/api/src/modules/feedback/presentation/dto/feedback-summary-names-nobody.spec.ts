@@ -32,13 +32,15 @@ const summary = {
 
 describe('what the summary route may answer with', () => {
   it('accepts a summary carrying points and the ids behind them', () => {
-    expect(feedbackSummaryResponseSchema.safeParse({ summary }).success).toBe(
-      true,
-    );
+    expect(
+      feedbackSummaryResponseSchema.safeParse({ summary, isAvailable: true })
+        .success,
+    ).toBe(true);
   });
 
   it('names nobody: an account id never reaches the wire', () => {
     const parsed = feedbackSummaryResponseSchema.parse({
+      isAvailable: true,
       summary: { ...summary, accountId: 'account-ann' },
     });
 
@@ -48,6 +50,7 @@ describe('what the summary route may answer with', () => {
 
   it('carries nobody else’s words: a message beside a point never reaches the wire', () => {
     const parsed = feedbackSummaryResponseSchema.parse({
+      isAvailable: true,
       summary: {
         ...summary,
         themes: [
@@ -66,6 +69,7 @@ describe('what the summary route may answer with', () => {
   it('cites ids rather than anything readable, so a source cannot smuggle text', () => {
     expect(
       feedbackSummaryResponseSchema.safeParse({
+        isAvailable: true,
         summary: {
           ...summary,
           themes: [
@@ -82,6 +86,7 @@ describe('what the summary route may answer with', () => {
   it('says which kind each source is, so a point leads to the page that holds it', () => {
     expect(
       feedbackSummaryResponseSchema.safeParse({
+        isAvailable: true,
         summary: {
           ...summary,
           themes: [
@@ -97,7 +102,10 @@ describe('what the summary route may answer with', () => {
 
   it('answers nothing when there is nothing to show, rather than an empty summary', () => {
     expect(
-      feedbackSummaryResponseSchema.safeParse({ summary: null }).success,
+      feedbackSummaryResponseSchema.safeParse({
+        summary: null,
+        isAvailable: true,
+      }).success,
     ).toBe(true);
   });
 });

@@ -1,9 +1,10 @@
+import { AI_IS_CONFIGURED } from '@app/shared/application/ai-completer.port';
 import {
   OutboxHandler,
   type OutboxMessageRead,
   UnprocessableOutboxMessage,
 } from '@app/shared/application/outbox-handler.port';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { z } from 'zod';
 import { RefreshFeedbackSummaryUseCase } from '../use-cases/refresh-feedback-summary.use-case';
 
@@ -36,7 +37,11 @@ const MAX_ATTEMPTS = 3;
 export class FeedbackSummaryOutboxHandler extends OutboxHandler {
   readonly maxAttempts = MAX_ATTEMPTS;
 
-  constructor(private readonly refresh: RefreshFeedbackSummaryUseCase) {
+  constructor(
+    private readonly refresh: RefreshFeedbackSummaryUseCase,
+    @Inject(AI_IS_CONFIGURED)
+    private readonly aiIsConfigured: boolean,
+  ) {
     super();
   }
 
@@ -45,6 +50,13 @@ export class FeedbackSummaryOutboxHandler extends OutboxHandler {
       // Only reachable if the wiring claims a type this handler does not know.
       throw new UnprocessableOutboxMessage(
         `${message.type} is not a summary refresh`,
+      );
+    }
+    if (!this.aiIsConfigured) {
+      // Enqueued while a provider was configured, drained after it went away. Never, not later:
+      // retrying would spend three attempts on a question nothing can answer (ADR 0085).
+      throw new UnprocessableOutboxMessage(
+        'No model provider is configured, so no summary can be written',
       );
     }
     const parsed = refreshPayload.safeParse(message.payload);

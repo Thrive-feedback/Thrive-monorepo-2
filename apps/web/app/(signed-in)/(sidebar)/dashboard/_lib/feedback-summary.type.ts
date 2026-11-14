@@ -29,6 +29,16 @@ export type SummarySection = {
   readonly points: readonly SummaryPoint[];
 };
 
+/** What the page was told: the summary if there is one, and whether there can be one at all. */
+export type FeedbackSummaryRead = {
+  readonly summary: FeedbackSummary | null;
+  /**
+   * `false` where this deployment has no model provider. The page says that rather than telling
+   * somebody too little has been written to them, which would be untrue about their own Feedback.
+   */
+  readonly isAvailable: boolean;
+};
+
 /** What the Feedback written to one Member over one period adds up to, as the page reads it. */
 export type FeedbackSummary = {
   /** The quarter it covers, `2026-Q4`. */

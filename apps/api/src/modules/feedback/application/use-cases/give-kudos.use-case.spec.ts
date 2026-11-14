@@ -52,7 +52,7 @@ function setUp() {
     new FakeIdGenerator(KUDOS_ID),
     unitOfWork,
     outbox,
-    new SummaryRefreshService(outbox, new FakeClock(NOW)),
+    new SummaryRefreshService(outbox, new FakeClock(NOW), true),
   );
   return { kudosRepository, unitOfWork, useCase, outbox };
 }

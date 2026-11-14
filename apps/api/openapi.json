@@ -5145,10 +5145,14 @@
             ],
             "additionalProperties": false,
             "nullable": true
+          },
+          "isAvailable": {
+            "type": "boolean"
           }
         },
         "required": [
-          "summary"
+          "summary",
+          "isAvailable"
         ],
         "additionalProperties": false
       },

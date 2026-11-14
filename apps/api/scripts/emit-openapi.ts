@@ -31,7 +31,8 @@ async function emit(): Promise<void> {
   process.env.DISCORD_CLIENT_ID = 'unused';
   process.env.DISCORD_CLIENT_SECRET = 'unused';
   process.env.DISCORD_BOT_TOKEN = 'unused';
-  // And the model provider's: no model is asked anything while the document is built.
+  // And the model provider's. Optional since ADR 0085, but set here all the same: the contract
+  // must not depend on whether whoever regenerates it happens to have a provider configured.
   process.env.AI_PROVIDER_ENDPOINT = 'https://unused.invalid/v1';
   process.env.AI_PROVIDER_API_KEY = 'unused';
   process.env.AI_PROVIDER_MODEL = 'unused';

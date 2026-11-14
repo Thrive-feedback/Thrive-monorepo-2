@@ -1298,6 +1298,7 @@ export interface components {
                     }[];
                 }[];
             } | null;
+            isAvailable: boolean;
         };
         ListFeedItemsResponseDto_Output: {
             /** Format: uuid */

@@ -76,16 +76,30 @@ describe('environmentSchema', () => {
     },
   );
 
-  it.each([
+  const AI_PROVIDER: string[] = [
     'AI_PROVIDER_ENDPOINT',
     'AI_PROVIDER_API_KEY',
     'AI_PROVIDER_MODEL',
     'AI_PROVIDER_LABEL',
-  ])('refuses a missing %s, rather than defaulting a provider', (name) => {
-    expect(failedPaths({ ...validEnvironment, [name]: undefined })).toEqual([
-      name,
-    ]);
+  ];
+
+  it('accepts an environment naming no model provider, which switches AI off', () => {
+    const withoutAi: Record<string, unknown> = { ...validEnvironment };
+    for (const name of AI_PROVIDER) {
+      delete withoutAi[name];
+    }
+
+    expect(environmentSchema.safeParse(withoutAi).success).toBe(true);
   });
+
+  it.each(AI_PROVIDER)(
+    'refuses a provider missing only its %s, because half of one never works and never says why',
+    (name) => {
+      expect(
+        failedPaths({ ...validEnvironment, [name]: undefined }),
+      ).not.toEqual([]);
+    },
+  );
 
   it('refuses a model endpoint that does not parse', () => {
     expect(

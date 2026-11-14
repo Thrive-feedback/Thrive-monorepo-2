@@ -60,6 +60,12 @@ export const feedbackSummaryResponseSchema = z.object({
    * agreeing (`GEN_08`). Nothing about the feature turns on it.
    */
   summary: summarySchema.nullable(),
+  /**
+   * Whether a summary can be written at all here (ADR 0085). `false` where this deployment has
+   * no model provider, so the page can say that rather than telling somebody there is not enough
+   * written to them — which would be a falsehood about their own Feedback.
+   */
+  isAvailable: z.boolean(),
 });
 export class FeedbackSummaryResponseDto extends createZodDto(
   feedbackSummaryResponseSchema,
