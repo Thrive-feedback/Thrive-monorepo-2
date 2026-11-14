@@ -433,6 +433,7 @@ export function PostcardEditor({
       <CardNotesContext value={areNotesShown}>
         <CardNotesToneContext value={POSTCARD_KIND_TONES[card.kind]}>
           <DialogContent
+            placement="screen"
             ref={contentRef}
             hasCloseButton={false}
             aria-describedby={undefined}

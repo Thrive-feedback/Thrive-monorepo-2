@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Toaster } from '@/components/atoms/toaster';
 import { ROUTES } from '@/lib/routes.constant';
 
@@ -71,6 +71,10 @@ beforeEach(() => {
 });
 
 describe('HomeComposerPanel', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it.each([
     ['Give feedback', 'Your feedback'],
     ['Ask for feedback', 'Your request'],
@@ -99,13 +103,15 @@ describe('HomeComposerPanel', () => {
   });
 
   it('leaves the keyboard down on a touch screen', () => {
+    // A whole MediaQueryList, since the toaster listens for the window crossing `md`.
     vi.stubGlobal('matchMedia', (query: string) => ({
       matches: query === '(pointer: coarse)',
+      addEventListener: () => {},
+      removeEventListener: () => {},
     }));
     draw();
 
     expect(field()).not.toHaveFocus();
-    vi.unstubAllGlobals();
   });
 
   it('sends a Kudos, and goes to the board from it', async () => {

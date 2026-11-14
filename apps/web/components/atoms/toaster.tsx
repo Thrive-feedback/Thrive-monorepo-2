@@ -9,10 +9,15 @@ import {
   XIcon,
 } from 'lucide-react';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
+import { MD_AND_UP } from '@/lib/breakpoint.constant';
 import { cn } from '@/lib/cn.util';
+import { useMediaQuery } from '@/lib/use-media-query';
 import styles from './toaster.module.css';
 
 export type { ToasterProps };
+
+/** How far below the window's top edge a toast drops in on a narrow screen. */
+const TOP_CLEARANCE = 'calc(var(--space-unit) * 20)';
 
 /**
  * Mounted once, in the root layout. Anything then raises a toast with `toast()` from
@@ -24,12 +29,23 @@ export type { ToasterProps };
  *
  * Every toast can be closed early. Sonner renders its close button first, so `order-last`
  * moves it to the end of the row, where a close button is looked for.
+ *
+ * From `md` a toast rises at the bottom right. Below it the bottom of the window is taken, by the
+ * tab bar, by a dialog's sheet and its buttons, by what follows a sent Kudos, so a toast drops in
+ * at the top instead, just under the navbar.
  */
 export function Toaster(props: ToasterProps) {
+  const isWide = useMediaQuery(MD_AND_UP);
+
   return (
     <Sonner
       theme="light"
       closeButton
+      position={isWide ? 'bottom-right' : 'top-center'}
+      // Under the navbar's 18 steps, with 2 of air. Sonner reads `mobileOffset` up to 600px and
+      // `offset` beyond, so both are set; only the top is, and the bottom right keeps its own.
+      offset={{ top: TOP_CLEARANCE }}
+      mobileOffset={{ top: TOP_CLEARANCE }}
       icons={{
         success: <CircleCheckIcon className="size-5 text-status-success-fg" />,
         info: <InfoIcon className="size-5 text-status-info-fg" />,

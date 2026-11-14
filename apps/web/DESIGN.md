@@ -323,8 +323,15 @@ A status word inline, in its tone's `-active` colour at weight 500, the size of 
 ### Navigation
 - **Side nav:** rows in button-sm type, Ink Secondary, control corner; hover gives the neutral surface tint and Ink; the current page (from 48rem) is Brand Plum text on the plum 20% surface. Groups are headed by an uppercase overline over a subtle rule.
 - **Navbars:** frosted glass, clear at the top of the page and frosting over in the first 4rem of scroll, curving into the page at both ends.
+- **Sidebar rail:** in Settings, from 48rem up to 80rem, the main sidebar narrows from 14rem to a 4rem rail of its icons (easing on the fast step), so Settings' menu and the open section fit beside it. Each icon is named by a tooltip on the right; a count sits small on its icon's corner; a group heading keeps only its rule; the account foot keeps only the face.
+- **Tab bar (phone):** below 48rem the sidebar's places stand in a bar along the bottom, the frame's glass grown to 4rem and curving into the page at both ends: Home, Kudos, "+" in the middle as the sidebar draws it (the outlined button, a 2.75rem square), Waiting with its count on the icon's corner, and Feedback, which opens Received and Given upward. Each tab is an icon over a button-xs word; the current one is Brand Plum, its icon on the plum tint. Below 48rem toasts drop in at the top, under the navbar, since the bottom holds the bar, a dialog's sheet and its buttons; from 48rem they rise at the bottom right.
 - **Links:** Plum Ink, weight 500, underlined on hover with a 4px offset.
 - **Focus (everything):** one hairline ring, 0.0625rem of Focus Plum at a 0.125rem offset.
+
+### Dialogs and sheets
+- **From 48rem:** a dialog is a card centred on the page, at most 32rem wide, surface corner, `shadow-high`, fading and growing in over the blurred page.
+- **Below 48rem:** it is a bottom sheet (ADR 0084): the window's full width on its bottom edge, top corners rounded, at most three quarters of its height, with the Drawer's grab handle across its top. It slides up on the enter step and down on the exit step; dragged down by the handle past a quarter of its height, or flicked, it closes, and short of that it settles back. With reduced motion it neither slides nor settles.
+- **Screens:** the postcard's and the Kudos card's editors and readers fill the window at every width instead, and their own pickers come up as Drawers.
 
 ### Postcard stock (signature)
 Raised Paper under a 10% tone tint (cream from the warning border, sage from success, blush from error at 8%), a 0.75rem dot grid in the ink at 4%, `shadow-high`. Written postcards carry ruled lines spaced by the text's line height. The 404's envelope reuses this stock; the landing page's envelope is Surface Paper instead.

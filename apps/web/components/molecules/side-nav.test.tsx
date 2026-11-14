@@ -1,7 +1,11 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { HashIcon, HouseIcon, PaletteIcon, UsersIcon } from 'lucide-react';
 import { describe, expect, it } from 'vitest';
 import { SideNav } from './side-nav';
+
+/** Longer than the tooltip's 300ms hover delay. */
+const TOOLTIP_DELAY_PASSED = 400;
 
 const ITEMS = [
   { href: '/a', label: 'First', Icon: HouseIcon },
@@ -106,5 +110,43 @@ describe('SideNav', () => {
     expect(
       screen.getAllByRole('listitem').map((item) => item.textContent),
     ).toEqual(['First', 'Mine', 'Second']);
+  });
+
+  it('folded to its icons, keeps every item named, its count read, and names one pointed at', async () => {
+    const user = userEvent.setup();
+    render(
+      <SideNav
+        label="Main"
+        items={[
+          { href: '/a', label: 'Home', Icon: HouseIcon },
+          { heading: 'Mine' },
+          { href: '/b', label: 'Waiting', Icon: PaletteIcon, count: 2 },
+        ]}
+        currentHref="/a"
+        foldsToIcons
+      />,
+    );
+
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(screen.getByRole('link', { name: 'Waiting 2' })).toBeVisible();
+    expect(screen.getByText('Mine')).toBeInTheDocument();
+
+    await user.hover(screen.getByRole('link', { name: 'Waiting 2' }));
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Waiting');
+  });
+
+  it('names no item by tooltip when it is not folded, since the labels show', async () => {
+    const user = userEvent.setup();
+    render(<SideNav label="Main" items={ITEMS} currentHref="/a" />);
+
+    await user.hover(screen.getByRole('link', { name: 'Second' }));
+    // Past the tooltip's 300ms delay, so one that would open has had its chance.
+    await new Promise((resolve) => setTimeout(resolve, TOOLTIP_DELAY_PASSED));
+
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 });

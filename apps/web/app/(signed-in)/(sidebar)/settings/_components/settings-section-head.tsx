@@ -27,7 +27,7 @@ export function SettingsSectionHead({
     <div className="flex flex-col gap-3">
       <NextLink
         href={ROUTES.settings.index}
-        className="flex w-fit items-center gap-1 rounded-button text-button-sm text-fg-secondary hover:text-fg-primary lg:hidden"
+        className="flex w-fit items-center gap-1 rounded-button text-button-sm text-fg-secondary hover:text-fg-primary md:hidden"
       >
         <ChevronLeftIcon aria-hidden="true" className="size-4" />
         Settings

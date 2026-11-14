@@ -6,3 +6,50 @@
 .scrim {
   backdrop-filter: blur(var(--scrim-blur));
 }
+
+/*
+ * The sheet a dialog is on a phone (ADR 0084). It slides up from below the window as it opens and
+ * back down as it closes, and its handle drags it through `--sheet-drag`: under the finger it moves
+ * at once, let go it settles on the enter step. The slide is on `translate` and the drag on
+ * `transform`, so the two add up and a sheet let go mid-drag leaves from where it was.
+ *
+ * In the components layer, so the `md:` utilities that make it a centred card step up over it.
+ */
+@layer components {
+  .sheet {
+    transform: translate(0, var(--sheet-drag, 0px));
+    transition: transform var(--motion-enter);
+  }
+
+  .sheet[data-swiping] {
+    transition-duration: 0s;
+  }
+
+  .sheet[data-state='open'] {
+    animation: sheet-enter var(--motion-enter);
+  }
+
+  .sheet[data-state='closed'] {
+    animation: sheet-exit var(--motion-exit);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sheet,
+    .sheet[data-state] {
+      animation: none;
+      transition-duration: 0s;
+    }
+  }
+}
+
+@keyframes sheet-enter {
+  from {
+    translate: 0 100%;
+  }
+}
+
+@keyframes sheet-exit {
+  to {
+    translate: 0 100%;
+  }
+}

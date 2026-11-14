@@ -58,16 +58,17 @@ export function WorkspaceSelector({
   const [isSwitching, startSwitching] = useTransition();
   const others = workspaces.active.filter(({ id }) => id !== current.id);
 
-  // Set in the display face and the primary colour, on the wordmark's baseline, so "Thrive ×
-  // Acme" reads as one line: on a phone at the size the bar has room for beside the bell, Settings
-  // and the avatar, and from `sm` up a little larger than the wordmark.
+  // Set in the display face and the primary colour, on the wordmark's baseline and at its size on
+  // every screen, so "Thrive × Acme" reads as one lockup. On a phone the button around it gives
+  // up its spare padding instead, and a name too long for the bar ends in an ellipsis.
   const identity = (
     <Text
       as="span"
-      variant="subtitle-display-2"
+      variant="display-4"
       className={cn(
-        'max-w-36 truncate text-action-primary sm:max-w-80 sm:text-display-4',
+        'max-w-36 truncate text-action-primary sm:max-w-80',
         styles.onLogoBaseline,
+        styles.fitsPhoneBar,
       )}
     >
       {current.name}
@@ -90,12 +91,15 @@ export function WorkspaceSelector({
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label={`Workspace: ${current.name}. Switch Workspace`}
-          className="group flex min-w-0 items-center gap-1 rounded-button py-0.5 ps-2 pe-1 text-fg-primary transition-colors hover:bg-action-neutral-surface data-[state=open]:bg-action-neutral-surface motion-reduce:transition-none"
+          className="group flex min-w-0 items-center gap-0.5 rounded-button py-0.5 ps-1 pe-0 text-fg-primary transition hover:bg-action-neutral-surface active:scale-97 data-[state=open]:bg-action-neutral-surface motion-reduce:transition-none sm:gap-1 sm:ps-2 sm:pe-1 sm:active:scale-100"
         >
           {identity}
+          {/* On a touch screen, which has no pointing to reveal it, the chevron is always there, in
+              the name's plum so the two read as one; on a phone it drops onto the name's
+              lowercase, which the wordmark's baseline has moved down. */}
           <ChevronDownIcon
             aria-hidden="true"
-            className="size-4 shrink-0 text-fg-secondary opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100 group-data-[state=open]:rotate-180 group-data-[state=open]:opacity-100 motion-reduce:transition-none pointer-coarse:opacity-100"
+            className="size-4 shrink-0 pointer-coarse:text-action-primary text-fg-secondary opacity-0 pointer-coarse:opacity-100 transition group-hover:opacity-100 group-focus-visible:opacity-100 group-data-[state=open]:rotate-180 group-data-[state=open]:opacity-100 motion-reduce:transition-none max-sm:translate-y-0.75"
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-72">

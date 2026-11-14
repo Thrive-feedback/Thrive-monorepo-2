@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ROUTES } from '@/lib/routes.constant';
 import { Sidebar } from './sidebar';
@@ -42,7 +43,12 @@ async function draw(waiting: number, path: string = ROUTES.home) {
   readTeammates.mockResolvedValue([]);
   readWaitingCount.mockResolvedValue(waiting);
   render(await Sidebar());
-  return screen.getByRole('navigation', { name: 'Main' });
+  return within(sidebar()).getByRole('navigation', { name: 'Main' });
+}
+
+/** The column beside the page; a phone's tab bar is drawn too, and has its own tests. */
+function sidebar() {
+  return screen.getByRole('complementary', { name: 'Sidebar' });
 }
 
 describe('Sidebar', () => {
@@ -123,8 +129,34 @@ describe('Sidebar', () => {
     await draw(0);
 
     expect(
-      screen.getByRole('button', { name: 'Write something' }),
+      within(sidebar()).getByRole('button', { name: 'Write something' }),
     ).toBeVisible();
+  });
+
+  it('keeps every place named in Settings, where it folds to its icons, and names an icon pointed at', async () => {
+    const user = userEvent.setup();
+    const nav = await draw(2, ROUTES.settings.index);
+
+    expect(
+      within(nav)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual([
+      'Home',
+      'Kudos board',
+      'Waiting for me2',
+      'Teammates',
+      'My Feedback',
+      'Received',
+      'Given',
+    ]);
+    expect(
+      within(sidebar()).getByRole('link', { name: 'Settings' }),
+    ).toHaveAttribute('aria-current', 'page');
+
+    await user.hover(within(nav).getByRole('link', { name: 'Kudos board' }));
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Kudos board');
   });
 
   it('reads who a postcard can be for: the Workspace without the person', async () => {

@@ -22,7 +22,7 @@ export async function Navbar() {
         <>
           <XIcon
             aria-hidden="true"
-            className="size-4 shrink-0 translate-x-1 translate-y-0.5 text-fg-muted"
+            className="size-3.5 shrink-0 translate-x-0.5 translate-y-0.5 text-fg-muted sm:size-4 sm:translate-x-1"
           />
           <WorkspaceSelector
             current={membership.workspace}
