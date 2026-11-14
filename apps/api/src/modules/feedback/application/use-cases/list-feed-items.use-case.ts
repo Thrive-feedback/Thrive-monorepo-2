@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AskStatus } from '../../domain/value-object/ask-status.vo';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
-import { KudosQuery } from '../query-port/kudos.query-port';
+import { type KudosPageRow, KudosQuery } from '../query-port/kudos.query-port';
 import { PeopleService } from '../service/people.service';
 import type {
   FeedItemsView,
@@ -28,6 +28,7 @@ export interface ListFeedItemsInput {
 }
 
 const NOTHING_MORE: FeedItemsView = { items: [], nextAfterId: null };
+const NO_KUDOS: KudosPageRow = { items: [], hasMore: false };
 
 /**
  * A query: what one Member reads on Home — Everyone, what they were selected to read, or both —
@@ -37,7 +38,7 @@ const NOTHING_MORE: FeedItemsView = { items: [], nextAfterId: null };
  * widen what came back, and the reader is an argument to that read rather than a filter after it
  * (`BE_21` R4). Home's two lists are one read so one cursor can page them (ADR 0071), and a Kudos,
  * which every Member reads and which has no Visibility, comes in from its own table under that same
- * cursor (ADR 0077).
+ * cursor (ADR 0077) everywhere but Shared with me (ADR 0090).
  */
 @Injectable()
 export class ListFeedItemsUseCase {
@@ -60,12 +61,11 @@ export class ListFeedItemsUseCase {
         input.show,
         page,
       ),
-      this.kudosQuery.onHome(
-        input.workspaceId,
-        page,
-        // Shared with me is what names the reader. A Kudos for the whole Workspace names nobody.
-        input.show === 'SHARED_WITH_ME' ? input.readerAccountId : null,
-      ),
+      // Shared with me is the Feedback someone selected the reader for. A Kudos has no Visibility,
+      // so nobody is ever selected for one, not even someone it names.
+      input.show === 'SHARED_WITH_ME'
+        ? NO_KUDOS
+        : this.kudosQuery.onHome(input.workspaceId, page, null),
     ]);
     const people = await this.peopleService.peopleIn(input.workspaceId, [
       ...feedItems.items.flatMap((feedback) => [

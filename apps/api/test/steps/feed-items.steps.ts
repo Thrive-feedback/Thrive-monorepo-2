@@ -174,15 +174,6 @@ Then(
   },
 );
 
-Then(
-  "{person}'s Home holds {int} Kudos",
-  function (this: ThriveWorld, _name: string, count: number) {
-    const items: readonly { kind: string }[] =
-      this.lastResponse?.body?.items ?? [];
-    assert.equal(items.filter((item) => item.kind === 'KUDOS').length, count);
-  },
-);
-
 When(
   '{person} reads Home one item at a time',
   async function (this: ThriveWorld, name: string) {
