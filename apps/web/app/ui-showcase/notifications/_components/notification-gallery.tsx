@@ -126,7 +126,7 @@ function ChannelPostCard({ post }: ChannelPostCardProps) {
 }
 
 /**
- * Every notification Thrive sends: the four kinds a person is told about, in the bell and in
+ * Every notification Thrive sends: the five kinds a person is told about, in the bell and in
  * Discord, and the two a Workspace's channel is told about. The bell lines are the real copy and
  * the real row, on sample data.
  */
@@ -145,7 +145,7 @@ export function NotificationGallery() {
     >
       <GallerySection
         title="Every kind"
-        description="The four things a person is told about. Each one is a line in their bell, and a Discord message if they linked Discord. The sentence and the path are the bell’s own, with a sample name and {id} where the real id goes."
+        description="The five things a person is told about. Each one is a line in their bell, and a Discord message if they linked Discord. The sentence and the path are the bell’s own, with a sample name and {id} where the real id goes."
       >
         <div className="grid gap-6 md:grid-cols-2">
           {KIND_ORDER.map((type) => (
@@ -197,7 +197,7 @@ export function NotificationGallery() {
 
       <GallerySection
         title="In the bell"
-        description="The panel with the real row on sample lines: one of every kind unread, one already read, and one from somebody with no name. Each line shows the face of who did it, their photo or their initials, and an unread dot in its kind’s colour: blue for an ask and its answer, purple for Feedback written or shared. At the end, an icon says who can read what the line leads to: everyone in the Workspace, selected people, or only the people it’s for. Somebody asked for Feedback sees it only when their answer goes on the Workspace feed, since a Giver is told nothing else of who reads it. A line written before that was recorded, like the last sample, shows none. Pressing a line marks it read here and follows its real link, which takes a sample id nowhere useful."
+        description="The panel with the real row on sample lines: one of every kind unread, one already read, and one from somebody with no name. Each line shows the face of who did it, their photo or their initials, and an unread dot in its kind’s colour: blue for an ask and its answer, purple for Feedback written or shared, orange for Kudos. At the end, an icon says who can read what the line leads to: everyone in the Workspace, selected people, or only the people it’s for. Somebody asked for Feedback sees it only when their answer goes on the Workspace feed, since a Giver is told nothing else of who reads it. A line written before that was recorded, like the last sample, shows none. Pressing a line marks it read here and, rather than following its link, draws the page it would have opened: the address, the page, the filter it opens on and what opens over it."
       >
         <SampleBell />
         <div className="flex flex-wrap items-start gap-6">
@@ -224,7 +224,7 @@ export function NotificationGallery() {
 
       <GallerySection
         title="In the Workspace’s channel"
-        description="Posted to the Discord channel a Workspace connected, for everyone in it. These never reach the bell, and giving Kudos tells nobody in the bell at all."
+        description="Posted to the Discord channel a Workspace connected, for everyone in it. These never reach the bell. A Kudos also tells, in the bell, each person it mentions."
       >
         <div className="grid gap-6 md:grid-cols-2">
           {CHANNEL_POSTS.map((post) => (

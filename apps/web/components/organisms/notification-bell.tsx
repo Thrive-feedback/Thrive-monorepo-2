@@ -21,6 +21,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '@/lib/notifications/notification-actions.service';
+import { isDrawableKind } from '@/lib/notifications/notification-copy.constant';
 import { NotificationRow, NotificationRowSkeleton } from './notification-row';
 import { NotificationsEmpty } from './notifications-empty';
 
@@ -118,8 +119,11 @@ export function NotificationBell() {
   }, []);
 
   function showLines(items: readonly BellNotification[]) {
-    linesOnScreen.current = items.length;
-    setNotifications(items);
+    // Only kinds this bundle has a sentence for. The bundle drawing the line decides, not the
+    // server that answered: an open tab can outlive a deploy and be sent a kind it never heard of.
+    const drawable = items.filter((item) => isDrawableKind(item.type));
+    linesOnScreen.current = drawable.length;
+    setNotifications(drawable);
     setPanelState('ready');
   }
 

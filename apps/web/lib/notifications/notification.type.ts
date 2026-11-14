@@ -20,7 +20,7 @@ export type BellNotification = {
   readonly actorName: string | null;
   /** Their photo, or `null` when they have none, and their initials stand in. */
   readonly actorPhotoUrl: string | null;
-  /** The Ask, the Feedback Request or the Feedback the line leads to. */
+  /** The Ask, the Feedback Request, the Feedback or the Kudos the line leads to. */
   readonly subjectId: string;
   readonly createdAt: string;
   readonly isRead: boolean;
