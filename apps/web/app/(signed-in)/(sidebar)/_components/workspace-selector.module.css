@@ -9,3 +9,14 @@
 .onLogoBaseline {
   translate: 0 calc(var(--spacing) * 6 * (96.2632 / 102 - 0.5) - 0.39em);
 }
+
+/*
+ * The name is the wordmark's size, display-4, but on a phone the bar runs short of room beside the
+ * bell, Settings and the avatar: below 394px wide it eases down with the viewport (7.1vw is
+ * display-4's 28px at 394px), so a short name such as "Thrive" still fits whole at 375px instead
+ * of ending in an ellipsis. Wider, `min()` gives display-4 itself, at whatever size a breakpoint
+ * sets it. Only the size moves; the variant's leading, tracking and weight stay the token's.
+ */
+.fitsPhoneBar {
+  font-size: min(var(--text-display-4), 7.1vw);
+}

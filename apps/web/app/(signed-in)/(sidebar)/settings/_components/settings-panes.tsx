@@ -20,10 +20,11 @@ export type SettingsPanesProps = {
  * that a label and its control are a screen apart. Each section
  * draws its own head (`SettingsSectionHead`), since some carry an action beside their title.
  *
- * On a screen wide enough for three columns (`lg`) the menu and the section sit side by side, and
- * `/settings` shows Account beside the menu. On a narrower one they take turns: `/settings` is the
- * menu alone, and a section hides the menu and offers the way back to it. A client component
- * because which pane shows depends on the current path, which only the browser knows.
+ * Wherever the main sidebar is shown (`md`) the menu and the section sit side by side, the main
+ * sidebar narrowing to its icons below `xl` to make room, and `/settings` shows Account beside the
+ * menu. On a phone they take turns: `/settings` is the menu alone, and a section hides the menu and
+ * offers the way back to it. A client component because which pane shows depends on the current
+ * path, which only the browser knows.
  *
  * The menu is a column the width of the main sidebar, divided from the section by a line as the
  * main sidebar is from it, its contents held just below the navbar as the page scrolls
@@ -34,14 +35,14 @@ export function SettingsPanes({ children }: SettingsPanesProps) {
   const atIndex = pathname === ROUTES.settings.index;
 
   return (
-    <div className="flex flex-1 flex-col lg:flex-row">
+    <div className="flex flex-1 flex-col md:flex-row">
       <div
         className={cn(
-          'border-border-subtle px-3 pt-3 pb-6 lg:w-56 lg:shrink-0 lg:border-r',
-          !atIndex && 'max-lg:hidden',
+          'border-border-subtle px-3 pt-3 pb-6 md:w-56 md:shrink-0 md:border-r',
+          !atIndex && 'max-md:hidden',
         )}
       >
-        <div className="flex flex-col gap-4 lg:sticky lg:top-21">
+        <div className="flex flex-col gap-4 md:sticky md:top-21">
           <Text variant="subtitle-1" as="p" className="px-3 pt-2">
             Settings
           </Text>
@@ -55,7 +56,7 @@ export function SettingsPanes({ children }: SettingsPanesProps) {
       <div
         className={cn(
           'flex min-w-0 flex-1 flex-col',
-          atIndex && 'max-lg:hidden',
+          atIndex && 'max-md:hidden',
         )}
       >
         <div className="mx-auto flex w-full max-w-240 flex-col gap-6 px-4 pt-8 pb-12 md:px-6">

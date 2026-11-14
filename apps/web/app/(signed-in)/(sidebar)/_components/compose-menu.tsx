@@ -59,6 +59,24 @@ const CHOICES: readonly {
   },
 ];
 
+/**
+ * Where "+" stands. Either way it is the same outlined button keeping its own corners, the same as
+ * the sidebar's items. In the sidebar it is a full-width bar and its menu drops below; in the
+ * phone's tab bar it is a square in the middle, the size of the rail's, and its menu rises above
+ * the bar.
+ */
+const PLACEMENTS = {
+  sidebar: {
+    // Its icon is centred and alone, so it needs no side padding, and fits the narrow rail too.
+    button: 'w-full px-0',
+    menu: { side: 'bottom', align: 'start' },
+  },
+  'tab-bar': {
+    button: 'size-11 px-0',
+    menu: { side: 'top', align: 'center' },
+  },
+} as const;
+
 export type ComposeMenuProps = {
   /** The Workspace the page was drawn for, which a card is sent to. */
   workspaceId: string;
@@ -67,6 +85,8 @@ export type ComposeMenuProps = {
   /** The Workspace's active Workspace Goals, by name, offered on `#`. */
   workspaceGoals: readonly string[];
   writer: PostcardWriter;
+  /** Where "+" stands: the sidebar's full-width bar, or the square in the middle of the phone's tab bar. */
+  placement?: keyof typeof PLACEMENTS;
 };
 
 /**
@@ -79,7 +99,9 @@ export function ComposeMenu({
   teammates,
   workspaceGoals,
   writer,
+  placement = 'sidebar',
 }: ComposeMenuProps) {
+  const { button, menu } = PLACEMENTS[placement];
   const { openCard, cards } = useComposeCards();
   const plusRef = useRef<HTMLButtonElement>(null);
   const isOpeningCard = useRef(false);
@@ -114,10 +136,9 @@ export function ComposeMenu({
           }
         }}
       >
-        {/* The trigger rounds whatever it wraps into a pill; this is a full-width bar, so it keeps
-            the button's own corners, the same as the sidebar's items below it. */}
+        {/* The trigger rounds whatever it wraps into a pill; "+" keeps the button's own corners. */}
         <DropdownMenuTrigger asChild className="rounded-button">
-          <Button ref={plusRef} variant="secondary" className="w-full">
+          <Button ref={plusRef} className={button}>
             <PlusIcon aria-hidden="true" className="size-5" />
             <span className="sr-only">Write something</span>
           </Button>
@@ -125,7 +146,8 @@ export function ComposeMenu({
         {/* Its items' corners run parallel to its own: 6px in from a 9px corner, each item rounds by
             the 3px left, where the menu's usual 4px would leave them out of true. */}
         <DropdownMenuContent
-          align="start"
+          side={menu.side}
+          align={menu.align}
           className="w-72 p-1.5"
           onCloseAutoFocus={handleMenuCloseAutoFocus}
         >

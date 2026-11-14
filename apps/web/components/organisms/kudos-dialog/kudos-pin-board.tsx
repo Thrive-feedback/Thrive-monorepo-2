@@ -123,7 +123,9 @@ export type KudosPinActionsProps = {
 
 /**
  * What comes after the card is pinned, under the board. Going to the Kudos Board is what is offered
- * first. On a narrow screen the bar sits above the toast that says the Kudos went.
+ * first. Below `lg` the bar sits high enough to clear the toast that says the Kudos went, which from
+ * `md` rises at the bottom right and can reach under the middle of a narrow window; on a phone that
+ * toast drops in at the top instead.
  */
 export function KudosPinActions({
   ref,

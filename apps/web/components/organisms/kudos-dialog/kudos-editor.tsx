@@ -245,6 +245,7 @@ export function KudosEditor({
       <CardNotesContext value={areNotesShown}>
         <CardNotesToneContext value="secondary">
           <DialogContent
+            placement="screen"
             ref={contentRef}
             hasCloseButton={false}
             aria-describedby={undefined}

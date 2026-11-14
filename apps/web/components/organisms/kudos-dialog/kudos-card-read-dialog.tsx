@@ -53,6 +53,7 @@ export function KudosCardReadDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        placement="screen"
         hasCloseButton={false}
         aria-describedby={undefined}
         onOpenAutoFocus={noteOpener}

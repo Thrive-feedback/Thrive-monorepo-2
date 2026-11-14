@@ -61,7 +61,7 @@ export async function MemberNavbar({
       )}
     >
       {children ? (
-        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+        <div className="flex min-w-0 items-center gap-1 sm:gap-4">
           {logo}
           {children}
         </div>

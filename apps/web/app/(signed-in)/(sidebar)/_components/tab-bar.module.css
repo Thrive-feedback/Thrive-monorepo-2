@@ -1,0 +1,9 @@
+/*
+ * Room under the bar for a phone's home indicator, from the device's own inset, which no utility
+ * reads. It stays 0 until the page opts into the full screen with `viewport-fit=cover`; whoever
+ * sets that must grow the layout's `pb-16`, which keeps the end of each page clear of the bar, by
+ * the same inset.
+ */
+.tabBar {
+  padding-bottom: env(safe-area-inset-bottom);
+}

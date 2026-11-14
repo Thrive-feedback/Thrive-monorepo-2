@@ -10,6 +10,7 @@ import {
   UsersIcon,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { isSettingsPath } from '@/app/(signed-in)/(sidebar)/_lib/settings-path.util';
 import { SideNav, type SideNavEntry } from '@/components/molecules/side-nav';
 import { ROUTES } from '@/lib/routes.constant';
 
@@ -20,8 +21,9 @@ export type SidebarNavProps = {
 
 /**
  * Where to go from Home; items with no address are drawn where they will be and lead nowhere
- * yet. It reads the path itself because the layout around it does not run again when the client
- * navigates between the pages under it.
+ * yet. In Settings, below `xl`, it folds to its icons beside Settings' own menu. It reads the path
+ * itself because the layout around it does not run again when the client navigates between the
+ * pages under it.
  */
 export function SidebarNav({ waitingCount }: SidebarNavProps) {
   const pathname = usePathname();
@@ -41,5 +43,12 @@ export function SidebarNav({ waitingCount }: SidebarNavProps) {
     { href: ROUTES.given, label: 'Given', Icon: SendIcon },
   ];
 
-  return <SideNav label="Main" items={items} currentHref={pathname} />;
+  return (
+    <SideNav
+      label="Main"
+      items={items}
+      currentHref={pathname}
+      foldsToIcons={isSettingsPath(pathname)}
+    />
+  );
 }

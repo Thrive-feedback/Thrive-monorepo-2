@@ -5,14 +5,15 @@ import { Sidebar } from './_components/sidebar';
 /**
  * Home and the pages beside it, Settings among them: the Member frame, with its own navbar, and
  * the sidebar set into the frame against its left edge, a column divided from the page by a line,
- * on a screen wide enough for it. Settings sets its own menu beside it as a second such column. A phone gets neither sidebar nor its replacement yet.
+ * on a screen wide enough for it. Settings sets its own menu beside it as a second such column,
+ * and below `xl` the sidebar narrows to its icons to make room. A phone has the sidebar's places
+ * in a tab bar along the bottom instead, so the page leaves room above it.
  * The check is in each page, not here, because a layout does not run again when the client
  * navigates between the pages under it.
  *
  * The page fills the frame, so the sidebar meets it on three sides, the navbar above, the strip to
  * its left and the strip below, and the column beside it runs to the strip on the right. Each page
- * keeps its own distance from those edges. The sidebar's contents stay in view as the page scrolls,
- * stuck just below the navbar (`mt-18`).
+ * keeps its own distance from those edges.
  */
 export default function SidebarLayout({
   children,
@@ -22,17 +23,10 @@ export default function SidebarLayout({
   return (
     <MemberShell navbar={<Navbar />} fillsFrame>
       <div className="flex flex-1">
-        {/* The + button at its top sits 12px in from the frame on both sides, so its corner runs
-            parallel to the frame's: the button's 9px and those 12px make the frame's 21px. */}
-        <aside
-          aria-label="Sidebar"
-          className="hidden w-56 shrink-0 border-border-subtle border-r px-3 pt-3 pb-6 md:block"
-        >
-          <div className="sticky top-21">
-            <Sidebar />
-          </div>
-        </aside>
-        <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+        <Sidebar />
+        <div className="flex min-w-0 flex-1 flex-col pb-16 md:pb-0">
+          {children}
+        </div>
       </div>
     </MemberShell>
   );
