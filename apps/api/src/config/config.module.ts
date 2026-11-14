@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 
 import {
-  AiConfig,
+  AI_SETTING,
   AuthConfig,
   ChatConfig,
   CONFIGURATION,
@@ -48,7 +48,7 @@ import {
       inject: [CONFIGURATION],
     },
     {
-      provide: AiConfig,
+      provide: AI_SETTING,
       useFactory: (config: Configuration) => config.ai,
       inject: [CONFIGURATION],
     },
@@ -64,7 +64,7 @@ import {
     AuthConfig,
     EmailConfig,
     ChatConfig,
-    AiConfig,
+    AI_SETTING,
     WebConfig,
   ],
 })

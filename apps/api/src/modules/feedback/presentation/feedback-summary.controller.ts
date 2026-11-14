@@ -56,13 +56,15 @@ export class FeedbackSummaryController {
     @Param() params: WorkspacePathParamsDto,
     @Query() query: GetMyFeedbackSummaryQueryDto,
   ) {
-    const summary = await this.getMyFeedbackSummaryUseCase.execute({
-      workspaceId: params.workspaceId,
-      accountId: actor.accountId,
-      period: query.period ?? null,
-    });
+    const { summary, isAvailable } =
+      await this.getMyFeedbackSummaryUseCase.execute({
+        workspaceId: params.workspaceId,
+        accountId: actor.accountId,
+        period: query.period ?? null,
+      });
 
     return {
+      isAvailable,
       summary:
         summary === null
           ? null

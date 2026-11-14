@@ -40,7 +40,10 @@ const THREE_MESSAGES = [
   aSource('three', '2026-10-20T00:00:00.000Z'),
 ];
 
-function setUp(sources: readonly SummarySourceRow[] = THREE_MESSAGES) {
+function setUp(
+  sources: readonly SummarySourceRow[] = THREE_MESSAGES,
+  aiIsConfigured = true,
+) {
   const corpus = new FakeSummaryCorpusQuery().with(...sources);
   const summaries = new FakeFeedbackSummaryRepository();
   const outbox = new FakeOutbox();
@@ -67,6 +70,7 @@ function setUp(sources: readonly SummarySourceRow[] = THREE_MESSAGES) {
     outbox,
     new FakeClock(NOW),
     new FakeUnitOfWork(),
+    aiIsConfigured,
   );
   const reading = (period: string | null = null) =>
     useCase.execute({ workspaceId: WORKSPACE_ID, accountId: ANN, period });
@@ -84,14 +88,14 @@ describe('reading a summary that does not exist yet', () => {
   it('answers with nothing, and asks for one to be written', async () => {
     const { outbox, reading } = setUp();
 
-    expect(await reading()).toBeNull();
+    expect((await reading()).summary).toBeNull();
     expect(outbox.ofType(SUMMARY_REFRESH_TYPE)).toHaveLength(1);
   });
 
   it('asks for nothing below the floor, where a summary is worse than the list', async () => {
     const { outbox, reading } = setUp(THREE_MESSAGES.slice(0, 2));
 
-    expect(await reading()).toBeNull();
+    expect((await reading()).summary).toBeNull();
     expect(outbox.enqueued).toHaveLength(0);
   });
 
@@ -106,12 +110,34 @@ describe('reading a summary that does not exist yet', () => {
   });
 });
 
+describe('reading where no model provider is configured', () => {
+  it('says so, rather than letting the page claim too little was written', async () => {
+    const { outbox, reading } = setUp(THREE_MESSAGES, false);
+
+    const read = await reading();
+
+    expect(read.isAvailable).toBe(false);
+    expect(read.summary).toBeNull();
+    expect(outbox.enqueued).toHaveLength(0);
+  });
+
+  it('still answers with a summary written while one was configured', async () => {
+    const { reading, generate } = setUp(THREE_MESSAGES, false);
+    await generate();
+
+    const read = await reading();
+
+    expect(read.isAvailable).toBe(false);
+    expect(read.summary?.sections.themes).toHaveLength(1);
+  });
+});
+
 describe('reading a summary that is current', () => {
   it('answers with it and asks for nothing', async () => {
     const { outbox, reading, generate } = setUp();
     await generate();
 
-    const read = await reading();
+    const { summary: read } = await reading();
 
     expect(read?.isStale).toBe(false);
     expect(read?.sections.themes).toHaveLength(1);
@@ -125,7 +151,7 @@ describe('reading a summary an older prompt wrote', () => {
     await generate();
     summaries.pretendWrittenBy(1);
 
-    const read = await reading();
+    const { summary: read } = await reading();
 
     // Not stale to the person: nothing new was written to them, and the rewrite is Thrive's
     // business rather than something to put on the page.
@@ -152,7 +178,7 @@ describe('reading a summary that is behind', () => {
     await generate();
     corpus.with(...THREE_MESSAGES, aSource('four', '2026-11-07T00:00:00.000Z'));
 
-    const read = await reading();
+    const { summary: read } = await reading();
 
     expect(read?.isStale).toBe(true);
     expect(outbox.ofType(SUMMARY_REFRESH_TYPE)).toHaveLength(1);

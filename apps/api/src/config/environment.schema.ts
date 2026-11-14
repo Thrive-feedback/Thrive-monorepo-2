@@ -41,50 +41,70 @@ const originList = z
  * Nothing here defaults a secret, and no default weakens production. A new entry ships
  * with its `.env.example` line in the same change.
  */
-export const environmentSchema = z.object({
-  NODE_ENV: z
-    .enum(['development', 'test', 'production'])
-    .default('development'),
+export const environmentSchema = z
+  .object({
+    NODE_ENV: z
+      .enum(['development', 'test', 'production'])
+      .default('development'),
 
-  PORT: z.coerce.number().int().min(1).max(65_535).default(3000),
+    PORT: z.coerce.number().int().min(1).max(65_535).default(3000),
 
-  DATABASE_URL: postgresUrl,
+    DATABASE_URL: postgresUrl,
 
-  CORS_ALLOWED_ORIGINS: originList,
+    CORS_ALLOWED_ORIGINS: originList,
 
-  // Signs and encrypts sessions. Better Auth requires at least 32 characters.
-  BETTER_AUTH_SECRET: z.string().min(32),
+    // Signs and encrypts sessions. Better Auth requires at least 32 characters.
+    BETTER_AUTH_SECRET: z.string().min(32),
 
-  // The web origin people reach Better Auth through. Its callback and redirect URLs are
-  // built from it, so it is the web app's address, not this API's.
-  BETTER_AUTH_URL: z.url(),
+    // The web origin people reach Better Auth through. Its callback and redirect URLs are
+    // built from it, so it is the web app's address, not this API's.
+    BETTER_AUTH_URL: z.url(),
 
-  GOOGLE_CLIENT_ID: z.string().min(1),
-  GOOGLE_CLIENT_SECRET: z.string().min(1),
+    GOOGLE_CLIENT_ID: z.string().min(1),
+    GOOGLE_CLIENT_SECRET: z.string().min(1),
 
-  // The Resend API key, and the address every email is sent from — an address on the
-  // verified sending subdomain, not a person's (ADR 0038). Required everywhere: the API
-  // always sends real email.
-  RESEND_API_KEY: z.string().min(1),
-  RESEND_FROM_ADDRESS: z.email(),
+    // The Resend API key, and the address every email is sent from — an address on the
+    // verified sending subdomain, not a person's (ADR 0038). Required everywhere: the API
+    // always sends real email.
+    RESEND_API_KEY: z.string().min(1),
+    RESEND_FROM_ADDRESS: z.email(),
 
-  // Thrive's one Discord application, shared by every Workspace that connects a server
-  // (brain ADR-0035). The client id is public — the web app puts it in the authorise URL the
-  // Admin is sent to — while the secret signs the install `state` and exchanges the code, and
-  // the bot token authorises every call Thrive makes to Discord.
-  DISCORD_CLIENT_ID: z.string().min(1),
-  DISCORD_CLIENT_SECRET: z.string().min(1),
-  DISCORD_BOT_TOKEN: z.string().min(1),
+    // Thrive's one Discord application, shared by every Workspace that connects a server
+    // (brain ADR-0035). The client id is public — the web app puts it in the authorise URL the
+    // Admin is sent to — while the secret signs the install `state` and exchanges the code, and
+    // the bot token authorises every call Thrive makes to Discord.
+    DISCORD_CLIENT_ID: z.string().min(1),
+    DISCORD_CLIENT_SECRET: z.string().min(1),
+    DISCORD_BOT_TOKEN: z.string().min(1),
 
-  // Whichever model endpoint answers today (ADR 0077). Required at boot like Resend's and
-  // Discord's credentials: a half-configured AI feature is worse than a refused boot, and a
-  // default endpoint or model is a wrong production target nobody notices. The label names the
-  // provider in logs and nowhere else, so no code above the AI module holds a vendor name.
-  AI_PROVIDER_ENDPOINT: z.url(),
-  AI_PROVIDER_API_KEY: z.string().min(1),
-  AI_PROVIDER_MODEL: z.string().min(1),
-  AI_PROVIDER_LABEL: z.string().min(1),
-});
+    // Whichever model endpoint answers today (ADR 0077, ADR 0085). **All four or none**: a
+    // deployment that has no model provider yet runs with the AI features switched off, and one
+    // that has half a provider is refused — a wrong endpoint or a missing key would otherwise
+    // surface as a feature that quietly never works. Still no defaults: a default endpoint is a
+    // wrong production target nobody notices. The label names the provider in logs and nowhere
+    // else, so no code above the AI module holds a vendor name.
+    AI_PROVIDER_ENDPOINT: z.url().optional(),
+    AI_PROVIDER_API_KEY: z.string().min(1).optional(),
+    AI_PROVIDER_MODEL: z.string().min(1).optional(),
+    AI_PROVIDER_LABEL: z.string().min(1).optional(),
+  })
+  .superRefine((environment, context) => {
+    const provider = [
+      environment.AI_PROVIDER_ENDPOINT,
+      environment.AI_PROVIDER_API_KEY,
+      environment.AI_PROVIDER_MODEL,
+      environment.AI_PROVIDER_LABEL,
+    ];
+    const set = provider.filter((value) => value !== undefined).length;
+    if (set !== 0 && set !== provider.length) {
+      context.addIssue({
+        code: 'custom',
+        path: ['AI_PROVIDER_ENDPOINT'],
+        message:
+          'Set every AI_PROVIDER_* value or none of them. Half a provider is a feature that never works and never says why.',
+      });
+    }
+  });
 
 export type Environment = z.infer<typeof environmentSchema>;
 

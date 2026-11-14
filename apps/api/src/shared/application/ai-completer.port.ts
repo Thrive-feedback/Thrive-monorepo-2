@@ -40,3 +40,14 @@ export interface AiAnswer {
 export abstract class AiCompleter {
   abstract complete(completion: AiCompletion): Promise<AiAnswer>;
 }
+
+/**
+ * Injection token for whether a model provider is configured at all (ADR 0085).
+ *
+ * **A feature that asks a model reads this first and does nothing when it is false.** Not because
+ * asking would fail — it would, loudly — but because a deployment without a provider should spend
+ * nothing, enqueue nothing and promise nobody anything, rather than filling an outbox with work
+ * that can only die. It is a boolean, not the provider: which endpoint answers stays inside
+ * `AiModule`.
+ */
+export const AI_IS_CONFIGURED = Symbol('AI_IS_CONFIGURED');

@@ -8,11 +8,15 @@ const WORKSPACE_ID = '0199a0f0-0000-7000-8000-00000000000a';
 const SOURCE_ID = '0199a0f0-0000-7000-8000-0000000000f1';
 const NOW = new Date('2026-11-08T09:00:00.000Z');
 
-function setUp() {
+function setUp(aiIsConfigured = true) {
   const outbox = new FakeOutbox();
   return {
     outbox,
-    service: new SummaryRefreshService(outbox, new FakeClock(NOW)),
+    service: new SummaryRefreshService(
+      outbox,
+      new FakeClock(NOW),
+      aiIsConfigured,
+    ),
   };
 }
 
@@ -59,6 +63,19 @@ describe('asking for the summaries a write made out of date', () => {
     });
 
     expect(outbox.ofType(SUMMARY_REFRESH_TYPE)).toHaveLength(10);
+  });
+
+  it('asks for nothing where no model provider is configured', async () => {
+    const { outbox, service } = setUp(false);
+
+    await service.askFor({
+      workspaceId: WORKSPACE_ID,
+      accountIds: members(3),
+      sourceId: SOURCE_ID,
+    });
+
+    // No rows that could only die: nothing can answer them (ADR 0085).
+    expect(outbox.enqueued).toHaveLength(0);
   });
 
   it('asks for nothing when a Kudos named nobody', async () => {

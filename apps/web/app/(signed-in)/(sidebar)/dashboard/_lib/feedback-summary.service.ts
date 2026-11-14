@@ -6,6 +6,7 @@ import type { CurrentMembership } from '@/lib/session/current-account.type';
 import type {
   FeedbackSummary,
   FeedbackSummaryOnTheWire,
+  FeedbackSummaryRead,
   SummarySectionName,
 } from './feedback-summary.type';
 
@@ -30,8 +31,8 @@ const SECTION_ORDER = Object.keys(SECTION_TITLES) as SummarySectionName[];
  */
 async function readMyFeedbackSummary(
   membership: CurrentMembership,
-): Promise<FeedbackSummary | null> {
-  const { summary } = unwrap(
+): Promise<FeedbackSummaryRead> {
+  const { summary, isAvailable } = unwrap(
     await apiClient().GET('/v1/workspaces/{workspaceId}/me/summary', {
       params: {
         path: { workspaceId: membership.workspace.id },
@@ -40,20 +41,27 @@ async function readMyFeedbackSummary(
       cache: 'no-store',
     }),
   );
-  return summary === null ? null : toFeedbackSummary(summary);
+  return {
+    summary: summary === null ? null : toFeedbackSummary(summary),
+    isAvailable,
+  };
 }
 
-/** The summary, or `null` when the API could not give it, as the page draws both the same way. */
+/**
+ * What the page draws. A read the API could not answer is reported as unavailable rather than as
+ * an empty summary: telling somebody too little has been written to them, when in truth nothing
+ * could be read, is a falsehood about their own Feedback.
+ */
 export async function readMyFeedbackSummaryOrNothing(
   membership: CurrentMembership,
-): Promise<FeedbackSummary | null> {
+): Promise<FeedbackSummaryRead> {
   try {
     return await readMyFeedbackSummary(membership);
   } catch (error) {
     if (!(error instanceof ApiError)) {
       throw error;
     }
-    return null;
+    return { summary: null, isAvailable: false };
   }
 }
 

@@ -1,7 +1,8 @@
+import { AI_IS_CONFIGURED } from '@app/shared/application/ai-completer.port';
 import { Clock } from '@app/shared/application/clock.port';
 import { Outbox } from '@app/shared/application/outbox.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { FeedbackSummarySnapshot } from '../../domain/entity/feedback-summary.entity';
 import { FeedbackSummaryRepository } from '../../domain/repository/feedback-summary-repository.port';
 import { SummaryPeriod } from '../../domain/value-object/summary-period.vo';
@@ -24,6 +25,18 @@ export interface MyFeedbackSummary extends FeedbackSummarySnapshot {
   readonly isStale: boolean;
 }
 
+export interface MyFeedbackSummaryRead {
+  /** What is written, or nothing yet. */
+  readonly summary: MyFeedbackSummary | null;
+  /**
+   * Whether summaries can be written at all in this deployment (ADR 0085). The page needs it to
+   * tell "not enough has been written to you yet" from "this is not switched on" — two different
+   * answers that would otherwise read the same, and one of them would be a falsehood about the
+   * person's own Feedback.
+   */
+  readonly isAvailable: boolean;
+}
+
 /**
  * Reads the caller's own summary of one period, and asks for a new one when what stands is
  * behind.
@@ -40,11 +53,13 @@ export class GetMyFeedbackSummaryUseCase {
     private readonly outbox: Outbox,
     private readonly clock: Clock,
     private readonly unitOfWork: UnitOfWork,
+    @Inject(AI_IS_CONFIGURED)
+    private readonly aiIsConfigured: boolean,
   ) {}
 
   async execute(
     input: GetMyFeedbackSummaryInput,
-  ): Promise<MyFeedbackSummary | null> {
+  ): Promise<MyFeedbackSummaryRead> {
     const period =
       input.period === null
         ? SummaryPeriod.containing(this.clock.now())
@@ -76,6 +91,7 @@ export class GetMyFeedbackSummaryUseCase {
       stored !== null && stored.promptVersion !== SUMMARY_PROMPT_VERSION;
 
     if (
+      this.aiIsConfigured &&
       newest !== null &&
       worthWriting &&
       (stored === null || isStale || writtenByAnOlderPrompt)
@@ -83,7 +99,10 @@ export class GetMyFeedbackSummaryUseCase {
       await this.askForOne(input, period.toString(), newest.id);
     }
 
-    return stored === null ? null : { ...stored, isStale };
+    return {
+      summary: stored === null ? null : { ...stored, isStale },
+      isAvailable: this.aiIsConfigured,
+    };
   }
 
   /**

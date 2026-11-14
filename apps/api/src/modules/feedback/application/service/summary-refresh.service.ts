@@ -1,6 +1,7 @@
+import { AI_IS_CONFIGURED } from '@app/shared/application/ai-completer.port';
 import { Clock } from '@app/shared/application/clock.port';
 import { Outbox } from '@app/shared/application/outbox.port';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SummaryPeriod } from '../../domain/value-object/summary-period.vo';
 import { SUMMARY_REFRESH_TYPE } from '../adapter/feedback-summary-outbox.adapter';
 import { summaryRefreshKey } from './summary-refresh-key.service';
@@ -31,6 +32,8 @@ export class SummaryRefreshService {
   constructor(
     private readonly outbox: Outbox,
     private readonly clock: Clock,
+    @Inject(AI_IS_CONFIGURED)
+    private readonly aiIsConfigured: boolean,
   ) {}
 
   /**
@@ -48,6 +51,11 @@ export class SummaryRefreshService {
     readonly accountIds: readonly string[];
     readonly sourceId: string;
   }): Promise<void> {
+    if (!this.aiIsConfigured) {
+      // Nothing to ask, so nothing is promised: a deployment with no provider writes no outbox
+      // rows that could only die (ADR 0085).
+      return;
+    }
     const period = SummaryPeriod.containing(this.clock.now()).toString();
     await this.outbox.enqueue(
       details.accountIds.slice(0, MAX_SUMMARIES_PER_WRITE).map((accountId) => ({

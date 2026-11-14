@@ -56,7 +56,7 @@ async function setUp(visibility: Visibility = Visibility.onlyMe()) {
     new FakeIdGenerator(FEEDBACK_ID, SECOND_FEEDBACK_ID),
     unitOfWork,
     outbox,
-    new SummaryRefreshService(outbox, new FakeClock(NOW)),
+    new SummaryRefreshService(outbox, new FakeClock(NOW), true),
   );
   return {
     feedbackRequestRepository,

@@ -59,7 +59,7 @@ function setUp() {
     new FakeIdGenerator(FEEDBACK_ID),
     unitOfWork,
     outbox,
-    new SummaryRefreshService(outbox, new FakeClock(NOW)),
+    new SummaryRefreshService(outbox, new FakeClock(NOW), true),
   );
   return {
     feedbackRepository,
