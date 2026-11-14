@@ -48,7 +48,7 @@ exports[`Landing > renders the same page 1`] = `
         <button
           aria-label="Dark theme"
           aria-pressed="false"
-          class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary bg-action-neutral-surface size-9 rounded-full text-action-primary not-disabled:hover:bg-action-primary-surface-hover not-disabled:active:bg-action-primary-surface-hover aria-pressed:text-action-secondary aria-pressed:not-disabled:active:bg-action-secondary-surface-hover aria-pressed:not-disabled:hover:bg-action-secondary-surface-hover"
+          class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary aria-disabled:cursor-not-allowed aria-disabled:border-transparent aria-disabled:bg-action-disabled-surface aria-disabled:text-fg-secondary aria-disabled:active:bg-action-disabled-surface aria-disabled:hover:bg-action-disabled-surface bg-action-neutral-surface size-9 rounded-full text-action-primary not-disabled:hover:bg-action-primary-surface-hover not-disabled:active:bg-action-primary-surface-hover aria-pressed:text-action-secondary aria-pressed:not-disabled:active:bg-action-secondary-surface-hover aria-pressed:not-disabled:hover:bg-action-secondary-surface-hover"
           data-slot="button"
           type="button"
         >
@@ -71,7 +71,7 @@ exports[`Landing > renders the same page 1`] = `
           </svg>
         </button>
         <a
-          class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary border border-action-neutral-border bg-surface-base text-fg-primary not-disabled:hover:bg-action-neutral-surface-hover not-disabled:active:bg-action-neutral-surface-hover px-3 py-2 text-button-sm leading-5"
+          class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary aria-disabled:cursor-not-allowed aria-disabled:border-transparent aria-disabled:bg-action-disabled-surface aria-disabled:text-fg-secondary aria-disabled:active:bg-action-disabled-surface aria-disabled:hover:bg-action-disabled-surface border border-action-neutral-border bg-surface-base text-fg-primary not-disabled:hover:bg-action-neutral-surface-hover not-disabled:active:bg-action-neutral-surface-hover px-3 py-2 text-button-sm leading-5"
           data-slot="button"
           href="/signin"
         >
@@ -150,7 +150,7 @@ exports[`Landing > renders the same page 1`] = `
               class="flex flex-col items-center gap-3"
             >
               <a
-                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary bg-action-primary text-fg-on-action not-disabled:hover:bg-action-primary-hover not-disabled:active:bg-action-primary-active px-5.5 py-3.5 text-button-md leading-5"
+                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary aria-disabled:cursor-not-allowed aria-disabled:border-transparent aria-disabled:bg-action-disabled-surface aria-disabled:text-fg-secondary aria-disabled:active:bg-action-disabled-surface aria-disabled:hover:bg-action-disabled-surface bg-action-primary text-fg-on-action not-disabled:hover:bg-action-primary-hover not-disabled:active:bg-action-primary-active px-5.5 py-3.5 text-button-md leading-5"
                 data-slot="button"
                 href="/signin"
               >
@@ -1550,7 +1550,7 @@ Next time, send it before lunch so sales can use it too. Thank you!
             >
               <button
                 aria-label="Bring the card on the left to the front"
-                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary border border-action-neutral-border bg-surface-base text-fg-primary not-disabled:hover:bg-action-neutral-surface-hover not-disabled:active:bg-action-neutral-surface-hover size-9 rounded-full"
+                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary aria-disabled:cursor-not-allowed aria-disabled:border-transparent aria-disabled:bg-action-disabled-surface aria-disabled:text-fg-secondary aria-disabled:active:bg-action-disabled-surface aria-disabled:hover:bg-action-disabled-surface border border-action-neutral-border bg-surface-base text-fg-primary not-disabled:hover:bg-action-neutral-surface-hover not-disabled:active:bg-action-neutral-surface-hover size-9 rounded-full"
                 data-slot="button"
                 type="button"
               >
@@ -1600,7 +1600,7 @@ Next time, send it before lunch so sales can use it too. Thank you!
               </div>
               <button
                 aria-label="Bring the card on the right to the front"
-                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary border border-action-neutral-border bg-surface-base text-fg-primary not-disabled:hover:bg-action-neutral-surface-hover not-disabled:active:bg-action-neutral-surface-hover size-9 rounded-full"
+                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary aria-disabled:cursor-not-allowed aria-disabled:border-transparent aria-disabled:bg-action-disabled-surface aria-disabled:text-fg-secondary aria-disabled:active:bg-action-disabled-surface aria-disabled:hover:bg-action-disabled-surface border border-action-neutral-border bg-surface-base text-fg-primary not-disabled:hover:bg-action-neutral-surface-hover not-disabled:active:bg-action-neutral-surface-hover size-9 rounded-full"
                 data-slot="button"
                 type="button"
               >
@@ -5732,7 +5732,7 @@ Next time, send it before lunch so sales can use it too. Thank you!
                   class="flex flex-col items-center gap-2"
                 >
                   <a
-                    class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary bg-action-primary text-fg-on-action not-disabled:hover:bg-action-primary-hover not-disabled:active:bg-action-primary-active px-5.5 py-3.5 text-button-md leading-5"
+                    class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary aria-disabled:cursor-not-allowed aria-disabled:border-transparent aria-disabled:bg-action-disabled-surface aria-disabled:text-fg-secondary aria-disabled:active:bg-action-disabled-surface aria-disabled:hover:bg-action-disabled-surface bg-action-primary text-fg-on-action not-disabled:hover:bg-action-primary-hover not-disabled:active:bg-action-primary-active px-5.5 py-3.5 text-button-md leading-5"
                     data-slot="button"
                     href="/signin"
                   >

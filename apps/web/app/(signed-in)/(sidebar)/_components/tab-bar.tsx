@@ -2,12 +2,14 @@
 
 import {
   ClockIcon,
+  EllipsisIcon,
   HandHeartIcon,
   HouseIcon,
   InboxIcon,
   type LucideIcon,
-  MessageSquareTextIcon,
   SendIcon,
+  SparklesIcon,
+  UsersIcon,
 } from 'lucide-react';
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -17,6 +19,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
 import glass from '@/components/organisms/glass.module.css';
@@ -39,8 +42,8 @@ const TAB_ICON_CLASSES =
 
 /**
  * The phone's way around, in place of the sidebar it has no room for: Home, the Kudos board, "+"
- * in the middle, Waiting for me with its count, and My Feedback, which opens Received and
- * Given as the sidebar groups them. The Teammates page is not built, so it has no tab.
+ * in the middle, Waiting for me with its count, and More, which opens the rest of the sidebar:
+ * Teammates, then My Feedback's Your dashboard, Received and Given, as the sidebar groups them.
  *
  * It is the frame's bottom strip grown tall enough to hold them, the same frosted glass, curving
  * into the page at both ends as the navbar does at the top. It reads the path itself because the
@@ -48,8 +51,12 @@ const TAB_ICON_CLASSES =
  */
 export function TabBar({ waitingCount, children }: TabBarProps) {
   const pathname = usePathname();
-  const inMyFeedback =
-    pathname.startsWith(ROUTES.received) || pathname.startsWith(ROUTES.given);
+  const inMore = [
+    ROUTES.teammates,
+    ROUTES.dashboard,
+    ROUTES.received,
+    ROUTES.given,
+  ].some((href) => pathname.startsWith(href));
 
   return (
     <div
@@ -95,28 +102,36 @@ export function TabBar({ waitingCount, children }: TabBarProps) {
           <li>
             <DropdownMenu>
               <DropdownMenuTrigger
-                aria-current={inMyFeedback ? 'page' : undefined}
+                aria-current={inMore ? 'page' : undefined}
                 className={TAB_CLASSES}
               >
                 <span className={TAB_ICON_CLASSES}>
-                  <MessageSquareTextIcon
-                    aria-hidden="true"
-                    className="size-5"
-                  />
+                  <EllipsisIcon aria-hidden="true" className="size-5" />
                 </span>
-                <span>
-                  <span className="sr-only">My </span>Feedback
-                </span>
+                More
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="end" className="w-56">
+                <MoreLink
+                  href={ROUTES.teammates}
+                  Icon={UsersIcon}
+                  label="Teammates"
+                  isCurrent={pathname.startsWith(ROUTES.teammates)}
+                />
+                <DropdownMenuSeparator />
                 <DropdownMenuLabel>My Feedback</DropdownMenuLabel>
-                <FeedbackLink
+                <MoreLink
+                  href={ROUTES.dashboard}
+                  Icon={SparklesIcon}
+                  label="Your dashboard"
+                  isCurrent={pathname.startsWith(ROUTES.dashboard)}
+                />
+                <MoreLink
                   href={ROUTES.received}
                   Icon={InboxIcon}
                   label="Received"
                   isCurrent={pathname.startsWith(ROUTES.received)}
                 />
-                <FeedbackLink
+                <MoreLink
                   href={ROUTES.given}
                   Icon={SendIcon}
                   label="Given"
@@ -180,8 +195,8 @@ function Tab({
   );
 }
 
-/** Received or Given in My Feedback's menu, marked when it is the page open. */
-function FeedbackLink({
+/** A page in More's menu, marked when it is the page open. */
+function MoreLink({
   href,
   Icon,
   label,

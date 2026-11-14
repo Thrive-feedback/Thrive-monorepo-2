@@ -54,6 +54,26 @@ describe('Button', () => {
     expect(handleClick).not.toHaveBeenCalled();
   });
 
+  it('stays reachable from the keyboard while marked unavailable, so it can say why', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <Button aria-disabled aria-describedby="why">
+          Save
+        </Button>
+        <p id="why">Nothing has changed yet.</p>
+      </>,
+    );
+
+    await user.tab();
+
+    const save = screen.getByRole('button', { name: 'Save' });
+    expect(save).toHaveFocus();
+    expect(save).toHaveAttribute('aria-disabled', 'true');
+    expect(save).not.toBeDisabled();
+    expect(save).toHaveAccessibleDescription('Nothing has changed yet.');
+  });
+
   it('is busy and cannot be pressed while loading, and keeps its name', async () => {
     const user = userEvent.setup();
     const handleClick = vi.fn();

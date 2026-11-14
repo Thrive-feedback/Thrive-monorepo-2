@@ -4,7 +4,7 @@ import { Slot } from 'radix-ui';
 import { cn } from '@/lib/cn.util';
 
 const buttonVariants = cva(
-  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary',
+  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-button transition-colors disabled:cursor-not-allowed disabled:border-transparent disabled:bg-action-disabled-surface disabled:text-fg-secondary aria-disabled:cursor-not-allowed aria-disabled:border-transparent aria-disabled:bg-action-disabled-surface aria-disabled:text-fg-secondary aria-disabled:active:bg-action-disabled-surface aria-disabled:hover:bg-action-disabled-surface',
   {
     variants: {
       // Hover and pressed fills wait on `not-disabled:`, not `enabled:`: `:enabled` matches form
@@ -64,6 +64,10 @@ export type ButtonProps = React.ComponentPropsWithRef<'button'> &
  *
  * `loading` disables the button and marks it busy rather than swapping its label, so the
  * accessible name stays what the person clicked; the spinner is decorative inside it.
+ *
+ * `aria-disabled` draws it as `disabled` does, hover and press included, but leaves it focusable and
+ * pressable, for an action that is unavailable and must still say why: what a press does then is
+ * the caller's, such as showing the reason.
  *
  * `asChild` paints its one child as a button instead of rendering a `<button>` — for a link
  * that looks like an action: `<Button asChild><Link href="/x">Go</Link></Button>`. The child

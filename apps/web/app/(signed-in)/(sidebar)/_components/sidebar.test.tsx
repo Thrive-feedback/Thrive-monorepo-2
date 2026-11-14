@@ -82,7 +82,7 @@ describe('Sidebar', () => {
     );
   });
 
-  it('marks Home as the open page, and leads to Waiting for me and the Kudos board', async () => {
+  it('marks Home as the open page, and leads everywhere it lists, Teammates included', async () => {
     const nav = await draw(0);
 
     expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute(
@@ -110,10 +110,11 @@ describe('Sidebar', () => {
     expect(
       within(nav).getByRole('link', { name: 'Your dashboard' }),
     ).toHaveAttribute('href', ROUTES.dashboard);
-    expect(within(nav).getAllByRole('link')).toHaveLength(6);
-    for (const button of within(nav).getAllByRole('button')) {
-      expect(button).toHaveAttribute('aria-disabled', 'true');
-    }
+    expect(
+      within(nav).getByRole('link', { name: 'Teammates' }),
+    ).toHaveAttribute('href', ROUTES.teammates);
+    expect(within(nav).getAllByRole('link')).toHaveLength(7);
+    expect(within(nav).queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('counts the Asks waiting for the person, in the Workspace they are in', async () => {
@@ -147,6 +148,7 @@ describe('Sidebar', () => {
       'Waiting for me2',
       'Teammates',
       'My Feedback',
+      'Your dashboard',
       'Received',
       'Given',
     ]);

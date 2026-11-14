@@ -62,22 +62,6 @@ describe('SideNav', () => {
     );
   });
 
-  it('draws an item with nowhere to go yet as a button marked unavailable, in its place', () => {
-    render(
-      <SideNav
-        label="Main"
-        items={[...ITEMS, { label: 'Later', Icon: UsersIcon }]}
-        currentHref="/a"
-      />,
-    );
-
-    expect(screen.getByRole('button', { name: 'Later' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
-    expect(screen.getAllByRole('listitem').at(-1)).toHaveTextContent('Later');
-  });
-
   it('shows a count beside an item, and nothing at zero', () => {
     render(
       <SideNav

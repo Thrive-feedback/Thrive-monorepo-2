@@ -86,6 +86,8 @@ export const ROUTES = {
   dashboard: '/dashboard',
   /** The Workspace's Kudos board. */
   kudos: '/kudos',
+  /** Everyone in the Workspace but the person, each with Give, Ask and Kudos. */
+  teammates: '/teammates',
   /** The Kudos board narrowed to one month, `YYYY-MM`. */
   kudosMonth: (month: string) => `/kudos?month=${month}`,
   /** Everything written to the person. */
