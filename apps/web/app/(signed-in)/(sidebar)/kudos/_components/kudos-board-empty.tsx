@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { CardsEmpty } from '@/app/(signed-in)/(sidebar)/_components/cards-empty';
 import { ComposeAction } from '@/app/(signed-in)/(sidebar)/_components/compose-action';
 import { readComposeContext } from '@/app/(signed-in)/(sidebar)/_lib/compose-context.service';
 import { KUDOS_BOARD_HEADING_ID } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board.constant';
 import { kudosMonthName } from '@/app/(signed-in)/(sidebar)/kudos/_lib/kudos-board-place.util';
 import { Button } from '@/components/atoms/button';
+import { CardsEmpty } from '@/components/organisms/cards-empty';
 import { ROUTES } from '@/lib/routes.constant';
 import type { MemberAccount } from '@/lib/session/session.service';
 

@@ -1,10 +1,6 @@
 'use client';
 
 import { useRef } from 'react';
-import {
-  CardsEmpty,
-  type CardsEmptyProps,
-} from '@/app/(signed-in)/(sidebar)/_components/cards-empty';
 import { ComposeAction } from '@/app/(signed-in)/(sidebar)/_components/compose-action';
 import { PersonalItemTile } from '@/app/(signed-in)/(sidebar)/_components/personal-item-tile';
 import { PersonalItemsGridSkeleton } from '@/app/(signed-in)/(sidebar)/_components/personal-items-skeleton';
@@ -49,6 +45,10 @@ import {
   CardTitle,
 } from '@/components/atoms/card';
 import { Text } from '@/components/atoms/text';
+import {
+  CardsEmpty,
+  type CardsEmptyProps,
+} from '@/components/organisms/cards-empty';
 import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';

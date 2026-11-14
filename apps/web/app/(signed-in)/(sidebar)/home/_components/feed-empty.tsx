@@ -1,4 +1,4 @@
-import { CardsEmpty } from '@/app/(signed-in)/(sidebar)/_components/cards-empty';
+import { CardsEmpty } from '@/components/organisms/cards-empty';
 import type { HomeShow } from '@/lib/routes.constant';
 
 /**

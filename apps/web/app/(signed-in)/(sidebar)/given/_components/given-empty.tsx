@@ -1,7 +1,7 @@
-import { CardsEmpty } from '@/app/(signed-in)/(sidebar)/_components/cards-empty';
 import { ComposeAction } from '@/app/(signed-in)/(sidebar)/_components/compose-action';
 import { readComposeContext } from '@/app/(signed-in)/(sidebar)/_lib/compose-context.service';
 import { GIVEN_HEADING_ID } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-side.constant';
+import { CardsEmpty } from '@/components/organisms/cards-empty';
 import type { MemberAccount } from '@/lib/session/session.service';
 
 export type GivenEmptyProps = {
