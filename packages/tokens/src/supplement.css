@@ -5,7 +5,7 @@
  *
  * Motion (transitions.dev's scale, until design owns one), a stroke width for the focus ring, two content widths, a monospace family, the
  * wordmark's colour in each theme, the ground of a disabled control (whose blueprint value
- * vanishes on a dark dialog), and the blur behind a dialog or under a glass bar are what
+ * vanishes on a dark dialog), the red of a count waiting on the person, and the blur behind a dialog or under a glass bar are what
  * today's screens use that the blueprint does not describe.
  */
 :root {
@@ -65,6 +65,13 @@
   /* The ground of a control that cannot be used yet. On light it is the subtle surface, as the
      blueprint's disabled buttons are drawn. */
   --action-disabled-surface: var(--surface-subtle);
+
+  /* A count that is waiting on the person — the bell's unread number, and the same number beside
+     a place in the navigation — in the red the owner chose (error-450), with white on it at about
+     5:1. A request to design to add the role to the blueprint (`FE_03` R9). The same in both
+     themes: it is a mark, not a surface. */
+  --attention: var(--error-450);
+  --attention-fg: var(--neutral-50);
 }
 
 /* The wordmark is white on the dark theme (Figma, Thrive · node 17348:15047). */

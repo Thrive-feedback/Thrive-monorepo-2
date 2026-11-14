@@ -2,7 +2,7 @@ import {
   ShowcaseEntry,
   StateCell,
 } from '@/app/ui-showcase/_components/showcase-entry';
-import { Badge } from '@/components/atoms/badge';
+import { Badge, CountBadge } from '@/components/atoms/badge';
 
 export function BadgeEntry() {
   return (
@@ -14,7 +14,7 @@ export function BadgeEntry() {
       summary="A short label that marks or sorts the thing beside it."
       useFor="A state, a level, a category or a count next to the thing it describes."
       avoidFor="Anything a person clicks to act (Button) or removes (a tag in a field)."
-      usage={`import { Badge } from '@/components/atoms/badge';
+      usage={`import { Badge, CountBadge } from '@/components/atoms/badge';
 
 <Badge>Draft</Badge>
 <Badge tone="success">Answered</Badge>
@@ -74,6 +74,10 @@ export function BadgeEntry() {
         <Badge tone="warning">Waiting</Badge>
         <Badge tone="error">Withdrawn</Badge>
         <Badge tone="info">Shared</Badge>
+      </StateCell>
+      <StateCell label="A count waiting on the person">
+        <CountBadge count={3} />
+        <CountBadge count={120} />
       </StateCell>
       <StateCell label="Edged, on a tinted card">
         <div className="flex flex-wrap gap-2 rounded-control bg-action-tertiary/8 p-3">

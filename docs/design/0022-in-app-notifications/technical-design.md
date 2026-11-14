@@ -53,7 +53,7 @@ browser (§2 D9).
 | D6 | **The row write is `await`ed and its failure swallowed**, unlike the chat message, which stays fire-and-forget | fire-and-forget for both (`0021` D5); awaiting both | They are different risks. The row is one local Postgres insert, ~1 ms, and losing it means the person is **never told by any channel**. The chat call is two HTTPS round trips to a third party that may be down. So: `await` the row inside a `try/catch` that logs and returns; leave chat as `0021` wrote it. **Cost, stated:** ~1–3 ms added to the p50 of three write endpoints, measurable before and after with the existing suites |
 | D7 | **Fan-out is one `createMany`**, not a call per recipient | `Promise.allSettled` over inserts | A request asking five people is one round trip, not five. This is also why D2's shape pays: the recipients are already in hand |
 | D8 | **Idempotent on `(recipientAccountId, type, subjectId)`, unique, inserted with `skipDuplicates`** | nothing; a dedup check read before insert | A double-submitted form or a retried request must not put two lines in a bell. A check-then-insert is a race (`BE_12`); a unique index is not. It also enforces `requirement.md` rule 4 at the database rather than in a code path somebody can reorder |
-| D9 | **Freshness is polling: on mount, on the tab regaining focus, and every 60 s while visible** | SSE; websockets; a shorter interval | There is no Redis and no broker (`BE_19`, `INFRA_12` both `todo`), the API may run more than one replica, and a held connection would cross Railway's proxy and the private hop. A 50-Member Workspace polling once a minute is **under 2 requests a second** (two calls per poll — §4.3 says why one is not reachable); at 5 s it would be ten times that, to change a number that changes a few times a day. **Cost: the count can be up to 60 s stale** — `requirement.md` §4 step 3 says "within a minute" for that reason |
+| D9 | **Freshness is polling: on mount, on the tab regaining focus, and every 60 s while visible** (since D19 a poll reads the newest page of lines as well as the count) | SSE; websockets; a shorter interval | There is no Redis and no broker (`BE_19`, `INFRA_12` both `todo`), the API may run more than one replica, and a held connection would cross Railway's proxy and the private hop. A 50-Member Workspace polling once a minute is **under 4 requests a second** (four calls per poll since D19 — §4.3 says why fewer is not reachable); at 5 s it would be twelve times that, to change a number that changes a few times a day. **Cost: the count can be up to 60 s stale** — `requirement.md` §4 step 3 says "within a minute" for that reason |
 | D10 | **The web polls through a server action**, as `SessionRefresher` already does | the browser calling the API; a Next route handler | §1 fact 2 — the client has no way to reach the API. `apps/web/lib/session/session-actions.service.ts` is the established shape; a route handler is the alternative if the action's POST semantics prove awkward, and that is a `FE_09`/`FE_11` call made when the code is written, not here |
 | D11 | **Routes sit under the Workspace**: `GET /v1/workspaces/{workspaceId}/notifications`, `POST …/notifications/read`, `POST …/notifications/{id}/read` | `/v1/notifications/mine`, as `0021` put Linked Accounts | A Linked Account belongs to an **Account**; a Notification belongs to a **Workspace** (`requirement.md` rule 5). Under the Workspace it gets `WorkspaceMemberGuard` free (`BE_21` R3). **And the surface has no way to name a person** — the caller is always the recipient — so rule 7 is a property of the API's shape, not of a check somebody might forget |
 | D12 | **In-app copy is composed in the web; chat copy stays on the API** | one rendered string from the API for both; both in the web | **The one to argue with.** The API must compose chat copy — it posts it, and it needs an absolute URL. The web must own in-app copy — the destination is a *web route* (`ROUTES.homeAsk`), and `ROUTES` is not the API's to know; `0021` §4.2 step 3 having the API build a web path is already a layering smell that works only because chat needs a URL anyway. It also puts the sentence where `FE_23` (i18n, `todo`) will want it. **Cost: the sentence exists in two places.** Mitigated by the `type` enum being the one shared vocabulary and by §4.4 listing both renderings side by side |
@@ -63,10 +63,11 @@ browser (§2 D9).
 | D16 | ~~**The row keeps who can read its subject, as `audience`**~~ — **superseded by ADR 0089**: a bell line does not say who can read what it names, and the column is dropped | — | ADR 0089 |
 | D17 | **The bell line shows the actor's photo**: `actor.photoUrl` on the list response, from the same `AccountSummaryPort.summariesOf` call that names them, so still one call per page | a second lookup for photos | The face is read with the name, and both are resolved at read time for the reason D3 gives |
 | D18 | **A Kudos is the fifth kind, `KUDOS_RECEIVED`**: each Member it @mentions gets a line and, if linked, a direct message; a Kudos naming nobody tells nobody. The line opens Received showing Kudos; neither carries its words. Feedback enqueues `notifications.kudos_received` only when the Kudos names somebody. The web leaves out a kind it has no sentence for, and the API counts only kinds it lists, so the next kind is additive | telling every Member of a Kudos for the whole Workspace; bell only; opening the Kudos board | ADR 0086. A Kudos for everybody is read on the board by everybody, and telling all of them would fill every bell; the person praised by name is the one being told something happened to them |
+| D19 | **One poll feeds the bell and every count in the navigation**: a client `NotificationsProvider` around the sidebar layout reads `GET …/notifications/unread-count` and the newest page of `GET …/notifications` (100 lines, the API's page cap) on mount, on focus and every 60 s while visible. The bell's number is that count, exact. Waiting for me (unread `ASK_RECEIVED`), Received (unread answers, Feedback written and Kudos) and the Received tabs are counted from the lines read so far, in the `attention` red, capped at 99+. The panel draws every line read, no taller than the window, and reads the next page as the person scrolls near the end; a poll lays the newest page over the older pages rather than starting again. A line read in the bell takes every number down at once | a count endpoint per place; the server's pending-Ask count for Waiting; the newest 100 only, with no way further | No API of its own (owner, 2026-11-14). **Costs, stated:** a poll is two server actions, so four API calls (§4.3); an unread line older than the pages read is in the bell's number and in no navigation count until the person scrolls to it, which shows only past a hundred lines; an older page read once is not read again, so a line in it read on another device stays unread here until a reload; the counts arrive with the first poll, after the page is drawn, not with it; Waiting counts unread Asks, not pending ones, so Mark all as read clears it while an Ask still waits — the owner's choice |
 
 **Not approved yet — this document is the review. D12 and D14 are the two to argue with.**
 
-**D17 and D18 were decided by the owner on 2026-11-14** (the photo, the Kudos kind); they are not open. D16 was decided the same day and withdrawn by ADR 0089.
+**D17, D18 and D19 were decided by the owner on 2026-11-14** (the photo, the Kudos kind, the shared counts and the paged list); they are not open. D16 was decided the same day and withdrawn by ADR 0089.
 
 ## 3. Domain model
 
@@ -211,6 +212,22 @@ second**, one of them an index scan over a table holding roughly 90,000 rows a y
 (`requirement.md` §7 question 3). A partial index on `read_at IS NULL` would be tighter and Prisma
 does not express one cleanly; it is a raw migration if it ever shows up in a measurement, and **nothing
 should be done about it before then**.
+
+**Re-sized 2026-11-14 for D19.** A poll now also reads the newest page of lines, a second server
+action, so it is **four** API calls: at a 50-Member Workspace once a minute, **under 4 requests a
+second**. The list is the same index's first two columns, then a sort of that person's rows by
+`createdAt` to take a hundred, with a `count(*)` beside it for `total`:
+
+```sql
+SELECT … FROM notification
+ WHERE recipient_account_id = $1 AND workspace_id = $2
+ ORDER BY created_at DESC, id DESC LIMIT 100 OFFSET $3
+```
+
+A person is told a few things a day, so that is a sort of hundreds of rows, or a few thousand after
+some years — nothing to index for. An index on `(recipient_account_id, workspace_id, created_at)`
+would make it a range read; like the partial index above, it waits for a measurement. Older pages
+are read only when somebody scrolls for them, never by a poll.
 
 ### 4.4 The two renderings (D12)
 

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HashIcon, HouseIcon, PaletteIcon, UsersIcon } from 'lucide-react';
 import { describe, expect, it } from 'vitest';
@@ -74,7 +74,10 @@ describe('SideNav', () => {
       />,
     );
 
-    expect(screen.getByRole('link', { name: 'Waiting 3' })).toBeVisible();
+    // Drawn as a number and said as words, as every count is.
+    const waiting = screen.getByRole('link', { name: /^Waiting ?, 3 unread$/ });
+    expect(waiting).toBeVisible();
+    expect(within(waiting).getByText('3')).toHaveClass('bg-attention');
     expect(screen.getByRole('link', { name: 'Done' })).toBeVisible();
   });
 
@@ -115,10 +118,14 @@ describe('SideNav', () => {
       'aria-current',
       'page',
     );
-    expect(screen.getByRole('link', { name: 'Waiting 2' })).toBeVisible();
+    expect(
+      screen.getByRole('link', { name: /^Waiting ?, 2 unread$/ }),
+    ).toBeVisible();
     expect(screen.getByText('Mine')).toBeInTheDocument();
 
-    await user.hover(screen.getByRole('link', { name: 'Waiting 2' }));
+    await user.hover(
+      screen.getByRole('link', { name: /^Waiting ?, 2 unread$/ }),
+    );
 
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Waiting');
   });

@@ -14,6 +14,11 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push }),
   useSearchParams: () => new URLSearchParams(),
 }));
+// The filter reads its counts from the bell's provider, whose reads are server actions.
+vi.mock(
+  '@/lib/notifications/notification-actions.service',
+  async () => (await import('@/lib/test/bell-notifications')).BELL_ACTIONS,
+);
 vi.mock('./_components/received-items', () => ({
   ReceivedItems: () => <p>What was received</p>,
 }));

@@ -1,58 +1,64 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { BellNotification } from '@/lib/notifications/notification.type';
+import type {
+  BellNotification,
+  NotificationsPage,
+} from '@/lib/notifications/notification.type';
+import {
+  aBellNotification,
+  answerTheBell,
+  aPage,
+  BELL_ACTIONS,
+  settled,
+  unreadLines,
+} from '@/lib/test/bell-notifications';
 import { NotificationBell } from './notification-bell';
+import { NotificationsProvider } from './notifications-provider';
 
-const countUnreadNotifications = vi.fn();
-const listMyNotifications = vi.fn();
-const markNotificationRead = vi.fn();
-const markAllNotificationsRead = vi.fn();
-vi.mock('@/lib/notifications/notification-actions.service', () => ({
-  countUnreadNotifications: () => countUnreadNotifications(),
-  listMyNotifications: () => listMyNotifications(),
-  markNotificationRead: (...args: unknown[]) => markNotificationRead(...args),
-  markAllNotificationsRead: () => markAllNotificationsRead(),
-}));
+vi.mock(
+  '@/lib/notifications/notification-actions.service',
+  async () => (await import('@/lib/test/bell-notifications')).BELL_ACTIONS,
+);
 
 const SUBJECT = '0199ffff-0000-7000-8000-00000000000a';
-const FIVE_MINUTES_AGO = new Date(Date.now() - 5 * 60_000).toISOString();
-
-function aNotification(
-  overrides: Partial<BellNotification> = {},
-): BellNotification {
-  return {
-    id: '0199ffff-0000-7000-8000-000000000001',
-    type: 'ASK_RECEIVED',
-    actorName: 'Nut',
-    actorPhotoUrl: null,
-    subjectId: SUBJECT,
-    createdAt: FIVE_MINUTES_AGO,
-    isRead: false,
-    ...overrides,
-  };
-}
+const { countUnreadNotifications, listMyNotifications } = BELL_ACTIONS;
 
 beforeEach(() => {
-  countUnreadNotifications.mockReset().mockResolvedValue(0);
-  listMyNotifications.mockReset().mockResolvedValue([]);
-  markNotificationRead.mockReset().mockResolvedValue(undefined);
-  markAllNotificationsRead.mockReset().mockResolvedValue(true);
+  answerTheBell();
 });
 
-async function openTheBell(name = 'Notifications') {
+/** The bell as the layout mounts it: under the provider that reads its lines. */
+function drawBell() {
+  render(
+    <NotificationsProvider>
+      <NotificationBell />
+    </NotificationsProvider>,
+  );
+}
+
+async function openTheBell(name: string | RegExp = /^Notifications/) {
   const user = userEvent.setup();
-  render(<NotificationBell />);
+  drawBell();
   await user.click(await screen.findByRole('button', { name }));
   await screen.findByRole('menu');
   return user;
 }
 
+/** An answer the test gives when it chooses, to put a read in flight. */
+function held<T>() {
+  let give: (value: T) => void = () => {};
+  const promise = new Promise<T>((resolve) => {
+    give = resolve;
+  });
+  return { promise, give };
+}
+
 describe('NotificationBell', () => {
   it('shows no number while nothing is unread', async () => {
-    countUnreadNotifications.mockResolvedValue(0);
+    answerTheBell([aBellNotification('ASK_RECEIVED', { isRead: true })]);
 
-    render(<NotificationBell />);
+    drawBell();
 
     expect(
       await screen.findByRole('button', { name: 'Notifications' }),
@@ -61,14 +67,37 @@ describe('NotificationBell', () => {
   });
 
   it('shows how many are unread, in the name as well as the number', async () => {
-    countUnreadNotifications.mockResolvedValue(3);
+    answerTheBell(unreadLines('ASK_RECEIVED', 3));
 
-    render(<NotificationBell />);
+    drawBell();
 
     expect(
       await screen.findByRole('button', { name: 'Notifications, 3 unread' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
+    // In the red a count waiting on the person is drawn in.
+    expect(screen.getByText('3')).toHaveClass('bg-attention');
+  });
+
+  it('shows the API’s count, not how many lines it has read', async () => {
+    answerTheBell(unreadLines('ASK_RECEIVED', 2));
+    countUnreadNotifications.mockResolvedValue(42);
+
+    drawBell();
+
+    expect(
+      await screen.findByRole('button', { name: 'Notifications, 42 unread' }),
+    ).toBeInTheDocument();
+  });
+
+  it('draws anything past ninety-nine as 99+, and says the real number', async () => {
+    countUnreadNotifications.mockResolvedValue(120);
+
+    drawBell();
+
+    expect(
+      await screen.findByRole('button', { name: 'Notifications, 120 unread' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('99+')).toBeInTheDocument();
   });
 
   it.each([
@@ -88,7 +117,7 @@ describe('NotificationBell', () => {
   ] as const)(
     'says "%s" and opens what it names',
     async (type, sentence, href) => {
-      listMyNotifications.mockResolvedValue([aNotification({ type })]);
+      answerTheBell([aBellNotification(type)]);
 
       await openTheBell();
 
@@ -100,7 +129,7 @@ describe('NotificationBell', () => {
   );
 
   it('still reads as a sentence when the person cannot be named', async () => {
-    listMyNotifications.mockResolvedValue([aNotification({ actorName: null })]);
+    answerTheBell([aBellNotification('ASK_RECEIVED', { actorName: null })]);
 
     await openTheBell();
 
@@ -112,7 +141,11 @@ describe('NotificationBell', () => {
   });
 
   it('says how long ago each one was, and marks the unread ones', async () => {
-    listMyNotifications.mockResolvedValue([aNotification()]);
+    answerTheBell([
+      aBellNotification('ASK_RECEIVED', {
+        createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
+      }),
+    ]);
 
     await openTheBell();
 
@@ -124,8 +157,8 @@ describe('NotificationBell', () => {
   });
 
   it('shows the face of who did it, by their initials when they have no photo', async () => {
-    listMyNotifications.mockResolvedValue([
-      aNotification({ actorName: 'Nut Somchai' }),
+    answerTheBell([
+      aBellNotification('ASK_RECEIVED', { actorName: 'Nut Somchai' }),
     ]);
 
     await openTheBell();
@@ -146,13 +179,9 @@ describe('NotificationBell', () => {
     'marks a %s line in the colour of the card it opens: its dot, ringed while unread, and its highlight',
     async (type, name, fill) => {
       const ring = fill.replace('bg-', 'outline-');
-      listMyNotifications.mockResolvedValue([
-        aNotification({ type }),
-        aNotification({
-          id: '0199ffff-0000-7000-8000-000000000008',
-          type,
-          isRead: true,
-        }),
+      answerTheBell([
+        aBellNotification(type),
+        aBellNotification(type, { isRead: true }),
       ]);
 
       await openTheBell();
@@ -176,7 +205,7 @@ describe('NotificationBell', () => {
       for (const line of [unread, read]) {
         expect(line).toHaveClass(highlight);
         expect(line).not.toHaveClass(
-          'data-highlighted:bg-action-primary-surface',
+          'data-highlighted:bg-action-neutral-surface-hover',
         );
       }
     },
@@ -187,14 +216,11 @@ describe('NotificationBell', () => {
     // through JSON, as it arrives, rather than cast to a kind it is not.
     const unknown: BellNotification = JSON.parse(
       JSON.stringify({
-        ...aNotification({ id: '0199ffff-0000-7000-8000-000000000009' }),
+        ...aBellNotification('ASK_RECEIVED'),
         type: 'SOMETHING_LATER',
       }),
     );
-    listMyNotifications.mockResolvedValue([
-      unknown,
-      aNotification({ type: 'KUDOS_RECEIVED' }),
-    ]);
+    answerTheBell([unknown, aBellNotification('KUDOS_RECEIVED')]);
 
     await openTheBell();
 
@@ -209,13 +235,9 @@ describe('NotificationBell', () => {
 
   it('sets an unread line in bold as well as ringing its dot, so the ring is never the only cue', async () => {
     // The orange ring is below 3:1 on the panel, so it must stay a second cue (WCAG 1.4.11).
-    listMyNotifications.mockResolvedValue([
-      aNotification({ type: 'KUDOS_RECEIVED' }),
-      aNotification({
-        id: '0199ffff-0000-7000-8000-000000000007',
-        type: 'KUDOS_RECEIVED',
-        isRead: true,
-      }),
+    answerTheBell([
+      aBellNotification('KUDOS_RECEIVED'),
+      aBellNotification('KUDOS_RECEIVED', { isRead: true }),
     ]);
 
     await openTheBell();
@@ -226,8 +248,6 @@ describe('NotificationBell', () => {
   });
 
   it('says in words when there is nothing, rather than showing an empty box', async () => {
-    listMyNotifications.mockResolvedValue([]);
-
     await openTheBell();
 
     expect(await screen.findByText('Nothing yet')).toBeInTheDocument();
@@ -243,30 +263,24 @@ describe('NotificationBell', () => {
   });
 
   it('marks one read and takes the number down when its line is pressed', async () => {
-    countUnreadNotifications.mockResolvedValue(1);
-    listMyNotifications.mockResolvedValue([aNotification()]);
+    const line = aBellNotification('ASK_RECEIVED');
+    answerTheBell([line]);
 
     const user = await openTheBell('Notifications, 1 unread');
     await user.click(
       await screen.findByRole('menuitem', { name: /asked you for feedback/ }),
     );
 
-    expect(markNotificationRead).toHaveBeenCalledWith(
-      '0199ffff-0000-7000-8000-000000000001',
-    );
+    expect(BELL_ACTIONS.markNotificationRead).toHaveBeenCalledWith(line.id);
     expect(
       await screen.findByRole('button', { name: 'Notifications' }),
     ).toBeInTheDocument();
   });
 
   it('clears the number on Mark all as read, and keeps the lines', async () => {
-    countUnreadNotifications.mockResolvedValue(2);
-    listMyNotifications.mockResolvedValue([
-      aNotification(),
-      aNotification({
-        id: '0199ffff-0000-7000-8000-000000000002',
-        type: 'FEEDBACK_RECEIVED',
-      }),
+    answerTheBell([
+      aBellNotification('ASK_RECEIVED'),
+      aBellNotification('FEEDBACK_RECEIVED'),
     ]);
 
     const user = await openTheBell('Notifications, 2 unread');
@@ -274,7 +288,7 @@ describe('NotificationBell', () => {
       await screen.findByRole('menuitem', { name: 'Mark all as read' }),
     );
 
-    expect(markAllNotificationsRead).toHaveBeenCalledOnce();
+    expect(BELL_ACTIONS.markAllNotificationsRead).toHaveBeenCalledOnce();
     // The open menu hides the rest of the page from the accessibility tree, so the bell itself
     // is only reachable here as a hidden element.
     await waitFor(() => {
@@ -292,10 +306,34 @@ describe('NotificationBell', () => {
     expect(screen.queryByText('Unread')).not.toBeInTheDocument();
   });
 
+  it('keeps the number and the lines when Mark all as read is refused', async () => {
+    answerTheBell([aBellNotification('ASK_RECEIVED')]);
+    BELL_ACTIONS.markAllNotificationsRead.mockResolvedValue(false);
+
+    const user = await openTheBell('Notifications, 1 unread');
+    await user.click(
+      await screen.findByRole('menuitem', { name: 'Mark all as read' }),
+    );
+
+    await waitFor(() =>
+      expect(BELL_ACTIONS.markAllNotificationsRead).toHaveBeenCalledOnce(),
+    );
+    expect(
+      screen.getByRole('button', {
+        name: 'Notifications, 1 unread',
+        hidden: true,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: /asked you for feedback/ }),
+    ).toHaveTextContent('Unread');
+  });
+
   it('keeps the number it has when a poll fails, and says nothing about it', async () => {
     countUnreadNotifications.mockResolvedValue(null);
+    listMyNotifications.mockResolvedValue(null);
 
-    render(<NotificationBell />);
+    drawBell();
 
     expect(
       await screen.findByRole('button', { name: 'Notifications' }),
@@ -304,27 +342,26 @@ describe('NotificationBell', () => {
   });
 
   it('keeps the number it has when a poll never reaches the server', async () => {
-    countUnreadNotifications
-      .mockResolvedValueOnce(3)
-      .mockRejectedValue(new Error('Failed to fetch'));
-    render(<NotificationBell />);
+    answerTheBell(unreadLines('ASK_RECEIVED', 3));
+    drawBell();
     await screen.findByRole('button', { name: 'Notifications, 3 unread' });
+    countUnreadNotifications.mockRejectedValue(new Error('Failed to fetch'));
+    listMyNotifications.mockRejectedValue(new Error('Failed to fetch'));
 
-    window.dispatchEvent(new Event('focus'));
+    await settled(() => window.dispatchEvent(new Event('focus')));
 
-    await waitFor(() =>
-      expect(countUnreadNotifications).toHaveBeenCalledTimes(2),
-    );
+    expect(listMyNotifications).toHaveBeenCalledTimes(2);
     expect(
-      await screen.findByRole('button', { name: 'Notifications, 3 unread' }),
+      screen.getByRole('button', { name: 'Notifications, 3 unread' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('takes the number down when pressing a line never reaches the server', async () => {
-    countUnreadNotifications.mockResolvedValue(1);
-    listMyNotifications.mockResolvedValue([aNotification()]);
-    markNotificationRead.mockRejectedValue(new Error('Failed to fetch'));
+    answerTheBell([aBellNotification('ASK_RECEIVED')]);
+    BELL_ACTIONS.markNotificationRead.mockRejectedValue(
+      new Error('Failed to fetch'),
+    );
     const user = await openTheBell('Notifications, 1 unread');
 
     await user.click(
@@ -334,7 +371,7 @@ describe('NotificationBell', () => {
     expect(
       await screen.findByRole('button', { name: 'Notifications' }),
     ).toBeInTheDocument();
-    expect(markNotificationRead).toHaveBeenCalledOnce();
+    expect(BELL_ACTIONS.markNotificationRead).toHaveBeenCalledOnce();
   });
 
   it('says so in the panel when it could not read them', async () => {
@@ -346,6 +383,89 @@ describe('NotificationBell', () => {
   });
 });
 
+describe('a bell with more lines than one page', () => {
+  /** Says the list has scrolled to `fromTheEnd` pixels short of its last line. */
+  function scrollTheLines(fromTheEnd: number) {
+    const list = screen.getByRole('group', { name: 'Notifications' });
+    Object.defineProperty(list, 'scrollHeight', {
+      configurable: true,
+      value: 2000,
+    });
+    Object.defineProperty(list, 'clientHeight', {
+      configurable: true,
+      value: 500,
+    });
+    list.scrollTop = 1500 - fromTheEnd;
+    fireEvent.scroll(list);
+  }
+
+  it('draws every line of the first page, all in one list that scrolls', async () => {
+    answerTheBell(unreadLines('KUDOS_RECEIVED', 100));
+
+    await openTheBell();
+
+    expect(
+      await screen.findAllByRole('menuitem', { name: /gave you kudos/ }),
+    ).toHaveLength(100);
+  });
+
+  it('reads the next page as the person scrolls near the end, and adds it under the first', async () => {
+    const firstPage = unreadLines('KUDOS_RECEIVED', 100);
+    const secondPage = [
+      aBellNotification('ASK_RECEIVED', { actorName: 'Ploy' }),
+    ];
+    listMyNotifications.mockImplementation(async (page = 1) =>
+      aPage(page === 1 ? firstPage : secondPage, 101),
+    );
+    await openTheBell();
+    await screen.findAllByRole('menuitem', { name: /gave you kudos/ });
+
+    scrollTheLines(100);
+
+    expect(
+      await screen.findByRole('menuitem', {
+        name: /Ploy asked you for feedback/,
+      }),
+    ).toBeInTheDocument();
+    expect(listMyNotifications).toHaveBeenCalledWith(2);
+    expect(
+      screen.getAllByRole('menuitem', { name: /gave you kudos/ }),
+    ).toHaveLength(100);
+  });
+
+  it('asks for nothing more while the person is far from the end, or once everything is read', async () => {
+    answerTheBell(unreadLines('KUDOS_RECEIVED', 3));
+    await openTheBell();
+    await screen.findAllByRole('menuitem', { name: /gave you kudos/ });
+
+    scrollTheLines(0);
+
+    expect(listMyNotifications).not.toHaveBeenCalledWith(2);
+  });
+
+  it('asks for one page at a time, however often the list scrolls while it is on its way', async () => {
+    const secondPage = held<NotificationsPage | null>();
+    listMyNotifications.mockImplementation((page = 1) =>
+      page === 1
+        ? Promise.resolve(aPage(unreadLines('KUDOS_RECEIVED', 100), 150))
+        : secondPage.promise,
+    );
+    await openTheBell();
+    await screen.findAllByRole('menuitem', { name: /gave you kudos/ });
+
+    scrollTheLines(100);
+    scrollTheLines(50);
+    scrollTheLines(0);
+
+    // Shown as loading while it is on its way.
+    expect(await screen.findByRole('status')).toBeInTheDocument();
+    expect(
+      listMyNotifications.mock.calls.filter(([page]) => page === 2),
+    ).toHaveLength(1);
+    secondPage.give(aPage([], 150));
+  });
+});
+
 describe('NotificationBell, over time', () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -353,11 +473,11 @@ describe('NotificationBell, over time', () => {
 
   it('asks again every minute while the tab is being looked at', async () => {
     vi.useFakeTimers();
-    countUnreadNotifications.mockResolvedValue(0);
 
-    render(<NotificationBell />);
+    drawBell();
     await vi.advanceTimersByTimeAsync(60_000);
 
+    expect(listMyNotifications).toHaveBeenCalledTimes(2);
     expect(countUnreadNotifications).toHaveBeenCalledTimes(2);
   });
 
@@ -367,44 +487,53 @@ describe('NotificationBell, over time', () => {
       .spyOn(document, 'visibilityState', 'get')
       .mockReturnValue('hidden');
 
-    render(<NotificationBell />);
+    drawBell();
     await vi.advanceTimersByTimeAsync(5 * 60_000);
 
-    expect(countUnreadNotifications).not.toHaveBeenCalled();
+    expect(listMyNotifications).not.toHaveBeenCalled();
 
     visibility.mockReturnValue('visible');
     document.dispatchEvent(new Event('visibilitychange'));
     await vi.advanceTimersByTimeAsync(0);
 
-    expect(countUnreadNotifications).toHaveBeenCalledOnce();
+    expect(listMyNotifications).toHaveBeenCalledOnce();
     visibility.mockRestore();
+  });
+
+  it('asks once when the tab comes back and the window takes focus together', async () => {
+    drawBell();
+    await waitFor(() => expect(listMyNotifications).toHaveBeenCalledOnce());
+    const answer = held<NotificationsPage | null>();
+    listMyNotifications.mockReturnValue(answer.promise);
+
+    document.dispatchEvent(new Event('visibilitychange'));
+    window.dispatchEvent(new Event('focus'));
+
+    expect(listMyNotifications).toHaveBeenCalledTimes(2);
+    answer.give(aPage([]));
   });
 });
 
 describe('the gap between pressing the bell and seeing anything', () => {
   it('keeps the lines it already had when it is opened again', async () => {
-    listMyNotifications.mockResolvedValue([aNotification()]);
+    answerTheBell([aBellNotification('ASK_RECEIVED')]);
     const user = await openTheBell();
     await screen.findByText('Nut asked you for feedback');
 
     // Closed and opened again. The lines it had are almost always still right, so they stay on
     // screen while the refresh happens behind them.
     await user.keyboard('{Escape}');
-    let resolveRefresh: (items: BellNotification[]) => void = () => {};
-    listMyNotifications.mockReturnValue(
-      new Promise<BellNotification[]>((resolve) => {
-        resolveRefresh = resolve;
-      }),
-    );
+    const refresh = held<NotificationsPage | null>();
+    listMyNotifications.mockReturnValue(refresh.promise);
     await user.click(screen.getByRole('button', { name: /Notifications/ }));
 
     expect(screen.getByText('Nut asked you for feedback')).toBeInTheDocument();
     expect(screen.queryByText('Loading…')).not.toBeInTheDocument();
-    resolveRefresh([aNotification()]);
+    refresh.give(aPage([]));
   });
 
   it('leaves the lines alone when a refresh behind them fails', async () => {
-    listMyNotifications.mockResolvedValue([aNotification()]);
+    answerTheBell([aBellNotification('ASK_RECEIVED')]);
     const user = await openTheBell();
     await screen.findByText('Nut asked you for feedback');
 
@@ -412,22 +541,18 @@ describe('the gap between pressing the bell and seeing anything', () => {
     listMyNotifications.mockResolvedValue(null);
     await user.click(screen.getByRole('button', { name: /Notifications/ }));
 
-    // A failed refresh is not worth replacing what somebody is already reading.
-    await waitFor(() => {
-      expect(listMyNotifications).toHaveBeenCalledTimes(2);
-    });
+    // A failed refresh is not worth replacing what somebody is already reading. Three reads: the
+    // one on arrival, the first open and this one.
+    await settled();
+    expect(listMyNotifications).toHaveBeenCalledTimes(3);
     expect(screen.getByText('Nut asked you for feedback')).toBeInTheDocument();
   });
 
   it('shows a skeleton the shape of the rows on the very first open', async () => {
-    let resolveFirst: (items: BellNotification[]) => void = () => {};
-    listMyNotifications.mockReturnValue(
-      new Promise<BellNotification[]>((resolve) => {
-        resolveFirst = resolve;
-      }),
-    );
+    const first = held<NotificationsPage | null>();
+    listMyNotifications.mockReturnValue(first.promise);
     const user = userEvent.setup();
-    render(<NotificationBell />);
+    drawBell();
     await user.click(
       await screen.findByRole('button', { name: /Notifications/ }),
     );
@@ -435,7 +560,7 @@ describe('the gap between pressing the bell and seeing anything', () => {
     // Announced as loading, with rows at the height the real ones will be so the panel does not
     // resize as they arrive.
     expect(await screen.findByRole('status')).toBeInTheDocument();
-    resolveFirst([aNotification()]);
+    first.give(aPage([aBellNotification('ASK_RECEIVED')]));
     await screen.findByText('Nut asked you for feedback');
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
@@ -450,71 +575,74 @@ describe('the gap between pressing the bell and seeing anything', () => {
       await screen.findByText(/couldn't load these just now/i),
     ).toBeInTheDocument();
   });
+
+  it('tries again with the skeleton when a bell that could not be read is opened again', async () => {
+    listMyNotifications.mockResolvedValue(null);
+    const user = await openTheBell();
+    await screen.findByText(/couldn't load these/);
+
+    await user.keyboard('{Escape}');
+    const retry = held<NotificationsPage | null>();
+    listMyNotifications.mockReturnValue(retry.promise);
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
+
+    expect(await screen.findByRole('status')).toBeInTheDocument();
+    retry.give(aPage([aBellNotification('ASK_RECEIVED')]));
+    expect(
+      await screen.findByText('Nut asked you for feedback'),
+    ).toBeInTheDocument();
+  });
 });
 
-describe('when answers come back out of order, or late', () => {
-  it('does not let a slow failed open wipe lines a later one painted', async () => {
-    let failSlowOpen: (items: BellNotification[] | null) => void = () => {};
-    listMyNotifications.mockReturnValueOnce(
-      new Promise<BellNotification[] | null>((resolve) => {
-        failSlowOpen = resolve;
-      }),
-    );
-    const user = await openTheBell();
-    await user.keyboard('{Escape}');
+describe('when answers come back late', () => {
+  it('waits for the read already on its way rather than sending a second behind it', async () => {
+    const onArrival = held<NotificationsPage | null>();
+    listMyNotifications.mockReturnValueOnce(onArrival.promise);
 
-    listMyNotifications.mockResolvedValue([aNotification()]);
-    await user.click(screen.getByRole('button', { name: /Notifications/ }));
-    await screen.findByText('Nut asked you for feedback');
+    await openTheBell();
 
-    // The first open finally gives up, after the second already painted. What somebody is
-    // reading is worth more than a message about a request they have forgotten about.
-    failSlowOpen(null);
-    await waitFor(() => {
-      expect(
-        screen.getByText('Nut asked you for feedback'),
-      ).toBeInTheDocument();
-    });
-    expect(screen.queryByText(/couldn't load these/i)).not.toBeInTheDocument();
-  });
-
-  it('lets the newest answer win, not the slowest', async () => {
-    let finishFirst: (items: BellNotification[]) => void = () => {};
-    listMyNotifications.mockReturnValueOnce(
-      new Promise<BellNotification[]>((resolve) => {
-        finishFirst = resolve;
-      }),
-    );
-    const user = await openTheBell();
-    await user.keyboard('{Escape}');
-
-    listMyNotifications.mockResolvedValue([
-      aNotification({ actorName: 'Ploy' }),
-    ]);
-    await user.click(screen.getByRole('button', { name: /Notifications/ }));
-    await screen.findByText('Ploy asked you for feedback');
-
-    finishFirst([aNotification({ actorName: 'Stale' })]);
-    await waitFor(() => {
-      expect(screen.queryByText('Stale asked you for feedback')).toBeNull();
-    });
-    expect(screen.getByText('Ploy asked you for feedback')).toBeInTheDocument();
-  });
-
-  it('says it could not look when a reopen fails and there was nothing to keep', async () => {
-    // An empty bell and a bell that could not be read are different answers (#269), and an
-    // empty first open must not make the second one lie.
-    listMyNotifications.mockResolvedValue([]);
-    const user = await openTheBell();
-    await screen.findByText(/Nothing yet/);
-
-    await user.keyboard('{Escape}');
-    listMyNotifications.mockResolvedValue(null);
-    await user.click(screen.getByRole('button', { name: /Notifications/ }));
-
+    // Opening while the read on arrival is out joins it: server actions queue, so a second read
+    // could only be answered after the first anyway.
+    expect(listMyNotifications).toHaveBeenCalledOnce();
+    onArrival.give(aPage([aBellNotification('ASK_RECEIVED')]));
     expect(
-      await screen.findByText(/couldn't load these just now/i),
+      await screen.findByText('Nut asked you for feedback'),
     ).toBeInTheDocument();
-    expect(screen.queryByText(/Nothing yet/)).not.toBeInTheDocument();
+  });
+
+  it('keeps an empty bell empty, open, through a poll that fails', async () => {
+    // "Nothing yet" was a true answer; a later poll that could not look does not make it false,
+    // and an open panel must not flash a skeleton or an error at somebody reading it.
+    const user = await openTheBell();
+    await screen.findByText('Nothing yet');
+    listMyNotifications.mockResolvedValue(null);
+
+    await settled(() => window.dispatchEvent(new Event('focus')));
+
+    expect(listMyNotifications).toHaveBeenCalledTimes(3);
+    expect(screen.getByText('Nothing yet')).toBeInTheDocument();
+    expect(screen.queryByText(/couldn't load these/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    await user.keyboard('{Escape}');
+  });
+
+  it('does not let a read sent before a line was pressed mark it unread again', async () => {
+    const line = aBellNotification('KUDOS_RECEIVED');
+    answerTheBell([line]);
+    const user = await openTheBell('Notifications, 1 unread');
+    await screen.findByRole('menuitem', { name: /gave you kudos/ });
+
+    // A poll goes out, and is answered from before the line is pressed.
+    const stale = held<NotificationsPage | null>();
+    listMyNotifications.mockReturnValue(stale.promise);
+    countUnreadNotifications.mockResolvedValue(1);
+    window.dispatchEvent(new Event('focus'));
+    await user.click(screen.getByRole('menuitem', { name: /gave you kudos/ }));
+    await settled(() => stale.give(aPage([line])));
+
+    // Answered from before the press, it would say 1 unread again.
+    expect(
+      screen.getByRole('button', { name: 'Notifications', hidden: true }),
+    ).toBeInTheDocument();
   });
 });

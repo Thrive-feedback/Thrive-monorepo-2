@@ -1,14 +1,16 @@
 import { preconnect } from 'react-dom';
 import styles from '@/components/organisms/glass.module.css';
-import { MemberNavbar } from '@/components/organisms/member-navbar';
 import { cn } from '@/lib/cn.util';
 
 /** Where Google serves the photos people signed in with. */
 const GOOGLE_PHOTOS_ORIGIN = 'https://lh3.googleusercontent.com';
 
 export type MemberShellProps = {
-  /** The bar across the top, when the pages bring their own rather than the Member navbar. */
-  navbar?: React.ReactNode;
+  /**
+   * The bar across the top: a `MemberNavbar`, filled in by the pages under it. Theirs to give,
+   * since its bell reads from a `NotificationsProvider` they put around the shell.
+   */
+  navbar: React.ReactNode;
   /**
    * The page meets the frame on every side, and each of its columns keeps its own distance from it,
    * rather than sitting inside the shell's own padding.
@@ -31,7 +33,7 @@ export type MemberShellProps = {
  * shell knowing what it holds.
  */
 export function MemberShell({
-  navbar = <MemberNavbar />,
+  navbar,
   fillsFrame = false,
   children,
 }: MemberShellProps) {
