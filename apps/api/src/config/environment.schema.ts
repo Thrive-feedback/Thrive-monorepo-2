@@ -36,6 +36,20 @@ const originList = z
   );
 
 /**
+ * A comma-separated list of email addresses, lower-cased so a match never depends on how
+ * someone typed their own address. An empty list is a safe mistake: it lets nobody in.
+ */
+const emailList = z
+  .string()
+  .transform((value) =>
+    value
+      .split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter((email) => email !== ''),
+  )
+  .pipe(z.array(z.email()));
+
+/**
  * The shape of every environment variable this application reads, parsed once at boot.
  *
  * Nothing here defaults a secret, and no default weakens production. A new entry ships
@@ -87,6 +101,21 @@ export const environmentSchema = z
     AI_PROVIDER_API_KEY: z.string().min(1).optional(),
     AI_PROVIDER_MODEL: z.string().min(1).optional(),
     AI_PROVIDER_LABEL: z.string().min(1).optional(),
+
+    // Whether Your dashboard is shown, read by the web through `GET /v1/feature-flags` (ADR 0087).
+    // Its name is the owner's, not `INFRA_07` R7's concern-first scheme. Left out, it is off — a
+    // departure from `INFRA_07` R9 recorded in the ADR: a forgotten flag hides an unfinished page.
+    // Anything but `true` or `false` refuses the boot, so a typo cannot read as either.
+    USER_DASHBOARD_FLAG: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+
+    // Who may open `/ui-showcase`, by the email they sign in with (ADR 0088). Left out, nobody
+    // may, here or anywhere else — a departure from `INFRA_07` R9 recorded in the ADR: a forgotten
+    // list closes the showcase rather than opening it. An address that does not parse refuses the
+    // boot, rather than quietly locking its owner out.
+    UI_SHOWCASE_ALLOWED_EMAILS: emailList.default([]),
   })
   .superRefine((environment, context) => {
     const provider = [

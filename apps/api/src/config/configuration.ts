@@ -112,6 +112,28 @@ export class WebConfig {
   ) {}
 }
 
+/**
+ * What each deployment has switched on (ADR 0087). Only capabilities live here, never a value
+ * about where something runs, because `GET /v1/feature-flags` hands these to anyone who asks.
+ */
+export class FeatureFlagsConfig {
+  constructor(
+    /** Whether Your dashboard is shown in the menu and answers at its address. */
+    readonly showsDashboard: boolean,
+  ) {}
+}
+
+/**
+ * Who may open the UI showcase (ADR 0088). Never returned or logged: a route answers only
+ * whether its caller is in it.
+ */
+export class UiShowcaseConfig {
+  constructor(
+    /** Lower-cased. Empty means nobody. */
+    readonly allowedEmails: ReadonlySet<string>,
+  ) {}
+}
+
 export interface Configuration {
   readonly http: HttpConfig;
   readonly database: DatabaseConfig;
@@ -120,6 +142,8 @@ export interface Configuration {
   readonly chat: ChatConfig;
   readonly ai: AiSetting;
   readonly web: WebConfig;
+  readonly featureFlags: FeatureFlagsConfig;
+  readonly uiShowcase: UiShowcaseConfig;
 }
 
 /**
@@ -199,6 +223,10 @@ export function loadConfiguration(
     // The auth URL is already the web origin (ADR 0027), so a second variable would only be
     // one that could disagree with it.
     web: new WebConfig(new URL(parsed.data.BETTER_AUTH_URL).origin),
+    featureFlags: new FeatureFlagsConfig(parsed.data.USER_DASHBOARD_FLAG),
+    uiShowcase: new UiShowcaseConfig(
+      new Set(parsed.data.UI_SHOWCASE_ALLOWED_EMAILS),
+    ),
   };
 }
 

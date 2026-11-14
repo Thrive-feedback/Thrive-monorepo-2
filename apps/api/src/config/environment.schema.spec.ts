@@ -113,3 +113,70 @@ describe('environmentSchema', () => {
     ).toEqual(['RESEND_FROM_ADDRESS']);
   });
 });
+
+describe('the dashboard flag', () => {
+  function dashboardFlag(value: string | undefined): boolean | undefined {
+    const parsed = environmentSchema.safeParse({
+      ...validEnvironment,
+      USER_DASHBOARD_FLAG: value,
+    });
+    return parsed.success ? parsed.data.USER_DASHBOARD_FLAG : undefined;
+  }
+
+  it('is off when the deployment leaves it out, so a forgotten flag hides the page', () => {
+    expect(dashboardFlag(undefined)).toBe(false);
+  });
+
+  it.each([
+    ['true', true],
+    ['false', false],
+  ] as const)(
+    'reads %s as a boolean, not as the string it arrived as',
+    (value, expected) => {
+      expect(dashboardFlag(value)).toBe(expected);
+    },
+  );
+
+  it.each(['yes', 'TRUE', '1', ''])(
+    'refuses %p, rather than guessing which way it meant',
+    (value) => {
+      expect(
+        failedPaths({ ...validEnvironment, USER_DASHBOARD_FLAG: value }),
+      ).toEqual(['USER_DASHBOARD_FLAG']);
+    },
+  );
+});
+
+describe('who may open the UI showcase', () => {
+  function allowed(value: string | undefined): string[] | undefined {
+    const parsed = environmentSchema.safeParse({
+      ...validEnvironment,
+      UI_SHOWCASE_ALLOWED_EMAILS: value,
+    });
+    return parsed.success ? parsed.data.UI_SHOWCASE_ALLOWED_EMAILS : undefined;
+  }
+
+  it('is nobody when the deployment leaves it out, so a forgotten list closes the showcase', () => {
+    expect(allowed(undefined)).toEqual([]);
+  });
+
+  it('is nobody when the list is empty', () => {
+    expect(allowed('')).toEqual([]);
+  });
+
+  it('reads several, however they were spaced, and in lower case', () => {
+    expect(allowed(' Ann@Acme.test, ben@acme.test ,')).toEqual([
+      'ann@acme.test',
+      'ben@acme.test',
+    ]);
+  });
+
+  it('refuses an address that does not parse, rather than locking its owner out quietly', () => {
+    expect(
+      failedPaths({
+        ...validEnvironment,
+        UI_SHOWCASE_ALLOWED_EMAILS: 'ann@acme.test,ben',
+      }),
+    ).toEqual(['UI_SHOWCASE_ALLOWED_EMAILS.1']);
+  });
+});

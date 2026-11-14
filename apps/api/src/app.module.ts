@@ -8,6 +8,7 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { outboxModule } from './infrastructure/outbox/outbox.module';
+import { FeatureFlagsModule } from './modules/feature-flags';
 import {
   FeedbackModule,
   FeedbackSummaryOutboxHandler,
@@ -28,6 +29,7 @@ import {
   NotificationsModule,
   PersonNotificationOutboxHandler,
 } from './modules/notifications';
+import { UiShowcaseAccessModule } from './modules/ui-showcase-access';
 import { WorkspaceModule } from './modules/workspace';
 import { WorkspaceGoalModule } from './modules/workspace-goal';
 import { CodedErrorFilter } from './shared/presentation/coded-error.filter';
@@ -71,6 +73,8 @@ import { SharedModule } from './shared/shared.module';
     WorkspaceGoalModule,
     IntegrationsModule,
     NotificationsModule,
+    FeatureFlagsModule,
+    UiShowcaseAccessModule,
   ],
   controllers: [HealthController],
   providers: [

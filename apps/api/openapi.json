@@ -3026,6 +3026,63 @@
           "workspace-goals"
         ]
       }
+    },
+    "/v1/feature-flags": {
+      "get": {
+        "operationId": "FeatureFlagsController_getFeatureFlags",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFeatureFlagsResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Read what this deployment has switched on",
+        "tags": [
+          "feature-flags"
+        ]
+      }
+    },
+    "/v1/ui-showcase-access/mine": {
+      "get": {
+        "operationId": "UiShowcaseAccessController_getMine",
+        "parameters": [
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMyUiShowcaseAccessResponseDto_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          }
+        },
+        "summary": "Read whether I may open the UI showcase",
+        "tags": [
+          "ui-showcase-access"
+        ]
+      }
     }
   },
   "info": {
@@ -10028,6 +10085,34 @@
         },
         "required": [
           "id"
+        ],
+        "additionalProperties": false
+      },
+      "GetFeatureFlagsResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "USER_DASHBOARD_FLAG": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ]
+          }
+        },
+        "required": [
+          "USER_DASHBOARD_FLAG"
+        ],
+        "additionalProperties": false
+      },
+      "GetMyUiShowcaseAccessResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "isAllowed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isAllowed"
         ],
         "additionalProperties": false
       }
