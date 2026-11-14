@@ -46,7 +46,7 @@ export abstract class KudosQuery {
 
   /**
    * The Kudos of one Workspace past a place on Home, newest first. `recipientAccountId` narrows it to
-   * the Kudos that name that person, for Shared with me; `null` reads them all.
+   * the Kudos that name that person, for Received; `null` reads them all.
    */
   abstract onHome(
     workspaceId: string,

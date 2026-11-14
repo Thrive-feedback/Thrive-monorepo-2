@@ -1,6 +1,6 @@
 # 0077 — Kudos joins Home's list
 
-**Status:** accepted, 2026-11-01
+**Status:** accepted, 2026-11-01; its Shared with me rule is amended by 0090
 
 ## Context
 

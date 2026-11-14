@@ -173,10 +173,10 @@ Feature: Home
     Then Ann's Home shows a Kudos on its card
 
   @api
-  Scenario: Shared with me holds a Kudos that names the reader
+  Scenario: Shared with me leaves out a Kudos that names the reader
     Given Ben has given Kudos: "@Ann carried the launch."
     When Ann looks at Shared with me on Home
-    Then Ann's Home holds 1 Kudos
+    Then Ann's Home is empty
 
   @api
   Scenario: Shared with me leaves out a Kudos for the whole Workspace

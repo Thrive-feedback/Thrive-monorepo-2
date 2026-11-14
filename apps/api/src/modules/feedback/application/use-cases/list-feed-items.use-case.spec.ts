@@ -365,7 +365,7 @@ describe('reading Home', () => {
       expect(home.items.at(0)?.id).toBe('for-the-workspace');
     });
 
-    it('holds only the Kudos that name the reader under Shared with me', async () => {
+    it('holds no Kudos under Shared with me, not even one that names the reader', async () => {
       const { kudosQuery, useCase } = setUp();
       kudosQuery.rows.push(
         kudosRow('names-ana', NEWEST, { recipients: [ANA] }),
@@ -375,9 +375,7 @@ describe('reading Home', () => {
 
       const home = await read(useCase, 'SHARED_WITH_ME');
 
-      expect(
-        home.items.filter((item) => item.kind === 'KUDOS').map(({ id }) => id),
-      ).toEqual(['names-ana']);
+      expect(home.items.filter((item) => item.kind === 'KUDOS')).toEqual([]);
     });
 
     it('holds nothing from another Workspace', async () => {
