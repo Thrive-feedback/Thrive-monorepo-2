@@ -30,6 +30,8 @@ import styles from './tab-bar.module.css';
 export type TabBarProps = {
   /** How many Asks are waiting for the person, shown on Waiting as the sidebar shows it. */
   waitingCount: number;
+  /** Whether More offers Your dashboard, as the sidebar does (ADR 0087). */
+  showsDashboard: boolean;
   /** "+", in the middle of the bar. */
   children: React.ReactNode;
 };
@@ -49,11 +51,15 @@ const TAB_ICON_CLASSES =
  * into the page at both ends as the navbar does at the top. It reads the path itself because the
  * layout around it does not run again when the client navigates between the pages under it.
  */
-export function TabBar({ waitingCount, children }: TabBarProps) {
+export function TabBar({
+  waitingCount,
+  showsDashboard,
+  children,
+}: TabBarProps) {
   const pathname = usePathname();
   const inMore = [
     ROUTES.teammates,
-    ROUTES.dashboard,
+    ...(showsDashboard ? [ROUTES.dashboard] : []),
     ROUTES.received,
     ROUTES.given,
   ].some((href) => pathname.startsWith(href));
@@ -119,12 +125,14 @@ export function TabBar({ waitingCount, children }: TabBarProps) {
                 />
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>My Feedback</DropdownMenuLabel>
-                <MoreLink
-                  href={ROUTES.dashboard}
-                  Icon={SparklesIcon}
-                  label="Your dashboard"
-                  isCurrent={pathname.startsWith(ROUTES.dashboard)}
-                />
+                {showsDashboard && (
+                  <MoreLink
+                    href={ROUTES.dashboard}
+                    Icon={SparklesIcon}
+                    label="Your dashboard"
+                    isCurrent={pathname.startsWith(ROUTES.dashboard)}
+                  />
+                )}
                 <MoreLink
                   href={ROUTES.received}
                   Icon={InboxIcon}

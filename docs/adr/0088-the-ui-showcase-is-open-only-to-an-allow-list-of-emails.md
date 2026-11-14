@@ -26,10 +26,11 @@ does not keep a page's segment out of the RSC payload. Proxy is for optimistic c
 - **`GET /v1/ui-showcase-access/mine`** answers `{ "isAllowed": boolean }` for the signed-in
   caller. It is not `@Public()`: signed out is `401 NOT_SIGNED_IN` from the global guard. It never
   returns the list, and nothing logs an address.
-- **The web checks in every page, and in the metadata of a page that names what it shows.** Each
-  `page.tsx` under `app/ui-showcase/` calls `requireUiShowcaseAccess()` first: no session goes to
-  sign in; not allowed, or an API that cannot say, is not found. A test fails when a page there does
-  not call it first.
+- **The web checks in every page, and in every page's metadata.** Each `page.tsx` under
+  `app/ui-showcase/` calls `requireUiShowcaseAccess()` first in its default export and in its
+  `generateMetadata`, since a refused page's metadata still reaches the 404 it is sent: no session
+  goes to sign in; not allowed, or an API that cannot say, is not found. A test fails when a page
+  there does not call it first in both, or declares static `metadata`.
 - **The proxy matches `/ui-showcase` and `/ui-showcase/:path*`**, so a visitor with no session
   cookie goes straight to sign in carrying `next`, as every signed-in route does. A cookie that has
   lapsed reaches the page, which sends its owner to sign in without `next`, as every page here does.

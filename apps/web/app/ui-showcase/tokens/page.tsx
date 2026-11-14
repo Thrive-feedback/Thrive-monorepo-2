@@ -1,11 +1,16 @@
 import type { Metadata } from 'next';
+import { requireUiShowcaseAccess } from '@/lib/ui-showcase/ui-showcase-access.service';
 import { TokenGallery } from './_components/token-gallery';
 
-export const metadata: Metadata = {
-  title: 'Design tokens',
-  description:
-    'Every semantic token Thrive can paint with, shown with its name.',
-};
+/** Asked here too, so someone not on the list is sent nothing about this page (ADR 0088). */
+export async function generateMetadata(): Promise<Metadata> {
+  await requireUiShowcaseAccess();
+  return {
+    title: 'Design tokens',
+    description:
+      'Every semantic token Thrive can paint with, shown with its name.',
+  };
+}
 
 /**
  * FE_01 R2 — a route file wires a URL to a view and renders a named component defined
@@ -14,6 +19,7 @@ export const metadata: Metadata = {
  *
  * This page is the check `#47` asks a reader to make: the semantic layer, visible, by name.
  */
-export default function DesignTokensPage() {
+export default async function DesignTokensPage() {
+  await requireUiShowcaseAccess();
   return <TokenGallery />;
 }

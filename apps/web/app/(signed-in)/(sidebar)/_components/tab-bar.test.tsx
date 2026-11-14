@@ -20,10 +20,14 @@ vi.mock(
   }),
 );
 
-function draw(path: string = ROUTES.home, waitingCount = 0) {
+function draw(
+  path: string = ROUTES.home,
+  waitingCount = 0,
+  showsDashboard = true,
+) {
   usePathname.mockReturnValue(path);
   render(
-    <TabBar waitingCount={waitingCount}>
+    <TabBar waitingCount={waitingCount} showsDashboard={showsDashboard}>
       <ComposeMenu
         workspaceId="workspace-acme"
         teammates={[]}
@@ -109,6 +113,27 @@ describe('TabBar', () => {
       ['Given', ROUTES.given],
     ]);
     expect(within(menu).getByText('My Feedback')).toBeVisible();
+  });
+
+  it('leaves Your dashboard out of More where the deployment has switched it off', async () => {
+    const user = userEvent.setup();
+    const nav = draw(ROUTES.home, 0, false);
+
+    await user.click(within(nav).getByRole('button', { name: 'More' }));
+
+    expect(
+      within(screen.getByRole('menu'))
+        .getAllByRole('menuitem')
+        .map((item) => item.getAttribute('href')),
+    ).toEqual([ROUTES.teammates, ROUTES.received, ROUTES.given]);
+  });
+
+  it('does not mark More on the dashboard’s address where it is switched off, since More does not lead there', () => {
+    const nav = draw(ROUTES.dashboard, 0, false);
+
+    expect(
+      within(nav).getByRole('button', { name: 'More' }),
+    ).not.toHaveAttribute('aria-current');
   });
 
   it.each([ROUTES.teammates, ROUTES.dashboard, ROUTES.received, ROUTES.given])(

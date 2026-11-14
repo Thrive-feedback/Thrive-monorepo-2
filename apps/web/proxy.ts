@@ -56,7 +56,8 @@ function spendDestination(request: NextRequest) {
 export const config = {
   // Literals, not ROUTES: Next reads the matcher at build time and accepts only constants.
   // Keep it in step with ROUTES.home, ROUTES.kudos, ROUTES.received, ROUTES.given,
-  // ROUTES.waiting, ROUTES.register, ROUTES.settings and ROUTES.chooseWorkspace.
+  // ROUTES.waiting, ROUTES.register, ROUTES.settings, ROUTES.chooseWorkspace and
+  // ROUTES.uiShowcase.
   matcher: [
     '/home',
     '/kudos',
@@ -70,5 +71,8 @@ export const config = {
     // the tool's authorisation code, which must not be copied into a sign-in address or a cookie.
     // Its page checks the session itself, as every page does.
     '/settings/((?!workspace/integrations/).*)',
+    // Only for the team on the API's list (ADR 0088); each page there asks who is on it.
+    '/ui-showcase',
+    '/ui-showcase/:path*',
   ],
 };

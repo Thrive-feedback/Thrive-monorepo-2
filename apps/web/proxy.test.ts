@@ -105,7 +105,7 @@ describe('a signed-in visit', () => {
 });
 
 describe('what the proxy runs on', () => {
-  it('guards the signed-in pages, never sign-in, the public landing page, or the address a chat tool returns an Admin to', () => {
+  it('guards the signed-in pages and the UI showcase, never sign-in, the public landing page, or the address a chat tool returns an Admin to', () => {
     expect(config.matcher).toEqual([
       '/home',
       '/kudos',
@@ -116,6 +116,20 @@ describe('what the proxy runs on', () => {
       '/choose-workspace',
       '/settings',
       '/settings/((?!workspace/integrations/).*)',
+      '/ui-showcase',
+      '/ui-showcase/:path*',
     ]);
+  });
+});
+
+describe('the UI showcase', () => {
+  it('sends a signed-out visitor to sign-in, carrying which showcase page they wanted', () => {
+    expect(visit('/ui-showcase/cards').headers.get('location')).toBe(
+      'http://localhost:3001/signin?next=%2Fui-showcase%2Fcards',
+    );
+  });
+
+  it('lets a visitor with a session through, for the page to decide whether they are on the list', () => {
+    expect(visit('/ui-showcase', SESSION).headers.get('location')).toBeNull();
   });
 });

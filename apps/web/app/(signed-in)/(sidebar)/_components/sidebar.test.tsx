@@ -38,10 +38,20 @@ vi.mock('@/lib/feedback/teammates.service', () => ({
     readTeammates(membership, ownEmail),
 }));
 
-async function draw(waiting: number, path: string = ROUTES.home) {
+const readFeatureFlags = vi.fn();
+vi.mock('@/lib/feature-flags/feature-flags.service', () => ({
+  readFeatureFlags: () => readFeatureFlags(),
+}));
+
+async function draw(
+  waiting: number,
+  path: string = ROUTES.home,
+  showsDashboard = true,
+) {
   usePathname.mockReturnValue(path);
   readTeammates.mockResolvedValue([]);
   readWaitingCount.mockResolvedValue(waiting);
+  readFeatureFlags.mockResolvedValue({ showsDashboard });
   render(await Sidebar());
   return within(sidebar()).getByRole('navigation', { name: 'Main' });
 }
@@ -69,6 +79,39 @@ describe('Sidebar', () => {
       'Received',
       'Given',
     ]);
+  });
+
+  it('leaves Your dashboard out of both menus where the deployment has switched it off', async () => {
+    const user = userEvent.setup();
+    const nav = await draw(0, ROUTES.home, false);
+
+    expect(
+      within(nav)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual([
+      'Home',
+      'Kudos board',
+      'Waiting for me',
+      'Teammates',
+      'My Feedback',
+      'Received',
+      'Given',
+    ]);
+
+    const tabBar = screen
+      .getAllByRole('navigation', { name: 'Main' })
+      .find((candidate) => !sidebar().contains(candidate));
+    if (tabBar === undefined) {
+      throw new Error('no tab bar drawn');
+    }
+    await user.click(within(tabBar).getByRole('button', { name: 'More' }));
+
+    expect(
+      within(screen.getByRole('menu'))
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Teammates', 'Received', 'Given']);
   });
 
   it('marks the page that is open, wherever the person went', async () => {
