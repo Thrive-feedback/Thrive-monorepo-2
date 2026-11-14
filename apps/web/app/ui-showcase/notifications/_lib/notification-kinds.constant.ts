@@ -138,9 +138,7 @@ const MAI_PHOTO = standInPhoto('#fdba74', '#ea580c');
 
 /**
  * Lines for the sample bell: one unread line of every kind, one already read, and one whose
- * actor has no name to show. Some actors have a photo and some show their initials. Each says who
- * can read what it leads to, but the last, which stands for a line written before that was
- * recorded and shows no icon.
+ * actor has no name to show. Some actors have a photo and some show their initials.
  */
 export const SAMPLE_NOTIFICATIONS: readonly BellNotification[] = [
   {
@@ -151,7 +149,6 @@ export const SAMPLE_NOTIFICATIONS: readonly BellNotification[] = [
     subjectId: 'sample-ask',
     createdAt: AN_HOUR_AGO,
     isRead: false,
-    audience: 'EVERYONE',
   },
   {
     id: 'sample-ask-answered',
@@ -161,7 +158,6 @@ export const SAMPLE_NOTIFICATIONS: readonly BellNotification[] = [
     subjectId: 'sample-request',
     createdAt: AN_HOUR_AGO,
     isRead: false,
-    audience: 'ONLY_ME',
   },
   {
     id: 'sample-feedback-received',
@@ -171,7 +167,6 @@ export const SAMPLE_NOTIFICATIONS: readonly BellNotification[] = [
     subjectId: 'sample-feedback',
     createdAt: AN_HOUR_AGO,
     isRead: false,
-    audience: 'ONLY_ME',
   },
   {
     id: 'sample-feedback-shared',
@@ -181,7 +176,6 @@ export const SAMPLE_NOTIFICATIONS: readonly BellNotification[] = [
     subjectId: 'sample-feedback',
     createdAt: AN_HOUR_AGO,
     isRead: false,
-    audience: 'EVERYONE',
   },
   {
     id: 'sample-kudos-received',
@@ -191,7 +185,6 @@ export const SAMPLE_NOTIFICATIONS: readonly BellNotification[] = [
     subjectId: 'sample-kudos',
     createdAt: AN_HOUR_AGO,
     isRead: false,
-    audience: 'EVERYONE',
   },
   {
     id: 'sample-read',
@@ -201,7 +194,6 @@ export const SAMPLE_NOTIFICATIONS: readonly BellNotification[] = [
     subjectId: 'sample-feedback',
     createdAt: YESTERDAY,
     isRead: true,
-    audience: 'SELECTED_PEOPLE',
   },
   {
     id: 'sample-unnamed',
@@ -211,6 +203,5 @@ export const SAMPLE_NOTIFICATIONS: readonly BellNotification[] = [
     subjectId: 'sample-ask',
     createdAt: YESTERDAY,
     isRead: true,
-    audience: null,
   },
 ];

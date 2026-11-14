@@ -116,7 +116,6 @@ export async function listMyNotifications(): Promise<
       subjectId: item.subjectId,
       createdAt: item.createdAt,
       isRead: item.readAt !== null,
-      audience: item.audience,
     }));
   } catch (error) {
     if (!(error instanceof ApiError)) {

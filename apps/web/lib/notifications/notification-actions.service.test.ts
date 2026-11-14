@@ -123,7 +123,7 @@ describe('what each action costs the person waiting', () => {
 });
 
 describe('reading the bell', () => {
-  it('turns each line the API sends into what the bell draws, face and audience included', async () => {
+  it('turns each line the API sends into what the bell draws, face included', async () => {
     server.use(
       http.get(
         `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/notifications`,
@@ -141,7 +141,6 @@ describe('reading the bell', () => {
                 subjectId: '0199a0f0-0000-7000-8000-0000000000d1',
                 createdAt: '2026-11-14T03:00:00.000Z',
                 readAt: null,
-                audience: 'SELECTED_PEOPLE',
               },
               {
                 id: '0199a0f0-0000-7000-8000-0000000000b2',
@@ -154,8 +153,6 @@ describe('reading the bell', () => {
                 subjectId: '0199a0f0-0000-7000-8000-0000000000d2',
                 createdAt: '2026-11-13T03:00:00.000Z',
                 readAt: '2026-11-13T04:00:00.000Z',
-                // Written before the audience was recorded.
-                audience: null,
               },
             ],
             total: 2,
@@ -174,7 +171,6 @@ describe('reading the bell', () => {
         subjectId: '0199a0f0-0000-7000-8000-0000000000d1',
         createdAt: '2026-11-14T03:00:00.000Z',
         isRead: false,
-        audience: 'SELECTED_PEOPLE',
       },
       {
         id: '0199a0f0-0000-7000-8000-0000000000b2',
@@ -184,7 +180,6 @@ describe('reading the bell', () => {
         subjectId: '0199a0f0-0000-7000-8000-0000000000d2',
         createdAt: '2026-11-13T03:00:00.000Z',
         isRead: true,
-        audience: null,
       },
     ]);
   });

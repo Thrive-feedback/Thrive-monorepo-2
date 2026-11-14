@@ -52,39 +52,10 @@ Feature: Being told inside Thrive
     Then Cara is told that Ann shared Feedback with them
 
   @api
-  Scenario: A line says who can read Feedback written to them
-    When Ann gives Ben Feedback: "You kept the room with you.", shared with everyone in the Workspace
-    Then Ben's line about the Feedback written to them says everyone in the Workspace can read it
-
-  @api
-  Scenario: The Member who asked is told who can read the answer
-    Given Cara is a Member of Ann's Workspace
-    And Ann has asked Ben for Feedback: "Running the planning meeting", shared with Cara
-    When Ben answers "You open strongly and lose the room at the detail."
-    Then Ann's line about the answer says selected people can read it
-
-  @api
-  Scenario: Somebody asked is told when their answer goes on the Workspace feed
-    When Ann asks Ben for Feedback: "Running the planning meeting", shared with everyone in the Workspace
-    Then Ben's line about being asked says everyone in the Workspace can read it
-
-  @api
-  Scenario Outline: Somebody asked is told nothing else of who reads their answer
-    Given Cara is a Member of Ann's Workspace
-    When Ann asks Ben for Feedback: "Running the planning meeting", shared with <shared with>
-    Then Ben's line about being asked says nothing of who can read it
-
-    Examples:
-      | shared with  |
-      | nobody else  |
-      | Cara         |
-
-  @api
-  Scenario: Somebody given Kudos is told, and every Member can read it
+  Scenario: Somebody given Kudos is told
     Given Ben has introduced themselves
     When Ann gives Kudos: "@Ben carried the launch."
     Then Ben is told that Ann gave them Kudos
-    And Ben's line about the Kudos given to them says everyone in the Workspace can read it
     And nothing Ben is told carries "carried the launch"
     And Ann has 0 unread notifications
 

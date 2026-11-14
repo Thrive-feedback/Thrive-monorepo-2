@@ -1,4 +1,3 @@
-import type { NotificationAudience } from '../../domain/value-object/notification-audience.vo';
 import type { NotificationTypeValue } from '../../domain/value-object/notification-type.vo';
 
 /** What a collection route asks for. Declared here, not borrowed from another module. */
@@ -17,8 +16,6 @@ export interface NotificationRow {
   readonly createdAt: Date;
   /** `null` while the Member has not read it. */
   readonly readAt: Date | null;
-  /** Who can read what it names; `null` on a row written before that was recorded. */
-  readonly audience: NotificationAudience | null;
 }
 
 export interface NotificationRowPage {

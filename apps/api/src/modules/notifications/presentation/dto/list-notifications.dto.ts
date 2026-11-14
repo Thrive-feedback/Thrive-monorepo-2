@@ -4,7 +4,6 @@ import {
 } from '@app/shared/presentation/dto/page.dto';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { NOTIFICATION_AUDIENCES } from '../../domain/value-object/notification-audience.vo';
 import { NOTIFICATION_TYPES } from '../../domain/value-object/notification-type.vo';
 
 export const listNotificationsQuerySchema = z.strictObject(pageQueryShape);
@@ -37,11 +36,6 @@ const notificationSchema = z.object({
   createdAt: z.iso.datetime({ offset: true }),
   /** `null` while the Member has not read it. */
   readAt: z.iso.datetime({ offset: true }).nullable(),
-  /**
-   * Who can read what it names, as fixed when it was written. `null` on a line written before
-   * that was recorded.
-   */
-  audience: z.enum(NOTIFICATION_AUDIENCES).nullable(),
 });
 
 export const listNotificationsResponseSchema = z.object({

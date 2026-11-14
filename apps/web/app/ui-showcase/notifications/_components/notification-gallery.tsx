@@ -197,7 +197,7 @@ export function NotificationGallery() {
 
       <GallerySection
         title="In the bell"
-        description="The panel with the real row on sample lines: one of every kind unread, one already read, and one from somebody with no name. Each line shows the face of who did it, their photo or their initials, and an unread dot in its kind’s colour: blue for an ask and its answer, purple for Feedback written or shared, orange for Kudos. At the end, an icon says who can read what the line leads to: everyone in the Workspace, selected people, or only the people it’s for. Somebody asked for Feedback sees it only when their answer goes on the Workspace feed, since a Giver is told nothing else of who reads it. A line written before that was recorded, like the last sample, shows none. Pressing a line marks it read here and, rather than following its link, draws the page it would have opened: the address, the page, the filter it opens on and what opens over it."
+        description="The panel with the real row on sample lines: one of every kind unread, one already read, and one from somebody with no name. Each line shows the face of who did it, their photo or their initials, and an unread dot in its kind’s colour: blue for an ask and its answer, purple for Feedback written or shared, orange for Kudos. Pressing a line marks it read here and, rather than following its link, draws the page it would have opened: the address, the page, the filter it opens on and what opens over it."
       >
         <SampleBell />
         <div className="flex flex-wrap items-start gap-6">

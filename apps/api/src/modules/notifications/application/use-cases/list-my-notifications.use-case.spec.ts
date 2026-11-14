@@ -45,7 +45,6 @@ function setUp() {
         type: 'ASK_RECEIVED',
         actorAccountId: BEN,
         subjectId: '0199a0f0-0000-7000-8000-0000000000s1',
-        audience: 'EVERYONE',
       }),
       aNotificationRow({
         id: '0199a0f0-0000-7000-8000-00000000n002',
@@ -116,22 +115,6 @@ describe('reading what I have been told about', () => {
       BEN_PHOTO,
       null,
       BEN_PHOTO,
-    ]);
-  });
-
-  it('says who can read what each line names, and nothing for a line that never recorded it', async () => {
-    const { useCase } = setUp();
-
-    const bell = await useCase.execute({
-      workspaceId: ACME_ID,
-      recipientAccountId: ANN,
-      page: ONE_PAGE,
-    });
-
-    expect(bell.items.map((line) => line.audience)).toEqual([
-      'EVERYONE',
-      null,
-      null,
     ]);
   });
 

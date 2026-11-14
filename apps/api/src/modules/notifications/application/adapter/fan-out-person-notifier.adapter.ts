@@ -183,7 +183,6 @@ export class FanOutPersonNotifier extends PersonNotifierPort {
       type: one.type,
       actorAccountId: event.actorAccountId,
       subjectId: one.subjectId,
-      audience: event.audience ?? null,
     }));
     // One statement for the whole fan-out: five people asked is one round trip, not five.
     // A failure is not caught here — the relay records the attempt and tries again, which is
