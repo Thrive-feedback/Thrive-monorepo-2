@@ -17,6 +17,8 @@ import { ROUTES } from '@/lib/routes.constant';
 export type SidebarNavProps = {
   /** How many Asks are waiting for the person, because that number is what makes them open it. */
   waitingCount: number;
+  /** Whether Your dashboard is switched on for this deployment (ADR 0087). */
+  showsDashboard: boolean;
 };
 
 /**
@@ -24,7 +26,7 @@ export type SidebarNavProps = {
  * It reads the path itself because the layout around it does not run again when the client
  * navigates between the pages under it.
  */
-export function SidebarNav({ waitingCount }: SidebarNavProps) {
+export function SidebarNav({ waitingCount, showsDashboard }: SidebarNavProps) {
   const pathname = usePathname();
   const items: readonly SideNavEntry[] = [
     { href: ROUTES.home, label: 'Home', Icon: HouseIcon },
@@ -37,7 +39,15 @@ export function SidebarNav({ waitingCount }: SidebarNavProps) {
     },
     { href: ROUTES.teammates, label: 'Teammates', Icon: UsersIcon },
     { heading: 'My Feedback' },
-    { href: ROUTES.dashboard, label: 'Your dashboard', Icon: SparklesIcon },
+    ...(showsDashboard
+      ? [
+          {
+            href: ROUTES.dashboard,
+            label: 'Your dashboard',
+            Icon: SparklesIcon,
+          },
+        ]
+      : []),
     { href: ROUTES.received, label: 'Received', Icon: InboxIcon },
     { href: ROUTES.given, label: 'Given', Icon: SendIcon },
   ];

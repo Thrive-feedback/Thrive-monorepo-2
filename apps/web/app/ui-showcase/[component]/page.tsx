@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ComponentPage } from '@/app/ui-showcase/_components/component-page';
 import { COMPONENT_CATALOG } from '@/app/ui-showcase/_lib/component-catalog.constant';
+import { requireUiShowcaseAccess } from '@/lib/ui-showcase/ui-showcase-access.service';
 
 // Typed here rather than with Next's generated `PageProps`, which exists only after a build
 // or dev server has run, so a clean checkout's type-check would not find it.
@@ -9,7 +10,10 @@ type ComponentShowcasePageProps = {
   params: Promise<{ component: string }>;
 };
 
-/** Every page is built ahead of time; a slug that is not in the catalog is a 404. */
+/**
+ * Only the catalog's slugs exist; any other is a 404. Each is rendered per request, because it
+ * asks who is reading (ADR 0088).
+ */
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -19,6 +23,8 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: ComponentShowcasePageProps): Promise<Metadata> {
+  // Asked here too, so someone not on the list is not sent the component's name as a title.
+  await requireUiShowcaseAccess();
   const { component } = await params;
   const entry = COMPONENT_CATALOG.find(({ slug }) => slug === component);
   return {
@@ -35,6 +41,7 @@ export async function generateMetadata({
 export default async function ComponentShowcasePage({
   params,
 }: ComponentShowcasePageProps) {
+  await requireUiShowcaseAccess();
   const { component } = await params;
   const index = COMPONENT_CATALOG.findIndex(({ slug }) => slug === component);
   const entry = COMPONENT_CATALOG[index];
