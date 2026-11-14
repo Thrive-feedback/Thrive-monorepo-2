@@ -241,6 +241,18 @@ describe('telling the people Feedback was written for', () => {
     });
   });
 
+  it('says who can read it, so the bell can show it', async () => {
+    const { useCase, outbox } = setUp();
+
+    await useCase.execute(
+      offering({ visibility: 'SELECTED_PEOPLE', selectedAccountIds: [CARA] }),
+    );
+
+    expect(outbox.ofType(WRITTEN)[0]?.payload).toMatchObject({
+      audience: 'SELECTED_PEOPLE',
+    });
+  });
+
   it('shares with nobody when the Feedback is for the Receiver alone', async () => {
     const { useCase, outbox } = setUp();
 

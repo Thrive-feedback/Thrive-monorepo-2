@@ -1,8 +1,20 @@
+import type { NotificationAudience } from '../../domain/value-object/notification-audience.vo';
+
 /** What every notification carries: which Workspace it is about, and who caused it. */
-interface PersonEvent {
+export interface PersonEvent {
   readonly workspaceId: string;
   /** Who did the thing. Never notified about their own action. */
   readonly actorAccountId: string;
+  /**
+   * Who can read what the line points at, said only to people allowed to know it: the Feedback
+   * Request's Visibility for its Requester, the Feedback's own for its Receivers and the people it
+   * was shared with. Fixed once written, so the bell can keep it.
+   *
+   * Absent for an Ask's Givers unless the answer goes on the Workspace feed, because a Giver is
+   * not told who else reads their answer (brain `ADR-0046` decision 4), and on an event enqueued
+   * before it was sent. Either is recorded with none, and the bell draws no icon.
+   */
+  readonly audience?: NotificationAudience;
 }
 
 /**

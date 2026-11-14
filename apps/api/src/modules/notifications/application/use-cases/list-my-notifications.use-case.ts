@@ -51,22 +51,27 @@ export class ListMyNotificationsUseCase {
     // by", and a bell line is somebody being called by name — "Nut asked you for feedback". It
     // also keeps the bell and the chat message saying the same thing: `ChatCopyService` composes
     // from Identity's `ProfileNamePort.displayNameOf`.
-    const names = new Map(
-      summaries.map((summary) => [summary.accountId, summary.displayName]),
+    const actors = new Map(
+      summaries.map((summary) => [summary.accountId, summary]),
     );
 
     return {
-      items: page.items.map((notification) => ({
-        id: notification.id,
-        type: notification.type,
-        actorAccountId: notification.actorAccountId,
-        // An actor who has not introduced themselves and one whose Account has gone both read
-        // as unnamed, because neither has a name to show and the bell says the same of both.
-        actorName: names.get(notification.actorAccountId) ?? null,
-        subjectId: notification.subjectId,
-        createdAt: notification.createdAt,
-        readAt: notification.readAt,
-      })),
+      items: page.items.map((notification) => {
+        const actor = actors.get(notification.actorAccountId);
+        return {
+          id: notification.id,
+          type: notification.type,
+          actorAccountId: notification.actorAccountId,
+          // An actor who has not introduced themselves and one whose Account has gone both read
+          // as unnamed, because neither has a name to show and the bell says the same of both.
+          actorName: actor?.displayName ?? null,
+          actorPhotoUrl: actor?.photoUrl ?? null,
+          subjectId: notification.subjectId,
+          createdAt: notification.createdAt,
+          readAt: notification.readAt,
+          audience: notification.audience,
+        };
+      }),
       total: page.total,
     };
   }

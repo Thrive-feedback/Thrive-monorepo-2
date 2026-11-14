@@ -16,6 +16,7 @@ import {
   GiverNotInWorkspaceError,
   SelectedPersonNotInWorkspaceError,
 } from '../feedback-request.errors';
+import { toGiverAudience } from '../service/notification-audience.mapper';
 import { TagsService } from '../service/tags.service';
 
 export interface SendFeedbackRequestInput {
@@ -112,6 +113,8 @@ export class SendFeedbackRequestUseCase {
           payload: {
             workspaceId: sent.workspaceId,
             actorAccountId: sent.requesterAccountId,
+            // The Givers are told only that their answer goes on the feed, never who else reads it.
+            audience: toGiverAudience(visibility.toString()),
             giverAccountIds: sent.asks.map((ask) => ask.giverAccountId),
             requestMessage: sent.message,
             askIdByGiver: Object.fromEntries(

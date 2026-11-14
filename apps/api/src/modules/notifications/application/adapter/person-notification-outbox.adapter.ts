@@ -5,15 +5,25 @@ import {
 } from '@app/shared/application/outbox-handler.port';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
+import { NOTIFICATION_AUDIENCES } from '../../domain/value-object/notification-audience.vo';
 import { PersonNotifierPort } from '../port/person-notifier.port';
 
 export const ASK_RECEIVED_TYPE = 'notifications.ask_received';
 export const ASK_ANSWERED_TYPE = 'notifications.ask_answered';
 export const FEEDBACK_WRITTEN_TYPE = 'notifications.feedback_written';
 
+/**
+ * Optional: an Ask's Givers are sent none unless their answer goes on the feed, and a message
+ * enqueued before the audience was sent has none either. A value this release does not know reads
+ * as none too, rather than refusing the message: refusing would lose the whole notification, bell
+ * line and chat message, over an icon. Any of these is recorded without one.
+ */
+const audience = z.enum(NOTIFICATION_AUDIENCES).optional().catch(undefined);
+
 const askReceivedPayload = z.object({
   workspaceId: z.string().min(1),
   actorAccountId: z.string().min(1),
+  audience,
   giverAccountIds: z.array(z.string().min(1)),
   /**
    * The one payload here that carries words, and only because a chat message says what was
@@ -27,6 +37,7 @@ const askReceivedPayload = z.object({
 const askAnsweredPayload = z.object({
   workspaceId: z.string().min(1),
   actorAccountId: z.string().min(1),
+  audience,
   requesterAccountId: z.string().min(1),
   feedbackRequestId: z.string().min(1),
 });
@@ -34,6 +45,7 @@ const askAnsweredPayload = z.object({
 const feedbackWrittenPayload = z.object({
   workspaceId: z.string().min(1),
   actorAccountId: z.string().min(1),
+  audience,
   receiverAccountIds: z.array(z.string().min(1)),
   sharedWithAccountIds: z.array(z.string().min(1)),
   feedbackId: z.string().min(1),

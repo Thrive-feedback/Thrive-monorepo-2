@@ -231,6 +231,18 @@ describe('a Giver answering an Ask', () => {
 describe('telling the Requester their request was answered', () => {
   const ASK_ANSWERED = 'notifications.ask_answered';
 
+  it('says who can read the answer: whoever the request was shown to', async () => {
+    const { useCase, outbox } = await setUp(
+      Visibility.of({ value: 'EVERYONE', selectedAccountIds: [] }),
+    );
+
+    await useCase.execute(answering);
+
+    expect(outbox.ofType(ASK_ANSWERED)[0]?.payload).toMatchObject({
+      audience: 'EVERYONE',
+    });
+  });
+
   it('tells the Requester, naming who answered and the request to open', async () => {
     const { useCase, outbox } = await setUp();
 

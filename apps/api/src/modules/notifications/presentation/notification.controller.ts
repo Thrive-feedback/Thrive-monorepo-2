@@ -94,10 +94,12 @@ export class NotificationController {
         actor: {
           accountId: notification.actorAccountId,
           name: notification.actorName,
+          photoUrl: notification.actorPhotoUrl,
         },
         subjectId: notification.subjectId,
         createdAt: notification.createdAt.toISOString(),
         readAt: notification.readAt?.toISOString() ?? null,
+        audience: notification.audience,
       })),
       total: notifications.total,
       page: page.page,

@@ -898,6 +898,8 @@ export interface components {
                 actor: {
                     accountId: string;
                     name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
                 };
                 /** Format: uuid */
                 subjectId: string;
@@ -905,6 +907,8 @@ export interface components {
                 createdAt: string;
                 /** Format: date-time */
                 readAt: string | null;
+                /** @enum {string|null} */
+                audience: "ONLY_ME" | "SELECTED_PEOPLE" | "EVERYONE" | null;
             }[];
             total: number;
             page: number;

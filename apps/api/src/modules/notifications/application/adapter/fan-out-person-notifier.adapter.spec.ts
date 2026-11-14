@@ -92,6 +92,25 @@ describe('the bell is the floor', () => {
     expect(discord.posted).toEqual([]);
   });
 
+  it('records who can read what the line names, as the event said', async () => {
+    const { notifier, notifications, asked } = setUp();
+
+    await notifier.askReceived({ ...asked([BEN, CARA]), audience: 'EVERYONE' });
+
+    expect(notifications.stored.map((stored) => stored.row.audience)).toEqual([
+      'EVERYONE',
+      'EVERYONE',
+    ]);
+  });
+
+  it('records no audience for an event enqueued before it was sent', async () => {
+    const { notifier, notifications, asked } = setUp();
+
+    await notifier.askReceived(asked());
+
+    expect(notifications.stored[0]?.row.audience).toBeNull();
+  });
+
   it('writes one line and sends one message to somebody who linked', async () => {
     const { notifier, notifications, discord, linked, asked } = setUp();
     linked(BEN);

@@ -5,7 +5,7 @@ import { NotificationTypeNotSupportedError } from '../notifications.errors';
  * Thrive raises, because Feedback written to somebody and Feedback shared with them are the same
  * event seen from two sides and read as two different sentences.
  *
- * The type is also the whole of what a Notification says: the kind of thing `subjectId` names
+ * The type also says what kind of thing a Notification points at: the kind `subjectId` names
  * follows from it — an Ask for `ASK_RECEIVED`, a Feedback Request for `ASK_ANSWERED`, a piece of
  * Feedback for the other two — so a stored row needs no second column to say which it was
  * (design 0022 D4).

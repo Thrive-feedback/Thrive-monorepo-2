@@ -18,16 +18,22 @@ const ONE_PAGE = { page: 1, pageSize: 20 };
  * call them by — and a fixture where both were the same could not tell the two apart, so a
  * regression to `fullName` would pass it.
  */
-function aSummary(accountId: string, displayName: string | null) {
+function aSummary(
+  accountId: string,
+  displayName: string | null,
+  photoUrl: string | null = null,
+) {
   return {
     accountId,
     email: `${accountId}@acme.test`,
     fullName: displayName === null ? null : `${displayName} Formal-Surname`,
     displayName,
     slug: null,
-    photoUrl: null,
+    photoUrl,
   };
 }
+
+const BEN_PHOTO = 'https://lh3.googleusercontent.com/a/ben=s96-c';
 
 function setUp() {
   const notificationQuery = new FakeNotificationQuery()
@@ -39,6 +45,7 @@ function setUp() {
         type: 'ASK_RECEIVED',
         actorAccountId: BEN,
         subjectId: '0199a0f0-0000-7000-8000-0000000000s1',
+        audience: 'EVERYONE',
       }),
       aNotificationRow({
         id: '0199a0f0-0000-7000-8000-00000000n002',
@@ -62,7 +69,7 @@ function setUp() {
     );
   const accountSummaryPort = new FakeAccountSummaryPort();
   accountSummaryPort.summaries.push(
-    aSummary(BEN, 'Ben Carter'),
+    aSummary(BEN, 'Ben Carter', BEN_PHOTO),
     aSummary(CARA, 'Cara Diaz'),
   );
   const useCase = new ListMyNotificationsUseCase(
@@ -93,6 +100,55 @@ describe('reading what I have been told about', () => {
         '0199a0f0-0000-7000-8000-0000000000s2',
       ],
       ['ASK_ANSWERED', 'Ben Carter', '0199a0f0-0000-7000-8000-0000000000s3'],
+    ]);
+  });
+
+  it('shows each actor by their photo, and by none when they have no photo', async () => {
+    const { useCase } = setUp();
+
+    const bell = await useCase.execute({
+      workspaceId: ACME_ID,
+      recipientAccountId: ANN,
+      page: ONE_PAGE,
+    });
+
+    expect(bell.items.map((line) => line.actorPhotoUrl)).toEqual([
+      BEN_PHOTO,
+      null,
+      BEN_PHOTO,
+    ]);
+  });
+
+  it('says who can read what each line names, and nothing for a line that never recorded it', async () => {
+    const { useCase } = setUp();
+
+    const bell = await useCase.execute({
+      workspaceId: ACME_ID,
+      recipientAccountId: ANN,
+      page: ONE_PAGE,
+    });
+
+    expect(bell.items.map((line) => line.audience)).toEqual([
+      'EVERYONE',
+      null,
+      null,
+    ]);
+  });
+
+  it('shows no photo for an actor whose Account has gone', async () => {
+    const { accountSummaryPort, useCase } = setUp();
+    accountSummaryPort.summaries.length = 0;
+
+    const bell = await useCase.execute({
+      workspaceId: ACME_ID,
+      recipientAccountId: ANN,
+      page: ONE_PAGE,
+    });
+
+    expect(bell.items.map((line) => line.actorPhotoUrl)).toEqual([
+      null,
+      null,
+      null,
     ]);
   });
 

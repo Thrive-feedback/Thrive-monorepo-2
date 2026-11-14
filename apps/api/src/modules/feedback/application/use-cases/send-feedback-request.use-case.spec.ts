@@ -253,6 +253,33 @@ describe('telling the people asked', () => {
     });
   });
 
+  it('tells the people asked when their answer goes on the Workspace feed', async () => {
+    const { useCase, outbox } = setUp();
+
+    await useCase.execute(request({ visibility: 'EVERYONE' }));
+
+    expect(outbox.ofType(ASK_RECEIVED)[0]?.payload).toMatchObject({
+      audience: 'EVERYONE',
+    });
+  });
+
+  it.each([
+    ['ONLY_ME', []],
+    ['SELECTED_PEOPLE', [CARA]],
+  ] as const)(
+    'tells the people asked nothing of who reads their answer when it is %s',
+    async (visibility, selectedAccountIds) => {
+      const { useCase, outbox } = setUp();
+
+      await useCase.execute(
+        request({ visibility, selectedAccountIds: [...selectedAccountIds] }),
+      );
+
+      // A Giver is not told who reads their answer unless it goes on the feed (ADR-0046).
+      expect(outbox.ofType(ASK_RECEIVED)[0]?.payload.audience).toBeUndefined();
+    },
+  );
+
   it('keys the message by the request, so a retried send tells each person once', async () => {
     const { useCase, outbox } = setUp();
 

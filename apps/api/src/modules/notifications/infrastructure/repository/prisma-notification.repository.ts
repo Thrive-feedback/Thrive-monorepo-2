@@ -33,6 +33,7 @@ export class PrismaNotificationRepository extends NotificationRepository {
         type: notification.type,
         actorAccountId: notification.actorAccountId,
         subjectId: notification.subjectId,
+        audience: notification.audience,
       })),
       skipDuplicates: true,
     });

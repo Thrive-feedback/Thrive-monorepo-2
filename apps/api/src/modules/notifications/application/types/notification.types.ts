@@ -1,3 +1,4 @@
+import type { NotificationAudience } from '../../domain/value-object/notification-audience.vo';
 import type { NotificationTypeValue } from '../../domain/value-object/notification-type.vo';
 
 /** What a collection route asks for. Declared here, not borrowed from another module. */
@@ -16,6 +17,8 @@ export interface NotificationRow {
   readonly createdAt: Date;
   /** `null` while the Member has not read it. */
   readonly readAt: Date | null;
+  /** Who can read what it names; `null` on a row written before that was recorded. */
+  readonly audience: NotificationAudience | null;
 }
 
 export interface NotificationRowPage {
@@ -23,10 +26,12 @@ export interface NotificationRowPage {
   readonly total: number;
 }
 
-/** The same Notification once the actor has a name, which is all a bell line needs. */
+/** The same Notification once the actor has a name and a face, which is all a bell line needs. */
 export interface NotificationView extends NotificationRow {
   /** `null` while the actor has not introduced themselves, or their Account is gone. */
   readonly actorName: string | null;
+  /** Their Google photo, or `null` when they have none or their Account is gone. */
+  readonly actorPhotoUrl: string | null;
 }
 
 export interface NotificationListView {
