@@ -1,6 +1,6 @@
 Feature: Being told inside Thrive
   Every Member is told when somebody asks them for Feedback, answers a request they
-  sent, or writes Feedback to them — with no chat tool connected, nothing linked and
+  sent, writes Feedback to them, or gives them Kudos — with no chat tool connected, nothing linked and
   no setting to find. It is the floor under the direct messages, not an alternative
   to them. A Notification names who did something and what it concerns, and carries
   none of the words. Nobody sees anybody else's, and nobody is told about their own
@@ -78,6 +78,21 @@ Feature: Being told inside Thrive
       | shared with  |
       | nobody else  |
       | Cara         |
+
+  @api
+  Scenario: Somebody given Kudos is told, and every Member can read it
+    Given Ben has introduced themselves
+    When Ann gives Kudos: "@Ben carried the launch."
+    Then Ben is told that Ann gave them Kudos
+    And Ben's line about the Kudos given to them says everyone in the Workspace can read it
+    And nothing Ben is told carries "carried the launch"
+    And Ann has 0 unread notifications
+
+  @api
+  Scenario: A Kudos for the whole Workspace tells nobody in person
+    When Ann gives Kudos: "Thank you all for the launch."
+    Then Ben has 0 unread notifications
+    And Ann has 0 unread notifications
 
   @api
   Scenario: Reading one clears it from the count, and it stays on the list

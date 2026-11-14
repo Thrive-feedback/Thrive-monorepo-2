@@ -20,6 +20,9 @@ export function toNotificationAudience(
   return AUDIENCE_OF[visibility];
 }
 
+/** Who can read a Kudos: every Member, as a Kudos has no Visibility (brain `ADR-0045`). */
+export const KUDOS_AUDIENCE: NotificationAudience = 'EVERYONE';
+
 /**
  * Who can read the answer, told to the Giver asked for it — which is only ever that it goes on the
  * Workspace feed. A Giver is told that much before writing and nothing more: for Only me and

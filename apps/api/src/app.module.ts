@@ -24,6 +24,7 @@ import {
   ASK_ANSWERED_TYPE,
   ASK_RECEIVED_TYPE,
   FEEDBACK_WRITTEN_TYPE,
+  KUDOS_RECEIVED_TYPE,
   NotificationsModule,
   PersonNotificationOutboxHandler,
 } from './modules/notifications';
@@ -59,6 +60,7 @@ import { SharedModule } from './shared/shared.module';
           { type: ASK_RECEIVED_TYPE, handler: notifications },
           { type: ASK_ANSWERED_TYPE, handler: notifications },
           { type: FEEDBACK_WRITTEN_TYPE, handler: notifications },
+          { type: KUDOS_RECEIVED_TYPE, handler: notifications },
           { type: SUMMARY_REFRESH_TYPE, handler: summaries },
         ],
       },

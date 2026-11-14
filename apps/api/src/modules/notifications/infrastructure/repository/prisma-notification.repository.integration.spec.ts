@@ -326,6 +326,28 @@ describe('counting what has not been read', () => {
     expect(await query.unreadCountFor(acme, ann)).toBe(2);
   });
 
+  it('counts only kinds this release can list, so a badge always has a line behind it', async () => {
+    const workspaceId = aWorkspace();
+    const ann = anAccount();
+    await repository.recordAll([aNotification(workspaceId, ann)]);
+    // A kind a newer release wrote, read by this one after a rollback.
+    await prismaService.notification.create({
+      data: {
+        id: idGenerator.next(),
+        workspaceId,
+        recipientAccountId: ann,
+        type: 'SOMETHING_LATER',
+        actorAccountId: anAccount(),
+        subjectId: idGenerator.next(),
+      },
+    });
+
+    expect(await query.unreadCountFor(workspaceId, ann)).toBe(1);
+    expect(
+      (await query.forRecipient(workspaceId, ann, ONE_PAGE)).items,
+    ).toHaveLength(1);
+  });
+
   it('counts nothing for a Workspace nobody has told the caller anything in', async () => {
     expect(await query.unreadCountFor(aWorkspace(), anAccount())).toBe(0);
   });

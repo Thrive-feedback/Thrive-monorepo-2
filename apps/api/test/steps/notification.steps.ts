@@ -53,13 +53,14 @@ async function toldOf(world: ThriveWorld, name: string, type: string) {
 defineParameterType({
   name: 'toldAbout',
   regexp:
-    /being asked|the answer|the Feedback written to them|the Feedback shared with them/,
+    /being asked|the answer|the Feedback written to them|the Feedback shared with them|the Kudos given to them/,
   transformer: (said: string) =>
     ({
       'being asked': 'ASK_RECEIVED',
       'the answer': 'ASK_ANSWERED',
       'the Feedback written to them': 'FEEDBACK_RECEIVED',
       'the Feedback shared with them': 'FEEDBACK_SHARED',
+      'the Kudos given to them': 'KUDOS_RECEIVED',
     })[said],
 });
 
@@ -142,6 +143,14 @@ Then(
   '{person} is told that {person} shared Feedback with them',
   async function (this: ThriveWorld, name: string, actor: string) {
     const told = await toldOf(this, name, 'FEEDBACK_SHARED');
+    assert.equal(told.actor.accountId, this.person(actor).accountId);
+  },
+);
+
+Then(
+  '{person} is told that {person} gave them Kudos',
+  async function (this: ThriveWorld, name: string, actor: string) {
+    const told = await toldOf(this, name, 'KUDOS_RECEIVED');
     assert.equal(told.actor.accountId, this.person(actor).accountId);
   },
 );

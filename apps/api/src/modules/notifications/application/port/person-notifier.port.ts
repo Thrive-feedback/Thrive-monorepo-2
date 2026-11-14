@@ -55,9 +55,19 @@ export interface FeedbackWritten extends PersonEvent {
   readonly feedbackId: string;
 }
 
+export interface KudosReceived extends PersonEvent {
+  /**
+   * The Members the Kudos names. Empty for a Kudos given to the whole Workspace, which tells
+   * nobody: every Member reads it on the board, and telling all of them would fill every bell.
+   */
+  readonly recipientAccountIds: readonly string[];
+  /** The Kudos they were given. None of its words travel to the bell. */
+  readonly kudosId: string;
+}
+
 /**
  * Telling one person something happened to them — somebody asked them for Feedback, answered a
- * request they sent, or wrote Feedback to them.
+ * request they sent, wrote Feedback to them, or gave them Kudos.
  *
  * **Published.** Feedback calls it after its own transaction commits, and never learns how
  * anybody is reached: whether that is a bell inside Thrive, a chat tool, or both is this
@@ -79,4 +89,6 @@ export abstract class PersonNotifierPort {
   abstract askAnswered(event: AskAnswered): Promise<void>;
 
   abstract feedbackWritten(event: FeedbackWritten): Promise<void>;
+
+  abstract kudosReceived(event: KudosReceived): Promise<void>;
 }

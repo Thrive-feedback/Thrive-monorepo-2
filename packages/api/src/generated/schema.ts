@@ -894,7 +894,7 @@ export interface components {
                 /** Format: uuid */
                 id: string;
                 /** @enum {string} */
-                type: "ASK_RECEIVED" | "ASK_ANSWERED" | "FEEDBACK_RECEIVED" | "FEEDBACK_SHARED";
+                type: "ASK_RECEIVED" | "ASK_ANSWERED" | "FEEDBACK_RECEIVED" | "FEEDBACK_SHARED" | "KUDOS_RECEIVED";
                 actor: {
                     accountId: string;
                     name: string | null;

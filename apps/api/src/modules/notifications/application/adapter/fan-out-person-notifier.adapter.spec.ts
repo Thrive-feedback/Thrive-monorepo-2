@@ -286,4 +286,43 @@ describe('who is told, and about what', () => {
     expect(notifications.stored[0]?.row.recipientAccountId).toBe(ANN);
     expect(notifications.stored[0]?.row.subjectId).toBe('request-1');
   });
+  it('tells everyone a Kudos names, each about that Kudos, and that every Member can read it', async () => {
+    const { notifier, notifications } = setUp();
+
+    await notifier.kudosReceived({
+      workspaceId: WORKSPACE,
+      actorAccountId: ANN,
+      audience: 'EVERYONE',
+      recipientAccountIds: [BEN, CARA],
+      kudosId: 'kudos-1',
+    });
+
+    expect(
+      notifications.stored.map(({ row }) => [
+        row.recipientAccountId,
+        row.type,
+        row.subjectId,
+        row.audience,
+      ]),
+    ).toEqual([
+      [BEN, 'KUDOS_RECEIVED', 'kudos-1', 'EVERYONE'],
+      [CARA, 'KUDOS_RECEIVED', 'kudos-1', 'EVERYONE'],
+    ]);
+  });
+
+  it('never tells the giver, or a Deactivated Member, about a Kudos', async () => {
+    const { notifier, notifications, membership } = setUp();
+    membership.withDeactivated(WORKSPACE, CARA);
+
+    await notifier.kudosReceived({
+      workspaceId: WORKSPACE,
+      actorAccountId: ANN,
+      recipientAccountIds: [ANN, BEN, CARA],
+      kudosId: 'kudos-1',
+    });
+
+    expect(
+      notifications.stored.map(({ row }) => row.recipientAccountId),
+    ).toEqual([BEN]);
+  });
 });

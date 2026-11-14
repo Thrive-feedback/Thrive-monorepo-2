@@ -11,6 +11,7 @@ import { PersonNotifierPort } from '../port/person-notifier.port';
 export const ASK_RECEIVED_TYPE = 'notifications.ask_received';
 export const ASK_ANSWERED_TYPE = 'notifications.ask_answered';
 export const FEEDBACK_WRITTEN_TYPE = 'notifications.feedback_written';
+export const KUDOS_RECEIVED_TYPE = 'notifications.kudos_received';
 
 /**
  * Optional: an Ask's Givers are sent none unless their answer goes on the feed, and a message
@@ -51,6 +52,14 @@ const feedbackWrittenPayload = z.object({
   feedbackId: z.string().min(1),
 });
 
+const kudosReceivedPayload = z.object({
+  workspaceId: z.string().min(1),
+  actorAccountId: z.string().min(1),
+  audience,
+  recipientAccountIds: z.array(z.string().min(1)),
+  kudosId: z.string().min(1),
+});
+
 /**
  * Five, where the channel announcement gets one (ADR 0076 D7).
  *
@@ -88,6 +97,10 @@ export class PersonNotificationOutboxHandler extends OutboxHandler {
       case FEEDBACK_WRITTEN_TYPE:
         return this.personNotifier.feedbackWritten(
           parse(feedbackWrittenPayload, message),
+        );
+      case KUDOS_RECEIVED_TYPE:
+        return this.personNotifier.kudosReceived(
+          parse(kudosReceivedPayload, message),
         );
       default:
         // Only reachable if the wiring claims a type this handler does not know — a mistake no
