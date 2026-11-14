@@ -39,7 +39,9 @@ export const NOTIFICATION_LINES: Readonly<
   },
   FEEDBACK_RECEIVED: {
     sentenceFor: (actor) => `${actor} wrote feedback to you`,
-    destinationFor: (subjectId) => ROUTES.homeFeedback(subjectId, 'all'),
+    // Received showing Feedback given unasked, the only kind this is, with the postcard open.
+    destinationFor: (subjectId) =>
+      ROUTES.receivedFeedback(subjectId, PERSONAL_VIEWS[0], 'offered'),
   },
   FEEDBACK_SHARED: {
     sentenceFor: (actor) => `${actor} shared feedback with you`,

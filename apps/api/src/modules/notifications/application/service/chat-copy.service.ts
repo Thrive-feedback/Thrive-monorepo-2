@@ -63,9 +63,11 @@ export class ChatCopyService {
     const opening = event.isReceiver
       ? `**${event.actorName}** wrote feedback to you in *${event.workspaceName}*`
       : `**${event.actorName}** shared feedback with you in *${event.workspaceName}*`;
-    return [opening, this.linkTo(WEB_PATHS.feedback(event.feedbackId))].join(
-      '\n',
-    );
+    // A Receiver reads it in Received; somebody it was shared with reads it on Home.
+    const path = event.isReceiver
+      ? WEB_PATHS.receivedFeedback(event.feedbackId)
+      : WEB_PATHS.feedback(event.feedbackId);
+    return [opening, this.linkTo(path)].join('\n');
   }
 
   kudosReceived(event: {

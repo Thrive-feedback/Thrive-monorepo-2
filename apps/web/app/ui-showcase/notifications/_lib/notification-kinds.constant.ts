@@ -76,10 +76,15 @@ export const NOTIFICATION_KINDS: Readonly<
     title: 'Feedback written to you',
     when: 'Somebody offers Feedback and names this person as a Receiver.',
     whoIsTold: 'Each Receiver, once each.',
-    opens: 'Home, with that Feedback open over it.',
-    landsOn: HOME_WITH_FEEDBACK_OVER_IT,
+    opens:
+      'Received, showing Feedback given to them, with that Feedback open over it.',
+    landsOn: {
+      page: 'Received',
+      showing: 'Given to me',
+      overIt: 'That Feedback',
+    },
     inChat:
-      'Who wrote it and in which Workspace, with a link to the Feedback. None of its words.',
+      'Who wrote it and in which Workspace, with a link to that Feedback in Received. None of its words.',
   },
   FEEDBACK_SHARED: {
     title: 'Feedback shared with you',

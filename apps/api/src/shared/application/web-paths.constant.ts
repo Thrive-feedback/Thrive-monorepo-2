@@ -28,6 +28,12 @@ export const WEB_PATHS = {
    */
   feedback: (feedbackId: string) => `/home?feedback=${feedbackId}`,
   /**
+   * Received narrowed to Feedback given unasked, with the piece open over it: where somebody it
+   * was written to reads it. Matches `ROUTES.receivedFeedback(id, PERSONAL_VIEWS[0], 'offered')`.
+   */
+  receivedFeedback: (feedbackId: string) =>
+    `/received?show=offered&feedback=${feedbackId}`,
+  /**
    * The Workspace's Kudos board, because **a Kudos has no permalink**: there is no route that
    * reads one. The board is where it hangs. Thin, and it costs less here than it would for
    * Feedback, because the post already carries the words (brain `ADR-0045`).
