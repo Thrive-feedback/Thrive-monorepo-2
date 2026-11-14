@@ -4,6 +4,7 @@ import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-to
 import { cn } from '@/lib/cn.util';
 import type {
   SummarySection as Section,
+  SummaryPoint,
   SummarySectionName,
 } from '../_lib/feedback-summary.type';
 import { SummaryPointSources } from './summary-point-sources';
@@ -60,7 +61,9 @@ export function SummarySection({ section }: SummarySectionProps) {
         <ul className="flex flex-col gap-4">
           {section.points.map((point) => (
             <li
-              key={point.point}
+              // Prose alone is not an identity: the model groups and can repeat itself, so what
+              // a point was read from distinguishes two that read alike.
+              key={keyOf(point)}
               className={cn(
                 'border-s-2 ps-4',
                 tone === 'primary' && 'border-action-primary-border',
@@ -78,4 +81,9 @@ export function SummarySection({ section }: SummarySectionProps) {
       )}
     </section>
   );
+}
+
+/** A point's identity on the page: what it says, and the messages it says it from. */
+function keyOf(point: SummaryPoint): string {
+  return [point.point, ...point.sources.map((source) => source.id)].join('|');
 }

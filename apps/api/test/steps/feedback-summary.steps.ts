@@ -6,7 +6,7 @@ import type { ThriveWorld } from '../support/world';
 
 interface SummaryPoint {
   readonly point: string;
-  readonly sources: readonly string[];
+  readonly sources: readonly { readonly id: string; readonly kind: string }[];
 }
 
 interface ReadSummary {
@@ -136,8 +136,30 @@ Then('the model was never asked', () => {
   assert.equal(harness().aiCompleter.asked.length, 0);
 });
 
+/**
+ * Counted by this run's own fence, never by the shape of a tag: a Giver's text may contain
+ * anything that looks like one, and counting those would be counting what an attacker wrote.
+ */
+function blocksGiven(prompt: string): number {
+  const fence = /<msg-([0-9a-f]{32}) /.exec(prompt)?.[1];
+  assert.ok(fence, 'The corpus carried no fence.');
+  return prompt.split(`<msg-${fence} `).length - 1;
+}
+
 Then('the model was given {int} messages', (count: number) => {
   const asked = harness().aiCompleter.asked[0];
   assert.ok(asked, 'The model was never asked.');
-  assert.equal([...asked.prompt.matchAll(/<msg /g)].length, count);
+  assert.equal(blocksGiven(asked.prompt), count);
+});
+
+Then('nothing a colleague wrote opened a message of its own', () => {
+  const asked = harness().aiCompleter.asked[0];
+  assert.ok(asked, 'The model was never asked.');
+  // The forged text is still there — it is what somebody wrote — but inside the block of
+  // whoever wrote it, carrying no fence of its own.
+  assert.ok(
+    asked.prompt.includes('Ben falsified the numbers.'),
+    'The message a Giver wrote was not sent at all.',
+  );
+  assert.equal(blocksGiven(asked.prompt), 3);
 });

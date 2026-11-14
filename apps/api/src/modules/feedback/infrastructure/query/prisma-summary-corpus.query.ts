@@ -7,8 +7,8 @@ import {
 } from '../../application/query-port/summary-corpus.query-port';
 import type { SummaryPeriodRange } from '../../domain/value-object/summary-period.vo';
 
-/** Oldest first, so the model reads a period the way it happened. */
-const OLDEST_FIRST = { createdAt: 'asc' } as const;
+/** Newest first, which is the end to keep when there are more than one generation may read. */
+const NEWEST_FIRST = { createdAt: 'desc' } as const;
 
 interface FreshnessRecord {
   readonly id: string;
@@ -32,6 +32,7 @@ export class PrismaSummaryCorpusQuery extends SummaryCorpusQuery {
     workspaceId: string,
     accountId: string,
     within: SummaryPeriodRange,
+    limit: number,
   ): Promise<readonly SummarySourceRow[]> {
     const { client } = this.prismaTransactionContext;
     const written = { gte: within.from, lt: within.until };
@@ -45,7 +46,10 @@ export class PrismaSummaryCorpusQuery extends SummaryCorpusQuery {
           receivers: { some: { accountId } },
           createdAt: written,
         },
-        orderBy: OLDEST_FIRST,
+        // Newest first and capped here, because either table alone could hold more than a
+        // generation may read; the whole corpus is ordered oldest first below.
+        orderBy: NEWEST_FIRST,
+        take: limit,
         select: { id: true, message: true, createdAt: true },
       }),
       client.kudos.findMany({
@@ -54,7 +58,8 @@ export class PrismaSummaryCorpusQuery extends SummaryCorpusQuery {
           recipients: { some: { accountId } },
           createdAt: written,
         },
-        orderBy: OLDEST_FIRST,
+        orderBy: NEWEST_FIRST,
+        take: limit,
         select: { id: true, message: true, createdAt: true },
       }),
     ]);
@@ -62,7 +67,10 @@ export class PrismaSummaryCorpusQuery extends SummaryCorpusQuery {
     return [
       ...feedback.map((row) => ({ ...row, kind: 'FEEDBACK' as const })),
       ...kudos.map((row) => ({ ...row, kind: 'KUDOS' as const })),
-    ].sort((one, other) => one.createdAt.getTime() - other.createdAt.getTime());
+    ]
+      .sort((one, other) => other.createdAt.getTime() - one.createdAt.getTime())
+      .slice(0, limit)
+      .reverse();
   }
 
   async freshnessOf(
