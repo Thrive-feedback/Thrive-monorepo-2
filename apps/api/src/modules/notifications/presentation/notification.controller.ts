@@ -99,7 +99,6 @@ export class NotificationController {
         subjectId: notification.subjectId,
         createdAt: notification.createdAt.toISOString(),
         readAt: notification.readAt?.toISOString() ?? null,
-        audience: notification.audience,
       })),
       total: notifications.total,
       page: page.page,

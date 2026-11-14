@@ -69,7 +69,6 @@ export class ListMyNotificationsUseCase {
           subjectId: notification.subjectId,
           createdAt: notification.createdAt,
           readAt: notification.readAt,
-          audience: notification.audience,
         };
       }),
       total: page.total,

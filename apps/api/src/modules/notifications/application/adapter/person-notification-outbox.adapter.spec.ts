@@ -46,14 +46,13 @@ describe('draining a notification', () => {
     expect(personNotifier.asksReceived[0]?.giverAccountIds).toEqual([BEN]);
   });
 
-  it('tells the people a Kudos names, and that every Member can read it', async () => {
+  it('tells the people a Kudos names', async () => {
     const { handler, personNotifier } = setUp();
 
     await handler.handle(
       message(KUDOS_RECEIVED_TYPE, {
         workspaceId: WORKSPACE,
         actorAccountId: ANN,
-        audience: 'EVERYONE',
         recipientAccountIds: [BEN],
         kudosId: 'kudos-1',
       }),
@@ -63,58 +62,26 @@ describe('draining a notification', () => {
     expect(personNotifier.kudosReceived_[0]).toMatchObject({
       recipientAccountIds: [BEN],
       kudosId: 'kudos-1',
-      audience: 'EVERYONE',
     });
   });
 
-  it('passes on who can read what the line names', async () => {
+  it('still drains a message an earlier release enqueued with an audience', async () => {
     const { handler, personNotifier } = setUp();
 
+    // Enqueued before the audience was removed, or a dead row being replayed: the extra key is
+    // dropped rather than refused, so such a message still tells somebody.
     await handler.handle(
       message(ASK_ANSWERED_TYPE, {
         workspaceId: WORKSPACE,
         actorAccountId: BEN,
-        audience: 'SELECTED_PEOPLE',
-        requesterAccountId: ANN,
-        feedbackRequestId: 'request-1',
-      }),
-    );
-
-    expect(personNotifier.asksAnswered[0]?.audience).toBe('SELECTED_PEOPLE');
-  });
-
-  it('still drains a message enqueued before the audience was sent', async () => {
-    const { handler, personNotifier } = setUp();
-
-    await handler.handle(
-      message(ASK_ANSWERED_TYPE, {
-        workspaceId: WORKSPACE,
-        actorAccountId: BEN,
+        audience: 'EVERYONE',
         requesterAccountId: ANN,
         feedbackRequestId: 'request-1',
       }),
     );
 
     expect(personNotifier.asksAnswered).toHaveLength(1);
-    expect(personNotifier.asksAnswered[0]?.audience).toBeUndefined();
-  });
-
-  it('still tells somebody when the audience is one it does not know, without one', async () => {
-    const { handler, personNotifier } = setUp();
-
-    await handler.handle(
-      message(ASK_ANSWERED_TYPE, {
-        workspaceId: WORKSPACE,
-        actorAccountId: BEN,
-        audience: 'FRIENDS_OF_FRIENDS',
-        requesterAccountId: ANN,
-        feedbackRequestId: 'request-1',
-      }),
-    );
-
-    // An icon is not worth losing the notification over; the line is recorded without one.
-    expect(personNotifier.asksAnswered).toHaveLength(1);
-    expect(personNotifier.asksAnswered[0]?.audience).toBeUndefined();
+    expect(personNotifier.asksAnswered[0]).not.toHaveProperty('audience');
   });
 
   it('tells the Requester their request was answered', async () => {

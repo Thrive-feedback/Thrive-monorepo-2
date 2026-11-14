@@ -52,6 +52,24 @@ describe('DropdownMenu', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  it('keeps the focus ring on the item the keyboard is on, so it is seen as well as tinted', async () => {
+    const user = userEvent.setup();
+    render(<AccountMenu />);
+
+    await user.click(screen.getByRole('button', { name: 'Account' }));
+    await user.keyboard('{ArrowDown}');
+
+    // The app's one focus ring is drawn on :focus-visible; an item may not take it away, since
+    // its highlight tint alone is far too faint to show where the keyboard is.
+    const profile = screen.getByRole('menuitem', { name: 'Profile' });
+    expect(profile).toHaveFocus();
+    expect(profile).not.toHaveClass('outline-hidden');
+    // Pointed at or focused, a grey step that reads on the panel, not the brand's chosen tint.
+    expect(profile).toHaveClass(
+      'data-highlighted:bg-action-neutral-surface-hover',
+    );
+  });
+
   it('marks an item that cannot be picked', async () => {
     const user = userEvent.setup();
     render(<AccountMenu />);

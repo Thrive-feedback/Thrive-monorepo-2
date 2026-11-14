@@ -17,7 +17,6 @@ import {
   ReceiverNotInWorkspaceError,
   SelectedPersonNotInWorkspaceError,
 } from '../feedback-request.errors';
-import { toNotificationAudience } from '../service/notification-audience.mapper';
 import { SummaryRefreshService } from '../service/summary-refresh.service';
 import { TagsService } from '../service/tags.service';
 
@@ -117,7 +116,6 @@ export class OfferFeedbackUseCase {
           payload: {
             workspaceId: input.workspaceId,
             actorAccountId: input.giverAccountId,
-            audience: toNotificationAudience(visibility.toString()),
             receiverAccountIds: written.receiverAccountIds,
             sharedWithAccountIds: visibility.selectedAccountIds(),
             feedbackId: written.id,

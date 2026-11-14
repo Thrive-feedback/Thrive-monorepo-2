@@ -18,7 +18,7 @@ const LINES: readonly (readonly [NotificationType, string, string])[] = [
   [
     'FEEDBACK_RECEIVED',
     'Ploy wrote feedback to you',
-    `/home?feedback=${SUBJECT}`,
+    `/received?show=offered&feedback=${SUBJECT}`,
   ],
   [
     'FEEDBACK_SHARED',

@@ -4,6 +4,7 @@ import { PlusIcon } from 'lucide-react';
 import { useRef } from 'react';
 import {
   COMPOSE_CHOICE_TITLES,
+  COMPOSE_CHOICE_TONES,
   type ComposeChoice,
 } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import { Button } from '@/components/atoms/button';
@@ -13,6 +14,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
+import {
+  FEED_CARD_FILL,
+  FEED_CARD_HIGHLIGHT,
+} from '@/components/organisms/feed-card/feed-card-tone.constant';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import { cn } from '@/lib/cn.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
@@ -21,20 +26,6 @@ import {
   useComposeCards,
   warmComposeCards,
 } from './compose-cards';
-
-/** Each choice pointed at, in the colour of the card it writes. */
-const CHOICE_HIGHLIGHTS: Readonly<Record<ComposeChoice, string>> = {
-  ask: 'data-highlighted:bg-action-tertiary-surface',
-  give: 'data-highlighted:bg-action-primary-surface',
-  kudos: 'data-highlighted:bg-action-secondary-surface',
-};
-
-/** The mark beside each choice, so its colour is learnt before the card opens. */
-const CHOICE_DOTS: Readonly<Record<ComposeChoice, string>> = {
-  ask: 'bg-action-tertiary',
-  give: 'bg-action-primary',
-  kudos: 'bg-action-secondary',
-};
 
 const CHOICES: readonly {
   title: string;
@@ -156,14 +147,18 @@ export function ComposeMenu({
               key={title}
               className={cn(
                 'flex-col items-start gap-0.5 px-3 py-2.5',
-                CHOICE_HIGHLIGHTS[card],
+                // Pointed at, in the colour of the card it writes, as every kind-coloured line is.
+                FEED_CARD_HIGHLIGHT[COMPOSE_CHOICE_TONES[card]],
               )}
               onSelect={() => handleChoose(card)}
             >
               <span className="flex items-center gap-2 text-fg-primary text-subtitle-4">
                 <span
                   aria-hidden="true"
-                  className={cn('size-2 rounded-full', CHOICE_DOTS[card])}
+                  className={cn(
+                    'size-2 rounded-full',
+                    FEED_CARD_FILL[COMPOSE_CHOICE_TONES[card]],
+                  )}
                 />
                 {title}
               </span>

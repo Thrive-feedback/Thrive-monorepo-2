@@ -125,6 +125,28 @@ describe('ComposeMenu', () => {
     ]);
   });
 
+  it('tints each choice, pointed at, in the colour of the card it writes', async () => {
+    const user = userEvent.setup();
+    draw();
+
+    await user.click(screen.getByRole('button', { name: 'Write something' }));
+
+    // The same tint every kind-coloured line takes, the bell's included, not the menu's own.
+    const [ask, give, kudos] = screen.getAllByRole('menuitem');
+    expect(ask).toHaveClass(
+      'data-highlighted:bg-action-tertiary-surface-hover',
+    );
+    expect(give).toHaveClass(
+      'data-highlighted:bg-action-primary-surface-hover',
+    );
+    expect(kudos).toHaveClass(
+      'data-highlighted:bg-action-secondary-surface-hover',
+    );
+    expect(ask).not.toHaveClass(
+      'data-highlighted:bg-action-neutral-surface-hover',
+    );
+  });
+
   it('opens the postcard titled by the choice, with the focus on the card', async () => {
     const user = userEvent.setup();
     draw();

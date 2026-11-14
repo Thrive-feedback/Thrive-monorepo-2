@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Badge } from '@/components/atoms/badge';
+import { CountBadge, CountSaid } from '@/components/atoms/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,13 +23,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
 import glass from '@/components/organisms/glass.module.css';
+import { useUnreadCounts } from '@/components/organisms/notifications-provider';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 import styles from './tab-bar.module.css';
 
 export type TabBarProps = {
-  /** How many Asks are waiting for the person, shown on Waiting as the sidebar shows it. */
-  waitingCount: number;
   /** Whether More offers Your dashboard, as the sidebar does (ADR 0087). */
   showsDashboard: boolean;
   /** "+", in the middle of the bar. */
@@ -39,6 +38,8 @@ export type TabBarProps = {
 /** A tab's icon and its word under it; the current one is plum, its icon on the plum tint. */
 const TAB_CLASSES =
   'group flex w-full flex-col items-center gap-1 rounded-button py-1.5 text-button-xs text-fg-secondary aria-[current]:text-action-primary data-[state=open]:text-fg-primary';
+/** A tab's count, on its icon's corner, lifted off the bar. */
+const TAB_COUNT_CLASSES = 'absolute -top-1.5 right-0 shadow-low';
 const TAB_ICON_CLASSES =
   'relative flex h-7 w-12 items-center justify-center rounded-full transition-colors group-aria-[current]:bg-action-primary-surface-hover motion-reduce:transition-none';
 
@@ -51,12 +52,10 @@ const TAB_ICON_CLASSES =
  * into the page at both ends as the navbar does at the top. It reads the path itself because the
  * layout around it does not run again when the client navigates between the pages under it.
  */
-export function TabBar({
-  waitingCount,
-  showsDashboard,
-  children,
-}: TabBarProps) {
+export function TabBar({ showsDashboard, children }: TabBarProps) {
   const pathname = usePathname();
+  // Read from the bell's own poll, as the sidebar reads them.
+  const unread = useUnreadCounts();
   const inMore = [
     ROUTES.teammates,
     ...(showsDashboard ? [ROUTES.dashboard] : []),
@@ -102,7 +101,7 @@ export function TabBar({
               currentHref={pathname}
               label="Waiting"
               rest=" for me"
-              count={waitingCount}
+              count={unread.waiting}
             />
           </li>
           <li>
@@ -113,8 +112,20 @@ export function TabBar({
               >
                 <span className={TAB_ICON_CLASSES}>
                   <EllipsisIcon aria-hidden="true" className="size-5" />
+                  {/* Received is inside More, so its count shows on More until it is opened. */}
+                  <CountBadge
+                    count={unread.received}
+                    said={null}
+                    className={TAB_COUNT_CLASSES}
+                  />
                 </span>
-                More
+                <span>
+                  More
+                  <CountSaid
+                    count={unread.received}
+                    said="unread in Received"
+                  />
+                </span>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="end" className="w-56">
                 <MoreLink
@@ -138,6 +149,7 @@ export function TabBar({
                   Icon={InboxIcon}
                   label="Received"
                   isCurrent={pathname.startsWith(ROUTES.received)}
+                  count={unread.received}
                 />
                 <MoreLink
                   href={ROUTES.given}
@@ -173,8 +185,6 @@ function Tab({
   rest?: string;
   count?: number;
 }) {
-  const hasCount = count !== undefined && count > 0;
-
   return (
     <NextLink
       href={href}
@@ -183,46 +193,46 @@ function Tab({
     >
       <span className={TAB_ICON_CLASSES}>
         <Icon aria-hidden="true" className="size-5" />
-        {/* Drawn on the icon's corner, but read after the name, as the sidebar reads it. */}
-        {hasCount && (
-          <Badge
-            aria-hidden="true"
-            tone="brand"
-            className="absolute -top-1.5 right-0 px-1.5 tabular-nums shadow-low"
-          >
-            {count}
-          </Badge>
-        )}
+        {/* Drawn on the icon's corner, its words read after the name, as the sidebar reads it. */}
+        <CountBadge
+          count={count ?? 0}
+          said={null}
+          className={TAB_COUNT_CLASSES}
+        />
       </span>
       <span>
         {label}
         {rest && <span className="sr-only">{rest}</span>}
-        {hasCount && <span className="sr-only"> {count}</span>}
+        <CountSaid count={count ?? 0} />
       </span>
     </NextLink>
   );
 }
 
-/** A page in More's menu, marked when it is the page open. */
+/** A page in More's menu, marked when it is the page open, with its unread count if it has one. */
 function MoreLink({
   href,
   Icon,
   label,
   isCurrent,
+  count,
 }: {
   href: string;
   Icon: LucideIcon;
   label: string;
   isCurrent: boolean;
+  count?: number;
 }) {
   return (
+    // The open page stays plum when pointed at, rather than taking the menu's grey highlight.
     <DropdownMenuItem
       asChild
-      className="aria-[current]:bg-action-primary-surface aria-[current]:text-action-primary"
+      className="aria-[current]:bg-action-primary-surface aria-[current]:text-action-primary aria-[current]:data-highlighted:bg-action-primary-surface"
     >
       <NextLink href={href} aria-current={isCurrent ? 'page' : undefined}>
         <Icon aria-hidden="true" className="size-4.5" />
-        {label}
+        <span className="flex-1">{label}</span>
+        <CountBadge count={count ?? 0} />
       </NextLink>
     </DropdownMenuItem>
   );

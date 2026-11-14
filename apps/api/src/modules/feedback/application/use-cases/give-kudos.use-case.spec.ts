@@ -220,7 +220,7 @@ describe('telling the Workspace channel about a Kudos', () => {
 describe('telling the people a Kudos names', () => {
   const RECEIVED = 'notifications.kudos_received';
 
-  it('tells everyone it names, in person, and that every Member can read it', async () => {
+  it('tells everyone it names, in person', async () => {
     const { useCase, outbox } = setUp();
 
     await useCase.execute(giving('@ben and @cara carried the launch.'));
@@ -233,7 +233,6 @@ describe('telling the people a Kudos names', () => {
     expect(outbox.ofType(RECEIVED)[0]?.payload).toEqual({
       workspaceId: WORKSPACE_ID,
       actorAccountId: ANN,
-      audience: 'EVERYONE',
       recipientAccountIds: [BEN, CARA],
       kudosId: KUDOS_ID,
     });

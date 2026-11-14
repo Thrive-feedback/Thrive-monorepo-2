@@ -227,8 +227,8 @@ describe('never failing the thing that caused it', () => {
 describe('messaging somebody Feedback was written to', () => {
   it('tells the Receiver it was written to them, and a Selected person it was shared', async () => {
     const { notifier, discord, linked } = setUp();
-    linked(BEN);
-    linked(CARA);
+    linked(BEN, 'dm-ben');
+    linked(CARA, 'dm-cara');
 
     await notifier.feedbackWritten({
       workspaceId: WORKSPACE,
@@ -238,13 +238,15 @@ describe('messaging somebody Feedback was written to', () => {
       feedbackId: 'feedback-1',
     });
 
-    const texts = discord.posted.map((post) => post.text);
-    expect(texts.some((text) => text.includes('wrote feedback to you'))).toBe(
-      true,
+    const to = (channelId: string) =>
+      discord.posted.find((post) => post.channelId === channelId)?.text ?? '';
+    // The Receiver reads it in Received; somebody it was shared with reads it on Home.
+    expect(to('dm-ben')).toContain('wrote feedback to you');
+    expect(to('dm-ben')).toContain(
+      '/received?show=offered&feedback=feedback-1',
     );
-    expect(
-      texts.some((text) => text.includes('shared feedback with you')),
-    ).toBe(true);
+    expect(to('dm-cara')).toContain('shared feedback with you');
+    expect(to('dm-cara')).toContain('/home?feedback=feedback-1');
   });
 
   it('tells somebody who is both the Receiver and Selected exactly once', async () => {

@@ -1,7 +1,21 @@
+import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-tone.type';
+
 /** What a person can choose to write, in the order it is offered: ask for Feedback, give it, or give a Kudos. */
 export const COMPOSE_CHOICES = ['ask', 'give', 'kudos'] as const;
 
 export type ComposeChoice = (typeof COMPOSE_CHOICES)[number];
+
+/**
+ * The colour of the card each choice writes, as the feed cards name it: asking in the blue of
+ * everything asked for, giving in the brand's purple, a Kudos in the warm orange.
+ */
+export const COMPOSE_CHOICE_TONES: Readonly<
+  Record<ComposeChoice, FeedCardTone>
+> = {
+  ask: 'tertiary',
+  give: 'primary',
+  kudos: 'secondary',
+};
 
 /** What each choice is called wherever it is offered: the menu, Home's composer, an empty list. */
 export const COMPOSE_CHOICE_TITLES: Readonly<Record<ComposeChoice, string>> = {

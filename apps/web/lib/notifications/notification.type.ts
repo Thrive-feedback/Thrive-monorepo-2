@@ -24,9 +24,10 @@ export type BellNotification = {
   readonly subjectId: string;
   readonly createdAt: string;
   readonly isRead: boolean;
-  /**
-   * Who can read what it leads to, as fixed when it was written, or `null` for a line written
-   * before that was recorded, which shows no icon.
-   */
-  readonly audience: NotificationItem['audience'];
+};
+
+/** One page of lines, and how many there are in all, so the bell knows whether to ask for more. */
+export type NotificationsPage = {
+  readonly items: readonly BellNotification[];
+  readonly total: number;
 };

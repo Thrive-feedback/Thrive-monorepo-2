@@ -10,15 +10,13 @@ import {
   readCurrentMembership,
   readSession,
 } from '@/lib/session/session.service';
-import type { BellNotification } from './notification.type';
-
-/**
- * The panel holds the most recent, not a history: there is no way to scroll further, so one
- * short page is the whole of it.
- */
-const PANEL_PAGE = { page: 1, pageSize: 10 };
+import type { NotificationsPage } from './notification.type';
+import { NOTIFICATIONS_PAGE_SIZE } from './notification-page.constant';
 
 const NotificationId = z.uuid();
+
+/** The page asked for comes from the browser, so it is checked before it is sent on. */
+const PageNumber = z.int().positive();
 
 async function forwardedCookie(): Promise<string | undefined> {
   return (await headers()).get('cookie') ?? undefined;
@@ -84,31 +82,36 @@ export async function countUnreadNotifications(): Promise<number | null> {
 }
 
 /**
- * The most recent things the person has been told about here, newest first.
+ * One page of what the person has been told about here, newest first: page 1 is the most recent
+ * {@link NOTIFICATIONS_PAGE_SIZE}.
  *
  * `null` means we could not read them, which the panel says in a sentence rather than showing
  * an empty list — "nothing yet" and "we could not look" are different answers.
  */
-export async function listMyNotifications(): Promise<
-  readonly BellNotification[] | null
-> {
+export async function listMyNotifications(
+  page = 1,
+): Promise<NotificationsPage | null> {
+  const pageNumber = PageNumber.safeParse(page);
+  if (!pageNumber.success) {
+    return null;
+  }
   const workspaceId = await currentWorkspaceId();
   if (workspaceId === null) {
     return null;
   }
   const cookie = await forwardedCookie();
   try {
-    const page = unwrap(
+    const answer = unwrap(
       await apiClient().GET('/v1/workspaces/{workspaceId}/notifications', {
         params: {
           path: { workspaceId },
           header: { cookie },
-          query: PANEL_PAGE,
+          query: { page: pageNumber.data, pageSize: NOTIFICATIONS_PAGE_SIZE },
         },
         cache: 'no-store',
       }),
     );
-    return page.items.map((item) => ({
+    const items = answer.items.map((item) => ({
       id: item.id,
       type: item.type,
       actorName: item.actor.name,
@@ -116,8 +119,8 @@ export async function listMyNotifications(): Promise<
       subjectId: item.subjectId,
       createdAt: item.createdAt,
       isRead: item.readAt !== null,
-      audience: item.audience,
     }));
+    return { items, total: answer.total };
   } catch (error) {
     if (!(error instanceof ApiError)) {
       throw error;
