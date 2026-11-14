@@ -29,7 +29,6 @@ function aNotification(
     subjectId: SUBJECT,
     createdAt: FIVE_MINUTES_AGO,
     isRead: false,
-    audience: null,
     ...overrides,
   };
 }
@@ -138,28 +137,6 @@ describe('NotificationBell', () => {
   });
 
   it.each([
-    ['EVERYONE', 'Everyone in the Workspace'],
-    ['SELECTED_PEOPLE', 'Selected people'],
-    // The person told is never the one "me" of Only me, and the bell cannot tell how many it
-    // was for, so it says the one thing true either way.
-    ['ONLY_ME', "Only the people it's for"],
-  ] as const)(
-    'says a line leading to something %s can read is visible to %s',
-    async (audience, label) => {
-      listMyNotifications.mockResolvedValue([
-        aNotification({ type: 'FEEDBACK_RECEIVED', audience }),
-      ]);
-
-      await openTheBell();
-
-      const line = await screen.findByRole('menuitem', {
-        name: /wrote feedback to you/,
-      });
-      expect(line).toHaveTextContent(`Visible to ${label}`);
-    },
-  );
-
-  it.each([
     ['ASK_RECEIVED', /asked you for feedback/, 'bg-action-tertiary'],
     ['ASK_ANSWERED', /answered your request/, 'bg-action-tertiary'],
     ['FEEDBACK_RECEIVED', /wrote feedback to you/, 'bg-action-primary'],
@@ -177,17 +154,6 @@ describe('NotificationBell', () => {
       expect(line.querySelector('[aria-hidden="true"]')).toHaveClass(fill);
     },
   );
-
-  it('says nothing about who can read it on a line written before that was recorded', async () => {
-    listMyNotifications.mockResolvedValue([aNotification({ audience: null })]);
-
-    await openTheBell();
-
-    const line = await screen.findByRole('menuitem', {
-      name: /asked you for feedback/,
-    });
-    expect(line).not.toHaveTextContent('Visible to');
-  });
 
   it('leaves out a line of a kind it has no sentence for, and draws the rest', async () => {
     // A kind a newer API or web server knows, handed to a bundle built before it. Read back

@@ -3,7 +3,6 @@ import { DropdownMenuItem } from '@/components/atoms/dropdown-menu';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
-import { audienceForOthers } from '@/components/organisms/feed-card/feed-card-audience.util';
 import { FEED_CARD_FILL } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-tone.type';
 import { cn } from '@/lib/cn.util';
@@ -27,14 +26,6 @@ const NOTIFICATION_TONES: Readonly<Record<NotificationType, FeedCardTone>> = {
   KUDOS_RECEIVED: 'secondary',
 };
 
-/**
- * Who can read what a line leads to, said from the side of the person told, who is not the one
- * "me" Only me names. Nothing for a line written before that was recorded.
- */
-function bellAudienceOf(audience: BellNotification['audience']) {
-  return audience === null ? null : audienceForOthers(audience);
-}
-
 export type NotificationRowProps = {
   notification: BellNotification;
   /** Pressing the line: it is about to open what it points at, and counts as read. */
@@ -42,8 +33,8 @@ export type NotificationRowProps = {
 };
 
 /**
- * One line in the bell: whether it is still unread, the face of who did it, what happened, how
- * long ago, and at the end who can read what it leads to.
+ * One line in the bell: whether it is still unread, the face of who did it, what happened and
+ * how long ago.
  *
  * It is a link rather than a button, so it opens in a new tab on a middle click and reads as a
  * link to a screen reader. Unread is said in words as well as drawn as a dot, because a colour
@@ -55,7 +46,6 @@ export function NotificationRow({
   onOpen,
 }: NotificationRowProps) {
   const { actor, sentence, destination } = notificationLine(notification);
-  const audience = bellAudienceOf(notification.audience);
 
   return (
     <DropdownMenuItem asChild onSelect={() => onOpen(notification)}>
@@ -87,15 +77,6 @@ export function NotificationRow({
             {timeAgo(notification.createdAt)}
           </Text>
         </span>
-        {audience && (
-          <>
-            <audience.Icon
-              aria-hidden="true"
-              className="mt-0.5 size-4 shrink-0 text-fg-secondary"
-            />
-            <span className="sr-only">Visible to {audience.label}</span>
-          </>
-        )}
         {!notification.isRead && <span className="sr-only">Unread</span>}
       </NextLink>
     </DropdownMenuItem>

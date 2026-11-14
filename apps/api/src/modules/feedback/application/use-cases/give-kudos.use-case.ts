@@ -11,7 +11,6 @@ import {
   type KudosCardSnapshot,
 } from '../../domain/value-object/kudos-card.vo';
 import { KudosMessage } from '../../domain/value-object/kudos-message.vo';
-import { KUDOS_AUDIENCE } from '../service/notification-audience.mapper';
 import { SummaryRefreshService } from '../service/summary-refresh.service';
 import { TagsService } from '../service/tags.service';
 
@@ -105,7 +104,6 @@ export class GiveKudosUseCase {
             payload: {
               workspaceId: given.workspaceId,
               actorAccountId: given.giverAccountId,
-              audience: KUDOS_AUDIENCE,
               recipientAccountIds: given.recipientAccountIds,
               kudosId: given.id,
             },
