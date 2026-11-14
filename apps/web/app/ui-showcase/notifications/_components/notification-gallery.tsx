@@ -15,6 +15,7 @@ import {
 } from '@/components/atoms/card';
 import { Text } from '@/components/atoms/text';
 import { NotificationRowSkeleton } from '@/components/organisms/notification-row';
+import { NotificationsEmpty } from '@/components/organisms/notifications-empty';
 import type { NotificationType } from '@/lib/notifications/notification.type';
 import {
   NOTIFICATION_LINES,
@@ -39,7 +40,7 @@ function isNotificationType(key: string): key is NotificationType {
 }
 
 const WHAT_PRESSING_DOES = [
-  'Marks the line read. Its dot goes and the bell’s count drops by one straight away, before the server has answered.',
+  'Marks the line read. Its dot, in the colour of its kind, goes and the bell’s count drops by one straight away, before the server has answered.',
   'Follows the line’s link to the page it points at.',
   'Closes the panel.',
 ] as const;
@@ -196,18 +197,29 @@ export function NotificationGallery() {
 
       <GallerySection
         title="In the bell"
-        description="The panel with the real row on sample lines: one of every kind unread, one already read, and one from somebody with no name. Pressing a line marks it read here and follows its real link, which takes a sample id nowhere useful."
+        description="The panel with the real row on sample lines: one of every kind unread, one already read, and one from somebody with no name. Each line shows the face of who did it, their photo or their initials, and an unread dot in its kind’s colour: blue for an ask and its answer, purple for Feedback written or shared. At the end, an icon says who can read what the line leads to: everyone in the Workspace, selected people, or only the people it’s for. Somebody asked for Feedback sees it only when their answer goes on the Workspace feed, since a Giver is told nothing else of who reads it. A line written before that was recorded, like the last sample, shows none. Pressing a line marks it read here and follows its real link, which takes a sample id nowhere useful."
       >
         <SampleBell />
-        <figure className="flex max-w-88 flex-col gap-2">
-          <Card className="py-2">
-            <NotificationRowSkeleton />
-          </Card>
-          <Text as="figcaption" variant="caption" tone="muted">
-            One line while the panel is loading, at the height the real line
-            will be.
-          </Text>
-        </figure>
+        <div className="flex flex-wrap items-start gap-6">
+          <figure className="flex w-full max-w-88 flex-col gap-2">
+            <Card className="py-2">
+              <NotificationRowSkeleton />
+            </Card>
+            <Text as="figcaption" variant="caption" tone="muted">
+              One line while the panel is loading, at the height the real line
+              will be.
+            </Text>
+          </figure>
+          <figure className="flex w-full max-w-88 flex-col gap-2">
+            <Card className="py-0">
+              <NotificationsEmpty />
+            </Card>
+            <Text as="figcaption" variant="caption" tone="muted">
+              The panel with nothing in it, drawn the way every empty place for
+              cards is.
+            </Text>
+          </figure>
+        </div>
       </GallerySection>
 
       <GallerySection

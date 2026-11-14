@@ -24,6 +24,12 @@ describe('NotificationGallery', () => {
     expect(screen.getAllByText('/home?feedback={id}')).toHaveLength(2);
   });
 
+  it('shows the panel with nothing in it, as every empty place for cards is drawn', () => {
+    render(<NotificationGallery />);
+
+    expect(screen.getByText('Nothing yet')).toBeInTheDocument();
+  });
+
   it('opens a sample bell with one line per sample, unread ones said so', async () => {
     const user = userEvent.setup();
     render(<NotificationGallery />);

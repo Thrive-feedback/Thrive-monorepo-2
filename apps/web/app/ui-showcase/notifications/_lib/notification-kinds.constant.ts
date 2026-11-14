@@ -1,3 +1,4 @@
+import { standInPhoto } from '@/app/ui-showcase/_lib/stand-in-photo.util';
 import type {
   BellNotification,
   NotificationType,
@@ -95,58 +96,74 @@ export const CHANNEL_POSTS: readonly ChannelPost[] = [
 
 const AN_HOUR_AGO = '2026-11-08T09:00:00.000Z';
 const YESTERDAY = '2026-11-07T10:00:00.000Z';
+const ANN_PHOTO = standInPhoto('#a78bfa', '#6d28d9');
+const MAI_PHOTO = standInPhoto('#fdba74', '#ea580c');
 
 /**
  * Lines for the sample bell: one unread line of every kind, one already read, and one whose
- * actor has no name to show.
+ * actor has no name to show. Some actors have a photo and some show their initials. Each says who
+ * can read what it leads to, but the last, which stands for a line written before that was
+ * recorded and shows no icon.
  */
 export const SAMPLE_NOTIFICATIONS: readonly BellNotification[] = [
   {
     id: 'sample-ask-received',
     type: 'ASK_RECEIVED',
     actorName: 'Ann Lee',
+    actorPhotoUrl: ANN_PHOTO,
     subjectId: 'sample-ask',
     createdAt: AN_HOUR_AGO,
     isRead: false,
+    audience: 'EVERYONE',
   },
   {
     id: 'sample-ask-answered',
     type: 'ASK_ANSWERED',
     actorName: 'Nut Somchai',
+    actorPhotoUrl: null,
     subjectId: 'sample-request',
     createdAt: AN_HOUR_AGO,
     isRead: false,
+    audience: 'ONLY_ME',
   },
   {
     id: 'sample-feedback-received',
     type: 'FEEDBACK_RECEIVED',
     actorName: 'Mai Tanaka',
+    actorPhotoUrl: MAI_PHOTO,
     subjectId: 'sample-feedback',
     createdAt: AN_HOUR_AGO,
     isRead: false,
+    audience: 'ONLY_ME',
   },
   {
     id: 'sample-feedback-shared',
     type: 'FEEDBACK_SHARED',
     actorName: 'Ben Carter',
+    actorPhotoUrl: null,
     subjectId: 'sample-feedback',
     createdAt: AN_HOUR_AGO,
     isRead: false,
+    audience: 'EVERYONE',
   },
   {
     id: 'sample-read',
     type: 'FEEDBACK_RECEIVED',
     actorName: 'Ann Lee',
+    actorPhotoUrl: ANN_PHOTO,
     subjectId: 'sample-feedback',
     createdAt: YESTERDAY,
     isRead: true,
+    audience: 'SELECTED_PEOPLE',
   },
   {
     id: 'sample-unnamed',
     type: 'ASK_RECEIVED',
     actorName: null,
+    actorPhotoUrl: null,
     subjectId: 'sample-ask',
     createdAt: YESTERDAY,
     isRead: true,
+    audience: null,
   },
 ];

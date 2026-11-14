@@ -112,9 +112,11 @@ export async function listMyNotifications(): Promise<
       id: item.id,
       type: item.type,
       actorName: item.actor.name,
+      actorPhotoUrl: item.actor.photoUrl,
       subjectId: item.subjectId,
       createdAt: item.createdAt,
       isRead: item.readAt !== null,
+      audience: item.audience,
     }));
   } catch (error) {
     if (!(error instanceof ApiError)) {

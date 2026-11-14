@@ -22,6 +22,7 @@ import {
   markNotificationRead,
 } from '@/lib/notifications/notification-actions.service';
 import { NotificationRow, NotificationRowSkeleton } from './notification-row';
+import { NotificationsEmpty } from './notifications-empty';
 
 /**
  * How often the count is asked for again while somebody is looking at the page. A minute is
@@ -35,9 +36,6 @@ const MOST_SHOWN = 99;
 
 /** Enough rows to fill the panel while the real ones are on their way. */
 const PLACEHOLDER_ROWS = ['first', 'second', 'third'] as const;
-
-const NOTHING_YET =
-  'Nothing yet. When somebody asks you for feedback, answers you, or writes to you, it shows up here.';
 
 const COULD_NOT_LOAD =
   "We couldn't load these just now. Try again in a moment.";
@@ -227,9 +225,7 @@ export function NotificationBell() {
           </Text>
         )}
         {panelState === 'ready' && notifications.length === 0 && (
-          <Text variant="body-2" tone="muted" className="px-2 py-3">
-            {NOTHING_YET}
-          </Text>
+          <NotificationsEmpty />
         )}
         {panelState === 'ready' &&
           notifications.map((notification) => (

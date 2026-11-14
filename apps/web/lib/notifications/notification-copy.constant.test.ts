@@ -39,7 +39,7 @@ describe('notificationLine', () => {
     (type, sentence, destination) => {
       expect(
         notificationLine({ type, actorName: 'Ploy', subjectId: SUBJECT }),
-      ).toEqual({ sentence, destination });
+      ).toEqual({ actor: 'Ploy', sentence, destination });
     },
   );
 
@@ -53,6 +53,7 @@ describe('notificationLine', () => {
       });
 
       expect(line.sentence).toBe(sentence.replace('Ploy', 'Somebody'));
+      expect(line.actor).toBe('Somebody');
     },
   );
 
