@@ -1,6 +1,6 @@
 # 0084 — A summary refresh is keyed by the newest message it must account for
 
-Status:   proposed
+Status:   accepted
 Date:     2026-11-08
 Deciders: naroebordin
 

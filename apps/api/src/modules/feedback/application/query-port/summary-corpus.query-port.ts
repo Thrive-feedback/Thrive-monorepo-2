@@ -24,6 +24,8 @@ export abstract class SummaryCorpusQuery {
     workspaceId: string,
     accountId: string,
     within: SummaryPeriodRange,
+    /** At most this many, the newest kept. Answered oldest first whatever the limit. */
+    limit: number,
   ): Promise<readonly SummarySourceRow[]>;
 
   /**

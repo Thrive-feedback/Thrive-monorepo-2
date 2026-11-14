@@ -28,7 +28,7 @@ const SECTION_ORDER = Object.keys(SECTION_TITLES) as SummarySectionName[];
  * cannot be. Nothing is cached: one person's summary must never be served to another, and reading
  * it is also what asks for a newer one when the one stored has fallen behind.
  */
-export async function readMyFeedbackSummary(
+async function readMyFeedbackSummary(
   membership: CurrentMembership,
 ): Promise<FeedbackSummary | null> {
   const { summary } = unwrap(

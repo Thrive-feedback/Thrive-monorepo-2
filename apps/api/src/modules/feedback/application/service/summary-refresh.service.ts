@@ -6,6 +6,20 @@ import { SUMMARY_REFRESH_TYPE } from '../adapter/feedback-summary-outbox.adapter
 import { summaryRefreshKey } from './summary-refresh-key.service';
 
 /**
+ * How many summaries one write may ask for.
+ *
+ * A piece of Feedback may name up to fifty Receivers, and each one's summary costs a model call —
+ * so one request could buy fifty of them, and nothing stops a caller repeating the request. The
+ * cap bounds what any single write can spend.
+ *
+ * **Nobody loses a summary to it.** This path is an optimisation: it warms a summary before the
+ * Member looks. The read path is the guarantee — opening the dashboard asks for one whenever what
+ * is stored has fallen behind — so a Receiver past the cap gets theirs written the moment they go
+ * looking for it, one generation later than the rest.
+ */
+const MAX_SUMMARIES_PER_WRITE = 10;
+
+/**
  * Asks for the summaries that something just written has made out of date.
  *
  * One place rather than three, because answering an Ask, offering Feedback and giving Kudos all
@@ -26,7 +40,8 @@ export class SummaryRefreshService {
    *
    * Keyed by the Member, the item that made their summary stale and the prompt that will write
    * it, so the read path's own request for the same item is the same key and costs nothing
-   * (ADR 0084).
+   * (ADR 0084). At most {@link MAX_SUMMARIES_PER_WRITE} are asked for here; the rest are the
+   * read path's to notice.
    */
   async askFor(details: {
     readonly workspaceId: string;
@@ -35,7 +50,7 @@ export class SummaryRefreshService {
   }): Promise<void> {
     const period = SummaryPeriod.containing(this.clock.now()).toString();
     await this.outbox.enqueue(
-      details.accountIds.map((accountId) => ({
+      details.accountIds.slice(0, MAX_SUMMARIES_PER_WRITE).map((accountId) => ({
         type: SUMMARY_REFRESH_TYPE,
         idempotencyKey: summaryRefreshKey(accountId, details.sourceId),
         payload: {

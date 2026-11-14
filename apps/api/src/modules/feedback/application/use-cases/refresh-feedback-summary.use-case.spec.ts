@@ -13,6 +13,7 @@ import { RefreshFeedbackSummaryUseCase } from './refresh-feedback-summary.use-ca
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-00000000000a';
 const ANN = 'account-ann';
+const FENCE_ID = '0199a0f0-0000-7000-8000-0000000000fe';
 const SUMMARY_ID = '0199a0f0-0000-7000-8000-0000000000s1';
 const PERIOD = '2026-Q4';
 const NOW = new Date('2026-11-08T09:00:00.000Z');
@@ -52,7 +53,7 @@ function setUp(sources: readonly SummarySourceRow[] = THREE_MESSAGES) {
     summaries,
     new SummaryPromptService(),
     completer,
-    new FakeIdGenerator(SUMMARY_ID),
+    new FakeIdGenerator(FENCE_ID, SUMMARY_ID),
     new FakeClock(NOW),
     new FakeUnitOfWork(),
   );
@@ -62,7 +63,7 @@ function setUp(sources: readonly SummarySourceRow[] = THREE_MESSAGES) {
       accountId: ANN,
       period: PERIOD,
     });
-  return { completer, summaries, refreshing };
+  return { completer, corpus, summaries, refreshing };
 }
 
 describe('writing a summary', () => {
@@ -159,7 +160,51 @@ describe('an answer that cannot be trusted', () => {
   });
 });
 
+describe('a corpus bigger than one generation may read', () => {
+  it('asks for the newest only, so a busy quarter cannot overflow the provider', async () => {
+    const { completer, corpus, refreshing } = setUp();
+    completer.answering(anAnswer());
+
+    await refreshing();
+
+    expect(corpus.limitsAsked).toEqual([200]);
+  });
+});
+
 describe('a model that ignores its instructions', () => {
+  it('drops a point that cites nothing, so nothing unprovable reaches a Member', async () => {
+    const { completer, summaries, refreshing } = setUp();
+    completer.answering(
+      anAnswer({
+        areas_to_improve: [
+          { point: 'Invented, and citing nothing', sources: [] },
+          { point: 'Grounded', sources: ['one'] },
+        ],
+      }),
+    );
+
+    await refreshing();
+
+    expect(summaries.only()?.sections.areas_to_improve).toEqual([
+      { point: 'Grounded', sources: [{ id: 'one', kind: 'FEEDBACK' }] },
+    ]);
+  });
+
+  it('keeps a suggested action that cites nothing, which is the one section allowed to', async () => {
+    const { completer, summaries, refreshing } = setUp();
+    completer.answering(
+      anAnswer({
+        suggested_actions: [{ point: 'Park the detail', sources: [] }],
+      }),
+    );
+
+    await refreshing();
+
+    expect(summaries.only()?.sections.suggested_actions).toEqual([
+      { point: 'Park the detail', sources: [] },
+    ]);
+  });
+
   it('cuts a section to its cap, so no provider can put sixteen points in front of a Member', async () => {
     const { completer, summaries, refreshing } = setUp();
     completer.answering(

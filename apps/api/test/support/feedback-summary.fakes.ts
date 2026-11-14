@@ -53,6 +53,8 @@ function keyOf(accountId: string, workspaceId: string, period: string): string {
 
 /** Holds one corpus, whatever period is asked for: a spec sets what the Member received. */
 export class FakeSummaryCorpusQuery extends SummaryCorpusQuery {
+  /** Every limit a caller asked for, so a spec can prove the corpus is bounded. */
+  readonly limitsAsked: number[] = [];
   private rows: readonly SummarySourceRow[] = [];
 
   with(...rows: readonly SummarySourceRow[]): this {
@@ -64,8 +66,10 @@ export class FakeSummaryCorpusQuery extends SummaryCorpusQuery {
     _workspaceId: string,
     _accountId: string,
     _within: SummaryPeriodRange,
+    limit: number,
   ): Promise<readonly SummarySourceRow[]> {
-    return this.rows;
+    this.limitsAsked.push(limit);
+    return this.rows.slice(-limit);
   }
 
   async freshnessOf(

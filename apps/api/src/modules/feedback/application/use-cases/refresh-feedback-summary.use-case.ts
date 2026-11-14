@@ -38,6 +38,17 @@ export const SUMMARY_SOURCE_FLOOR = 3;
  */
 const ATTEMPTS_PER_RUN = 1;
 
+/**
+ * How many messages one generation reads, newest first.
+ *
+ * The corpus was measured at 50 items (design 0025 §11); nothing kept it near that. Unbounded, a
+ * busy quarter builds a prompt past the provider's context window, which comes back as a `400` —
+ * correctly not retried — so that Member's summary would stop being written for the rest of the
+ * period and nobody would be told. Taking the newest is the right end to cut: a summary is about
+ * where somebody is now.
+ */
+const MAX_SOURCES = 200;
+
 export interface RefreshFeedbackSummaryInput {
   readonly workspaceId: string;
   readonly accountId: string;
@@ -82,6 +93,7 @@ export class RefreshFeedbackSummaryUseCase {
       input.workspaceId,
       input.accountId,
       period.range(),
+      MAX_SOURCES,
     );
 
     if (sources.length < SUMMARY_SOURCE_FLOOR) {
@@ -90,9 +102,13 @@ export class RefreshFeedbackSummaryUseCase {
       return;
     }
 
+    // Minted per generation, so no Giver can write a fence of their own and have a block of
+    // their invention read as a real message (see `SummaryPromptService`).
+    const fence = this.idGenerator.next().replaceAll('-', '');
+
     const written = await this.completer.complete({
-      system: this.prompt.system(),
-      prompt: this.prompt.corpus(sources),
+      system: this.prompt.system(fence),
+      prompt: this.prompt.corpus(sources, fence),
       answerSchema: summaryAnswerSchema(),
       maxAnswerTokens: SUMMARY_MAX_ANSWER_TOKENS,
       maxAttempts: ATTEMPTS_PER_RUN,

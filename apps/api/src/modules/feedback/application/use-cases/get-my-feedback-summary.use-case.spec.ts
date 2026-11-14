@@ -19,6 +19,7 @@ import { RefreshFeedbackSummaryUseCase } from './refresh-feedback-summary.use-ca
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-00000000000a';
 const ANN = 'account-ann';
+const FENCE_ID = '0199a0f0-0000-7000-8000-0000000000fe';
 const SUMMARY_ID = '0199a0f0-0000-7000-8000-0000000000s1';
 const NOW = new Date('2026-11-08T09:00:00.000Z');
 /** The quarter `NOW` falls in, which is what the route reads when nobody names one. */
@@ -55,7 +56,8 @@ function setUp(sources: readonly SummarySourceRow[] = THREE_MESSAGES) {
     summaries,
     new SummaryPromptService(),
     completer,
-    new FakeIdGenerator(SUMMARY_ID),
+    // Two per generation: the corpus fence, then the summary's own id.
+    new FakeIdGenerator(FENCE_ID, SUMMARY_ID, FENCE_ID, SUMMARY_ID),
     new FakeClock(NOW),
     new FakeUnitOfWork(),
   );
