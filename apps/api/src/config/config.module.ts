@@ -8,8 +8,10 @@ import {
   type Configuration,
   DatabaseConfig,
   EmailConfig,
+  FeatureFlagsConfig,
   HttpConfig,
   loadConfiguration,
+  UiShowcaseConfig,
   WebConfig,
 } from './configuration';
 
@@ -57,6 +59,16 @@ import {
       useFactory: (config: Configuration) => config.web,
       inject: [CONFIGURATION],
     },
+    {
+      provide: FeatureFlagsConfig,
+      useFactory: (config: Configuration) => config.featureFlags,
+      inject: [CONFIGURATION],
+    },
+    {
+      provide: UiShowcaseConfig,
+      useFactory: (config: Configuration) => config.uiShowcase,
+      inject: [CONFIGURATION],
+    },
   ],
   exports: [
     HttpConfig,
@@ -66,6 +78,8 @@ import {
     ChatConfig,
     AI_SETTING,
     WebConfig,
+    FeatureFlagsConfig,
+    UiShowcaseConfig,
   ],
 })
 export class ConfigModule {}

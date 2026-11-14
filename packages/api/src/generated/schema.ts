@@ -824,6 +824,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/feature-flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read what this deployment has switched on */
+        get: operations["FeatureFlagsController_getFeatureFlags"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ui-showcase-access/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read whether I may open the UI showcase */
+        get: operations["UiShowcaseAccessController_getMine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2396,6 +2430,13 @@ export interface components {
         CreateWorkspaceGoalResponseDto_Output: {
             /** Format: uuid */
             id: string;
+        };
+        GetFeatureFlagsResponseDto_Output: {
+            /** @enum {string} */
+            USER_DASHBOARD_FLAG: "true" | "false";
+        };
+        GetMyUiShowcaseAccessResponseDto_Output: {
+            isAllowed: boolean;
         };
     };
     responses: never;
@@ -4750,6 +4791,54 @@ export interface operations {
             };
             /** @description WORKSPACE_GOAL_ALREADY_ACTIVE */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeatureFlagsController_getFeatureFlags: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetFeatureFlagsResponseDto_Output"];
+                };
+            };
+        };
+    };
+    UiShowcaseAccessController_getMine: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetMyUiShowcaseAccessResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
