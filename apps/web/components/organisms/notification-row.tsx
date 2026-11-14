@@ -3,7 +3,11 @@ import { DropdownMenuItem } from '@/components/atoms/dropdown-menu';
 import { Skeleton } from '@/components/atoms/skeleton';
 import { Text } from '@/components/atoms/text';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
-import { FEED_CARD_FILL } from '@/components/organisms/feed-card/feed-card-tone.constant';
+import {
+  FEED_CARD_FILL,
+  FEED_CARD_HALO,
+  FEED_CARD_HIGHLIGHT,
+} from '@/components/organisms/feed-card/feed-card-tone.constant';
 import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-tone.type';
 import { cn } from '@/lib/cn.util';
 import type {
@@ -16,7 +20,10 @@ import { timeAgo } from '@/lib/time-ago.util';
 /**
  * The kind of card each line leads to, as its colour: the cool one for anything asked or answered,
  * the brand's for Feedback written to the person or shared with them, which is only ever Feedback
- * given unasked, and the warm one for a Kudos. The unread dot takes it, so a dot and the card it opens match.
+ * given unasked, and the warm one for a Kudos. Every line's dot takes it, so a dot and the card it
+ * opens match; an unread line's dot also wears a ring of it, and a line pointed at or focused is
+ * tinted with it. The tint is too faint to show focus alone: the keyboard's line also keeps the
+ * app's focus ring.
  */
 const NOTIFICATION_TONES: Readonly<Record<NotificationType, FeedCardTone>> = {
   ASK_RECEIVED: 'tertiary',
@@ -37,8 +44,8 @@ export type NotificationRowProps = {
  * how long ago.
  *
  * It is a link rather than a button, so it opens in a new tab on a middle click and reads as a
- * link to a screen reader. Unread is said in words as well as drawn as a dot, because a colour
- * says nothing to somebody who cannot see it. The face is hidden from screen readers, because the
+ * link to a screen reader. Unread is said in words as well as drawn as a ring round the dot,
+ * because a ring says nothing to somebody who cannot see it. The face is hidden from screen readers, because the
  * sentence already names the person.
  */
 export function NotificationRow({
@@ -46,17 +53,22 @@ export function NotificationRow({
   onOpen,
 }: NotificationRowProps) {
   const { actor, sentence, destination } = notificationLine(notification);
+  const tone = NOTIFICATION_TONES[notification.type];
 
   return (
-    <DropdownMenuItem asChild onSelect={() => onOpen(notification)}>
+    <DropdownMenuItem
+      asChild
+      // The item's own merge, so this replaces its one highlight rather than racing it in CSS.
+      className={FEED_CARD_HIGHLIGHT[tone]}
+      onSelect={() => onOpen(notification)}
+    >
       <NextLink href={destination} className="items-start gap-2">
         <span
           aria-hidden="true"
           className={cn(
             'mt-2 size-2 shrink-0 rounded-full',
-            notification.isRead
-              ? 'bg-transparent'
-              : FEED_CARD_FILL[NOTIFICATION_TONES[notification.type]],
+            FEED_CARD_FILL[tone],
+            !notification.isRead && FEED_CARD_HALO[tone],
           )}
         />
         <PhotoAvatar

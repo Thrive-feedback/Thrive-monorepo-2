@@ -38,6 +38,26 @@ export const FEED_CARD_FILL: Readonly<Record<FeedCardTone, string>> = {
   secondary: 'bg-action-secondary',
 };
 
+/**
+ * Each kind's colour as the ground of a line while it is pointed at or focused, in place of a
+ * menu's one highlight, so a line reads as the kind of thing it opens before it is pressed.
+ */
+export const FEED_CARD_HIGHLIGHT: Readonly<Record<FeedCardTone, string>> = {
+  primary: 'data-highlighted:bg-action-primary-surface-hover',
+  tertiary: 'data-highlighted:bg-action-tertiary-surface-hover',
+  secondary: 'data-highlighted:bg-action-secondary-surface-hover',
+};
+
+/**
+ * Each kind's colour as a ring drawn around a mark, a gap away from it, for a mark that is waiting
+ * on somebody: an unread line's dot. An outline, so the gap stays clear on any background.
+ */
+export const FEED_CARD_HALO: Readonly<Record<FeedCardTone, string>> = {
+  primary: 'outline-2 outline-offset-2 outline-action-primary',
+  tertiary: 'outline-2 outline-offset-2 outline-action-tertiary',
+  secondary: 'outline-2 outline-offset-2 outline-action-secondary',
+};
+
 /** The edge of each kind of card where it is drawn as an outline, as in an empty list. */
 export const FEED_CARD_EDGE: Readonly<Record<FeedCardTone, string>> = {
   primary: 'border-action-primary-border',
