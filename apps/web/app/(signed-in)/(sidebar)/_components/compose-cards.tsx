@@ -65,6 +65,8 @@ export type ComposeCardsProps = {
   /** The Workspace's active Workspace Goals, by name, offered on `#`. */
   workspaceGoals: readonly string[];
   writer: PostcardWriter;
+  /** Who a postcard is for, or who is asked, as it opens, such as the teammate it was opened from. */
+  defaultRecipientAccountIds?: readonly string[];
   /** What is already written as a card opens, as typed before choosing it. */
   defaultMessage?: string;
   /** A card went, and is out of the way. */
@@ -83,6 +85,7 @@ export const ComposeCards = memo(function ComposeCards({
   teammates,
   workspaceGoals,
   writer,
+  defaultRecipientAccountIds,
   defaultMessage,
   onSent,
   onCloseAutoFocus,
@@ -97,6 +100,7 @@ export const ComposeCards = memo(function ComposeCards({
           writer={writer}
           card={cards.postcard}
           title={COMPOSE_CHOICE_TITLES[cards.postcard]}
+          defaultRecipientAccountIds={defaultRecipientAccountIds}
           defaultMessage={defaultMessage}
           open={cards.isPostcardOpen}
           onOpenChange={cards.setIsPostcardOpen}

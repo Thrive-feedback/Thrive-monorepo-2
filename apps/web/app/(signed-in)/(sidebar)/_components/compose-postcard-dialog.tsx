@@ -52,6 +52,8 @@ export type ComposePostcardDialogProps = {
   writer: PostcardWriter;
   card: ComposeCard;
   title: string;
+  /** Who it is for, or who is asked, as it opens, such as the teammate it was opened from. */
+  defaultRecipientAccountIds?: readonly string[];
   /** What is already written as it opens, as typed before choosing this card. */
   defaultMessage?: string;
   open: boolean;
@@ -72,6 +74,7 @@ export function ComposePostcardDialog({
   writer,
   card,
   title,
+  defaultRecipientAccountIds,
   defaultMessage,
   open,
   onOpenChange,
@@ -108,6 +111,7 @@ export function ComposePostcardDialog({
       teammates={teammates}
       workspaceGoals={workspaceGoals}
       writer={writer}
+      defaultRecipientAccountIds={defaultRecipientAccountIds}
       defaultMessage={defaultMessage}
       open={open}
       onOpenChange={handleOpenChange}

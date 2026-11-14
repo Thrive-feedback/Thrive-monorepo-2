@@ -14,7 +14,9 @@ vi.mock('next/headers', () => ({
   headers: async () => new Headers({ cookie: 'thrive.session_token=abc' }),
 }));
 
-const { readTeammates } = await import('./teammates.service');
+const { readTeammates, readWorkspaceMembers } = await import(
+  './teammates.service'
+);
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
 const MEMBERSHIP = {
@@ -76,5 +78,23 @@ describe('reading who can be asked for Feedback', () => {
     ]);
 
     expect(await readTeammates(MEMBERSHIP, 'ann@acme.test')).toEqual([]);
+  });
+});
+
+describe('reading everyone in the Workspace', () => {
+  it('lists every Member, the person reading included', async () => {
+    apiHolds([
+      { accountId: 'account-ann', email: 'ann@acme.test', fullName: 'Ann Lee' },
+      {
+        accountId: 'account-ben',
+        email: 'ben@acme.test',
+        fullName: 'Ben Carter',
+      },
+    ]);
+
+    expect(await readWorkspaceMembers(MEMBERSHIP)).toEqual([
+      { accountId: 'account-ann', name: 'Ann Lee', email: 'ann@acme.test' },
+      { accountId: 'account-ben', name: 'Ben Carter', email: 'ben@acme.test' },
+    ]);
   });
 });

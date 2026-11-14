@@ -20,10 +20,9 @@ export type SidebarNavProps = {
 };
 
 /**
- * Where to go from Home; items with no address are drawn where they will be and lead nowhere
- * yet. In Settings, below `xl`, it folds to its icons beside Settings' own menu. It reads the path
- * itself because the layout around it does not run again when the client navigates between the
- * pages under it.
+ * Where to go from Home. In Settings, below `xl`, it folds to its icons beside Settings' own menu.
+ * It reads the path itself because the layout around it does not run again when the client
+ * navigates between the pages under it.
  */
 export function SidebarNav({ waitingCount }: SidebarNavProps) {
   const pathname = usePathname();
@@ -36,7 +35,7 @@ export function SidebarNav({ waitingCount }: SidebarNavProps) {
       Icon: ClockIcon,
       count: waitingCount,
     },
-    { label: 'Teammates', Icon: UsersIcon },
+    { href: ROUTES.teammates, label: 'Teammates', Icon: UsersIcon },
     { heading: 'My Feedback' },
     { href: ROUTES.dashboard, label: 'Your dashboard', Icon: SparklesIcon },
     { href: ROUTES.received, label: 'Received', Icon: InboxIcon },

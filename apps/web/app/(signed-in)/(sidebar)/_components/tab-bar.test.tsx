@@ -37,7 +37,7 @@ function draw(path: string = ROUTES.home, waitingCount = 0) {
 }
 
 describe('TabBar', () => {
-  it('lists Home, the Kudos board, "+", Waiting for me and My Feedback, in that order', () => {
+  it('lists Home, the Kudos board, "+", Waiting for me and More, in that order', () => {
     const nav = draw();
 
     expect(
@@ -55,7 +55,7 @@ describe('TabBar', () => {
       'Kudos board',
       'Write something',
       'Waiting for me',
-      'My Feedback',
+      'More',
     ]);
     expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute(
       'href',
@@ -77,7 +77,7 @@ describe('TabBar', () => {
     ).toBeVisible();
   });
 
-  it('marks the page that is open, and My Feedback on Received or Given', () => {
+  it('marks the page that is open, and More only on a page it opens', () => {
     const nav = draw(ROUTES.kudos);
 
     expect(
@@ -87,27 +87,49 @@ describe('TabBar', () => {
       'aria-current',
     );
     expect(
-      within(nav).getByRole('button', { name: 'My Feedback' }),
+      within(nav).getByRole('button', { name: 'More' }),
     ).not.toHaveAttribute('aria-current');
   });
 
-  it('opens Received and Given from My Feedback, marking the one open', async () => {
+  it('opens Teammates, then My Feedback’s Your dashboard, Received and Given, from More', async () => {
     const user = userEvent.setup();
-    const nav = draw(ROUTES.given);
-    const myFeedback = within(nav).getByRole('button', { name: 'My Feedback' });
+    const nav = draw(ROUTES.home);
 
-    expect(myFeedback).toHaveAttribute('aria-current', 'page');
-
-    await user.click(myFeedback);
+    await user.click(within(nav).getByRole('button', { name: 'More' }));
 
     const menu = screen.getByRole('menu');
     expect(
-      within(menu).getByRole('menuitem', { name: 'Received' }),
-    ).toHaveAttribute('href', ROUTES.received);
-    expect(
-      within(menu).getByRole('menuitem', { name: 'Given' }),
-    ).toHaveAttribute('aria-current', 'page');
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((item) => [item.textContent, item.getAttribute('href')]),
+    ).toEqual([
+      ['Teammates', ROUTES.teammates],
+      ['Your dashboard', ROUTES.dashboard],
+      ['Received', ROUTES.received],
+      ['Given', ROUTES.given],
+    ]);
+    expect(within(menu).getByText('My Feedback')).toBeVisible();
   });
+
+  it.each([ROUTES.teammates, ROUTES.dashboard, ROUTES.received, ROUTES.given])(
+    'marks More, and the page in its menu, on %s',
+    async (path) => {
+      const user = userEvent.setup();
+      const nav = draw(path);
+      const more = within(nav).getByRole('button', { name: 'More' });
+
+      expect(more).toHaveAttribute('aria-current', 'page');
+
+      await user.click(more);
+
+      expect(
+        within(screen.getByRole('menu'))
+          .getAllByRole('menuitem')
+          .filter((item) => item.getAttribute('aria-current') === 'page')
+          .map((item) => item.getAttribute('href')),
+      ).toEqual([path]);
+    },
+  );
 
   it('offers the three things to write from "+"', async () => {
     const user = userEvent.setup();

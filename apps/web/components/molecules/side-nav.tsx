@@ -10,8 +10,8 @@ import {
 import { cn } from '@/lib/cn.util';
 
 export type SideNavItem = {
-  /** Where it leads. Without one the item is drawn the same, but leads nowhere yet. */
-  readonly href?: string;
+  /** Where it leads. */
+  readonly href: string;
   readonly label: string;
   readonly Icon: LucideIcon;
   /** How many things wait behind the item, shown beside its label. Nothing shows at zero. */
@@ -51,9 +51,6 @@ export type SideNavProps = {
  * light primary colour. An item's children hang under it like a code editor's file tree: a line
  * runs down from under its icon and curves into each child, ending at the last. They are always
  * shown; nothing folds. On a narrow screen the links grow taller, to tap.
- *
- * An item with no `href` is a page still to be built: it looks like the rest so the column reads
- * as it will, but it is a button marked unavailable, so nothing pretends to lead somewhere.
  */
 export function SideNav({
   label,
@@ -176,24 +173,15 @@ function SideNavLink({
     </>
   );
 
-  const link =
-    href === undefined ? (
-      <button
-        type="button"
-        aria-disabled="true"
-        className={sideNavLink({ foldsToIcons })}
-      >
-        {content}
-      </button>
-    ) : (
-      <NextLink
-        href={href}
-        aria-current={href === currentHref ? 'page' : undefined}
-        className={sideNavLink({ foldsToIcons })}
-      >
-        {content}
-      </NextLink>
-    );
+  const link = (
+    <NextLink
+      href={href}
+      aria-current={href === currentHref ? 'page' : undefined}
+      className={sideNavLink({ foldsToIcons })}
+    >
+      {content}
+    </NextLink>
+  );
 
   if (!foldsToIcons) {
     return link;
