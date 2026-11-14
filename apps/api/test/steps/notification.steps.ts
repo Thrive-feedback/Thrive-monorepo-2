@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { Then, When } from '@cucumber/cucumber';
+import { defineParameterType, Then, When } from '@cucumber/cucumber';
 import { drainOutbox } from '../support/drain-outbox';
 import type { ApiResponse, ThriveWorld } from '../support/world';
 
@@ -48,6 +48,32 @@ async function toldOf(world: ThriveWorld, name: string, type: string) {
   );
   return read.body.items.find((item: { type: string }) => item.type === type);
 }
+
+/** Which line a step means, in the words a person would use for it. */
+defineParameterType({
+  name: 'toldAbout',
+  regexp:
+    /being asked|the answer|the Feedback written to them|the Feedback shared with them/,
+  transformer: (said: string) =>
+    ({
+      'being asked': 'ASK_RECEIVED',
+      'the answer': 'ASK_ANSWERED',
+      'the Feedback written to them': 'FEEDBACK_RECEIVED',
+      'the Feedback shared with them': 'FEEDBACK_SHARED',
+    })[said],
+});
+
+/** Who a line says can read what it leads to, as the bell says it. */
+defineParameterType({
+  name: 'audience',
+  regexp: /everyone in the Workspace|selected people|only the people it is for/,
+  transformer: (said: string) =>
+    ({
+      'everyone in the Workspace': 'EVERYONE',
+      'selected people': 'SELECTED_PEOPLE',
+      'only the people it is for': 'ONLY_ME',
+    })[said],
+});
 
 When(
   '{person} looks at what they have been told',
@@ -171,5 +197,26 @@ When(
       'GET',
       `/v1/workspaces/${this.workspaceOf(owner)}/notifications`,
     );
+  },
+);
+
+Then(
+  "{person}'s line about {toldAbout} says {audience} can read it",
+  async function (
+    this: ThriveWorld,
+    name: string,
+    type: string,
+    audience: string,
+  ) {
+    const told = await toldOf(this, name, type);
+    assert.equal(told.audience, audience);
+  },
+);
+
+Then(
+  "{person}'s line about {toldAbout} says nothing of who can read it",
+  async function (this: ThriveWorld, name: string, type: string) {
+    const told = await toldOf(this, name, type);
+    assert.equal(told.audience, null);
   },
 );

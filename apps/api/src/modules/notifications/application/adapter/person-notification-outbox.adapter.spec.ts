@@ -45,6 +45,56 @@ describe('draining a notification', () => {
     expect(personNotifier.asksReceived[0]?.giverAccountIds).toEqual([BEN]);
   });
 
+  it('passes on who can read what the line names', async () => {
+    const { handler, personNotifier } = setUp();
+
+    await handler.handle(
+      message(ASK_ANSWERED_TYPE, {
+        workspaceId: WORKSPACE,
+        actorAccountId: BEN,
+        audience: 'SELECTED_PEOPLE',
+        requesterAccountId: ANN,
+        feedbackRequestId: 'request-1',
+      }),
+    );
+
+    expect(personNotifier.asksAnswered[0]?.audience).toBe('SELECTED_PEOPLE');
+  });
+
+  it('still drains a message enqueued before the audience was sent', async () => {
+    const { handler, personNotifier } = setUp();
+
+    await handler.handle(
+      message(ASK_ANSWERED_TYPE, {
+        workspaceId: WORKSPACE,
+        actorAccountId: BEN,
+        requesterAccountId: ANN,
+        feedbackRequestId: 'request-1',
+      }),
+    );
+
+    expect(personNotifier.asksAnswered).toHaveLength(1);
+    expect(personNotifier.asksAnswered[0]?.audience).toBeUndefined();
+  });
+
+  it('still tells somebody when the audience is one it does not know, without one', async () => {
+    const { handler, personNotifier } = setUp();
+
+    await handler.handle(
+      message(ASK_ANSWERED_TYPE, {
+        workspaceId: WORKSPACE,
+        actorAccountId: BEN,
+        audience: 'FRIENDS_OF_FRIENDS',
+        requesterAccountId: ANN,
+        feedbackRequestId: 'request-1',
+      }),
+    );
+
+    // An icon is not worth losing the notification over; the line is recorded without one.
+    expect(personNotifier.asksAnswered).toHaveLength(1);
+    expect(personNotifier.asksAnswered[0]?.audience).toBeUndefined();
+  });
+
   it('tells the Requester their request was answered', async () => {
     const { handler, personNotifier } = setUp();
 

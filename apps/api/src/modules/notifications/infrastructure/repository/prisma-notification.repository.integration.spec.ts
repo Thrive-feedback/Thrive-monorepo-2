@@ -4,6 +4,7 @@ import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { UuidIdGenerator } from '@app/infrastructure/uuid-id-generator.adapter';
 import type { NotificationToRecord } from '../../domain/repository/notification-repository.port';
+import type { NotificationAudience } from '../../domain/value-object/notification-audience.vo';
 import type { NotificationTypeValue } from '../../domain/value-object/notification-type.vo';
 import { PrismaNotificationQuery } from '../query/prisma-notification.query';
 import { PrismaNotificationRepository } from './prisma-notification.repository';
@@ -49,6 +50,7 @@ function aNotification(
     type: NotificationTypeValue;
     actorAccountId: string;
     subjectId: string;
+    audience: NotificationAudience | null;
   }> = {},
 ): NotificationToRecord {
   return {
@@ -60,6 +62,7 @@ function aNotification(
     // Derived per row unless a test says otherwise, so two tests cannot collide on the
     // idempotency index and leave a `recordAll` quietly writing nothing.
     subjectId: idGenerator.next(),
+    audience: null,
     ...overrides,
   };
 }
@@ -146,6 +149,27 @@ describe('recording what Members are told', () => {
     expect(line?.subjectId).toBe(written.subjectId);
     expect(line?.readAt).toBeNull();
     expect(line?.createdAt).toBeInstanceOf(Date);
+  });
+
+  it('reads back who can read what it names, as it was recorded', async () => {
+    const workspaceId = aWorkspace();
+    const ann = anAccount();
+    const written = aNotification(workspaceId, ann, { audience: 'EVERYONE' });
+
+    await repository.recordAll([written]);
+
+    const [line] = (await query.forRecipient(workspaceId, ann, ONE_PAGE)).items;
+    expect(line?.audience).toBe('EVERYONE');
+  });
+
+  it('reads a row recorded without an audience as having none', async () => {
+    const workspaceId = aWorkspace();
+    const ann = anAccount();
+
+    await repository.recordAll([aNotification(workspaceId, ann)]);
+
+    const [line] = (await query.forRecipient(workspaceId, ann, ONE_PAGE)).items;
+    expect(line?.audience).toBeNull();
   });
 
   it('writes nothing, and asks nothing, when an event has no recipients left', async () => {

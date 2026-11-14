@@ -12,6 +12,7 @@ import {
 } from '../../domain/value-object/postcard.vo';
 import { isEveryone } from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
+import { toNotificationAudience } from '../service/notification-audience.mapper';
 import { SummaryRefreshService } from '../service/summary-refresh.service';
 import { TagsService } from '../service/tags.service';
 
@@ -98,6 +99,7 @@ export class AnswerFeedbackAskUseCase {
           payload: {
             workspaceId: input.workspaceId,
             actorAccountId: input.giverAccountId,
+            audience: toNotificationAudience(written.visibility),
             requesterAccountId: asked.requesterAccountId,
             feedbackRequestId: asked.id,
           },

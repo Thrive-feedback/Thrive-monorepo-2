@@ -10,4 +10,5 @@ export {
   type FeedbackWritten,
   PersonNotifierPort,
 } from './application/port/person-notifier.port';
+export type { NotificationAudience } from './domain/value-object/notification-audience.vo';
 export { NotificationsModule } from './notifications.module';

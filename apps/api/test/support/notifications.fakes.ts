@@ -348,6 +348,7 @@ export function aNotificationRecord(
     type: 'ASK_RECEIVED',
     actorAccountId: 'account-ben',
     subjectId: '0199a0f0-0000-7000-8000-0000000000s1',
+    audience: null,
     ...overrides,
   };
 }
@@ -363,6 +364,7 @@ export function aNotificationRow(
     subjectId: '0199a0f0-0000-7000-8000-0000000000s1',
     createdAt: new Date('2026-10-24T03:00:00.000Z'),
     readAt: null,
+    audience: null,
     ...overrides,
   };
 }

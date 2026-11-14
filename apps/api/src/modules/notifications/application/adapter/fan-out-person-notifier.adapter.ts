@@ -9,6 +9,7 @@ import {
   type AskAnswered,
   type AskReceived,
   type FeedbackWritten,
+  type PersonEvent,
   PersonNotifierPort,
 } from '../port/person-notifier.port';
 import { NotificationRecipients } from '../service/notification-recipients.service';
@@ -136,13 +137,13 @@ export class FanOutPersonNotifier extends PersonNotifierPort {
    * worth removing if a third channel arrives.
    */
   private async fanOut(
-    event: { readonly workspaceId: string; readonly actorAccountId: string },
+    event: PersonEvent,
     told: readonly Told[],
     deliverToChat: () => Promise<void>,
   ): Promise<void> {
     // The row first, and its failure reaches the relay: it is the floor under everything, and
     // retrying it is free.
-    await this.record(event.workspaceId, event.actorAccountId, told);
+    await this.record(event, told);
     // The chat message second, and still swallowed: it cannot be unsent, so a retry doubles it
     // rather than repairing it. `ChatPersonNotifier` already logs what it skipped and why.
     await deliverToChat().catch(() => {
@@ -151,8 +152,7 @@ export class FanOutPersonNotifier extends PersonNotifierPort {
   }
 
   private async record(
-    workspaceId: string,
-    actorAccountId: string,
+    event: PersonEvent,
     told: readonly Told[],
   ): Promise<void> {
     if (told.length === 0) {
@@ -160,11 +160,12 @@ export class FanOutPersonNotifier extends PersonNotifierPort {
     }
     const rows: NotificationToRecord[] = told.map((one) => ({
       id: this.idGenerator.next(),
-      workspaceId,
+      workspaceId: event.workspaceId,
       recipientAccountId: one.recipientAccountId,
       type: one.type,
-      actorAccountId,
+      actorAccountId: event.actorAccountId,
       subjectId: one.subjectId,
+      audience: event.audience ?? null,
     }));
     // One statement for the whole fan-out: five people asked is one round trip, not five.
     // A failure is not caught here — the relay records the attempt and tries again, which is

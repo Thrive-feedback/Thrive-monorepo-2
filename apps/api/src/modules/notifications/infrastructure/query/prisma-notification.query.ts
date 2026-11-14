@@ -6,6 +6,7 @@ import type {
   NotificationRowPage,
   PageRequest,
 } from '../../application/types/notification.types';
+import { storedAudience } from '../../domain/value-object/notification-audience.vo';
 import { NOTIFICATION_TYPES } from '../../domain/value-object/notification-type.vo';
 
 /** The columns a bell line needs. The Workspace and the recipient are not among them. */
@@ -16,6 +17,7 @@ const ROW_FIELDS = {
   subjectId: true,
   createdAt: true,
   readAt: true,
+  audience: true,
 } as const;
 
 /** Reads through `client`, so a read inside a unit of work joins its transaction. */
@@ -48,7 +50,12 @@ export class PrismaNotificationQuery extends NotificationQuery {
     // The column is text, as every value this application keys a map by is stored; only rows
     // this release knows how to draw are answered, so a type written by a later one reads as
     // nothing rather than as a line the bell has no sentence for.
-    return { items: rows.filter(isKnownType), total };
+    return {
+      items: rows
+        .map((row) => ({ ...row, audience: storedAudience(row.audience) }))
+        .filter(isKnownType),
+      total,
+    };
   }
 
   async unreadCountFor(

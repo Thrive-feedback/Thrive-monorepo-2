@@ -540,9 +540,9 @@ model LinkedAccount {
 }
 
 /// One thing one Member is told about, inside Thrive (glossary: Notification). It is a pointer,
-/// never a copy: it names who did something and which Ask, Feedback Request or Feedback it
-/// concerns, and carries none of the words — following it, behind a sign-in, is how those are
-/// read (design 0022 D3).
+/// not a copy of what it names: it names who did something and which Ask, Feedback Request or
+/// Feedback it concerns, keeps who can read that subject (design 0022 D16), and carries none of
+/// the words — following it, behind a sign-in, is how those are read (design 0022 D3).
 ///
 /// Written after the thing it is about has committed, in this module's own transaction: a
 /// cross-module transaction is forbidden, so a crash in between loses it. That is accepted and
@@ -565,6 +565,11 @@ model Notification {
   subjectId          String
   /// Null until the Member opens it or marks everything read. The unread count counts these.
   readAt             DateTime?
+  /// Who can read what it names, as fixed when it was written: ONLY_ME, SELECTED_PEOPLE or
+  /// EVERYONE. Null when the person told may not know it — an Ask's Giver, unless the answer goes
+  /// on the Workspace feed — and on rows written before it was recorded. The bell then draws no
+  /// icon (design 0022 D16).
+  audience           String?
   createdAt          DateTime  @default(now())
 
   /// One line per person per thing: a retried or double-submitted write cannot make two.
