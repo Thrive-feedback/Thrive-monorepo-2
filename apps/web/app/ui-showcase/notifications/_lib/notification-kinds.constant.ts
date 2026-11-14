@@ -4,6 +4,16 @@ import type {
   NotificationType,
 } from '@/lib/notifications/notification.type';
 
+/** The screen a bell line lands on, named in the words that screen itself uses. */
+export type NotificationLanding = {
+  /** The page's title, as the sidebar names it. */
+  readonly page: string;
+  /** The choice of the page's filter it opens on, or null for a page with none to show. */
+  readonly showing: string | null;
+  /** What opens over the page, or null when the page itself is the answer. */
+  readonly overIt: string | null;
+};
+
 /** What one kind of notification is for, in words a person new to Thrive can follow. */
 export type NotificationKind = {
   readonly title: string;
@@ -12,12 +22,21 @@ export type NotificationKind = {
   readonly whoIsTold: string;
   /** The page pressing the bell line lands on, said rather than shown as a path. */
   readonly opens: string;
+  /** The same page, as parts the showcase can draw. */
+  readonly landsOn: NotificationLanding;
   /**
    * What the Discord direct message says, for a Member who linked Discord. Written as a
    * description because the message itself is composed by the API, which the web app cannot
    * import.
    */
   readonly inChat: string;
+};
+
+/** Home on its first filter, with the one piece of Feedback the line names open over it. */
+const HOME_WITH_FEEDBACK_OVER_IT: NotificationLanding = {
+  page: 'Home',
+  showing: 'All Feedback',
+  overIt: 'That Feedback',
 };
 
 /**
@@ -34,6 +53,11 @@ export const NOTIFICATION_KINDS: Readonly<
       'Each Giver on the request, once each. Every Giver gets their own Ask.',
     opens:
       'Waiting for me, with that Ask open on the postcard it is answered on.',
+    landsOn: {
+      page: 'Waiting for me',
+      showing: null,
+      overIt: 'The Ask, on the postcard it is answered on',
+    },
     inChat:
       'Who asked, in which Workspace, the request itself quoted on one line (cut at 120 characters), and a link to the Ask.',
   },
@@ -44,6 +68,7 @@ export const NOTIFICATION_KINDS: Readonly<
       'The Requester, and nobody else. The other Givers on the same request are not told.',
     opens:
       'Received, showing My requests. A request has no page of its own, so the line opens the list it is on.',
+    landsOn: { page: 'Received', showing: 'My requests', overIt: null },
     inChat:
       'Who answered and in which Workspace, with a link to My requests. Nothing of the answer itself.',
   },
@@ -52,6 +77,7 @@ export const NOTIFICATION_KINDS: Readonly<
     when: 'Somebody offers Feedback and names this person as a Receiver.',
     whoIsTold: 'Each Receiver, once each.',
     opens: 'Home, with that Feedback open over it.',
+    landsOn: HOME_WITH_FEEDBACK_OVER_IT,
     inChat:
       'Who wrote it and in which Workspace, with a link to the Feedback. None of its words.',
   },
@@ -61,8 +87,19 @@ export const NOTIFICATION_KINDS: Readonly<
     whoIsTold:
       'Each person picked who is not also a Receiver. A Receiver who was also picked is told once, as a Receiver.',
     opens: 'Home, with that Feedback open over it.',
+    landsOn: HOME_WITH_FEEDBACK_OVER_IT,
     inChat:
       'Who shared it and in which Workspace, with a link to the Feedback. None of its words.',
+  },
+  KUDOS_RECEIVED: {
+    title: 'Kudos given to you',
+    when: 'Somebody gives Kudos that @mentions this person. A Kudos naming nobody is for the whole Workspace and tells nobody.',
+    whoIsTold: 'Each person the Kudos mentions, once each.',
+    opens:
+      'Received, showing Kudos. A Kudos has no page of its own, so the line opens the list it is on.',
+    landsOn: { page: 'Received', showing: 'Kudos', overIt: null },
+    inChat:
+      'Who gave it and in which Workspace, with a link to the Kudos given to you. None of its words; the Workspace channel is where those are posted.',
   },
 };
 
@@ -142,6 +179,16 @@ export const SAMPLE_NOTIFICATIONS: readonly BellNotification[] = [
     actorName: 'Ben Carter',
     actorPhotoUrl: null,
     subjectId: 'sample-feedback',
+    createdAt: AN_HOUR_AGO,
+    isRead: false,
+    audience: 'EVERYONE',
+  },
+  {
+    id: 'sample-kudos-received',
+    type: 'KUDOS_RECEIVED',
+    actorName: 'Mai Tanaka',
+    actorPhotoUrl: MAI_PHOTO,
+    subjectId: 'sample-kudos',
     createdAt: AN_HOUR_AGO,
     isRead: false,
     audience: 'EVERYONE',

@@ -85,6 +85,7 @@ describe('NotificationBell', () => {
       'Nut shared feedback with you',
       `/home?feedback=${SUBJECT}`,
     ],
+    ['KUDOS_RECEIVED', 'Nut gave you kudos', '/received?show=kudos'],
   ] as const)(
     'says "%s" and opens what it names',
     async (type, sentence, href) => {
@@ -163,6 +164,7 @@ describe('NotificationBell', () => {
     ['ASK_ANSWERED', /answered your request/, 'bg-action-tertiary'],
     ['FEEDBACK_RECEIVED', /wrote feedback to you/, 'bg-action-primary'],
     ['FEEDBACK_SHARED', /shared feedback with you/, 'bg-action-primary'],
+    ['KUDOS_RECEIVED', /gave you kudos/, 'bg-action-secondary'],
   ] as const)(
     'marks an unread %s line with a dot in the colour of the card it opens',
     async (type, name, fill) => {
@@ -187,12 +189,38 @@ describe('NotificationBell', () => {
     expect(line).not.toHaveTextContent('Visible to');
   });
 
+  it('leaves out a line of a kind it has no sentence for, and draws the rest', async () => {
+    // A kind a newer API or web server knows, handed to a bundle built before it. Read back
+    // through JSON, as it arrives, rather than cast to a kind it is not.
+    const unknown: BellNotification = JSON.parse(
+      JSON.stringify({
+        ...aNotification({ id: '0199ffff-0000-7000-8000-000000000009' }),
+        type: 'SOMETHING_LATER',
+      }),
+    );
+    listMyNotifications.mockResolvedValue([
+      unknown,
+      aNotification({ type: 'KUDOS_RECEIVED' }),
+    ]);
+
+    await openTheBell();
+
+    expect(
+      await screen.findByRole('menuitem', { name: /Nut gave you kudos/ }),
+    ).toBeInTheDocument();
+    const lines = screen
+      .getAllByRole('menuitem')
+      .filter((item) => item.textContent !== 'Mark all as read');
+    expect(lines).toHaveLength(1);
+  });
+
   it('says in words when there is nothing, rather than showing an empty box', async () => {
     listMyNotifications.mockResolvedValue([]);
 
     await openTheBell();
 
     expect(await screen.findByText('Nothing yet')).toBeInTheDocument();
+    expect(screen.getByText(/or gives you kudos/)).toBeInTheDocument();
     // Inside the menu, where ARIA allows no heading, and the page's outline gains none.
     expect(
       screen.queryByRole('heading', { name: 'Nothing yet' }),

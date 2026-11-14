@@ -25,6 +25,7 @@ const LINES: readonly (readonly [NotificationType, string, string])[] = [
     'Ploy shared feedback with you',
     `/home?feedback=${SUBJECT}`,
   ],
+  ['KUDOS_RECEIVED', 'Ploy gave you kudos', '/received?show=kudos'],
 ];
 
 describe('notificationLine', () => {

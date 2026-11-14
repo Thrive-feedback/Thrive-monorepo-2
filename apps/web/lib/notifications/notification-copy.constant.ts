@@ -22,7 +22,7 @@ type NotificationLineTemplate = {
  * the API has no business knowing. So the sentence lives here, beside `ROUTES`, and carries
  * none of what was written — a Notification is a pointer, not a copy.
  *
- * Exhaustive by construction: a fifth kind in the contract cannot be ignored here, because
+ * Exhaustive by construction: a new kind in the contract cannot be ignored here, because
  * this record would then be missing a key and would not compile.
  */
 export const NOTIFICATION_LINES: Readonly<
@@ -45,7 +45,24 @@ export const NOTIFICATION_LINES: Readonly<
     sentenceFor: (actor) => `${actor} shared feedback with you`,
     destinationFor: (subjectId) => ROUTES.homeFeedback(subjectId, 'all'),
   },
+  KUDOS_RECEIVED: {
+    sentenceFor: (actor) => `${actor} gave you kudos`,
+    // A Kudos has no address of its own, so the bell opens the Kudos given to the person.
+    destinationFor: () => ROUTES.receivedViewing(PERSONAL_VIEWS[0], 'kudos'),
+  },
 };
+
+/**
+ * Whether this build has a sentence for a kind. The contract fixes the kinds at build time, and
+ * every table here is keyed by them, so a kind added later fails to compile until it is given
+ * one. A running bundle can still be handed a kind it was built without — by an API deployed
+ * ahead of the web, or by a newer web server answering a tab opened before the deploy — so the
+ * bell checks with this where it draws, and leaves such a line out rather than drawing it without
+ * a sentence, which would take the page down with it.
+ */
+export function isDrawableKind(type: string): type is NotificationType {
+  return Object.hasOwn(NOTIFICATION_LINES, type);
+}
 
 /** One line, ready to draw: who it names, what it says and where it goes. */
 export type NotificationLine = {

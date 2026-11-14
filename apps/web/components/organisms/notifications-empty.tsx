@@ -11,7 +11,7 @@ export function NotificationsEmpty() {
       title="Nothing yet"
       // A paragraph, not a heading: it sits inside the bell's menu, which may hold no heading.
       titleAs="p"
-      description="When somebody asks you for feedback, answers you, or writes to you, it shows up here."
+      description="When somebody asks you for feedback, answers you, writes to you, or gives you kudos, it shows up here."
     />
   );
 }

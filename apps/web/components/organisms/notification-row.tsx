@@ -17,13 +17,14 @@ import { timeAgo } from '@/lib/time-ago.util';
 /**
  * The kind of card each line leads to, as its colour: the cool one for anything asked or answered,
  * the brand's for Feedback written to the person or shared with them, which is only ever Feedback
- * given unasked. The unread dot takes it, so a dot and the card it opens match.
+ * given unasked, and the warm one for a Kudos. The unread dot takes it, so a dot and the card it opens match.
  */
 const NOTIFICATION_TONES: Readonly<Record<NotificationType, FeedCardTone>> = {
   ASK_RECEIVED: 'tertiary',
   ASK_ANSWERED: 'tertiary',
   FEEDBACK_RECEIVED: 'primary',
   FEEDBACK_SHARED: 'primary',
+  KUDOS_RECEIVED: 'secondary',
 };
 
 /**
