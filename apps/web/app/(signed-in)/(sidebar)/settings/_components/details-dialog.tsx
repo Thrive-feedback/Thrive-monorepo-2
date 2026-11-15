@@ -30,11 +30,14 @@ export type DetailsDialogProps = {
    * is gone by then. Without it, focus would fall to the page.
    */
   returnFocusTo?: React.RefObject<HTMLElement | null>;
+  /** Where to go from the facts, such as a link to the thing itself, in the footer beside Close. */
+  children?: React.ReactNode;
 };
 
 /**
  * The facts about one thing in a Settings list that its row leaves out, so the row can say only
- * what it is and where it stands. Read only: it changes nothing, so its one way out is Close.
+ * what it is and where it stands. Read only: it changes nothing, so its way out is Close, with at
+ * most a way on from the facts beside it.
  */
 export function DetailsDialog({
   title,
@@ -43,6 +46,7 @@ export function DetailsDialog({
   open,
   onOpenChange,
   returnFocusTo,
+  children,
 }: DetailsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,6 +78,7 @@ export function DetailsDialog({
           <DialogClose asChild>
             <Button>Close</Button>
           </DialogClose>
+          {children}
         </DialogFooter>
       </DialogContent>
     </Dialog>

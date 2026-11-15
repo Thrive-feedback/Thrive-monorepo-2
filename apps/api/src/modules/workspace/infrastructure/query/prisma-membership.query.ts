@@ -2,6 +2,7 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { Injectable } from '@nestjs/common';
 import { MembershipQuery } from '../../application/query-port/membership.query-port';
 import type {
+  MemberStandingView,
   MemberStatus,
   MembershipPage,
   MembershipView,
@@ -9,6 +10,7 @@ import type {
   WorkspaceMemberPage,
 } from '../../application/types/membership.types';
 import {
+  toMemberStandingView,
   toMembershipView,
   toWorkspaceMemberView,
 } from '../mapper/membership.mapper';
@@ -49,6 +51,24 @@ export class PrismaMembershipQuery extends MembershipQuery {
       this.prismaTransactionContext.client.member.count({ where }),
     ]);
     return { items: members.map(toMembershipView), total };
+  }
+
+  async standingIn(
+    workspaceId: string,
+    accountId: string,
+  ): Promise<MemberStandingView | null> {
+    const member = await this.prismaTransactionContext.client.member.findUnique(
+      {
+        where: { workspaceId_userId: { workspaceId, userId: accountId } },
+        select: {
+          userId: true,
+          role: true,
+          createdAt: true,
+          deactivatedAt: true,
+        },
+      },
+    );
+    return member ? toMemberStandingView(member) : null;
   }
 
   async membershipInWorkspace(
@@ -115,7 +135,7 @@ export class PrismaMembershipQuery extends MembershipQuery {
         orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
         skip: (page.page - 1) * page.pageSize,
         take: page.pageSize,
-        select: { userId: true, role: true },
+        select: { userId: true, role: true, createdAt: true },
       }),
       this.prismaTransactionContext.client.member.count({ where }),
     ]);

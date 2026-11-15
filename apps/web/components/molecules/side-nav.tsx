@@ -43,8 +43,9 @@ export type SideNavProps = {
    */
   currentHref?: string;
   /**
-   * Below `xl`, shows each item as its icon alone, named by a tooltip when pointed at, so the column
-   * can be a narrow rail beside a second menu. For a flat list: an item's children are not folded.
+   * While the sidebar is folded to its rail (the `rail:` variant, from `data-sidebar` on `<html>`),
+   * shows each item as its icon alone, named by a tooltip when pointed at. For a flat list: an
+   * item's children are not folded.
    */
   foldsToIcons?: boolean;
 };
@@ -117,27 +118,32 @@ const sideNavHeading = cva(
   'mt-3 border-border-subtle border-t px-3 pt-5 pb-2 text-fg-secondary text-overline uppercase',
   {
     variants: {
-      foldsToIcons: { true: 'max-xl:mt-2 max-xl:pt-2 max-xl:pb-0', false: '' },
+      foldsToIcons: { true: 'rail:mt-2 rail:pt-2 rail:pb-0', false: '' },
     },
   },
 );
 
 /** Words that folding hides from sight but keeps for assistive technology. */
 const foldedAway = cva('', {
-  variants: { foldsToIcons: { true: 'max-xl:sr-only', false: '' } },
+  variants: { foldsToIcons: { true: 'rail:sr-only', false: '' } },
 });
 
 /** Beside the label, or folded, small on the icon's corner. */
 const sideNavCount = cva('', {
   variants: {
     foldsToIcons: {
-      true: 'max-xl:absolute max-xl:-top-1.5 max-xl:right-0',
+      true: 'rail:absolute rail:-top-1.5 rail:right-0',
       false: '',
     },
   },
 });
 
-const sideNavLink = cva(
+/**
+ * One row of a side nav, as its links are drawn: an icon and a label, the open page in the light
+ * primary colour. Exported for a control that stands among the rows, such as the button that folds
+ * the sidebar, so it reads as one of them.
+ */
+export const sideNavLink = cva(
   [
     'relative flex w-full items-center gap-2.5 rounded-button px-3 py-2 text-start text-button-sm text-fg-secondary hover:bg-action-neutral-surface-hover hover:text-fg-primary',
     'max-md:py-3.5',
@@ -146,7 +152,7 @@ const sideNavLink = cva(
   {
     variants: {
       // A square around the icon, the count on its corner.
-      foldsToIcons: { true: 'max-xl:justify-center max-xl:px-0', false: '' },
+      foldsToIcons: { true: 'rail:justify-center rail:px-0', false: '' },
     },
   },
 );
@@ -193,7 +199,7 @@ function SideNavLink({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{link}</TooltipTrigger>
-      <TooltipContent side="right" className="xl:hidden">
+      <TooltipContent side="right" className="not-rail:hidden">
         {label}
       </TooltipContent>
     </Tooltip>

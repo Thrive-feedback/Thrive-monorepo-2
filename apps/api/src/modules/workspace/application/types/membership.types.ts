@@ -29,6 +29,19 @@ export interface MembershipPage {
 export interface WorkspaceMemberView {
   readonly accountId: string;
   readonly role: MemberRoleValue;
+  /** When they joined the Workspace. */
+  readonly joinedAt: Date;
+}
+
+/**
+ * Where one person stands in a Workspace they are or were in: their Role, when they joined, and
+ * whether they can still open it.
+ */
+export interface MemberStandingView {
+  readonly accountId: string;
+  readonly role: MemberRoleValue;
+  readonly status: MemberStatus;
+  readonly joinedAt: Date;
 }
 
 export interface WorkspaceMemberPage {

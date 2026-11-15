@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Caveat, Google_Sans } from 'next/font/google';
 import localFont from 'next/font/local';
 import { Toaster } from '@/components/atoms/toaster';
+import { SIDEBAR_INIT_SCRIPT } from '@/lib/sidebar-fold.constant';
 import { SITE_NAME } from '@/lib/site.constant';
 import { THEME_INIT_SCRIPT } from '@/lib/theme.constant';
 import { webUrl } from '@/lib/web-url.util';
@@ -89,6 +90,10 @@ export default function RootLayout({
         <script
           // biome-ignore lint/security/noDangerouslySetInnerHtml: a constant from this repo, not input; inlining it is what lets it run before paint.
           dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: a constant from this repo, not input; inlining it is what lets the sidebar be drawn at its width before paint.
+          dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT_SCRIPT }}
         />
       </head>
       <body className="min-h-dvh">

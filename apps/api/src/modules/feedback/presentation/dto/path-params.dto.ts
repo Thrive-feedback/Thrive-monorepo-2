@@ -26,3 +26,10 @@ export const feedbackAskPathParamsSchema = z.object({
 export class FeedbackAskPathParamsDto extends createZodDto(
   feedbackAskPathParamsSchema,
 ) {}
+
+/** The same path, plus the one Member whose Profile a route reads. */
+export const memberPathParamsSchema = z.object({
+  workspaceId: z.uuid(),
+  accountId: z.uuid(),
+});
+export class MemberPathParamsDto extends createZodDto(memberPathParamsSchema) {}

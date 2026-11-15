@@ -58,6 +58,17 @@ function givenViewing(view: PersonalView) {
   return view === PERSONAL_VIEWS[0] ? '/given' : `/given?view=${view}`;
 }
 
+/** The lists a Profile shows, in the order offered. The first is what it opens on. */
+export const PROFILE_SHOWS = ['feedback', 'shared', 'kudos'] as const;
+
+export type ProfileShow = (typeof PROFILE_SHOWS)[number];
+
+/** One person's Profile showing one of its lists; `feedback` is what it opens on, so it needs no query. */
+function profileShowing(slug: string, show: ProfileShow) {
+  const profile = `/profile/${encodeURIComponent(slug)}`;
+  return show === PROFILE_SHOWS[0] ? profile : `${profile}?show=${show}`;
+}
+
 /** The orders Waiting for me can be read in. The first is what it opens on. */
 export const WAITING_SORTS = ['newest', 'oldest'] as const;
 
@@ -114,6 +125,22 @@ export const ROUTES = {
   ) => {
     const viewing = givenViewing(view);
     return `${viewing}${viewing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
+  },
+  /**
+   * Anyone's Profile in the Workspace, the signed-in person's own included: who they are, and what
+   * was written to them that everyone there reads.
+   */
+  profile: (slug: string) => profileShowing(slug, PROFILE_SHOWS[0]),
+  /** A Profile showing one of its lists. */
+  profileShowing,
+  /** One piece of Feedback open over a Profile, which keeps showing the list it was showing. */
+  profileFeedback: (
+    slug: string,
+    feedbackId: string,
+    show: ProfileShow = PROFILE_SHOWS[0],
+  ) => {
+    const showing = profileShowing(slug, show);
+    return `${showing}${showing.includes('?') ? '&' : '?'}feedback=${feedbackId}`;
   },
   /** Every Ask waiting for the person. */
   waiting: '/waiting',

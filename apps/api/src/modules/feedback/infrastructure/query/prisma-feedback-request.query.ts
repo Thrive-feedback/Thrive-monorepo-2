@@ -225,19 +225,28 @@ function skipFor(page: PageRequest): number {
 }
 
 /** What each choice on Home lets a reader see, always inside one Workspace. */
+/** Feedback the whole Workspace reads. */
+const EVERYONE_READS = { visibility: 'EVERYONE' } as const;
+
+/**
+ * Feedback somebody selected the reader to read. The join alone would answer this — a selected
+ * person exists only for SELECTED_PEOPLE, which the Visibility itself holds — and the value is
+ * matched anyway, so a row left behind by any other choice is unreadable rather than shared.
+ */
+function selectedToRead(readerAccountId: string) {
+  return {
+    visibility: 'SELECTED_PEOPLE',
+    selectedPeople: { some: { accountId: readerAccountId } },
+  } as const;
+}
+
 function feedItemsWhere(
   workspaceId: string,
   readerAccountId: string,
   show: FeedItemShow,
 ) {
-  const everyone = { visibility: 'EVERYONE' } as const;
-  // The join alone would answer this — a selected person exists only for SELECTED_PEOPLE, which
-  // the Visibility itself holds — and the value is matched anyway, so a row left behind by any
-  // other choice is unreadable rather than shared.
-  const selected = {
-    visibility: 'SELECTED_PEOPLE',
-    selectedPeople: { some: { accountId: readerAccountId } },
-  } as const;
+  const everyone = EVERYONE_READS;
+  const selected = selectedToRead(readerAccountId);
   switch (show) {
     case 'EVERYONE':
       return { workspaceId, ...everyone };
@@ -370,6 +379,65 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
             {
               workspaceId,
               origin: 'OFFERED' as const,
+              receivers: { some: { accountId: receiverAccountId } },
+            },
+            olderThan(page.after),
+          ],
+        },
+        orderBy: NEWEST_FIRST,
+        take: page.limit + 1,
+        select: FEED_ITEM_FIELDS,
+      });
+    return {
+      items: records.slice(0, page.limit).map(toReceivedFeedbackRow),
+      hasMore: records.length > page.limit,
+    };
+  }
+
+  everyoneFeedbackTo(
+    workspaceId: string,
+    receiverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<ReceivedFeedbackPageRow> {
+    return this.feedbackToReadable(
+      workspaceId,
+      receiverAccountId,
+      EVERYONE_READS,
+      page,
+    );
+  }
+
+  sharedFeedbackTo(
+    workspaceId: string,
+    receiverAccountId: string,
+    readerAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<ReceivedFeedbackPageRow> {
+    return this.feedbackToReadable(
+      workspaceId,
+      receiverAccountId,
+      selectedToRead(readerAccountId),
+      page,
+    );
+  }
+
+  /** The Feedback given to one Member, asked for or not, that one Visibility filter lets through. */
+  private async feedbackToReadable(
+    workspaceId: string,
+    receiverAccountId: string,
+    readable: typeof EVERYONE_READS | ReturnType<typeof selectedToRead>,
+    page: FeedPageRequest,
+  ): Promise<ReceivedFeedbackPageRow> {
+    // One row more than asked for, only to tell whether another page follows (ADR 0059).
+    const records =
+      await this.prismaTransactionContext.client.feedback.findMany({
+        where: {
+          AND: [
+            // Through the Receivers, not `feedback.receiverAccountId`: that column holds only the
+            // first of several, and is kept for an older API mid-deploy (ADR 0061).
+            {
+              workspaceId,
+              ...readable,
               receivers: { some: { accountId: receiverAccountId } },
             },
             olderThan(page.after),

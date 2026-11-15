@@ -47,3 +47,22 @@ export const COMPOSE_CHOICE_OUTLINES: Readonly<
   give: 'outlined',
   kudos: 'outlined-highlight',
 };
+
+/** The three things to write to one teammate, in the order offered beside them. */
+export const PERSON_COMPOSE_CHOICES = [
+  'give',
+  'ask',
+  'kudos',
+] as const satisfies readonly ComposeChoice[];
+
+/**
+ * Each choice offered beside one teammate: its word on the button, and its whole name, which holds
+ * the word and says who it is for.
+ */
+export const PERSON_COMPOSE_ACTIONS: Readonly<
+  Record<ComposeChoice, { word: string; name: (who: string) => string }>
+> = {
+  give: { word: 'Give', name: (who) => `Give ${who} feedback` },
+  ask: { word: 'Ask', name: (who) => `Ask ${who} for feedback` },
+  kudos: { word: 'Kudos', name: (who) => `Give ${who} kudos` },
+};

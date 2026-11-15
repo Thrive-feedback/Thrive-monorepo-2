@@ -1,4 +1,5 @@
 import type {
+  MemberStandingView,
   MemberStatus,
   MembershipPage,
   MembershipView,
@@ -7,9 +8,9 @@ import type {
 } from '../types/membership.types';
 
 /**
- * Every answer but those asked for with `DEACTIVATED`, `deactivatedAmong` and `isDeactivatedIn`
- * is about active Members only: a Deactivated person is no longer in the Workspace for anything
- * they or others do there.
+ * Every answer but those asked for with `DEACTIVATED`, `deactivatedAmong`, `isDeactivatedIn` and
+ * `standingIn` is about active Members only: a Deactivated person is no longer in the Workspace
+ * for anything they or others do there.
  */
 export abstract class MembershipQuery {
   /**
@@ -22,6 +23,15 @@ export abstract class MembershipQuery {
     page: PageRequest,
     status: MemberStatus,
   ): Promise<MembershipPage>;
+
+  /**
+   * Where the Account stands in one Workspace, active or Deactivated, or `null` when it was never
+   * a Member there.
+   */
+  abstract standingIn(
+    workspaceId: string,
+    accountId: string,
+  ): Promise<MemberStandingView | null>;
 
   /** The Account's membership of one Workspace, or `null` when it is not a Member there. */
   abstract membershipInWorkspace(

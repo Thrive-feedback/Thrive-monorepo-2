@@ -84,6 +84,7 @@ describe('listing the Members of a Workspace', () => {
           slug: null,
           photoUrl: null,
           role: 'ADMIN',
+          joinedAt: expect.any(Date),
         },
         {
           accountId: member.accountId,
@@ -93,6 +94,7 @@ describe('listing the Members of a Workspace', () => {
           slug: null,
           photoUrl: null,
           role: 'MEMBER',
+          joinedAt: expect.any(Date),
         },
       ],
       total: 2,

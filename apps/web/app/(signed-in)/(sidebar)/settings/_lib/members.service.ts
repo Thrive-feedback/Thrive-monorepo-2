@@ -49,8 +49,11 @@ const readMembersOf = cache(
       accountId: member.accountId,
       email: member.email,
       name: member.displayName,
+      fullName: member.fullName,
+      slug: member.slug,
       photoUrl: member.photoUrl,
       role: member.role,
+      joinedAt: member.joinedAt,
     }));
   },
 );

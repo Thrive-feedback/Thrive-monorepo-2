@@ -1,0 +1,42 @@
+/*
+ * The head of a Profile: a band across the top of the page, under the navbar with nothing between
+ * them, lit by a light haze of the three colours of what Thrive does (giving, asking and thanking),
+ * and its foot perforated like the edge of a sheet of stamps, as the landing page's bands are.
+ *
+ * The haze is three soft radial gradients over a faint tint of the brand, painted once rather than
+ * blurred, as the orb backdrop's orbs are. The tint carries on to the foot so the perforation reads
+ * against the page below. Neither a gradient from a token nor a mask has a utility.
+ */
+.band {
+  --bite: calc(var(--space-unit) * 1.5);
+  --pitch: calc(var(--space-unit) * 5);
+
+  background-color: color-mix(
+    in oklch,
+    var(--action-primary) 5%,
+    var(--surface-base)
+  );
+  background-image:
+    radial-gradient(
+      ellipse 40% 130% at 6% 0%,
+      color-mix(in oklch, var(--action-primary) 16%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 36% 120% at 52% 20%,
+      color-mix(in oklch, var(--action-tertiary) 11%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 38% 130% at 96% 0%,
+      color-mix(in oklch, var(--action-secondary) 14%, transparent),
+      transparent 70%
+    );
+
+  /* Solid down to the bites, then a row of round bites along the foot. A mask shows what lies under
+     its black, so the black is an instruction, not a colour. */
+  mask:
+    linear-gradient(black 0 0) 0 0 / 100% calc(100% - var(--bite)) no-repeat,
+    radial-gradient(circle var(--bite) at 50% 100%, transparent 98%, black) 0
+    100% / var(--pitch) calc(var(--bite) * 2) repeat-x;
+}

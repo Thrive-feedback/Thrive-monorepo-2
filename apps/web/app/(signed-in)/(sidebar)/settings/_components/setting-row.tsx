@@ -55,7 +55,7 @@ export function SettingRow({
             as="p"
             variant="body-3"
             tone="muted"
-            className="hidden pointer-coarse:block"
+            className="pointer-coarse:block hidden"
           >
             {info}
           </Text>
@@ -83,7 +83,7 @@ function SettingInfo({ label, info }: SettingInfoProps) {
         <button
           type="button"
           aria-label={`About ${label}`}
-          className="inline-flex cursor-help items-center justify-center rounded-full p-1 text-fg-secondary transition-colors hover:text-fg-primary pointer-coarse:hidden"
+          className="inline-flex pointer-coarse:hidden cursor-help items-center justify-center rounded-full p-1 text-fg-secondary transition-colors hover:text-fg-primary"
         >
           <InfoIcon aria-hidden="true" className="size-4" />
         </button>

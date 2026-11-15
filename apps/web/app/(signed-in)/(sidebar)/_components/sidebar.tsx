@@ -48,6 +48,7 @@ export async function Sidebar() {
             <SidebarAccount
               name={session.profile?.displayName ?? session.name}
               email={email}
+              slug={session.profile.slug}
               photoUrl={session.photoUrl}
             />
           </div>

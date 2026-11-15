@@ -117,7 +117,12 @@ describe('TeammatesDirectory', () => {
   it('lists everyone by name, each with Give, Ask and Kudos', () => {
     draw();
 
-    expect(listed()).toEqual(['Krit Chan', 'Mali Sombat', 'nok@acme.test']);
+    expect(listed()).toEqual([
+      'Krit Chan',
+      'Lek Wong',
+      'Mali Sombat',
+      'nok@acme.test',
+    ]);
     const mali = screen
       .getAllByRole('listitem')
       .find((row) => row.textContent?.includes('Mali Sombat'));
@@ -135,7 +140,24 @@ describe('TeammatesDirectory', () => {
     ]);
   });
 
-  it('lists the person among the rest by name, marked You, with nothing to write to themselves', () => {
+  it('names each teammate by Display name over full name, as Settings does, and leaves their email out', () => {
+    draw();
+
+    const mali = screen
+      .getAllByRole('listitem')
+      .find((row) => row.textContent?.includes('Mali Sombat'));
+    if (!mali) {
+      throw new Error('Mali is not listed.');
+    }
+    expect(within(mali).getByText('Mali')).toBeInTheDocument();
+    expect(within(mali).getByText('Mali Sombat')).toHaveAttribute(
+      'title',
+      'Mali Sombat',
+    );
+    expect(mali).not.toHaveTextContent('mali.sombat@acme.test');
+  });
+
+  it('lists the person among the rest by name, marked You, with every action in its place but only View profile working', () => {
     draw();
 
     const rows = within(screen.getByRole('list', { name: 'Teammates' }))
@@ -154,7 +176,44 @@ describe('TeammatesDirectory', () => {
       throw new Error('The person is not listed.');
     }
     expect(within(you).getByText('You')).toBeVisible();
-    expect(within(you).queryByRole('button')).not.toBeInTheDocument();
+    expect(
+      within(you)
+        .getAllByRole('button')
+        .map((button) => [
+          button.getAttribute('aria-label'),
+          button.hasAttribute('disabled'),
+        ]),
+    ).toEqual([
+      ['Give Lek Wong feedback', true],
+      ['Ask Lek Wong for feedback', true],
+      ['Give Lek Wong kudos', true],
+    ]);
+    expect(
+      within(you).getByRole('link', { name: 'View profile of Lek Wong' }),
+    ).toHaveAttribute('href', '/profile/lek');
+  });
+
+  it('offers View profile for each teammate, the person’s own included, and the name leads nowhere', () => {
+    draw();
+
+    expect(
+      screen.getByRole('link', { name: 'View profile of Mali Sombat' }),
+    ).toHaveAttribute('href', '/profile/mali');
+    expect(
+      screen.getByRole('link', { name: 'View profile of Lek Wong' }),
+    ).toHaveAttribute('href', '/profile/lek');
+    expect(
+      screen.queryByRole('link', { name: /^Mali Sombat/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('offers no profile for someone who has not introduced themselves, who has none yet', () => {
+    draw();
+
+    expect(
+      screen.queryByRole('link', { name: 'View profile of nok@acme.test' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText('nok@acme.test')).toBeInTheDocument();
   });
 
   it('finds the person too when they search for themselves', async () => {
@@ -227,7 +286,7 @@ describe('TeammatesDirectory', () => {
 
     expect(search).toHaveValue('');
     expect(search).toHaveFocus();
-    expect(listed()).toHaveLength(3);
+    expect(listed()).toHaveLength(4);
   });
 
   it('shows ten at a time, turned by Next and Previous', async () => {

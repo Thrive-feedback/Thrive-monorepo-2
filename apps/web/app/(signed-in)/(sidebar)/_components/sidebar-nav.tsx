@@ -10,7 +10,6 @@ import {
   UsersIcon,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { isSettingsPath } from '@/app/(signed-in)/(sidebar)/_lib/settings-path.util';
 import { SideNav, type SideNavEntry } from '@/components/molecules/side-nav';
 import { useUnreadCounts } from '@/components/organisms/notifications-provider';
 import { ROUTES } from '@/lib/routes.constant';
@@ -21,9 +20,9 @@ export type SidebarNavProps = {
 };
 
 /**
- * Where to go from Home. In Settings, below `xl`, it folds to its icons beside Settings' own menu.
- * It reads the path itself because the layout around it does not run again when the client
- * navigates between the pages under it.
+ * Where to go from Home. It folds to its icons whenever the sidebar is a rail. It reads the path
+ * itself because the layout around it does not run again when the client navigates between the
+ * pages under it.
  *
  * Waiting for me and Received carry how many unread lines of theirs the bell holds, read from the
  * bell's own poll, so a line read in the bell takes the number here down with it.
@@ -61,11 +60,6 @@ export function SidebarNav({ showsDashboard }: SidebarNavProps) {
   ];
 
   return (
-    <SideNav
-      label="Main"
-      items={items}
-      currentHref={pathname}
-      foldsToIcons={isSettingsPath(pathname)}
-    />
+    <SideNav label="Main" items={items} currentHref={pathname} foldsToIcons />
   );
 }
