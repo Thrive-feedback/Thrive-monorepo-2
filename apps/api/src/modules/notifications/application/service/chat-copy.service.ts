@@ -63,10 +63,11 @@ export class ChatCopyService {
     const opening = event.isReceiver
       ? `**${event.actorName}** wrote feedback to you in *${event.workspaceName}*`
       : `**${event.actorName}** shared feedback with you in *${event.workspaceName}*`;
-    // A Receiver reads it in Received; somebody it was shared with reads it on Home.
+    // A Receiver reads it in Received; somebody it was shared with reads it under Shared with me
+    // on Home — the same place the bell's line opens, so following either one clears it.
     const path = event.isReceiver
       ? WEB_PATHS.receivedFeedback(event.feedbackId)
-      : WEB_PATHS.feedback(event.feedbackId);
+      : WEB_PATHS.sharedFeedback(event.feedbackId);
     return [opening, this.linkTo(path)].join('\n');
   }
 

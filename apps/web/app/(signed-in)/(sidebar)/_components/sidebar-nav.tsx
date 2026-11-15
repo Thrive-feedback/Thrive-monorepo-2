@@ -11,8 +11,9 @@ import {
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { isSettingsPath } from '@/app/(signed-in)/(sidebar)/_lib/settings-path.util';
+import { SHARED_COUNT_SAID } from '@/app/(signed-in)/(sidebar)/_lib/shared-count-said.constant';
 import { SideNav, type SideNavEntry } from '@/components/molecules/side-nav';
-import { useUnreadCounts } from '@/components/organisms/notifications-provider';
+import { useNavigationCounts } from '@/components/organisms/notifications-provider';
 import { ROUTES } from '@/lib/routes.constant';
 
 export type SidebarNavProps = {
@@ -25,20 +26,28 @@ export type SidebarNavProps = {
  * It reads the path itself because the layout around it does not run again when the client
  * navigates between the pages under it.
  *
- * Waiting for me and Received carry how many unread lines of theirs the bell holds, read from the
- * bell's own poll, so a line read in the bell takes the number here down with it.
+ * Waiting for me carries how many Asks still wait on the person, Received how much is new in it,
+ * and Home how much has newly been shared with them, which only choosing Shared with me there
+ * clears. All are read on the bell's poll but not from the bell, so reading a line there changes
+ * none of them.
  */
 export function SidebarNav({ showsDashboard }: SidebarNavProps) {
   const pathname = usePathname();
-  const unread = useUnreadCounts();
+  const counts = useNavigationCounts();
   const items: readonly SideNavEntry[] = [
-    { href: ROUTES.home, label: 'Home', Icon: HouseIcon },
+    {
+      href: ROUTES.home,
+      label: 'Home',
+      Icon: HouseIcon,
+      count: counts.shared,
+      countSaid: SHARED_COUNT_SAID,
+    },
     { href: ROUTES.kudos, label: 'Kudos board', Icon: HandHeartIcon },
     {
       href: ROUTES.waiting,
       label: 'Waiting for me',
       Icon: ClockIcon,
-      count: unread.waiting,
+      count: counts.waiting,
     },
     { href: ROUTES.teammates, label: 'Teammates', Icon: UsersIcon },
     { heading: 'My Feedback' },
@@ -55,7 +64,7 @@ export function SidebarNav({ showsDashboard }: SidebarNavProps) {
       href: ROUTES.received,
       label: 'Received',
       Icon: InboxIcon,
-      count: unread.received,
+      count: counts.received,
     },
     { href: ROUTES.given, label: 'Given', Icon: SendIcon },
   ];

@@ -17,6 +17,7 @@ import {
 } from '../../domain/value-object/kudos-month.vo';
 import { olderThan } from '../mapper/feed-position.mapper';
 import { toKudosCardSnapshot } from '../mapper/kudos.mapper';
+import { kudosNamingWhere } from '../mapper/personal-items-where.mapper';
 
 /** Newest first, `id` breaking ties, so the order is total and a cursor names one place in it. */
 const NEWEST_FIRST = [{ createdAt: 'desc' }, { id: 'desc' }] satisfies {
@@ -108,12 +109,9 @@ export class PrismaKudosQuery extends KudosQuery {
     const records = await this.prismaTransactionContext.client.kudos.findMany({
       where: {
         AND: [
-          {
-            workspaceId,
-            ...(recipientAccountId !== null && {
-              recipients: { some: { accountId: recipientAccountId } },
-            }),
-          },
+          recipientAccountId === null
+            ? { workspaceId }
+            : kudosNamingWhere(workspaceId, recipientAccountId),
           olderThan(page.after),
         ],
       },

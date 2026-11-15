@@ -1,6 +1,7 @@
 import { type Actor, CurrentActor } from '@app/shared/presentation/actor';
 import { COOKIE_HEADER } from '@app/shared/presentation/dto/cookie-header.dto';
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -12,6 +13,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBody,
   ApiHeader,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -28,6 +30,7 @@ import {
   ListNotificationsQueryDto,
   ListNotificationsResponseDto,
 } from './dto/list-notifications.dto';
+import { MarkReadRequestDto } from './dto/mark-read.dto';
 import {
   NotificationPathParamsDto,
   WorkspacePathParamsDto,
@@ -130,10 +133,15 @@ export class NotificationController {
   @Post('read')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    summary: 'Mark everything I have been told about in this Workspace as read',
+    summary:
+      'Mark everything I have been told about in this Workspace as read, or only some kinds',
   })
   @ApiHeader(COOKIE_HEADER)
-  @ApiNoContentResponse({ description: 'The bell is clear in this Workspace.' })
+  // Optional on the wire: Mark all as read has always been sent with no body at all.
+  @ApiBody({ type: MarkReadRequestDto, required: false })
+  @ApiNoContentResponse({
+    description: 'Those kinds, or every kind, are clear in this Workspace.',
+  })
   @ApiBadRequestResponse({ description: 'REQUEST_INVALID' })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
   @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
@@ -141,10 +149,12 @@ export class NotificationController {
     @CurrentActor() actor: Actor,
     @CurrentWorkspaceAccess() access: WorkspaceAccess,
     @Param() _params: WorkspacePathParamsDto,
+    @Body() body: MarkReadRequestDto,
   ): Promise<void> {
     await this.markAllReadUseCase.execute({
       workspaceId: access.workspaceId,
       recipientAccountId: actor.accountId,
+      types: body.types ?? null,
     });
   }
 

@@ -100,7 +100,9 @@ export class FanOutPersonNotifier extends PersonNotifierPort {
       recipients.map((recipientAccountId) => ({
         recipientAccountId,
         type: 'ASK_ANSWERED' as const,
-        subjectId: event.feedbackRequestId,
+        // The answer, not the request: keyed by the request, a second answer would repeat the
+        // first line and be dropped, and the Requester would never be told of it (ADR 0094).
+        subjectId: event.feedbackId,
       })),
       () => this.chatPersonNotifier.askAnswered(event),
     );

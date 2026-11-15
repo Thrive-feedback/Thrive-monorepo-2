@@ -32,6 +32,12 @@ export interface AskAnswered extends PersonEvent {
   readonly requesterAccountId: string;
   /** The request they open. Nothing of what was written travels with this. */
   readonly feedbackRequestId: string;
+  /**
+   * The answer: what the line is about, so each answer to one request is a line of its own
+   * (ADR 0094). Nothing of what was written travels with this either. A message an earlier release
+   * enqueued carries the request's id here instead, which keys its line as it was keyed then.
+   */
+  readonly feedbackId: string;
 }
 
 export interface FeedbackWritten extends PersonEvent {

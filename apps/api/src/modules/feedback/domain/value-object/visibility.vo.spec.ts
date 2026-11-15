@@ -5,7 +5,7 @@ import {
   PersonAlreadySelectedError,
   VisibilityInvalidError,
 } from '../feedback-request.errors';
-import { isEveryone, Visibility } from './visibility.vo';
+import { isEveryone, isSelectedPeople, Visibility } from './visibility.vo';
 
 const GIVER = 'account-ben';
 const RECEIVER = 'account-ann';
@@ -120,5 +120,13 @@ describe('whether every Member may read it', () => {
     expect(isEveryone('EVERYONE')).toBe(true);
     expect(isEveryone('ONLY_ME')).toBe(false);
     expect(isEveryone('SELECTED_PEOPLE')).toBe(false);
+  });
+});
+
+describe('whether people were picked by name to read it', () => {
+  it('is true only of Selected people, asked of a stored value', () => {
+    expect(isSelectedPeople('SELECTED_PEOPLE')).toBe(true);
+    expect(isSelectedPeople('ONLY_ME')).toBe(false);
+    expect(isSelectedPeople('EVERYONE')).toBe(false);
   });
 });

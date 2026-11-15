@@ -88,6 +88,33 @@ When(
   },
 );
 
+When(
+  '{person} marks what they were told about Kudos read',
+  async function (this: ThriveWorld, name: string) {
+    // What opening the Kudos they were given reads: the kind, and no other.
+    await drainOutbox();
+    this.succeeded(
+      await this.as(name, 'POST', `${notificationsOf(this, name)}/read`, {
+        types: ['KUDOS_RECEIVED'],
+      }),
+      `${name} marking their Kudos read`,
+    );
+  },
+);
+
+When(
+  '{person} marks a kind of notification that does not exist read',
+  async function (this: ThriveWorld, name: string) {
+    await this.as(name, 'POST', `${notificationsOf(this, name)}/read`, {
+      types: ['SOMETHING_ELSE'],
+    });
+  },
+);
+
+Then('the bell refuses the choice', function (this: ThriveWorld) {
+  this.refusedWith('REQUEST_INVALID');
+});
+
 Then(
   '{person} is told that {person} asked them for Feedback',
   async function (this: ThriveWorld, name: string, actor: string) {

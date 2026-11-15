@@ -19,6 +19,11 @@ export type SideNavItem = {
    * `, 2 unread`. Nothing shows at zero.
    */
   readonly count?: number;
+  /**
+   * What the count is, said after the number in place of `unread`, where the item's own name does
+   * not say it — `unread in Shared with me` beside Home, which counts one of its lists.
+   */
+  readonly countSaid?: string;
   /** Items that belong to this one, listed under it with a branch line to each. */
   readonly children?: readonly SideNavItem[];
 };
@@ -152,7 +157,7 @@ const sideNavLink = cva(
 );
 
 function SideNavLink({
-  item: { href, label, Icon, count },
+  item: { href, label, Icon, count, countSaid },
   currentHref,
   foldsToIcons,
 }: {
@@ -170,6 +175,7 @@ function SideNavLink({
       </span>
       <CountBadge
         count={count ?? 0}
+        said={countSaid}
         className={sideNavCount({ foldsToIcons })}
       />
     </>

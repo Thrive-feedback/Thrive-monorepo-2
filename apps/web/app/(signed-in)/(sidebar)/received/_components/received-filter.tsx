@@ -1,10 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { usePersonalItemsView } from '@/app/(signed-in)/(sidebar)/_lib/use-personal-items-view';
 import { CountBadge } from '@/components/atoms/badge';
 import { Toggle } from '@/components/atoms/toggle';
-import { useUnreadCounts } from '@/components/organisms/notifications-provider';
+import {
+  useNavigationCountActions,
+  useNavigationCounts,
+} from '@/components/organisms/notifications-provider';
 import {
   RECEIVED_SHOWS,
   type ReceivedShow,
@@ -39,13 +43,25 @@ export type ReceivedFilterProps = {
 /**
  * What Received shows, as a row of chips with one pressed, kept in the address so a reload or a
  * shared link keeps it. Each choice reads its own list from the server, so choosing one navigates,
- * keeping how the list is laid out. Each chip but All carries how many of its kind are unread in
- * the bell.
+ * keeping how the list is laid out. Each chip but All carries how much of its kind is new since the
+ * person last opened it, and the one open is marked opened, so its count goes and the bell lines
+ * that lead to it are read. All marks none: it
+ * shows a little of everything, not each kind in full.
+ *
+ * Marked from the browser, once the chip is on screen, rather than while the server draws the
+ * page: a link prefetched ahead of a press draws it too, and would clear a count nobody saw.
  */
 export function ReceivedFilter({ show }: ReceivedFilterProps) {
   const router = useRouter();
   const view = usePersonalItemsView();
-  const unread = useUnreadCounts();
+  const counts = useNavigationCounts();
+  const { markPlaceOpened } = useNavigationCountActions();
+
+  useEffect(() => {
+    if (show !== 'all') {
+      markPlaceOpened(show);
+    }
+  }, [show, markPlaceOpened]);
 
   return (
     <fieldset className="flex flex-wrap gap-2">
@@ -66,7 +82,7 @@ export function ReceivedFilter({ show }: ReceivedFilterProps) {
         >
           {SHOW_NAMES[value]}
           {/* All would only repeat the sidebar's number, so it carries none. */}
-          {value !== 'all' && <CountBadge count={unread[value]} />}
+          {value !== 'all' && <CountBadge count={counts[value]} />}
         </Toggle>
       ))}
     </fieldset>

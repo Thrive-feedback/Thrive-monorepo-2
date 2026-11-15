@@ -1,8 +1,5 @@
-import {
-  PERSONAL_VIEWS,
-  type ReceivedShow,
-  ROUTES,
-} from '@/lib/routes.constant';
+import { PERSONAL_VIEWS, ROUTES } from '@/lib/routes.constant';
+import type { CountedPlace } from './navigation-counts.type';
 import type { BellNotification, NotificationType } from './notification.type';
 
 /**
@@ -12,22 +9,16 @@ import type { BellNotification, NotificationType } from './notification.type';
  */
 const SOMEBODY = 'Somebody';
 
-/**
- * Where in the navigation an unread line is counted: beside Waiting for me, or on one of
- * Received's chips (and so on Received itself, which adds its chips up).
- */
-export type UnreadPlace = 'waiting' | Exclude<ReceivedShow, 'all'>;
-
 type NotificationLineTemplate = {
   /** The whole sentence, with whoever did it already in it. */
   readonly sentenceFor: (actor: string) => string;
   /** Where pressing the line lands, as a path in this app. */
   readonly destinationFor: (subjectId: string) => string;
   /**
-   * Where an unread line of this kind is counted, which is the page its destination opens, or
-   * `null` for a kind that opens somewhere carrying no count.
+   * The page whose opening reads every line of this kind: the one its destination opens. Opening
+   * it is having seen what the line pointed at, so the bell need not say it again.
    */
-  readonly countedIn: UnreadPlace | null;
+  readonly readIn: CountedPlace;
 };
 
 /**
@@ -46,34 +37,42 @@ export const NOTIFICATION_LINES: Readonly<
   ASK_RECEIVED: {
     sentenceFor: (actor) => `${actor} asked you for feedback`,
     destinationFor: (subjectId) => ROUTES.waitingAsk(subjectId),
-    countedIn: 'waiting',
+    readIn: 'waiting',
   },
   ASK_ANSWERED: {
     sentenceFor: (actor) => `${actor} answered your request`,
     // Received has no address for one request, so the bell opens the person's requests.
     destinationFor: () => ROUTES.receivedViewing(PERSONAL_VIEWS[0], 'requests'),
-    countedIn: 'requests',
+    readIn: 'requests',
   },
   FEEDBACK_RECEIVED: {
     sentenceFor: (actor) => `${actor} wrote feedback to you`,
     // Received showing Feedback given unasked, the only kind this is, with the postcard open.
     destinationFor: (subjectId) =>
       ROUTES.receivedFeedback(subjectId, PERSONAL_VIEWS[0], 'offered'),
-    countedIn: 'offered',
+    readIn: 'offered',
   },
   FEEDBACK_SHARED: {
     sentenceFor: (actor) => `${actor} shared feedback with you`,
-    destinationFor: (subjectId) => ROUTES.homeFeedback(subjectId, 'all'),
-    // Home carries no count: it is in the bell's number only.
-    countedIn: null,
+    // Home showing what was shared with them, which is what clears its count, with the postcard open.
+    destinationFor: (subjectId) => ROUTES.homeFeedback(subjectId, 'shared'),
+    readIn: 'shared',
   },
   KUDOS_RECEIVED: {
     sentenceFor: (actor) => `${actor} gave you kudos`,
     // A Kudos has no address of its own, so the bell opens the Kudos given to the person.
     destinationFor: () => ROUTES.receivedViewing(PERSONAL_VIEWS[0], 'kudos'),
-    countedIn: 'kudos',
+    readIn: 'kudos',
   },
 };
+
+/** Every kind of line that opening `place` reads. */
+export function typesReadIn(place: CountedPlace): NotificationType[] {
+  return Object.entries(NOTIFICATION_LINES)
+    .filter(([, line]) => line.readIn === place)
+    .map(([type]) => type)
+    .filter(isDrawableKind);
+}
 
 /**
  * Whether this build has a sentence for a kind. The contract fixes the kinds at build time, and

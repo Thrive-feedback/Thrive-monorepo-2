@@ -36,7 +36,15 @@ vi.mock(
   '@/app/(signed-in)/(sidebar)/waiting/_lib/waiting-asks-actions.service',
   () => ({ readNextWaitingAsks: vi.fn() }),
 );
+vi.mock(
+  '@/lib/notifications/notification-actions.service',
+  async () => (await import('@/lib/test/bell-notifications')).BELL_ACTIONS,
+);
 
+const { NotificationsProvider, useNavigationCounts } = await import(
+  '@/components/organisms/notifications-provider'
+);
+const { answerTheBell } = await import('@/lib/test/bell-notifications');
 const { AnsweredAsksProvider } = await import('./answered-asks');
 const { WaitingAskList } = await import('./waiting-ask-list');
 const { WAITING_HEADING_ID } = await import('./waiting-heading.constant');
@@ -424,6 +432,41 @@ describe('WaitingPostcard', () => {
         AFTER_THE_FLIGHT,
       );
       expect(refresh).toHaveBeenCalledOnce();
+    });
+
+    it('counts one Ask fewer beside Waiting for me once the answer has flown', async () => {
+      answerTheBell([], { waiting: 2 });
+      function WaitingCount() {
+        return (
+          <output aria-label="Waiting for me">
+            {useNavigationCounts().waiting}
+          </output>
+        );
+      }
+      const { rerender } = render(
+        <NotificationsProvider>
+          <WaitingCount />
+        </NotificationsProvider>,
+      );
+      // Found before the postcard opens: it hides the page around it, the count's name with it.
+      const count = screen.getByRole('status', { name: 'Waiting for me' });
+      await waitFor(() => expect(count).toHaveTextContent('2'));
+      rerender(
+        <>
+          <NotificationsProvider>
+            <WaitingCount />
+            {drawThePage()}
+          </NotificationsProvider>
+          <Toaster />
+        </>,
+      );
+
+      await writeAnAnswer();
+
+      await waitFor(
+        () => expect(count).toHaveTextContent('1'),
+        AFTER_THE_FLIGHT,
+      );
     });
 
     it('still takes the card out when the person leaves in flight', async () => {

@@ -1,12 +1,18 @@
 import { Clock } from '@app/shared/application/clock.port';
 import { Injectable } from '@nestjs/common';
 import { NotificationRepository } from '../../domain/repository/notification-repository.port';
+import type { NotificationTypeValue } from '../../domain/value-object/notification-type.vo';
 
 export interface MarkAllReadInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
   readonly workspaceId: string;
   /** Whose bell to clear: the signed-in caller, always. */
   readonly recipientAccountId: string;
+  /**
+   * Only these kinds — what opening one page of the person's reads, such as their Kudos — or
+   * `null` for every kind, which is Mark all as read.
+   */
+  readonly types: readonly NotificationTypeValue[] | null;
 }
 
 /**
@@ -34,6 +40,7 @@ export class MarkAllReadUseCase {
         recipientAccountId: input.recipientAccountId,
       },
       this.clock.now(),
+      input.types,
     );
   }
 }

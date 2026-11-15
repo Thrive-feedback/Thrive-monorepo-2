@@ -30,6 +30,11 @@ import type {
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
 import { olderThan } from '../mapper/feed-position.mapper';
 import {
+  feedItemsWhere,
+  offeredToWhere,
+  waitingAsksWhere,
+} from '../mapper/personal-items-where.mapper';
+import {
   toAnswerPostcardSnapshot,
   toFeedbackPostcardSnapshot,
   toPostcardSnapshot,
@@ -224,30 +229,6 @@ function skipFor(page: PageRequest): number {
   return (page.page - 1) * page.pageSize;
 }
 
-/** What each choice on Home lets a reader see, always inside one Workspace. */
-function feedItemsWhere(
-  workspaceId: string,
-  readerAccountId: string,
-  show: FeedItemShow,
-) {
-  const everyone = { visibility: 'EVERYONE' } as const;
-  // The join alone would answer this — a selected person exists only for SELECTED_PEOPLE, which
-  // the Visibility itself holds — and the value is matched anyway, so a row left behind by any
-  // other choice is unreadable rather than shared.
-  const selected = {
-    visibility: 'SELECTED_PEOPLE',
-    selectedPeople: { some: { accountId: readerAccountId } },
-  } as const;
-  switch (show) {
-    case 'EVERYONE':
-      return { workspaceId, ...everyone };
-    case 'SHARED_WITH_ME':
-      return { workspaceId, ...selected };
-    case 'ALL':
-      return { workspaceId, OR: [everyone, selected] };
-  }
-}
-
 /** Reads through `client`, so a read inside a unit of work joins its transaction. */
 @Injectable()
 export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
@@ -298,11 +279,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     // it has left, so a `skip: 1` would pass over the next Ask instead of it (ADR 0075).
     const records =
       await this.prismaTransactionContext.client.feedbackAsk.findMany({
-        where: {
-          giverAccountId,
-          status: 'PENDING',
-          feedbackRequest: { workspaceId },
-        },
+        where: waitingAsksWhere(workspaceId, giverAccountId),
         orderBy: sort === 'OLDEST' ? OLDEST_FIRST : NEWEST_FIRST,
         take: page.limit + 2,
         ...(page.afterId === null ? {} : { cursor: { id: page.afterId } }),
@@ -365,13 +342,7 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       await this.prismaTransactionContext.client.feedback.findMany({
         where: {
           AND: [
-            // Through the Receivers, not `feedback.receiverAccountId`: that column holds only the
-            // first of several, and is kept for an older API mid-deploy (ADR 0061).
-            {
-              workspaceId,
-              origin: 'OFFERED' as const,
-              receivers: { some: { accountId: receiverAccountId } },
-            },
+            offeredToWhere(workspaceId, receiverAccountId),
             olderThan(page.after),
           ],
         },

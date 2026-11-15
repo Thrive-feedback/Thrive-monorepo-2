@@ -11,7 +11,7 @@ export interface NotificationToRecord {
   readonly recipientAccountId: string;
   readonly type: NotificationTypeValue;
   readonly actorAccountId: string;
-  /** The Ask, Feedback Request, Feedback or Kudos this is about; which follows from `type`. */
+  /** The Ask, Feedback or Kudos this is about; which follows from `type`. */
   readonly subjectId: string;
 }
 
@@ -58,6 +58,9 @@ export abstract class NotificationRepository {
    *
    * Only the unread ones are touched, so pressing the button on an already-empty bell writes no
    * rows at all rather than restamping a year of them.
+   *
+   * `types` narrows it to those kinds — what opening the page they lead to reads — and `null`
+   * marks every kind, as Mark all as read does.
    */
   abstract markAllRead(
     recipient: {
@@ -65,5 +68,6 @@ export abstract class NotificationRepository {
       readonly recipientAccountId: string;
     },
     readAt: Date,
+    types: readonly NotificationTypeValue[] | null,
   ): Promise<void>;
 }

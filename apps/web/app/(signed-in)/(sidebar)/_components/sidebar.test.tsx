@@ -2,9 +2,9 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { NotificationsProvider } from '@/components/organisms/notifications-provider';
-import type { BellNotification } from '@/lib/notifications/notification.type';
+import type { PlaceCounts } from '@/lib/notifications/navigation-counts.type';
 import { ROUTES } from '@/lib/routes.constant';
-import { answerTheBell, unreadLines } from '@/lib/test/bell-notifications';
+import { answerTheBell } from '@/lib/test/bell-notifications';
 import { Sidebar } from './sidebar';
 
 const MEMBERSHIP = { workspace: { id: 'w-1', name: 'Acme' }, role: 'MEMBER' };
@@ -50,12 +50,12 @@ async function draw(
   waiting: number,
   path: string = ROUTES.home,
   showsDashboard = true,
-  extra: BellNotification[] = [],
+  counts: Partial<PlaceCounts> = {},
 ) {
   usePathname.mockReturnValue(path);
   readTeammates.mockResolvedValue([]);
   readFeatureFlags.mockResolvedValue({ showsDashboard });
-  answerTheBell([...unreadLines('ASK_RECEIVED', waiting), ...extra]);
+  answerTheBell([], { waiting, ...counts });
   render(<NotificationsProvider>{await Sidebar()}</NotificationsProvider>);
   return within(sidebar()).getByRole('navigation', { name: 'Main' });
 }
@@ -164,7 +164,7 @@ describe('Sidebar', () => {
     expect(within(nav).queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('counts the unread Asks in the bell beside Waiting for me, in red', async () => {
+  it('counts the Asks still waiting beside Waiting for me, in red', async () => {
     const nav = await draw(3);
 
     const waiting = await within(nav).findByRole('link', {
@@ -182,20 +182,27 @@ describe('Sidebar', () => {
     expect(within(waiting).getByText('99+')).toBeVisible();
   });
 
-  it('counts what Received holds of the bell beside Received: answers, Feedback and Kudos', async () => {
-    const nav = await draw(0, ROUTES.home, true, [
-      ...unreadLines('ASK_ANSWERED', 1),
-      ...unreadLines('FEEDBACK_RECEIVED', 1),
-      ...unreadLines('KUDOS_RECEIVED', 2),
-      // Read on Home, so not Received's to count.
-      ...unreadLines('FEEDBACK_SHARED', 1),
-    ]);
+  it('counts what is new in Received beside it: answers, Feedback and Kudos together', async () => {
+    const nav = await draw(0, ROUTES.home, true, {
+      requests: 1,
+      offered: 1,
+      kudos: 2,
+    });
 
     expect(
       await within(nav).findByRole('link', {
         name: /^Received ?, 4 unread$/,
       }),
     ).toBeVisible();
+  });
+
+  it('counts what is newly shared with the person beside Home, saying where it is', async () => {
+    const nav = await draw(0, ROUTES.home, true, { shared: 3 });
+
+    const home = await within(nav).findByRole('link', {
+      name: /^Home ?, 3 unread in Shared with me$/,
+    });
+    expect(within(home).getByText('3')).toHaveClass('bg-attention');
   });
 
   it('offers "+" to write something above the menu', async () => {

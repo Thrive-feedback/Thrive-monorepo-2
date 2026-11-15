@@ -5,6 +5,7 @@ import {
   NotificationRepository,
   type NotificationToRecord,
 } from '../../domain/repository/notification-repository.port';
+import type { NotificationTypeValue } from '../../domain/value-object/notification-type.vo';
 
 /** Writes through `client`, so a write inside a unit of work joins its transaction. */
 @Injectable()
@@ -63,6 +64,7 @@ export class PrismaNotificationRepository extends NotificationRepository {
       readonly recipientAccountId: string;
     },
     readAt: Date,
+    types: readonly NotificationTypeValue[] | null,
   ): Promise<void> {
     await this.prismaTransactionContext.client.notification.updateMany({
       // The Workspace is in the match, so a Member of several clears the bell they are looking
@@ -72,6 +74,7 @@ export class PrismaNotificationRepository extends NotificationRepository {
         workspaceId: recipient.workspaceId,
         recipientAccountId: recipient.recipientAccountId,
         readAt: null,
+        ...(types !== null && { type: { in: [...types] } }),
       },
       data: { readAt },
     });

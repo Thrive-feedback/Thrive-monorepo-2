@@ -246,7 +246,7 @@ describe('messaging somebody Feedback was written to', () => {
       '/received?show=offered&feedback=feedback-1',
     );
     expect(to('dm-cara')).toContain('shared feedback with you');
-    expect(to('dm-cara')).toContain('/home?feedback=feedback-1');
+    expect(to('dm-cara')).toContain('/home?show=shared&feedback=feedback-1');
   });
 
   it('tells somebody who is both the Receiver and Selected exactly once', async () => {
@@ -313,6 +313,7 @@ describe('messaging the Requester when an Ask is answered', () => {
       actorAccountId: BEN,
       requesterAccountId: ANN,
       feedbackRequestId: 'request-1',
+      feedbackId: 'answer-1',
     });
 
     expect(discord.posted).toHaveLength(1);

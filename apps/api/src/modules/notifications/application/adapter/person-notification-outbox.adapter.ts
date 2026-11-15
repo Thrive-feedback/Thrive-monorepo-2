@@ -25,12 +25,20 @@ const askReceivedPayload = z.object({
   askIdByGiver: z.record(z.string().min(1), z.string().min(1)),
 });
 
-const askAnsweredPayload = z.object({
-  workspaceId: z.string().min(1),
-  actorAccountId: z.string().min(1),
-  requesterAccountId: z.string().min(1),
-  feedbackRequestId: z.string().min(1),
-});
+const askAnsweredPayload = z
+  .object({
+    workspaceId: z.string().min(1),
+    actorAccountId: z.string().min(1),
+    requesterAccountId: z.string().min(1),
+    feedbackRequestId: z.string().min(1),
+    feedbackId: z.string().min(1).optional(),
+  })
+  // An earlier release sent no answer and keyed the line by its request. Such a message is still
+  // told, as it would have been then — one line for the request — rather than refused and lost.
+  .transform((payload) => ({
+    ...payload,
+    feedbackId: payload.feedbackId ?? payload.feedbackRequestId,
+  }));
 
 const feedbackWrittenPayload = z.object({
   workspaceId: z.string().min(1),

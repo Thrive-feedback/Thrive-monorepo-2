@@ -21,7 +21,9 @@ describe('NotificationGallery', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('/waiting?ask={id}')).toBeInTheDocument();
     expect(screen.getByText('/received?show=requests')).toBeInTheDocument();
-    expect(screen.getByText('/home?feedback={id}')).toBeInTheDocument();
+    expect(
+      screen.getByText('/home?show=shared&feedback={id}'),
+    ).toBeInTheDocument();
     expect(
       screen.getByText('/received?show=offered&feedback={id}'),
     ).toBeInTheDocument();

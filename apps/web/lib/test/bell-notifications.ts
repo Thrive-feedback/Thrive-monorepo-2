@@ -1,7 +1,12 @@
 import { act } from '@testing-library/react';
 import { vi } from 'vitest';
 import type {
+  CountedPlace,
+  PlaceCounts,
+} from '@/lib/notifications/navigation-counts.type';
+import type {
   BellNotification,
+  BellRead,
   NotificationsPage,
   NotificationType,
 } from '@/lib/notifications/notification.type';
@@ -56,26 +61,60 @@ export function aPage(
  * ```
  *
  * {@link answerTheBell} sets what they answer; call it in `beforeEach`.
+ *
+ * A poll is one action, `readBell`, which answers with three parts. Each part has a stand-in of
+ * its own here — `countUnreadNotifications`, `listMyNotifications(1)` and `readMyCounts` — so a
+ * test can hold or fail one of them, and `readBell` answers with what they answer.
  */
 export const BELL_ACTIONS = {
+  readBell: vi.fn<() => Promise<BellRead>>(),
   countUnreadNotifications: vi.fn<() => Promise<number | null>>(),
   listMyNotifications:
     vi.fn<(page?: number) => Promise<NotificationsPage | null>>(),
   markNotificationRead: vi.fn<(id: string) => Promise<void>>(),
   markAllNotificationsRead: vi.fn<() => Promise<boolean>>(),
+  readMyCounts: vi.fn<() => Promise<PlaceCounts | null>>(),
+  markPlaceOpened: vi.fn<(place: CountedPlace) => Promise<void>>(),
+};
+
+/** Nothing waiting and nothing new, as the counts read for somebody with nothing yet. */
+export const NO_COUNTS: PlaceCounts = {
+  waiting: 0,
+  requests: 0,
+  offered: 0,
+  kudos: 0,
+  shared: 0,
 };
 
 /**
  * Resets the bell's actions so they answer with `lines` as the only page and count its unread
- * ones, marking succeeds, and nothing a previous test asked is remembered.
+ * ones, the navigation's counts as `counts` — which the lines do not decide — marking succeeds,
+ * and nothing a previous test asked is remembered.
  */
-export function answerTheBell(lines: readonly BellNotification[] = []) {
+export function answerTheBell(
+  lines: readonly BellNotification[] = [],
+  counts: Partial<PlaceCounts> = {},
+) {
   BELL_ACTIONS.countUnreadNotifications
     .mockReset()
     .mockResolvedValue(lines.filter((line) => !line.isRead).length);
   BELL_ACTIONS.listMyNotifications.mockReset().mockResolvedValue(aPage(lines));
   BELL_ACTIONS.markNotificationRead.mockReset().mockResolvedValue(undefined);
   BELL_ACTIONS.markAllNotificationsRead.mockReset().mockResolvedValue(true);
+  BELL_ACTIONS.readMyCounts
+    .mockReset()
+    .mockResolvedValue({ ...NO_COUNTS, ...counts });
+  BELL_ACTIONS.markPlaceOpened.mockReset().mockResolvedValue(undefined);
+  // A part answering `null` is a refusal the API answered; a part that rejects never reached it,
+  // and rejects the whole read, as the real action's `Promise.all` does.
+  BELL_ACTIONS.readBell.mockReset().mockImplementation(async () => {
+    const [count, page, placeCounts] = await Promise.all([
+      BELL_ACTIONS.countUnreadNotifications(),
+      BELL_ACTIONS.listMyNotifications(1),
+      BELL_ACTIONS.readMyCounts(),
+    ]);
+    return { count, page, counts: placeCounts };
+  });
 }
 
 /**

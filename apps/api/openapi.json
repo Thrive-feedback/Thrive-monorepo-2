@@ -700,9 +700,19 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkReadRequestDto"
+              }
+            }
+          }
+        },
         "responses": {
           "204": {
-            "description": "The bell is clear in this Workspace."
+            "description": "Those kinds, or every kind, are clear in this Workspace."
           },
           "400": {
             "description": "REQUEST_INVALID"
@@ -714,7 +724,7 @@
             "description": "WORKSPACE_NOT_FOUND"
           }
         },
-        "summary": "Mark everything I have been told about in this Workspace as read",
+        "summary": "Mark everything I have been told about in this Workspace as read, or only some kinds",
         "tags": [
           "notifications"
         ]
@@ -1740,6 +1750,111 @@
         "summary": "Count the Kudos given in this Workspace, in all and by month",
         "tags": [
           "kudos"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/me/counts": {
+      "get": {
+        "operationId": "MyCountsController_getMyCounts",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMyCountsResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "How many Asks wait on me, and what is new in each kind of my Received and in Shared with me",
+        "tags": [
+          "feedback"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/me/seen": {
+      "post": {
+        "operationId": "MySeenController_markListSeen",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkListSeenRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Nothing in that list counts as new."
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "Mark one of my lists as seen, so only what comes after it counts as new",
+        "tags": [
+          "feedback"
         ]
       }
     },
@@ -3482,6 +3597,27 @@
         "required": [
           "count"
         ],
+        "additionalProperties": false
+      },
+      "MarkReadRequestDto": {
+        "type": "object",
+        "properties": {
+          "types": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ASK_RECEIVED",
+                "ASK_ANSWERED",
+                "FEEDBACK_RECEIVED",
+                "FEEDBACK_SHARED",
+                "KUDOS_RECEIVED"
+              ]
+            }
+          }
+        },
+        "default": {},
         "additionalProperties": false
       },
       "SendFeedbackRequestRequestDto": {
@@ -9290,6 +9426,62 @@
         "required": [
           "total",
           "months"
+        ],
+        "additionalProperties": false
+      },
+      "GetMyCountsResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "waitingAsks": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "newAnswers": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "newOffered": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "newKudos": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "newShared": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "waitingAsks",
+          "newAnswers",
+          "newOffered",
+          "newKudos",
+          "newShared"
+        ],
+        "additionalProperties": false
+      },
+      "MarkListSeenRequestDto": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "string",
+            "enum": [
+              "RECEIVED_REQUESTS",
+              "RECEIVED_OFFERED",
+              "RECEIVED_KUDOS",
+              "SHARED_WITH_ME"
+            ]
+          }
+        },
+        "required": [
+          "list"
         ],
         "additionalProperties": false
       },

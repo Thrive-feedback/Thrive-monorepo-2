@@ -231,6 +231,7 @@ describe('clearing the bell', () => {
     await repository.markAllRead(
       { workspaceId: acme, recipientAccountId: ann },
       READ_AT,
+      null,
     );
 
     expect(await query.unreadCountFor(acme, ann)).toBe(0);
@@ -251,6 +252,7 @@ describe('clearing the bell', () => {
     await repository.markAllRead(
       { workspaceId, recipientAccountId: ann },
       READ_AT,
+      null,
     );
 
     expect(await query.unreadCountFor(workspaceId, ann)).toBe(0);
@@ -271,12 +273,60 @@ describe('clearing the bell', () => {
     await repository.markAllRead(
       { workspaceId, recipientAccountId: ann },
       later,
+      null,
     );
 
     const page = await query.forRecipient(workspaceId, ann, ONE_PAGE);
     const line = page.items.find((item) => item.id === written.id);
     expect(line?.readAt).toEqual(READ_AT);
     expect(await query.unreadCountFor(workspaceId, ann)).toBe(0);
+  });
+});
+
+describe('reading the kinds one page holds', () => {
+  it('marks only the kinds asked for, and leaves every other kind unread', async () => {
+    const workspaceId = aWorkspace();
+    const ann = anAccount();
+    const kudos = aNotification(workspaceId, ann, { type: 'KUDOS_RECEIVED' });
+    await repository.recordAll([
+      kudos,
+      aNotification(workspaceId, ann, { type: 'ASK_RECEIVED' }),
+      aNotification(workspaceId, ann, { type: 'FEEDBACK_SHARED' }),
+    ]);
+
+    await repository.markAllRead(
+      { workspaceId, recipientAccountId: ann },
+      READ_AT,
+      ['KUDOS_RECEIVED'],
+    );
+
+    const page = await query.forRecipient(workspaceId, ann, ONE_PAGE);
+    expect(page.items.find((item) => item.id === kudos.id)?.readAt).toEqual(
+      READ_AT,
+    );
+    expect(await query.unreadCountFor(workspaceId, ann)).toBe(2);
+  });
+
+  it('marks those kinds in this Workspace only, and only the caller’s', async () => {
+    const acme = aWorkspace();
+    const globex = aWorkspace();
+    const ann = anAccount();
+    const ben = anAccount();
+    await repository.recordAll([
+      aNotification(acme, ann, { type: 'KUDOS_RECEIVED' }),
+      aNotification(globex, ann, { type: 'KUDOS_RECEIVED' }),
+      aNotification(acme, ben, { type: 'KUDOS_RECEIVED' }),
+    ]);
+
+    await repository.markAllRead(
+      { workspaceId: acme, recipientAccountId: ann },
+      READ_AT,
+      ['KUDOS_RECEIVED'],
+    );
+
+    expect(await query.unreadCountFor(acme, ann)).toBe(0);
+    expect(await query.unreadCountFor(globex, ann)).toBe(1);
+    expect(await query.unreadCountFor(acme, ben)).toBe(1);
   });
 });
 

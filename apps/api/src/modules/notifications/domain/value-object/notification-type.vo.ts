@@ -6,9 +6,10 @@ import { NotificationTypeNotSupportedError } from '../notifications.errors';
  * event seen from two sides and read as two different sentences.
  *
  * The type also says what kind of thing a Notification points at: the kind `subjectId` names
- * follows from it — an Ask for `ASK_RECEIVED`, a Feedback Request for `ASK_ANSWERED`, a piece of
- * Feedback for `FEEDBACK_RECEIVED` and `FEEDBACK_SHARED`, a Kudos for `KUDOS_RECEIVED` — so a
- * stored row needs no second column to say which it was (design 0022 D4).
+ * follows from it — an Ask for `ASK_RECEIVED`, a piece of Feedback for `ASK_ANSWERED` (the answer,
+ * since ADR 0094; rows written before it name the Feedback Request), `FEEDBACK_RECEIVED` and
+ * `FEEDBACK_SHARED`, a Kudos for `KUDOS_RECEIVED` — so a stored row needs no second column to say
+ * which it was (design 0022 D4).
  */
 export const NOTIFICATION_TYPES = [
   'ASK_RECEIVED',
