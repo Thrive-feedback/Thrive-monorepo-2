@@ -290,6 +290,8 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
   /** What each Member received, whose Receivers say whose it is. */
   readonly receivedItems: (ReceivedFeedbackRow & {
     readonly workspaceId: string;
+    /** Who was selected to read it, for Selected people; nobody when left out. */
+    readonly selectedAccountIds?: readonly string[];
   })[] = [];
 
   /** What each Member asked for, whose Requester says whose it is. */
@@ -388,6 +390,62 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
         (row) =>
           row.workspaceId === workspaceId &&
           row.origin === 'OFFERED' &&
+          row.receiverAccountIds.includes(receiverAccountId) &&
+          isPast(row, page.after),
+      )
+      .sort(
+        (a, b) =>
+          b.createdAt.getTime() - a.createdAt.getTime() ||
+          b.id.localeCompare(a.id),
+      );
+    return {
+      items: rest.slice(0, page.limit),
+      hasMore: rest.length > page.limit,
+    };
+  }
+
+  async everyoneFeedbackTo(
+    workspaceId: string,
+    receiverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<ReceivedFeedbackPageRow> {
+    return this.feedbackToReadable(
+      workspaceId,
+      receiverAccountId,
+      (row) => row.visibility === 'EVERYONE',
+      page,
+    );
+  }
+
+  async sharedFeedbackTo(
+    workspaceId: string,
+    receiverAccountId: string,
+    readerAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<ReceivedFeedbackPageRow> {
+    return this.feedbackToReadable(
+      workspaceId,
+      receiverAccountId,
+      (row) =>
+        row.visibility === 'SELECTED_PEOPLE' &&
+        (row.selectedAccountIds ?? []).includes(readerAccountId),
+      page,
+    );
+  }
+
+  private feedbackToReadable(
+    workspaceId: string,
+    receiverAccountId: string,
+    readable: (
+      row: FakeFeedbackRequestQuery['receivedItems'][number],
+    ) => boolean,
+    page: FeedPageRequest,
+  ): ReceivedFeedbackPageRow {
+    const rest = this.receivedItems
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          readable(row) &&
           row.receiverAccountIds.includes(receiverAccountId) &&
           isPast(row, page.after),
       )

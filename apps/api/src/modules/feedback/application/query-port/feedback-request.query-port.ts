@@ -310,6 +310,36 @@ export abstract class FeedbackRequestQuery {
   ): Promise<ReceivedFeedbackPageRow>;
 
   /**
+   * The Feedback given to one Member that the whole Workspace reads, asked for or not, past a place
+   * in their Profile, newest first. Only Everyone is here, whoever reads it — the Member themselves
+   * too — so a Profile shows the same to everyone who opens it.
+   *
+   * The Visibility is applied here rather than above, because a page has to hold only what may be
+   * shown (ADR 0044).
+   */
+  abstract everyoneFeedbackTo(
+    workspaceId: string,
+    receiverAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<ReceivedFeedbackPageRow>;
+
+  /**
+   * The Feedback given to one Member, asked for or not, that somebody selected one reader to read,
+   * past a place in that Member's Profile, newest first: Home's Shared with me, narrowed to what was
+   * written to them. A Giver or a Receiver cannot be selected, so the Member reading their own is
+   * read nothing here, and neither is the Giver.
+   *
+   * The Visibility is applied here rather than above, because a page has to hold only what this
+   * reader may read (ADR 0044).
+   */
+  abstract sharedFeedbackTo(
+    workspaceId: string,
+    receiverAccountId: string,
+    readerAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<ReceivedFeedbackPageRow>;
+
+  /**
    * The requests one Member sent, past a place in their Received list, each placed at its latest
    * activity, newest first, with every Ask and every answer. The Requester is an argument, so
    * nobody else's can be read through this. A request moves up when it is answered, so the place a

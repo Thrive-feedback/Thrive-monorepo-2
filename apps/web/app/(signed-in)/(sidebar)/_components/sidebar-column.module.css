@@ -1,6 +1,7 @@
 /*
- * The column eases between the full sidebar and the rail as the person goes in and out of
- * Settings. A width transition on the motion tokens has no utility, which is why this is CSS.
+ * The column eases between the full sidebar and the rail as the person folds or widens it, or goes
+ * in and out of Settings. A width transition on the motion tokens has no utility, which is why this
+ * is CSS.
  */
 .column {
   transition: width var(--motion-duration-fast) var(--motion-ease-smooth-out);

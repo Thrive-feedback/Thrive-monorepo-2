@@ -23,6 +23,7 @@ import { CreateWorkspaceUseCase } from './application/use-cases/create-workspace
 import { DeactivateMemberUseCase } from './application/use-cases/deactivate-member.use-case';
 import { GetCurrentMembershipUseCase } from './application/use-cases/get-current-membership.use-case';
 import { GetInvitationUseCase } from './application/use-cases/get-invitation.use-case';
+import { GetWorkspaceProfileUseCase } from './application/use-cases/get-workspace-profile.use-case';
 import { ListMyInvitationsUseCase } from './application/use-cases/list-my-invitations.use-case';
 import { ListMyMembershipsUseCase } from './application/use-cases/list-my-memberships.use-case';
 import { ListWorkspaceInvitationsUseCase } from './application/use-cases/list-workspace-invitations.use-case';
@@ -54,6 +55,7 @@ import { MyInvitationController } from './presentation/my-invitation.controller'
 import { WorkspaceController } from './presentation/workspace.controller';
 import { WorkspaceMemberController } from './presentation/workspace-member.controller';
 import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
+import { WorkspaceProfileController } from './presentation/workspace-profile.controller';
 
 /**
  * Workspace owns Workspace and Member, which Better Auth's organization plugin stores for it
@@ -67,6 +69,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     WorkspaceController,
     MemberController,
     WorkspaceMemberController,
+    WorkspaceProfileController,
     InvitationController,
     // Before the link's controller, whose `:invitationId` would otherwise take `mine`.
     MyInvitationController,
@@ -126,6 +129,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ReactivateMemberUseCase,
     ListWorkspaceInvitationsUseCase,
     GetInvitationUseCase,
+    GetWorkspaceProfileUseCase,
     AcceptInvitationUseCase,
     RevokeInvitationUseCase,
     ResendInvitationUseCase,

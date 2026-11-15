@@ -1,4 +1,5 @@
 import type {
+  MemberStandingView,
   MembershipView,
   WorkspaceMemberView,
 } from '../../application/types/membership.types';
@@ -25,10 +26,27 @@ export function toMembershipView(record: {
 export function toWorkspaceMemberView(record: {
   readonly userId: string;
   readonly role: string;
+  readonly createdAt: Date;
 }): WorkspaceMemberView {
   return {
     accountId: record.userId,
     role: MemberRole.of(record.role.toUpperCase()).toString(),
+    joinedAt: record.createdAt,
+  };
+}
+
+/** A stored `member` row, active or Deactivated, as where its Account stands in the Workspace. */
+export function toMemberStandingView(record: {
+  readonly userId: string;
+  readonly role: string;
+  readonly createdAt: Date;
+  readonly deactivatedAt: Date | null;
+}): MemberStandingView {
+  return {
+    accountId: record.userId,
+    role: MemberRole.of(record.role.toUpperCase()).toString(),
+    status: record.deactivatedAt === null ? 'ACTIVE' : 'DEACTIVATED',
+    joinedAt: record.createdAt,
   };
 }
 

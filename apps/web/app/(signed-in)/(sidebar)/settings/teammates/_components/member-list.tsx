@@ -12,6 +12,7 @@ import { AvatarName } from '@/components/molecules/avatar-name';
 import { PersonName } from '@/components/organisms/person-name';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { InactiveMemberActions, MemberActions } from './member-actions';
+import { MemberInformationMenu, NO_NAME } from './member-information';
 import { RoleBadge } from './role-badge';
 
 /** Enough rows to fill the first screen, without promising how many will come. */
@@ -26,9 +27,10 @@ export type MemberListProps = {
 /**
  * Everyone in the Workspace, one row each: the signed-in person first, marked You, then everyone
  * else active, then, under an Inactive heading, everyone who left or was Deactivated, their names
- * grey with "(inactive)". Each row reads as a person first — face, name over email — with their
- * Role as a badge at the end. An Admin also gets one menu per row: it changes anyone's Role, their
- * own included, except the only Admin's; Deactivates anyone else; and Reactivates anyone inactive.
+ * grey with "(inactive)". Each row reads as a person first — face, Display name over full name — with
+ * their Role as a badge at the end, and a menu whose Information shows everything else about them.
+ * An Admin's menu also changes anyone's Role, their own included, except the only Admin's;
+ * Deactivates anyone else; and Reactivates anyone inactive.
  * On their own row Deactivate is leaving, as it is in Settings → General. It reads its own data, so the page renders around it while the
  * read is in flight.
  */
@@ -66,9 +68,13 @@ export async function MemberList({ membership, ownEmail }: MemberListProps) {
                   isSelf={isSelf}
                   isLastAdmin={member.role === 'ADMIN' && adminCount === 1}
                   canDeactivate={canDeactivateOthers}
+                  member={member}
                 />
               ) : (
-                <RoleBadge memberRole={member.role} />
+                <span className="flex items-center gap-2">
+                  <RoleBadge memberRole={member.role} />
+                  <MemberInformationMenu member={member} />
+                </span>
               )}
             </MemberRow>
           );
@@ -91,9 +97,13 @@ export async function MemberList({ membership, ownEmail }: MemberListProps) {
                     accountId={member.accountId}
                     name={member.name ?? member.email}
                     memberRole={member.role}
+                    member={member}
                   />
                 ) : (
-                  <RoleBadge memberRole={member.role} inactive />
+                  <span className="flex items-center gap-2">
+                    <RoleBadge memberRole={member.role} inactive />
+                    <MemberInformationMenu member={member} inactive />
+                  </span>
                 )}
               </MemberRow>
             ))}
@@ -123,8 +133,9 @@ type MemberRowProps = {
 
 /**
  * One person: a dash until they have introduced themselves, and their initials, taken from their
- * email until they have a name, when they have no photo. A long address is cut short rather than
- * pushing the Role off the row; it is in full in its title.
+ * email until they have a name, when they have no photo. Under the name, their full name, or their
+ * address until they have one. A long one is cut short rather than pushing the Role off the row; it
+ * is in full in its title.
  */
 function MemberRow({
   member,
@@ -142,7 +153,7 @@ function MemberRow({
         <div className="flex min-w-0 flex-col">
           <span className="flex min-w-0 items-center gap-2">
             <Text as="span" variant="subtitle-4" className="truncate">
-              <PersonName name={member.name ?? '—'} inactive={inactive} />
+              <PersonName name={member.name ?? NO_NAME} inactive={inactive} />
             </Text>
             {isSelf && (
               <Badge size="sm" tone="outline">
@@ -150,14 +161,15 @@ function MemberRow({
               </Badge>
             )}
           </span>
+          {/* Until they introduce themselves they have no full name, so their address says who. */}
           <Text
             as="span"
             variant="body-3"
             tone="muted"
             className="truncate"
-            title={member.email}
+            title={member.fullName ?? member.email}
           >
-            {member.email}
+            {member.fullName ?? member.email}
           </Text>
         </div>
       </AvatarName>

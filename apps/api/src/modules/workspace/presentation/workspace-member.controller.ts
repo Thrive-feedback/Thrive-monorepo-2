@@ -87,6 +87,7 @@ export class WorkspaceMemberController {
         slug: member.slug,
         photoUrl: member.photoUrl,
         role: member.role,
+        joinedAt: member.joinedAt.toISOString(),
       })),
       total: members.total,
       page: page.page,

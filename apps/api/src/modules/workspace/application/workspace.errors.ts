@@ -103,6 +103,19 @@ export class MemberNotFoundError extends ApplicationError {
   }
 }
 
+/**
+ * No Profile has this slug, or its Account was never a Member of this Workspace. The two are one
+ * answer, so nobody can learn who is in another Workspace by guessing slugs.
+ */
+export class ProfileNotFoundError extends ApplicationError {
+  readonly code = 'PROFILE_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super('No Member of this Workspace has a Profile with this slug.');
+  }
+}
+
 /** Admins Deactivate others; a Member with no management rights can only Deactivate themselves. */
 export class NotAllowedToDeactivateError extends ApplicationError {
   readonly code = 'NOT_ALLOWED_TO_DEACTIVATE';

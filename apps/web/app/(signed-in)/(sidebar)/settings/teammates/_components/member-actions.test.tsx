@@ -2,12 +2,25 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MemberDeactivationResult } from '@/app/(signed-in)/(sidebar)/settings/_lib/member-deactivation-actions.service';
+import type { WorkspaceMember } from '@/app/(signed-in)/(sidebar)/settings/_lib/workspace-member.type';
 import type { MemberRoleActionResult } from '@/app/(signed-in)/(sidebar)/settings/teammates/_lib/member-role-actions.service';
 import type { MemberRole } from '@/lib/session/current-account.type';
 import { InactiveMemberActions, MemberActions } from './member-actions';
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
 const WORKSPACE = { workspaceId: WORKSPACE_ID, workspaceName: 'Acme' };
+
+/** Everything Settings knows about the teammate a menu is for, which Information shows. */
+const A_MEMBER: WorkspaceMember = {
+  accountId: '0199a0f0-0000-7000-8000-0000000000b1',
+  email: 'ben@acme.test',
+  name: 'Ben',
+  fullName: 'Ben Carter',
+  slug: 'ben',
+  photoUrl: null,
+  role: 'MEMBER',
+  joinedAt: '2026-10-11T03:04:05.000Z',
+};
 
 const changeMemberRole =
   vi.fn<
@@ -70,6 +83,7 @@ describe('MemberActions', () => {
     render(
       <MemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-2"
         name="Ben"
         memberRole="MEMBER"
@@ -87,6 +101,7 @@ describe('MemberActions', () => {
     render(
       <MemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-2"
         name="Ben"
         memberRole="MEMBER"
@@ -106,6 +121,7 @@ describe('MemberActions', () => {
     render(
       <MemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-2"
         name="Ben"
         memberRole="ADMIN"
@@ -130,6 +146,7 @@ describe('MemberActions', () => {
     render(
       <MemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-2"
         name="Ben"
         memberRole="ADMIN"
@@ -155,6 +172,7 @@ describe('MemberActions', () => {
     render(
       <MemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-1"
         name="Ann"
         memberRole="ADMIN"
@@ -178,6 +196,7 @@ describe('MemberActions', () => {
     render(
       <MemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-1"
         name="Ann"
         memberRole="ADMIN"
@@ -203,6 +222,7 @@ describe('MemberActions', () => {
     render(
       <MemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-1"
         name="Ann"
         memberRole="ADMIN"
@@ -227,6 +247,7 @@ describe('MemberActions', () => {
     render(
       <MemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-1"
         name="Ann"
         memberRole="ADMIN"
@@ -251,23 +272,29 @@ describe('MemberActions', () => {
     ).toHaveTextContent('Admin');
   });
 
-  it('offers a menu with Deactivate only when asked to, and asks before doing it', async () => {
+  it('offers Information in the menu always, Deactivate only when asked to, and asks before doing it', async () => {
     deactivateMember.mockResolvedValue({ ok: true });
     const user = userEvent.setup();
     const { rerender } = render(
       <MemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-2"
         name="Ben"
         memberRole="MEMBER"
       />,
     );
 
-    expect(screen.queryByRole('button', { name: 'Manage Ben' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Manage Ben' }));
+    expect(
+      screen.getAllByRole('menuitem').map((item) => item.textContent),
+    ).toEqual(['Information']);
+    await user.keyboard('{Escape}');
 
     rerender(
       <MemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-2"
         name="Ben"
         memberRole="MEMBER"
@@ -295,6 +322,7 @@ describe('InactiveMemberActions', () => {
     render(
       <InactiveMemberActions
         {...WORKSPACE}
+        member={A_MEMBER}
         accountId="a-2"
         name="Ben"
         memberRole="ADMIN"

@@ -63,7 +63,7 @@ function theWorkspaceHolds(
 }
 
 describe('Teammates', () => {
-  it('lists everyone in the Workspace, the person signed in marked You with nothing to write', async () => {
+  it('lists everyone in the Workspace, the person signed in marked You with nothing they can write', async () => {
     theWorkspaceHolds([
       { accountId: 'ann', email: 'ann@acme.test', fullName: 'Ann Lee' },
       { accountId: 'mali', email: 'mali@acme.test', fullName: 'Mali Sombat' },
@@ -77,8 +77,8 @@ describe('Teammates', () => {
     expect(screen.getByText('Ann Lee')).toBeVisible();
     expect(screen.getByText('You')).toBeVisible();
     expect(
-      screen.queryByRole('button', { name: 'Give Ann Lee feedback' }),
-    ).not.toBeInTheDocument();
+      screen.getByRole('button', { name: 'Give Ann Lee feedback' }),
+    ).toBeDisabled();
   });
 
   it('points an Admin alone in the Workspace to inviting people', async () => {

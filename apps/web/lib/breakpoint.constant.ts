@@ -3,3 +3,9 @@
  * It is `--breakpoint-md` in `packages/tokens/src/theme.css`; change the two together.
  */
 export const MD_AND_UP = '(min-width: 48rem)';
+
+/**
+ * The `xl` breakpoint as a media query, for code that must decide what CSS decides with `xl:`.
+ * It is `--breakpoint-xl` in `packages/tokens/src/theme.css`; change the two together.
+ */
+export const XL_AND_UP = '(min-width: 80rem)';

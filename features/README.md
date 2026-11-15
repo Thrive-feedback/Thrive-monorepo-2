@@ -6,7 +6,7 @@ Step definitions live with the stack that runs them: `@api` steps in `apps/api/t
 | Feature                     | Covers                                                                                                          |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `sessions.feature`          | being recognised while signed in; signing out; starting Google sign-in; being turned away while signed out; renewing a session |
-| `profiles.feature`          | introducing yourself, once                                                                                      |
+| `profiles.feature`          | introducing yourself, once; opening anyone's Profile in your Workspace — who they are, their Role, the Feedback everyone reads, the Feedback written to them that somebody shared with you (never on your own), and the Kudos that name them; a Deactivated Member's still opens; nobody outside the Workspace has one |
 | `workspace.feature`         | founding a Workspace; the two refusals a founder can meet; who is in a Workspace, and only for its Members       |
 | `invitations.feature`       | inviting one or several people, each as an Admin or a Member, and each outcome; the Role each Invitation was sent with; the link read while signed out; joining from the email or from the Invitations waiting on sign-in; revoking, resending, accepting an expired one or a second one; who may do which |
 | `member-roles.feature`      | an Admin making anyone an Admin or a Member, other Admins and the founder included; the new Role holding from the next action; the last Admin kept; who may change Roles, and only inside their Workspace |

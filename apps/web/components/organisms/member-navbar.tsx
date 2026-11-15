@@ -78,6 +78,7 @@ export async function MemberNavbar({
               <AccountAvatar
                 name={session.profile?.displayName ?? session.name}
                 email={session.email}
+                slug={session.profile?.slug ?? null}
                 photoUrl={session.photoUrl}
               />
             </div>

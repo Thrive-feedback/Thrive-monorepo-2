@@ -27,6 +27,8 @@ export interface WorkspaceMember {
   /** Their photo from Google; `null` when Google has none. */
   readonly photoUrl: string | null;
   readonly role: MemberRoleValue;
+  /** When they joined this Workspace. */
+  readonly joinedAt: Date;
 }
 
 export interface WorkspaceMemberList {
@@ -74,6 +76,7 @@ export class ListWorkspaceMembersUseCase {
                 slug: summary.slug,
                 photoUrl: summary.photoUrl,
                 role: member.role,
+                joinedAt: member.joinedAt,
               },
             ]
           : [];

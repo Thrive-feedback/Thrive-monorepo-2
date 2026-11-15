@@ -110,10 +110,20 @@ describe('reading memberships once some have been Deactivated', () => {
     const { workspaceId, ann, ben, cat } =
       await aWorkspaceWithDeactivatedPeople();
 
+    const annJoined = await prismaService.member.findUniqueOrThrow({
+      where: { workspaceId_userId: { workspaceId, userId: ann.accountId } },
+      select: { createdAt: true },
+    });
     expect(
       await membershipQuery.membersOfWorkspace(workspaceId, PAGE, 'ACTIVE'),
     ).toEqual({
-      items: [{ accountId: ann.accountId, role: 'ADMIN' }],
+      items: [
+        {
+          accountId: ann.accountId,
+          role: 'ADMIN',
+          joinedAt: annJoined.createdAt,
+        },
+      ],
       total: 1,
     });
     expect(
@@ -124,8 +134,12 @@ describe('reading memberships once some have been Deactivated', () => {
       ),
     ).toEqual({
       items: [
-        { accountId: ben.accountId, role: 'ADMIN' },
-        { accountId: cat.accountId, role: 'MEMBER' },
+        { accountId: ben.accountId, role: 'ADMIN', joinedAt: expect.any(Date) },
+        {
+          accountId: cat.accountId,
+          role: 'MEMBER',
+          joinedAt: expect.any(Date),
+        },
       ],
       total: 2,
     });
@@ -189,5 +203,47 @@ describe('reading which Workspace someone is in', () => {
     await deactivate(ann, newer);
 
     expect(await workspacesOf(ann)).toEqual(['Older']);
+  });
+});
+
+describe('reading where someone stands in a Workspace', () => {
+  it('answers an active Member’s Role and when they joined', async () => {
+    const { workspaceId, ann } = await aWorkspaceWithDeactivatedPeople();
+    const joined = await prismaService.member.findUniqueOrThrow({
+      where: { workspaceId_userId: { workspaceId, userId: ann.accountId } },
+      select: { createdAt: true },
+    });
+
+    expect(
+      await membershipQuery.standingIn(workspaceId, ann.accountId),
+    ).toEqual({
+      accountId: ann.accountId,
+      role: 'ADMIN',
+      status: 'ACTIVE',
+      joinedAt: joined.createdAt,
+    });
+  });
+
+  it('still answers for someone Deactivated, as Deactivated', async () => {
+    const { workspaceId, cat } = await aWorkspaceWithDeactivatedPeople();
+
+    const standing = await membershipQuery.standingIn(
+      workspaceId,
+      cat.accountId,
+    );
+
+    expect([standing?.role, standing?.status]).toEqual([
+      'MEMBER',
+      'DEACTIVATED',
+    ]);
+  });
+
+  it('answers nothing for someone who was never in the Workspace', async () => {
+    const { workspaceId } = await aWorkspaceWithDeactivatedPeople();
+    const outsider = await fixtures.aSignedInAccount('standing-outsider');
+
+    expect(
+      await membershipQuery.standingIn(workspaceId, outsider.accountId),
+    ).toBe(null);
   });
 });

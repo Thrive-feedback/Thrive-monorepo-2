@@ -5,6 +5,7 @@ import { useOptimistic, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { DeactivateMemberDialog } from '@/app/(signed-in)/(sidebar)/settings/_components/deactivate-member-button';
 import { OnlyAdminDialog } from '@/app/(signed-in)/(sidebar)/settings/_components/only-admin-dialog';
+import type { WorkspaceMember } from '@/app/(signed-in)/(sidebar)/settings/_lib/workspace-member.type';
 import { changeMemberRole } from '@/app/(signed-in)/(sidebar)/settings/teammates/_lib/member-role-actions.service';
 import { Button } from '@/components/atoms/button';
 import {
@@ -24,6 +25,10 @@ import {
 } from '@/components/atoms/dropdown-menu';
 import { RoleSelect } from '@/components/organisms/role-select';
 import type { MemberRole } from '@/lib/session/current-account.type';
+import {
+  MemberInformationDialog,
+  MemberInformationItem,
+} from './member-information';
 import { ReactivateMemberDialog } from './reactivate-member-dialog';
 import { RoleBadge } from './role-badge';
 
@@ -35,6 +40,8 @@ type Teammate = {
   /** Who it is, which names the controls and every question they ask. */
   name: string;
   memberRole: MemberRole;
+  /** Everything known about them, which Information shows. */
+  member: WorkspaceMember;
 };
 
 type ManageTriggerProps = {
@@ -56,14 +63,6 @@ function ManageTrigger({ name, ref }: ManageTriggerProps) {
       </Button>
     </DropdownMenuTrigger>
   );
-}
-
-/**
- * Holds the menu's place on a row that has none, such as the person's own, so every Role badge
- * down the list ends on the same line.
- */
-function NoMenu() {
-  return <span aria-hidden="true" className="size-9 shrink-0" />;
 }
 
 export type MemberActionsProps = Teammate & {
@@ -89,8 +88,9 @@ type Question =
  * a Role reads and changes alike wherever it is chosen; picking one saves it at once, showing it
  * while the change is on its way. Making yourself a Member is asked first, because it takes these
  * controls away from you, and making the only Admin a Member is answered with why it cannot be.
- * Deactivating, rarer and harder to take back, waits in the menu beside it, on the person's own row
- * too, where it is leaving: asked first, or answered with why not when they are the only Admin.
+ * Their Information, and Deactivating, rarer and harder to take back, wait in the menu beside it,
+ * Deactivate on the person's own row too, where it is leaving: asked first, or answered with why not
+ * when they are the only Admin.
  */
 export function MemberActions({
   workspaceId,
@@ -101,8 +101,10 @@ export function MemberActions({
   isSelf = false,
   isLastAdmin = false,
   canDeactivate = false,
+  member,
 }: MemberActionsProps) {
   const [shownRole, showRole] = useOptimistic(memberRole);
+  const [isInformationOpen, setIsInformationOpen] = useState(false);
   const [isChanging, startChanging] = useTransition();
   const [question, setQuestion] = useState<Question>();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -148,10 +150,11 @@ export function MemberActions({
         disabled={isChanging}
         onChange={handleRoleChange}
       />
-      {canDeactivate ? (
-        <DropdownMenu>
-          <ManageTrigger name={name} ref={menuButtonRef} />
-          <DropdownMenuContent>
+      <DropdownMenu>
+        <ManageTrigger name={name} ref={menuButtonRef} />
+        <DropdownMenuContent>
+          <MemberInformationItem onSelect={() => setIsInformationOpen(true)} />
+          {canDeactivate && (
             <DropdownMenuItem
               tone="danger"
               onSelect={() =>
@@ -163,11 +166,15 @@ export function MemberActions({
               <UserMinusIcon aria-hidden="true" className="size-4" />
               Deactivate
             </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : (
-        <NoMenu />
-      )}
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <MemberInformationDialog
+        member={member}
+        open={isInformationOpen}
+        onOpenChange={setIsInformationOpen}
+        returnFocusTo={menuButtonRef}
+      />
       <OnlyAdminDialog
         name={name}
         workspaceName={workspaceName}
@@ -221,7 +228,7 @@ export function MemberActions({
 
 /**
  * An Admin's hold on someone who left or was Deactivated: the Role they would come back with, as an
- * outline, and a menu whose one choice brings them back.
+ * outline, and a menu with their Information and the choice that brings them back.
  */
 export function InactiveMemberActions({
   workspaceId,
@@ -229,8 +236,10 @@ export function InactiveMemberActions({
   accountId,
   name,
   memberRole,
+  member,
 }: Teammate) {
   const [isAsking, setIsAsking] = useState(false);
+  const [isInformationOpen, setIsInformationOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
@@ -239,6 +248,7 @@ export function InactiveMemberActions({
       <DropdownMenu>
         <ManageTrigger name={name} ref={menuButtonRef} />
         <DropdownMenuContent>
+          <MemberInformationItem onSelect={() => setIsInformationOpen(true)} />
           <DropdownMenuItem onSelect={() => setIsAsking(true)}>
             <UserPlusIcon aria-hidden="true" className="size-4" />
             Reactivate
@@ -253,6 +263,13 @@ export function InactiveMemberActions({
         memberRole={memberRole}
         open={isAsking}
         onOpenChange={setIsAsking}
+        returnFocusTo={menuButtonRef}
+      />
+      <MemberInformationDialog
+        member={member}
+        inactive
+        open={isInformationOpen}
+        onOpenChange={setIsInformationOpen}
         returnFocusTo={menuButtonRef}
       />
     </span>

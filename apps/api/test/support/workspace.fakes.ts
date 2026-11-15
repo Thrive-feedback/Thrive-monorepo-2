@@ -51,6 +51,7 @@ import type {
   PendingInvitationView,
 } from '@app/modules/workspace/application/types/invitation.types';
 import type {
+  MemberStandingView,
   MemberStatus,
   MembershipPage,
   MembershipView,
@@ -256,11 +257,16 @@ export class FakeWorkspaceInviting extends WorkspaceInviting {
  * with a `deactivatedAt` is kept but, like the real store, answered only where Deactivated
  * Members are asked for.
  */
+/** When a fake membership joined, for tests that do not say. */
+export const FAKE_JOINED_AT = new Date('2026-10-01T00:00:00.000Z');
+
 export class FakeMembershipQuery extends MembershipQuery {
   readonly memberships: (MembershipView & {
     readonly accountId: string;
     readonly deactivatedAt?: Date;
     readonly lastUsedAt?: Date;
+    /** When they joined; a fixed instant when a test does not care. */
+    readonly joinedAt?: Date;
   })[] = [];
 
   private get active() {
@@ -289,6 +295,23 @@ export class FakeMembershipQuery extends MembershipQuery {
       items: items.slice(start, start + page.pageSize),
       total: items.length,
     };
+  }
+
+  async standingIn(
+    workspaceId: string,
+    accountId: string,
+  ): Promise<MemberStandingView | null> {
+    const found = this.memberships.find(
+      (m) => m.accountId === accountId && m.workspace.id === workspaceId,
+    );
+    return found
+      ? {
+          accountId: found.accountId,
+          role: found.role,
+          status: found.deactivatedAt === undefined ? 'ACTIVE' : 'DEACTIVATED',
+          joinedAt: found.joinedAt ?? FAKE_JOINED_AT,
+        }
+      : null;
   }
 
   async membershipInWorkspace(
@@ -338,7 +361,11 @@ export class FakeMembershipQuery extends MembershipQuery {
           m.workspace.id === workspaceId &&
           (m.deactivatedAt === undefined) === (status === 'ACTIVE'),
       )
-      .map((m) => ({ accountId: m.accountId, role: m.role }));
+      .map((m) => ({
+        accountId: m.accountId,
+        role: m.role,
+        joinedAt: m.joinedAt ?? FAKE_JOINED_AT,
+      }));
     const start = (page.page - 1) * page.pageSize;
     return {
       items: items.slice(start, start + page.pageSize),

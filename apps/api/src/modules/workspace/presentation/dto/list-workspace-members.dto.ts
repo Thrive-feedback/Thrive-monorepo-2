@@ -28,6 +28,8 @@ const workspaceMemberSchema = z.object({
   /** Their photo from Google; `null` when Google has none. */
   photoUrl: z.url().nullable(),
   role: z.enum(MEMBER_ROLES),
+  /** When they joined this Workspace. */
+  joinedAt: z.iso.datetime({ offset: true }),
 });
 
 export const listWorkspaceMembersResponseSchema = z.object({

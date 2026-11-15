@@ -47,14 +47,14 @@ describe('MemberNavbar', () => {
     expect(settings).toHaveAttribute('aria-current', 'page');
   });
 
-  it('leads the avatar, named for the person, to their Account', async () => {
+  it('leads the avatar, named for the person, to their Profile', async () => {
     readSession.mockResolvedValue(ANN);
 
     render(await MemberNavbar());
 
     expect(
-      screen.getByRole('link', { name: 'Account: Ann Lee' }),
-    ).toHaveAttribute('href', '/settings/account');
+      screen.getByRole('link', { name: 'Profile: Ann Lee' }),
+    ).toHaveAttribute('href', '/profile/ann');
   });
 
   it('keeps Settings and the avatar off a wide screen when the page’s sidebar holds them', async () => {

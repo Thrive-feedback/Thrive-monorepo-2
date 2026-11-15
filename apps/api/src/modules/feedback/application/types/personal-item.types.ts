@@ -80,6 +80,18 @@ export const RECEIVED_ITEM_SHOWS = [
 
 export type ReceivedItemShow = (typeof RECEIVED_ITEM_SHOWS)[number];
 
+/**
+ * Which of a Profile's lists to read: what the whole Workspace was shown, what was shared with the
+ * reader, or its Kudos.
+ */
+export const PROFILE_ITEM_SHOWS = [
+  'FEEDBACK',
+  'SHARED_WITH_ME',
+  'KUDOS',
+] as const;
+
+export type ProfileItemShow = (typeof PROFILE_ITEM_SHOWS)[number];
+
 /** Where an item sits in a Member's own list: when it was written, or a request's latest activity. */
 export function positionOf(item: ReceivedItemView): FeedPosition {
   return {
