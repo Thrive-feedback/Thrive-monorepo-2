@@ -1,5 +1,8 @@
 import { FEEDBACK_PUBLISHED_TYPE } from '@app/modules/integrations';
-import { ASK_ANSWERED_TYPE } from '@app/modules/notifications';
+import {
+  ASK_ANSWERED_TYPE,
+  FEEDBACK_WRITTEN_TYPE,
+} from '@app/modules/notifications';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
 import { Outbox } from '@app/shared/application/outbox.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
@@ -10,7 +13,10 @@ import {
   AnswerPostcard,
   type AnswerPostcardSnapshot,
 } from '../../domain/value-object/postcard.vo';
-import { isEveryone } from '../../domain/value-object/visibility.vo';
+import {
+  isEveryone,
+  isSelectedPeople,
+} from '../../domain/value-object/visibility.vo';
 import { FeedbackAskNotFoundError } from '../feedback-request.errors';
 import { SummaryRefreshService } from '../service/summary-refresh.service';
 import { TagsService } from '../service/tags.service';
@@ -89,9 +95,11 @@ export class AnswerFeedbackAskUseCase {
       await this.feedbackRequestRepository.saveAnswer(request, feedback);
       const asked = request.snapshot();
       const written = feedback.snapshot();
-      // The Requester, and nobody else — not the other Givers on the same request, who were
-      // never promised anything about each other (#214).
+      // Everything this answer has to set off, in the answer's own transaction (ADR 0076), as one
+      // write.
       await this.outbox.enqueue([
+        // The Requester is told it was answered — not the other Givers on the same request, who
+        // were never promised anything about each other (#214).
         {
           type: ASK_ANSWERED_TYPE,
           idempotencyKey: `${ASK_ANSWERED_TYPE}:${written.id}`,
@@ -100,26 +108,44 @@ export class AnswerFeedbackAskUseCase {
             actorAccountId: input.giverAccountId,
             requesterAccountId: asked.requesterAccountId,
             feedbackRequestId: asked.id,
+            feedbackId: written.id,
           },
         },
+        // The people the Requester chose to read what the request collects find the answer under
+        // Shared with me, so they are told of it as Offered Feedback shared with them is. With no
+        // Receivers in the event: the Requester is told above, in the words of an answer.
+        ...(isSelectedPeople(written.visibility)
+          ? [
+              {
+                type: FEEDBACK_WRITTEN_TYPE,
+                idempotencyKey: `${FEEDBACK_WRITTEN_TYPE}:${written.id}`,
+                payload: {
+                  workspaceId: input.workspaceId,
+                  actorAccountId: input.giverAccountId,
+                  receiverAccountIds: [],
+                  sharedWithAccountIds: written.selectedAccountIds,
+                  feedbackId: written.id,
+                },
+              },
+            ]
+          : []),
+        // The Workspace feed shows public Feedback whatever its origin, so a channel that showed
+        // only Offered Feedback would quietly disagree with it (ADR 0062).
+        ...(isEveryone(written.visibility)
+          ? [
+              {
+                type: FEEDBACK_PUBLISHED_TYPE,
+                idempotencyKey: `${FEEDBACK_PUBLISHED_TYPE}:${written.id}`,
+                payload: {
+                  workspaceId: input.workspaceId,
+                  giverAccountId: input.giverAccountId,
+                  receiverAccountIds: written.receiverAccountIds,
+                  feedbackId: written.id,
+                },
+              },
+            ]
+          : []),
       ]);
-      if (isEveryone(written.visibility)) {
-        // In the answer's own transaction (ADR 0076). The Workspace feed shows public Feedback
-        // whatever its origin, so a channel that showed only Offered Feedback would quietly
-        // disagree with it (ADR 0062).
-        await this.outbox.enqueue([
-          {
-            type: FEEDBACK_PUBLISHED_TYPE,
-            idempotencyKey: `${FEEDBACK_PUBLISHED_TYPE}:${written.id}`,
-            payload: {
-              workspaceId: input.workspaceId,
-              giverAccountId: input.giverAccountId,
-              receiverAccountIds: written.receiverAccountIds,
-              feedbackId: written.id,
-            },
-          },
-        ]);
-      }
       // The answer is Feedback written to whoever asked for it, so their summary is now behind.
       await this.summaryRefresh.askFor({
         workspaceId: input.workspaceId,

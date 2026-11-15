@@ -217,7 +217,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Mark everything I have been told about in this Workspace as read */
+        /** Mark everything I have been told about in this Workspace as read, or only some kinds */
         post: operations["NotificationController_markAllRead"];
         delete?: never;
         options?: never;
@@ -458,6 +458,40 @@ export interface paths {
         get: operations["KudosController_listKudosMonths"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/me/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** How many Asks wait on me, and what is new in each kind of my Received and in Shared with me */
+        get: operations["MyCountsController_getMyCounts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/me/seen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark one of my lists as seen, so only what comes after it counts as new */
+        post: operations["MySeenController_markListSeen"];
         delete?: never;
         options?: never;
         head?: never;
@@ -948,6 +982,10 @@ export interface components {
         };
         UnreadCountResponseDto_Output: {
             count: number;
+        };
+        /** @default {} */
+        MarkReadRequestDto: {
+            types?: ("ASK_RECEIVED" | "ASK_ANSWERED" | "FEEDBACK_RECEIVED" | "FEEDBACK_SHARED" | "KUDOS_RECEIVED")[];
         };
         SendFeedbackRequestRequestDto: {
             message: string;
@@ -2244,6 +2282,17 @@ export interface components {
                 count: number;
             }[];
         };
+        GetMyCountsResponseDto_Output: {
+            waitingAsks: number;
+            newAnswers: number;
+            newOffered: number;
+            newKudos: number;
+            newShared: number;
+        };
+        MarkListSeenRequestDto: {
+            /** @enum {string} */
+            list: "RECEIVED_REQUESTS" | "RECEIVED_OFFERED" | "RECEIVED_KUDOS" | "SHARED_WITH_ME";
+        };
         StartGoogleSignInRequestDto: {
             /** Format: uuid */
             invitationId?: string;
@@ -3009,9 +3058,13 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["MarkReadRequestDto"];
+            };
+        };
         responses: {
-            /** @description The bell is clear in this Workspace. */
+            /** @description Those kinds, or every kind, are clear in this Workspace. */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -3736,6 +3789,99 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ListKudosMonthsResponseDto_Output"];
                 };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyCountsController_getMyCounts: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetMyCountsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MySeenController_markListSeen: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkListSeenRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Nothing in that list counts as new. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description NOT_SIGNED_IN */
             401: {

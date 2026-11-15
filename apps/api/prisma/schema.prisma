@@ -443,6 +443,30 @@ model KudosMention {
   @@map("kudos_mention")
 }
 
+/// A list that carries a count of what is new in it: each kind of Received, and Shared with me
+/// on Home.
+enum SeenList {
+  RECEIVED_REQUESTS
+  RECEIVED_OFFERED
+  RECEIVED_KUDOS
+  SHARED_WITH_ME
+}
+
+/// When one Member last opened one list in one Workspace. What arrived after it is the count
+/// beside that list; a list never opened has no row, and everything in it counts. Apart from the
+/// bell: reading a Notification changes nothing here (ADR 0091).
+model ListSeen {
+  /// Workspace's id, held without a foreign key (BE_03 R7), as on Feedback.
+  workspaceId String
+  /// personal · the Member who opened it. No foreign key: Accounts are Identity's.
+  accountId   String
+  list        SeenList
+  seenAt      DateTime
+
+  @@id([workspaceId, accountId, list])
+  @@map("list_seen")
+}
+
 // Workspace Goal's table. The Workspace is held as an id with no foreign key into Workspace's
 // tables, which this module does not own (BE_03 R7).
 
@@ -540,9 +564,9 @@ model LinkedAccount {
 }
 
 /// One thing one Member is told about, inside Thrive (glossary: Notification). It is a pointer,
-/// never a copy: it names who did something and which Ask, Feedback Request, Feedback or Kudos
-/// it concerns, and carries none of the words — following it, behind a sign-in, is how those are
-/// read (design 0022 D3). It does not say who can read what it names (ADR 0089).
+/// never a copy: it names who did something and which Ask, Feedback or Kudos it concerns, and
+/// carries none of the words — following it, behind a sign-in, is how those are read (design
+/// 0022 D3). It does not say who can read what it names (ADR 0089).
 ///
 /// Written after the thing it is about has committed, in this module's own transaction: a
 /// cross-module transaction is forbidden, so a crash in between loses it. That is accepted and
@@ -559,9 +583,10 @@ model Notification {
   type               String
   /// Who did the thing. Never the recipient — nobody is told about their own action.
   actorAccountId     String
-  /// The Ask, Feedback Request, Feedback or Kudos it names. Which of them it is follows from
-  /// `type`, each of which has exactly one kind of subject, so a second column would hold a
-  /// value derivable from the first (design 0022 D4). No foreign key: they are Feedback's.
+  /// The Ask, Feedback or Kudos it names — for ASK_ANSWERED the answer, since ADR 0094; older
+  /// rows of that type name the Feedback Request. Which of them it is follows from `type`, so a
+  /// second column would hold a value derivable from the first (design 0022 D4). No foreign key:
+  /// they are Feedback's.
   subjectId          String
   /// Null until the Member opens it or marks everything read. The unread count counts these.
   readAt             DateTime?

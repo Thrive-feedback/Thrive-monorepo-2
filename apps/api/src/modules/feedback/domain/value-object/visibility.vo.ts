@@ -21,6 +21,11 @@ export function isEveryone(value: VisibilityValue): boolean {
   return value === 'EVERYONE';
 }
 
+/** Whether people besides the Giver and the Receivers were picked by name to read it. */
+export function isSelectedPeople(value: VisibilityValue): boolean {
+  return value === 'SELECTED_PEOPLE';
+}
+
 /**
  * Who besides the Giver and the Receivers may read a piece of Feedback: nobody, the Members
  * selected, or every Member of the Workspace. Chosen when sending — by the Requester for what a

@@ -84,7 +84,7 @@ describe('draining a notification', () => {
     expect(personNotifier.asksAnswered[0]).not.toHaveProperty('audience');
   });
 
-  it('tells the Requester their request was answered', async () => {
+  it('still tells of an answer an earlier release enqueued without it, by its request', async () => {
     const { handler, personNotifier } = setUp();
 
     await handler.handle(
@@ -96,8 +96,27 @@ describe('draining a notification', () => {
       }),
     );
 
+    expect(personNotifier.asksAnswered[0]?.feedbackId).toBe('request-1');
+  });
+
+  it('tells the Requester their request was answered', async () => {
+    const { handler, personNotifier } = setUp();
+
+    await handler.handle(
+      message(ASK_ANSWERED_TYPE, {
+        workspaceId: WORKSPACE,
+        actorAccountId: BEN,
+        requesterAccountId: ANN,
+        feedbackRequestId: 'request-1',
+        feedbackId: 'answer-1',
+      }),
+    );
+
     expect(personNotifier.asksAnswered).toHaveLength(1);
-    expect(personNotifier.asksAnswered[0]?.requesterAccountId).toBe(ANN);
+    expect(personNotifier.asksAnswered[0]).toMatchObject({
+      requesterAccountId: ANN,
+      feedbackId: 'answer-1',
+    });
   });
 
   it('tells the people Feedback was written for', async () => {

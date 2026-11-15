@@ -73,6 +73,39 @@ Feature: Being told inside Thrive
     And Ben still has 1 notification
 
   @api
+  Scenario: The Requester is told of every answer to one request, not only the first
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben and Cara for Feedback: "Running the planning meeting"
+    And Ben has answered "You kept everyone with you."
+    And Cara has answered "The agenda was clear."
+    Then Ann has 2 unread notifications
+    And Ann still has 2 notifications
+
+  @api
+  Scenario: Somebody the Requester shared the answers with is told of each answer
+    Given Cara is a Member of Ann's Workspace
+    And Ann has asked Ben for Feedback: "Running the planning meeting", shared with Cara
+    And Ben has answered "You kept everyone with you."
+    Then Cara is told that Ben shared Feedback with them
+    And Cara has 1 unread notification
+    And Ann is told that Ben answered their request
+    And Ann has 1 unread notification
+
+  @api
+  Scenario: Reading one kind leaves every other kind unread
+    Given Ben has introduced themselves
+    And Ann has asked Ben for Feedback: "Running the planning meeting"
+    And Ann has given Kudos: "@Ben carried the launch."
+    When Ben marks what they were told about Kudos read
+    Then Ben has 1 unread notification
+    And Ben still has 2 notifications
+
+  @api
+  Scenario: Reading a kind the bell does not have is refused
+    When Ben marks a kind of notification that does not exist read
+    Then the bell refuses the choice
+
+  @api
   Scenario: Marking everything read clears the count and keeps the lines
     Given Ann has asked Ben for Feedback: "Running the planning meeting"
     And Ann has asked Ben for Feedback: "The retro"

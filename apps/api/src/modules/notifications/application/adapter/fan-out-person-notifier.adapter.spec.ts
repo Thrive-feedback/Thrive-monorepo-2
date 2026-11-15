@@ -253,7 +253,7 @@ describe('who is told, and about what', () => {
     expect(notifications.stored[0]?.row.type).toBe('FEEDBACK_RECEIVED');
   });
 
-  it('tells only the Requester that an Ask was answered', async () => {
+  it('tells only the Requester that an Ask was answered, about that answer', async () => {
     const { notifier, notifications } = setUp();
 
     await notifier.askAnswered({
@@ -261,11 +261,36 @@ describe('who is told, and about what', () => {
       actorAccountId: BEN,
       requesterAccountId: ANN,
       feedbackRequestId: 'request-1',
+      feedbackId: 'answer-1',
     });
 
     expect(notifications.stored).toHaveLength(1);
     expect(notifications.stored[0]?.row.recipientAccountId).toBe(ANN);
-    expect(notifications.stored[0]?.row.subjectId).toBe('request-1');
+    expect(notifications.stored[0]?.row.subjectId).toBe('answer-1');
+  });
+
+  it('tells the Requester of every answer to one request, a line each', async () => {
+    const { notifier, notifications } = setUp();
+
+    await notifier.askAnswered({
+      workspaceId: WORKSPACE,
+      actorAccountId: BEN,
+      requesterAccountId: ANN,
+      feedbackRequestId: 'request-1',
+      feedbackId: 'answer-1',
+    });
+    await notifier.askAnswered({
+      workspaceId: WORKSPACE,
+      actorAccountId: CARA,
+      requesterAccountId: ANN,
+      feedbackRequestId: 'request-1',
+      feedbackId: 'answer-2',
+    });
+
+    expect(notifications.stored.map((one) => one.row.subjectId)).toEqual([
+      'answer-1',
+      'answer-2',
+    ]);
   });
   it('tells everyone a Kudos names, each about that Kudos', async () => {
     const { notifier, notifications } = setUp();

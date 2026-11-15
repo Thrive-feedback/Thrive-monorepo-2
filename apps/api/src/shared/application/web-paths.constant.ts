@@ -28,6 +28,13 @@ export const WEB_PATHS = {
    */
   feedback: (feedbackId: string) => `/home?feedback=${feedbackId}`,
   /**
+   * Home showing Shared with me, with the piece open over it: where somebody it was shared with
+   * reads it, and opening which clears that list's count and reads the lines about it (ADR 0092).
+   * Matches `ROUTES.homeFeedback(id, 'shared')`.
+   */
+  sharedFeedback: (feedbackId: string) =>
+    `/home?show=shared&feedback=${feedbackId}`,
+  /**
    * Received narrowed to Feedback given unasked, with the piece open over it: where somebody it
    * was written to reads it. Matches `ROUTES.receivedFeedback(id, PERSONAL_VIEWS[0], 'offered')`.
    */

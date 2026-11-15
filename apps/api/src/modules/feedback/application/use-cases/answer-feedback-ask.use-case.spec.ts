@@ -243,6 +243,8 @@ describe('telling the Requester their request was answered', () => {
       actorAccountId: BEN,
       requesterAccountId: ANN,
       feedbackRequestId: REQUEST_ID,
+      // The answer itself, so a second answer to the same request is a line of its own.
+      feedbackId: FEEDBACK_ID,
     });
   });
 
@@ -279,6 +281,47 @@ describe('telling the Requester their request was answered', () => {
       `${ASK_ANSWERED}:${FEEDBACK_ID}`,
     );
   });
+});
+
+describe('telling the people the Requester shared the answers with', () => {
+  const FEEDBACK_WRITTEN = 'notifications.feedback_written';
+
+  it('tells each person selected to read it, and leaves the Requester to the answer above', async () => {
+    const { useCase, outbox } = await setUp(
+      Visibility.of({ value: 'SELECTED_PEOPLE', selectedAccountIds: [CARA] }),
+    );
+
+    await useCase.execute(answering);
+
+    expect(outbox.ofType(FEEDBACK_WRITTEN)).toHaveLength(1);
+    expect(outbox.ofType(FEEDBACK_WRITTEN)[0]).toMatchObject({
+      idempotencyKey: `${FEEDBACK_WRITTEN}:${FEEDBACK_ID}`,
+      payload: {
+        workspaceId: WORKSPACE_ID,
+        actorAccountId: BEN,
+        receiverAccountIds: [],
+        sharedWithAccountIds: [CARA],
+        feedbackId: FEEDBACK_ID,
+      },
+    });
+  });
+
+  it.each([
+    ['nobody else', Visibility.onlyMe()],
+    [
+      'everyone in the Workspace',
+      Visibility.of({ value: 'EVERYONE', selectedAccountIds: [] }),
+    ],
+  ])(
+    'tells nobody more when the answers are shared with %s',
+    async (_audience, visibility) => {
+      const { useCase, outbox } = await setUp(visibility);
+
+      await useCase.execute(answering);
+
+      expect(outbox.ofType(FEEDBACK_WRITTEN)).toEqual([]);
+    },
+  );
 });
 
 describe('telling the Workspace channel about an answer', () => {
