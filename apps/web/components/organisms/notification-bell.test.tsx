@@ -111,7 +111,7 @@ describe('NotificationBell', () => {
     [
       'FEEDBACK_SHARED',
       'Nut shared feedback with you',
-      `/home?feedback=${SUBJECT}`,
+      `/home?show=shared&feedback=${SUBJECT}`,
     ],
     ['KUDOS_RECEIVED', 'Nut gave you kudos', '/received?show=kudos'],
   ] as const)(
@@ -355,6 +355,14 @@ describe('NotificationBell', () => {
       screen.getByRole('button', { name: 'Notifications, 3 unread' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    // And it keeps asking: a poll that never got an answer does not stop the next one.
+    answerTheBell(unreadLines('ASK_RECEIVED', 4));
+    await settled(() => window.dispatchEvent(new Event('focus')));
+
+    expect(
+      screen.getByRole('button', { name: 'Notifications, 4 unread' }),
+    ).toBeInTheDocument();
   });
 
   it('takes the number down when pressing a line never reaches the server', async () => {

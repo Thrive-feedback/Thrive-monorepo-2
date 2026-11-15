@@ -2,9 +2,9 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { NotificationsProvider } from '@/components/organisms/notifications-provider';
-import type { BellNotification } from '@/lib/notifications/notification.type';
+import type { PlaceCounts } from '@/lib/notifications/navigation-counts.type';
 import { ROUTES } from '@/lib/routes.constant';
-import { answerTheBell, unreadLines } from '@/lib/test/bell-notifications';
+import { answerTheBell } from '@/lib/test/bell-notifications';
 import { ComposeMenu } from './compose-menu';
 import { TabBar } from './tab-bar';
 
@@ -32,10 +32,10 @@ function draw(
   path: string = ROUTES.home,
   waiting = 0,
   showsDashboard = true,
-  extra: BellNotification[] = [],
+  counts: Partial<PlaceCounts> = {},
 ) {
   usePathname.mockReturnValue(path);
-  answerTheBell([...unreadLines('ASK_RECEIVED', waiting), ...extra]);
+  answerTheBell([], { waiting, ...counts });
   render(
     <NotificationsProvider>
       <TabBar showsDashboard={showsDashboard}>
@@ -85,12 +85,22 @@ describe('TabBar', () => {
     ).toHaveAttribute('href', ROUTES.waiting);
   });
 
-  it('reads the count of unread Asks after Waiting for me, as the sidebar does', async () => {
+  it('reads the count of Asks still waiting after Waiting for me, as the sidebar does', async () => {
     const nav = draw(ROUTES.home, 3);
 
     expect(
       await within(nav).findByRole('link', {
         name: /^Waiting for me ?, 3 unread$/,
+      }),
+    ).toBeVisible();
+  });
+
+  it('counts what is newly shared with the person on Home, saying where it is', async () => {
+    const nav = draw(ROUTES.waiting, 0, true, { shared: 2 });
+
+    expect(
+      await within(nav).findByRole('link', {
+        name: /^Home ?, 2 unread in Shared with me$/,
       }),
     ).toBeVisible();
   });
@@ -104,12 +114,9 @@ describe('TabBar', () => {
     expect(within(waiting).getByText('99+')).toBeVisible();
   });
 
-  it('shows what Received holds of the bell on More, and beside Received inside it', async () => {
+  it('shows what is new in Received on More, and beside Received inside it', async () => {
     const user = userEvent.setup();
-    const nav = draw(ROUTES.home, 0, true, [
-      ...unreadLines('ASK_ANSWERED', 1),
-      ...unreadLines('KUDOS_RECEIVED', 1),
-    ]);
+    const nav = draw(ROUTES.home, 0, true, { requests: 1, kudos: 1 });
     // Drawn on More's icon and read after its name, saying where they are, as Waiting's is.
     const more = await within(nav).findByRole('button', {
       name: /^More ?, 2 unread in Received$/,

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
+import { SHARED_COUNT_SAID } from '@/app/(signed-in)/(sidebar)/_lib/shared-count-said.constant';
 import { CountBadge, CountSaid } from '@/components/atoms/badge';
 import {
   DropdownMenu,
@@ -23,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
 import glass from '@/components/organisms/glass.module.css';
-import { useUnreadCounts } from '@/components/organisms/notifications-provider';
+import { useNavigationCounts } from '@/components/organisms/notifications-provider';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 import styles from './tab-bar.module.css';
@@ -54,8 +55,7 @@ const TAB_ICON_CLASSES =
  */
 export function TabBar({ showsDashboard, children }: TabBarProps) {
   const pathname = usePathname();
-  // Read from the bell's own poll, as the sidebar reads them.
-  const unread = useUnreadCounts();
+  const counts = useNavigationCounts();
   const inMore = [
     ROUTES.teammates,
     ...(showsDashboard ? [ROUTES.dashboard] : []),
@@ -82,6 +82,8 @@ export function TabBar({ showsDashboard, children }: TabBarProps) {
               Icon={HouseIcon}
               currentHref={pathname}
               label="Home"
+              count={counts.shared}
+              countSaid={SHARED_COUNT_SAID}
             />
           </li>
           <li>
@@ -101,7 +103,7 @@ export function TabBar({ showsDashboard, children }: TabBarProps) {
               currentHref={pathname}
               label="Waiting"
               rest=" for me"
-              count={unread.waiting}
+              count={counts.waiting}
             />
           </li>
           <li>
@@ -114,7 +116,7 @@ export function TabBar({ showsDashboard, children }: TabBarProps) {
                   <EllipsisIcon aria-hidden="true" className="size-5" />
                   {/* Received is inside More, so its count shows on More until it is opened. */}
                   <CountBadge
-                    count={unread.received}
+                    count={counts.received}
                     said={null}
                     className={TAB_COUNT_CLASSES}
                   />
@@ -122,7 +124,7 @@ export function TabBar({ showsDashboard, children }: TabBarProps) {
                 <span>
                   More
                   <CountSaid
-                    count={unread.received}
+                    count={counts.received}
                     said="unread in Received"
                   />
                 </span>
@@ -149,7 +151,7 @@ export function TabBar({ showsDashboard, children }: TabBarProps) {
                   Icon={InboxIcon}
                   label="Received"
                   isCurrent={pathname.startsWith(ROUTES.received)}
-                  count={unread.received}
+                  count={counts.received}
                 />
                 <MoreLink
                   href={ROUTES.given}
@@ -177,6 +179,7 @@ function Tab({
   label,
   rest,
   count,
+  countSaid,
 }: {
   href: string;
   Icon: LucideIcon;
@@ -184,6 +187,8 @@ function Tab({
   label: string;
   rest?: string;
   count?: number;
+  /** What the count is, said after the number, where the tab's name does not say it. */
+  countSaid?: string;
 }) {
   return (
     <NextLink
@@ -203,7 +208,7 @@ function Tab({
       <span>
         {label}
         {rest && <span className="sr-only">{rest}</span>}
-        <CountSaid count={count ?? 0} />
+        <CountSaid count={count ?? 0} said={countSaid} />
       </span>
     </NextLink>
   );

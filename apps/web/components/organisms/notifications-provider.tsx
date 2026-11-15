@@ -10,17 +10,24 @@ import {
   useState,
   useTransition,
 } from 'react';
-import type { BellNotification } from '@/lib/notifications/notification.type';
+import type {
+  CountedPlace,
+  PlaceCounts,
+} from '@/lib/notifications/navigation-counts.type';
+import type {
+  BellNotification,
+  BellRead,
+} from '@/lib/notifications/notification.type';
 import {
-  countUnreadNotifications,
   listMyNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  readBell,
+  markPlaceOpened as tellPlaceOpened,
 } from '@/lib/notifications/notification-actions.service';
 import {
   isDrawableKind,
   NOTIFICATION_LINES,
-  type UnreadPlace,
 } from '@/lib/notifications/notification-copy.constant';
 import { NOTIFICATIONS_PAGE_SIZE } from '@/lib/notifications/notification-page.constant';
 
@@ -57,7 +64,59 @@ type NotificationsValue = {
   readonly markAllRead: () => void;
 };
 
+/** What changes the navigation's counts before the next poll says so. Never changes itself. */
+type NavigationCountActions = {
+  /**
+   * A page with a count was opened: the bell lines that lead there are read at once, a list's
+   * count of what is new goes to nothing — Waiting for me's stays, since only answering takes it
+   * down — and the server is told.
+   */
+  readonly markPlaceOpened: (place: CountedPlace) => void;
+  /**
+   * Call just before an answer is sent; call what it returns once the answer has gone. Waiting for
+   * me then counts one fewer at once — unless a poll sent after the answer has already counted it,
+   * which would make it one fewer twice.
+   */
+  readonly startAnsweringAsk: () => () => void;
+};
+
+/** The bell's lines and its number, changed together so a mark counts what it marks. */
+type Bell = {
+  readonly lines: readonly BellNotification[];
+  readonly unreadCount: number;
+};
+
+const NO_COUNTS: PlaceCounts = {
+  waiting: 0,
+  requests: 0,
+  offered: 0,
+  kudos: 0,
+  shared: 0,
+};
+
+const EMPTY_BELL: Bell = { lines: [], unreadCount: 0 };
+
+const NOTHING_READ: BellRead = { count: null, page: null, counts: null };
+
+/** How many times each page has been opened, to tell a page of older lines it opened meanwhile. */
+type OpenedTurns = Record<CountedPlace, number>;
+
+const NONE_OPENED: OpenedTurns = {
+  waiting: 0,
+  requests: 0,
+  offered: 0,
+  kudos: 0,
+  shared: 0,
+};
+
+/**
+ * Three contexts, so a place re-renders only for what it draws: the bell for its lines, the
+ * navigation for its counts — which change a few times a day, not on every poll — and the pages
+ * that mark themselves opened for actions that never change.
+ */
 const NotificationsContext = createContext<NotificationsValue | null>(null);
+const CountsContext = createContext<PlaceCounts>(NO_COUNTS);
+const CountActionsContext = createContext<NavigationCountActions | null>(null);
 
 export type NotificationsProviderProps = {
   children: React.ReactNode;
@@ -83,16 +142,29 @@ function joined(
   return [...newer, ...older.filter((line) => !held.has(line.id))];
 }
 
+/** Whether two reads of the counts say the same, so an unchanged poll keeps the same object. */
+function sameCounts(a: PlaceCounts, b: PlaceCounts): boolean {
+  return (
+    a.waiting === b.waiting &&
+    a.requests === b.requests &&
+    a.offered === b.offered &&
+    a.kudos === b.kudos &&
+    a.shared === b.shared
+  );
+}
+
 /**
- * What the person has been told, read once for every place that shows it: the bell, its number,
- * and the counts beside Waiting for me and Received and their tabs. One poll feeds them all, so
- * reading a line in the bell takes every number down together, and nothing here needs an API of
- * its own.
+ * What waits on the person, read on one timer for every place that shows it: the bell and its
+ * number, the counts beside Waiting for me, Received and Home, and on Received's chips and Home's
+ * Shared with me.
  *
- * A poll reads the unread count and the newest page. Older pages are read only as the person
- * scrolls for them, and stay: a poll lays the newest page over them rather than starting again.
- * The bell's number is the API's count; the navigation's are counted from the lines read so far —
- * the newest page, and any older page the person has scrolled the bell to (design 0022 D19).
+ * A poll is one server action reading the unread count, the newest page of lines and the
+ * navigation's counts together. Older pages are read only as the person scrolls for them, and
+ * stay: a poll lays the newest page over them rather than starting again. The bell's number is the
+ * API's unread count. The navigation's are read from the Asks, Feedback and Kudos themselves, not
+ * from the bell (ADR 0091): reading a line leaves them as they were, answering an Ask takes Waiting
+ * for me down, and opening a list — a kind of Received, or Shared with me — takes that list's down
+ * and reads the bell lines that lead to it (ADR 0092).
  *
  * It asks the server on a timer rather than being pushed to: the browser cannot reach the API, so
  * every read is a server action, and nothing in this stack can hold a connection open. A count can
@@ -104,13 +176,13 @@ export function NotificationsProvider({
   children,
 }: NotificationsProviderProps) {
   const [status, setStatus] = useState<NotificationsStatus>('loading');
-  const [lines, setLines] = useState<readonly BellNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [bell, setBell] = useState<Bell>(EMPTY_BELL);
   /** How many lines there are in all, drawable or not, as the last answer counted them. */
   const [total, setTotal] = useState(0);
   /** How many pages are read. A poll rereads only the first, so this only grows. */
   const [pagesRead, setPagesRead] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [counts, setCounts] = useState<PlaceCounts>(NO_COUNTS);
   const [, startMarkingAll] = useTransition();
 
   /**
@@ -120,6 +192,8 @@ export function NotificationsProvider({
    * line just read as unread again.
    */
   const pollTurn = useRef(0);
+  /** The newest poll whose counts were painted, which an answer compares itself against. */
+  const countedTurn = useRef(0);
   /** Whether a poll is on its way, so focus and the tab coming back together send one. */
   const isPolling = useRef(false);
   /** Whether a page of older lines is on its way, so a scroll sends one at a time. */
@@ -129,6 +203,8 @@ export function NotificationsProvider({
    * from before it; everything it holds existed then, and so is read now.
    */
   const markedAllTurn = useRef(0);
+  /** Bumped per page as it opens, for the same reason as {@link markedAllTurn}, one kind at a time. */
+  const openedTurns = useRef<OpenedTurns>({ ...NONE_OPENED });
 
   const poll = useCallback(() => {
     if (isPolling.current) {
@@ -137,26 +213,35 @@ export function NotificationsProvider({
     isPolling.current = true;
     pollTurn.current += 1;
     const thisPoll = pollTurn.current;
-    // Sent together, and answered one after the other: server actions queue.
-    void Promise.all([
-      countUnreadNotifications().catch(() => null),
-      listMyNotifications(1).catch(() => null),
-    ]).then(([count, page]) => {
-      if (thisPoll !== pollTurn.current) {
-        return;
-      }
-      isPolling.current = false;
-      if (count !== null) {
-        setUnreadCount(count);
-      }
-      if (page === null) {
-        setStatus((current) => (current === 'loading' ? 'failed' : current));
-        return;
-      }
-      setLines((current) => joined(drawable(page.items), current));
-      setTotal(page.total);
-      setStatus('ready');
-    });
+    void readBell()
+      .catch(() => NOTHING_READ)
+      .then(({ count, page, counts: placeCounts }) => {
+        if (thisPoll !== pollTurn.current) {
+          return;
+        }
+        isPolling.current = false;
+        if (placeCounts !== null) {
+          countedTurn.current = thisPoll;
+          setCounts((current) =>
+            sameCounts(current, placeCounts) ? current : placeCounts,
+          );
+        }
+        if (count !== null || page !== null) {
+          setBell((current) => ({
+            lines:
+              page === null
+                ? current.lines
+                : joined(drawable(page.items), current.lines),
+            unreadCount: count ?? current.unreadCount,
+          }));
+        }
+        if (page === null) {
+          setStatus((current) => (current === 'loading' ? 'failed' : current));
+          return;
+        }
+        setTotal(page.total);
+        setStatus('ready');
+      });
   }, []);
 
   const refresh = useCallback(() => {
@@ -193,6 +278,7 @@ export function NotificationsProvider({
     setIsLoadingMore(true);
     const nextPage = pagesRead + 1;
     const markedAllBefore = markedAllTurn.current;
+    const openedBefore = { ...openedTurns.current };
     void listMyNotifications(nextPage)
       .catch(() => null)
       .then((page) => {
@@ -203,14 +289,24 @@ export function NotificationsProvider({
           return;
         }
         setPagesRead(nextPage);
+        // Asked for before everything, or this kind's page, was marked read, so possibly answered
+        // from before it: what it holds existed then, and so is read now.
+        const readSince = (item: BellNotification) => {
+          const place = NOTIFICATION_LINES[item.type].readIn;
+          return (
+            markedAllBefore !== markedAllTurn.current ||
+            openedBefore[place] !== openedTurns.current[place]
+          );
+        };
         const older = drawable(page.items).map((item) =>
-          markedAllBefore === markedAllTurn.current
-            ? item
-            : { ...item, isRead: true },
+          readSince(item) ? { ...item, isRead: true } : item,
         );
         // New lines push older ones down a page while the person scrolls, so a page can repeat
         // lines already read; it cannot skip any. The copy on screen may have been read since.
-        setLines((current) => joined(current, older));
+        setBell((current) => ({
+          ...current,
+          lines: joined(current.lines, older),
+        }));
         setTotal(page.total);
       });
   }, [hasMore, pagesRead]);
@@ -221,12 +317,12 @@ export function NotificationsProvider({
     }
     pollTurn.current += 1;
     isPolling.current = false;
-    setLines((current) =>
-      current.map((item) =>
+    setBell((current) => ({
+      lines: current.lines.map((item) =>
         item.id === notification.id ? { ...item, isRead: true } : item,
       ),
-    );
-    setUnreadCount((current) => Math.max(0, current - 1));
+      unreadCount: Math.max(0, current.unreadCount - 1),
+    }));
     markNotificationRead(notification.id).catch(() => {});
   }, []);
 
@@ -241,19 +337,88 @@ export function NotificationsProvider({
       pollTurn.current += 1;
       isPolling.current = false;
       markedAllTurn.current += 1;
-      setLines((current) => current.map((item) => ({ ...item, isRead: true })));
-      setUnreadCount(0);
+      setBell((current) => ({
+        lines: current.lines.map((item) => ({ ...item, isRead: true })),
+        unreadCount: 0,
+      }));
       if (droppedAPoll) {
         poll();
       }
     });
   }, [poll]);
 
+  /**
+   * A poll on its way may have been answered from before a change to the counts, and would undo
+   * it, so it is dropped — and asked again, sent after the change, because the bell may be waiting
+   * on it: a page opened on one list marks it before the first poll has answered.
+   */
+  const askAgainAfter = useCallback(
+    (change: () => void) => {
+      const droppedAPoll = isPolling.current;
+      pollTurn.current += 1;
+      isPolling.current = false;
+      change();
+      if (droppedAPoll) {
+        poll();
+      }
+    },
+    [poll],
+  );
+
+  const markPlaceOpened = useCallback(
+    (place: CountedPlace) => {
+      askAgainAfter(() => {
+        openedTurns.current[place] += 1;
+        if (place !== 'waiting') {
+          setCounts((current) =>
+            current[place] === 0 ? current : { ...current, [place]: 0 },
+          );
+        }
+        // Lines not read into the bell yet are not here to count; the next poll brings the number
+        // right.
+        setBell((current) => {
+          const leadsHere = (line: BellNotification) =>
+            !line.isRead && NOTIFICATION_LINES[line.type].readIn === place;
+          const newlyRead = current.lines.filter(leadsHere).length;
+          if (newlyRead === 0) {
+            return current;
+          }
+          return {
+            lines: current.lines.map((line) =>
+              leadsHere(line) ? { ...line, isRead: true } : line,
+            ),
+            unreadCount: Math.max(0, current.unreadCount - newlyRead),
+          };
+        });
+        tellPlaceOpened(place).catch(() => {});
+      });
+    },
+    [askAgainAfter],
+  );
+
+  const startAnsweringAsk = useCallback(() => {
+    // Server actions are answered in the order they are sent, so a poll sent after this point is
+    // read after the answer is stored, and already counts it.
+    // A poll sent before it has always been answered by the time the answer has gone, so none is
+    // left to undo this; one still on its way was sent after it, and paints the same number.
+    const sentAfter = pollTurn.current;
+    return () => {
+      if (countedTurn.current > sentAfter) {
+        return;
+      }
+      setCounts((current) =>
+        current.waiting === 0
+          ? current
+          : { ...current, waiting: current.waiting - 1 },
+      );
+    };
+  }, []);
+
   const value = useMemo(
     () => ({
       status,
-      lines,
-      unreadCount,
+      lines: bell.lines,
+      unreadCount: bell.unreadCount,
       hasMore,
       isLoadingMore,
       refresh,
@@ -263,8 +428,7 @@ export function NotificationsProvider({
     }),
     [
       status,
-      lines,
-      unreadCount,
+      bell,
       hasMore,
       isLoadingMore,
       refresh,
@@ -274,7 +438,20 @@ export function NotificationsProvider({
     ],
   );
 
-  return <NotificationsContext value={value}>{children}</NotificationsContext>;
+  const countActions = useMemo(
+    () => ({ markPlaceOpened, startAnsweringAsk }),
+    [markPlaceOpened, startAnsweringAsk],
+  );
+
+  return (
+    <NotificationsContext value={value}>
+      <CountsContext value={counts}>
+        <CountActionsContext value={countActions}>
+          {children}
+        </CountActionsContext>
+      </CountsContext>
+    </NotificationsContext>
+  );
 }
 
 /** The bell's lines and what can be done with them. Only inside a {@link NotificationsProvider}. */
@@ -286,42 +463,37 @@ export function useNotifications(): NotificationsValue {
   return value;
 }
 
-/**
- * How many unread lines, for the places in the navigation that say so: one count per place a line
- * is counted in (see `countedIn`), and Received, which adds up its chips.
- */
-export type UnreadCounts = Readonly<Record<UnreadPlace, number>> & {
+/** The counts the navigation draws: one per place, and Received, which adds up its chips. */
+export type NavigationCounts = PlaceCounts & {
   readonly received: number;
 };
 
-const NO_LINES: readonly BellNotification[] = [];
-
 /**
- * The unread counts the navigation draws, from the lines the bell has read. Each kind is counted
- * where its line leads; Feedback shared with the person opens on Home, so it is in the bell's
- * number and in no count here.
+ * The counts beside Waiting for me, Received, Received's chips and Shared with me.
  *
  * Outside a {@link NotificationsProvider} there is nothing to count, and every count is 0, so the
  * navigation draws no number rather than failing where no bell is mounted, such as the showcase.
  */
-export function useUnreadCounts(): UnreadCounts {
-  const lines = use(NotificationsContext)?.lines ?? NO_LINES;
-  return useMemo(() => {
-    const counts: Record<UnreadPlace, number> = {
-      waiting: 0,
-      requests: 0,
-      offered: 0,
-      kudos: 0,
-    };
-    for (const line of lines) {
-      const place = NOTIFICATION_LINES[line.type].countedIn;
-      if (!line.isRead && place !== null) {
-        counts[place] += 1;
-      }
-    }
-    return {
+export function useNavigationCounts(): NavigationCounts {
+  const counts = use(CountsContext);
+  return useMemo(
+    () => ({
       ...counts,
       received: counts.requests + counts.offered + counts.kudos,
-    };
-  }, [lines]);
+    }),
+    [counts],
+  );
+}
+
+const NOTHING_TO_COUNT: NavigationCountActions = {
+  markPlaceOpened: () => {},
+  startAnsweringAsk: () => () => {},
+};
+
+/**
+ * What changes the navigation's counts before the next poll does. Outside a
+ * {@link NotificationsProvider} there is no count to change, so each does nothing.
+ */
+export function useNavigationCountActions(): NavigationCountActions {
+  return use(CountActionsContext) ?? NOTHING_TO_COUNT;
 }

@@ -15,10 +15,11 @@ vi.mock('next/headers', () => ({
 }));
 
 const {
-  countUnreadNotifications,
   listMyNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  markPlaceOpened,
+  readBell,
 } = await import('./notification-actions.service');
 
 const WORKSPACE_ID = '0199a0f0-0000-7000-8000-0000000000aa';
@@ -62,6 +63,19 @@ beforeEach(() => {
         return HttpResponse.json({ count: 2 });
       },
     ),
+    http.get(
+      `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/me/counts`,
+      ({ request }) => {
+        asked.push(new URL(request.url).pathname);
+        return HttpResponse.json({
+          waitingAsks: 0,
+          newAnswers: 0,
+          newOffered: 0,
+          newKudos: 0,
+          newShared: 0,
+        });
+      },
+    ),
     http.post(
       `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/notifications/read`,
       ({ request }) => {
@@ -94,13 +108,17 @@ describe('what each action costs the person waiting', () => {
     ]);
   });
 
-  it('counts the unread the same way, as it already did', async () => {
-    await countUnreadNotifications();
+  it('reads a whole poll after one read of the Workspace, the three reads together', async () => {
+    await readBell();
 
-    expect(asked).toEqual([
-      '/v1/members/mine/current',
-      `/v1/workspaces/${WORKSPACE_ID}/notifications/unread-count`,
-    ]);
+    expect(asked[0]).toBe('/v1/members/mine/current');
+    expect(asked.slice(1).sort()).toEqual(
+      [
+        `/v1/workspaces/${WORKSPACE_ID}/me/counts`,
+        `/v1/workspaces/${WORKSPACE_ID}/notifications`,
+        `/v1/workspaces/${WORKSPACE_ID}/notifications/unread-count`,
+      ].sort(),
+    );
   });
 
   it('marks one read without reading the session as well', async () => {
@@ -175,8 +193,30 @@ describe('reading the bell', () => {
     },
   );
 
-  it('answers how many are unread', async () => {
-    await expect(countUnreadNotifications()).resolves.toBe(2);
+  it('answers how many are unread, with the newest page', async () => {
+    const read = await readBell();
+
+    expect(read.count).toBe(2);
+    expect(read.page).toEqual({ items: [], total: 0 });
+  });
+
+  it('answers the parts it could read when another is refused', async () => {
+    server.use(
+      http.get(
+        `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/notifications/unread-count`,
+        () =>
+          HttpResponse.json(
+            { error: { code: 'INTERNAL_ERROR' } },
+            { status: 500 },
+          ),
+      ),
+    );
+
+    const read = await readBell();
+
+    expect(read.count).toBeNull();
+    expect(read.page).toEqual({ items: [], total: 0 });
+    expect(read.counts).not.toBeNull();
   });
 
   it('turns each line the API sends into what the bell draws, face included', async () => {
@@ -260,7 +300,7 @@ describe('when the session has expired', () => {
     // `readCurrentMembership` answers null for no Workspace and for no session alike. Somebody
     // whose session has expired must not be left pressing a bell that can never work.
     await expect(listMyNotifications()).rejects.toThrow(/NEXT_REDIRECT/);
-    await expect(countUnreadNotifications()).rejects.toThrow(/NEXT_REDIRECT/);
+    await expect(readBell()).rejects.toThrow(/NEXT_REDIRECT/);
     await expect(markAllNotificationsRead()).rejects.toThrow(/NEXT_REDIRECT/);
   });
 });
@@ -288,10 +328,130 @@ describe('when the session is in no Workspace at all', () => {
   it('says it could not look, rather than asking about a Workspace it does not have', async () => {
     // Somebody between Workspaces is not an error, and there is nothing to ask about.
     await expect(listMyNotifications()).resolves.toBeNull();
-    await expect(countUnreadNotifications()).resolves.toBeNull();
+    await expect(readBell()).resolves.toEqual({
+      count: null,
+      page: null,
+      counts: null,
+    });
     await expect(markAllNotificationsRead()).resolves.toBe(false);
     await expect(
       markNotificationRead(NOTIFICATION_ID),
     ).resolves.toBeUndefined();
+  });
+});
+
+describe('the counts beside Waiting for me, Received and Shared with me', () => {
+  it('reads them from the things themselves, named for where the navigation draws them', async () => {
+    server.use(
+      http.get(
+        `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/me/counts`,
+        ({ request }) => {
+          asked.push(new URL(request.url).pathname);
+          return HttpResponse.json({
+            waitingAsks: 3,
+            newAnswers: 2,
+            newOffered: 1,
+            newKudos: 4,
+            newShared: 5,
+          });
+        },
+      ),
+    );
+
+    expect((await readBell()).counts).toEqual({
+      waiting: 3,
+      requests: 2,
+      offered: 1,
+      kudos: 4,
+      shared: 5,
+    });
+  });
+
+  it('says it could not find out when the API refuses, so the numbers on screen stay', async () => {
+    server.use(
+      http.get(
+        `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/me/counts`,
+        () =>
+          HttpResponse.json(
+            { error: { code: 'INTERNAL_ERROR' } },
+            { status: 500 },
+          ),
+      ),
+    );
+
+    expect((await readBell()).counts).toBeNull();
+  });
+
+  /** What each write was sent with, by the path it was sent to. */
+  function sentOnOpening() {
+    const sent: Record<string, unknown> = {};
+    server.use(
+      http.post(
+        `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/me/seen`,
+        async ({ request }) => {
+          sent.seen = await request.json();
+          return new HttpResponse(null, { status: 204 });
+        },
+      ),
+      http.post(
+        `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/notifications/read`,
+        async ({ request }) => {
+          sent.read = await request.json();
+          return new HttpResponse(null, { status: 204 });
+        },
+      ),
+    );
+    return sent;
+  }
+
+  it.each([
+    ['requests', 'RECEIVED_REQUESTS', 'ASK_ANSWERED'],
+    ['offered', 'RECEIVED_OFFERED', 'FEEDBACK_RECEIVED'],
+    ['kudos', 'RECEIVED_KUDOS', 'KUDOS_RECEIVED'],
+    ['shared', 'SHARED_WITH_ME', 'FEEDBACK_SHARED'],
+  ] as const)(
+    'marks %s opened as the API names it, and reads the bell lines that lead there',
+    async (place, list, kind) => {
+      const sent = sentOnOpening();
+
+      await markPlaceOpened(place);
+
+      expect(sent).toEqual({ seen: { list }, read: { types: [kind] } });
+    },
+  );
+
+  it('reads the lines about being asked when Waiting for me opens, and leaves its count alone', async () => {
+    const sent = sentOnOpening();
+
+    await markPlaceOpened('waiting');
+
+    expect(sent).toEqual({ read: { types: ['ASK_RECEIVED'] } });
+  });
+
+  it.each(['all', 'ALL', 'everything', 42, null])(
+    'asks nothing for %s, which is not one list with a count',
+    async (place) => {
+      // A server action is a public endpoint: the browser can send it anything.
+      // @ts-expect-error — not one of the places this bundle would send.
+      await expect(markPlaceOpened(place)).resolves.toBeUndefined();
+      expect(asked).toEqual([]);
+    },
+  );
+
+  it('still reads the bell lines when marking the list seen is refused, and does not fail', async () => {
+    const sent = sentOnOpening();
+    server.use(
+      http.post(
+        `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/me/seen`,
+        () =>
+          HttpResponse.json(
+            { error: { code: 'INTERNAL_ERROR' } },
+            { status: 500 },
+          ),
+      ),
+    );
+
+    await expect(markPlaceOpened('kudos')).resolves.toBeUndefined();
+    expect(sent.read).toEqual({ types: ['KUDOS_RECEIVED'] });
   });
 });

@@ -3,6 +3,7 @@ import type { NotificationType } from './notification.type';
 import {
   NOTIFICATION_LINES,
   notificationLine,
+  typesReadIn,
 } from './notification-copy.constant';
 
 const SUBJECT = '0199ffff-0000-7000-8000-00000000000a';
@@ -23,7 +24,7 @@ const LINES: readonly (readonly [NotificationType, string, string])[] = [
   [
     'FEEDBACK_SHARED',
     'Ploy shared feedback with you',
-    `/home?feedback=${SUBJECT}`,
+    `/home?show=shared&feedback=${SUBJECT}`,
   ],
   ['KUDOS_RECEIVED', 'Ploy gave you kudos', '/received?show=kudos'],
 ];
@@ -67,4 +68,19 @@ describe('notificationLine', () => {
 
     expect(line.sentence).toBe('Somebody asked you for feedback');
   });
+});
+
+describe('typesReadIn', () => {
+  it.each([
+    ['waiting', ['ASK_RECEIVED']],
+    ['requests', ['ASK_ANSWERED']],
+    ['offered', ['FEEDBACK_RECEIVED']],
+    ['kudos', ['KUDOS_RECEIVED']],
+    ['shared', ['FEEDBACK_SHARED']],
+  ] as const)(
+    'reads, on opening %s, the lines that lead there',
+    (place, kinds) => {
+      expect(typesReadIn(place)).toEqual(kinds);
+    },
+  );
 });

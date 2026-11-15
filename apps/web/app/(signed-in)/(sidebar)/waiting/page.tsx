@@ -8,6 +8,7 @@ import { requireMember } from '@/lib/session/session.service';
 import { AnsweredAsksProvider } from './_components/answered-asks';
 import { WaitingAsks, WaitingAsksSkeleton } from './_components/waiting-asks';
 import { WAITING_HEADING_ID } from './_components/waiting-heading.constant';
+import { WaitingOpened } from './_components/waiting-opened';
 import { WaitingPostcard } from './_components/waiting-postcard';
 import { WaitingSort } from './_components/waiting-sort';
 import { WaitingSearchParams } from './_lib/waiting-search-params.schema';
@@ -36,6 +37,7 @@ export default async function Waiting({ searchParams }: WaitingProps) {
 
   return (
     <AnsweredAsksProvider>
+      <WaitingOpened />
       {/* The gap clears the note by hand that rises above the first card's small postcard. */}
       <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-11')}>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">

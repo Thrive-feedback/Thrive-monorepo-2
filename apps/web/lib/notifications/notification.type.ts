@@ -1,4 +1,5 @@
 import type { components } from '@repo/api';
+import type { PlaceCounts } from './navigation-counts.type';
 
 type NotificationItem =
   components['schemas']['ListNotificationsResponseDto_Output']['items'][number];
@@ -20,7 +21,7 @@ export type BellNotification = {
   readonly actorName: string | null;
   /** Their photo, or `null` when they have none, and their initials stand in. */
   readonly actorPhotoUrl: string | null;
-  /** The Ask, the Feedback Request, the Feedback or the Kudos the line leads to. */
+  /** The Ask, the Feedback (an answer, for an answered request) or the Kudos the line is about. */
   readonly subjectId: string;
   readonly createdAt: string;
   readonly isRead: boolean;
@@ -30,4 +31,14 @@ export type BellNotification = {
 export type NotificationsPage = {
   readonly items: readonly BellNotification[];
   readonly total: number;
+};
+
+/**
+ * What one poll reads: the bell's number, its newest page of lines, and the navigation's counts.
+ * Each is `null` on its own when it could not be read, and whatever is on screen for it stays.
+ */
+export type BellRead = {
+  readonly count: number | null;
+  readonly page: NotificationsPage | null;
+  readonly counts: PlaceCounts | null;
 };

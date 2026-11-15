@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { deliverCard } from '@/app/(signed-in)/(sidebar)/_lib/deliver-card.util';
 import { sendPostcardAnswer } from '@/app/(signed-in)/(sidebar)/_lib/send-postcard-actions.service';
 import { toSentAnswer } from '@/app/(signed-in)/(sidebar)/_lib/sent-postcard.util';
+import { useNavigationCountActions } from '@/components/organisms/notifications-provider';
 import type {
   PostcardAnswer,
   PostcardAsk,
@@ -63,8 +64,12 @@ export function WaitingPostcardDialog({
   const hasLeft = useRef(false);
   const hasClosed = useRef(false);
   const { markAnswered } = useAnsweredAsks();
+  const { startAnsweringAsk } = useNavigationCountActions();
+  /** Takes Waiting for me's count down once the answer has gone, unless a poll already has. */
+  const countItAnswered = useRef<() => void>(() => {});
 
   async function handleSend(answer: PostcardAnswer) {
+    countItAnswered.current = startAnsweringAsk();
     const hasGone = await deliverCard(
       () => sendPostcardAnswer(workspaceId, askId, toSentAnswer(answer)),
       'Answer sent.',
@@ -81,6 +86,7 @@ export function WaitingPostcardDialog({
     if (hasSent.current && !hasTakenItsCardOut.current) {
       hasTakenItsCardOut.current = true;
       markAnswered(askId);
+      countItAnswered.current();
       router.refresh();
     }
   }, [askId, markAnswered, router]);

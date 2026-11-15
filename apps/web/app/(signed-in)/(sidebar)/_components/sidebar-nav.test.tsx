@@ -21,9 +21,9 @@ beforeEach(() => {
 });
 
 describe('SidebarNav beside the bell', () => {
-  it('takes its count down the moment a line is read in the bell, as the layout mounts them', async () => {
+  it('keeps its count when a line is read in the bell, since it counts what is new, not what is unread', async () => {
     const user = userEvent.setup();
-    answerTheBell([aBellNotification('KUDOS_RECEIVED')]);
+    answerTheBell([aBellNotification('KUDOS_RECEIVED')], { kudos: 1 });
     render(
       <NotificationsProvider>
         <NotificationBell />
@@ -43,7 +43,16 @@ describe('SidebarNav beside the bell', () => {
 
     // The menu hides the page from the accessibility tree while it closes.
     expect(
-      await screen.findByRole('link', { name: /^Received$/, hidden: true }),
+      await screen.findByRole('button', {
+        name: 'Notifications',
+        hidden: true,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', {
+        name: /^Received ?, 1 unread$/,
+        hidden: true,
+      }),
     ).toBeInTheDocument();
   });
 });

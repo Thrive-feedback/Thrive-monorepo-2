@@ -32,10 +32,10 @@ export type NotificationKind = {
   readonly inChat: string;
 };
 
-/** Home on its first filter, with the one piece of Feedback the line names open over it. */
-const HOME_WITH_FEEDBACK_OVER_IT: NotificationLanding = {
+/** Home showing Shared with me, with the one piece of Feedback the line names open over it. */
+const SHARED_WITH_ME_WITH_FEEDBACK_OVER_IT: NotificationLanding = {
   page: 'Home',
-  showing: 'All Feedback',
+  showing: 'Shared with me',
   overIt: 'That Feedback',
 };
 
@@ -88,11 +88,11 @@ export const NOTIFICATION_KINDS: Readonly<
   },
   FEEDBACK_SHARED: {
     title: 'Feedback shared with you',
-    when: 'Somebody offers Feedback with its Visibility set to Selected people, and picks this person.',
+    when: 'Somebody offers Feedback with its Visibility set to Selected people and picks this person, or answers a request whose Requester picked this person to read its answers.',
     whoIsTold:
       'Each person picked who is not also a Receiver. A Receiver who was also picked is told once, as a Receiver.',
-    opens: 'Home, with that Feedback open over it.',
-    landsOn: HOME_WITH_FEEDBACK_OVER_IT,
+    opens: 'Home showing Shared with me, with that Feedback open over it.',
+    landsOn: SHARED_WITH_ME_WITH_FEEDBACK_OVER_IT,
     inChat:
       'Who shared it and in which Workspace, with a link to the Feedback. None of its words.',
   },
