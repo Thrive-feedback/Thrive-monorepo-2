@@ -134,7 +134,7 @@ them. A lasting record of them belongs in a brain ADR when this card is built.
 | 1 | Can a Member turn in-app Notifications off? | **No.** It is the floor; an off switch makes "nobody told me" possible again and brings `NotificationPreference` into scope. Rule 1 |
 | 2 | Does the bell show Notifications from the person's **other** Workspaces? | **No.** Home is one Workspace's, and a count mixing two is a lie about where pressing it will take you. The chat DM already names its Workspace (`0021` D11) and covers the person looking elsewhere. Rule 5 |
 | 3 | How long is a Notification kept? | **Forever, for now.** ~90,000 rows and under 10 MB a year for a whole Workspace. No deletion is built until there is a reason to build it |
-| 5 | Read on being **seen**, or on being **pressed**? | **Pressed**, plus an explicit *Mark all as read*. Marking on sight means the count disappears for somebody who glanced at the panel on the way past |
+| 5 | Read on being **seen**, or on being **pressed**? | **Pressed**, plus an explicit *Mark all as read*. Marking on sight means the count disappears for somebody who glanced at the panel on the way past. **Amended 2026-11-15 by ADR 0092:** also read when the page a line leads to is opened — Waiting for me, one kind of Received, or Shared with me — since that page is what the line pointed at; glancing at the panel still reads nothing |
 
 **Still open.**
 
