@@ -212,3 +212,13 @@
 .noScrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/*
+ * The words set at the share of their chosen size that fills the card (ADR 0092), which
+ * `useFittedSize` measures into `--kudos-fit`. Inside `.writing`, so it outranks `.sized`, which
+ * sets the chosen size itself.
+ */
+.writing .fitted {
+  font-size: calc(var(--postcard-size) * var(--kudos-fit, 1));
+  line-height: calc(var(--postcard-leading) * var(--kudos-fit, 1));
+}

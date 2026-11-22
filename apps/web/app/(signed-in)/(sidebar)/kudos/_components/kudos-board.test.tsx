@@ -58,14 +58,26 @@ const ids = (from: number, to: number) =>
   Array.from({ length: to - from + 1 }, (_, index) => `k${from + index}`);
 
 /** Stands for the window changing width. */
-let windowChanged: () => void;
+/** Everything watching for a change of size: the board, and each card fitting its words. */
+const watchers = new Set<() => void>();
+
+function windowChanged() {
+  for (const watcher of watchers) {
+    watcher();
+  }
+}
 
 class WatchesTheWindow {
+  readonly #callback: () => void;
   constructor(callback: () => void) {
-    windowChanged = callback;
+    this.#callback = callback;
   }
-  observe() {}
-  disconnect() {}
+  observe() {
+    watchers.add(this.#callback);
+  }
+  disconnect() {
+    watchers.delete(this.#callback);
+  }
 }
 
 /** Lays the board out this many cards across, as its classes do in a browser. */

@@ -130,6 +130,18 @@ describe('KudosDialog', () => {
     expect(message()).toHaveValue('');
   });
 
+  it('writes on from the end of the words wherever the card is pressed', async () => {
+    const user = userEvent.setup();
+    render(dialog());
+    await write(user, 'Thank you');
+    expect(message()).not.toHaveFocus();
+
+    await user.click(screen.getByTestId('kudos-writing-room'));
+
+    expect(message()).toHaveFocus();
+    expect(message()).toHaveProperty('selectionStart', 'Thank you'.length);
+  });
+
   it('has no stamp, nobody to choose and nobody to share it with', async () => {
     const user = userEvent.setup();
     render(dialog());
