@@ -23,8 +23,8 @@ export type ProfileHeaderProps = {
 
 /**
  * The head of a Profile, a band that hangs from the navbar in the frame's tint, lit by soft glows of
- * plum, blue and orange that run on into the navbar, its foot cut in a zigzag where the page
- * begins. Inside it,
+ * plum, blue and orange that run on into the navbar, its foot perforated like a sheet of stamps
+ * where the page begins. Inside it,
  * kept to the page's column: the person's small face and the name they go by, then their full name,
  * then the address they sign in with, each on a line of its own. Someone who has
  * left is marked Deactivated, so nobody writes to them expecting an answer. What the reader can do
