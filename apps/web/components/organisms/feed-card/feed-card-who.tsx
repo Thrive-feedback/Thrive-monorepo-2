@@ -99,7 +99,7 @@ export function FeedCardWho({
         )}
       </AvatarName>
       <span className="text-fg-secondary">{verb}</span>
-      <span className="text-action-secondary-hover">to</span>
+      <span className="text-action-secondary-active">to</span>
       <Receivers
         receivers={receivers}
         peopleDescription={peopleDescription}
