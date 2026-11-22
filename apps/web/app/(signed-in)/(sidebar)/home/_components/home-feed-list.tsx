@@ -2,16 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useEndlessList } from '@/app/(signed-in)/(sidebar)/_lib/use-endless-list';
+import { groupFeedByDay } from '@/app/(signed-in)/(sidebar)/home/_lib/feed-day.util';
 import {
   readHomeFeedThroughDay,
   readNextHomeFeedPage,
 } from '@/app/(signed-in)/(sidebar)/home/_lib/home-feed-actions.service';
+import type { HomeWeekSummary } from '@/app/(signed-in)/(sidebar)/home/_lib/home-week.type';
 import { FeedCardSkeleton } from '@/components/organisms/feed-card/feed-card-skeleton';
 import { FeedPageFailed } from '@/components/organisms/feed-card/feed-page-failed';
 import type { HomeFeedPage } from '@/lib/feedback/home-feed-item.type';
 import type { HomeShow } from '@/lib/routes.constant';
-import { groupFeedByDay } from '../_lib/feed-day.util';
-import type { HomeWeek } from '../_lib/home-week.type';
 import { useDayJump } from './home-day-jump';
 import { dayAnchorOf, dayHeadingOf, HomeFeedDay } from './home-feed-day';
 
@@ -24,8 +24,11 @@ const MOST_READS_TO_A_DAY = 3;
 export type HomeFeedListProps = {
   /** The page the server read. Later reads of it are ignored: see `useEndlessList`. */
   initialPage: HomeFeedPage;
-  /** What the last seven days held, which names the days and says which held nothing. */
-  week: HomeWeek;
+  /**
+   * What the last seven days held, which names the days and says which held nothing; `null` when
+   * the API could not count them, and the list is then in days without either.
+   */
+  week: HomeWeekSummary | null;
   show: HomeShow;
 };
 
@@ -66,23 +69,31 @@ export function HomeFeedList({ initialPage, week, show }: HomeFeedListProps) {
     [items, week, hasMore],
   );
 
-  const { requestedDay, finish } = useDayJump();
-  const readsToTheDay = useRef(0);
+  const { requestedDay, finish, attach } = useDayJump();
+  // How many reads the press being answered has spent. Each press has its own: one made while
+  // another is still reading starts from none.
+  const spent = useRef<{ day: string | null; reads: number }>({
+    day: null,
+    reads: 0,
+  });
 
-  // A list that leaves, because the filter changed or the reader sent something, lets go of a press
-  // it had not finished: the next list starts from its own first page.
-  useEffect(() => finish, [finish]);
+  // While this list is drawn it answers presses. A list that leaves, because the filter changed or
+  // the reader sent something, is let go of by the provider, which also lets go of its press.
+  useEffect(() => attach(), [attach]);
 
   useEffect(() => {
     if (requestedDay === null) {
-      readsToTheDay.current = 0;
+      spent.current = { day: null, reads: 0 };
       return;
+    }
+    if (spent.current.day !== requestedDay) {
+      spent.current = { day: requestedDay, reads: 0 };
     }
     if (phase === 'reading') {
       // What is being read may bring the day in; the list drawing again looks once more.
       return;
     }
-    if (phase === 'failed' && readsToTheDay.current > 0) {
+    if (phase === 'failed' && spent.current.reads > 0) {
       // A read for this press failed: the list offers to try again, and the press is over.
       finish();
       return;
@@ -92,7 +103,7 @@ export function HomeFeedList({ initialPage, week, show }: HomeFeedListProps) {
       finish();
       return;
     }
-    if (!hasMore || readsToTheDay.current >= MOST_READS_TO_A_DAY) {
+    if (!hasMore || spent.current.reads >= MOST_READS_TO_A_DAY) {
       // Out of list, or out of reads: the furthest the list has come is where the day would be.
       const furthest = sections.at(-1);
       if (furthest) {
@@ -101,7 +112,7 @@ export function HomeFeedList({ initialPage, week, show }: HomeFeedListProps) {
       finish();
       return;
     }
-    readsToTheDay.current += 1;
+    spent.current.reads += 1;
     void appendFrom((cursor) =>
       readHomeFeedThroughDay({ show, cursor, day: requestedDay }),
     );

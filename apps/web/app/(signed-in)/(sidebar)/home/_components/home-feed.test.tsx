@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PLAIN_POSTCARD } from '@/app/(signed-in)/(sidebar)/_lib/plain-postcard.constant';
+import { weekEndingSunday } from '@/app/(signed-in)/(sidebar)/home/_lib/home-feed.fixture';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
-import { weekEndingSunday } from '../_lib/home-feed.fixture';
 import { HomeDayJumpProvider } from './home-day-jump';
 import { HomeFeed, type HomeFeedProps } from './home-feed';
 
@@ -12,8 +12,8 @@ vi.mock('@/app/(signed-in)/(sidebar)/home/_lib/home-feed.service', () => ({
   readHomeFeed: (...args: unknown[]) => readHomeFeed(...args),
 }));
 const readHomeWeek = vi.fn();
-vi.mock('../_lib/home-week.service', () => ({
-  readHomeWeek: (...args: unknown[]) => readHomeWeek(...args),
+vi.mock('@/app/(signed-in)/(sidebar)/home/_lib/home-week.service', () => ({
+  readHomeWeekIfCounted: (...args: unknown[]) => readHomeWeek(...args),
 }));
 vi.mock(
   '@/app/(signed-in)/(sidebar)/home/_lib/home-feed-actions.service',
@@ -137,5 +137,17 @@ describe('HomeFeed', () => {
     expect(
       screen.queryByText('Somebody else posted', PAST_THE_DRAWING),
     ).not.toBeInTheDocument();
+  });
+
+  it('still shows every card when the week could not be counted', async () => {
+    readHomeWeek.mockResolvedValue(null);
+    readHomeFeed.mockResolvedValue(pageWith(piece('p-1', 'ben', 'Still here')));
+
+    render(await homeFeed({ membership: MEMBERSHIP, show: 'all' }));
+
+    expect(
+      screen.getByText('Still here', PAST_THE_DRAWING),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^Sunday 22/ })).toBeVisible();
   });
 });

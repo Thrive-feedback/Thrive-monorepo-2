@@ -9,6 +9,9 @@ export type EndlessPage<Item> = {
   readonly nextCursor: string | null;
 };
 
+/** What one read past the end came to. */
+export type AppendResult = 'read' | 'failed' | 'busy' | 'ended';
+
 /**
  * A list that reads its next page as its end comes near. What has been read is held here rather
  * than taken from `initialPage` on every render, because opening a card changes the address and
@@ -21,9 +24,6 @@ export type EndlessPage<Item> = {
  * A page never adds an item the list already holds, by `idOf`. A list whose items can move up, as a
  * request in Received does when it is answered, could otherwise draw one twice under one key.
  */
-/** What one read past the end came to. */
-export type AppendResult = 'read' | 'failed' | 'busy' | 'ended';
-
 export function useEndlessList<Item>(
   initialPage: EndlessPage<Item>,
   readNext: (cursor: string) => Promise<EndlessPage<Item> | null>,

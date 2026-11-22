@@ -1,5 +1,3 @@
-'use client';
-
 import { memo } from 'react';
 import { FeedCard } from '@/components/organisms/feed-card/feed-card';
 import { KudosFeedCard } from '@/components/organisms/feed-card/kudos-feed-card';

@@ -15,7 +15,7 @@ export type HomeWeekDay = HomeWeekCounts & { readonly day: string };
  * Everything Home says about a day, Today and Yesterday included, is worked out from these dates and
  * never from the browser's clock, so the server and the browser draw the same page.
  */
-export type HomeWeek = {
+export type HomeWeekSummary = {
   /** The last of the days: today, on the API's clock. */
   readonly today: string;
   /** Oldest first, every one of the seven, the quiet ones too. */
