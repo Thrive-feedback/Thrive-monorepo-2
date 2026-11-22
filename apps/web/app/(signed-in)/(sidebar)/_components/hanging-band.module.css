@@ -1,7 +1,7 @@
 /*
- * The head of a Profile: a band that hangs from the navbar in the frame's tint, so the two read as
- * one surface, lit by soft glows of plum, blue and orange, its foot perforated like a sheet of
- * stamps where the page begins.
+ * The head of a page that hangs from the navbar, a Profile's or Home's: a band in the frame's tint,
+ * so the two read as one surface, lit by soft glows of plum, blue and orange, its foot perforated
+ * like a sheet of stamps where the page begins.
  *
  * The band carries `[data-hangs-from-navbar]`, so the navbar paints the same ground instead of
  * frosting, from the light laid out on the window (`--hanging-light`, `--hanging-tint`; both in the

@@ -35,7 +35,9 @@ vi.mock('next/navigation', () => ({
   },
 }));
 
-const { readNextHomeFeedPage } = await import('./home-feed-actions.service');
+const { readNextHomeFeedPage, readHomeFeedThroughDay } = await import(
+  './home-feed-actions.service'
+);
 
 const FEED_ITEMS = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/feed-items`;
 
@@ -56,6 +58,7 @@ const AN_ANSWER = {
   message: 'The order of the steps was clear.',
   tags: { workspaceGoals: [], mentions: [] },
   createdAt: '2026-10-31T03:00:00.000Z',
+  day: '2026-10-31',
   visibility: 'SELECTED_PEOPLE',
   postcard: null,
   request: {
@@ -184,6 +187,7 @@ describe('readNextHomeFeedPage', () => {
       },
       // An answer is drawn on the halved card its request was.
       card: expect.objectContaining({ kind: 'ask' }),
+      day: '2026-10-31',
     });
   });
 
@@ -229,5 +233,88 @@ describe('readNextHomeFeedPage', () => {
     await expect(
       readNextHomeFeedPage({ show: 'all', cursor: 'cursor-1' }),
     ).rejects.toMatchObject({ to: '/signin' });
+  });
+});
+
+/** A piece of Home on `day`, to page through. */
+function onDay(day: string, id: string) {
+  return { ...AN_ANSWER, id, day, createdAt: `${day}T03:00:00.000Z` };
+}
+
+describe('readHomeFeedThroughDay', () => {
+  it('reads on, page after page, until it has read something from before the day', async () => {
+    const pages: Record<
+      string,
+      { items: unknown[]; nextCursor: string | null }
+    > = {
+      'cursor-1': {
+        items: [onDay('2026-11-21', '0199a0f0-0000-7000-8000-0000000000e1')],
+        nextCursor: 'cursor-2',
+      },
+      'cursor-2': {
+        items: [onDay('2026-11-19', '0199a0f0-0000-7000-8000-0000000000e2')],
+        nextCursor: 'cursor-3',
+      },
+      'cursor-3': {
+        items: [onDay('2026-11-18', '0199a0f0-0000-7000-8000-0000000000e3')],
+        nextCursor: 'cursor-4',
+      },
+    };
+    const asked: (string | null)[] = [];
+    server.use(
+      http.get(FEED_ITEMS, ({ request }) => {
+        const cursor = new URL(request.url).searchParams.get('cursor');
+        asked.push(cursor);
+        return HttpResponse.json({
+          readerAccountId: ANN,
+          ...pages[cursor ?? ''],
+        });
+      }),
+    );
+
+    const page = await readHomeFeedThroughDay({
+      show: 'all',
+      cursor: 'cursor-1',
+      day: '2026-11-19',
+    });
+
+    expect(asked).toEqual(['cursor-1', 'cursor-2', 'cursor-3']);
+    expect(page?.items.map((item) => item.day)).toEqual([
+      '2026-11-21',
+      '2026-11-19',
+      '2026-11-18',
+    ]);
+    expect(page?.nextCursor).toBe('cursor-4');
+  });
+
+  it('stops at its bound however far the day is', async () => {
+    let reads = 0;
+    server.use(
+      http.get(FEED_ITEMS, () => {
+        reads += 1;
+        return HttpResponse.json({
+          readerAccountId: ANN,
+          items: [
+            onDay('2026-11-21', `0199a0f0-0000-7000-8000-00000000${reads}`),
+          ],
+          nextCursor: `cursor-${reads + 1}`,
+        });
+      }),
+    );
+
+    await readHomeFeedThroughDay({
+      show: 'all',
+      cursor: 'cursor-1',
+      day: '2026-01-01',
+    });
+
+    expect(reads).toBe(5);
+  });
+
+  it.each([
+    [{ show: 'all', cursor: 'cursor-1' }],
+    [{ show: 'all', cursor: 'cursor-1', day: 'Wednesday' }],
+  ])('reads nothing without a day it can name: %j', async (input) => {
+    expect(await readHomeFeedThroughDay(input)).toBeNull();
   });
 });

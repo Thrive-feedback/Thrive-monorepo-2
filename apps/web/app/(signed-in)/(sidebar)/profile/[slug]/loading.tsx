@@ -1,10 +1,12 @@
+import {
+  BAND_TOP_SPACE,
+  HangingBand,
+} from '@/app/(signed-in)/(sidebar)/_components/hanging-band';
 import { PersonalItemsLoading } from '@/app/(signed-in)/(sidebar)/_components/personal-items-skeleton';
 import {
   PAGE_COLUMN,
   PAGE_COLUMN_WIDTH,
 } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
-import { BAND_TOP_SPACE } from '@/app/(signed-in)/(sidebar)/profile/[slug]/_components/profile-header';
-import styles from '@/app/(signed-in)/(sidebar)/profile/[slug]/_components/profile-header.module.css';
 import { Skeleton, SkeletonRegion } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
 import { PERSONAL_VIEWS } from '@/lib/routes.constant';
@@ -18,7 +20,7 @@ export default function ProfileLoading() {
   return (
     <>
       <SkeletonRegion>
-        <div data-hangs-from-navbar="" className={styles.band}>
+        <HangingBand as="div">
           <div
             className={cn(
               PAGE_COLUMN_WIDTH,
@@ -33,7 +35,7 @@ export default function ProfileLoading() {
             <Skeleton className="h-6 w-48" />
             <Skeleton className="h-5 w-64" />
           </div>
-        </div>
+        </HangingBand>
       </SkeletonRegion>
       <div className={cn(PAGE_COLUMN, 'flex flex-col gap-6')}>
         <PersonalItemsLoading view={PERSONAL_VIEWS[0]} />

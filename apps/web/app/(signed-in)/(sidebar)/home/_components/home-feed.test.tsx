@@ -3,18 +3,31 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PLAIN_POSTCARD } from '@/app/(signed-in)/(sidebar)/_lib/plain-postcard.constant';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
-import { HomeFeed } from './home-feed';
+import { weekEndingSunday } from '../_lib/home-feed.fixture';
+import { HomeDayJumpProvider } from './home-day-jump';
+import { HomeFeed, type HomeFeedProps } from './home-feed';
 
 const readHomeFeed = vi.fn();
 vi.mock('@/app/(signed-in)/(sidebar)/home/_lib/home-feed.service', () => ({
   readHomeFeed: (...args: unknown[]) => readHomeFeed(...args),
 }));
+const readHomeWeek = vi.fn();
+vi.mock('../_lib/home-week.service', () => ({
+  readHomeWeek: (...args: unknown[]) => readHomeWeek(...args),
+}));
 vi.mock(
   '@/app/(signed-in)/(sidebar)/home/_lib/home-feed-actions.service',
-  () => ({ readNextHomeFeedPage: vi.fn() }),
+  () => ({ readNextHomeFeedPage: vi.fn(), readHomeFeedThroughDay: vi.fn() }),
 );
 
+/** The feed as the page places it, inside what carries a press of a day to it. */
+async function homeFeed(props: HomeFeedProps) {
+  return <HomeDayJumpProvider>{await HomeFeed(props)}</HomeDayJumpProvider>;
+}
+
 const piece = (id: string, giver: string, message: string) => ({
+  kind: 'FEEDBACK',
+  day: '2026-11-22',
   id,
   origin: 'OFFERED',
   giver: { accountId: giver, name: giver, photoUrl: null, inactive: false },
@@ -47,6 +60,9 @@ const MEMBERSHIP = {
 } as const;
 
 beforeEach(() => {
+  readHomeWeek.mockResolvedValue(
+    weekEndingSunday({ '2026-11-22': { offered: 2 } }),
+  );
   readHomeFeed.mockResolvedValue({
     readerAccountId: 'ann',
     items: [],
@@ -56,9 +72,10 @@ beforeEach(() => {
 
 describe('HomeFeed', () => {
   it('reads the choice it was given', async () => {
-    render(await HomeFeed({ membership: MEMBERSHIP, show: 'shared' }));
+    render(await homeFeed({ membership: MEMBERSHIP, show: 'shared' }));
 
     expect(readHomeFeed).toHaveBeenCalledWith(MEMBERSHIP, 'shared');
+    expect(readHomeWeek).toHaveBeenCalledWith(MEMBERSHIP, 'shared');
   });
 
   it.each([
@@ -68,7 +85,7 @@ describe('HomeFeed', () => {
   ] as const)(
     'says what %s holds when it holds nothing',
     async (show, title) => {
-      render(await HomeFeed({ membership: MEMBERSHIP, show }));
+      render(await homeFeed({ membership: MEMBERSHIP, show }));
 
       expect(screen.getByText(title, PAST_THE_DRAWING)).toBeInTheDocument();
     },
@@ -79,7 +96,7 @@ describe('HomeFeed', () => {
       pageWith(piece('p-1', 'ann', 'Their first card')),
     );
     const { rerender } = render(
-      await HomeFeed({ membership: MEMBERSHIP, show: 'all' }),
+      await homeFeed({ membership: MEMBERSHIP, show: 'all' }),
     );
 
     readHomeFeed.mockResolvedValue(
@@ -88,7 +105,7 @@ describe('HomeFeed', () => {
         piece('p-1', 'ann', 'Their first card'),
       ),
     );
-    rerender(await HomeFeed({ membership: MEMBERSHIP, show: 'all' }));
+    rerender(await homeFeed({ membership: MEMBERSHIP, show: 'all' }));
 
     expect(
       screen.getAllByRole('article').map((card) => card.textContent),
@@ -103,7 +120,7 @@ describe('HomeFeed', () => {
       pageWith(piece('p-1', 'ann', 'Their first card')),
     );
     const { rerender } = render(
-      await HomeFeed({ membership: MEMBERSHIP, show: 'all' }),
+      await homeFeed({ membership: MEMBERSHIP, show: 'all' }),
     );
 
     readHomeFeed.mockResolvedValue(
@@ -112,7 +129,7 @@ describe('HomeFeed', () => {
         piece('p-1', 'ann', 'Their first card'),
       ),
     );
-    rerender(await HomeFeed({ membership: MEMBERSHIP, show: 'all' }));
+    rerender(await homeFeed({ membership: MEMBERSHIP, show: 'all' }));
 
     expect(
       screen.getByText('Their first card', PAST_THE_DRAWING),
