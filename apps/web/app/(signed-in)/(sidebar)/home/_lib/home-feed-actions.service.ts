@@ -29,3 +29,49 @@ export async function readNextHomeFeedPage(
     readHomeFeed(membership, parsed.data.show, parsed.data.cursor),
   );
 }
+
+const ThroughDay = NextPage.extend({ day: z.iso.date() });
+
+/**
+ * The most pages one press of a day reads, here on the server, whatever the browser asks. Seven days
+ * of a team's Home is a page or two; this is the bound for a week far busier than that.
+ */
+const MOST_PAGES_THROUGH_A_DAY = 5;
+
+/**
+ * Home read on from `cursor` until a whole day is in, for the ribbon's press of a day the list has
+ * not reached: page after page, here rather than in the browser, because the browser sends server
+ * actions one at a time and a loop there would hold up the bell and anything being sent. It stops
+ * once it has read something from before `day`, at the end of Home, or at the bound, and answers it
+ * all as one page.
+ */
+export async function readHomeFeedThroughDay(
+  input: unknown,
+): Promise<HomeFeedPage | null> {
+  const parsed = ThroughDay.safeParse(input);
+  if (!parsed.success) {
+    return null;
+  }
+  const { show, day } = parsed.data;
+  return readNextPageAsMember(async (membership): Promise<HomeFeedPage> => {
+    const first = await readHomeFeed(membership, show, parsed.data.cursor);
+    const items = [...first.items];
+    let cursor = first.nextCursor;
+    for (
+      let pages = 1;
+      pages < MOST_PAGES_THROUGH_A_DAY &&
+      cursor !== null &&
+      !((items.at(-1)?.day ?? day) < day);
+      pages++
+    ) {
+      const page = await readHomeFeed(membership, show, cursor);
+      items.push(...page.items);
+      cursor = page.nextCursor;
+    }
+    return {
+      readerAccountId: first.readerAccountId,
+      items,
+      nextCursor: cursor,
+    };
+  });
+}

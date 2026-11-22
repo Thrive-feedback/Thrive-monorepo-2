@@ -1,72 +1,77 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PLAIN_POSTCARD } from '@/app/(signed-in)/(sidebar)/_lib/plain-postcard.constant';
-import type {
-  HomeFeedItem,
-  HomeFeedPage,
-} from '@/lib/feedback/home-feed-item.type';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { HomeFeedEntry } from '@/lib/feedback/home-feed-item.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
+import {
+  homePage,
+  offeredOn,
+  weekEndingSunday,
+} from '../_lib/home-feed.fixture';
+import type { HomeWeek } from '../_lib/home-week.type';
+import { HomeDayJumpProvider } from './home-day-jump';
 import { HomeFeedList } from './home-feed-list';
+import { HomeWeekRibbon } from './home-week-ribbon';
 
 const readNextHomeFeedPage = vi.fn();
+const readHomeFeedThroughDay = vi.fn();
 vi.mock(
   '@/app/(signed-in)/(sidebar)/home/_lib/home-feed-actions.service',
   () => ({
     readNextHomeFeedPage: (input: unknown) => readNextHomeFeedPage(input),
+    readHomeFeedThroughDay: (input: unknown) => readHomeFeedThroughDay(input),
   }),
 );
 
-const READER = 'ann';
+const SUNDAY = '2026-11-22';
+const FRIDAY = '2026-11-20';
+const THURSDAY = '2026-11-19';
+const piece = (id: string, message: string, day = SUNDAY) =>
+  offeredOn(day, id, message);
 
-function piece(id: string, message: string): HomeFeedItem {
-  const person = (accountId: string, name: string) => ({
-    accountId,
-    name,
-    photoUrl: null,
-    inactive: false,
-  });
-  return {
-    id,
-    origin: 'OFFERED',
-    giver: person('cara', 'Cara Diaz'),
-    receivers: [person('ben', 'Ben Carter')],
-    message,
-    messageTags: NO_TEXT_TAGS,
-    givenAt: '2026-10-31T03:00:00.000Z',
-    visibility: 'SELECTED_PEOPLE',
-    request: null,
-    card: {
-      ...PLAIN_POSTCARD,
-      kind: 'give',
-      giver: person('cara', 'Cara Diaz'),
-      receivers: [person('ben', 'Ben Carter')],
-      message,
-      messageTags: NO_TEXT_TAGS,
-      sentOn: '2026-10-31T03:00:00.000Z',
-    },
-  };
-}
+/** A week whose counts agree with whatever a test puts on Sunday, Friday and Thursday. */
+const BUSY_WEEK = weekEndingSunday({
+  [SUNDAY]: { offered: 3 },
+  [FRIDAY]: { offered: 1 },
+  [THURSDAY]: { offered: 1 },
+});
 
-function page(
-  items: readonly HomeFeedItem[],
-  nextCursor: string | null,
-): HomeFeedPage {
-  return {
-    readerAccountId: READER,
-    items: items.map((item) => ({ kind: 'FEEDBACK' as const, ...item })),
-    nextCursor,
-  };
+function List({
+  entries,
+  nextCursor = null,
+  week = BUSY_WEEK,
+  show = 'all',
+  withRibbon = false,
+}: {
+  entries: readonly HomeFeedEntry[];
+  nextCursor?: string | null;
+  week?: HomeWeek;
+  show?: 'all' | 'everyone' | 'shared';
+  withRibbon?: boolean;
+}) {
+  return (
+    <HomeDayJumpProvider>
+      {withRibbon && <HomeWeekRibbon week={week} />}
+      <HomeFeedList
+        initialPage={homePage(entries, nextCursor)}
+        week={week}
+        show={show}
+      />
+    </HomeDayJumpProvider>
+  );
 }
 
 /** What the list is watching, and a way to bring the end of it into view. */
 let bringTheEndIntoView: () => void;
 let observing: number;
+const scrollIntoView = vi.fn();
 
 beforeEach(() => {
   observing = 0;
   readNextHomeFeedPage.mockReset();
+  readHomeFeedThroughDay.mockReset();
+  scrollIntoView.mockReset();
   vi.stubGlobal(
     'IntersectionObserver',
     class {
@@ -85,6 +90,19 @@ beforeEach(() => {
       }
     },
   );
+  // A browser's, which jsdom has not got.
+  Element.prototype.scrollIntoView = scrollIntoView;
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 async function scrollToTheEnd() {
@@ -95,34 +113,30 @@ async function scrollToTheEnd() {
 
 describe('HomeFeedList', () => {
   it('draws the first page the server read', () => {
-    render(
-      <HomeFeedList
-        initialPage={page([piece('fb-1', 'First.')], null)}
-        show="all"
-      />,
-    );
+    render(<List entries={[piece('fb-1', 'First.')]} />);
 
     expect(screen.getByText('First.', PAST_THE_DRAWING)).toBeInTheDocument();
   });
 
   it('draws one card for each piece, in the order given, each by how it came about', () => {
     const offered = piece('fb-1', 'First.');
-    const requested: HomeFeedItem = {
+    const requested: HomeFeedEntry = {
       ...piece('fb-2', 'Second.'),
+      kind: 'FEEDBACK',
       origin: 'REQUESTED',
       request: {
         message: 'How clear was the plan?',
         messageTags: NO_TEXT_TAGS,
-        requester: offered.receivers[0] ?? offered.giver,
+        requester: {
+          accountId: 'ben',
+          name: 'Ben Carter',
+          photoUrl: null,
+          inactive: false,
+        },
         asked: [],
       },
     };
-    render(
-      <HomeFeedList
-        initialPage={page([offered, requested], null)}
-        show="all"
-      />,
-    );
+    render(<List entries={[offered, requested]} />);
 
     const [first, second] = screen.getAllByRole('listitem');
     expect(first).toHaveTextContent('First.');
@@ -132,12 +146,7 @@ describe('HomeFeedList', () => {
   });
 
   it('leads each card to its postcard, keeping the filter', () => {
-    render(
-      <HomeFeedList
-        initialPage={page([piece('fb-1', 'First.')], null)}
-        show="shared"
-      />,
-    );
+    render(<List entries={[piece('fb-1', 'First.')]} show="shared" />);
 
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
@@ -147,11 +156,12 @@ describe('HomeFeedList', () => {
 
   it('reads the next page as the end comes into view, and adds it below', async () => {
     readNextHomeFeedPage.mockResolvedValue(
-      page([piece('fb-2', 'Second.')], null),
+      homePage([piece('fb-2', 'Second.')], null),
     );
     render(
-      <HomeFeedList
-        initialPage={page([piece('fb-1', 'First.')], 'cursor-1')}
+      <List
+        entries={[piece('fb-1', 'First.')]}
+        nextCursor="cursor-1"
         show="everyone"
       />,
     );
@@ -169,14 +179,9 @@ describe('HomeFeedList', () => {
 
   it('follows the cursor of the page it just read', async () => {
     readNextHomeFeedPage
-      .mockResolvedValueOnce(page([piece('fb-2', 'Second.')], 'cursor-2'))
-      .mockResolvedValueOnce(page([piece('fb-3', 'Third.')], null));
-    render(
-      <HomeFeedList
-        initialPage={page([piece('fb-1', 'First.')], 'cursor-1')}
-        show="all"
-      />,
-    );
+      .mockResolvedValueOnce(homePage([piece('fb-2', 'Second.')], 'cursor-2'))
+      .mockResolvedValueOnce(homePage([piece('fb-3', 'Third.')], null));
+    render(<List entries={[piece('fb-1', 'First.')]} nextCursor="cursor-1" />);
 
     await scrollToTheEnd();
     await scrollToTheEnd();
@@ -190,14 +195,9 @@ describe('HomeFeedList', () => {
 
   it('stops watching for the end once there is no next page', async () => {
     readNextHomeFeedPage.mockResolvedValue(
-      page([piece('fb-2', 'Second.')], null),
+      homePage([piece('fb-2', 'Second.')], null),
     );
-    render(
-      <HomeFeedList
-        initialPage={page([piece('fb-1', 'First.')], 'cursor-1')}
-        show="all"
-      />,
-    );
+    render(<List entries={[piece('fb-1', 'First.')]} nextCursor="cursor-1" />);
 
     await scrollToTheEnd();
 
@@ -205,12 +205,7 @@ describe('HomeFeedList', () => {
   });
 
   it('never looks for a next page when the first is the last', () => {
-    render(
-      <HomeFeedList
-        initialPage={page([piece('fb-1', 'First.')], null)}
-        show="all"
-      />,
-    );
+    render(<List entries={[piece('fb-1', 'First.')]} />);
 
     expect(observing).toBe(0);
   });
@@ -218,13 +213,8 @@ describe('HomeFeedList', () => {
   it('says when a page could not be read, and reads it again on asking', async () => {
     readNextHomeFeedPage
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(page([piece('fb-2', 'Second.')], null));
-    render(
-      <HomeFeedList
-        initialPage={page([piece('fb-1', 'First.')], 'cursor-1')}
-        show="all"
-      />,
-    );
+      .mockResolvedValueOnce(homePage([piece('fb-2', 'Second.')], null));
+    render(<List entries={[piece('fb-1', 'First.')]} nextCursor="cursor-1" />);
 
     await scrollToTheEnd();
 
@@ -241,21 +231,15 @@ describe('HomeFeedList', () => {
 
   it('keeps what it has read when the page reads the first page again', async () => {
     readNextHomeFeedPage.mockResolvedValue(
-      page([piece('fb-2', 'Second.')], null),
+      homePage([piece('fb-2', 'Second.')], null),
     );
     const { rerender } = render(
-      <HomeFeedList
-        initialPage={page([piece('fb-1', 'First.')], 'cursor-1')}
-        show="all"
-      />,
+      <List entries={[piece('fb-1', 'First.')]} nextCursor="cursor-1" />,
     );
     await scrollToTheEnd();
 
     rerender(
-      <HomeFeedList
-        initialPage={page([piece('fb-0', 'Just written.')], 'cursor-0')}
-        show="all"
-      />,
+      <List entries={[piece('fb-0', 'Just written.')]} nextCursor="cursor-0" />,
     );
 
     expect(screen.getByText('Second.', PAST_THE_DRAWING)).toBeInTheDocument();
@@ -265,42 +249,27 @@ describe('HomeFeedList', () => {
   });
 
   it('shows a Kudos among the Feedback, each on its own card', () => {
-    render(
-      <HomeFeedList
-        initialPage={{
-          readerAccountId: READER,
-          items: [
-            {
-              kind: 'KUDOS',
-              id: 'k1',
-              giver: {
-                accountId: 'mali',
-                name: 'Mali Chaiyo',
-                photoUrl: null,
-                inactive: false,
-              },
-              recipients: [],
-              message: 'Great launch, everyone.',
-              messageTags: NO_TEXT_TAGS,
-              givenAt: '2026-10-31T03:00:00.000Z',
-              drawing: {
-                templateKey: 'peach-pop',
-                textStyle: {
-                  font: 'modern',
-                  sizeStep: 4,
-                  align: 'center',
-                  ink: 'ink',
-                },
-                stickers: [],
-              },
-            },
-            ...page([piece('f-1', 'Well done.')], null).items,
-          ],
-          nextCursor: null,
-        }}
-        show="all"
-      />,
-    );
+    const kudos: HomeFeedEntry = {
+      kind: 'KUDOS',
+      day: SUNDAY,
+      id: 'k1',
+      giver: {
+        accountId: 'mali',
+        name: 'Mali Chaiyo',
+        photoUrl: null,
+        inactive: false,
+      },
+      recipients: [],
+      message: 'Great launch, everyone.',
+      messageTags: NO_TEXT_TAGS,
+      givenAt: '2026-11-22T03:00:00.000Z',
+      drawing: {
+        templateKey: 'peach-pop',
+        textStyle: { font: 'modern', sizeStep: 4, align: 'center', ink: 'ink' },
+        stickers: [],
+      },
+    };
+    render(<List entries={[kudos, piece('f-1', 'Well done.')]} />);
 
     expect(
       screen.getByText('Great launch, everyone.', PAST_THE_DRAWING),
@@ -309,5 +278,173 @@ describe('HomeFeedList', () => {
       screen.getByRole('button', { name: /^Open kudos from/ }),
     ).toBeVisible();
     expect(screen.getAllByRole('article')).toHaveLength(2);
+  });
+});
+
+describe('Home in days', () => {
+  it('heads each day once, even when a page ended halfway through it', async () => {
+    readNextHomeFeedPage.mockResolvedValue(
+      homePage([piece('fb-3', 'Friday again.', FRIDAY)], null),
+    );
+    render(
+      <List
+        entries={[piece('fb-1', 'Today.'), piece('fb-2', 'Friday.', FRIDAY)]}
+        nextCursor="cursor-1"
+        week={weekEndingSunday({
+          [SUNDAY]: { offered: 1 },
+          [FRIDAY]: { offered: 2 },
+        })}
+      />,
+    );
+
+    await scrollToTheEnd();
+
+    const friday = screen.getByRole('region', { name: /^Friday/ });
+    expect(within(friday).getAllByRole('article')).toHaveLength(2);
+    expect(screen.getAllByRole('region', { name: /^Friday/ })).toHaveLength(1);
+  });
+
+  it('names Today and Yesterday from the week, whatever the clock says', () => {
+    vi.useFakeTimers({ now: new Date('2026-11-25T12:00:00.000Z') });
+    render(
+      <List
+        entries={[
+          piece('fb-1', 'Today.'),
+          piece('fb-2', 'Yesterday.', '2026-11-21'),
+        ]}
+        week={weekEndingSunday({
+          [SUNDAY]: { offered: 1 },
+          '2026-11-21': { offered: 1 },
+        })}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: /^Today 22/ })).toBeVisible();
+    expect(
+      screen.getByRole('heading', { name: /^Yesterday 21/ }),
+    ).toBeVisible();
+  });
+
+  it('says how much a day of the week held, in its kinds’ own words', () => {
+    render(
+      <List
+        entries={[piece('fb-1', 'Today.')]}
+        week={weekEndingSunday({ [SUNDAY]: { offered: 1, answers: 2 } })}
+      />,
+    );
+
+    const today = screen.getByRole('region', { name: /^Today/ });
+    expect(today).toHaveTextContent('1 offered');
+    expect(today).toHaveTextContent('2 answers');
+    expect(today).not.toHaveTextContent('Kudos');
+  });
+
+  it('says a day of the week held nothing once the list has read past it', () => {
+    render(
+      <List
+        entries={[piece('fb-1', 'Today.'), piece('fb-2', 'Friday.', FRIDAY)]}
+        week={weekEndingSunday({
+          [SUNDAY]: { offered: 1 },
+          [FRIDAY]: { offered: 1 },
+        })}
+      />,
+    );
+
+    expect(screen.getByText('Nothing written on Saturday.')).toBeVisible();
+  });
+});
+
+describe('jumping to a day from the ribbon', () => {
+  it('brings a day already read into view without reading anything', async () => {
+    render(
+      <List
+        withRibbon
+        entries={[piece('fb-1', 'Today.'), piece('fb-2', 'Friday.', FRIDAY)]}
+        nextCursor="cursor-1"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^Friday 20/ }));
+
+    expect(readHomeFeedThroughDay).not.toHaveBeenCalled();
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('heading', { name: /^Friday 20/ })).toHaveFocus();
+  });
+
+  it('reads on to a day not yet read, once, then brings it into view', async () => {
+    readHomeFeedThroughDay.mockResolvedValue(
+      homePage([piece('fb-3', 'Thursday.', THURSDAY)], 'cursor-2'),
+    );
+    render(
+      <List
+        withRibbon
+        entries={[piece('fb-1', 'Today.')]}
+        nextCursor="cursor-1"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^Thursday 19/ }));
+
+    expect(readHomeFeedThroughDay).toHaveBeenCalledTimes(1);
+    expect(readHomeFeedThroughDay).toHaveBeenCalledWith({
+      show: 'all',
+      cursor: 'cursor-1',
+      day: THURSDAY,
+    });
+    expect(
+      await screen.findByRole('heading', { name: /^Thursday 19/ }),
+    ).toHaveFocus();
+  });
+
+  it('cannot be asked for a day that held nothing', () => {
+    render(<List withRibbon entries={[piece('fb-1', 'Today.')]} />);
+
+    expect(
+      screen.getByRole('button', { name: /^Wednesday 18, nothing written/ }),
+    ).toBeDisabled();
+  });
+
+  it('gives up when the read fails, leaving the list to offer another try', async () => {
+    readHomeFeedThroughDay.mockResolvedValue(null);
+    render(
+      <List
+        withRibbon
+        entries={[piece('fb-1', 'Today.')]}
+        nextCursor="cursor-1"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^Thursday 19/ }));
+
+    expect(
+      await screen.findByText("We couldn't load the Feed."),
+    ).toBeInTheDocument();
+    expect(readHomeFeedThroughDay).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByRole('button', { name: /^Thursday 19/ }),
+    ).not.toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('stops after its bound when the day never comes', async () => {
+    let read = 0;
+    readHomeFeedThroughDay.mockImplementation(async () => {
+      read += 1;
+      return homePage(
+        [piece(`today-${read}`, `More today ${read}.`)],
+        `cursor-${read + 1}`,
+      );
+    });
+    render(
+      <List
+        withRibbon
+        entries={[piece('fb-1', 'Today.')]}
+        nextCursor="cursor-1"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^Thursday 19/ }));
+    await screen.findByText('More today 3.', PAST_THE_DRAWING);
+
+    expect(readHomeFeedThroughDay).toHaveBeenCalledTimes(3);
   });
 });

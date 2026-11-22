@@ -1,3 +1,7 @@
+import {
+  BAND_TOP_SPACE,
+  HangingBand,
+} from '@/app/(signed-in)/(sidebar)/_components/hanging-band';
 import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
 import { PAGE_COLUMN_WIDTH } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
 import type { Profile } from '@/app/(signed-in)/(sidebar)/profile/[slug]/_lib/profile.type';
@@ -5,13 +9,6 @@ import { Badge } from '@/components/atoms/badge';
 import { Text } from '@/components/atoms/text';
 import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { cn } from '@/lib/cn.util';
-import styles from './profile-header.module.css';
-
-/**
- * The space above what the band holds: the navbar's height, since the band starts under it, and a
- * clear gap more, so the person does not sit against the bar.
- */
-export const BAND_TOP_SPACE = 'pt-24';
 
 export type ProfileHeaderProps = {
   profile: Profile;
@@ -36,8 +33,7 @@ export function ProfileHeader({
   children,
 }: ProfileHeaderProps) {
   return (
-    // Marked so the navbar paints the band's ground rather than glass, and the two read as one.
-    <header data-hangs-from-navbar="" className={styles.band}>
+    <HangingBand>
       <div
         className={cn(
           PAGE_COLUMN_WIDTH,
@@ -70,6 +66,6 @@ export function ProfileHeader({
         </div>
         {children && <div className="shrink-0">{children}</div>}
       </div>
-    </header>
+    </HangingBand>
   );
 }

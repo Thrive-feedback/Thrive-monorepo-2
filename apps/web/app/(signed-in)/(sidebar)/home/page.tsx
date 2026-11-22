@@ -1,18 +1,27 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { FeedbackPostcard } from '@/app/(signed-in)/(sidebar)/_components/feedback-postcard';
+import {
+  BAND_TOP_SPACE,
+  HangingBand,
+} from '@/app/(signed-in)/(sidebar)/_components/hanging-band';
 import { InvitationNotices } from '@/app/(signed-in)/(sidebar)/_components/invitation-notices';
 import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
-import { PAGE_COLUMN } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
+import {
+  PAGE_COLUMN,
+  PAGE_COLUMN_WIDTH,
+} from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
-import { HandwrittenNote } from '@/components/molecules/handwritten-note';
+import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 import { FeedComposerSkeleton } from './_components/feed-composer/feed-composer-skeleton';
 import { HomeComposer } from './_components/home-composer';
+import { HomeDayJumpProvider } from './_components/home-day-jump';
 import { HomeFeed, HomeFeedSkeleton } from './_components/home-feed';
 import { HomeFeedFilter } from './_components/home-feed-filter';
+import { HomeWeek, HomeWeekSkeleton } from './_components/home-week';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
@@ -39,10 +48,12 @@ type HomeProps = {
 };
 
 /**
- * Home of the person's Workspace, where a Member lands after signing in, in the letter concept of
- * the design workspace: what the Workspace shared with everyone and what somebody selected or
- * mentioned the person to read, in one list under a filter. Pressing a card opens the piece over
- * it, named in the address so a reload or a shared link opens it again.
+ * Home of the person's Workspace, where a Member lands after signing in. Its head hangs from the
+ * navbar as a Profile's does, named for the Workspace, with what the last seven days held and a
+ * ribbon of those days; the composer lies across the head's foot. Below, what the Workspace shared
+ * with everyone and what somebody selected or mentioned the person to read, in days, under a
+ * filter. Pressing a card opens the piece over it, named in the address so a reload or a shared
+ * link opens it again.
  */
 export default async function Home({ searchParams }: HomeProps) {
   const { signedIn, opened, left, switched, show, feedback } =
@@ -81,18 +92,24 @@ export default async function Home({ searchParams }: HomeProps) {
           then={showing}
         />
       )}
-      <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-8')}>
-        {/* Most people have no Invitation waiting, so no space is held for one while it is read. */}
-        <Suspense fallback={null}>
-          <InvitationNotices />
-        </Suspense>
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-end gap-x-3">
-            <PageTitle>Home</PageTitle>
-            <HandwrittenNote size="md" className="-translate-y-1.5">
-              say it while it's fresh
-            </HandwrittenNote>
+      <HomeDayJumpProvider>
+        <HangingBand>
+          <div
+            className={cn(
+              PAGE_COLUMN_WIDTH,
+              BAND_TOP_SPACE,
+              'flex flex-col gap-4 pb-24',
+            )}
+          >
+            <PageTitle>{workspaceName} home</PageTitle>
+            <Suspense key={show} fallback={<HomeWeekSkeleton />}>
+              <HomeWeek membership={session.membership} show={show} />
+            </Suspense>
           </div>
+        </HangingBand>
+        {/* After the band, never inside it: it lies across the band's foot, which the band's mask
+            would cut, and the band takes no presses. */}
+        <div className={cn(PAGE_COLUMN_WIDTH, 'relative z-10 -mt-16')}>
           <Suspense fallback={<FeedComposerSkeleton />}>
             <HomeComposer
               session={session}
@@ -100,20 +117,25 @@ export default async function Home({ searchParams }: HomeProps) {
             />
           </Suspense>
         </div>
-        {/* Grows to the foot of the page, so an empty feed sits in the middle of what is left. The
-            gap clears the note by hand that rises above the first card's small postcard. */}
-        <div className="flex flex-1 flex-col gap-11">
-          <div className="flex items-center justify-end gap-3 md:justify-between">
-            <HandwrittenNote size="md" tilt="left" className="hidden md:block">
-              what your team's been saying
-            </HandwrittenNote>
-            <HomeFeedFilter show={show} />
-          </div>
-          <Suspense key={show} fallback={<HomeFeedSkeleton />}>
-            <HomeFeed membership={session.membership} show={show} />
+        <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-6')}>
+          {/* Most people have no Invitation waiting, so no space is held for one while it is read.
+              Under the band, so arriving late it cannot push the band down. */}
+          <Suspense fallback={null}>
+            <InvitationNotices />
           </Suspense>
+          <div className="flex flex-1 flex-col">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
+              <Text as="h2" variant="display-6">
+                Day by day
+              </Text>
+              <HomeFeedFilter show={show} />
+            </div>
+            <Suspense key={show} fallback={<HomeFeedSkeleton />}>
+              <HomeFeed membership={session.membership} show={show} />
+            </Suspense>
+          </div>
         </div>
-      </div>
+      </HomeDayJumpProvider>
       {/* Always there, so a press holds the small postcard's pending mark until the postcard is
           ready, rather than committing to an empty fallback; a reload still does not wait. */}
       <Suspense fallback={null}>

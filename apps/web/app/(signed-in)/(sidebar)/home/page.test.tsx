@@ -33,6 +33,10 @@ vi.mock('next/navigation', () => ({
 vi.mock('./_components/home-composer', () => ({
   HomeComposer: () => <p>The composer</p>,
 }));
+vi.mock('./_components/home-week', () => ({
+  HomeWeek: ({ show }: { show: string }) => <p>The week, showing {show}</p>,
+  HomeWeekSkeleton: () => null,
+}));
 vi.mock('./_components/home-feed', () => ({
   HomeFeed: ({ show }: { show: string }) => <p>The feed, showing {show}</p>,
   HomeFeedSkeleton: () => null,
@@ -66,12 +70,12 @@ function open(searchParams: Record<string, string> = {}) {
 }
 
 describe('Home', () => {
-  it('lets only a Member in, and is headed Home', async () => {
+  it('lets only a Member in, and is headed with the Workspace’s name', async () => {
     render(await open());
 
     expect(requireMember).toHaveBeenCalled();
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Home' }),
+      screen.getByRole('heading', { level: 1, name: 'Globex home' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('status')).toBeNull();
   });
@@ -132,6 +136,7 @@ describe('Home', () => {
     render(await open());
 
     expect(screen.getByText('The filter on all')).toBeInTheDocument();
+    expect(screen.getByText('The week, showing all')).toBeInTheDocument();
     expect(screen.getByText('The feed, showing all')).toBeInTheDocument();
   });
 
@@ -139,6 +144,7 @@ describe('Home', () => {
     render(await open({ show: 'shared' }));
 
     expect(screen.getByText('The filter on shared')).toBeInTheDocument();
+    expect(screen.getByText('The week, showing shared')).toBeInTheDocument();
     expect(screen.getByText('The feed, showing shared')).toBeInTheDocument();
   });
 

@@ -21,6 +21,9 @@ export type EndlessPage<Item> = {
  * A page never adds an item the list already holds, by `idOf`. A list whose items can move up, as a
  * request in Received does when it is answered, could otherwise draw one twice under one key.
  */
+/** What one read past the end came to. */
+export type AppendResult = 'read' | 'failed' | 'busy' | 'ended';
+
 export function useEndlessList<Item>(
   initialPage: EndlessPage<Item>,
   readNext: (cursor: string) => Promise<EndlessPage<Item> | null>,
@@ -30,31 +33,58 @@ export function useEndlessList<Item>(
   const [cursor, setCursor] = useState(initialPage.nextCursor);
   const [phase, setPhase] = useState<'idle' | 'reading' | 'failed'>('idle');
   const endRef = useRef<HTMLDivElement>(null);
+  // Held as well as rendered, so reads one after another each start where the last one ended, and
+  // only one is ever in flight: a second, from the end coming into view or a press, waits its turn.
+  const cursorRef = useRef(initialPage.nextCursor);
+  const isReadingRef = useRef(false);
 
-  const readNextPage = useCallback(async () => {
-    if (cursor === null) {
-      return;
-    }
-    setPhase('reading');
-    let page: EndlessPage<Item> | null = null;
-    try {
-      page = await readNext(cursor);
-    } catch (error) {
-      // Being signed out rejects with a redirect, which is not a page that failed. Anything else,
-      // such as the connection dropping, is one, and the list offers to try again.
-      unstable_rethrow(error);
-    }
-    if (!page) {
-      setPhase('failed');
-      return;
-    }
-    setItems((read) => {
-      const held = new Set(read.map(idOf));
-      return [...read, ...page.items.filter((item) => !held.has(idOf(item)))];
-    });
-    setCursor(page.nextCursor);
-    setPhase('idle');
-  }, [cursor, readNext, idOf]);
+  /**
+   * Reads past the end with `read`, which may read more than one page, and adds what it brings.
+   * `busy` means a read was already in flight, and `ended` that there is nothing more to read.
+   */
+  const appendFrom = useCallback(
+    async (
+      read: (cursor: string) => Promise<EndlessPage<Item> | null>,
+    ): Promise<AppendResult> => {
+      const from = cursorRef.current;
+      if (from === null) {
+        return 'ended';
+      }
+      if (isReadingRef.current) {
+        return 'busy';
+      }
+      isReadingRef.current = true;
+      setPhase('reading');
+      let page: EndlessPage<Item> | null = null;
+      try {
+        page = await read(from);
+      } catch (error) {
+        // Being signed out rejects with a redirect, which is not a page that failed. Anything else,
+        // such as the connection dropping, is one, and the list offers to try again.
+        unstable_rethrow(error);
+      } finally {
+        isReadingRef.current = false;
+      }
+      if (!page) {
+        setPhase('failed');
+        return 'failed';
+      }
+      setItems((held) => {
+        const ids = new Set(held.map(idOf));
+        return [...held, ...page.items.filter((item) => !ids.has(idOf(item)))];
+      });
+      cursorRef.current = page.nextCursor;
+      setCursor(page.nextCursor);
+      setPhase('idle');
+      return 'read';
+    },
+    [idOf],
+  );
+
+  const readNextPage = useCallback(
+    () => appendFrom(readNext),
+    [appendFrom, readNext],
+  );
 
   useEffect(() => {
     const end = endRef.current;
@@ -79,5 +109,6 @@ export function useEndlessList<Item>(
     hasMore: cursor !== null,
     endRef,
     readNextPage,
+    appendFrom,
   };
 }

@@ -1,25 +1,51 @@
-import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
-import { PAGE_COLUMN } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
-import { Skeleton } from '@/components/atoms/skeleton';
+import {
+  BAND_TOP_SPACE,
+  HangingBand,
+} from '@/app/(signed-in)/(sidebar)/_components/hanging-band';
+import {
+  PAGE_COLUMN,
+  PAGE_COLUMN_WIDTH,
+} from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
+import { Skeleton, SkeletonRegion } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
 import { FeedComposerSkeleton } from './_components/feed-composer/feed-composer-skeleton';
 import { HomeFeedSkeleton } from './_components/home-feed';
+import { HomeWeekSkeleton } from './_components/home-week';
 
 /**
- * Home while the server builds it. The navbar and sidebar stay in place, so this holds the
- * feed's column in grey, the row for its filter included, so the list does not jump when it arrives.
+ * Home while the server builds it. The band already hangs from the navbar, so the bar does not turn
+ * from glass to the band's ground when the page arrives, and everything holds the room it will take,
+ * so nothing jumps.
  */
 export default function HomeLoading() {
   return (
-    <div className={cn(PAGE_COLUMN, 'flex flex-col gap-8')}>
-      <div className="flex flex-col gap-4">
-        <PageTitle>Home</PageTitle>
+    <>
+      <HangingBand as="div">
+        <div
+          className={cn(
+            PAGE_COLUMN_WIDTH,
+            BAND_TOP_SPACE,
+            'flex flex-col gap-4 pb-24',
+          )}
+        >
+          <SkeletonRegion>
+            <Skeleton className="h-10 w-64" />
+          </SkeletonRegion>
+          <HomeWeekSkeleton />
+        </div>
+      </HangingBand>
+      <div className={cn(PAGE_COLUMN_WIDTH, 'relative z-10 -mt-16')}>
         <FeedComposerSkeleton />
       </div>
-      <div className="flex flex-col gap-11">
-        <Skeleton className="h-10 w-44 self-end" />
+      <div className={cn(PAGE_COLUMN, 'flex flex-col gap-6')}>
+        <SkeletonRegion>
+          <div className="flex items-center justify-between gap-3 pb-2">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-10 w-44" />
+          </div>
+        </SkeletonRegion>
         <HomeFeedSkeleton />
       </div>
-    </div>
+    </>
   );
 }

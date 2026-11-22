@@ -17,7 +17,7 @@ import type { CurrentMembership } from '@/lib/session/current-account.type';
 const PAGE_SIZE = 20;
 
 /** The address's words for each choice, in the API's. */
-const API_SHOWS: Readonly<Record<HomeShow, HomeFeedShow>> = {
+export const API_SHOWS: Readonly<Record<HomeShow, HomeFeedShow>> = {
   all: 'ALL',
   everyone: 'EVERYONE',
   shared: 'SHARED_WITH_ME',
@@ -48,10 +48,12 @@ export async function readHomeFeed(
     // Feedback on Home is for at least one person, so each has a postcard: nothing is left out.
     items: page.items.flatMap((item): HomeFeedEntry[] => {
       if (item.kind === 'KUDOS') {
-        return [{ kind: item.kind, ...toReadKudos(item) }];
+        return [{ kind: item.kind, ...toReadKudos(item), day: item.day }];
       }
       const card = toFeedbackPostcard(item);
-      return card ? [{ kind: item.kind, ...toHomeFeedItem(item), card }] : [];
+      return card
+        ? [{ kind: item.kind, ...toHomeFeedItem(item), card, day: item.day }]
+        : [];
     }),
     nextCursor: page.nextCursor,
   };

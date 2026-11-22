@@ -17,7 +17,7 @@ class NeverSeesTheEnd {
 type ListProps = {
   readNext: (
     cursor: string,
-  ) => Promise<{ items: string[]; nextCursor: null } | null>;
+  ) => Promise<{ items: string[]; nextCursor: string | null } | null>;
   onRejected?: (error: unknown) => void;
 };
 
@@ -77,5 +77,41 @@ describe('useEndlessList', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Read on' }));
 
     expect(await screen.findByText('one,two')).toBeInTheDocument();
+  });
+
+  it('reads once when asked twice before the first read is back', async () => {
+    let finish: (page: { items: string[]; nextCursor: null }) => void =
+      () => {};
+    const readNext = vi.fn(
+      () =>
+        new Promise<{ items: string[]; nextCursor: null }>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    render(<List readNext={readNext} />);
+    const readOn = screen.getByRole('button', { name: 'Read on' });
+
+    await userEvent.click(readOn);
+    await userEvent.click(readOn);
+    finish({ items: ['two'], nextCursor: null });
+
+    expect(await screen.findByText('one,two')).toBeInTheDocument();
+    expect(readNext).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts each read where the one before it ended', async () => {
+    const readNext = vi
+      .fn()
+      .mockResolvedValueOnce({ items: ['two'], nextCursor: 'cursor-2' })
+      .mockResolvedValueOnce({ items: ['three'], nextCursor: null });
+    render(<List readNext={readNext} />);
+    const readOn = screen.getByRole('button', { name: 'Read on' });
+
+    await userEvent.click(readOn);
+    await screen.findByText('one,two');
+    await userEvent.click(readOn);
+
+    expect(await screen.findByText('one,two,three')).toBeInTheDocument();
+    expect(readNext.mock.calls).toEqual([['cursor-1'], ['cursor-2']]);
   });
 });

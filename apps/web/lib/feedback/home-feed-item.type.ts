@@ -5,9 +5,16 @@ import type { AskStatus } from './ask-status.constant';
 import type { FeedbackPerson } from './feedback-person.util';
 import type { TextTags } from './text-tags.type';
 
-export type FeedItemOnTheWire = Extract<
-  components['schemas']['ListFeedItemsResponseDto_Output']['items'][number],
-  { kind: 'FEEDBACK' }
+/**
+ * A piece of Feedback as the lists send it. Home's adds the `day` it falls on, which Received's and
+ * the others' do not, so it is left out here and Home reads it on its own.
+ */
+export type FeedItemOnTheWire = Omit<
+  Extract<
+    components['schemas']['ListFeedItemsResponseDto_Output']['items'][number],
+    { kind: 'FEEDBACK' }
+  >,
+  'day'
 >;
 
 /** Which of what a Member reads on Home: the three choices of its filter, as the API names them. */
@@ -68,11 +75,18 @@ export type HomeFeedItem = {
   readonly card: ReadPostcard;
 };
 
-/** One page of Home. The reader comes with it because no other read says who they are. */
+/**
+ * The day a piece of Home was given, `YYYY-MM-DD`, as the API worked it out on the one clock every
+ * calendar is read on (ADR 0095). Home groups its list by it and keeps no clock of its own.
+ */
+type OnHomeDay = { readonly day: string };
+
 /** One thing on Home: a piece of Feedback, or a Kudos on its card. */
 export type HomeFeedEntry =
-  | (HomeFeedItem & { readonly kind: 'FEEDBACK' })
-  | (ReadKudos & { readonly kind: 'KUDOS' });
+  | (HomeFeedItem & { readonly kind: 'FEEDBACK' } & OnHomeDay)
+  | (ReadKudos & { readonly kind: 'KUDOS' } & OnHomeDay);
+
+/** One page of Home. The reader comes with it because no other read says who they are. */
 
 export type HomeFeedPage = {
   readonly readerAccountId: string;
