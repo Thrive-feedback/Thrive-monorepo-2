@@ -78,6 +78,21 @@
     var(--neutral-50) 72%,
     transparent
   );
+  --surface-glow-primary: color-mix(
+    in oklch,
+    var(--primary-450) 75%,
+    transparent
+  );
+  --surface-glow-secondary: color-mix(
+    in oklch,
+    var(--secondary-350) 60%,
+    transparent
+  );
+  --surface-glow-tertiary: color-mix(
+    in oklch,
+    var(--info-500) 60%,
+    transparent
+  );
   --surface-skeleton: color-mix(in oklch, var(--neutral-100) 70%, transparent);
   --surface-track: var(--neutral-200);
   --surface-paper: var(--neutral-25);
@@ -592,6 +607,21 @@
   --surface-glass-neutral: color-mix(
     in oklch,
     var(--neutral-825) 72%,
+    transparent
+  );
+  --surface-glow-primary: color-mix(
+    in oklch,
+    var(--primary-400) 45%,
+    transparent
+  );
+  --surface-glow-secondary: color-mix(
+    in oklch,
+    var(--secondary-400) 30%,
+    transparent
+  );
+  --surface-glow-tertiary: color-mix(
+    in oklch,
+    var(--info-400) 35%,
     transparent
   );
   --surface-skeleton: color-mix(in oklch, var(--neutral-700) 60%, transparent);
