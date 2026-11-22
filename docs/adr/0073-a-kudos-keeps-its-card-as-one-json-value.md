@@ -1,6 +1,6 @@
 # 0073 — A Kudos keeps how its card looks as one JSON value
 
-**Status:** accepted, 2026-10-31
+**Status:** accepted, 2026-10-31; its rule on how large the message is drawn is amended by 0092
 
 ## Context
 

@@ -1,3 +1,4 @@
+import { POSTCARD_SIZES } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import { MAX_KUDOS_LENGTH } from '@/lib/feedback/kudos-item.type';
 
 /**
@@ -15,11 +16,10 @@ export function kudosCardDate(isoDateTime: string): string {
 }
 
 /**
- * The largest size step that still fits, for a message up to each length: a card never scrolls, so
- * a long message is set smaller. Steps are `POSTCARD_SIZES`', smallest first, and the last entry
- * reaches the limit. Measured on the card on a phone and a wide screen, in all three fonts, on every
- * template, with Thai and with English: the words fill at most about 85% of the room, which leaves
- * some for the suggestions and a sticker.
+ * A first guess at the step a message fits in, from its length alone, for when nothing can be
+ * measured yet: on the server and on the first paint. Steps are `POSTCARD_SIZES`', smallest first,
+ * and the last entry reaches the limit. It is sized for the widest message, the Modern font with
+ * Thai, so it is never larger than what is then measured (ADR 0092).
  */
 const LARGEST_STEP_FOR_LENGTH: readonly { upTo: number; step: number }[] = [
   { upTo: 80, step: 4 },
@@ -28,12 +28,44 @@ const LARGEST_STEP_FOR_LENGTH: readonly { upTo: number; step: number }[] = [
   { upTo: MAX_KUDOS_LENGTH, step: 1 },
 ];
 
-/**
- * The step a message is set in. The Giver's choice is the largest it may be, and the length alone
- * steps it down, so every reader gets the same size from what is saved (ADR 0073).
- */
-export function fittedSizeStep(sizeStep: number, length: number): number {
+/** The guess, never larger than the step the Giver chose. */
+export function guessedSizeStep(sizeStep: number, length: number): number {
   const largest =
     LARGEST_STEP_FOR_LENGTH.find(({ upTo }) => length <= upTo)?.step ?? 1;
   return Math.min(sizeStep, largest);
+}
+
+/** One step's size as a share of another's, by the sizes they have on a phone. */
+export function shareOfSize(step: number, ofStep: number): number {
+  const size = POSTCARD_SIZES[step]?.px;
+  const of = POSTCARD_SIZES[ofStep]?.px;
+  return size && of ? Math.min(size / of, 1) : 1;
+}
+
+/** How finely the share is searched for: about a tenth of a pixel on the largest size. */
+const FIT_ROUNDS = 8;
+
+/**
+ * The largest share of the chosen size, from `smallest` up to all of it, at which the words fit,
+ * found by halving: `fits` lays them out at a share and says whether they fit. When even `smallest`
+ * does not, `smallest`, which a message within the limit always fits (ADR 0092).
+ */
+export function largestShareThatFits(
+  fits: (share: number) => boolean,
+  smallest: number,
+): number {
+  if (fits(1)) {
+    return 1;
+  }
+  let low = smallest;
+  let high = 1;
+  for (let round = 0; round < FIT_ROUNDS; round += 1) {
+    const middle = (low + high) / 2;
+    if (fits(middle)) {
+      low = middle;
+    } else {
+      high = middle;
+    }
+  }
+  return Math.round(low * 1000) / 1000;
 }
