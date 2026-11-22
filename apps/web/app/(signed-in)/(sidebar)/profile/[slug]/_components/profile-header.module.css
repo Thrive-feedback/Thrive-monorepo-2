@@ -1,7 +1,7 @@
 /*
  * The head of a Profile: a band that hangs from the navbar in the frame's tint, so the two read as
- * one surface, lit by soft glows of plum, blue and orange, its foot cut in a zigzag where the page
- * begins.
+ * one surface, lit by soft glows of plum, blue and orange, its foot perforated like a sheet of
+ * stamps where the page begins.
  *
  * The band carries `[data-hangs-from-navbar]`, so the navbar paints the same ground instead of
  * frosting, from the light laid out on the window (`--hanging-light`, `--hanging-tint`; both in the
@@ -13,29 +13,27 @@
  */
 .band {
   --bar: calc(var(--space-unit) * 18);
-  --tooth: calc(var(--space-unit) * 2.5);
+  /* The landing page's sheet-of-stamps edge (`.perforated` in `landing.module.css`): a bite, and
+     how far apart the bites stand. */
+  --bite: calc(var(--space-unit) * 1.5);
+  --pitch: calc(var(--space-unit) * 5);
 
   position: relative;
   isolation: isolate;
   margin-top: calc(-1 * var(--bar));
 
-  /* Solid down to the teeth, then a row of teeth along the foot, each pointing down into the page.
-     Both keep to the content box, so they start where the band's own column does when it reaches
-     back under the sidebar from `md`. The third layer is that reach, just under the navbar: one
-     corner of tint around a quarter circle, which rounds the sidebar's top corner into the band and
-     scrolls away with it. On a phone it lies inside the band and changes nothing. The mask also cuts
-     the window-held light to the band. A mask shows what lies under its black, so the black is an
-     instruction, not a colour. */
+  /* Solid down to the bites, then the foot perforated as a sheet of stamps is: a row of round
+     bites, each half a circle taken out of the band's bottom edge. Both keep to the content box,
+     so they start where the band's own column does when it reaches back under the sidebar from
+     `md`. The third layer is that reach, just under the navbar: one corner of tint around a quarter
+     circle, which rounds the sidebar's top corner into the band and scrolls away with it. On a
+     phone it lies inside the band and changes nothing. The mask also cuts the window-held light to
+     the band. A mask shows what lies under its black, so the black is an instruction, not a colour. */
   mask:
-    linear-gradient(black 0 0) 0 0 / 100% calc(100% - var(--tooth)) no-repeat
+    linear-gradient(black 0 0) 0 0 / 100% calc(100% - var(--bite)) no-repeat
     content-box,
-    conic-gradient(
-      from -45deg at bottom,
-      transparent,
-      black 1deg 89deg,
-      transparent 90deg
-    )
-    50% 100% / calc(var(--tooth) * 2) var(--tooth) repeat-x content-box,
+    radial-gradient(circle var(--bite) at 50% 100%, transparent 98%, black) 50%
+    100% / var(--pitch) calc(var(--bite) * 2) repeat-x content-box,
     radial-gradient(
       circle at 0 100%,
       transparent var(--shape-page),
