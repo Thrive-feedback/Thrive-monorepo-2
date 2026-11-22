@@ -18,6 +18,20 @@ vi.mock(
 
 beforeEach(() => {
   answerTheBell();
+  // The sidebar stands beside the page from md, where the bell's panel drops from it as a menu.
+  vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query) =>
+      ({
+        matches: true,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }) satisfies MediaQueryList,
+  );
 });
 
 describe('SidebarNav beside the bell', () => {

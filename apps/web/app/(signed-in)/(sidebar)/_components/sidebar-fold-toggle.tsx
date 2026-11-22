@@ -14,20 +14,15 @@ import { useSidebarFold } from '@/lib/use-sidebar-fold';
 const COLLAPSE = 'Collapse sidebar';
 const EXPAND = 'Expand sidebar';
 
-export type SidebarFoldToggleProps = {
-  /** The page is one of Settings', where the rail is held below `xl`. */
-  inSettings: boolean;
-};
-
 /**
  * Folds the sidebar to its rail of icons, or widens it again, drawn as one of the sidebar's rows. The
- * choice is kept in this browser and holds at every width. Which icon and words show follows
+ * choice is kept in this browser and holds from `xl`, the only width where it can be made. Which icon and words show follows
  * `data-sidebar` in CSS, so the first paint is right before hydration; the name a screen reader
- * hears and whether it is expanded come from the same attribute once hydrated. Where Settings holds
- * the rail, it is not offered, since it could not act.
+ * hears and whether it is expanded come from the same attribute once hydrated. Below `xl` the window
+ * holds the sidebar at its width, so it is not offered there, since it could not act.
  */
-export function SidebarFoldToggle({ inSettings }: SidebarFoldToggleProps) {
-  const { folded, toggle } = useSidebarFold(inSettings);
+export function SidebarFoldToggle() {
+  const { folded, toggle } = useSidebarFold();
   const label = folded ? EXPAND : COLLAPSE;
 
   return (

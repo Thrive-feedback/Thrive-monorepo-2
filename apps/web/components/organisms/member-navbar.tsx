@@ -12,20 +12,29 @@ import { NotificationBell } from './notification-bell';
 import { SessionRefresher } from './session-refresher';
 import { SettingsLink } from './settings-link';
 
-/** Settings and the avatar, kept off a wide screen where the page's sidebar holds them instead. */
-const accountGroup = cva('flex items-center gap-gap-nav', {
+/** Where the logo stands: everywhere, or, where the bar shows the Workspace alone on a phone, from `md`. */
+const logoSlot = cva('flex', {
   variants: {
-    isAccountInSidebar: { true: 'md:hidden', false: '' },
+    hidesLogoOnPhone: { true: 'max-md:hidden', false: '' },
   },
-  defaultVariants: { isAccountInSidebar: false },
+  defaultVariants: { hidesLogoOnPhone: false },
 });
 
 export type MemberNavbarProps = {
+  /** Drawn before the logo, such as the button that opens a phone's menu. */
+  leading?: React.ReactNode;
   /** Drawn right after the logo. */
   children?: React.ReactNode;
+  /** Drawn at the right end, before the bell, such as a phone's "+". */
+  actions?: React.ReactNode;
   /**
-   * The page has a sidebar that holds Settings and the avatar at its foot, so the navbar draws them
-   * only where the sidebar is not shown: on a phone.
+   * The bar on a phone shows the Workspace alone, as `children`, without the logo beside it: below
+   * `md` the logo is not drawn.
+   */
+  hidesLogoOnPhone?: boolean;
+  /**
+   * The page has a sidebar that holds Settings and the avatar at its foot, beside the page or, on a
+   * phone, in its menu drawer, so the navbar does not draw them.
    */
   isAccountInSidebar?: boolean;
 };
@@ -38,50 +47,66 @@ export type MemberNavbarProps = {
  * waiting for them, and there is nothing waiting for nobody.
  * This is where a session due a refresh gets one on a Member's pages.
  *
- * Home's pages pass the Workspace the person is in as `children`, drawn right after the logo, and
- * keep Settings and the avatar in their sidebar (`isAccountInSidebar`).
+ * Home's pages pass the Workspace the person is in as `children`, drawn right after the logo, the
+ * phone's menu button before it (`leading`) and its "+" by the bell (`actions`), and keep Settings
+ * and the avatar in their sidebar (`isAccountInSidebar`).
  */
 export async function MemberNavbar({
+  leading,
   children,
+  actions,
+  hidesLogoOnPhone = false,
   isAccountInSidebar = false,
 }: MemberNavbarProps = {}) {
   const [session, needsRefresh] = await Promise.all([
     readSession(),
     readSessionNeedsRefresh(),
   ]);
-  const logo = <NavbarLogo href={session ? ROUTES.home : ROUTES.landing} />;
+  const logo = (
+    <span className={logoSlot({ hidesLogoOnPhone })}>
+      <NavbarLogo href={session ? ROUTES.home : ROUTES.landing} />
+    </span>
+  );
 
   return (
+    // Where a page's head hangs from the bar, the bar draws that head's ground instead of glass.
     <header
       className={cn(
         'fixed inset-x-0 top-0 z-40 flex h-18 items-center justify-between gap-gap-nav px-inset-container',
         styles.glass,
         styles.curvesDown,
         styles.framed,
+        styles.hangsOver,
       )}
     >
-      {children ? (
-        <div className="flex min-w-0 items-center gap-1 sm:gap-4">
-          {logo}
-          {children}
-        </div>
-      ) : (
-        logo
-      )}
+      <div className="flex min-w-0 items-center gap-2">
+        {leading}
+        {children ? (
+          <div className="flex min-w-0 items-center gap-1 sm:gap-4">
+            {logo}
+            {children}
+          </div>
+        ) : (
+          logo
+        )}
+      </div>
       {needsRefresh && <SessionRefresher />}
       <div className="flex items-center gap-gap-nav">
         {session && (
           <>
+            {actions}
             <NotificationBell />
-            <div className={accountGroup({ isAccountInSidebar })}>
-              <SettingsLink />
-              <AccountAvatar
-                name={session.profile?.displayName ?? session.name}
-                email={session.email}
-                slug={session.profile?.slug ?? null}
-                photoUrl={session.photoUrl}
-              />
-            </div>
+            {!isAccountInSidebar && (
+              <div className="flex items-center gap-gap-nav">
+                <SettingsLink />
+                <AccountAvatar
+                  name={session.profile?.displayName ?? session.name}
+                  email={session.email}
+                  slug={session.profile?.slug ?? null}
+                  photoUrl={session.photoUrl}
+                />
+              </div>
+            )}
           </>
         )}
       </div>

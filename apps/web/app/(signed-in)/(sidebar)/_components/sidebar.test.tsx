@@ -6,6 +6,7 @@ import type { BellNotification } from '@/lib/notifications/notification.type';
 import { ROUTES } from '@/lib/routes.constant';
 import { answerTheBell, unreadLines } from '@/lib/test/bell-notifications';
 import { Sidebar } from './sidebar';
+import { SidebarDrawer, SidebarDrawerTrigger } from './sidebar-drawer';
 
 const MEMBERSHIP = { workspace: { id: 'w-1', name: 'Acme' }, role: 'MEMBER' };
 
@@ -56,11 +57,19 @@ async function draw(
   readTeammates.mockResolvedValue([]);
   readFeatureFlags.mockResolvedValue({ showsDashboard });
   answerTheBell([...unreadLines('ASK_RECEIVED', waiting), ...extra]);
-  render(<NotificationsProvider>{await Sidebar()}</NotificationsProvider>);
+  const drawn = await Sidebar();
+  render(
+    <NotificationsProvider>
+      <SidebarDrawer>
+        <SidebarDrawerTrigger />
+        {drawn}
+      </SidebarDrawer>
+    </NotificationsProvider>,
+  );
   return within(sidebar()).getByRole('navigation', { name: 'Main' });
 }
 
-/** The column beside the page; a phone's tab bar is drawn too, and has its own tests. */
+/** The column beside the page; a phone's menu drawer holds the same, once opened. */
 function sidebar() {
   return screen.getByRole('complementary', { name: 'Sidebar' });
 }
@@ -103,19 +112,26 @@ describe('Sidebar', () => {
       'Given',
     ]);
 
-    const tabBar = screen
-      .getAllByRole('navigation', { name: 'Main' })
-      .find((candidate) => !sidebar().contains(candidate));
-    if (tabBar === undefined) {
-      throw new Error('no tab bar drawn');
-    }
-    await user.click(within(tabBar).getByRole('button', { name: 'More' }));
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
 
     expect(
-      within(screen.getByRole('menu'))
-        .getAllByRole('menuitem')
+      within(
+        within(screen.getByRole('dialog', { name: 'Menu' })).getByRole(
+          'navigation',
+          { name: 'Main' },
+        ),
+      )
+        .getAllByRole('listitem')
         .map((item) => item.textContent),
-    ).toEqual(['Teammates', 'Received', 'Given']);
+    ).toEqual([
+      'Home',
+      'Kudos board',
+      'Waiting for me',
+      'Teammates',
+      'My Feedback',
+      'Received',
+      'Given',
+    ]);
   });
 
   it('marks the page that is open, wherever the person went', async () => {
@@ -206,7 +222,7 @@ describe('Sidebar', () => {
     ).toBeVisible();
   });
 
-  it('keeps every place named in Settings, where it folds to its icons, and names an icon pointed at', async () => {
+  it('keeps every place named on a Settings page, marks Settings open, and names a place pointed at', async () => {
     const user = userEvent.setup();
     const nav = await draw(2, ROUTES.settings.index);
     await within(nav).findByRole('link', {

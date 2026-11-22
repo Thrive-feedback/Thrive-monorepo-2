@@ -2,13 +2,15 @@ import { NotificationsProvider } from '@/components/organisms/notifications-prov
 import { MemberShell } from '@/components/templates/member-shell';
 import { Navbar } from './_components/navbar';
 import { Sidebar } from './_components/sidebar';
+import { SidebarDrawer } from './_components/sidebar-drawer';
 
 /**
  * Home and the pages beside it, Settings among them: the Member frame, with its own navbar, and
  * the sidebar set into the frame against its left edge, a column divided from the page by a line,
  * on a screen wide enough for it. Settings sets its own menu beside it as a second such column,
- * and below `xl` the sidebar narrows to its icons to make room. A phone has the sidebar's places
- * in a tab bar along the bottom instead, so the page leaves room above it.
+ * and below `xl` the sidebar narrows to its icons to make room. A phone has no room for the sidebar
+ * beside the page, so the same sidebar opens there in a drawer from the navbar's menu button; the
+ * button and the drawer share one drawer around the whole frame.
  * The check is in each page, not here, because a layout does not run again when the client
  * navigates between the pages under it.
  *
@@ -23,16 +25,16 @@ export default function SidebarLayout({
 }>) {
   return (
     // One read of what the person has been told, for the bell in the navbar and the counts in the
-    // sidebar and the tab bar alike.
+    // sidebar and its drawer alike.
     <NotificationsProvider>
-      <MemberShell navbar={<Navbar />} fillsFrame>
-        <div className="flex flex-1">
-          <Sidebar />
-          <div className="flex min-w-0 flex-1 flex-col pb-16 md:pb-0">
-            {children}
+      <SidebarDrawer>
+        <MemberShell navbar={<Navbar />} fillsFrame>
+          <div className="flex flex-1">
+            <Sidebar />
+            <div className="flex min-w-0 flex-1 flex-col">{children}</div>
           </div>
-        </div>
-      </MemberShell>
+        </MemberShell>
+      </SidebarDrawer>
     </NotificationsProvider>
   );
 }

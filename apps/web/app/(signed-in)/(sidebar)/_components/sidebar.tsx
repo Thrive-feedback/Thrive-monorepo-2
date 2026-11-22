@@ -8,15 +8,16 @@ import { ComposeMenu } from './compose-menu';
 import styles from './sidebar.module.css';
 import { SidebarAccount } from './sidebar-account';
 import { SidebarColumn } from './sidebar-column';
+import { SidebarDrawerContent } from './sidebar-drawer';
 import { SidebarNav } from './sidebar-nav';
-import { TabBar } from './tab-bar';
 
 /**
  * The sidebar beside Home and its pages: "+" to write something, then where to go, and at its foot
- * Settings and who is signed in. A phone has no room for it, so the same places and "+" stand in a
- * tab bar along the bottom instead. Who a postcard can be for, who signs it, and what `@` and `#`
- * offer on it are read once here, so either "+" can hand them over. Which places are switched on
- * is read here too, so both menus leave out the same ones.
+ * Settings and who is signed in. A phone has no room for it beside the page, so there the same
+ * places and foot open in the menu drawer from the navbar, and "+" stands in the navbar by the bell.
+ * Who a postcard can be for, who signs it, and what `@` and `#` offer on it are read here for "+".
+ * Which places are switched on is read here too, so the column and the drawer leave out the same
+ * ones.
  */
 export async function Sidebar() {
   const session = await requireMember();
@@ -54,9 +55,17 @@ export async function Sidebar() {
           </div>
         </div>
       </SidebarColumn>
-      <TabBar showsDashboard={showsDashboard}>
-        <ComposeMenu {...compose} placement="tab-bar" />
-      </TabBar>
+      <SidebarDrawerContent>
+        <SidebarNav showsDashboard={showsDashboard} />
+        <div className="mt-auto">
+          <SidebarAccount
+            name={session.profile?.displayName ?? session.name}
+            email={email}
+            slug={session.profile.slug}
+            photoUrl={session.photoUrl}
+          />
+        </div>
+      </SidebarDrawerContent>
     </>
   );
 }

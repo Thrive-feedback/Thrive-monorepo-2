@@ -163,6 +163,31 @@ describe('Drawer, by width', () => {
     expect(drawer).toHaveAttribute('data-swipe-direction', 'right');
     expect(drawer.querySelector('[data-slot="drawer-handle"]')).toBeNull();
   });
+
+  it.each([
+    ['a phone', false],
+    ['md and wider', true],
+  ])(
+    'from the left is a panel along that edge on %s, without a handle',
+    async (_width, isWide) => {
+      const user = userEvent.setup();
+      asWideAs(isWide);
+      render(
+        <Drawer side="left">
+          <DrawerTrigger>Menu</DrawerTrigger>
+          <DrawerContent>
+            <DrawerTitle>Menu</DrawerTitle>
+          </DrawerContent>
+        </Drawer>,
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Menu' }));
+
+      const drawer = screen.getByRole('dialog', { name: 'Menu' });
+      expect(drawer).toHaveAttribute('data-swipe-direction', 'left');
+      expect(drawer.querySelector('[data-slot="drawer-handle"]')).toBeNull();
+    },
+  );
 });
 
 describe('Drawer, not modal, pressed', () => {

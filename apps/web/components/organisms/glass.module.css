@@ -126,3 +126,66 @@
 .framed {
   --frame-gap: calc(var(--space-unit) * 3);
 }
+
+/*
+ * A bar a page's head hangs from, such as a Profile's band, marked on the page by
+ * `[data-hangs-from-navbar]`. There the bar is not frosted: it is painted with the head's own ground,
+ * the glass tint over the page and a soft light of plum, blue and orange, so bar and head are one
+ * painting and meet with no edge in either colour mode (glass laid over the head never matches it
+ * exactly). The light is laid out on the window: the bar spans the window's width from its top, so
+ * in its own box the light falls where it falls on the window, and the head paints it on a layer
+ * held to the window. Each colour is spent before the window's edges, where the frame's strips meet
+ * the plain tint; the bar's curves, a little further in, show the light too, laid out on the window
+ * from where each curve stands, so a narrow phone's last trace of it still lines up. The page does not
+ * bounce at its ends there, since a bounce would pull the head away from the bar, which stays put.
+ * Radial gradients painted once rather than blurred, as the orb backdrop's orbs are; a gradient
+ * from a token has no utility.
+ */
+:root:has([data-hangs-from-navbar]) {
+  overscroll-behavior-y: none;
+  /* The bar's height, where its curves stand below its top. */
+  --hanging-bar: calc(var(--space-unit) * 18);
+  --hanging-tint: linear-gradient(var(--surface-glass), var(--surface-glass));
+  --hanging-light:
+    radial-gradient(
+      ellipse 18% calc(var(--space-unit) * 52) at 34%
+        calc(var(--space-unit) * 6),
+      color-mix(in oklch, var(--action-primary) 40%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 17% calc(var(--space-unit) * 44) at 61% 0,
+      color-mix(in oklch, var(--action-tertiary) 30%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 15% calc(var(--space-unit) * 48) at 79%
+        calc(var(--space-unit) * 4),
+      color-mix(in oklch, var(--action-secondary) 30%, transparent),
+      transparent
+    );
+}
+
+:root:has([data-hangs-from-navbar]) .hangsOver {
+  background-color: var(--surface-base);
+  background-image: var(--hanging-tint), var(--hanging-light);
+  backdrop-filter: none;
+}
+
+:root:has([data-hangs-from-navbar]) .hangsOver::before,
+:root:has([data-hangs-from-navbar]) .hangsOver::after {
+  background-color: var(--surface-base);
+  background-image: var(--hanging-tint), var(--hanging-light);
+  background-size: 100vw 100vh;
+}
+
+/* Each curve's part of the window: the left one stands the frame's gap in and the bar's height
+   down, the right one as far in from the right. A position from the window has no utility. */
+:root:has([data-hangs-from-navbar]) .hangsOver::before {
+  background-position: calc(-1 * var(--frame-gap)) calc(-1 * var(--hanging-bar));
+}
+
+:root:has([data-hangs-from-navbar]) .hangsOver::after {
+  background-position: right calc(-1 * var(--frame-gap)) top
+    calc(-1 * var(--hanging-bar));
+}

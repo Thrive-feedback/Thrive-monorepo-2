@@ -17,6 +17,18 @@ export const COMPOSE_CHOICE_TONES: Readonly<
   kudos: 'secondary',
 };
 
+/** What "+" says it does, to a screen reader, and as the title of the phone's sheet of choices. */
+export const WRITE_SOMETHING = 'Write something';
+
+/** The line under each choice where "+" offers it, saying what it is for. */
+export const COMPOSE_CHOICE_DESCRIPTIONS: Readonly<
+  Record<ComposeChoice, string>
+> = {
+  ask: 'Ask teammates what they think.',
+  give: "Tell a teammate what you've seen.",
+  kudos: 'Say well done in a few words.',
+};
+
 /** What each choice is called wherever it is offered: the menu, Home's composer, an empty list. */
 export const COMPOSE_CHOICE_TITLES: Readonly<Record<ComposeChoice, string>> = {
   ask: 'Ask for feedback',

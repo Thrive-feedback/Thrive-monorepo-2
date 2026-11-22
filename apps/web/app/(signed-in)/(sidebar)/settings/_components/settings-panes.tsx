@@ -28,7 +28,7 @@ export type SettingsPanesProps = {
  *
  * The menu is a column the width of the main sidebar, divided from the section by a line as the
  * main sidebar is from it, its contents held just below the navbar as the page scrolls
- * (`top-21`, as the main sidebar's).
+ * (`top-21`, where the main sidebar's contents stand).
  */
 export function SettingsPanes({ children }: SettingsPanesProps) {
   const pathname = usePathname();
@@ -50,6 +50,8 @@ export function SettingsPanes({ children }: SettingsPanesProps) {
             label="Settings sections"
             items={SETTINGS_MENU}
             currentHref={settingsSectionAt(pathname).href}
+            // A phone shows this menu alone at `/settings`, before any section is open.
+            marksCurrentFromMd
           />
         </div>
       </div>

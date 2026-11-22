@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
@@ -24,8 +30,26 @@ vi.mock(
 const SUBJECT = '0199ffff-0000-7000-8000-00000000000a';
 const { countUnreadNotifications, listMyNotifications } = BELL_ACTIONS;
 
+/** A window that is `md` or wider (`isWide`), where the bell's panel drops from it, or a phone's. */
+function asWideAs(isWide: boolean) {
+  vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query) =>
+      ({
+        matches: isWide,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }) satisfies MediaQueryList,
+  );
+}
+
 beforeEach(() => {
   answerTheBell();
+  asWideAs(true);
 });
 
 /** The bell as the layout mounts it: under the provider that reads its lines. */
@@ -644,5 +668,139 @@ describe('when answers come back late', () => {
     expect(
       screen.getByRole('button', { name: 'Notifications', hidden: true }),
     ).toBeInTheDocument();
+  });
+});
+
+describe('NotificationBell on a phone', () => {
+  beforeEach(() => {
+    asWideAs(false);
+  });
+
+  it('rises from the bottom as a sheet titled Notifications, with the lines in it', async () => {
+    answerTheBell(unreadLines('ASK_RECEIVED', 2));
+    const user = userEvent.setup();
+    drawBell();
+
+    await user.click(
+      await screen.findByRole('button', { name: /^Notifications/ }),
+    );
+
+    const sheet = await screen.findByRole('dialog', { name: 'Notifications' });
+    expect(sheet).toHaveAttribute('data-swipe-direction', 'down');
+    expect(await within(sheet).findAllByRole('link')).toHaveLength(2);
+    expect(
+      within(sheet).getByRole('button', { name: 'Mark all as read' }),
+    ).toBeInTheDocument();
+  });
+
+  it('marks a line read and puts the sheet away when the line is pressed', async () => {
+    answerTheBell(unreadLines('ASK_RECEIVED', 1));
+    const user = userEvent.setup();
+    drawBell();
+
+    await user.click(
+      await screen.findByRole('button', { name: /^Notifications/ }),
+    );
+    const sheet = await screen.findByRole('dialog', { name: 'Notifications' });
+    await user.click(
+      (await within(sheet).findAllByRole('link'))[0] as HTMLElement,
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Notifications' }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      await screen.findByRole('button', { name: 'Notifications' }),
+    ).toBeInTheDocument();
+  });
+
+  /** Opens the sheet on a phone and waits for its lines. */
+  async function openTheSheet(name: string | RegExp = /^Notifications/) {
+    const user = userEvent.setup();
+    drawBell();
+    await user.click(await screen.findByRole('button', { name }));
+    const sheet = await screen.findByRole('dialog', { name: 'Notifications' });
+    return { user, sheet };
+  }
+
+  it('clears the number on Mark all as read, and keeps the lines', async () => {
+    answerTheBell([
+      aBellNotification('ASK_RECEIVED'),
+      aBellNotification('FEEDBACK_RECEIVED'),
+    ]);
+    const { user, sheet } = await openTheSheet('Notifications, 2 unread');
+    await within(sheet).findAllByRole('link');
+
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Mark all as read' }),
+    );
+
+    expect(BELL_ACTIONS.markAllNotificationsRead).toHaveBeenCalledOnce();
+    await waitFor(() =>
+      expect(within(sheet).queryByText('Unread')).not.toBeInTheDocument(),
+    );
+    expect(within(sheet).getAllByRole('link')).toHaveLength(2);
+    expect(
+      within(sheet).queryByRole('button', { name: 'Mark all as read' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('keeps the number and the lines when Mark all as read is refused', async () => {
+    answerTheBell([aBellNotification('ASK_RECEIVED')]);
+    BELL_ACTIONS.markAllNotificationsRead.mockResolvedValue(false);
+    const { user, sheet } = await openTheSheet('Notifications, 1 unread');
+    await within(sheet).findAllByRole('link');
+
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Mark all as read' }),
+    );
+
+    await waitFor(() =>
+      expect(BELL_ACTIONS.markAllNotificationsRead).toHaveBeenCalledOnce(),
+    );
+    expect(
+      await within(sheet).findByRole('link', {
+        name: /asked you for feedback/,
+      }),
+    ).toHaveTextContent('Unread');
+  });
+
+  it('reads the next page as the person scrolls the sheet near the end, and adds it under the first', async () => {
+    const firstPage = unreadLines('KUDOS_RECEIVED', 100);
+    const secondPage = [
+      aBellNotification('ASK_RECEIVED', { actorName: 'Ploy' }),
+    ];
+    listMyNotifications.mockImplementation(async (page = 1) =>
+      aPage(page === 1 ? firstPage : secondPage, 101),
+    );
+    const { sheet } = await openTheSheet();
+    const [firstLine] = await within(sheet).findAllByRole('link', {
+      name: /gave you kudos/,
+    });
+
+    // The lines scroll in a box of their own under the sheet's header: the box that holds them.
+    const lines = firstLine?.parentElement;
+    if (!(lines instanceof HTMLElement)) {
+      throw new Error('no box holds the lines');
+    }
+    Object.defineProperty(lines, 'scrollHeight', {
+      configurable: true,
+      value: 2000,
+    });
+    Object.defineProperty(lines, 'clientHeight', {
+      configurable: true,
+      value: 500,
+    });
+    lines.scrollTop = 1400;
+    fireEvent.scroll(lines);
+
+    expect(
+      await within(sheet).findByRole('link', {
+        name: /Ploy asked you for feedback/,
+      }),
+    ).toBeInTheDocument();
+    expect(listMyNotifications).toHaveBeenCalledWith(2);
   });
 });

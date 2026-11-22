@@ -29,8 +29,8 @@ export type SidebarAccountProps = {
 
 /**
  * The foot of the sidebar: the button that folds it, Settings, then, under a line, who is signed in,
- * their face, name and address, leading to their Profile. The navbar draws these instead on a phone,
- * where there is no sidebar. Settings is marked current on every one of its pages, since they open
+ * their face, name and address, leading to their Profile. On a phone they stand at the foot of the
+ * menu drawer, as the sidebar does there. Settings is marked current on every one of its pages, since they open
  * beside this sidebar with their own menu; the account card is marked on the person's own Profile,
  * and not on anyone else's. Whenever the sidebar is a rail, all of them fold to their icon and face,
  * named by a tooltip, as the rest of the sidebar does. It reads the path itself because the layout
@@ -44,7 +44,7 @@ export function SidebarAccount({
 }: SidebarAccountProps) {
   const pathname = usePathname();
   const inSettings = isSettingsPath(pathname);
-  const { folded } = useSidebarFold(inSettings);
+  const { folded } = useSidebarFold();
   const profileHref = ROUTES.profile(slug);
   const label = `Profile: ${name}, ${email}`;
 
@@ -72,7 +72,7 @@ export function SidebarAccount({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-0.5">
-        <SidebarFoldToggle inSettings={inSettings} />
+        <SidebarFoldToggle />
         <SideNav
           label="Settings"
           currentHref={inSettings ? ROUTES.settings.index : undefined}

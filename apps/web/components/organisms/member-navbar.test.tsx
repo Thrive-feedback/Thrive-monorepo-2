@@ -57,25 +57,42 @@ describe('MemberNavbar', () => {
     ).toHaveAttribute('href', '/profile/ann');
   });
 
-  it('keeps Settings and the avatar off a wide screen when the page’s sidebar holds them', async () => {
+  it('leaves Settings and the avatar to the page’s sidebar when it holds them', async () => {
     readSession.mockResolvedValue(ANN);
 
     render(await MemberNavbar({ isAccountInSidebar: true }));
 
-    // A phone has no sidebar, so they stay in the bar there; jsdom cannot apply the breakpoint.
-    expect(
-      screen.getByRole('link', { name: 'Settings' }).parentElement,
-    ).toHaveClass('md:hidden');
+    // Beside the page or, on a phone, in its menu drawer: the bar draws neither.
+    expect(screen.queryByRole('link', { name: 'Settings' })).toBeNull();
+    expect(screen.queryByRole('link', { name: /Profile/ })).toBeNull();
   });
 
-  it('keeps Settings and the avatar at every width where the page has no sidebar', async () => {
+  it('keeps Settings and the avatar where the page has no sidebar', async () => {
     readSession.mockResolvedValue(ANN);
 
     render(await MemberNavbar());
 
+    expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument();
+  });
+
+  it('draws what it is given before the logo and before the bell', async () => {
+    readSession.mockResolvedValue(ANN);
+
+    render(
+      await MemberNavbar({
+        leading: <button type="button">Open menu</button>,
+        actions: <button type="button">Write something</button>,
+      }),
+    );
+
+    const menu = screen.getByRole('button', { name: 'Open menu' });
+    const logo = screen.getByRole('link', { name: 'Thrive' });
     expect(
-      screen.getByRole('link', { name: 'Settings' }).parentElement,
-    ).not.toHaveClass('md:hidden');
+      menu.compareDocumentPosition(logo) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Write something' }).nextSibling,
+    ).toHaveTextContent('notification bell');
   });
 
   it('has no colour mode switch, since that is in Settings', async () => {
@@ -129,6 +146,22 @@ describe('MemberNavbar', () => {
 
     const logo = screen.getByRole('link', { name: 'Thrive' });
     expect(logo).toHaveAttribute('href', '/home');
-    expect(logo.nextElementSibling).toHaveTextContent('Acme');
+    expect(logo.parentElement?.nextElementSibling).toHaveTextContent('Acme');
+  });
+
+  it('leaves the logo off a phone when the bar shows the Workspace alone there', async () => {
+    readSession.mockResolvedValue(ANN);
+
+    render(
+      await MemberNavbar({
+        hidesLogoOnPhone: true,
+        children: <span>Acme</span>,
+      }),
+    );
+
+    // jsdom cannot apply the breakpoint, so the class that hides it below md stands in for it.
+    expect(
+      screen.getByRole('link', { name: 'Thrive' }).parentElement,
+    ).toHaveClass('max-md:hidden');
   });
 });

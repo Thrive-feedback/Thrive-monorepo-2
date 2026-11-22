@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { PageLead } from '@/app/(signed-in)/(sidebar)/_components/page-lead';
 import {
   PageTitle,
   type PageTitleProps,
@@ -9,7 +10,6 @@ import {
   RECEIVED_HEADING_ID,
 } from '@/app/(signed-in)/(sidebar)/_lib/personal-items-side.constant';
 import { Skeleton } from '@/components/atoms/skeleton';
-import { Text } from '@/components/atoms/text';
 import { PersonalItemsViewToggle } from './personal-items-view-toggle';
 
 const HEADINGS: Readonly<
@@ -52,9 +52,7 @@ export function PersonalItemsHeading({ side }: PersonalItemsHeadingProps) {
     <div className="flex items-end justify-between gap-4">
       <div className="flex min-w-0 flex-col gap-1">
         <PageTitle {...focusable}>{title}</PageTitle>
-        <Text as="p" variant="body-1" tone="muted">
-          {description}
-        </Text>
+        <PageLead>{description}</PageLead>
       </div>
       <Suspense fallback={<Skeleton className="h-9 w-19 shrink-0" />}>
         <PersonalItemsViewToggle side={side} />

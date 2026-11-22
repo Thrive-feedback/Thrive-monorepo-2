@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import { XL_AND_UP } from '@/lib/breakpoint.constant';
+import { MD_AND_UP, XL_AND_UP } from '@/lib/breakpoint.constant';
 import {
   SIDEBAR_STORAGE_KEY,
   type SidebarWidth,
@@ -15,21 +15,20 @@ function readSaved(): SidebarWidth | null {
   }
 }
 
-function atXl(): boolean {
-  return typeof matchMedia === 'function' && matchMedia(XL_AND_UP).matches;
+function matches(query: string): boolean {
+  return typeof matchMedia === 'function' && matchMedia(query).matches;
 }
 
 /**
- * Sets `data-sidebar` and `data-sidebar-locked` on `<html>` from the person's choice, the window and
- * whether the page is one of Settings'. The script before paint does the same on load
- * (`SIDEBAR_INIT_SCRIPT`); this runs when the client navigates in or out of Settings and when the
- * person presses the button, which no load follows.
+ * Sets `data-sidebar` and `data-sidebar-locked` on `<html>` from the person's choice and the window.
+ * The script before paint does the same on load and as the window crosses a breakpoint
+ * (`SIDEBAR_INIT_SCRIPT`); this runs when the person presses the button, which no load follows.
  */
-export function applySidebarFold(inSettings: boolean): void {
+function applySidebarFold(): void {
   const { width, locked } = sidebarFoldOf({
     saved: readSaved(),
-    atXl: atXl(),
-    inSettings,
+    atMd: matches(MD_AND_UP),
+    atXl: matches(XL_AND_UP),
   });
   const root = document.documentElement;
   root.dataset.sidebar = width;
@@ -58,12 +57,12 @@ function readLocked(): boolean {
 }
 
 /**
- * Whether the sidebar is the rail of its icons, whether Settings holds it there, and a way to fold
- * or widen it. Both are read from `<html>` rather than held here, because the script before paint
+ * Whether the sidebar is the rail of its icons, whether the window holds it at its width (below
+ * `xl`), and a way to fold or widen it. Both are read from `<html>` rather than held here, because the script before paint
  * sets them before hydration. The server renders it wide and unlocked, and React swaps in the real
  * values straight after hydrating; what is drawn follows the attribute in CSS, so nothing jumps.
  */
-export function useSidebarFold(inSettings: boolean): {
+export function useSidebarFold(): {
   folded: boolean;
   locked: boolean;
   toggle: () => void;
@@ -78,8 +77,8 @@ export function useSidebarFold(inSettings: boolean): {
     } catch {
       // A browser that will not keep it still folds or widens now; it just forgets on reload.
     }
-    applySidebarFold(inSettings);
-  }, [inSettings]);
+    applySidebarFold();
+  }, []);
 
   return { folded, locked, toggle };
 }

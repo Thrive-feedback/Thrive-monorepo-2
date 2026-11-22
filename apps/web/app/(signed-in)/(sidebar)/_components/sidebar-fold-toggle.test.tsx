@@ -1,15 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { MD_AND_UP } from '@/lib/breakpoint.constant';
 import { SIDEBAR_STORAGE_KEY } from '@/lib/sidebar-fold.constant';
 import { SidebarFoldToggle } from './sidebar-fold-toggle';
 
-/** A window narrower than `xl`, where the sidebar starts as a rail. */
-function tablet() {
+/** A window that matches the queries `matches` says it does. */
+function windowMatching(matches: (query: string) => boolean) {
   vi.stubGlobal(
     'matchMedia',
-    vi.fn(() => ({
-      matches: false,
+    vi.fn((query: string) => ({
+      matches: matches(query),
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     })),
@@ -17,7 +18,8 @@ function tablet() {
 }
 
 beforeEach(() => {
-  tablet();
+  // A desktop, at `xl` or wider, where the person's choice holds.
+  windowMatching(() => true);
   document.documentElement.dataset.sidebar = 'rail';
 });
 
@@ -31,7 +33,7 @@ afterEach(() => {
 
 describe('SidebarFoldToggle', () => {
   it('on the rail, offers to expand the sidebar it controls', () => {
-    render(<SidebarFoldToggle inSettings={false} />);
+    render(<SidebarFoldToggle />);
 
     const button = screen.getByRole('button', { name: 'Expand sidebar' });
     expect(button).toHaveAttribute('aria-expanded', 'false');
@@ -40,7 +42,7 @@ describe('SidebarFoldToggle', () => {
 
   it('widens the sidebar when pressed, remembers it, and then offers to collapse it', async () => {
     const user = userEvent.setup();
-    render(<SidebarFoldToggle inSettings={false} />);
+    render(<SidebarFoldToggle />);
 
     await user.click(screen.getByRole('button', { name: 'Expand sidebar' }));
 
@@ -56,7 +58,7 @@ describe('SidebarFoldToggle', () => {
   it('folds a wide sidebar back to its rail', async () => {
     const user = userEvent.setup();
     document.documentElement.dataset.sidebar = 'wide';
-    render(<SidebarFoldToggle inSettings={false} />);
+    render(<SidebarFoldToggle />);
 
     await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
 
@@ -64,10 +66,11 @@ describe('SidebarFoldToggle', () => {
     expect(localStorage.getItem(SIDEBAR_STORAGE_KEY)).toBe('rail');
   });
 
-  it('keeps the rail in Settings below xl, where there is no room to widen it', async () => {
+  it('keeps the rail on a tablet, where there is no room to widen it', async () => {
     const user = userEvent.setup();
+    windowMatching((query) => query === MD_AND_UP);
     document.documentElement.dataset.sidebarLocked = '';
-    render(<SidebarFoldToggle inSettings />);
+    render(<SidebarFoldToggle />);
 
     await user.click(screen.getByRole('button', { name: 'Expand sidebar' }));
 

@@ -30,7 +30,8 @@ import styles from './drawer.module.css';
  *   </Drawer>
  *
  * A bottom sheet on a phone, swiped down to close, with a handle that says so; a panel on the
- * right from `md`, swiped right. Escape, the × or a press outside closes it too, and focus goes
+ * right from `md`, swiped right. `side="left"` makes it a panel along the left edge at every width,
+ * swiped left, for a menu that stands where a sidebar would. Escape, the × or a press outside closes it too, and focus goes
  * back to the trigger. The title names it, so every drawer needs one.
  *
  * `modal={false}` leaves the page in reach while it is open: focus is not held, and the page is
@@ -39,7 +40,7 @@ import styles from './drawer.module.css';
  * thing.
  */
 
-type DrawerSide = 'down' | 'right';
+type DrawerSide = 'down' | 'right' | 'left';
 
 /** What `Drawer` tells its content: the edge it comes from, and how to close a non-modal one. */
 type DrawerSetting = {
@@ -60,7 +61,7 @@ function useDrawerSetting() {
 
 /**
  * Base UI's root, less what this drawer cannot draw: it comes from the bottom or the right, by the
- * window's width, and has no snap points.
+ * window's width, or from the left, and has no snap points.
  */
 export type DrawerProps = Omit<
   DrawerPrimitive.Root.Props,
@@ -70,10 +71,18 @@ export type DrawerProps = Omit<
   | 'defaultSnapPoint'
   | 'onSnapPointChange'
   | 'actionsRef'
->;
+> & {
+  /** The left edge at every width, for a menu. Left out, the bottom on a phone and the right from `md`. */
+  side?: 'left';
+};
 
-export function Drawer({ modal = true, ...rest }: DrawerProps) {
-  const side: DrawerSide = useMediaQuery(MD_AND_UP) ? 'right' : 'down';
+export function Drawer({
+  modal = true,
+  side: fixedSide,
+  ...rest
+}: DrawerProps) {
+  const bySize: DrawerSide = useMediaQuery(MD_AND_UP) ? 'right' : 'down';
+  const side: DrawerSide = fixedSide ?? bySize;
   const actionsRef = useRef<DrawerPrimitive.Root.Actions | null>(null);
 
   return (
@@ -154,7 +163,8 @@ export type DrawerContentProps = WithClassName<DrawerPrimitive.Popup.Props> & {
 
 /**
  * Up from the bottom edge on a phone, at most three quarters of its height; in from the right
- * edge from `md`, the window's full height. The page behind is neither dimmed nor blurred, so
+ * edge from `md`, the window's full height; or, from the left, along that edge at the window's full
+ * height. The page behind is neither dimmed nor blurred, so
  * what is chosen here can be seen taking effect there.
  */
 export function DrawerContent({
@@ -210,7 +220,7 @@ export function DrawerContent({
           // panel itself, which leaves a keyboard a Tab away from anything to do.
           initialFocus={initialFocus}
           className={cn(
-            'pointer-events-auto fixed flex flex-col border border-border-muted bg-surface-raised text-fg-primary shadow-high outline-hidden data-[swipe-direction=down]:inset-x-0 data-[swipe-direction=right]:inset-y-4 data-[swipe-direction=right]:right-4 data-[swipe-direction=down]:bottom-0 data-[swipe-direction=down]:max-h-3/4 data-[swipe-direction=right]:w-96 data-[swipe-direction=right]:max-w-full data-[swipe-direction=right]:rounded-surface data-[swipe-direction=down]:rounded-t-surface',
+            'pointer-events-auto fixed flex flex-col border border-border-muted bg-surface-raised text-fg-primary shadow-high outline-hidden data-[swipe-direction=down]:inset-x-0 data-[swipe-direction=left]:inset-y-0 data-[swipe-direction=right]:inset-y-4 data-[swipe-direction=right]:right-4 data-[swipe-direction=down]:bottom-0 data-[swipe-direction=left]:left-0 data-[swipe-direction=down]:max-h-3/4 data-[swipe-direction=left]:w-72 data-[swipe-direction=right]:w-96 data-[swipe-direction=left]:max-w-full data-[swipe-direction=right]:max-w-full data-[swipe-direction=right]:rounded-surface data-[swipe-direction=down]:rounded-t-surface data-[swipe-direction=left]:rounded-r-surface data-[swipe-direction=left]:border-l-0',
             styles.popup,
             className,
           )}

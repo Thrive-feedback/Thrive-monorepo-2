@@ -1,10 +1,24 @@
 /*
- * The column eases between the full sidebar and the rail as the person folds or widens it, or goes
- * in and out of Settings. A width transition on the motion tokens has no utility, which is why this
- * is CSS.
+ * The column eases between the full sidebar and the rail as the person folds or widens it, or as the
+ * window crosses `xl`. A width transition on the motion tokens has no utility, which is why this is
+ * CSS.
  */
 .column {
   transition: width var(--motion-duration-fast) var(--motion-ease-smooth-out);
+}
+
+/*
+ * Beside the page, the whole column holds just under the navbar as the page scrolls, a window high
+ * less the navbar, so its dividing line runs the window's height and nothing of it moves. A height
+ * from the window less the navbar has no utility.
+ */
+@media (width >= 48rem) {
+  .column {
+    position: sticky;
+    top: calc(var(--space-unit) * 18);
+    align-self: flex-start;
+    height: calc(100dvh - var(--space-unit) * 18);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

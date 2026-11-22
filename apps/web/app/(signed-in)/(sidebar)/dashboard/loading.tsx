@@ -12,9 +12,9 @@ import { FeedbackSummaryLoading } from './_components/feedback-summary-skeleton'
 export default function DashboardLoading() {
   return (
     <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-8')}>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         <PageTitle>Your dashboard</PageTitle>
-        <Skeleton className="w-80 max-w-full text-body-2" />
+        <Skeleton className="w-80 max-w-full text-body-1" />
       </div>
       <FeedbackSummaryLoading />
     </div>
