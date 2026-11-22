@@ -1,7 +1,11 @@
 import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-tone.type';
 
-/** What a person can choose to write, in the order it is offered: ask for Feedback, give it, or give a Kudos. */
-export const COMPOSE_CHOICES = ['ask', 'give', 'kudos'] as const;
+/**
+ * What a person can choose to write, in the order it is offered everywhere: give Feedback, ask for
+ * it, or give a Kudos. The menu, the phone's sheet, Home's composer and the choices beside one
+ * teammate all read this one order.
+ */
+export const COMPOSE_CHOICES = ['give', 'ask', 'kudos'] as const;
 
 export type ComposeChoice = (typeof COMPOSE_CHOICES)[number];
 
@@ -59,13 +63,6 @@ export const COMPOSE_CHOICE_OUTLINES: Readonly<
   give: 'outlined',
   kudos: 'outlined-highlight',
 };
-
-/** The three things to write to one teammate, in the order offered beside them. */
-export const PERSON_COMPOSE_CHOICES = [
-  'give',
-  'ask',
-  'kudos',
-] as const satisfies readonly ComposeChoice[];
 
 /**
  * Each choice offered beside one teammate: its word on the button, and its whole name, which holds
