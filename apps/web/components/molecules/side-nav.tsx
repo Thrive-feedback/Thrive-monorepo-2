@@ -48,6 +48,11 @@ export type SideNavProps = {
    * item's children are not folded.
    */
   foldsToIcons?: boolean;
+  /**
+   * Marks the open page only from `md`, for a menu that a phone shows alone, before any page of it
+   * is open, as Settings' does. Left out, the open page is marked at every width.
+   */
+  marksCurrentFromMd?: boolean;
 };
 
 /**
@@ -61,6 +66,7 @@ export function SideNav({
   items,
   currentHref,
   foldsToIcons = false,
+  marksCurrentFromMd = false,
 }: SideNavProps) {
   return (
     <nav aria-label={label}>
@@ -82,6 +88,7 @@ export function SideNav({
                 item={entry}
                 currentHref={currentHref}
                 foldsToIcons={foldsToIcons}
+                marksCurrentFromMd={marksCurrentFromMd}
               />
               {entry.children && entry.children.length > 0 && (
                 <ul className="-mt-1.5 flex flex-col">
@@ -101,6 +108,7 @@ export function SideNav({
                         item={child}
                         currentHref={currentHref}
                         foldsToIcons={false}
+                        marksCurrentFromMd={marksCurrentFromMd}
                       />
                     </li>
                   ))}
@@ -147,13 +155,18 @@ export const sideNavLink = cva(
   [
     'relative flex w-full items-center gap-2.5 rounded-button px-3 py-2 text-start text-button-sm text-fg-secondary hover:bg-action-neutral-surface-hover hover:text-fg-primary',
     'max-md:py-3.5',
-    'md:aria-[current]:bg-action-primary-surface md:aria-[current]:text-action-primary',
   ],
   {
     variants: {
       // A square around the icon, the count on its corner.
       foldsToIcons: { true: 'rail:justify-center rail:px-0', false: '' },
+      marksCurrentFromMd: {
+        false:
+          'aria-[current]:bg-action-primary-surface aria-[current]:text-action-primary',
+        true: 'md:aria-[current]:bg-action-primary-surface md:aria-[current]:text-action-primary',
+      },
     },
+    defaultVariants: { marksCurrentFromMd: false },
   },
 );
 
@@ -161,10 +174,12 @@ function SideNavLink({
   item: { href, label, Icon, count },
   currentHref,
   foldsToIcons,
+  marksCurrentFromMd,
 }: {
   item: SideNavItem;
   currentHref?: string;
   foldsToIcons: boolean;
+  marksCurrentFromMd: boolean;
 }) {
   const content = (
     <>
@@ -185,7 +200,7 @@ function SideNavLink({
     <NextLink
       href={href}
       aria-current={href === currentHref ? 'page' : undefined}
-      className={sideNavLink({ foldsToIcons })}
+      className={sideNavLink({ foldsToIcons, marksCurrentFromMd })}
     >
       {content}
     </NextLink>

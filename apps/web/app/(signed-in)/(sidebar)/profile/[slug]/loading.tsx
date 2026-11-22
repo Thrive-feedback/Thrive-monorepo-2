@@ -3,7 +3,7 @@ import {
   PAGE_COLUMN,
   PAGE_COLUMN_WIDTH,
 } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
-import { BAND_CORNERS } from '@/app/(signed-in)/(sidebar)/profile/[slug]/_components/profile-header';
+import { BAND_TOP_SPACE } from '@/app/(signed-in)/(sidebar)/profile/[slug]/_components/profile-header';
 import styles from '@/app/(signed-in)/(sidebar)/profile/[slug]/_components/profile-header.module.css';
 import { Skeleton, SkeletonRegion } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
@@ -18,9 +18,13 @@ export default function ProfileLoading() {
   return (
     <>
       <SkeletonRegion>
-        <div className={cn(styles.band, BAND_CORNERS)}>
+        <div data-hangs-from-navbar="" className={styles.band}>
           <div
-            className={cn(PAGE_COLUMN_WIDTH, 'flex flex-col gap-2 pt-8 pb-10')}
+            className={cn(
+              PAGE_COLUMN_WIDTH,
+              BAND_TOP_SPACE,
+              'flex flex-col gap-2 pb-8',
+            )}
           >
             <div className="flex items-center gap-2.5">
               <Skeleton shape="circle" className="size-8" />

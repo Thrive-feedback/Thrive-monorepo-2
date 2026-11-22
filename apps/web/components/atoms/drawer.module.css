@@ -5,9 +5,11 @@
  * is a motion token; without motion it simply appears and goes.
  */
 .popup {
-  /* Just past its edge: the sheet sits on the bottom, the panel 4 steps in from the right. */
+  /* Just past its edge: the sheet sits on the bottom, the right panel 4 steps in from the right,
+     the left panel on the left edge. */
   --closed-down: translate3d(0, calc(100% + var(--space-unit) * 0.5), 0);
   --closed-right: translate3d(calc(100% + var(--space-unit) * 4.5), 0, 0);
+  --closed-left: translate3d(calc(-100% - var(--space-unit) * 0.5), 0, 0);
 
   transform: translate3d(
     var(--drawer-swipe-movement-x, 0px),
@@ -25,6 +27,11 @@
 .popup[data-swipe-direction='right'][data-starting-style],
 .popup[data-swipe-direction='right'][data-ending-style] {
   transform: var(--closed-right);
+}
+
+.popup[data-swipe-direction='left'][data-starting-style],
+.popup[data-swipe-direction='left'][data-ending-style] {
+  transform: var(--closed-left);
 }
 
 /* Let go, it leaves on the exit step, quicker the harder it was flung. */

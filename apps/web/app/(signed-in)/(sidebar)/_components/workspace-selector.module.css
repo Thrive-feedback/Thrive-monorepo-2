@@ -12,11 +12,22 @@
 
 /*
  * The name is the wordmark's size, display-4, but on a phone the bar runs short of room beside the
- * bell, Settings and the avatar: below 394px wide it eases down with the viewport (7.1vw is
+ * menu button, "+" and the bell: below 394px wide it eases down with the viewport (7.1vw is
  * display-4's 28px at 394px), so a short name such as "Thrive" still fits whole at 375px instead
  * of ending in an ellipsis. Wider, `min()` gives display-4 itself, at whatever size a breakpoint
  * sets it. Only the size moves; the variant's leading, tracking and weight stay the token's.
  */
 .fitsPhoneBar {
   font-size: min(var(--text-display-4), 7.1vw);
+}
+
+/*
+ * On a phone the name stands alone beside the menu button, so its lowercase is centred on the bar
+ * rather than set on the wordmark's baseline. Centred in its line, the name's baseline sits 0.39em
+ * below the bar's middle (above) and its lowercase is about 0.47em tall, so the middle of its letters
+ * sits half that above the baseline; the name moves up by the difference. Arithmetic on the face's
+ * metrics, which no utility expresses.
+ */
+.onBarMiddle {
+  translate: 0 calc(0.47em / 2 - 0.39em);
 }

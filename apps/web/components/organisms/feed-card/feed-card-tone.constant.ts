@@ -49,6 +49,19 @@ export const FEED_CARD_HIGHLIGHT: Readonly<Record<FeedCardTone, string>> = {
 };
 
 /**
+ * The same ground for a line that is a plain button or link rather than a menu's item, as in a
+ * phone's drawer: while it is pointed at or focused from the keyboard.
+ */
+export const FEED_CARD_POINTED: Readonly<Record<FeedCardTone, string>> = {
+  primary:
+    'hover:bg-action-primary-surface-hover focus-visible:bg-action-primary-surface-hover',
+  tertiary:
+    'hover:bg-action-tertiary-surface-hover focus-visible:bg-action-tertiary-surface-hover',
+  secondary:
+    'hover:bg-action-secondary-surface-hover focus-visible:bg-action-secondary-surface-hover',
+};
+
+/**
  * Each kind's colour as a ring drawn around a mark, a gap away from it, for a mark that is waiting
  * on somebody: an unread line's dot. An outline, so the gap stays clear on any background.
  */

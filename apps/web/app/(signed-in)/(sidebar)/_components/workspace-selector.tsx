@@ -39,8 +39,9 @@ export type WorkspaceSelectorProps = {
 };
 
 /**
- * The Workspace the person is in, beside the logo, by its name. With nowhere else to go
- * it is only that. With another Workspace to open, it is a quiet button: the name alone at rest,
+ * The Workspace the person is in, beside the logo, by its name. On a phone, where the bar shows the
+ * name alone, it is only the name, and Workspaces are switched in Settings. With nowhere else to go
+ * it is only that everywhere. With another Workspace to open, it is a quiet button: the name alone at rest,
  * then a muted chevron after it and a soft ground while pointed at, focused or open (always on a
  * touch screen, which has no pointing), and its menu lists them as the switcher does (brain
  * `ADR-0041` decision 5): each by name in the display face, the current one ticked on the
@@ -58,17 +59,34 @@ export function WorkspaceSelector({
   const [isSwitching, startSwitching] = useTransition();
   const others = workspaces.active.filter(({ id }) => id !== current.id);
 
-  // Set in the display face and the primary colour, on the wordmark's baseline and at its size on
-  // every screen, so "Thrive × Acme" reads as one lockup. On a phone the button around it gives
-  // up its spare padding instead, and a name too long for the bar ends in an ellipsis.
+  // From `md`, set in the display face and the primary colour, on the wordmark's baseline and at
+  // its size, so "Thrive × Acme" reads as one lockup, and a name too long ends in an ellipsis.
   const identity = (
     <Text
       as="span"
       variant="display-4"
       className={cn(
-        'max-w-36 truncate text-action-primary sm:max-w-80',
+        // Room after the last letter for Cooper's overhang, which `truncate` would clip, given back
+        // by the margin so the name stays where it was.
+        '-me-1 max-w-80 truncate pe-1 text-action-primary',
         styles.onLogoBaseline,
+      )}
+    >
+      {current.name}
+    </Text>
+  );
+
+  // On a phone the name stands alone, without the wordmark, so its letters are centred on the bar
+  // rather than set on the wordmark's baseline, and it is only the name: Workspaces are switched in
+  // Settings.
+  const phoneName = (
+    <Text
+      as="span"
+      variant="display-4"
+      className={cn(
+        '-me-1 min-w-0 truncate pe-1 text-action-primary md:hidden',
         styles.fitsPhoneBar,
+        styles.onBarMiddle,
       )}
     >
       {current.name}
@@ -76,7 +94,12 @@ export function WorkspaceSelector({
   );
 
   if (others.length === 0) {
-    return identity;
+    return (
+      <>
+        {phoneName}
+        <span className="flex min-w-0 max-md:hidden">{identity}</span>
+      </>
+    );
   }
 
   function handleSwitch(workspaceId: string) {
@@ -88,18 +111,18 @@ export function WorkspaceSelector({
 
   return (
     <>
+      {phoneName}
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label={`Workspace: ${current.name}. Switch Workspace`}
-          className="group flex min-w-0 items-center gap-0.5 rounded-button py-0.5 ps-1 pe-0 text-fg-primary transition hover:bg-action-neutral-surface active:scale-97 data-[state=open]:bg-action-neutral-surface motion-reduce:transition-none sm:gap-1 sm:ps-2 sm:pe-1 sm:active:scale-100"
+          className="group flex min-w-0 items-center gap-1 rounded-button py-0.5 ps-2 pe-1 text-fg-primary transition hover:bg-action-neutral-surface data-[state=open]:bg-action-neutral-surface motion-reduce:transition-none max-md:hidden"
         >
           {identity}
           {/* On a touch screen, which has no pointing to reveal it, the chevron is always there, in
-              the name's plum so the two read as one; on a phone it drops onto the name's
-              lowercase, which the wordmark's baseline has moved down. */}
+              the name's plum so the two read as one. */}
           <ChevronDownIcon
             aria-hidden="true"
-            className="size-4 shrink-0 pointer-coarse:text-action-primary text-fg-secondary opacity-0 pointer-coarse:opacity-100 transition group-hover:opacity-100 group-focus-visible:opacity-100 group-data-[state=open]:rotate-180 group-data-[state=open]:opacity-100 motion-reduce:transition-none max-sm:translate-y-0.75"
+            className="size-4 shrink-0 pointer-coarse:text-action-primary text-fg-secondary opacity-0 pointer-coarse:opacity-100 transition group-hover:opacity-100 group-focus-visible:opacity-100 group-data-[state=open]:rotate-180 group-data-[state=open]:opacity-100 motion-reduce:transition-none"
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-72">

@@ -3,9 +3,10 @@
 import { PlusIcon } from 'lucide-react';
 import { useRef } from 'react';
 import {
-  COMPOSE_CHOICE_TITLES,
   COMPOSE_CHOICE_TONES,
+  COMPOSE_CHOICES,
   type ComposeChoice,
+  WRITE_SOMETHING,
 } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import { Button } from '@/components/atoms/button';
 import {
@@ -14,85 +15,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/atoms/dropdown-menu';
-import {
-  FEED_CARD_FILL,
-  FEED_CARD_HIGHLIGHT,
-} from '@/components/organisms/feed-card/feed-card-tone.constant';
-import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
+import { FEED_CARD_HIGHLIGHT } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import { cn } from '@/lib/cn.util';
-import type { Teammate } from '@/lib/feedback/teammate.type';
 import {
   ComposeCards,
   useComposeCards,
   warmComposeCards,
 } from './compose-cards';
+import { ComposeChoiceWords, type ComposeProps } from './compose-choice-words';
 
-const CHOICES: readonly {
-  title: string;
-  description: string;
-  /** The card it opens. */
-  card: ComposeChoice;
-}[] = [
-  {
-    title: COMPOSE_CHOICE_TITLES.ask,
-    description: 'Ask teammates what they think.',
-    card: 'ask',
-  },
-  {
-    title: COMPOSE_CHOICE_TITLES.give,
-    description: "Tell a teammate what you've seen.",
-    card: 'give',
-  },
-  {
-    title: COMPOSE_CHOICE_TITLES.kudos,
-    description: 'Say well done in a few words.',
-    card: 'kudos',
-  },
-];
+export type ComposeMenuProps = ComposeProps;
 
 /**
- * Where "+" stands. Either way it is the same outlined button keeping its own corners, the same as
- * the sidebar's items. In the sidebar it is a full-width bar and its menu drops below; in the
- * phone's tab bar it is a square in the middle, the size of the rail's, and its menu rises above
- * the bar.
- */
-const PLACEMENTS = {
-  sidebar: {
-    // Its icon is centred and alone, so it needs no side padding, and fits the narrow rail too.
-    button: 'w-full px-0',
-    menu: { side: 'bottom', align: 'start' },
-  },
-  'tab-bar': {
-    button: 'size-11 px-0',
-    menu: { side: 'top', align: 'center' },
-  },
-} as const;
-
-export type ComposeMenuProps = {
-  /** The Workspace the page was drawn for, which a card is sent to. */
-  workspaceId: string;
-  /** Who a postcard can be for, and who `@` offers on it. */
-  teammates: readonly Teammate[];
-  /** The Workspace's active Workspace Goals, by name, offered on `#`. */
-  workspaceGoals: readonly string[];
-  writer: PostcardWriter;
-  /** Where "+" stands: the sidebar's full-width bar, or the square in the middle of the phone's tab bar. */
-  placement?: keyof typeof PLACEMENTS;
-};
-
-/**
- * "+": the three things to write, each with a line on what it is for. Asking for feedback opens
- * the request postcard in front of the page, giving it the Feedback one, and giving Kudos the Kudos
- * card, each titled by the choice, and each is sent to the API with the card itself.
+ * "+" in the sidebar: the three things to write, each with a line on what it is for. Asking for
+ * feedback opens the request postcard in front of the page, giving it the Feedback one, and giving
+ * Kudos the Kudos card, each titled by the choice, and each is sent to the API with the card itself.
+ * It is the same outlined button as the sidebar's items, keeping its own corners, a full-width bar
+ * reading "+ write", all lowercase, which folds to its icon alone, centred, on the narrow rail; its
+ * menu drops below.
  */
 export function ComposeMenu({
   workspaceId,
   teammates,
   workspaceGoals,
   writer,
-  placement = 'sidebar',
 }: ComposeMenuProps) {
-  const { button, menu } = PLACEMENTS[placement];
   const { openCard, cards } = useComposeCards();
   const plusRef = useRef<HTMLButtonElement>(null);
   const isOpeningCard = useRef(false);
@@ -129,22 +76,26 @@ export function ComposeMenu({
       >
         {/* The trigger rounds whatever it wraps into a pill; "+" keeps the button's own corners. */}
         <DropdownMenuTrigger asChild className="rounded-button">
-          <Button ref={plusRef} className={button}>
+          <Button ref={plusRef} className="w-full px-0">
             <PlusIcon aria-hidden="true" className="size-5" />
-            <span className="sr-only">Write something</span>
+            {/* Its word shows while the sidebar is wide; the full name is what a screen reader hears. */}
+            <span aria-hidden="true" className="rail:hidden">
+              write
+            </span>
+            <span className="sr-only">{WRITE_SOMETHING}</span>
           </Button>
         </DropdownMenuTrigger>
         {/* Its items' corners run parallel to its own: 6px in from a 9px corner, each item rounds by
             the 3px left, where the menu's usual 4px would leave them out of true. */}
         <DropdownMenuContent
-          side={menu.side}
-          align={menu.align}
+          side="bottom"
+          align="start"
           className="w-72 p-1.5"
           onCloseAutoFocus={handleMenuCloseAutoFocus}
         >
-          {CHOICES.map(({ title, description, card }) => (
+          {COMPOSE_CHOICES.map((card) => (
             <DropdownMenuItem
-              key={title}
+              key={card}
               className={cn(
                 'flex-col items-start gap-0.5 px-3 py-2.5',
                 // Pointed at, in the colour of the card it writes, as every kind-coloured line is.
@@ -152,19 +103,7 @@ export function ComposeMenu({
               )}
               onSelect={() => handleChoose(card)}
             >
-              <span className="flex items-center gap-2 text-fg-primary text-subtitle-4">
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    'size-2 rounded-full',
-                    FEED_CARD_FILL[COMPOSE_CHOICE_TONES[card]],
-                  )}
-                />
-                {title}
-              </span>
-              <span className="text-body-3 text-fg-secondary">
-                {description}
-              </span>
+              <ComposeChoiceWords card={card} />
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { PageLead } from '@/app/(signed-in)/(sidebar)/_components/page-lead';
 import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
 import { PAGE_COLUMN } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
-import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
 import { readFeatureFlags } from '@/lib/feature-flags/feature-flags.service';
 import { requireMember } from '@/lib/session/session.service';
@@ -50,12 +50,12 @@ export default async function Dashboard() {
 
   return (
     <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-8')}>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         <PageTitle>Your dashboard</PageTitle>
-        <Text as="p" variant="body-2" tone="muted">
+        <PageLead>
           What people have written to you, read back to you. Nobody else sees
           this page.
-        </Text>
+        </PageLead>
       </div>
       <Suspense fallback={<FeedbackSummaryLoading />}>
         <DashboardSummary session={session} />

@@ -12,9 +12,9 @@ import { TeammatesSkeleton } from './_components/teammates';
 export default function TeammatesLoading() {
   return (
     <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-8')}>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         <PageTitle>Teammates</PageTitle>
-        <Skeleton className="h-5 w-48" />
+        <Skeleton className="w-48 text-body-1" />
       </div>
       <TeammatesSkeleton />
     </div>

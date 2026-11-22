@@ -7,8 +7,11 @@ import { PhotoAvatar } from '@/components/molecules/photo-avatar';
 import { cn } from '@/lib/cn.util';
 import styles from './profile-header.module.css';
 
-/** The band's top corners, where it meets the frame's: both on a phone, the right one beside the sidebar. */
-export const BAND_CORNERS = 'rounded-t-page md:rounded-tl-none';
+/**
+ * The space above what the band holds: the navbar's height, since the band starts under it, and a
+ * clear gap more, so the person does not sit against the bar.
+ */
+export const BAND_TOP_SPACE = 'pt-24';
 
 export type ProfileHeaderProps = {
   profile: Profile;
@@ -19,8 +22,9 @@ export type ProfileHeaderProps = {
 };
 
 /**
- * The head of a Profile, a band across the top of the page with nothing between it and the navbar,
- * in a light haze of Thrive's three colours, its foot perforated like a sheet of stamps. Inside it,
+ * The head of a Profile, a band that hangs from the navbar in the frame's tint, lit by soft glows of
+ * plum, blue and orange that run on into the navbar, its foot cut in a zigzag where the page
+ * begins. Inside it,
  * kept to the page's column: the person's small face and the name they go by, then their full name,
  * then the address they sign in with, each on a line of its own. Someone who has
  * left is marked Deactivated, so nobody writes to them expecting an answer. What the reader can do
@@ -32,14 +36,13 @@ export function ProfileHeader({
   children,
 }: ProfileHeaderProps) {
   return (
-    // The frame's rounded corners are glass laid over the page, so the band rounds itself under them
-    // too, or its haze would show through the glass as a square. Beside the sidebar only the right
-    // corner meets the frame.
-    <header className={cn(styles.band, BAND_CORNERS)}>
+    // Marked so the navbar paints the band's ground rather than glass, and the two read as one.
+    <header data-hangs-from-navbar="" className={styles.band}>
       <div
         className={cn(
           PAGE_COLUMN_WIDTH,
-          'flex flex-col gap-5 pt-8 pb-10 md:flex-row md:items-center md:justify-between md:gap-6',
+          BAND_TOP_SPACE,
+          'flex flex-col gap-5 pb-8 md:flex-row md:items-center md:justify-between md:gap-6',
         )}
       >
         <div className="flex min-w-0 flex-col gap-1">

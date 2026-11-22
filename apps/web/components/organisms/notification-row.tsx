@@ -7,6 +7,7 @@ import {
   FEED_CARD_FILL,
   FEED_CARD_HALO,
   FEED_CARD_HIGHLIGHT,
+  FEED_CARD_POINTED,
 } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-tone.type';
 import { cn } from '@/lib/cn.util';
@@ -37,6 +38,11 @@ export type NotificationRowProps = {
   notification: BellNotification;
   /** Pressing the line: it is about to open what it points at, and counts as read. */
   onOpen: (notification: BellNotification) => void;
+  /**
+   * Where the line stands: an item of the bell's menu, or a plain link in a phone's drawer, whose
+   * `onOpen` also puts the drawer away.
+   */
+  variant?: 'menu' | 'drawer';
 };
 
 /**
@@ -51,9 +57,57 @@ export type NotificationRowProps = {
 export function NotificationRow({
   notification,
   onOpen,
+  variant = 'menu',
 }: NotificationRowProps) {
   const { actor, sentence, destination } = notificationLine(notification);
   const tone = NOTIFICATION_TONES[notification.type];
+
+  const words = (
+    <>
+      <span
+        aria-hidden="true"
+        className={cn(
+          'mt-2 size-2 shrink-0 rounded-full',
+          FEED_CARD_FILL[tone],
+          !notification.isRead && FEED_CARD_HALO[tone],
+        )}
+      />
+      <PhotoAvatar
+        name={actor}
+        photoUrl={notification.actorPhotoUrl}
+        size="sm"
+        className="shrink-0"
+      />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <Text
+          as="span"
+          variant="body-2"
+          className={cn(notification.isRead ? undefined : 'font-semibold')}
+        >
+          {sentence}
+        </Text>
+        <Text as="span" variant="caption" tone="muted">
+          {timeAgo(notification.createdAt)}
+        </Text>
+      </span>
+      {!notification.isRead && <span className="sr-only">Unread</span>}
+    </>
+  );
+
+  if (variant === 'drawer') {
+    return (
+      <NextLink
+        href={destination}
+        onClick={() => onOpen(notification)}
+        className={cn(
+          'flex items-start gap-2 rounded-element px-2 py-2 text-body-2 transition-colors motion-reduce:transition-none',
+          FEED_CARD_POINTED[tone],
+        )}
+      >
+        {words}
+      </NextLink>
+    );
+  }
 
   return (
     <DropdownMenuItem
@@ -63,33 +117,7 @@ export function NotificationRow({
       onSelect={() => onOpen(notification)}
     >
       <NextLink href={destination} className="items-start gap-2">
-        <span
-          aria-hidden="true"
-          className={cn(
-            'mt-2 size-2 shrink-0 rounded-full',
-            FEED_CARD_FILL[tone],
-            !notification.isRead && FEED_CARD_HALO[tone],
-          )}
-        />
-        <PhotoAvatar
-          name={actor}
-          photoUrl={notification.actorPhotoUrl}
-          size="sm"
-          className="shrink-0"
-        />
-        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <Text
-            as="span"
-            variant="body-2"
-            className={cn(notification.isRead ? undefined : 'font-semibold')}
-          >
-            {sentence}
-          </Text>
-          <Text as="span" variant="caption" tone="muted">
-            {timeAgo(notification.createdAt)}
-          </Text>
-        </span>
-        {!notification.isRead && <span className="sr-only">Unread</span>}
+        {words}
       </NextLink>
     </DropdownMenuItem>
   );

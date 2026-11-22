@@ -46,8 +46,25 @@ describe('WorkspaceSelector', () => {
       />,
     );
 
-    expect(screen.getByText('Acme')).toBeVisible();
+    // Once for a phone and once from md; jsdom cannot apply the breakpoint that keeps one.
+    expect(screen.getAllByText('Acme')).toHaveLength(2);
     expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('on a phone only names the Workspace, even with others to open, leaving switching to Settings', () => {
+    render(
+      <WorkspaceSelector
+        current={ACME}
+        workspaces={{ active: [ACME, GLOBEX], inactive: [] }}
+      />,
+    );
+
+    const [phoneName] = screen.getAllByText('Acme');
+    expect(phoneName).toHaveClass('md:hidden');
+    expect(phoneName?.closest('button')).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Workspace: Acme. Switch Workspace' }),
+    ).toHaveClass('max-md:hidden');
   });
 
   it('lists the Workspaces, ticking the current one and closing the ones the person left', async () => {

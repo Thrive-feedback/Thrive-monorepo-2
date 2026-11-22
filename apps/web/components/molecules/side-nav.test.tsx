@@ -47,6 +47,30 @@ describe('SideNav', () => {
     );
   });
 
+  // jsdom cannot apply a breakpoint, so the classes that colour the open page stand in for it.
+  it('colours the open page at every width, as a phone’s menu drawer shows it', () => {
+    render(<SideNav label="Main" items={ITEMS} currentHref="/a" />);
+
+    expect(screen.getByRole('link', { name: 'First' })).toHaveClass(
+      'aria-[current]:bg-action-primary-surface',
+    );
+  });
+
+  it('colours the open page only from md for a menu a phone shows alone', () => {
+    render(
+      <SideNav
+        label="Settings"
+        items={ITEMS}
+        currentHref="/a"
+        marksCurrentFromMd
+      />,
+    );
+
+    const first = screen.getByRole('link', { name: 'First' });
+    expect(first).toHaveClass('md:aria-[current]:bg-action-primary-surface');
+    expect(first).not.toHaveClass('aria-[current]:bg-action-primary-surface');
+  });
+
   it('lists an item’s children under it, always shown, in order', () => {
     render(<SideNav label="Settings" items={TREE} currentHref="/w/goals" />);
 
