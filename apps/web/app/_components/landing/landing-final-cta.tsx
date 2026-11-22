@@ -17,9 +17,9 @@ import { BOARD_KUDOS, DESK_CARDS } from './landing-team.mock';
 
 const { envelope } = LANDING_COPY;
 
-/** The stamp on the envelope: one of the app's own, the balloon, which nothing else here carries. */
+/** The stamp on the envelope: one of the app's own, the windmill, which nothing else here carries. */
 
-const ENVELOPE_STAMP = 'system/stamp-05-balloon';
+const ENVELOPE_STAMP = 'system/postcard_stamp_5';
 
 /**
  * The post lying on the desk around the letter, from the made-up team: three Kudos from the board

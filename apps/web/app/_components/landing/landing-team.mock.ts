@@ -103,7 +103,7 @@ export const DESK_CARDS = {
     ask: {
       requester: writer(FERN),
       templateKey: 'system/postcard_template_2',
-      stampKey: 'system/stamp-02-ocean',
+      stampKey: 'system/postcard_stamp_2',
       stickers: [],
       message:
         'How did the onboarding call go from your side? One thing to try next time?',
@@ -128,7 +128,7 @@ export const DESK_CARDS = {
     giver: writer(NOK),
     receivers: [groupPerson(PLOY)],
     templateKey: 'system/postcard_template_3',
-    stampKey: 'system/stamp-04-botanical',
+    stampKey: 'system/postcard_stamp_4',
     stickers: [],
     message:
       'Your recap after the client call saved us an hour: everyone knew who owned what before we left the room.\nNext time, send it before lunch so sales can use it too. Thank you!',
@@ -164,7 +164,7 @@ export const MOMENT_CARDS = [
     ask: {
       requester: writer(NOK),
       templateKey: 'system/postcard_template_4',
-      stampKey: 'system/stamp-04-botanical',
+      stampKey: 'system/postcard_stamp_4',
       stickers: [],
       message: planning.said,
       tone: 'sage',
@@ -187,7 +187,7 @@ export const MOMENT_CARDS = [
     giver: writer(FERN),
     receivers: [groupPerson(DAO)],
     templateKey: 'system/postcard_template_3',
-    stampKey: 'system/stamp-02-ocean',
+    stampKey: 'system/postcard_stamp_2',
     stickers: [],
     message: rehearsal.said,
     messageTags: NO_TEXT_TAGS,

@@ -16,7 +16,7 @@ const BEN = { name: 'Ben Park', photoUrl: null, inactive: false };
 export const SAMPLE_ASK: PostcardAsk = {
   requester: { name: MALI.name, photoUrl: MALI.photoUrl },
   templateKey: 'system/postcard_template_2',
-  stampKey: 'system/stamp-02-ocean',
+  stampKey: 'system/postcard_stamp_2',
   stickers: [
     {
       stickerKey: 'system/sticker-03-love',
@@ -46,7 +46,7 @@ export const SAMPLE_GIVEN: GivenPostcard = {
   giver: ANN,
   receivers: [MALI],
   templateKey: 'system/postcard_template_3',
-  stampKey: 'system/stamp-04-botanical',
+  stampKey: 'system/postcard_stamp_4',
   stickers: [
     {
       stickerKey: 'system/sticker-01-thumbs-up',

@@ -90,7 +90,7 @@ describe('PostcardMiniature', () => {
   it('carries the real stamp and the postmark of the day it was sent', () => {
     render(
       <PostcardMiniature
-        card={{ ...GIVEN, stampKey: 'system/stamp-02-ocean' }}
+        card={{ ...GIVEN, stampKey: 'system/postcard_stamp_2' }}
       />,
     );
 

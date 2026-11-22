@@ -11,15 +11,19 @@ function template(file: string, alt: string): StoredPicture {
 /**
  * The pictures a front can show, in the order they are offered (ADR 0063). A file in the bucket
  * that is not listed here is not shown. Retire one by taking it out of this list, never by
- * deleting its file: cards saved with it still need the picture. Each is a 4:3 landscape, at
- * least 1500×1125, with what matters in its middle 60% across: a phone crops the sides.
+ * deleting its file: cards saved with it still need the picture. A file's extension is not part of
+ * its key, so a template can change format without losing the cards saved with it. Each is a 3:2
+ * landscape PNG, as the picker shows them, at least 1800×1200, with what matters in its middle 60%
+ * across: a phone crops the sides.
  */
 export const POSTCARD_TEMPLATES: readonly [StoredPicture, ...StoredPicture[]] =
   [
-    template('postcard_template_1.jpg', 'Postcard picture 1'),
-    template('postcard_template_2.jpg', 'Postcard picture 2'),
-    template('postcard_template_3.jpg', 'Postcard picture 3'),
-    template('postcard_template_4.jpg', 'Postcard picture 4'),
+    template('postcard_template_1.png', 'Postcard picture 1'),
+    template('postcard_template_2.png', 'Postcard picture 2'),
+    template('postcard_template_3.png', 'Postcard picture 3'),
+    template('postcard_template_4.png', 'Postcard picture 4'),
+    template('postcard_template_5.png', 'Postcard picture 5'),
+    template('postcard_template_6.png', 'Postcard picture 6'),
   ];
 
 /** The template with this key, or the first one, for a key no longer offered. */
