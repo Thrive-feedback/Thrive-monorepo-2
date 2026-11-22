@@ -2622,6 +2622,51 @@
         }
       },
       {
+        "id": "surface.glow-primary",
+        "name": "Surface glow primary",
+        "description": "The plum glow laid over a head that hangs from the navbar, such as a Profile's, under the glass tint. Softer in dark mode, where a light colour on a dark ground glares.",
+        "light": {
+          "trackId": "primary",
+          "weight": 450,
+          "alpha": 0.75
+        },
+        "dark": {
+          "trackId": "primary",
+          "weight": 400,
+          "alpha": 0.45
+        }
+      },
+      {
+        "id": "surface.glow-secondary",
+        "name": "Surface glow secondary",
+        "description": "The orange glow laid over a head that hangs from the navbar, such as a Profile's, under the glass tint. Softer in dark mode, where a light colour on a dark ground glares.",
+        "light": {
+          "trackId": "secondary",
+          "weight": 350,
+          "alpha": 0.6
+        },
+        "dark": {
+          "trackId": "secondary",
+          "weight": 400,
+          "alpha": 0.3
+        }
+      },
+      {
+        "id": "surface.glow-tertiary",
+        "name": "Surface glow tertiary",
+        "description": "The blue glow laid over a head that hangs from the navbar, such as a Profile's, under the glass tint. Softer in dark mode, where a light colour on a dark ground glares.",
+        "light": {
+          "trackId": "info",
+          "weight": 500,
+          "alpha": 0.6
+        },
+        "dark": {
+          "trackId": "info",
+          "weight": 400,
+          "alpha": 0.35
+        }
+      },
+      {
         "id": "surface.skeleton",
         "name": "Surface skeleton",
         "description": "The placeholder block shown while content loads.",

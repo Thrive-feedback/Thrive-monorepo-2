@@ -44,6 +44,9 @@
   --color-surface-scrim: var(--surface-scrim);
   --color-surface-glass: var(--surface-glass);
   --color-surface-glass-neutral: var(--surface-glass-neutral);
+  --color-surface-glow-primary: var(--surface-glow-primary);
+  --color-surface-glow-secondary: var(--surface-glow-secondary);
+  --color-surface-glow-tertiary: var(--surface-glow-tertiary);
   --color-surface-skeleton: var(--surface-skeleton);
   --color-surface-track: var(--surface-track);
   --color-surface-paper: var(--surface-paper);
