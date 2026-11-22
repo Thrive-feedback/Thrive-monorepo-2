@@ -887,7 +887,9 @@
               "mode": "auto"
             },
             "letterSpacingPx": 0,
-            "unlinkedSizes": {},
+            "unlinkedSizes": {
+              "desktop": 11
+            },
             "unlinkedLineHeights": {},
             "unlinkedLetterSpacings": {}
           },
@@ -904,7 +906,9 @@
               "mode": "auto"
             },
             "letterSpacingPx": 0,
-            "unlinkedSizes": {},
+            "unlinkedSizes": {
+              "desktop": 11
+            },
             "unlinkedLineHeights": {},
             "unlinkedLetterSpacings": {}
           },
