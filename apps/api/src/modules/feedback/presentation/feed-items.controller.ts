@@ -20,7 +20,6 @@ import {
 import { ZodResponse } from 'nestjs-zod';
 import { ListFeedItemDaysUseCase } from '../application/use-cases/list-feed-item-days.use-case';
 import { ListFeedItemsUseCase } from '../application/use-cases/list-feed-items.use-case';
-import { CalendarDay } from '../domain/value-object/calendar-day.vo';
 import {
   toFeedItemResponse,
   toKudosResponse,
@@ -35,11 +34,6 @@ import {
 } from './dto/list-feed-items.dto';
 import { WorkspacePathParamsDto } from './dto/path-params.dto';
 import { WorkspaceMemberGuard } from './workspace-member.guard';
-
-/** The day an instant falls on, on the one clock, as Home groups its list (ADR 0095). */
-function dayOf(createdAt: Date): string {
-  return CalendarDay.containing(createdAt).toString();
-}
 
 /**
  * What a Member reads on Home, as one list paged by one cursor (ADR 0059, ADR 0071), and how much
@@ -79,15 +73,11 @@ export class FeedItemsController {
       readerAccountId: actor.accountId,
       items: feedItems.items.map((item) =>
         item.kind === 'KUDOS'
-          ? {
-              kind: item.kind,
-              ...toKudosResponse(item),
-              day: dayOf(item.createdAt),
-            }
+          ? { kind: item.kind, ...toKudosResponse(item), day: item.day }
           : {
               ...toFeedItemResponse(item),
               visibility: item.visibility,
-              day: dayOf(item.createdAt),
+              day: item.day,
             },
       ),
       nextCursor: toCursor(feedItems.nextAfterId),
@@ -97,7 +87,7 @@ export class FeedItemsController {
   @Get('days')
   @ApiOperation({
     summary:
-      'Count what the caller read on Home on each of the last seven days',
+      'Count what the caller can read on Home on each of the last seven days',
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.OK, type: ListFeedItemDaysResponseDto })
@@ -114,6 +104,18 @@ export class FeedItemsController {
       readerAccountId: actor.accountId,
       show: query.show,
     });
-    return { days: view.days.map((day) => ({ ...day })), totals: view.totals };
+    return {
+      days: view.days.map((each) => ({
+        day: each.day,
+        offeredFeedback: each.offeredFeedback,
+        requestedFeedback: each.requestedFeedback,
+        kudos: each.kudos,
+      })),
+      totals: {
+        offeredFeedback: view.totals.offeredFeedback,
+        requestedFeedback: view.totals.requestedFeedback,
+        kudos: view.totals.kudos,
+      },
+    };
   }
 }

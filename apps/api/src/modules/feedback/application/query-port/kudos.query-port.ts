@@ -58,7 +58,7 @@ export abstract class KudosQuery {
    * When each Kudos on Home was given, between two instants: the rows `onHome` reads for everyone,
    * read with the same filter, so a count of them is a count of the list (ADR 0095).
    */
-  abstract onHomeMomentsIn(
+  abstract onHomeGivenIn(
     workspaceId: string,
     within: InstantRange,
   ): Promise<readonly Date[]>;

@@ -69,19 +69,11 @@ function toKudosPage(
 }
 
 /**
- * The Kudos on Home: all of a Workspace's, or the ones naming one person for Received. The list and
- * the count of its days both read through this, so they cannot disagree (ADR 0095).
+ * The Kudos on Home: all of a Workspace's, every Member reads them. The list and the count of its
+ * days both read through this, so they cannot disagree (ADR 0095).
  */
-function kudosOnHomeWhere(
-  workspaceId: string,
-  recipientAccountId: string | null,
-): Prisma.KudosWhereInput {
-  return {
-    workspaceId,
-    ...(recipientAccountId !== null && {
-      recipients: { some: { accountId: recipientAccountId } },
-    }),
-  };
+function kudosOnHomeWhere(workspaceId: string): Prisma.KudosWhereInput {
+  return { workspaceId };
 }
 
 /** Reads through `client`, so a read inside a unit of work joins its transaction. */
@@ -124,7 +116,13 @@ export class PrismaKudosQuery extends KudosQuery {
     const records = await this.prismaTransactionContext.client.kudos.findMany({
       where: {
         AND: [
-          kudosOnHomeWhere(workspaceId, recipientAccountId),
+          {
+            ...kudosOnHomeWhere(workspaceId),
+            // Received narrows it to the Kudos that name one person.
+            ...(recipientAccountId !== null && {
+              recipients: { some: { accountId: recipientAccountId } },
+            }),
+          },
           olderThan(page.after),
         ],
       },
@@ -135,14 +133,14 @@ export class PrismaKudosQuery extends KudosQuery {
     return toKudosPage(records, page.limit);
   }
 
-  async onHomeMomentsIn(
+  async onHomeGivenIn(
     workspaceId: string,
     within: InstantRange,
   ): Promise<readonly Date[]> {
     const records = await this.prismaTransactionContext.client.kudos.findMany({
       where: {
         AND: [
-          kudosOnHomeWhere(workspaceId, null),
+          kudosOnHomeWhere(workspaceId),
           { createdAt: { gte: within.from, lt: within.until } },
         ],
       },

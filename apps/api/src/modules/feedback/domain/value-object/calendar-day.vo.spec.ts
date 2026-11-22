@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { CalendarDay, RecentDays } from './calendar-day.vo';
+import { CalendarDay, type DayCount, RecentDays } from './calendar-day.vo';
 
 const at = (iso: string) => new Date(iso);
 
@@ -36,6 +36,11 @@ describe('a calendar day', () => {
   });
 });
 
+/** The counts with each day written as text, to compare against. */
+function asText(counts: readonly DayCount[]) {
+  return counts.map(({ day, ...rest }) => ({ day: day.toString(), ...rest }));
+}
+
 describe('the last seven days', () => {
   const lastWeek = RecentDays.endingOn(CalendarDay.of('2026-11-22'), 7);
   const none = { offeredFeedback: 0, requestedFeedback: 0, kudos: 0 };
@@ -48,7 +53,7 @@ describe('the last seven days', () => {
   });
 
   it('counts every day, oldest first, the empty ones too', () => {
-    expect(lastWeek.count([], [])).toEqual([
+    expect(asText(lastWeek.count([], []))).toEqual([
       { day: '2026-11-16', ...none },
       { day: '2026-11-17', ...none },
       { day: '2026-11-18', ...none },
@@ -60,13 +65,15 @@ describe('the last seven days', () => {
   });
 
   it('counts Offered and Requested Feedback and Kudos apart', () => {
-    const counts = lastWeek.count(
-      [
-        { origin: 'OFFERED', createdAt: at('2026-11-22T03:00:00Z') },
-        { origin: 'OFFERED', createdAt: at('2026-11-21T23:30:00Z') },
-        { origin: 'REQUESTED', createdAt: at('2026-11-20T09:00:00Z') },
-      ],
-      [at('2026-11-22T10:00:00Z'), at('2026-11-16T00:00:00Z')],
+    const counts = asText(
+      lastWeek.count(
+        [
+          { origin: 'OFFERED', createdAt: at('2026-11-22T03:00:00Z') },
+          { origin: 'OFFERED', createdAt: at('2026-11-21T23:30:00Z') },
+          { origin: 'REQUESTED', createdAt: at('2026-11-20T09:00:00Z') },
+        ],
+        [at('2026-11-22T10:00:00Z'), at('2026-11-16T00:00:00Z')],
+      ),
     );
     expect(counts.at(-1)).toEqual({
       day: '2026-11-22',
@@ -91,5 +98,23 @@ describe('the last seven days', () => {
       [],
     );
     expect(counts.every((count) => count.offeredFeedback === 0)).toBe(true);
+  });
+});
+
+describe('naming a day', () => {
+  it('refuses what is not a day', () => {
+    expect(() => CalendarDay.of('Wednesday')).toThrow(RangeError);
+    expect(() => CalendarDay.of('2026-11-31T00:00')).toThrow(RangeError);
+    expect(() => CalendarDay.of('2026-02-30')).toThrow(RangeError);
+    expect(() => CalendarDay.of('2026-11-31')).toThrow(RangeError);
+  });
+
+  it('adds days up', () => {
+    expect(
+      RecentDays.total([
+        { offeredFeedback: 1, requestedFeedback: 0, kudos: 2 },
+        { offeredFeedback: 2, requestedFeedback: 1, kudos: 0 },
+      ]),
+    ).toEqual({ offeredFeedback: 3, requestedFeedback: 1, kudos: 2 });
   });
 });

@@ -24,6 +24,7 @@ import {
   type KudosRow,
 } from '@app/modules/feedback/application/query-port/kudos.query-port';
 import { TagsService } from '@app/modules/feedback/application/service/tags.service';
+import type { FeedbackGivenAt } from '@app/modules/feedback/application/types/feed-items.types';
 import type {
   FeedItemShow,
   PageRequest,
@@ -52,7 +53,6 @@ import {
   CALENDAR_UTC_OFFSET_HOURS,
   type InstantRange,
 } from '@app/modules/feedback/domain/value-object/calendar-clock.vo';
-import type { FeedbackMoment } from '@app/modules/feedback/domain/value-object/calendar-day.vo';
 import {
   VISIBILITIES,
   type VisibilityValue,
@@ -542,12 +542,12 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     });
   }
 
-  async feedItemMomentsIn(
+  async feedItemsGivenIn(
     workspaceId: string,
     readerAccountId: string,
     show: FeedItemShow,
     within: InstantRange,
-  ): Promise<readonly FeedbackMoment[]> {
+  ): Promise<readonly FeedbackGivenAt[]> {
     return this.onHomeFor(workspaceId, readerAccountId, show)
       .filter(
         (row) => row.createdAt >= within.from && row.createdAt < within.until,
@@ -779,7 +779,7 @@ export class FakeKudosQuery extends KudosQuery {
     };
   }
 
-  async onHomeMomentsIn(
+  async onHomeGivenIn(
     workspaceId: string,
     within: InstantRange,
   ): Promise<readonly Date[]> {
