@@ -12,9 +12,9 @@ import type {
   FeedPosition,
 } from '../../application/types/kudos.types';
 import {
-  KUDOS_MONTH_UTC_OFFSET_HOURS,
-  type KudosMonthRange,
-} from '../../domain/value-object/kudos-month.vo';
+  CALENDAR_UTC_OFFSET_HOURS,
+  type InstantRange,
+} from '../../domain/value-object/calendar-clock.vo';
 import { olderThan } from '../mapper/feed-position.mapper';
 import { toKudosCardSnapshot } from '../mapper/kudos.mapper';
 
@@ -68,6 +68,22 @@ function toKudosPage(
   };
 }
 
+/**
+ * The Kudos on Home: all of a Workspace's, or the ones naming one person for Received. The list and
+ * the count of its days both read through this, so they cannot disagree (ADR 0095).
+ */
+function kudosOnHomeWhere(
+  workspaceId: string,
+  recipientAccountId: string | null,
+): Prisma.KudosWhereInput {
+  return {
+    workspaceId,
+    ...(recipientAccountId !== null && {
+      recipients: { some: { accountId: recipientAccountId } },
+    }),
+  };
+}
+
 /** Reads through `client`, so a read inside a unit of work joins its transaction. */
 @Injectable()
 export class PrismaKudosQuery extends KudosQuery {
@@ -80,7 +96,7 @@ export class PrismaKudosQuery extends KudosQuery {
   async publicIn(
     workspaceId: string,
     page: CursorPageRequest,
-    within: KudosMonthRange | null,
+    within: InstantRange | null,
   ): Promise<KudosPageRow> {
     // One row more than asked for, only to tell whether another page follows (ADR 0059).
     const records = await this.prismaTransactionContext.client.kudos.findMany({
@@ -108,12 +124,7 @@ export class PrismaKudosQuery extends KudosQuery {
     const records = await this.prismaTransactionContext.client.kudos.findMany({
       where: {
         AND: [
-          {
-            workspaceId,
-            ...(recipientAccountId !== null && {
-              recipients: { some: { accountId: recipientAccountId } },
-            }),
-          },
+          kudosOnHomeWhere(workspaceId, recipientAccountId),
           olderThan(page.after),
         ],
       },
@@ -122,6 +133,22 @@ export class PrismaKudosQuery extends KudosQuery {
       select: KUDOS_FIELDS,
     });
     return toKudosPage(records, page.limit);
+  }
+
+  async onHomeMomentsIn(
+    workspaceId: string,
+    within: InstantRange,
+  ): Promise<readonly Date[]> {
+    const records = await this.prismaTransactionContext.client.kudos.findMany({
+      where: {
+        AND: [
+          kudosOnHomeWhere(workspaceId, null),
+          { createdAt: { gte: within.from, lt: within.until } },
+        ],
+      },
+      select: { createdAt: true },
+    });
+    return records.map((record) => record.createdAt);
   }
 
   async givenBy(
@@ -158,7 +185,7 @@ export class PrismaKudosQuery extends KudosQuery {
     return this.prismaTransactionContext.client.$queryRaw<KudosMonthRow[]>`
       SELECT
         to_char(
-          "createdAt" + make_interval(hours => ${KUDOS_MONTH_UTC_OFFSET_HOURS}::int),
+          "createdAt" + make_interval(hours => ${CALENDAR_UTC_OFFSET_HOURS}::int),
           'YYYY-MM'
         ) AS "month",
         COUNT(*)::int AS "count"

@@ -49,9 +49,10 @@ import { FeedbackRequestRepository } from '@app/modules/feedback/domain/reposito
 import { KudosRepository } from '@app/modules/feedback/domain/repository/kudos-repository.port';
 import type { AskStatusValue } from '@app/modules/feedback/domain/value-object/ask-status.vo';
 import {
-  KUDOS_MONTH_UTC_OFFSET_HOURS,
-  type KudosMonthRange,
-} from '@app/modules/feedback/domain/value-object/kudos-month.vo';
+  CALENDAR_UTC_OFFSET_HOURS,
+  type InstantRange,
+} from '@app/modules/feedback/domain/value-object/calendar-clock.vo';
+import type { FeedbackMoment } from '@app/modules/feedback/domain/value-object/calendar-day.vo';
 import {
   VISIBILITIES,
   type VisibilityValue,
@@ -524,23 +525,45 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     );
   }
 
+  /** What one Member reads on Home, as `feedItemsWhere` lets it through. */
+  private onHomeFor(
+    workspaceId: string,
+    readerAccountId: string,
+    show: FeedItemShow,
+  ) {
+    return this.feedbackWithVisibility.filter((row) => {
+      const everyone =
+        row.visibility === 'EVERYONE' && show !== 'SHARED_WITH_ME';
+      const selected =
+        row.visibility === 'SELECTED_PEOPLE' &&
+        show !== 'EVERYONE' &&
+        row.selectedAccountIds.includes(readerAccountId);
+      return row.workspaceId === workspaceId && (everyone || selected);
+    });
+  }
+
+  async feedItemMomentsIn(
+    workspaceId: string,
+    readerAccountId: string,
+    show: FeedItemShow,
+    within: InstantRange,
+  ): Promise<readonly FeedbackMoment[]> {
+    return this.onHomeFor(workspaceId, readerAccountId, show)
+      .filter(
+        (row) => row.createdAt >= within.from && row.createdAt < within.until,
+      )
+      .map((row) => ({ origin: row.origin, createdAt: row.createdAt }));
+  }
+
   async feedItemsFor(
     workspaceId: string,
     readerAccountId: string,
     show: FeedItemShow,
     page: FeedPageRequest,
   ): Promise<FeedItemPageRow> {
-    const read = this.feedbackWithVisibility
-      .filter((row) => {
-        const everyone =
-          row.visibility === 'EVERYONE' && show !== 'SHARED_WITH_ME';
-        const selected =
-          row.visibility === 'SELECTED_PEOPLE' &&
-          show !== 'EVERYONE' &&
-          row.selectedAccountIds.includes(readerAccountId);
-        return row.workspaceId === workspaceId && (everyone || selected);
-      })
-      .sort(newestFirst);
+    const read = this.onHomeFor(workspaceId, readerAccountId, show).sort(
+      newestFirst,
+    );
     const rest = read.filter((row) => isPast(row, page.after));
     return {
       items: rest.slice(0, page.limit).map((row) => {
@@ -706,7 +729,7 @@ export class FakeKudosQuery extends KudosQuery {
   async publicIn(
     workspaceId: string,
     page: CursorPageRequest,
-    within: KudosMonthRange | null,
+    within: InstantRange | null,
   ): Promise<KudosPageRow> {
     const newestFirst = this.rows
       .filter(
@@ -756,6 +779,20 @@ export class FakeKudosQuery extends KudosQuery {
     };
   }
 
+  async onHomeMomentsIn(
+    workspaceId: string,
+    within: InstantRange,
+  ): Promise<readonly Date[]> {
+    return this.rows
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          row.createdAt >= within.from &&
+          row.createdAt < within.until,
+      )
+      .map((row) => row.createdAt);
+  }
+
   async givenBy(
     workspaceId: string,
     giverAccountId: string,
@@ -795,7 +832,7 @@ export class FakeKudosQuery extends KudosQuery {
     for (const row of this.rows) {
       if (row.workspaceId === workspaceId) {
         const shifted = new Date(
-          row.createdAt.getTime() + KUDOS_MONTH_UTC_OFFSET_HOURS * HOUR,
+          row.createdAt.getTime() + CALENDAR_UTC_OFFSET_HOURS * HOUR,
         );
         const month = shifted.toISOString().slice(0, 7);
         counts.set(month, (counts.get(month) ?? 0) + 1);

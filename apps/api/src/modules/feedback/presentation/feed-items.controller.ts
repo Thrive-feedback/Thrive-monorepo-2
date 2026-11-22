@@ -18,11 +18,17 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
+import { ListFeedItemDaysUseCase } from '../application/use-cases/list-feed-item-days.use-case';
 import { ListFeedItemsUseCase } from '../application/use-cases/list-feed-items.use-case';
+import { CalendarDay } from '../domain/value-object/calendar-day.vo';
 import {
   toFeedItemResponse,
   toKudosResponse,
 } from './dto/feedback-response.mapper';
+import {
+  ListFeedItemDaysQueryDto,
+  ListFeedItemDaysResponseDto,
+} from './dto/list-feed-item-days.dto';
 import {
   ListFeedItemsQueryDto,
   ListFeedItemsResponseDto,
@@ -30,17 +36,26 @@ import {
 import { WorkspacePathParamsDto } from './dto/path-params.dto';
 import { WorkspaceMemberGuard } from './workspace-member.guard';
 
+/** The day an instant falls on, on the one clock, as Home groups its list (ADR 0095). */
+function dayOf(createdAt: Date): string {
+  return CalendarDay.containing(createdAt).toString();
+}
+
 /**
- * What a Member reads on Home, as one list paged by one cursor (ADR 0059, ADR 0071).
+ * What a Member reads on Home, as one list paged by one cursor (ADR 0059, ADR 0071), and how much
+ * of it each of the last seven days held (ADR 0095).
  *
- * Who the caller is comes from the session, so there is no parameter on this route that could
+ * Who the caller is comes from the session, so there is no parameter on these routes that could
  * name somebody else and read what they were shown.
  */
 @ApiTags('feedback')
 @Controller({ path: 'v1/workspaces/:workspaceId/feed-items' })
 @UseGuards(WorkspaceMemberGuard)
 export class FeedItemsController {
-  constructor(private readonly listFeedItemsUseCase: ListFeedItemsUseCase) {}
+  constructor(
+    private readonly listFeedItemsUseCase: ListFeedItemsUseCase,
+    private readonly listFeedItemDaysUseCase: ListFeedItemDaysUseCase,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List what the caller reads on Home' })
@@ -64,10 +79,41 @@ export class FeedItemsController {
       readerAccountId: actor.accountId,
       items: feedItems.items.map((item) =>
         item.kind === 'KUDOS'
-          ? { kind: item.kind, ...toKudosResponse(item) }
-          : { ...toFeedItemResponse(item), visibility: item.visibility },
+          ? {
+              kind: item.kind,
+              ...toKudosResponse(item),
+              day: dayOf(item.createdAt),
+            }
+          : {
+              ...toFeedItemResponse(item),
+              visibility: item.visibility,
+              day: dayOf(item.createdAt),
+            },
       ),
       nextCursor: toCursor(feedItems.nextAfterId),
     };
+  }
+
+  @Get('days')
+  @ApiOperation({
+    summary:
+      'Count what the caller read on Home on each of the last seven days',
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ZodResponse({ status: HttpStatus.OK, type: ListFeedItemDaysResponseDto })
+  @ApiBadRequestResponse({ description: 'REQUEST_INVALID' })
+  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
+  @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
+  async listFeedItemDays(
+    @CurrentActor() actor: Actor,
+    @Param() params: WorkspacePathParamsDto,
+    @Query() query: ListFeedItemDaysQueryDto,
+  ) {
+    const view = await this.listFeedItemDaysUseCase.execute({
+      workspaceId: params.workspaceId,
+      readerAccountId: actor.accountId,
+      show: query.show,
+    });
+    return { days: view.days.map((day) => ({ ...day })), totals: view.totals };
   }
 }

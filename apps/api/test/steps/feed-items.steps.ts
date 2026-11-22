@@ -287,3 +287,73 @@ Then(
 Then('Home refuses the choice', function (this: ThriveWorld) {
   this.refusedWith('REQUEST_INVALID');
 });
+
+interface HomeDay {
+  readonly day: string;
+  readonly offeredFeedback: number;
+  readonly requestedFeedback: number;
+  readonly kudos: number;
+}
+
+function homeDays(world: ThriveWorld): HomeDay[] {
+  const days: HomeDay[] | undefined = world.lastResponse?.body?.days;
+  assert.ok(days, "Nothing was counted of Home's days.");
+  return days;
+}
+
+When(
+  '{person} counts the last seven days on Home',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await looksAtHome(this, name, '/days'),
+      `${name} counting Home's days`,
+    );
+  },
+);
+
+When(
+  '{person} counts the last seven days of Shared with me on Home',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(
+      await looksAtHome(this, name, '/days?show=SHARED_WITH_ME'),
+      `${name} counting Shared with me's days`,
+    );
+  },
+);
+
+Then(
+  "today on {person}'s Home holds {int} Offered Feedback, {int} Requested Feedback and {int} Kudos",
+  function (
+    this: ThriveWorld,
+    _name: string,
+    offeredFeedback: number,
+    requestedFeedback: number,
+    kudos: number,
+  ) {
+    const today = homeDays(this).at(-1);
+    assert.ok(today, 'No day was counted.');
+    assert.deepEqual(
+      { offeredFeedback, requestedFeedback, kudos },
+      {
+        offeredFeedback: today.offeredFeedback,
+        requestedFeedback: today.requestedFeedback,
+        kudos: today.kudos,
+      },
+    );
+  },
+);
+
+Then(
+  "the six days before today on {person}'s Home hold nothing",
+  function (this: ThriveWorld, _name: string) {
+    const before = homeDays(this).slice(0, -1);
+    assert.equal(before.length, 6);
+    for (const day of before) {
+      assert.equal(
+        day.offeredFeedback + day.requestedFeedback + day.kudos,
+        0,
+        `${day.day} holds something.`,
+      );
+    }
+  },
+);
