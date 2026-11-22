@@ -65,7 +65,7 @@ const LOOK: SentPostcard['look'] = {
       rotation: -8,
     },
   ],
-  stampKey: 'system/stamp-02-ocean',
+  stampKey: 'system/postcard_stamp_2',
 };
 
 function aCard(overrides: Partial<SentPostcard> = {}): SentPostcard {

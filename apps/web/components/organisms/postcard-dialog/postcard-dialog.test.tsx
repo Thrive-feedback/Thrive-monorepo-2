@@ -245,8 +245,8 @@ describe('PostcardDialog', () => {
     const user = userEvent.setup();
     const onSend = vi.fn().mockResolvedValue(true);
     const onOpenChange = vi.fn();
-    // The third of four templates.
-    vi.spyOn(Math, 'random').mockReturnValue(0.6);
+    // The third template, however many the catalog holds.
+    vi.spyOn(Math, 'random').mockReturnValue(2.5 / POSTCARD_TEMPLATES.length);
     render(dialog({ onSend, onOpenChange }));
 
     await chooseMali(user);
@@ -820,7 +820,9 @@ describe('PostcardDialog, the front', () => {
 
     await turnToFront(user);
 
-    expect(frontPicture()).toHaveAccessibleName(templateAt(3).alt);
+    expect(frontPicture()).toHaveAccessibleName(
+      templateAt(POSTCARD_TEMPLATES.length - 1).alt,
+    );
   });
 
   it('puts the picture pressed in Templates on the front, and closes', async () => {
@@ -893,7 +895,9 @@ describe('PostcardDialog, the front', () => {
     await user.keyboard('{End}');
     await waitFor(() =>
       expect(
-        screen.getByRole('radio', { name: templateAt(3).alt }),
+        screen.getByRole('radio', {
+          name: templateAt(POSTCARD_TEMPLATES.length - 1).alt,
+        }),
       ).toHaveFocus(),
     );
     await user.keyboard(' ');
@@ -901,7 +905,9 @@ describe('PostcardDialog, the front', () => {
     expect(
       screen.queryByRole('dialog', { name: 'Templates' }),
     ).not.toBeInTheDocument();
-    expect(frontPicture()).toHaveAccessibleName(templateAt(3).alt);
+    expect(frontPicture()).toHaveAccessibleName(
+      templateAt(POSTCARD_TEMPLATES.length - 1).alt,
+    );
   });
 
   it('closes Templates on a choice made by assistive technology, which presses no key', async () => {
@@ -1531,17 +1537,17 @@ describe('PostcardDialog, the stamp', () => {
     await user.type(message(), 'Thank you.');
     await user.keyboard('{Escape}');
 
-    await chooseStamp(user, 'Ocean');
-    await chooseStamp(user, 'Night');
+    await chooseStamp(user, 'Sailboat');
+    await chooseStamp(user, 'Pagoda');
 
-    expect(screen.queryByRole('button', { name: 'Ocean stamp' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sailboat stamp' })).toBeNull();
     expect(
-      screen.getByRole('button', { name: 'Night stamp' }),
+      screen.getByRole('button', { name: 'Pagoda stamp' }),
     ).toBeInTheDocument();
     await pressSend(user);
     expect(onSend).toHaveBeenCalledWith(
       expect.objectContaining({
-        stampKey: 'system/stamp-03-night',
+        stampKey: 'system/postcard_stamp_3',
         stickers: [],
       }),
     );
@@ -1633,11 +1639,11 @@ describe('PostcardDialog, the stamp', () => {
     const user = userEvent.setup();
     render(dialog());
 
-    await chooseStamp(user, 'Ocean');
+    await chooseStamp(user, 'Sailboat');
     expect(screen.queryByRole('button', { name: 'Choose a stamp' })).toBeNull();
 
     await user.click(
-      screen.getByRole('button', { name: 'Remove the Ocean stamp' }),
+      screen.getByRole('button', { name: 'Remove the Sailboat stamp' }),
     );
 
     expect(
@@ -1648,16 +1654,16 @@ describe('PostcardDialog, the stamp', () => {
   it('marks the stamp on the card in the drawer', async () => {
     const user = userEvent.setup();
     render(dialog());
-    await chooseStamp(user, 'Balloon');
+    await chooseStamp(user, 'Windmill');
 
     await user.click(stampTool());
 
     const drawer = screen.getByRole('dialog', { name: 'Stamp' });
     expect(
-      within(drawer).getByRole('button', { name: 'Use the Balloon stamp' }),
+      within(drawer).getByRole('button', { name: 'Use the Windmill stamp' }),
     ).toHaveAttribute('aria-pressed', 'true');
     expect(
-      within(drawer).getByRole('button', { name: 'Use the Night stamp' }),
+      within(drawer).getByRole('button', { name: 'Use the Pagoda stamp' }),
     ).toHaveAttribute('aria-pressed', 'false');
   });
 
@@ -1665,14 +1671,13 @@ describe('PostcardDialog, the stamp', () => {
     const user = userEvent.setup();
     render(dialog());
 
-    await chooseStamp(user, 'Ocean');
+    await chooseStamp(user, 'Sailboat');
 
-    expect(screen.getByRole('button', { name: 'Ocean stamp' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
     expect(
-      screen.getByRole('button', { name: 'Remove the Ocean stamp' }),
+      screen.getByRole('button', { name: 'Sailboat stamp' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      screen.getByRole('button', { name: 'Remove the Sailboat stamp' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Turn the/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /Resize/ })).toBeNull();
@@ -1681,33 +1686,33 @@ describe('PostcardDialog, the stamp', () => {
   it('takes the stamp off with Delete, and gives the cursor to Stamp', async () => {
     const user = userEvent.setup();
     render(dialog());
-    await chooseStamp(user, 'Night');
-    screen.getByRole('button', { name: 'Night stamp' }).focus();
+    await chooseStamp(user, 'Pagoda');
+    screen.getByRole('button', { name: 'Pagoda stamp' }).focus();
 
     await user.keyboard('{Delete}');
 
-    expect(screen.queryByRole('button', { name: 'Night stamp' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Pagoda stamp' })).toBeNull();
     expect(stampTool()).toHaveFocus();
   });
 
   it('takes the stamp off with its ×', async () => {
     const user = userEvent.setup();
     render(dialog());
-    await chooseStamp(user, 'Mountains');
+    await chooseStamp(user, 'Moonlit peak');
 
     await user.click(
-      screen.getByRole('button', { name: 'Remove the Mountains stamp' }),
+      screen.getByRole('button', { name: 'Remove the Moonlit peak stamp' }),
     );
 
     expect(
-      screen.queryByRole('button', { name: 'Mountains stamp' }),
+      screen.queryByRole('button', { name: 'Moonlit peak stamp' }),
     ).toBeNull();
   });
 
   it('counts as something written, so closing warns about losing it', async () => {
     const user = userEvent.setup();
     render(dialog());
-    await chooseStamp(user, 'Ocean');
+    await chooseStamp(user, 'Sailboat');
 
     await user.click(screen.getByRole('button', { name: 'Close' }));
 
@@ -2454,7 +2459,7 @@ describe('PostcardDialog, asking for feedback', () => {
 describe('PostcardDialog, answering an Ask', () => {
   const STICKERED: PostcardAsk = {
     ...ASK,
-    stampKey: 'system/stamp-02-ocean',
+    stampKey: 'system/postcard_stamp_2',
     stickers: [
       {
         stickerKey: 'system/sticker-03-love',
@@ -2479,7 +2484,7 @@ describe('PostcardDialog, answering an Ask', () => {
     render(answerDialog(vi.fn().mockResolvedValue(true), STICKERED));
 
     expect(
-      screen.getByRole('img', { name: 'Ocean stamp' }),
+      screen.getByRole('img', { name: 'Sailboat stamp' }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('img', { name: 'Love sticker' }),

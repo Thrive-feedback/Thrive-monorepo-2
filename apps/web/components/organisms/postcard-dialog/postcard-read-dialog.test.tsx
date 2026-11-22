@@ -33,7 +33,7 @@ const GIVEN: GivenPostcard = {
   receivers: [{ name: 'Mali Sombat', photoUrl: null, inactive: false }],
   templateKey: 'system/postcard_template_1',
   stickers: [{ ...STICKER, side: 'back' }],
-  stampKey: 'system/stamp-02-ocean',
+  stampKey: 'system/postcard_stamp_2',
   message: 'You kept the room with you. #Ownership',
   messageTags: { workspaceGoals: [{ name: 'Ownership' }], mentions: [] },
   tone: 'cream',
@@ -89,7 +89,7 @@ const DRESSED_UP: AnsweredPostcard = {
     stickers: [
       { ...STICKER, stickerKey: 'system/sticker-03-love', side: 'back' },
     ],
-    stampKey: 'system/stamp-02-ocean',
+    stampKey: 'system/postcard_stamp_2',
   },
   answers: [
     {
@@ -213,7 +213,7 @@ describe('PostcardReadDialog', () => {
     expect(within(back()).getByText('Mali Sombat')).toBeInTheDocument();
     expect(within(back()).getByText('#Ownership')).toBeInTheDocument();
     expect(
-      within(back()).getByRole('img', { name: 'Ocean stamp' }),
+      within(back()).getByRole('img', { name: 'Sailboat stamp' }),
     ).toBeInTheDocument();
     expect(
       within(back()).getByRole('img', { name: 'Thumbs up sticker' }),
@@ -518,7 +518,7 @@ describe('PostcardReadDialog', () => {
       within(back()).getByRole('img', { name: 'Love sticker' }),
     ).toBeInTheDocument();
     expect(
-      within(back()).getByRole('img', { name: 'Ocean stamp' }),
+      within(back()).getByRole('img', { name: 'Sailboat stamp' }),
     ).toBeInTheDocument();
   });
 
@@ -672,7 +672,7 @@ describe('PostcardReadDialog', () => {
       expect(sticker('Thumbs up')).not.toBeInTheDocument();
       expect(postmark()).not.toBeInTheDocument();
       expect(
-        within(back()).getByRole('img', { name: 'Ocean stamp' }),
+        within(back()).getByRole('img', { name: 'Sailboat stamp' }),
       ).toBeInTheDocument();
       expect(within(back()).getByText('#Ownership')).toBeInTheDocument();
 

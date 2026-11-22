@@ -46,7 +46,7 @@ const LOOK = {
   tone: 'sage',
   textStyle: { font: 'classic', sizeStep: 3, align: 'center', ink: 'navy' },
   stickers: [],
-  stampKey: 'system/stamp-02-ocean',
+  stampKey: 'system/postcard_stamp_2',
 };
 
 const OFFERED = {

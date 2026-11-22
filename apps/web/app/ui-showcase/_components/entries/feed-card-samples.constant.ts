@@ -54,7 +54,7 @@ export const SAMPLE_GIVEN_CARD: GivenPostcard = {
   ...PLAIN_POSTCARD,
   kind: 'give',
   tone: 'sage',
-  stampKey: 'system/stamp-02-ocean',
+  stampKey: 'system/postcard_stamp_2',
   stickers: [
     {
       stickerKey: 'system/sticker-01-thumbs-up',
