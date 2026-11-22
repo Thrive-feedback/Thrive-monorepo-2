@@ -65,7 +65,7 @@ describe('Received', () => {
       within(kinds)
         .getAllByRole('button')
         .map((chip) => chip.textContent),
-    ).toEqual(['All', 'My requests', 'Given to me', 'Kudos']);
+    ).toEqual(['All', 'Given to me', 'My requests', 'Kudos']);
     expect(within(kinds).getByRole('button', { name: 'All' })).toHaveAttribute(
       'aria-pressed',
       'true',

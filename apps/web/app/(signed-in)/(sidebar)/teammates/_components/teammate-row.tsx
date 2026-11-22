@@ -2,9 +2,9 @@ import NextLink from 'next/link';
 import { useId, useState } from 'react';
 import {
   COMPOSE_CHOICE_OUTLINES,
+  COMPOSE_CHOICES,
   type ComposeChoice,
   PERSON_COMPOSE_ACTIONS,
-  PERSON_COMPOSE_CHOICES,
 } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import { Badge } from '@/components/atoms/badge';
 import { Button } from '@/components/atoms/button';
@@ -92,7 +92,7 @@ export function TeammateRow({
             </NextLink>
           </Button>
         )}
-        {PERSON_COMPOSE_CHOICES.map((choice) => {
+        {COMPOSE_CHOICES.map((choice) => {
           const { word, name } = PERSON_COMPOSE_ACTIONS[choice];
           if (!isYou && choice === 'kudos' && teammate.slug === null) {
             return (

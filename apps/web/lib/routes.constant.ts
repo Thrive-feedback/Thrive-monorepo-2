@@ -24,8 +24,11 @@ export function personalViewOf(value: string | null): PersonalView {
   return PERSONAL_VIEWS.find((view) => view === value) ?? PERSONAL_VIEWS[0];
 }
 
-/** What Received can be narrowed to, in the order offered. The first is what it opens on. */
-export const RECEIVED_SHOWS = ['all', 'requests', 'offered', 'kudos'] as const;
+/**
+ * What Received can be narrowed to, in the order offered: everything, then what was given, what was
+ * asked and the Kudos, as the choices to write are offered. The first is what it opens on.
+ */
+export const RECEIVED_SHOWS = ['all', 'offered', 'requests', 'kudos'] as const;
 
 export type ReceivedShow = (typeof RECEIVED_SHOWS)[number];
 

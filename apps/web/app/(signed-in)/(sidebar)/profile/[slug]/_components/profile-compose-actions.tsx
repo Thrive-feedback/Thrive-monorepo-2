@@ -8,9 +8,9 @@ import {
 } from '@/app/(signed-in)/(sidebar)/_components/compose-cards';
 import {
   COMPOSE_CHOICE_OUTLINES,
+  COMPOSE_CHOICES,
   type ComposeChoice,
   PERSON_COMPOSE_ACTIONS,
-  PERSON_COMPOSE_CHOICES,
 } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import { Button } from '@/components/atoms/button';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
@@ -67,7 +67,7 @@ export function ProfileComposeActions({
   return (
     <>
       <div className="grid grid-cols-3 gap-2 md:flex">
-        {PERSON_COMPOSE_CHOICES.map((each) => {
+        {COMPOSE_CHOICES.map((each) => {
           const { word, name } = PERSON_COMPOSE_ACTIONS[each];
           return (
             <Button

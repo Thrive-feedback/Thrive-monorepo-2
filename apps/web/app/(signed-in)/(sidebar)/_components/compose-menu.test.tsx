@@ -110,7 +110,7 @@ afterEach(() => {
 });
 
 describe('ComposeMenu', () => {
-  it('offers the three things to write, each saying what it is for', async () => {
+  it('offers the three things to write, giving first, each saying what it is for', async () => {
     const user = userEvent.setup();
     draw();
 
@@ -119,8 +119,8 @@ describe('ComposeMenu', () => {
     expect(
       screen.getAllByRole('menuitem').map((item) => item.textContent),
     ).toEqual([
-      'Ask for feedbackAsk teammates what they think.',
       "Give feedbackTell a teammate what you've seen.",
+      'Ask for feedbackAsk teammates what they think.',
       'Give kudosSay well done in a few words.',
     ]);
   });
@@ -132,7 +132,7 @@ describe('ComposeMenu', () => {
     await user.click(screen.getByRole('button', { name: 'Write something' }));
 
     // The same tint every kind-coloured line takes, the bell's included, not the menu's own.
-    const [ask, give, kudos] = screen.getAllByRole('menuitem');
+    const [give, ask, kudos] = screen.getAllByRole('menuitem');
     expect(ask).toHaveClass(
       'data-highlighted:bg-action-tertiary-surface-hover',
     );
