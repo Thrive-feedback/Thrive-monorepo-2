@@ -4,7 +4,7 @@ import type {
   HomeFeedPage,
 } from '@/lib/feedback/home-feed-item.type';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
-import type { HomeWeek, HomeWeekCounts } from './home-week.type';
+import type { HomeWeekCounts, HomeWeekSummary } from './home-week.type';
 
 /** Who reads Home in these tests. */
 export const READER = 'ann';
@@ -63,7 +63,7 @@ const NONE: HomeWeekCounts = { offered: 0, answers: 0, kudos: 0 };
 export function weekEndingSunday(
   held: Readonly<Record<string, Partial<HomeWeekCounts>>> = {},
   countsKudos = true,
-): HomeWeek {
+): HomeWeekSummary {
   const days = [
     '2026-11-16',
     '2026-11-17',

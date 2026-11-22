@@ -6,16 +6,20 @@ import {
   HangingBand,
 } from '@/app/(signed-in)/(sidebar)/_components/hanging-band';
 import { InvitationNotices } from '@/app/(signed-in)/(sidebar)/_components/invitation-notices';
-import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
 import {
   PAGE_COLUMN,
   PAGE_COLUMN_WIDTH,
 } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
+import {
+  HOME_BAND_FOOT,
+  HOME_COMPOSER_OVERLAP,
+} from '@/app/(signed-in)/(sidebar)/home/_lib/home-layout.constant';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
 import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
+import { BackToTop } from './_components/back-to-top';
 import { FeedComposerSkeleton } from './_components/feed-composer/feed-composer-skeleton';
 import { HomeComposer } from './_components/home-composer';
 import { HomeDayJumpProvider } from './_components/home-day-jump';
@@ -23,6 +27,9 @@ import { HomeFeed, HomeFeedSkeleton } from './_components/home-feed';
 import { HomeFeedFilter } from './_components/home-feed-filter';
 import { HomeWeek, HomeWeekSkeleton } from './_components/home-week';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
+
+/** The page's heading, which the button back to the top returns focus to. */
+const HOME_HEADING = 'home-heading';
 
 /** Only reachable after signing in, so there is nothing here for a search engine. */
 export const metadata: Metadata = {
@@ -49,7 +56,7 @@ type HomeProps = {
 
 /**
  * Home of the person's Workspace, where a Member lands after signing in. Its head hangs from the
- * navbar as a Profile's does, named for the Workspace, with what the last seven days held and a
+ * navbar as a Profile's does, headed Home, with what the last seven days held and a
  * ribbon of those days; the composer lies across the head's foot. Below, what the Workspace shared
  * with everyone and what somebody selected or mentioned the person to read, in days, under a
  * filter. Pressing a card opens the piece over it, named in the address so a reload or a shared
@@ -98,10 +105,13 @@ export default async function Home({ searchParams }: HomeProps) {
             className={cn(
               PAGE_COLUMN_WIDTH,
               BAND_TOP_SPACE,
-              'flex flex-col gap-4 pb-24',
+              HOME_BAND_FOOT,
+              'flex flex-col gap-4',
             )}
           >
-            <PageTitle>{workspaceName} home</PageTitle>
+            <Text as="h1" variant="display-1" id={HOME_HEADING} tabIndex={-1}>
+              Home
+            </Text>
             <Suspense key={show} fallback={<HomeWeekSkeleton />}>
               <HomeWeek membership={session.membership} show={show} />
             </Suspense>
@@ -109,7 +119,7 @@ export default async function Home({ searchParams }: HomeProps) {
         </HangingBand>
         {/* After the band, never inside it: it lies across the band's foot, which the band's mask
             would cut, and the band takes no presses. */}
-        <div className={cn(PAGE_COLUMN_WIDTH, 'relative z-10 -mt-16')}>
+        <div className={cn(PAGE_COLUMN_WIDTH, HOME_COMPOSER_OVERLAP)}>
           <Suspense fallback={<FeedComposerSkeleton />}>
             <HomeComposer
               session={session}
@@ -135,6 +145,7 @@ export default async function Home({ searchParams }: HomeProps) {
             </Suspense>
           </div>
         </div>
+        <BackToTop headingId={HOME_HEADING} />
       </HomeDayJumpProvider>
       {/* Always there, so a press holds the small postcard's pending mark until the postcard is
           ready, rather than committing to an empty fallback; a reload still does not wait. */}

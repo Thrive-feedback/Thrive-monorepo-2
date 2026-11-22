@@ -87,7 +87,6 @@ export type HomeFeedEntry =
   | (ReadKudos & { readonly kind: 'KUDOS' } & OnHomeDay);
 
 /** One page of Home. The reader comes with it because no other read says who they are. */
-
 export type HomeFeedPage = {
   readonly readerAccountId: string;
   /** Newest first. */

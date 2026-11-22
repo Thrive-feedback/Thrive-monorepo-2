@@ -1,13 +1,18 @@
-import { Text } from '@/components/atoms/text';
-import { FEED_CARD_KIND_INK } from '@/components/organisms/feed-card/feed-card-tone.constant';
-import { cn } from '@/lib/cn.util';
-import type { HomeShow } from '@/lib/routes.constant';
 import {
   countWords,
   type FeedDaySection,
   nameDay,
-} from '../_lib/feed-day.util';
-import type { HomeWeek } from '../_lib/home-week.type';
+} from '@/app/(signed-in)/(sidebar)/home/_lib/feed-day.util';
+import {
+  HOME_DAY_CARDS,
+  HOME_DAY_MARGIN,
+  HOME_DAY_ROW,
+} from '@/app/(signed-in)/(sidebar)/home/_lib/home-layout.constant';
+import type { HomeWeekSummary } from '@/app/(signed-in)/(sidebar)/home/_lib/home-week.type';
+import { Text } from '@/components/atoms/text';
+import { FEED_CARD_KIND_INK } from '@/components/organisms/feed-card/feed-card-tone.constant';
+import { cn } from '@/lib/cn.util';
+import type { HomeShow } from '@/lib/routes.constant';
 import { HomeFeedEntry } from './home-feed-entry';
 
 /** Where a day's section starts, for the ribbon to bring it into view. */
@@ -22,7 +27,7 @@ export function dayHeadingOf(day: string) {
 
 export type HomeFeedDayProps = {
   section: FeedDaySection;
-  week: HomeWeek;
+  week: HomeWeekSummary | null;
   readerAccountId: string;
   show: HomeShow;
 };
@@ -40,26 +45,29 @@ export function HomeFeedDay({
   show,
 }: HomeFeedDayProps) {
   const name = nameDay(section.day, week);
-  const isToday = section.day === week.today;
+  const isToday = section.day === week?.today;
   const quiet = section.kind === 'quiet';
   const counts =
     section.kind === 'day' && section.counts
-      ? countWords(section.counts, week.countsKudos).filter(
+      ? countWords(section.counts, week?.countsKudos ?? true).filter(
           ({ count }) => count > 0,
         )
       : [];
 
   return (
+    // Plain, not a landmark: an endless list of named regions would bury the page's own. The
+    // heading is what a screen reader moves by.
     <section
       id={dayAnchorOf(section.day)}
-      aria-labelledby={dayHeadingOf(section.day)}
       className={cn(
-        'scroll-mt-18 border-border-subtle border-t md:grid md:grid-cols-[7rem_minmax(0,1fr)] md:gap-7',
+        'scroll-mt-18 border-border-subtle border-t',
+        HOME_DAY_ROW,
         quiet ? 'py-5' : 'pt-4 pb-6 md:pt-12',
       )}
     >
       <div
         className={cn(
+          HOME_DAY_MARGIN,
           'z-10 flex items-baseline gap-x-2 gap-y-0.5 bg-surface-base max-md:sticky max-md:top-18 max-md:flex-wrap max-md:py-2',
           'md:sticky md:top-24 md:flex-col md:items-start md:self-start md:bg-transparent',
         )}
@@ -67,7 +75,7 @@ export function HomeFeedDay({
         <h3
           id={dayHeadingOf(section.day)}
           tabIndex={-1}
-          className="flex items-baseline gap-2 outline-none md:flex-col md:items-start md:gap-0"
+          className="flex items-baseline gap-2 md:flex-col md:items-start md:gap-0"
         >
           <Text
             as="span"
@@ -107,13 +115,17 @@ export function HomeFeedDay({
         )}
       </div>
       {section.kind === 'quiet' ? (
-        <Text variant="body-2" tone="muted" className="self-center max-md:pt-1">
+        <Text
+          variant="body-2"
+          tone="muted"
+          className={cn(HOME_DAY_CARDS, 'self-center max-md:pt-1')}
+        >
           Nothing written on {name.weekday}.
         </Text>
       ) : (
         // From `md` the first card's small postcard has a note by hand rising above it, which the
         // room above the section clears; on a phone the note sits under the card instead.
-        <ul className="flex min-w-0 flex-col gap-1.5 max-md:pt-2">
+        <ul className={cn(HOME_DAY_CARDS, 'flex flex-col gap-1.5 max-md:pt-2')}>
           {section.entries.map((entry) => (
             <li key={entry.id}>
               <HomeFeedEntry

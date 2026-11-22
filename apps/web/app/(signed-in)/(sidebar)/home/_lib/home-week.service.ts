@@ -1,12 +1,12 @@
 import 'server-only';
-import { unwrap } from '@repo/api';
+import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
 import type { HomeShow } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
 import { API_SHOWS } from './home-feed.service';
-import type { HomeWeek } from './home-week.type';
+import type { HomeWeekSummary } from './home-week.type';
 
 /**
  * How much the reader's Home held on each of the last seven days, under the filter it shows. The
@@ -15,7 +15,10 @@ import type { HomeWeek } from './home-week.type';
  * change the moment somebody shares, and one reader's are not another's.
  */
 export const readHomeWeek = cache(
-  async (membership: CurrentMembership, show: HomeShow): Promise<HomeWeek> => {
+  async (
+    membership: CurrentMembership,
+    show: HomeShow,
+  ): Promise<HomeWeekSummary> => {
     const cookie = (await headers()).get('cookie') ?? undefined;
     const week = unwrap(
       await apiClient().GET('/v1/workspaces/{workspaceId}/feed-items/days', {
@@ -44,3 +47,23 @@ export const readHomeWeek = cache(
     };
   },
 );
+
+/**
+ * The week, or `null` when the API could not count it. The counts dress Home rather than carry it,
+ * so a failed count leaves the band without its sentence and ribbon and the list without its
+ * counts and quiet days, and the cards still show. Anything but a refusal from the API is a fault of
+ * our own and still fails the page.
+ */
+export async function readHomeWeekIfCounted(
+  membership: CurrentMembership,
+  show: HomeShow,
+): Promise<HomeWeekSummary | null> {
+  try {
+    return await readHomeWeek(membership, show);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return null;
+    }
+    throw error;
+  }
+}

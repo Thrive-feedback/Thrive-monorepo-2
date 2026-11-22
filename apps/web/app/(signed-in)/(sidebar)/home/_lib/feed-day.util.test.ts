@@ -175,3 +175,26 @@ describe('the words for a count', () => {
     ]);
   });
 });
+
+describe('Home in days without a week', () => {
+  it('groups the cards by day with no counts, no quiet days and no Today', () => {
+    const sections = groupFeedByDay(
+      [offeredOn('2026-11-22', 'a'), offeredOn('2026-11-19', 'b')],
+      null,
+      true,
+    );
+
+    expect(sections.map((section) => section.kind)).toEqual(['day', 'day']);
+    expect(
+      sections.every(
+        (section) => section.kind === 'day' && section.counts === null,
+      ),
+    ).toBe(true);
+    expect(nameDay('2026-11-22', null)).toEqual({
+      label: 'Sunday',
+      weekday: 'Sunday',
+      numeral: '22',
+      detail: 'Nov 2026',
+    });
+  });
+});

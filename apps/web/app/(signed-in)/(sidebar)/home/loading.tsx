@@ -6,6 +6,10 @@ import {
   PAGE_COLUMN,
   PAGE_COLUMN_WIDTH,
 } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
+import {
+  HOME_BAND_FOOT,
+  HOME_COMPOSER_OVERLAP,
+} from '@/app/(signed-in)/(sidebar)/home/_lib/home-layout.constant';
 import { Skeleton, SkeletonRegion } from '@/components/atoms/skeleton';
 import { cn } from '@/lib/cn.util';
 import { FeedComposerSkeleton } from './_components/feed-composer/feed-composer-skeleton';
@@ -25,16 +29,17 @@ export default function HomeLoading() {
           className={cn(
             PAGE_COLUMN_WIDTH,
             BAND_TOP_SPACE,
-            'flex flex-col gap-4 pb-24',
+            HOME_BAND_FOOT,
+            'flex flex-col gap-4',
           )}
         >
           <SkeletonRegion>
-            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-15 w-72 md:h-18 md:w-112" />
           </SkeletonRegion>
           <HomeWeekSkeleton />
         </div>
       </HangingBand>
-      <div className={cn(PAGE_COLUMN_WIDTH, 'relative z-10 -mt-16')}>
+      <div className={cn(PAGE_COLUMN_WIDTH, HOME_COMPOSER_OVERLAP)}>
         <FeedComposerSkeleton />
       </div>
       <div className={cn(PAGE_COLUMN, 'flex flex-col gap-6')}>

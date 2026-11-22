@@ -1,5 +1,5 @@
 import type { HomeFeedEntry } from '@/lib/feedback/home-feed-item.type';
-import type { HomeWeek, HomeWeekCounts } from './home-week.type';
+import type { HomeWeekCounts, HomeWeekSummary } from './home-week.type';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -39,17 +39,21 @@ export type DayName = {
   readonly detail: string;
 };
 
-export function nameDay(day: string, week: HomeWeek): DayName {
+/**
+ * A day named from its date and the week's. Without a week, as when the API could not count it,
+ * nothing says which day is today, so every day takes its weekday and its month and year.
+ */
+export function nameDay(day: string, week: HomeWeekSummary | null): DayName {
   const date = midnightOf(day);
   const weekday = WEEKDAY.format(date);
   const month = MONTH.format(date);
   const label =
-    day === week.today
+    day === week?.today
       ? 'Today'
-      : day === dayBefore(week.today)
+      : week && day === dayBefore(week.today)
         ? 'Yesterday'
         : weekday;
-  const isInTheWeek = week.days.some((one) => one.day === day);
+  const isInTheWeek = week?.days.some((one) => one.day === day) ?? false;
   return {
     label,
     weekday,
@@ -88,13 +92,15 @@ export type FeedDaySection =
  */
 export function groupFeedByDay(
   entries: readonly HomeFeedEntry[],
-  week: HomeWeek,
+  week: HomeWeekSummary | null,
   hasReachedEnd: boolean,
 ): readonly FeedDaySection[] {
-  const countsOf = new Map(week.days.map((one) => [one.day, one]));
+  // Without a week, the days are the list's alone: no counts, and no day said to be quiet.
+  const days = week?.days ?? [];
+  const countsOf = new Map(days.map((one) => [one.day, one]));
   const byDay = new Map<string, HomeFeedEntry[]>();
   for (const entry of entries) {
-    const day = entry.day > week.today ? week.today : entry.day;
+    const day = week && entry.day > week.today ? week.today : entry.day;
     const held = byDay.get(day);
     if (held) {
       held.push(entry);
@@ -103,7 +109,7 @@ export function groupFeedByDay(
     }
   }
   const oldestRead = [...byDay.keys()].at(-1);
-  const quietDays = week.days
+  const quietDays = days
     .filter(
       (one) =>
         isQuiet(one) &&

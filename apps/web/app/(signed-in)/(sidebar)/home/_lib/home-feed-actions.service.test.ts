@@ -311,6 +311,75 @@ describe('readHomeFeedThroughDay', () => {
     expect(reads).toBe(5);
   });
 
+  it('stops at the end of Home, short of its bound', async () => {
+    let reads = 0;
+    server.use(
+      http.get(FEED_ITEMS, () => {
+        reads += 1;
+        return HttpResponse.json({
+          readerAccountId: ANN,
+          items: [
+            onDay('2026-11-21', `0199a0f0-0000-7000-8000-00000000000${reads}`),
+          ],
+          nextCursor: reads === 2 ? null : `cursor-${reads + 1}`,
+        });
+      }),
+    );
+
+    const page = await readHomeFeedThroughDay({
+      show: 'all',
+      cursor: 'cursor-1',
+      day: '2026-01-01',
+    });
+
+    expect(reads).toBe(2);
+    expect(page?.nextCursor).toBeNull();
+  });
+
+  it('adds nothing half read when a page past the first fails', async () => {
+    let reads = 0;
+    server.use(
+      http.get(FEED_ITEMS, () => {
+        reads += 1;
+        return reads === 3
+          ? HttpResponse.json(
+              { error: { code: 'INTERNAL', message: 'Broke.' } },
+              { status: 500 },
+            )
+          : HttpResponse.json({
+              readerAccountId: ANN,
+              items: [
+                onDay(
+                  '2026-11-21',
+                  `0199a0f0-0000-7000-8000-00000000000${reads}`,
+                ),
+              ],
+              nextCursor: `cursor-${reads + 1}`,
+            });
+      }),
+    );
+
+    expect(
+      await readHomeFeedThroughDay({
+        show: 'all',
+        cursor: 'cursor-1',
+        day: '2026-11-01',
+      }),
+    ).toBeNull();
+  });
+
+  it('sends somebody whose session has gone to sign in', async () => {
+    readCurrentMembership.mockResolvedValue(null);
+
+    await expect(
+      readHomeFeedThroughDay({
+        show: 'all',
+        cursor: 'cursor-1',
+        day: '2026-11-19',
+      }),
+    ).rejects.toMatchObject({ to: '/signin' });
+  });
+
   it.each([
     [{ show: 'all', cursor: 'cursor-1' }],
     [{ show: 'all', cursor: 'cursor-1', day: 'Wednesday' }],

@@ -33,6 +33,9 @@ vi.mock('next/navigation', () => ({
 vi.mock('./_components/home-composer', () => ({
   HomeComposer: () => <p>The composer</p>,
 }));
+vi.mock('./_components/back-to-top', () => ({
+  BackToTop: () => null,
+}));
 vi.mock('./_components/home-week', () => ({
   HomeWeek: ({ show }: { show: string }) => <p>The week, showing {show}</p>,
   HomeWeekSkeleton: () => null,
@@ -70,12 +73,12 @@ function open(searchParams: Record<string, string> = {}) {
 }
 
 describe('Home', () => {
-  it('lets only a Member in, and is headed with the Workspace’s name', async () => {
+  it('lets only a Member in, and is headed Home', async () => {
     render(await open());
 
     expect(requireMember).toHaveBeenCalled();
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Globex home' }),
+      screen.getByRole('heading', { level: 1, name: 'Home' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('status')).toBeNull();
   });

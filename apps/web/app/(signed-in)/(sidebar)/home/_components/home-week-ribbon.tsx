@@ -1,16 +1,21 @@
 'use client';
 
+import {
+  countWords,
+  isQuiet,
+  nameDay,
+} from '@/app/(signed-in)/(sidebar)/home/_lib/feed-day.util';
+import { RIBBON_DAYS_ON_A_PHONE } from '@/app/(signed-in)/(sidebar)/home/_lib/home-layout.constant';
+import type { HomeWeekSummary } from '@/app/(signed-in)/(sidebar)/home/_lib/home-week.type';
 import { FEED_CARD_FILL } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import { cn } from '@/lib/cn.util';
-import { countWords, isQuiet, nameDay } from '../_lib/feed-day.util';
-import type { HomeWeek } from '../_lib/home-week.type';
 import { useDayJump } from './home-day-jump';
 
 /** As many marks as a day has room for; more than this still reads as a busy day. */
 const MOST_MARKS = 4;
 
 export type HomeWeekRibbonProps = {
-  week: HomeWeek;
+  week: HomeWeekSummary;
 };
 
 /**
@@ -43,8 +48,11 @@ export function HomeWeekRibbon({ week }: HomeWeekRibbonProps) {
           return (
             <li
               key={one.day}
-              // The two oldest days are left off a phone.
-              className={cn(index < week.days.length - 5 && 'max-md:hidden')}
+              // Only the most recent days fit on a phone.
+              className={cn(
+                index < week.days.length - RIBBON_DAYS_ON_A_PHONE &&
+                  'max-md:hidden',
+              )}
             >
               <button
                 type="button"
@@ -54,11 +62,12 @@ export function HomeWeekRibbon({ week }: HomeWeekRibbonProps) {
                 aria-label={`${name.label} ${name.numeral}, ${quiet ? 'nothing written' : held}`}
                 onClick={() => request(one.day)}
                 className={cn(
-                  'flex w-full flex-col items-center gap-1 rounded-control border border-transparent px-1 pt-2 pb-2.5 text-fg-secondary transition-colors duration-150 ease-out',
+                  'flex w-full cursor-pointer flex-col items-center gap-1 rounded-control border border-transparent px-1 pt-2 pb-2.5 text-fg-secondary transition-colors duration-quick disabled:cursor-default',
                   'enabled:hover:bg-surface-base/60 enabled:hover:text-fg-primary',
                   isToday &&
                     'border-action-primary/40 bg-surface-base text-action-primary-active shadow-low',
-                  isFinding && 'animate-pulse',
+                  // Pulses only where motion is welcome; `aria-busy` says the same either way.
+                  isFinding && 'motion-safe:animate-pulse',
                 )}
               >
                 <span className="text-label">

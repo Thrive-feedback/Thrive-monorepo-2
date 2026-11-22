@@ -1,16 +1,17 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { HomeFeedEntry } from '@/lib/feedback/home-feed-item.type';
-import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
-import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
 import {
   homePage,
   offeredOn,
   weekEndingSunday,
-} from '../_lib/home-feed.fixture';
-import type { HomeWeek } from '../_lib/home-week.type';
-import { HomeDayJumpProvider } from './home-day-jump';
+} from '@/app/(signed-in)/(sidebar)/home/_lib/home-feed.fixture';
+import type { HomeWeekSummary } from '@/app/(signed-in)/(sidebar)/home/_lib/home-week.type';
+import type { HomeFeedEntry } from '@/lib/feedback/home-feed-item.type';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
+import { PAST_THE_DRAWING } from '@/lib/test/past-the-drawing';
+import { HomeDayJumpProvider, NoDayList } from './home-day-jump';
 import { HomeFeedList } from './home-feed-list';
 import { HomeWeekRibbon } from './home-week-ribbon';
 
@@ -46,7 +47,7 @@ function List({
 }: {
   entries: readonly HomeFeedEntry[];
   nextCursor?: string | null;
-  week?: HomeWeek;
+  week?: HomeWeekSummary;
   show?: 'all' | 'everyone' | 'shared';
   withRibbon?: boolean;
 }) {
@@ -104,6 +105,15 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
 });
+
+/** A day of the list, found by its heading, as a screen reader moves through the list. */
+function dayHeaded(name: RegExp): HTMLElement {
+  const section = screen.getByRole('heading', { name }).closest('section');
+  if (!section) {
+    throw new Error('That heading heads no day.');
+  }
+  return section;
+}
 
 async function scrollToTheEnd() {
   await act(async () => {
@@ -299,9 +309,10 @@ describe('Home in days', () => {
 
     await scrollToTheEnd();
 
-    const friday = screen.getByRole('region', { name: /^Friday/ });
-    expect(within(friday).getAllByRole('article')).toHaveLength(2);
-    expect(screen.getAllByRole('region', { name: /^Friday/ })).toHaveLength(1);
+    expect(within(dayHeaded(/^Friday/)).getAllByRole('article')).toHaveLength(
+      2,
+    );
+    expect(screen.getAllByRole('heading', { name: /^Friday/ })).toHaveLength(1);
   });
 
   it('names Today and Yesterday from the week, whatever the clock says', () => {
@@ -333,7 +344,7 @@ describe('Home in days', () => {
       />,
     );
 
-    const today = screen.getByRole('region', { name: /^Today/ });
+    const today = dayHeaded(/^Today/);
     expect(today).toHaveTextContent('1 offered');
     expect(today).toHaveTextContent('2 answers');
     expect(today).not.toHaveTextContent('Kudos');
@@ -446,5 +457,235 @@ describe('jumping to a day from the ribbon', () => {
     await screen.findByText('More today 3.', PAST_THE_DRAWING);
 
     expect(readHomeFeedThroughDay).toHaveBeenCalledTimes(3);
+  });
+
+  it('waits for a read already under way, then reads on for the day', async () => {
+    let finishScrollRead: (page: unknown) => void = () => {};
+    readNextHomeFeedPage.mockReturnValue(
+      new Promise((resolve) => {
+        finishScrollRead = resolve;
+      }),
+    );
+    readHomeFeedThroughDay.mockResolvedValue(
+      homePage([piece('fb-3', 'Thursday.', THURSDAY)], null),
+    );
+    render(
+      <List
+        withRibbon
+        entries={[piece('fb-1', 'Today.')]}
+        nextCursor="cursor-1"
+      />,
+    );
+    await scrollToTheEnd();
+
+    await userEvent.click(screen.getByRole('button', { name: /^Thursday 19/ }));
+    expect(readHomeFeedThroughDay).not.toHaveBeenCalled();
+    await act(async () => {
+      finishScrollRead(
+        homePage([piece('fb-2', 'Friday.', FRIDAY)], 'cursor-2'),
+      );
+    });
+
+    expect(
+      await screen.findByRole('heading', { name: /^Thursday 19/ }),
+    ).toHaveFocus();
+    expect(readHomeFeedThroughDay).toHaveBeenCalledTimes(1);
+    expect(readHomeFeedThroughDay).toHaveBeenCalledWith({
+      show: 'all',
+      cursor: 'cursor-2',
+      day: THURSDAY,
+    });
+  });
+
+  it('gives a second press its own reads, and the latest press wins', async () => {
+    const week = weekEndingSunday({
+      [SUNDAY]: { offered: 1 },
+      [THURSDAY]: { offered: 1 },
+      '2026-11-17': { offered: 1 },
+    });
+    let finishThursdaysRead: (page: unknown) => void = () => {};
+    let tuesdayReads = 0;
+    readHomeFeedThroughDay.mockImplementation(({ day }: { day: string }) => {
+      if (day === THURSDAY) {
+        return new Promise((resolve) => {
+          finishThursdaysRead = resolve;
+        });
+      }
+      tuesdayReads += 1;
+      // Tuesday comes in on that press's own third read.
+      return Promise.resolve(
+        tuesdayReads === 3
+          ? homePage([piece('tue', 'Tuesday.', '2026-11-17')], null)
+          : homePage(
+              [piece(`more-${tuesdayReads}`, `More ${tuesdayReads}.`)],
+              `cursor-${tuesdayReads + 2}`,
+            ),
+      );
+    });
+    render(
+      <List
+        withRibbon
+        week={week}
+        entries={[piece('fb-1', 'Today.')]}
+        nextCursor="cursor-1"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^Thursday 19/ }));
+    await userEvent.click(screen.getByRole('button', { name: /^Tuesday 17/ }));
+    await act(async () => {
+      finishThursdaysRead(
+        homePage([piece('fri', 'Friday.', FRIDAY)], 'cursor-2'),
+      );
+    });
+
+    expect(
+      await screen.findByRole('heading', { name: /^Tuesday 17/ }),
+    ).toHaveFocus();
+    expect(tuesdayReads).toBe(3);
+  });
+
+  it('lets go of a press when the list leaves, so the ribbon is not left finding', async () => {
+    readHomeFeedThroughDay.mockReturnValue(new Promise(() => {}));
+    const { rerender } = render(
+      <List
+        withRibbon
+        entries={[piece('fb-1', 'Today.')]}
+        nextCursor="cursor-1"
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /^Thursday 19/ }));
+    expect(
+      screen.getByRole('button', { name: /^Thursday 19/ }),
+    ).toHaveAttribute('aria-busy', 'true');
+
+    // The filter changed: the page draws a new list under a new key.
+    rerender(
+      <HomeDayJumpProvider>
+        <HomeWeekRibbon week={BUSY_WEEK} />
+      </HomeDayJumpProvider>,
+    );
+
+    expect(
+      screen.getByRole('button', { name: /^Thursday 19/ }),
+    ).not.toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('brings the furthest day into view when its reads run out', async () => {
+    let read = 0;
+    readHomeFeedThroughDay.mockImplementation(async () => {
+      read += 1;
+      return homePage(
+        [piece(`today-${read}`, `More today ${read}.`)],
+        `cursor-${read + 1}`,
+      );
+    });
+    render(
+      <List
+        withRibbon
+        entries={[piece('fb-1', 'Today.')]}
+        nextCursor="cursor-1"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^Thursday 19/ }));
+    await screen.findByText('More today 3.', PAST_THE_DRAWING);
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /^Thursday 19/ }),
+      ).not.toHaveAttribute('aria-busy', 'true'),
+    );
+    expect(screen.getByRole('heading', { name: /^Today 22/ })).toHaveFocus();
+  });
+
+  it('keeps a press made before the cards arrive, and answers it once they do', async () => {
+    const { rerender } = render(
+      <HomeDayJumpProvider>
+        <HomeWeekRibbon week={BUSY_WEEK} />
+      </HomeDayJumpProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^Friday 20/ }));
+    expect(screen.getByRole('button', { name: /^Friday 20/ })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    rerender(
+      <HomeDayJumpProvider>
+        <HomeWeekRibbon week={BUSY_WEEK} />
+        <HomeFeedList
+          initialPage={homePage(
+            [piece('fb-1', 'Today.'), piece('fb-2', 'Friday.', FRIDAY)],
+            null,
+          )}
+          week={BUSY_WEEK}
+          show="all"
+        />
+      </HomeDayJumpProvider>,
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: /^Friday 20/ }),
+    ).toHaveFocus();
+  });
+
+  it('cannot be left finding a day when Home holds no list to find it in', async () => {
+    render(
+      <HomeDayJumpProvider>
+        <HomeWeekRibbon week={BUSY_WEEK} />
+        <NoDayList />
+      </HomeDayJumpProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^Thursday 19/ }));
+
+    expect(
+      screen.getByRole('button', { name: /^Thursday 19/ }),
+    ).not.toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('lets go of a press made while loading when Home turns out to hold nothing', async () => {
+    const { rerender } = render(
+      <HomeDayJumpProvider>
+        <HomeWeekRibbon week={BUSY_WEEK} />
+      </HomeDayJumpProvider>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /^Thursday 19/ }));
+    expect(
+      screen.getByRole('button', { name: /^Thursday 19/ }),
+    ).toHaveAttribute('aria-busy', 'true');
+
+    rerender(
+      <HomeDayJumpProvider>
+        <HomeWeekRibbon week={BUSY_WEEK} />
+        <NoDayList />
+      </HomeDayJumpProvider>,
+    );
+
+    expect(
+      screen.getByRole('button', { name: /^Thursday 19/ }),
+    ).not.toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('keeps a press through a list that is taken down and put straight back', async () => {
+    readHomeFeedThroughDay.mockResolvedValue(
+      homePage([piece('fb-3', 'Thursday.', THURSDAY)], null),
+    );
+    render(
+      <StrictMode>
+        <List
+          withRibbon
+          entries={[piece('fb-1', 'Today.')]}
+          nextCursor="cursor-1"
+        />
+      </StrictMode>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^Thursday 19/ }));
+
+    expect(
+      await screen.findByRole('heading', { name: /^Thursday 19/ }),
+    ).toHaveFocus();
   });
 });
