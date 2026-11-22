@@ -37,8 +37,12 @@ of `feed-items` carries the `day` it falls on. Both read the one clock.**
   in `KudosMonth`; the board's month, this route's days and each item's `day` all read it.
 - **`day` on every `feed-items` item** (`YYYY-MM-DD`), so the web groups by it and holds no copy of
   the clock. Adding a field is safe (`GEN_08` R7).
-- **No index and no migration.** Measured on Postgres 17 with 200 Workspaces of 10,000 Feedback over
-  two years (2M rows, 30% Selected people with three selected each) and 1M Kudos:
+- **No index and no migration.** Measured on Postgres 17.11 (the local compose image), in a throwaway
+  database migrated with `prisma migrate deploy`, then dropped: 200 Workspaces of 10,000 Feedback
+  spread uniformly over two years (2M rows; 60% Everyone, 30% Selected people with three people
+  selected each, 10% Only me, all Offered, since a Requested row needs its request), and 5,000 Kudos
+  each (1M rows), then `VACUUM ANALYZE` and default settings. The SQL is the shape Prisma 7 writes
+  for these reads, over a 7-day range, run with `EXPLAIN (ANALYZE, BUFFERS)`:
 
   | Read | Plan | Time |
   |---|---|---|
@@ -47,9 +51,15 @@ of `feed-items` carries the `day` it falls on. Both read the one clock.**
   | All | BitmapOr of both ranges, the reader's selections hashed once | 3.8–6.3 ms, ~300 buffers |
   | Kudos | Index-only scan on `(workspaceId, createdAt, id)` | 0.1 ms, 4 buffers |
 
-  All's buffers come from reading the reader's whole history of selections through
-  `feedback_selected_person(accountId)`. A covering `(accountId, feedbackId)` index would make that
-  index-only; it is not worth a migration at this size.
+  All's buffers come from the hashed subplan, which reads every selection of the reader's,
+  `feedback_selected_person(accountId)`, in every Workspace, since that table holds no Workspace:
+  it grows with the reader's whole history, not with the week. When the hash grows dear the planner
+  falls back to checking each row of the week against the primary key `(feedbackId, accountId)`,
+  so there is no cliff. Should All grow hot, the adapter can read Everyone and Shared with me
+  apart and add them up, which keeps the Visibility rule in one place and needs no migration; a
+  covering `(accountId, feedbackId)` index would only speed the hashed path. Kudos' index-only
+  scan depends on the visibility map, and this week's rows are the least likely to be marked, so
+  production does a few heap fetches; still trivial.
 - **No cache.** The answer is per reader and per `show`, and is read beside a list that is not cached.
 
 ## Consequences
@@ -67,7 +77,8 @@ of `feed-items` carries the `day` it falls on. Both read the one clock.**
 - **The browser passes today, or its time zone.** Two Members of one Workspace would see different
   days for the same card, and a wrong clock shifts the ribbon.
 - **A `GROUP BY` in raw SQL.** One query, but the Visibility rule would be written a second time in
-  another language, with only a test to keep the two together. Worth it only past ~5k rows in a week.
+  another language, with only a test to keep the two together. The rows read are a week's, a few
+  dozen bytes each, so counting them in the use case costs less than that second rule.
 - **A rollup table or counters.** Work on every write and a second source of truth, for reads that
   take milliseconds.
 - **A `total` on `feed-items`.** The field ADR 0059 removed, and it still could not say which day.

@@ -1,12 +1,12 @@
 import type { FeedbackOrigin } from '../../domain/entity/feedback.entity';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
 import type { InstantRange } from '../../domain/value-object/calendar-clock.vo';
-import type { FeedbackMoment } from '../../domain/value-object/calendar-day.vo';
 import type {
   AnswerPostcardSnapshot,
   PostcardSnapshot,
 } from '../../domain/value-object/postcard.vo';
 import type { VisibilityValue } from '../../domain/value-object/visibility.vo';
+import type { FeedbackGivenAt } from '../types/feed-items.types';
 import type {
   AnswerView,
   FeedItemShow,
@@ -305,12 +305,12 @@ export abstract class FeedbackRequestQuery {
    * Ask, between two instants. It is the rows `feedItemsFor` pages through, read with the same
    * filter, so a count of them is a count of the list and the two cannot disagree (ADR 0095).
    */
-  abstract feedItemMomentsIn(
+  abstract feedItemsGivenIn(
     workspaceId: string,
     readerAccountId: string,
     show: FeedItemShow,
     within: InstantRange,
-  ): Promise<readonly FeedbackMoment[]>;
+  ): Promise<readonly FeedbackGivenAt[]>;
 
   /**
    * The Feedback given to one Member unasked, past a place in their Received list, newest first, at

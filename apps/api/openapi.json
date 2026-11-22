@@ -1378,7 +1378,7 @@
             "description": "WORKSPACE_NOT_FOUND"
           }
         },
-        "summary": "Count what the caller read on Home on each of the last seven days",
+        "summary": "Count what the caller can read on Home on each of the last seven days",
         "tags": [
           "feedback"
         ]

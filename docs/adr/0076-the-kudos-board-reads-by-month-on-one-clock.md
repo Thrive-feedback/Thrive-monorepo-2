@@ -1,6 +1,6 @@
 # 0076 — The Kudos board reads by month, on one clock
 
-**Status:** accepted, 2026-11-01
+**Status:** accepted, 2026-11-01; its clock constant moved to `calendar-clock.vo.ts`, shared with Home's days, by 0095
 
 ## Context
 

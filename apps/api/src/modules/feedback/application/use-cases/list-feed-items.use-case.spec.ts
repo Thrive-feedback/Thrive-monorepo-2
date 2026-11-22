@@ -433,3 +433,29 @@ describe('reading Home', () => {
     });
   });
 });
+
+describe('the day each piece of Home falls on', () => {
+  it('names each item’s day on the UTC+7 clock, turning at 17:00 UTC', async () => {
+    const { kudosQuery, useCase } = setUp();
+    kudosQuery.rows.push(
+      // 23:30 UTC on the 30th is already the morning of the 31st on the clock.
+      kudosRow('late-in-utc', new Date('2026-10-30T23:30:00.000Z')),
+      // A millisecond before 17:00 UTC is still the 30th.
+      kudosRow('just-before-midnight', new Date('2026-10-30T16:59:59.999Z')),
+    );
+
+    const view = await useCase.execute({
+      workspaceId: WORKSPACE_ID,
+      readerAccountId: ANA,
+      show: 'ALL',
+      page: FIRST_PAGE,
+    });
+    const dayOf = (id: string) =>
+      view.items.find((item) => item.id === id)?.day;
+
+    expect(dayOf('late-in-utc')).toBe('2026-10-31');
+    expect(dayOf('just-before-midnight')).toBe('2026-10-30');
+    // Feedback is given its day the same way: the morning of the 11th, in UTC and on the clock.
+    expect(dayOf('to-everyone')).toBe('2026-10-11');
+  });
+});

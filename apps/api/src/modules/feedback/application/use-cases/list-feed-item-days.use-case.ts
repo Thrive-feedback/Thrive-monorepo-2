@@ -46,7 +46,7 @@ export class ListFeedItemDaysUseCase {
     );
     const within = days.range();
     const [feedback, kudos] = await Promise.all([
-      this.feedbackRequestQuery.feedItemMomentsIn(
+      this.feedbackRequestQuery.feedItemsGivenIn(
         input.workspaceId,
         input.readerAccountId,
         input.show,
@@ -54,19 +54,15 @@ export class ListFeedItemDaysUseCase {
       ),
       input.show === 'SHARED_WITH_ME'
         ? NO_KUDOS
-        : this.kudosQuery.onHomeMomentsIn(input.workspaceId, within),
+        : this.kudosQuery.onHomeGivenIn(input.workspaceId, within),
     ]);
     const counted = days.count(feedback, kudos);
     return {
-      days: counted,
-      totals: counted.reduce(
-        (totals, day) => ({
-          offeredFeedback: totals.offeredFeedback + day.offeredFeedback,
-          requestedFeedback: totals.requestedFeedback + day.requestedFeedback,
-          kudos: totals.kudos + day.kudos,
-        }),
-        { offeredFeedback: 0, requestedFeedback: 0, kudos: 0 },
-      ),
+      days: counted.map(({ day, ...counts }) => ({
+        day: day.toString(),
+        ...counts,
+      })),
+      totals: RecentDays.total(counted),
     };
   }
 }

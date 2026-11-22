@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { AskStatus } from '../../domain/value-object/ask-status.vo';
+import { CalendarDay } from '../../domain/value-object/calendar-day.vo';
 import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
 import { type KudosPageRow, KudosQuery } from '../query-port/kudos.query-port';
 import { PeopleService } from '../service/people.service';
 import type {
   FeedItemsView,
   KudosFeedItemView,
+  OnHomeDay,
 } from '../types/feed-items.types';
 import type {
   FeedItemShow,
@@ -38,7 +40,8 @@ const NO_KUDOS: KudosPageRow = { items: [], hasMore: false };
  * widen what came back, and the reader is an argument to that read rather than a filter after it
  * (`BE_21` R4). Home's two lists are one read so one cursor can page them (ADR 0071), and a Kudos,
  * which every Member reads and which has no Visibility, comes in from its own table under that same
- * cursor (ADR 0077) everywhere but Shared with me (ADR 0090).
+ * cursor (ADR 0077) everywhere but Shared with me (ADR 0090). Each item says the day it was given
+ * on the one clock, which is what Home groups its list by (ADR 0095).
  */
 @Injectable()
 export class ListFeedItemsUseCase {
@@ -85,7 +88,7 @@ export class ListFeedItemsUseCase {
     ]);
 
     const feedbackViews = feedItems.items.map(
-      (feedback): FeedItemView => ({
+      (feedback): FeedItemView & OnHomeDay => ({
         kind: 'FEEDBACK',
         id: feedback.id,
         origin: feedback.origin,
@@ -99,6 +102,7 @@ export class ListFeedItemsUseCase {
         message: feedback.message,
         tags: feedback.tags,
         createdAt: feedback.createdAt,
+        day: CalendarDay.containing(feedback.createdAt).toString(),
         visibility: feedback.visibility,
         postcard: feedback.postcard,
         request: feedback.request && {
@@ -116,7 +120,7 @@ export class ListFeedItemsUseCase {
       }),
     );
     const kudosViews = kudos.items.map(
-      (each): KudosFeedItemView => ({
+      (each): KudosFeedItemView & OnHomeDay => ({
         kind: 'KUDOS',
         id: each.id,
         giver: people.personOf(each.giverAccountId),
@@ -125,6 +129,7 @@ export class ListFeedItemsUseCase {
         tags: each.tags,
         card: each.card,
         createdAt: each.createdAt,
+        day: CalendarDay.containing(each.createdAt).toString(),
       }),
     );
 

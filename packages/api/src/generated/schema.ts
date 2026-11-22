@@ -385,7 +385,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Count what the caller read on Home on each of the last seven days */
+        /** Count what the caller can read on Home on each of the last seven days */
         get: operations["FeedItemsController_listFeedItemDays"];
         put?: never;
         post?: never;

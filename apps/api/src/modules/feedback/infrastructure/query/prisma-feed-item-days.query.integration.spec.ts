@@ -3,8 +3,10 @@ import { loadConfiguration } from '@app/config/configuration';
 import { PrismaService } from '@app/infrastructure/database/prisma.service';
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { v7 as uuidv7 } from 'uuid';
+import type { FeedbackGivenAt } from '../../application/types/feed-items.types';
 import type { FeedItemShow } from '../../application/types/feedback-request.types';
 import type { FeedPosition } from '../../application/types/kudos.types';
+import { HOME_DAYS } from '../../application/use-cases/list-feed-item-days.use-case';
 import { Feedback } from '../../domain/entity/feedback.entity';
 import { FeedbackRequest } from '../../domain/entity/feedback-request.entity';
 import { Kudos } from '../../domain/entity/kudos.entity';
@@ -12,7 +14,6 @@ import { BoundTags } from '../../domain/value-object/bound-tags.vo';
 import type { InstantRange } from '../../domain/value-object/calendar-clock.vo';
 import {
   CalendarDay,
-  type FeedbackMoment,
   RecentDays,
 } from '../../domain/value-object/calendar-day.vo';
 import { FeedbackMessage } from '../../domain/value-object/feedback-message.vo';
@@ -42,7 +43,6 @@ const CARA = uuidv7();
 const DAN = uuidv7();
 const SHOWS: readonly FeedItemShow[] = ['ALL', 'EVERYONE', 'SHARED_WITH_ME'];
 
-const feedbackWritten: string[] = [];
 const requestsWritten: string[] = [];
 const kudosWritten: string[] = [];
 
@@ -55,7 +55,10 @@ const selected = (...selectedAccountIds: string[]) =>
   Visibility.of({ value: 'SELECTED_PEOPLE', selectedAccountIds });
 
 /** Today and the six days before it, as the use case counts them. */
-const lastWeek = RecentDays.endingOn(CalendarDay.containing(new Date()), 7);
+const lastWeek = RecentDays.endingOn(
+  CalendarDay.containing(new Date()),
+  HOME_DAYS,
+);
 const within: InstantRange = lastWeek.range();
 
 /** An instant some whole days before now, at the hour now is. */
@@ -74,7 +77,6 @@ async function given(
   people: { readonly receiver?: string; readonly workspaceId?: string } = {},
 ) {
   const id = uuidv7();
-  feedbackWritten.push(id);
   await feedbackRepository.save(
     Feedback.offer({
       tags: BoundTags.none(),
@@ -139,7 +141,7 @@ async function givenKudos(daysBack: number, workspaceId = WORKSPACE_ID) {
 
 /** Every page of the list, read the way Home reads it, and the kept rows' moments. */
 async function theWholeList(show: FeedItemShow) {
-  const feedback: FeedbackMoment[] = [];
+  const feedback: FeedbackGivenAt[] = [];
   let after: FeedPosition | null = null;
   for (;;) {
     const page = await feedbackQuery.feedItemsFor(WORKSPACE_ID, ANA, show, {
@@ -208,10 +210,10 @@ describe("counting Home's last seven days", () => {
     it(`counts exactly the list's rows under ${show}, day by day`, async () => {
       const list = await theWholeList(show);
       const [feedback, kudos] = await Promise.all([
-        feedbackQuery.feedItemMomentsIn(WORKSPACE_ID, ANA, show, within),
+        feedbackQuery.feedItemsGivenIn(WORKSPACE_ID, ANA, show, within),
         show === 'SHARED_WITH_ME'
           ? Promise.resolve([])
-          : kudosQuery.onHomeMomentsIn(WORKSPACE_ID, within),
+          : kudosQuery.onHomeGivenIn(WORKSPACE_ID, within),
       ]);
 
       expect(lastWeek.count(feedback, kudos)).toEqual(
@@ -221,13 +223,13 @@ describe("counting Home's last seven days", () => {
   }
 
   it('reads only the days asked for, in this Workspace, that the reader may read', async () => {
-    const feedback = await feedbackQuery.feedItemMomentsIn(
+    const feedback = await feedbackQuery.feedItemsGivenIn(
       WORKSPACE_ID,
       ANA,
       'ALL',
       within,
     );
-    const kudos = await kudosQuery.onHomeMomentsIn(WORKSPACE_ID, within);
+    const kudos = await kudosQuery.onHomeGivenIn(WORKSPACE_ID, within);
 
     expect(feedback.map((moment) => moment.origin).sort()).toEqual([
       'OFFERED',

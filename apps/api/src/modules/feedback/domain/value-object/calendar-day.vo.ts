@@ -7,6 +7,7 @@ import {
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 const OFFSET_MS = CALENDAR_UTC_OFFSET_HOURS * HOUR_MS;
+const A_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
  * One calendar day, `YYYY-MM-DD`, on the one clock every calendar is read on (ADR 0095). The clock
@@ -24,9 +25,20 @@ export class CalendarDay {
     );
   }
 
-  /** A day named `YYYY-MM-DD`. Whoever calls this has checked the shape. */
+  /** A day named `YYYY-MM-DD`. Anything else is not a day, and is refused rather than guessed at. */
   static of(value: string): CalendarDay {
-    return new CalendarDay(Date.parse(`${value}T00:00:00.000Z`) - OFFSET_MS);
+    const midnight = Date.parse(`${value}T00:00:00.000Z`);
+    const day = new CalendarDay(midnight - OFFSET_MS);
+    // A date the calendar does not hold, such as 30 February, parses into the next month: written
+    // back out, it is no longer the day asked for.
+    if (
+      !A_DATE.test(value) ||
+      Number.isNaN(midnight) ||
+      day.toString() !== value
+    ) {
+      throw new RangeError(`"${value}" is not a day`);
+    }
+    return day;
   }
 
   minusDays(count: number): CalendarDay {
@@ -45,21 +57,32 @@ export class CalendarDay {
   }
 }
 
-/** When a piece of Feedback was given, and whether it answered an Ask. */
-export interface FeedbackMoment {
-  readonly origin: FeedbackOrigin;
-  readonly createdAt: Date;
-}
-
-/** How much of each kind one day holds. */
-export interface DayCount {
-  /** `YYYY-MM-DD`, on the clock. */
-  readonly day: string;
+/** How much of each kind some stretch of Home held. */
+export interface KindCounts {
   /** Feedback given without being asked. */
   readonly offeredFeedback: number;
   /** Feedback written to answer an Ask. */
   readonly requestedFeedback: number;
   readonly kudos: number;
+}
+
+/** How much of each kind one day held. */
+export interface DayCount extends KindCounts {
+  readonly day: CalendarDay;
+}
+
+const NONE: KindCounts = { offeredFeedback: 0, requestedFeedback: 0, kudos: 0 };
+
+/** The count a piece of Feedback adds to, by how it came about. */
+function kindOf(
+  origin: FeedbackOrigin,
+): 'offeredFeedback' | 'requestedFeedback' {
+  switch (origin) {
+    case 'OFFERED':
+      return 'offeredFeedback';
+    case 'REQUESTED':
+      return 'requestedFeedback';
+  }
 }
 
 /**
@@ -87,34 +110,44 @@ export class RecentDays {
     return { from: first.range().from, until: last.range().until };
   }
 
-  /** Each day's count, oldest first. Anything outside the days is left out rather than moved in. */
+  /**
+   * Each day's count, oldest first, from when each piece of Feedback and each Kudos was given.
+   * Anything outside the days is left out rather than moved in.
+   */
   count(
-    feedback: readonly FeedbackMoment[],
+    feedback: readonly {
+      readonly origin: FeedbackOrigin;
+      readonly createdAt: Date;
+    }[],
     kudos: readonly Date[],
   ): readonly DayCount[] {
     const counts = new Map(
-      this.days.map((day) => [
-        day.toString(),
-        { offeredFeedback: 0, requestedFeedback: 0, kudos: 0 },
-      ]),
+      this.days.map((day) => [day.toString(), { day, ...NONE }]),
     );
     for (const { origin, createdAt } of feedback) {
       const count = counts.get(CalendarDay.containing(createdAt).toString());
-      if (count === undefined) {
-        continue;
-      }
-      if (origin === 'OFFERED') {
-        count.offeredFeedback += 1;
-      } else {
-        count.requestedFeedback += 1;
+      if (count) {
+        count[kindOf(origin)] += 1;
       }
     }
     for (const createdAt of kudos) {
       const count = counts.get(CalendarDay.containing(createdAt).toString());
-      if (count !== undefined) {
+      if (count) {
         count.kudos += 1;
       }
     }
-    return [...counts].map(([day, count]) => ({ day, ...count }));
+    return [...counts.values()];
+  }
+
+  /** Days' counts added up. */
+  static total(days: readonly KindCounts[]): KindCounts {
+    return days.reduce(
+      (total, day) => ({
+        offeredFeedback: total.offeredFeedback + day.offeredFeedback,
+        requestedFeedback: total.requestedFeedback + day.requestedFeedback,
+        kudos: total.kudos + day.kudos,
+      }),
+      NONE,
+    );
   }
 }
