@@ -1319,6 +1319,71 @@
         ]
       }
     },
+    "/v1/workspaces/{workspaceId}/feed-items/days": {
+      "get": {
+        "operationId": "FeedItemsController_listFeedItemDays",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "show",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ALL",
+              "type": "string",
+              "enum": [
+                "ALL",
+                "EVERYONE",
+                "SHARED_WITH_ME"
+              ]
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListFeedItemDaysResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          }
+        },
+        "summary": "Count what the caller read on Home on each of the last seven days",
+        "tags": [
+          "feedback"
+        ]
+      }
+    },
     "/v1/workspaces/{workspaceId}/received-items": {
       "get": {
         "operationId": "ReceivedItemsController_listReceivedItems",
@@ -6077,6 +6142,11 @@
                       ],
                       "additionalProperties": false,
                       "nullable": true
+                    },
+                    "day": {
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
                     }
                   },
                   "required": [
@@ -6091,7 +6161,8 @@
                     "createdAt",
                     "visibility",
                     "postcard",
-                    "request"
+                    "request",
+                    "day"
                   ],
                   "additionalProperties": false
                 },
@@ -6321,6 +6392,11 @@
                       "enum": [
                         "KUDOS"
                       ]
+                    },
+                    "day": {
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
                     }
                   },
                   "required": [
@@ -6331,7 +6407,8 @@
                     "tags",
                     "card",
                     "createdAt",
-                    "kind"
+                    "kind",
+                    "day"
                   ],
                   "additionalProperties": false
                 }
@@ -6347,6 +6424,79 @@
           "readerAccountId",
           "items",
           "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "ListFeedItemDaysResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "array",
+            "minItems": 7,
+            "maxItems": 7,
+            "items": {
+              "type": "object",
+              "properties": {
+                "day": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                },
+                "offeredFeedback": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "requestedFeedback": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "kudos": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "day",
+                "offeredFeedback",
+                "requestedFeedback",
+                "kudos"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "offeredFeedback": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "requestedFeedback": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "kudos": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "offeredFeedback",
+              "requestedFeedback",
+              "kudos"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "days",
+          "totals"
         ],
         "additionalProperties": false
       },

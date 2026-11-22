@@ -28,6 +28,8 @@ import type {
   FeedPosition,
 } from '../../application/types/kudos.types';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
+import type { InstantRange } from '../../domain/value-object/calendar-clock.vo';
+import type { FeedbackMoment } from '../../domain/value-object/calendar-day.vo';
 import { olderThan } from '../mapper/feed-position.mapper';
 import {
   toAnswerPostcardSnapshot,
@@ -362,6 +364,25 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
       })),
       hasMore: records.length > page.limit,
     };
+  }
+
+  async feedItemMomentsIn(
+    workspaceId: string,
+    readerAccountId: string,
+    show: FeedItemShow,
+    within: InstantRange,
+  ): Promise<readonly FeedbackMoment[]> {
+    // A range on the stored instant rather than a day worked out in SQL, so an index serves it; the
+    // days are counted above this, on the one clock (ADR 0095).
+    return this.prismaTransactionContext.client.feedback.findMany({
+      where: {
+        AND: [
+          feedItemsWhere(workspaceId, readerAccountId, show),
+          { createdAt: { gte: within.from, lt: within.until } },
+        ],
+      },
+      select: { origin: true, createdAt: true },
+    });
   }
 
   async offeredItemsTo(

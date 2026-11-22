@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { KUDOS_MONTH_UTC_OFFSET_HOURS } from '@app/modules/feedback/domain/value-object/kudos-month.vo';
+import { CALENDAR_UTC_OFFSET_HOURS } from '@app/modules/feedback/domain/value-object/calendar-clock.vo';
 import { Given, Then, When } from '@cucumber/cucumber';
 import { giveKudos, slugOf } from '../support/journeys';
 import type { ThriveWorld } from '../support/world';
@@ -27,7 +27,7 @@ const A_KUDOS_CARD = {
 
 /** This month on the clock the board reads. `Date.now` is safe: the Kudos are given just before. */
 function thisMonth(): string {
-  const shifted = Date.now() + KUDOS_MONTH_UTC_OFFSET_HOURS * 60 * 60 * 1000;
+  const shifted = Date.now() + CALENDAR_UTC_OFFSET_HOURS * 60 * 60 * 1000;
   return new Date(shifted).toISOString().slice(0, 7);
 }
 

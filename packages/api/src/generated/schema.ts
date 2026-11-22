@@ -378,6 +378,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/feed-items/days": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Count what the caller read on Home on each of the last seven days */
+        get: operations["FeedItemsController_listFeedItemDays"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspaceId}/received-items": {
         parameters: {
             query?: never;
@@ -1530,6 +1547,8 @@ export interface components {
                         }[];
                     } | null;
                 } | null;
+                /** Format: date */
+                day: string;
             } | {
                 /** Format: uuid */
                 id: string;
@@ -1584,8 +1603,24 @@ export interface components {
                 createdAt: string;
                 /** @enum {string} */
                 kind: "KUDOS";
+                /** Format: date */
+                day: string;
             })[];
             nextCursor: string | null;
+        };
+        ListFeedItemDaysResponseDto_Output: {
+            days: {
+                /** Format: date */
+                day: string;
+                offeredFeedback: number;
+                requestedFeedback: number;
+                kudos: number;
+            }[];
+            totals: {
+                offeredFeedback: number;
+                requestedFeedback: number;
+                kudos: number;
+            };
         };
         ListReceivedItemsResponseDto_Output: {
             /** Format: uuid */
@@ -3715,6 +3750,53 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListFeedItemsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FeedItemsController_listFeedItemDays: {
+        parameters: {
+            query?: {
+                show?: "ALL" | "EVERYONE" | "SHARED_WITH_ME";
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListFeedItemDaysResponseDto_Output"];
                 };
             };
             /** @description REQUEST_INVALID */

@@ -1,5 +1,5 @@
+import type { InstantRange } from '../../domain/value-object/calendar-clock.vo';
 import type { KudosCardSnapshot } from '../../domain/value-object/kudos-card.vo';
-import type { KudosMonthRange } from '../../domain/value-object/kudos-month.vo';
 import type { TagsView } from '../types/feedback-request.types';
 import type {
   CursorPageRequest,
@@ -41,7 +41,7 @@ export abstract class KudosQuery {
   abstract publicIn(
     workspaceId: string,
     page: CursorPageRequest,
-    within: KudosMonthRange | null,
+    within: InstantRange | null,
   ): Promise<KudosPageRow>;
 
   /**
@@ -53,6 +53,15 @@ export abstract class KudosQuery {
     page: FeedPageRequest,
     recipientAccountId: string | null,
   ): Promise<KudosPageRow>;
+
+  /**
+   * When each Kudos on Home was given, between two instants: the rows `onHome` reads for everyone,
+   * read with the same filter, so a count of them is a count of the list (ADR 0095).
+   */
+  abstract onHomeMomentsIn(
+    workspaceId: string,
+    within: InstantRange,
+  ): Promise<readonly Date[]>;
 
   /** The Kudos one Member wrote past a place in the list, newest first, naming anybody or nobody. */
   abstract givenBy(

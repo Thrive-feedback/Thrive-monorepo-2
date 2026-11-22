@@ -192,3 +192,21 @@ Feature: Home
     And Ben has given Kudos: "Fourth."
     When Ann reads Home one item at a time
     Then Ann read "Fourth." then "Third." then "Second." then "First."
+
+  @api
+  Scenario: Home counts what the reader can read on each of the last seven days
+    Given Dan is a Member of Ann's Workspace
+    And Ben has given Cara Feedback: "To everyone.", shared with everyone in the Workspace
+    And Ben has given Cara Feedback: "Selects Ann.", shared with Ann
+    And Ben has given Cara Feedback: "Selects Dan.", shared with Dan
+    And Ben has given Kudos: "Great launch, everyone."
+    When Ann counts the last seven days on Home
+    Then today on Ann's Home holds 2 Offered Feedback, 0 Requested Feedback and 1 Kudos
+    And the six days before today on Ann's Home hold nothing
+
+  @api
+  Scenario: Shared with me counts no Kudos
+    Given Ben has given Cara Feedback: "Selects Ann.", shared with Ann
+    And Ben has given Kudos: "Great launch, everyone."
+    When Ann counts the last seven days of Shared with me on Home
+    Then today on Ann's Home holds 1 Offered Feedback, 0 Requested Feedback and 0 Kudos

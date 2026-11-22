@@ -82,12 +82,21 @@ export const kudosFeedItemSchema = kudosSchema.extend({
   kind: z.literal('KUDOS'),
 });
 
+/** The day a piece of Home was given, which is what Home groups its list by (ADR 0095). */
+const onHomeShape = {
+  /** `YYYY-MM-DD`, on the one clock every calendar is read on: UTC+7. */
+  day: z.iso.date(),
+};
+
 export const listFeedItemsResponseSchema = z.object({
   /** Whose Home this is, so a reader can tell themselves among the people a piece names. */
   readerAccountId: z.uuid(),
   /** Feedback and Kudos together, newest first. */
   items: z.array(
-    z.discriminatedUnion('kind', [feedItemSchema, kudosFeedItemSchema]),
+    z.discriminatedUnion('kind', [
+      feedItemSchema.extend(onHomeShape),
+      kudosFeedItemSchema.extend(onHomeShape),
+    ]),
   ),
   ...cursorResultShape,
 });

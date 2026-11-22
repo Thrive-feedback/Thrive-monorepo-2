@@ -20,6 +20,7 @@ import { GetFeedbackUseCase } from './application/use-cases/get-feedback.use-cas
 import { GetFeedbackAskUseCase } from './application/use-cases/get-feedback-ask.use-case';
 import { GetMyFeedbackSummaryUseCase } from './application/use-cases/get-my-feedback-summary.use-case';
 import { GiveKudosUseCase } from './application/use-cases/give-kudos.use-case';
+import { ListFeedItemDaysUseCase } from './application/use-cases/list-feed-item-days.use-case';
 import { ListFeedItemsUseCase } from './application/use-cases/list-feed-items.use-case';
 import { ListGivenItemsUseCase } from './application/use-cases/list-given-items.use-case';
 import { ListKudosMonthsUseCase } from './application/use-cases/list-kudos-months.use-case';
@@ -108,6 +109,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ListGivenItemsUseCase,
     ListProfileItemsUseCase,
     ListFeedItemsUseCase,
+    ListFeedItemDaysUseCase,
     ListWaitingAsksUseCase,
     GetFeedbackUseCase,
     GetFeedbackAskUseCase,
