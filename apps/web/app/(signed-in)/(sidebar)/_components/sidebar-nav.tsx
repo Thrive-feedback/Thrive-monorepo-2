@@ -6,6 +6,7 @@ import {
   HeartIcon,
   HouseIcon,
   InboxIcon,
+  MessagesSquareIcon,
   SendIcon,
   UsersIcon,
 } from 'lucide-react';
@@ -20,6 +21,8 @@ export type SidebarNavProps = {
    * menu as Coming soon, greyed and not a link.
    */
   showsDashboard: boolean;
+  /** How many 1:1s wait on the person's answer, offered to them or asked of them. */
+  oneOnOnesToAnswer: number;
 };
 
 /**
@@ -28,9 +31,13 @@ export type SidebarNavProps = {
  * pages under it.
  *
  * Waiting for me and Received carry how many unread lines of theirs the bell holds, read from the
- * bell's own poll, so a line read in the bell takes the number here down with it.
+ * bell's own poll, so a line read in the bell takes the number here down with it. Tools are what a
+ * person works with beside Feedback, 1:1s first.
  */
-export function SidebarNav({ showsDashboard }: SidebarNavProps) {
+export function SidebarNav({
+  showsDashboard,
+  oneOnOnesToAnswer,
+}: SidebarNavProps) {
   const pathname = usePathname();
   const unread = useUnreadCounts();
   const items: readonly SideNavEntry[] = [
@@ -57,6 +64,14 @@ export function SidebarNav({ showsDashboard }: SidebarNavProps) {
       count: unread.received,
     },
     { href: ROUTES.given, label: 'Given', Icon: SendIcon },
+    { heading: 'Tools' },
+    {
+      href: ROUTES.oneOnOnes,
+      label: '1:1s',
+      Icon: MessagesSquareIcon,
+      count: oneOnOnesToAnswer,
+      countSaid: 'to answer',
+    },
   ];
 
   return (

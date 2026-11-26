@@ -1,3 +1,4 @@
+import { readOneOnOnesToAnswer } from '@/app/(signed-in)/(sidebar)/_lib/one-on-ones.service';
 import { toSessionWriter } from '@/app/(signed-in)/(sidebar)/_lib/postcard-writer.util';
 import { cn } from '@/lib/cn.util';
 import { readFeatureFlags } from '@/lib/feature-flags/feature-flags.service';
@@ -17,16 +18,18 @@ import { SidebarNav } from './sidebar-nav';
  * places and foot open in the menu drawer from the navbar, and "+" stands in the navbar by the bell.
  * Who a postcard can be for, who signs it, and what `@` and `#` offer on it are read here for "+".
  * Which places are switched on is read here too, so the column and the drawer leave out the same
- * ones.
+ * ones, and how many 1:1s wait on the person's answer, which nothing else on the page tells them.
  */
 export async function Sidebar() {
   const session = await requireMember();
   const { membership, email } = session;
-  const [teammates, workspaceGoals, { showsDashboard }] = await Promise.all([
-    readTeammates(membership, email),
-    readWorkspaceGoalNames(membership),
-    readFeatureFlags(),
-  ]);
+  const [teammates, workspaceGoals, { showsDashboard }, oneOnOnesToAnswer] =
+    await Promise.all([
+      readTeammates(membership, email),
+      readWorkspaceGoalNames(membership),
+      readFeatureFlags(),
+      readOneOnOnesToAnswer(membership),
+    ]);
 
   const compose = {
     workspaceId: membership.workspace.id,
@@ -43,7 +46,10 @@ export async function Sidebar() {
           in reach. The negative margin and matching padding leave room for a focus ring. */}
           <div className="-m-1 flex min-h-0 flex-col gap-4 overflow-y-auto p-1">
             <ComposeMenu {...compose} />
-            <SidebarNav showsDashboard={showsDashboard} />
+            <SidebarNav
+              showsDashboard={showsDashboard}
+              oneOnOnesToAnswer={oneOnOnesToAnswer}
+            />
           </div>
           <div className="mt-auto shrink-0">
             <SidebarAccount
@@ -56,7 +62,10 @@ export async function Sidebar() {
         </div>
       </SidebarColumn>
       <SidebarDrawerContent>
-        <SidebarNav showsDashboard={showsDashboard} />
+        <SidebarNav
+          showsDashboard={showsDashboard}
+          oneOnOnesToAnswer={oneOnOnesToAnswer}
+        />
         <div className="mt-auto">
           <SidebarAccount
             name={session.profile?.displayName ?? session.name}

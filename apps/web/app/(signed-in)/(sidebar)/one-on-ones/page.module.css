@@ -1,0 +1,12 @@
+/*
+ * From `lg` the 1:1s page fills the frame and never scrolls itself: the list of 1:1s scrolls inside
+ * its own column, beside the open one. That is the window less the navbar (18 steps) and the strip
+ * along the frame's foot (3 steps): 21 steps. A height from the window less a sum has no utility.
+ * The column grows to fill the page below `lg`; from it, the height is its own, not the content's.
+ */
+@media (width >= 64rem) {
+  .frame {
+    flex: none;
+    height: calc(100dvh - var(--space-unit) * 21);
+  }
+}

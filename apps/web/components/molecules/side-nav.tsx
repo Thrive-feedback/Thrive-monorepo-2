@@ -24,6 +24,8 @@ export type SideNavItem = {
    * these words in a badge beside its label, such as "Coming soon".
    */
   readonly unavailableNote?: string;
+  /** What the count is said to be after the label, as `, 2 to answer`; `unread` unless given. */
+  readonly countSaid?: string;
   /** Items that belong to this one, listed under it with a branch line to each. */
   readonly children?: readonly SideNavItem[];
 };
@@ -185,7 +187,7 @@ export const sideNavLink = cva(
 );
 
 function SideNavLink({
-  item: { href, label, Icon, count, unavailableNote },
+  item: { href, label, Icon, count, countSaid, unavailableNote },
   currentHref,
   foldsToIcons,
   marksCurrentFromMd,
@@ -214,6 +216,7 @@ function SideNavLink({
       ) : (
         <CountBadge
           count={count ?? 0}
+          said={countSaid}
           className={sideNavCount({ foldsToIcons })}
         />
       )}

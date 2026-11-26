@@ -39,6 +39,10 @@ import {
   ButtonGroupPreview,
 } from '@/app/ui-showcase/_components/entries/button-group-entry';
 import {
+  CalendarEntry,
+  CalendarPreview,
+} from '@/app/ui-showcase/_components/entries/calendar-entry';
+import {
   CardEntry,
   CardPreview,
 } from '@/app/ui-showcase/_components/entries/card-entry';
@@ -50,6 +54,10 @@ import {
   CheckboxEntry,
   CheckboxPreview,
 } from '@/app/ui-showcase/_components/entries/checkbox-entry';
+import {
+  DatePickerEntry,
+  DatePickerPreview,
+} from '@/app/ui-showcase/_components/entries/date-picker-entry';
 import {
   DialogEntry,
   DialogPreview,
@@ -198,6 +206,10 @@ import {
   TimeAgoEntry,
   TimeAgoPreview,
 } from '@/app/ui-showcase/_components/entries/time-ago-entry';
+import {
+  TimePickerEntry,
+  TimePickerPreview,
+} from '@/app/ui-showcase/_components/entries/time-picker-entry';
 import {
   ToastEntry,
   ToastPreview,
@@ -367,6 +379,13 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     Entry: CheckboxEntry,
   },
   {
+    slug: 'calendar',
+    name: 'Calendar',
+    level: 'atom',
+    Preview: CalendarPreview,
+    Entry: CalendarEntry,
+  },
+  {
     slug: 'radio-group',
     name: 'RadioGroup',
     level: 'atom',
@@ -456,6 +475,20 @@ export const COMPONENT_CATALOG: readonly ShowcaseComponent[] = [
     level: 'atom',
     Preview: ResizablePreview,
     Entry: ResizableEntry,
+  },
+  {
+    slug: 'date-picker',
+    name: 'DatePicker',
+    level: 'molecule',
+    Preview: DatePickerPreview,
+    Entry: DatePickerEntry,
+  },
+  {
+    slug: 'time-picker',
+    name: 'TimePicker',
+    level: 'molecule',
+    Preview: TimePickerPreview,
+    Entry: TimePickerEntry,
   },
   {
     slug: 'text-field',

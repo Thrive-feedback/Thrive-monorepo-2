@@ -13,6 +13,7 @@ const GALLERIES = [
   { href: ROUTES.uiShowcase.notifications, label: 'Notifications' },
   { href: ROUTES.uiShowcase.settings, label: 'Settings' },
   { href: ROUTES.uiShowcase.featureFlags, label: 'Feature flags' },
+  { href: ROUTES.uiShowcase.oneOnOnes, label: '1:1s' },
 ] as const;
 
 /**

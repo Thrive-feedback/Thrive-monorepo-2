@@ -42,6 +42,11 @@ vi.mock('@/lib/feedback/teammates.service', () => ({
     readTeammates(membership, ownEmail),
 }));
 
+vi.mock('@/app/(signed-in)/(sidebar)/_lib/one-on-ones.service', () => ({
+  readOneOnOnesToAnswer: async () => oneOnOnesToAnswer,
+}));
+let oneOnOnesToAnswer = 0;
+
 const readFeatureFlags = vi.fn();
 vi.mock('@/lib/feature-flags/feature-flags.service', () => ({
   readFeatureFlags: () => readFeatureFlags(),
@@ -75,7 +80,7 @@ function sidebar() {
 }
 
 describe('Sidebar', () => {
-  it('lists where to go in order, with Kudos board under Home and My Feedback over Received and Given', async () => {
+  it('lists where to go in order, with Kudos board under Home, My Feedback over Received and Given, and Tools over 1:1s', async () => {
     const nav = await draw(0);
 
     expect(
@@ -91,6 +96,8 @@ describe('Sidebar', () => {
       'Your dashboard',
       'Received',
       'Given',
+      'Tools',
+      '1:1s',
     ]);
   });
 
@@ -111,6 +118,8 @@ describe('Sidebar', () => {
       'Your dashboardComing soon',
       'Received',
       'Given',
+      'Tools',
+      '1:1s',
     ]);
     expect(
       within(nav).queryByRole('link', { name: /Your dashboard/ }),
@@ -170,8 +179,22 @@ describe('Sidebar', () => {
     expect(
       within(nav).getByRole('link', { name: 'Teammates' }),
     ).toHaveAttribute('href', ROUTES.teammates);
-    expect(within(nav).getAllByRole('link')).toHaveLength(7);
+    expect(within(nav).getByRole('link', { name: '1:1s' })).toHaveAttribute(
+      'href',
+      ROUTES.oneOnOnes,
+    );
+    expect(within(nav).getAllByRole('link')).toHaveLength(8);
     expect(within(nav).queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('counts the 1:1s waiting on the person’s answer beside 1:1s', async () => {
+    oneOnOnesToAnswer = 2;
+    const nav = await draw(0);
+    oneOnOnesToAnswer = 0;
+
+    expect(
+      within(nav).getByRole('link', { name: /^1:1s ?, 2 to answer$/ }),
+    ).toHaveAttribute('href', ROUTES.oneOnOnes);
   });
 
   it('counts the unread Asks in the bell beside Waiting for me, in red', async () => {
@@ -236,6 +259,8 @@ describe('Sidebar', () => {
       'Your dashboard',
       'Received',
       'Given',
+      'Tools',
+      '1:1s',
     ]);
     expect(
       within(sidebar()).getByRole('link', { name: 'Settings' }),
