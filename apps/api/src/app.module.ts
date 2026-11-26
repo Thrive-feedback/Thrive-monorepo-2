@@ -29,6 +29,7 @@ import {
   NotificationsModule,
   PersonNotificationOutboxHandler,
 } from './modules/notifications';
+import { OneOnOneModule } from './modules/one-on-one';
 import { UiShowcaseAccessModule } from './modules/ui-showcase-access';
 import { WorkspaceModule } from './modules/workspace';
 import { WorkspaceGoalModule } from './modules/workspace-goal';
@@ -71,6 +72,7 @@ import { SharedModule } from './shared/shared.module';
     WorkspaceModule,
     FeedbackModule,
     WorkspaceGoalModule,
+    OneOnOneModule,
     IntegrationsModule,
     NotificationsModule,
     FeatureFlagsModule,

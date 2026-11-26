@@ -875,6 +875,264 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/one-on-ones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the caller's 1:1s, running or waiting on an answer, whoever sent the invitation */
+        get: operations["OneOnOneController_listMyOneOnOnes"];
+        put?: never;
+        /** Invite a teammate to a 1:1, saying when it meets, and ask them to accept it */
+        post: operations["OneOnOneController_inviteToOneOnOne"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one 1:1 the caller is in */
+        get: operations["OneOnOneController_getOneOnOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept an invitation to a 1:1, on the schedule it was sent with */
+        post: operations["OneOnOneController_acceptOneOnOne"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send an invitation back with another time, instead of declining it; it then waits on its sender */
+        post: operations["OneOnOneController_suggestAnotherTime"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Turn down an invitation to a 1:1 */
+        post: operations["OneOnOneController_declineOneOnOne"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** End a running 1:1, or withdraw an invitation the caller sent that is not yet answered */
+        post: operations["OneOnOneController_endOneOnOne"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change when a 1:1 meets: either person once it runs, the sender before it is answered */
+        put: operations["OneOnOneController_rescheduleOneOnOne"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-one-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the 1:1 templates a 1:1 can start from, Thrive's first */
+        get: operations["OneOnOneTemplateController_listOneOnOneTemplates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/next": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a 1:1's next meeting: the one not finished, or what it will open with */
+        get: operations["OneOnOneMeetingController_getNextMeeting"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List a 1:1's finished meetings, newest first */
+        get: operations["OneOnOneMeetingController_listPastMeetings"];
+        put?: never;
+        /** Open the next meeting's agenda, or answer the one already open (idempotent) */
+        post: operations["OneOnOneMeetingController_openMeeting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start a meeting, whenever the two meet */
+        post: operations["OneOnOneMeetingController_startMeeting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finish a meeting, sharing its summary with both people */
+        post: operations["OneOnOneMeetingController_finishMeeting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/topics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a topic to a meeting's agenda */
+        post: operations["OneOnOneMeetingController_addTopic"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/topics/{topicId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Take a topic off the agenda */
+        delete: operations["OneOnOneMeetingController_removeTopic"];
+        options?: never;
+        head?: never;
+        /** Reword a topic, write its shared note, or tick it discussed */
+        patch: operations["OneOnOneMeetingController_updateTopic"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/topics/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put the agenda in a new order */
+        put: operations["OneOnOneMeetingController_reorderTopics"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/feature-flags": {
         parameters: {
             query?: never;
@@ -2732,6 +2990,217 @@ export interface components {
         CreateWorkspaceGoalResponseDto_Output: {
             /** Format: uuid */
             id: string;
+        };
+        ListMyOneOnOnesResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                status: "INVITED" | "ACTIVE" | "DECLINED" | "ENDED";
+                startedByAccountId: string;
+                invitedAccountId: string;
+                withAccountId: string;
+                schedule: {
+                    /** @enum {string} */
+                    cadence: "WEEKLY" | "EVERY_TWO_WEEKS" | "MONTHLY" | "ONCE";
+                    weekday: number;
+                    startMinute: number;
+                    lengthMinutes: number;
+                    templateKey: string;
+                    /** Format: date */
+                    startsOn: string;
+                };
+                inviteNote: string | null;
+                /** Format: date-time */
+                suggestedAt: string | null;
+                answerNote: string | null;
+                /** Format: date-time */
+                nextMeetingAt: string | null;
+                /** Format: date-time */
+                answeredAt: string | null;
+                /** Format: date-time */
+                endedAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                meetingInProgress: boolean;
+            }[];
+            nextCursor: string | null;
+        };
+        InviteToOneOnOneRequestDto: {
+            /** Format: uuid */
+            invitedAccountId: string;
+            schedule: {
+                /** @enum {string} */
+                cadence: "WEEKLY" | "EVERY_TWO_WEEKS" | "MONTHLY" | "ONCE";
+                weekday: number;
+                startMinute: number;
+                lengthMinutes: number;
+                templateKey: string;
+                /** Format: date */
+                startsOn?: string;
+            };
+            note?: string;
+        };
+        CreatedOneOnOneResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
+        };
+        OneOnOneResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            status: "INVITED" | "ACTIVE" | "DECLINED" | "ENDED";
+            startedByAccountId: string;
+            invitedAccountId: string;
+            withAccountId: string;
+            schedule: {
+                /** @enum {string} */
+                cadence: "WEEKLY" | "EVERY_TWO_WEEKS" | "MONTHLY" | "ONCE";
+                weekday: number;
+                startMinute: number;
+                lengthMinutes: number;
+                templateKey: string;
+                /** Format: date */
+                startsOn: string;
+            };
+            inviteNote: string | null;
+            /** Format: date-time */
+            suggestedAt: string | null;
+            answerNote: string | null;
+            /** Format: date-time */
+            nextMeetingAt: string | null;
+            /** Format: date-time */
+            answeredAt: string | null;
+            /** Format: date-time */
+            endedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            meetingInProgress: boolean;
+        };
+        SuggestAnotherTimeRequestDto: {
+            schedule: {
+                /** @enum {string} */
+                cadence: "WEEKLY" | "EVERY_TWO_WEEKS" | "MONTHLY" | "ONCE";
+                weekday: number;
+                startMinute: number;
+                lengthMinutes: number;
+                templateKey: string;
+                /** Format: date */
+                startsOn?: string;
+            };
+            note?: string;
+        };
+        DeclineOneOnOneRequestDto: {
+            note?: string;
+        };
+        OneOnOneScheduleRequestDto: {
+            /** @enum {string} */
+            cadence: "WEEKLY" | "EVERY_TWO_WEEKS" | "MONTHLY" | "ONCE";
+            weekday: number;
+            startMinute: number;
+            lengthMinutes: number;
+            templateKey: string;
+            /** Format: date */
+            startsOn?: string;
+        };
+        ListOneOnOneTemplatesResponseDto_Output: {
+            items: {
+                key: string;
+                /** @enum {string} */
+                scope: "THRIVE";
+                name: string;
+                suggestedWhen: string;
+                questions: string[];
+            }[];
+        };
+        NextMeetingResponseDto_Output: {
+            meeting: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                state: "PREPARING" | "IN_PROGRESS" | "FINISHED";
+                templateKey: string;
+                /** Format: date-time */
+                occursAt: string | null;
+                /** Format: date-time */
+                startedAt: string | null;
+                startedByAccountId: string | null;
+                /** Format: date-time */
+                finishedAt: string | null;
+                finishedByAccountId: string | null;
+                topics: {
+                    /** Format: uuid */
+                    id: string;
+                    text: string;
+                    /** @enum {string} */
+                    source: "CARRIED" | "TEMPLATE" | "PERSON";
+                    authorAccountId: string | null;
+                    position: number;
+                    notes: string;
+                    /** Format: date-time */
+                    notesUpdatedAt: string | null;
+                    notesUpdatedByAccountId: string | null;
+                    /** Format: date-time */
+                    discussedAt: string | null;
+                }[];
+            } | null;
+            carried: string[];
+            templateQuestions: string[];
+            templateName: string;
+        };
+        ListPastMeetingsResponseDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                state: "PREPARING" | "IN_PROGRESS" | "FINISHED";
+                templateKey: string;
+                /** Format: date-time */
+                occursAt: string | null;
+                /** Format: date-time */
+                startedAt: string | null;
+                startedByAccountId: string | null;
+                /** Format: date-time */
+                finishedAt: string | null;
+                finishedByAccountId: string | null;
+                topics: {
+                    /** Format: uuid */
+                    id: string;
+                    text: string;
+                    /** @enum {string} */
+                    source: "CARRIED" | "TEMPLATE" | "PERSON";
+                    authorAccountId: string | null;
+                    position: number;
+                    notes: string;
+                    /** Format: date-time */
+                    notesUpdatedAt: string | null;
+                    notesUpdatedByAccountId: string | null;
+                    /** Format: date-time */
+                    discussedAt: string | null;
+                }[];
+            }[];
+            nextCursor: string | null;
+        };
+        CreatedMeetingThingResponseDto: {
+            /** Format: uuid */
+            id: string;
+        };
+        CreatedMeetingThingResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
+        };
+        AddTopicRequestDto: {
+            text: string;
+        };
+        UpdateTopicRequestDto: {
+            text?: string;
+            note?: string;
+            /** Format: date-time */
+            noteReadAt?: string | null;
+            discussed?: boolean;
+        };
+        ReorderTopicsRequestDto: {
+            topicIds: string[];
         };
         GetFeatureFlagsResponseDto_Output: {
             /** @enum {string} */
@@ -5237,6 +5706,1006 @@ export interface operations {
                 content?: never;
             };
             /** @description WORKSPACE_GOAL_ALREADY_ACTIVE */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneController_listMyOneOnOnes: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListMyOneOnOnesResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneController_inviteToOneOnOne: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteToOneOnOneRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedOneOnOneResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID, ONE_ON_ONE_WITH_YOURSELF, ONE_ON_ONE_INVITE_NOTE_TOO_LONG, ONE_ON_ONE_SCHEDULE_INVALID or ONE_ON_ONE_TEMPLATE_UNKNOWN */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_PERSON_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_ALREADY_EXISTS */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneController_getOneOnOne: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneOnOneResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneController_acceptOneOnOne: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Accepted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_YOURS_TO_ANSWER */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_AWAITING_ANSWER or ONE_ON_ONE_TIME_PASSED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneController_suggestAnotherTime: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuggestAnotherTimeRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Suggested */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID, ONE_ON_ONE_INVITE_NOTE_TOO_LONG, ONE_ON_ONE_SCHEDULE_INVALID or ONE_ON_ONE_TEMPLATE_UNKNOWN */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_YOURS_TO_ANSWER */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_AWAITING_ANSWER */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneController_declineOneOnOne: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeclineOneOnOneRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Declined */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID or ONE_ON_ONE_ANSWER_NOTE_TOO_LONG */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_YOURS_TO_ANSWER */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_AWAITING_ANSWER */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneController_endOneOnOne: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ended */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_YOURS_TO_WITHDRAW */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_ALREADY_OVER */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneController_rescheduleOneOnOne: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OneOnOneScheduleRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Rescheduled */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID, ONE_ON_ONE_SCHEDULE_INVALID or ONE_ON_ONE_TEMPLATE_UNKNOWN */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_YOURS_TO_CHANGE */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_RUNNING */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneTemplateController_listOneOnOneTemplates: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListOneOnOneTemplatesResponseDto_Output"];
+                };
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_getNextMeeting: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NextMeetingResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_listPastMeetings: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListPastMeetingsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_openMeeting: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Already open: the meeting that is */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedMeetingThingResponseDto"];
+                };
+            };
+            /** @description Opened */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedMeetingThingResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_RUNNING */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_startMeeting: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+                meetingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Started */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_ALREADY_STARTED or ONE_ON_ONE_MEETING_FINISHED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_finishMeeting: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+                meetingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Finished */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_NOT_STARTED or ONE_ON_ONE_MEETING_FINISHED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_addTopic: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+                meetingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddTopicRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedMeetingThingResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID or ONE_ON_ONE_MEETING_TEXT_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_RUNNING or ONE_ON_ONE_MEETING_FINISHED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_removeTopic: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+                meetingId: string;
+                topicId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_TOPIC_NOT_YOURS */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND or ONE_ON_ONE_TOPIC_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_RUNNING or ONE_ON_ONE_MEETING_FINISHED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_updateTopic: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+                meetingId: string;
+                topicId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTopicRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Changed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID or ONE_ON_ONE_MEETING_TEXT_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_TOPIC_NOT_YOURS */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND or ONE_ON_ONE_TOPIC_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_NOT_STARTED, ONE_ON_ONE_MEETING_FINISHED or ONE_ON_ONE_TOPIC_CHANGED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_reorderTopics: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+                meetingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderTopicsRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Reordered */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID or ONE_ON_ONE_TOPIC_ORDER_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_RUNNING or ONE_ON_ONE_MEETING_FINISHED */
             409: {
                 headers: {
                     [name: string]: unknown;
