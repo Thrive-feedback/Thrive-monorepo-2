@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowUpIcon } from 'lucide-react';
-import { useIsScrolledPast } from '@/app/(signed-in)/(sidebar)/home/_lib/use-is-scrolled-past';
+import { useIsHeldPast } from '@/app/(signed-in)/(sidebar)/home/_lib/use-is-held-past';
 import { Button } from '@/components/atoms/button';
 import { cn } from '@/lib/cn.util';
 
@@ -22,7 +22,7 @@ export type BackToTopProps = {
  * neither pressed nor reached by Tab.
  */
 export function BackToTop({ headingId, pastId }: BackToTopProps) {
-  const isShown = useIsScrolledPast(pastId);
+  const isShown = useIsHeldPast(pastId);
 
   function goBackToTop() {
     const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

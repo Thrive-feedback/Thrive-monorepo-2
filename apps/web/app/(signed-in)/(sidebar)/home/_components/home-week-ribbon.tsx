@@ -9,6 +9,7 @@ import type { HomeWeekSummary } from '@/app/(signed-in)/(sidebar)/home/_lib/home
 import { FEED_CARD_FILL } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import { cn } from '@/lib/cn.util';
 import { useDayJump } from './home-day-jump';
+import styles from './home-week.module.css';
 
 export type HomeWeekRibbonProps = {
   week: HomeWeekSummary;
@@ -18,14 +19,15 @@ export type HomeWeekRibbonProps = {
  * The last seven days in a row, today at the end, each with a mark in its kind's colour for what it
  * held. Pressing a day brings it into view in the list below, reading on until it is there; a day
  * that held nothing has nothing to bring, so it cannot be pressed. A phone has room for the last
- * five, which CSS decides, so the server and the browser draw the same row.
+ * five, which CSS decides, so the server and the browser draw the same row. From `md` it fades as it
+ * nears the heading stuck above it, and the small week beside the stuck composer takes over.
  */
 export function HomeWeekRibbon({ week }: HomeWeekRibbonProps) {
   const { requestedDay, request } = useDayJump();
   const finding = requestedDay ? nameDay(requestedDay, week) : null;
 
   return (
-    <nav aria-label="Jump to a day">
+    <nav aria-label="Jump to a day" className={styles.leaves}>
       <ol className="grid grid-cols-5 gap-1 md:grid-cols-7 md:gap-1.5">
         {week.days.map((one, index) => {
           const {

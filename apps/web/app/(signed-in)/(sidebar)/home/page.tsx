@@ -40,6 +40,7 @@ import {
   HomeWeekSkeleton,
 } from './_components/home-week';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
+import styles from './page.module.css';
 
 /** The page's heading, which the button back to the top returns focus to. */
 const HOME_HEADING = 'home-heading';
@@ -114,77 +115,81 @@ export default async function Home({ searchParams }: HomeProps) {
         />
       )}
       <HomeDayJumpProvider>
-        {/* Before the band, never inside it: it stays in view as the band scrolls away. */}
-        <HomeHead headingId={HOME_HEADING} />
-        <HangingBand className={HOME_BAND_LAYER}>
+        {/* The page's column, all of it, so the small week beside the composer can follow the stuck
+            mark's scroll timeline, and the heading and the composer stick through to its end. */}
+        <div className={cn(styles.handoff, 'flex flex-1 flex-col')}>
+          {/* Before the band, never inside it: it stays in view as the band scrolls away. */}
+          <HomeHead headingId={HOME_HEADING} />
+          <HangingBand className={HOME_BAND_LAYER}>
+            <div
+              className={cn(
+                PAGE_COLUMN_WIDTH,
+                BAND_TOP_SPACE,
+                HOME_BAND_FOOT,
+                'flex flex-col gap-4',
+              )}
+            >
+              {/* The heading's room: it stands here, over the band, at its biggest. */}
+              <div className={HOME_HEADING_ROOM} />
+              <Suspense key={show} fallback={<HomeWeekSkeleton />}>
+                <HomeWeek membership={session.membership} show={show} />
+              </Suspense>
+            </div>
+          </HangingBand>
+          <HangingBandFoot className={HOME_STUCK_FOOT} />
+          <div
+            id={HOME_STUCK_MARK_ID}
+            aria-hidden="true"
+            className={cn(HOME_STUCK_MARK, styles.stuckMark)}
+          />
+          {/* After the band, never inside it: it lies across the band's foot, which the band's mask
+            would cut, and the band takes no presses. */}
           <div
             className={cn(
               PAGE_COLUMN_WIDTH,
-              BAND_TOP_SPACE,
-              HOME_BAND_FOOT,
-              'flex flex-col gap-4',
+              HOME_COMPOSER_OVERLAP,
+              HOME_COMPOSER_STUCK,
+              HOME_COMPOSER_ROW,
             )}
           >
-            {/* The heading's room: it stands here, over the band, at its biggest. */}
-            <div className={HOME_HEADING_ROOM} />
-            <Suspense key={show} fallback={<HomeWeekSkeleton />}>
-              <HomeWeek membership={session.membership} show={show} />
-            </Suspense>
-          </div>
-        </HangingBand>
-        <HangingBandFoot className={HOME_STUCK_FOOT} />
-        <div
-          id={HOME_STUCK_MARK_ID}
-          aria-hidden="true"
-          className={HOME_STUCK_MARK}
-        />
-        {/* After the band, never inside it: it lies across the band's foot, which the band's mask
-            would cut, and the band takes no presses. */}
-        <div
-          className={cn(
-            PAGE_COLUMN_WIDTH,
-            HOME_COMPOSER_OVERLAP,
-            HOME_COMPOSER_STUCK,
-            HOME_COMPOSER_ROW,
-          )}
-        >
-          <div className="flex-1">
-            <Suspense fallback={<FeedComposerSkeleton />}>
-              <HomeComposer
-                session={session}
-                isUnderPostcard={feedback !== undefined}
+            <div className="flex-1">
+              <Suspense fallback={<FeedComposerSkeleton />}>
+                <HomeComposer
+                  session={session}
+                  isUnderPostcard={feedback !== undefined}
+                />
+              </Suspense>
+            </div>
+            {/* No key on the filter: a new filter keeps the card it has until the new one is read,
+              rather than the composer widening and narrowing again under the reader. */}
+            <Suspense fallback={null}>
+              <HomeStuckWeek
+                membership={session.membership}
+                show={show}
+                stuckMarkId={HOME_STUCK_MARK_ID}
               />
             </Suspense>
           </div>
-          {/* No key on the filter: a new filter keeps the card it has until the new one is read,
-              rather than the composer widening and narrowing again under the reader. */}
-          <Suspense fallback={null}>
-            <HomeStuckWeek
-              membership={session.membership}
-              show={show}
-              stuckMarkId={HOME_STUCK_MARK_ID}
-            />
-          </Suspense>
-        </div>
-        <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-6')}>
-          {/* Most people have no Invitation waiting, so no space is held for one while it is read.
+          <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-6')}>
+            {/* Most people have no Invitation waiting, so no space is held for one while it is read.
               Under the band, so arriving late it cannot push the band down. */}
-          <Suspense fallback={null}>
-            <InvitationNotices />
-          </Suspense>
-          <div className="flex flex-1 flex-col">
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
-              <Text as="h2" variant="display-6">
-                Day by day
-              </Text>
-              <HomeFeedFilter show={show} />
-            </div>
-            <Suspense key={show} fallback={<HomeFeedSkeleton />}>
-              <HomeFeed membership={session.membership} show={show} />
+            <Suspense fallback={null}>
+              <InvitationNotices />
             </Suspense>
+            <div className="flex flex-1 flex-col">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
+                <Text as="h2" variant="display-6">
+                  Day by day
+                </Text>
+                <HomeFeedFilter show={show} />
+              </div>
+              <Suspense key={show} fallback={<HomeFeedSkeleton />}>
+                <HomeFeed membership={session.membership} show={show} />
+              </Suspense>
+            </div>
           </div>
+          <BackToTop headingId={HOME_HEADING} pastId={HOME_STUCK_MARK_ID} />
         </div>
-        <BackToTop headingId={HOME_HEADING} pastId={HOME_STUCK_MARK_ID} />
       </HomeDayJumpProvider>
       {/* Always there, so a press holds the small postcard's pending mark until the postcard is
           ready, rather than committing to an empty fallback; a reload still does not wait. */}

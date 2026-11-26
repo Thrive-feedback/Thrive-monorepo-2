@@ -1,0 +1,14 @@
+/*
+ * Home's stuck mark names a scroll timeline, `--home-stuck`, for the small week beside the composer to
+ * follow: its progress is how far the mark has left the window's top, and the composer sticks the
+ * moment it has left. A timeline is seen only below where it is named unless an element they share
+ * says so, so the page's own column does (`.handoff`); it moves nothing and makes no box for anything
+ * fixed or sticky inside it. Naming a timeline has no utility.
+ */
+.handoff {
+  timeline-scope: --home-stuck;
+}
+
+.stuckMark {
+  view-timeline: --home-stuck block;
+}

@@ -64,13 +64,15 @@ export const HOME_STUCK_FOOT =
   'hidden -mt-52 h-52 md:sticky md:top-0 md:z-15 md:block';
 
 /**
- * A line the width of the page that leaves the window's top exactly as the composer sticks, which is
- * how Home knows it has: it stands where the band's foot ends, and from `md` 52 higher, the
- * composer's stuck top, 36, and its reach over the band, 16, as the stuck foot does. On a phone,
- * where nothing sticks, it leaves as the band does. Seen by nobody and taking no room.
+ * A strip the width of the page, 16 tall, whose foot leaves the window's top exactly as the composer
+ * sticks, which is how Home knows it has: its foot stands where the band's foot ends, and from `md`
+ * 52 higher, the composer's stuck top, 36, and its reach over the band, 16, as the stuck foot does.
+ * The 16 it takes to leave is the scroll over which the small week comes in beside the composer, and
+ * how far back the page must scroll before it goes again. On a phone, where nothing sticks, it leaves
+ * as the band does. Seen by nobody and taking no room.
  */
 export const HOME_STUCK_MARK =
-  'pointer-events-none h-px -mb-px md:relative md:-top-52';
+  'pointer-events-none -mt-16 h-16 md:relative md:-top-52';
 
 /**
  * From `md`, the band lies over its stuck foot, which waits under it until the band scrolls away, and

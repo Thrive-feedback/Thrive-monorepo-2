@@ -6,7 +6,7 @@ import {
   toRibbonDay,
 } from '@/app/(signed-in)/(sidebar)/home/_lib/feed-day.util';
 import type { HomeWeekSummary } from '@/app/(signed-in)/(sidebar)/home/_lib/home-week.type';
-import { useIsScrolledPast } from '@/app/(signed-in)/(sidebar)/home/_lib/use-is-scrolled-past';
+import { useIsHeldPast } from '@/app/(signed-in)/(sidebar)/home/_lib/use-is-held-past';
 import { Text } from '@/components/atoms/text';
 import {
   Tooltip,
@@ -20,7 +20,7 @@ import styles from './home-week-calendar.module.css';
 
 export type HomeWeekCalendarProps = {
   week: HomeWeekSummary;
-  /** The line that leaves the window as the composer sticks: the card shows only once it has. */
+  /** The strip whose foot leaves the window as the composer sticks: the card is used only once it has. */
   stuckMarkId: string;
 };
 
@@ -33,12 +33,15 @@ export type HomeWeekCalendarProps = {
  * welcome. The ribbon's own live line, still on the page, says which day is being found, so this
  * card says nothing more.
  *
- * At rest its room is shut and the composer keeps the column's width; it is inert while unseen, so
- * Tab never reaches it. Once the composer sticks the room opens beside it and the card fades in, from
- * `md` only, where the composer sticks, its columns widening as the page does.
+ * At rest its room is shut and the composer keeps the column's width. As the composer comes up to
+ * stick, the room opens beside it and the card is revealed, following the scroll where the browser
+ * can, from `md` only, where the composer sticks, its columns widening as the page does. It can be
+ * pressed and reached by Tab once the composer has stuck, and stays so until the page has scrolled
+ * back far enough to shut the room again, so a scroll back and forth at the threshold does not
+ * flicker it.
  */
 export function HomeWeekCalendar({ week, stuckMarkId }: HomeWeekCalendarProps) {
-  const isStuck = useIsScrolledPast(stuckMarkId);
+  const isStuck = useIsHeldPast(stuckMarkId);
   const { requestedDay, request } = useDayJump();
   const titleId = useId();
   const days = week.days.map((one) => toRibbonDay(one, week));
