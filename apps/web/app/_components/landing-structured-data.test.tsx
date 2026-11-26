@@ -10,7 +10,9 @@ function readJsonLd(container: HTMLElement) {
 
 describe('LandingStructuredData', () => {
   it('says what the page is: the site, who publishes it and the web app, on the configured address', () => {
-    const { container } = render(<LandingStructuredData />);
+    const { container } = render(
+      <LandingStructuredData description={LANDING_COPY.meta.description} />,
+    );
     const data = readJsonLd(container);
 
     expect(data['@context']).toBe('https://schema.org');
@@ -25,7 +27,9 @@ describe('LandingStructuredData', () => {
   });
 
   it('describes the app in the words the page’s metadata uses', () => {
-    const { container } = render(<LandingStructuredData />);
+    const { container } = render(
+      <LandingStructuredData description={LANDING_COPY.meta.description} />,
+    );
     const app = readJsonLd(container)['@graph'].find(
       (node: { '@type': string }) => node['@type'] === 'WebApplication',
     );
@@ -34,7 +38,9 @@ describe('LandingStructuredData', () => {
   });
 
   it('claims no price, rating, review or count the page does not show', () => {
-    const { container } = render(<LandingStructuredData />);
+    const { container } = render(
+      <LandingStructuredData description={LANDING_COPY.meta.description} />,
+    );
     const text = container.querySelector('script')?.textContent ?? '';
 
     for (const field of [

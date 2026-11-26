@@ -7,6 +7,11 @@ import { LANDING_COPY } from './landing-copy.constant';
 
 const { nav } = LANDING_COPY;
 
+export type LandingNavbarProps = {
+  /** The switch to the front page for HR, while that page is switched on; otherwise nothing. */
+  audienceSwitch?: React.ReactNode;
+};
+
 /**
  * The landing page's bar: `SiteNavbar`'s frame, with the colour mode and Sign in. It is not
  * `SiteNavbar` itself because that asks the API for the session on every render, and the landing
@@ -14,10 +19,11 @@ const { nav } = LANDING_COPY;
  * curve into it, and stays clear over the hero until the page scrolls. It has no language switch
  * until the web app has Thai (#48): one that switches nothing only adds a control to skip.
  */
-export function LandingNavbar() {
+export function LandingNavbar({ audienceSwitch }: LandingNavbarProps) {
   return (
     <NavbarFrame curve={false} surface="glassClearAtTop">
       <nav aria-label="Main" className="flex items-center gap-gap-nav">
+        {audienceSwitch}
         <ThemeToggle />
         <Button asChild size="sm">
           <Link href={ROUTES.signIn}>{nav.signIn}</Link>

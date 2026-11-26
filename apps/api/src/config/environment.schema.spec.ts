@@ -114,17 +114,20 @@ describe('environmentSchema', () => {
   });
 });
 
-describe('the dashboard flag', () => {
-  function dashboardFlag(value: string | undefined): boolean | undefined {
+describe.each([
+  ['the dashboard flag', 'USER_DASHBOARD_FLAG'],
+  ['the HR front page flag', 'HR_LANDING_FLAG'],
+] as const)('%s', (_name, variable) => {
+  function flag(value: string | undefined): boolean | undefined {
     const parsed = environmentSchema.safeParse({
       ...validEnvironment,
-      USER_DASHBOARD_FLAG: value,
+      [variable]: value,
     });
-    return parsed.success ? parsed.data.USER_DASHBOARD_FLAG : undefined;
+    return parsed.success ? parsed.data[variable] : undefined;
   }
 
   it('is off when the deployment leaves it out, so a forgotten flag hides the page', () => {
-    expect(dashboardFlag(undefined)).toBe(false);
+    expect(flag(undefined)).toBe(false);
   });
 
   it.each([
@@ -133,16 +136,16 @@ describe('the dashboard flag', () => {
   ] as const)(
     'reads %s as a boolean, not as the string it arrived as',
     (value, expected) => {
-      expect(dashboardFlag(value)).toBe(expected);
+      expect(flag(value)).toBe(expected);
     },
   );
 
   it.each(['yes', 'TRUE', '1', ''])(
     'refuses %p, rather than guessing which way it meant',
     (value) => {
-      expect(
-        failedPaths({ ...validEnvironment, USER_DASHBOARD_FLAG: value }),
-      ).toEqual(['USER_DASHBOARD_FLAG']);
+      expect(failedPaths({ ...validEnvironment, [variable]: value })).toEqual([
+        variable,
+      ]);
     },
   );
 });

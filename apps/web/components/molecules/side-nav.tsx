@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority';
 import type { LucideIcon } from 'lucide-react';
 import NextLink from 'next/link';
-import { CountBadge } from '@/components/atoms/badge';
+import { Badge, CountBadge } from '@/components/atoms/badge';
 import {
   Tooltip,
   TooltipContent,
@@ -19,6 +19,11 @@ export type SideNavItem = {
    * `, 2 unread`. Nothing shows at zero.
    */
   readonly count?: number;
+  /**
+   * Set for a place that is not open yet: the row stays in the menu, greyed and not a link, with
+   * these words in a badge beside its label, such as "Coming soon".
+   */
+  readonly unavailableNote?: string;
   /** Items that belong to this one, listed under it with a branch line to each. */
   readonly children?: readonly SideNavItem[];
 };
@@ -153,25 +158,34 @@ const sideNavCount = cva('', {
  */
 export const sideNavLink = cva(
   [
-    'relative flex w-full items-center gap-2.5 rounded-button px-3 py-2 text-start text-button-sm text-fg-secondary hover:bg-action-neutral-surface-hover hover:text-fg-primary',
+    'relative flex w-full items-center gap-2.5 rounded-button px-3 py-2 text-start text-button-sm',
     'max-md:py-3.5',
   ],
   {
     variants: {
       // A square around the icon, the count on its corner.
       foldsToIcons: { true: 'rail:justify-center rail:px-0', false: '' },
+      /**
+       * A place not open yet keeps the row's shape but is greyed, and answers no pointer: nothing
+       * to press, nothing to focus. Its note sits in a badge beside the label and is read right
+       * after it; folded, the note goes with the label into the tooltip.
+       */
+      available: {
+        true: 'text-fg-secondary hover:bg-action-neutral-surface-hover hover:text-fg-primary',
+        false: 'cursor-default text-fg-disabled',
+      },
       marksCurrentFromMd: {
         false:
           'aria-[current]:bg-action-primary-surface aria-[current]:text-action-primary',
         true: 'md:aria-[current]:bg-action-primary-surface md:aria-[current]:text-action-primary',
       },
     },
-    defaultVariants: { marksCurrentFromMd: false },
+    defaultVariants: { available: true, marksCurrentFromMd: false },
   },
 );
 
 function SideNavLink({
-  item: { href, label, Icon, count },
+  item: { href, label, Icon, count, unavailableNote },
   currentHref,
   foldsToIcons,
   marksCurrentFromMd,
@@ -189,14 +203,28 @@ function SideNavLink({
       >
         {label}
       </span>
-      <CountBadge
-        count={count ?? 0}
-        className={sideNavCount({ foldsToIcons })}
-      />
+      {unavailableNote ? (
+        <Badge
+          tone="neutral"
+          size="sm"
+          className={foldedAway({ foldsToIcons })}
+        >
+          {unavailableNote}
+        </Badge>
+      ) : (
+        <CountBadge
+          count={count ?? 0}
+          className={sideNavCount({ foldsToIcons })}
+        />
+      )}
     </>
   );
 
-  const link = (
+  const row = unavailableNote ? (
+    <span className={sideNavLink({ foldsToIcons, available: false })}>
+      {content}
+    </span>
+  ) : (
     <NextLink
       href={href}
       aria-current={href === currentHref ? 'page' : undefined}
@@ -207,15 +235,15 @@ function SideNavLink({
   );
 
   if (!foldsToIcons) {
-    return link;
+    return row;
   }
 
   // The tooltip names the icon where the label is hidden, and is never shown beside a label.
   return (
     <Tooltip>
-      <TooltipTrigger asChild>{link}</TooltipTrigger>
+      <TooltipTrigger asChild>{row}</TooltipTrigger>
       <TooltipContent side="right" className="not-rail:hidden">
-        {label}
+        {unavailableNote ? `${label} · ${unavailableNote}` : label}
       </TooltipContent>
     </Tooltip>
   );

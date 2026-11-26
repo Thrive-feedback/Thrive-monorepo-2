@@ -28,6 +28,9 @@ export class FeatureFlagsController {
   @ZodResponse({ status: HttpStatus.OK, type: GetFeatureFlagsResponseDto })
   getFeatureFlags(): z.infer<typeof getFeatureFlagsResponseSchema> {
     const flags = this.getFeatureFlagsUseCase.execute();
-    return { USER_DASHBOARD_FLAG: flags.showsDashboard ? 'true' : 'false' };
+    return {
+      USER_DASHBOARD_FLAG: flags.showsDashboard ? 'true' : 'false',
+      HR_LANDING_FLAG: flags.showsHrLanding ? 'true' : 'false',
+    };
   }
 }

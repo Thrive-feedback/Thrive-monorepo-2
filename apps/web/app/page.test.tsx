@@ -1,11 +1,18 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { HR_LANDING_COPY } from './_components/hr-landing/hr-landing-copy.constant';
 import { LANDING_COPY } from './_components/landing/landing-copy.constant';
-import LandingPage, { metadata } from './page';
+import LandingPage, { generateMetadata } from './page';
+
+vi.mock('server-only', () => ({}));
 
 const readSession = vi.fn();
 vi.mock('@/lib/session/session.service', () => ({
   readSession: () => readSession(),
+}));
+const readFeatureFlags = vi.fn();
+vi.mock('@/lib/feature-flags/feature-flags.service', () => ({
+  readFeatureFlags: () => readFeatureFlags(),
 }));
 const cookieNames = new Set<string>();
 vi.mock('next/headers', () => ({
@@ -17,12 +24,22 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
-describe('LandingPage', () => {
-  beforeEach(() => {
-    cookieNames.clear();
-    readSession.mockReset();
-  });
+beforeEach(() => {
+  cookieNames.clear();
+  readSession.mockReset();
+  readFeatureFlags
+    .mockReset()
+    .mockResolvedValue({ showsDashboard: false, showsHrLanding: false });
+});
 
+function switchOnHrLanding() {
+  readFeatureFlags.mockResolvedValue({
+    showsDashboard: false,
+    showsHrLanding: true,
+  });
+}
+
+describe('LandingPage, while the front page for HR is off', () => {
   it('sends someone signed in to Home', async () => {
     cookieNames.add('thrive.session_token');
     readSession.mockResolvedValue({ email: 'ann@acme.test', name: 'Ann Lee' });
@@ -39,7 +56,7 @@ describe('LandingPage', () => {
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 
-  it('answers a visitor with no session cookie without asking the API', async () => {
+  it('answers a visitor with no session cookie without asking who they are', async () => {
     render(await LandingPage());
 
     expect(readSession).not.toHaveBeenCalled();
@@ -93,6 +110,14 @@ describe('LandingPage', () => {
     expect(screen.queryByRole('button', { name: 'TH' })).toBeNull();
   });
 
+  it('shows no switch to a page for HR that is not there', async () => {
+    render(await LandingPage());
+
+    expect(
+      screen.queryByRole('navigation', { name: 'Who this page is for' }),
+    ).toBeNull();
+  });
+
   it('no longer points visitors at the component showcase or the API reference', async () => {
     render(await LandingPage());
 
@@ -101,13 +126,80 @@ describe('LandingPage', () => {
   });
 });
 
-describe('the landing page’s metadata', () => {
-  it('names one canonical address and is indexable', () => {
-    expect(metadata.alternates?.canonical).toBe('/');
-    expect(metadata.robots).toEqual({ index: true, follow: true });
+describe('LandingPage, with the front page for HR on', () => {
+  beforeEach(switchOnHrLanding);
+
+  it('sends someone signed in to Home', async () => {
+    cookieNames.add('thrive.session_token');
+    readSession.mockResolvedValue({ email: 'ann@acme.test', name: 'Ann Lee' });
+
+    await expect(LandingPage()).rejects.toThrow('redirect:/home');
   });
 
-  it('previews a shared link with the same title and description as the page', () => {
+  it('is the front page for HR, with one h1 that names the promise', async () => {
+    render(await LandingPage());
+
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveAccessibleName(
+      HR_LANDING_COPY.hero.headline,
+    );
+  });
+
+  it('describes the app to search engines in the HR page’s words', async () => {
+    const { container } = render(await LandingPage());
+    const jsonLd = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')
+        ?.textContent ?? 'null',
+    );
+    const app = jsonLd['@graph'].find(
+      (node: { '@type': string }) => node['@type'] === 'WebApplication',
+    );
+
+    expect(app.description).toBe(HR_LANDING_COPY.meta.description);
+  });
+
+  it('marks itself as the page for HR, and links to the page for teams', async () => {
+    render(await LandingPage());
+
+    const audience = within(
+      screen.getByRole('navigation', { name: 'Who this page is for' }),
+    );
+    expect(audience.getByRole('link', { name: 'For HR' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(audience.getByRole('link', { name: 'For teams' })).toHaveAttribute(
+      'href',
+      '/for-teams',
+    );
+  });
+});
+
+describe('the landing page’s metadata', () => {
+  it('names one canonical address and is indexable, whichever page it is', async () => {
+    for (const showsHrLanding of [false, true]) {
+      readFeatureFlags.mockResolvedValue({
+        showsDashboard: false,
+        showsHrLanding,
+      });
+      const metadata = await generateMetadata();
+
+      expect(metadata.alternates?.canonical).toBe('/');
+      expect(metadata.robots).toEqual({ index: true, follow: true });
+    }
+  });
+
+  it('carries the HR page’s words while that page is on', async () => {
+    switchOnHrLanding();
+    const metadata = await generateMetadata();
+
+    expect(metadata.title).toEqual({ absolute: HR_LANDING_COPY.meta.title });
+    expect(metadata.description).toBe(HR_LANDING_COPY.meta.description);
+  });
+
+  it('previews a shared link with the same title and description as the page', async () => {
+    const metadata = await generateMetadata();
+
     expect(metadata.openGraph).toMatchObject({
       type: 'website',
       url: '/',

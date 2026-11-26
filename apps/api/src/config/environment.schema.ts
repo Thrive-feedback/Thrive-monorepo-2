@@ -111,6 +111,14 @@ export const environmentSchema = z
       .default('false')
       .transform((value) => value === 'true'),
 
+    // Whether the web's front page is the one for HR, with the page for teams at `/for-teams`
+    // (ADR 0087, brain ADR-0061). Named and defaulted like the dashboard flag above, for the same
+    // reasons: left out it is off, and anything but `true` or `false` refuses the boot.
+    HR_LANDING_FLAG: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+
     // Who may open `/ui-showcase`, by the email they sign in with (ADR 0088). Left out, nobody
     // may, here or anywhere else — a departure from `INFRA_07` R9 recorded in the ADR: a forgotten
     // list closes the showcase rather than opening it. An address that does not parse refuses the

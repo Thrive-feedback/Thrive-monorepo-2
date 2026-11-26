@@ -11431,10 +11431,18 @@
               "true",
               "false"
             ]
+          },
+          "HR_LANDING_FLAG": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ]
           }
         },
         "required": [
-          "USER_DASHBOARD_FLAG"
+          "USER_DASHBOARD_FLAG",
+          "HR_LANDING_FLAG"
         ],
         "additionalProperties": false
       },

@@ -12,6 +12,7 @@ const GALLERIES = [
   { href: ROUTES.uiShowcase.cards, label: 'Cards' },
   { href: ROUTES.uiShowcase.notifications, label: 'Notifications' },
   { href: ROUTES.uiShowcase.settings, label: 'Settings' },
+  { href: ROUTES.uiShowcase.featureFlags, label: 'Feature flags' },
 ] as const;
 
 /**

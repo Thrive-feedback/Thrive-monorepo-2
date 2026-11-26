@@ -1,14 +1,14 @@
 import { ROUTES } from '@/lib/routes.constant';
 import { SITE_NAME } from '@/lib/site.constant';
 import { webUrl } from '@/lib/web-url.util';
-import { LANDING_COPY } from './landing/landing-copy.constant';
 
 /**
  * What the landing page is, for search engines: the site, the organization behind it and the web
  * app it describes, linked to each other by id. Every value is one the page or its metadata
  * already shows. There is no price, rating, review or count, because Thrive has none to show.
+ * `description` is the one the page's own metadata carries, so the two never disagree.
  */
-export function landingStructuredData() {
+export function landingStructuredData(description: string) {
   const home = new URL(ROUTES.landing, webUrl()).href;
   const organization = `${home}#organization`;
   return {
@@ -34,7 +34,7 @@ export function landingStructuredData() {
         '@id': `${home}#app`,
         name: SITE_NAME,
         url: home,
-        description: LANDING_COPY.meta.description,
+        description,
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
         inLanguage: 'en',
@@ -44,14 +44,21 @@ export function landingStructuredData() {
   };
 }
 
+export type LandingStructuredDataProps = {
+  /** The description the page's metadata carries. */
+  description: string;
+};
+
 /** The landing page's structured data, as JSON-LD in the server-rendered page. */
-export function LandingStructuredData() {
+export function LandingStructuredData({
+  description,
+}: LandingStructuredDataProps) {
   return (
     <script
       type="application/ld+json"
       // biome-ignore lint/security/noDangerouslySetInnerHtml: built here from constants, and `<` is escaped so no value can close the script.
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(landingStructuredData()).replace(
+        __html: JSON.stringify(landingStructuredData(description)).replace(
           /</g,
           '\\u003c',
         ),

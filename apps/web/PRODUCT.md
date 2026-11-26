@@ -16,6 +16,9 @@ web
   someone in HR, the head of a student project (brain `ADR-0038`, 2026-10-21). No country, culture or
   price is named. Who pays is open again; the earlier buyer, a founder of a 20–50 person startup, is
   history (`vision.md`). Zero customer interviews.
+- **Behind `HR_LANDING_FLAG`** (brain `ADR-0061`, proposed): `/` speaks to the one HR person at a
+  20–150 person startup or SME and asks them to book a demo, and the page above moves to
+  `/for-teams`; a "For HR / For teams" switch joins the two. With the flag off, nothing changes.
 - **Users:** everyone on that team, the lead most of all, because the lead going first decides
   whether anyone else speaks up.
 
