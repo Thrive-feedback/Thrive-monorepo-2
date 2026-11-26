@@ -56,13 +56,16 @@ export function ProfileHeader({
               </Badge>
             )}
           </div>
-          {/* The full name says who the display name is, so it comes first under it. */}
-          <Text as="p" variant="subtitle-3" className="break-words">
-            {profile.fullName}
-          </Text>
-          <Text as="p" variant="body-2" tone="muted" className="break-words">
-            {profile.email}
-          </Text>
+          {/* The full name says who the display name is, so it comes first under it, and the
+              address they sign in with sits close under that, the two read as one. */}
+          <div className="flex flex-col">
+            <Text as="p" variant="subtitle-3" className="break-words">
+              {profile.fullName}
+            </Text>
+            <Text as="p" variant="body-2" tone="muted" className="break-words">
+              {profile.email}
+            </Text>
+          </div>
         </div>
         {children && <div className="shrink-0">{children}</div>}
       </div>
