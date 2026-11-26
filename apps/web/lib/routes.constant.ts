@@ -106,6 +106,8 @@ export const ROUTES = {
   teammates: '/teammates',
   /** The person's 1:1s, either side of each, as the two are equal (brain ADR-0060, ADR-0061). */
   oneOnOnes: '/one-on-ones',
+  /** The templates a 1:1's agenda starts from: Thrive's, the Workspace's and the person's own. */
+  oneOnOneTemplates: '/one-on-ones/templates',
   /** The person's 1:1s, with one of them open beside the list. */
   oneOnOneWith: (oneOnOneId: string) => `/one-on-ones?with=${oneOnOneId}`,
   /** The Kudos board narrowed to one month, `YYYY-MM`. */

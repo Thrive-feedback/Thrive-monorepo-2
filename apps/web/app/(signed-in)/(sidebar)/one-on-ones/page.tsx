@@ -1,4 +1,6 @@
+import { LayoutTemplateIcon } from 'lucide-react';
 import type { Metadata } from 'next';
+import NextLink from 'next/link';
 import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
 import type { OneOnOne } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import {
@@ -11,11 +13,13 @@ import {
   readOneOnOneTemplates,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-ones.service';
 import { toSessionWriter } from '@/app/(signed-in)/(sidebar)/_lib/postcard-writer.util';
+import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 import { cn } from '@/lib/cn.util';
 import { readTeammates } from '@/lib/feedback/teammates.service';
 import { readWorkspaceGoalNames } from '@/lib/feedback/workspace-goal-names.service';
+import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 import { OneOnOnePanel } from './_components/one-on-one-panel';
 import { OneOnOneStrip } from './_components/one-on-one-strip';
@@ -119,7 +123,13 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
             accept, either of you can change when it meets.
           </Text>
         </div>
-        <div className="ms-auto">
+        <div className="ms-auto flex items-center gap-2">
+          <Button asChild variant="ghost">
+            <NextLink href={ROUTES.oneOnOneTemplates}>
+              <LayoutTemplateIcon aria-hidden="true" className="size-4" />
+              Templates
+            </NextLink>
+          </Button>
           <OneOnOnesCreate
             workspaceId={membership.workspace.id}
             teammates={teammates}

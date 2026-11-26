@@ -80,7 +80,7 @@ function sidebar() {
 }
 
 describe('Sidebar', () => {
-  it('lists where to go in order, with Kudos board under Home, My Feedback over Received and Given, and Tools over 1:1s', async () => {
+  it('lists where to go in order, with Kudos board under Home, My Feedback over Received and Given, and Tools over 1:1s and its Templates', async () => {
     const nav = await draw(0);
 
     expect(
@@ -97,7 +97,9 @@ describe('Sidebar', () => {
       'Received',
       'Given',
       'Tools',
-      '1:1s',
+      // 1:1s holds its Templates, which is listed again as its own item.
+      '1:1sTemplates',
+      'Templates',
     ]);
   });
 
@@ -119,7 +121,9 @@ describe('Sidebar', () => {
       'Received',
       'Given',
       'Tools',
-      '1:1s',
+      // 1:1s holds its Templates, which is listed again as its own item.
+      '1:1sTemplates',
+      'Templates',
     ]);
     expect(
       within(nav).queryByRole('link', { name: /Your dashboard/ }),
@@ -183,7 +187,10 @@ describe('Sidebar', () => {
       'href',
       ROUTES.oneOnOnes,
     );
-    expect(within(nav).getAllByRole('link')).toHaveLength(8);
+    expect(
+      within(nav).getByRole('link', { name: 'Templates' }),
+    ).toHaveAttribute('href', ROUTES.oneOnOneTemplates);
+    expect(within(nav).getAllByRole('link')).toHaveLength(9);
     expect(within(nav).queryByRole('button')).not.toBeInTheDocument();
   });
 
@@ -260,7 +267,9 @@ describe('Sidebar', () => {
       'Received',
       'Given',
       'Tools',
-      '1:1s',
+      // 1:1s holds its Templates, which is listed again as its own item.
+      '1:1sTemplates',
+      'Templates',
     ]);
     expect(
       within(sidebar()).getByRole('link', { name: 'Settings' }),

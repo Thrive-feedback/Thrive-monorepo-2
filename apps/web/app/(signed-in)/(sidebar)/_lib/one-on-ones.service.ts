@@ -4,7 +4,11 @@ import { headers } from 'next/headers';
 import { cache } from 'react';
 import { apiClient } from '@/lib/api-client.service';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
-import type { OneOnOne, OneOnOneTemplate } from './one-on-one.type';
+import type {
+  OneOnOne,
+  OneOnOneTemplate,
+  OneOnOneTemplateCatalog,
+} from './one-on-one.type';
 import { awaitsReadersAnswer } from './one-on-one-state.util';
 
 /** More 1:1s than any one person keeps, so one read holds them all. */
@@ -46,13 +50,14 @@ export async function readOneOnOnesToAnswer(
   }
 }
 
-/** The templates a 1:1's agenda can start from, Thrive's own first. */
-export const readOneOnOneTemplates = cache(
-  async (
-    membership: CurrentMembership,
-  ): Promise<readonly OneOnOneTemplate[]> => {
+/**
+ * The templates a 1:1's agenda can start from, Thrive's own first, then the Workspace's, then the
+ * person's own; and whether they may keep templates for the whole Workspace, as an Admin.
+ */
+export const readOneOnOneTemplateCatalog = cache(
+  async (membership: CurrentMembership): Promise<OneOnOneTemplateCatalog> => {
     const cookie = (await headers()).get('cookie') ?? undefined;
-    const page = unwrap(
+    return unwrap(
       await apiClient().GET(
         '/v1/workspaces/{workspaceId}/one-on-one-templates',
         {
@@ -64,6 +69,12 @@ export const readOneOnOneTemplates = cache(
         },
       ),
     );
-    return page.items;
   },
 );
+
+/** The templates a 1:1's agenda can start from, in the order the catalog lists them. */
+export async function readOneOnOneTemplates(
+  membership: CurrentMembership,
+): Promise<readonly OneOnOneTemplate[]> {
+  return (await readOneOnOneTemplateCatalog(membership)).items;
+}

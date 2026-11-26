@@ -261,11 +261,12 @@ function Running({
               Bangkok time · {schedule.lengthMinutes} minutes
             </Text>
           </div>
-          {template && (
-            <div className="flex flex-col gap-2 md:col-span-3">
-              <Text as="h3" variant="label" tone="muted">
-                The agenda starts from {template.name}
-              </Text>
+          <div className="flex flex-col gap-2 md:col-span-3">
+            <Text as="h3" variant="label" tone="muted">
+              The agenda starts from {schedule.templateName}
+            </Text>
+            {/* Another person's own template is theirs to read; its questions reach the agenda. */}
+            {template && (
               <ul className="flex list-disc flex-col gap-1.5 ps-5 marker:text-fg-muted">
                 {template.questions.map((question) => (
                   <li key={question}>
@@ -275,8 +276,8 @@ function Running({
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </section>

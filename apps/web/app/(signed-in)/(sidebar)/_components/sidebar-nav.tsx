@@ -6,6 +6,7 @@ import {
   HeartIcon,
   HouseIcon,
   InboxIcon,
+  LayoutTemplateIcon,
   MessagesSquareIcon,
   SendIcon,
   UsersIcon,
@@ -71,6 +72,13 @@ export function SidebarNav({
       Icon: MessagesSquareIcon,
       count: oneOnOnesToAnswer,
       countSaid: 'to answer',
+      children: [
+        {
+          href: ROUTES.oneOnOneTemplates,
+          label: 'Templates',
+          Icon: LayoutTemplateIcon,
+        },
+      ],
     },
   ];
 

@@ -45,6 +45,7 @@ function oneOnOne(
       startMinute: 600,
       lengthMinutes: 30,
       templateKey: 'weekly-check-in',
+      templateName: 'Weekly check-in',
       startsOn: '2026-11-26',
     },
     inviteNote: null,

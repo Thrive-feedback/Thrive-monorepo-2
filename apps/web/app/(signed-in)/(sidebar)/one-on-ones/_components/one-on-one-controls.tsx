@@ -167,6 +167,10 @@ function DeclineForm({
           <ScheduleFields
             value={another}
             templates={templates}
+            currentTemplate={{
+              key: schedule.templateKey,
+              name: schedule.templateName,
+            }}
             disabled={isPending}
             onChange={setAnother}
           />
@@ -370,6 +374,7 @@ export function RunningControls({
         description={`Bangkok time. It holds at once, for you and ${shortName}; the next meeting is the first under the new schedule.`}
         initial={choiceOf(schedule)}
         templates={templates}
+        initialTemplateName={schedule.templateName}
         submitLabel="Save"
         done={isOnce ? 'Time changed' : 'Schedule changed'}
         onSubmit={(next) => rescheduleOneOnOne(workspaceId, oneOnOneId, next)}

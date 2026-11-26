@@ -5,6 +5,7 @@ import type {
   OneOnOneCadence,
   OneOnOneScheduleChoice,
   OneOnOneTemplate,
+  OneOnOneTemplateScope,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import {
   CADENCE_WORDS,
@@ -19,7 +20,9 @@ import { Label } from '@/components/atoms/label';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/atoms/select';
@@ -30,9 +33,27 @@ import { TimePicker } from '@/components/molecules/time-picker';
 export type ScheduleFieldsProps = {
   value: OneOnOneScheduleChoice;
   templates: readonly OneOnOneTemplate[];
+  /**
+   * The template the 1:1 already starts from. When the person's list does not hold it, as the other
+   * person's own or one since removed, it stays a choice, so changing the time never changes it.
+   */
+  currentTemplate?: { readonly key: string; readonly name: string };
   disabled?: boolean;
   onChange: (value: OneOnOneScheduleChoice) => void;
 };
+
+/** The layers a template comes from, in the order they are offered. */
+const LAYERS: readonly { scope: OneOnOneTemplateScope; label: string }[] = [
+  { scope: 'THRIVE', label: 'Thrive' },
+  { scope: 'WORKSPACE', label: 'Your Workspace' },
+  { scope: 'PERSONAL', label: 'Yours' },
+];
+
+/** "After each sprint. Opens with “What slowed us?”", or just the question when it says no when. */
+function templateHint(template: OneOnOneTemplate): string {
+  const opens = `Opens with “${template.questions[0] ?? ''}”`;
+  return template.suggestedWhen ? `${template.suggestedWhen}. ${opens}` : opens;
+}
 
 /**
  * When a 1:1 meets and what its agenda starts from: how often, which day, what time, how long, and
@@ -42,11 +63,17 @@ export type ScheduleFieldsProps = {
 export function ScheduleFields({
   value,
   templates,
+  currentTemplate,
   disabled = false,
   onChange,
 }: ScheduleFieldsProps) {
   const id = useId();
   const template = templates.find((each) => each.key === value.templateKey);
+  const unlisted =
+    currentTemplate &&
+    !templates.some((each) => each.key === currentTemplate.key)
+      ? currentTemplate
+      : undefined;
 
   const isOnce = value.cadence === 'ONCE';
   const today = todayInBangkok();
@@ -182,17 +209,40 @@ export function ScheduleFields({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {templates.map((each) => (
-              <SelectItem key={each.key} value={each.key}>
-                {each.name}
-              </SelectItem>
-            ))}
+            {unlisted && (
+              <SelectGroup>
+                <SelectLabel>As it is now</SelectLabel>
+                <SelectItem value={unlisted.key}>{unlisted.name}</SelectItem>
+              </SelectGroup>
+            )}
+            {LAYERS.map((layer) => {
+              const inLayer = templates.filter(
+                (each) => each.scope === layer.scope,
+              );
+              return inLayer.length === 0 ? null : (
+                <SelectGroup key={layer.scope}>
+                  <SelectLabel>{layer.label}</SelectLabel>
+                  {inLayer.map((each) => (
+                    <SelectItem key={each.key} value={each.key}>
+                      {each.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              );
+            })}
           </SelectContent>
         </Select>
-        {template && (
+        {template ? (
           <Text id={`${id}-template-when`} variant="body-3" tone="muted">
-            {template.suggestedWhen}. Opens with “{template.questions[0]}”
+            {templateHint(template)}
           </Text>
+        ) : (
+          value.templateKey === unlisted?.key && (
+            <Text id={`${id}-template-when`} variant="body-3" tone="muted">
+              Not in your list of templates, so it stays as it is unless you
+              choose another.
+            </Text>
+          )
         )}
       </div>
     </div>
