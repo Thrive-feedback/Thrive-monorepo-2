@@ -1,0 +1,70 @@
+/*
+ * The room the small week takes beside the stuck composer, and the card in it. The room opens from
+ * nothing to the card's width and a gap, easing out over the medium step, so the composer narrows
+ * rather than jumping narrower; only the composer's own row is laid out again, and its height never
+ * changes, so nothing below it moves. The card lies in that room on its right edge, as tall as the
+ * composer, and fades in as it slides the last 2 units into place, which the compositor alone does.
+ * At rest the room is shut, and the card, unseen and inert, lets every press through to the composer
+ * under it. A phone has no room and no card.
+ *
+ * The card is as wide as its seven columns, their gaps, its padding and its edge: 52 from `md`, 60
+ * from `lg` and 66 from `xl`, where the columns are 6, 7 and 8. A width eased between two lengths,
+ * and a length per breakpoint shared by the room and the card, have no utility.
+ */
+.room {
+  --card: calc(var(--space-unit) * 52);
+
+  display: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 0;
+  transition: width var(--motion-duration-medium) var(--motion-ease-smooth-out);
+}
+
+.card {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  width: var(--card);
+  opacity: 0;
+  translate: calc(var(--space-unit) * 2) 0;
+  pointer-events: none;
+  transition:
+    opacity var(--motion-duration-medium) var(--motion-ease-smooth-out),
+    translate var(--motion-duration-medium) var(--motion-ease-smooth-out);
+}
+
+@media (width >= 48rem) {
+  .room {
+    display: block;
+  }
+
+  .room[data-shown] {
+    width: calc(var(--card) + var(--space-unit) * 3);
+  }
+
+  .room[data-shown] .card {
+    opacity: 1;
+    translate: 0 0;
+    pointer-events: auto;
+  }
+}
+
+@media (width >= 64rem) {
+  .room {
+    --card: calc(var(--space-unit) * 60);
+  }
+}
+
+@media (width >= 80rem) {
+  .room {
+    --card: calc(var(--space-unit) * 66);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room,
+  .card {
+    transition: none;
+  }
+}

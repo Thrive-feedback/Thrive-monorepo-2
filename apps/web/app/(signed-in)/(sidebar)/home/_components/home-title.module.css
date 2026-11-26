@@ -1,26 +1,31 @@
 /*
  * Home's heading is set in the band's display size at the top of the page and, from `md`, settles to
  * a page title's size as the page begins to scroll, so it fits the strip it then stays in under the
- * navbar. Where a scroll timeline exists and motion is welcome, the size follows the scroll over its
- * first 12 units, taking no duration. Anywhere else it changes once, at the mark halfway there
- * (`[data-settled]`, set as that mark leaves the window), easing over the fast step only where
- * motion is welcome. Only the heading's own line is laid out again: its box above holds a fixed
- * height, so nothing around it moves. A size between two type roles, and a scroll timeline, have no
- * utility.
+ * navbar. It is drawn smaller rather than set smaller: its box keeps the display line, so nothing is
+ * laid out again and the compositor alone moves it. Shrinking toward its top left corner keeps it
+ * where it stands, its settled line inside the strip. How much smaller is `--settled-scale`, the page
+ * title's size over the display size, which the heading measures from the two type roles; until it
+ * has, it stays as it is.
+ *
+ * Where a scroll timeline exists and motion is welcome, the scale follows the scroll over its first
+ * 12 units, linearly, so it moves with the finger and takes no duration. Anywhere else it changes at
+ * the mark halfway there (`[data-settled]`, set as that mark leaves the window), easing out over the
+ * medium step only where motion is welcome. Neither a scroll timeline nor a scale read from a custom
+ * property has a utility.
  */
+.title {
+  transform-origin: left top;
+}
+
 @keyframes settle {
   to {
-    font-size: var(--type-display-5-size);
-    line-height: var(--type-display-5-leading);
-    letter-spacing: var(--type-display-5-tracking);
+    scale: var(--settled-scale, 1);
   }
 }
 
 @media (width >= 48rem) {
   .title[data-settled] {
-    font-size: var(--type-display-5-size);
-    line-height: var(--type-display-5-leading);
-    letter-spacing: var(--type-display-5-tracking);
+    scale: var(--settled-scale, 1);
   }
 }
 
@@ -35,9 +40,8 @@
 
   @supports not (animation-timeline: scroll()) {
     .title {
-      transition-property: font-size, line-height, letter-spacing;
-      transition-duration: var(--motion-duration-fast);
-      transition-timing-function: var(--motion-ease-smooth-out);
+      transition: scale var(--motion-duration-medium)
+        var(--motion-ease-smooth-out);
     }
   }
 }
