@@ -216,6 +216,7 @@ describe('a day as a ribbon draws it', () => {
       isToday: true,
       isQuiet: false,
       marks: ['primary', 'primary', 'secondary', 'secondary'],
+      kinds: ['primary', 'secondary'],
       held: '2 offered, 3 Kudos',
     });
   });
@@ -232,6 +233,7 @@ describe('a day as a ribbon draws it', () => {
       isToday: false,
       isQuiet: true,
       marks: [],
+      kinds: [],
       held: 'nothing written',
     });
   });

@@ -7,7 +7,6 @@ import {
   HangingBandFoot,
 } from '@/app/(signed-in)/(sidebar)/_components/hanging-band';
 import { InvitationNotices } from '@/app/(signed-in)/(sidebar)/_components/invitation-notices';
-import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
 import {
   PAGE_COLUMN,
   PAGE_COLUMN_WIDTH,
@@ -71,8 +70,8 @@ type HomeProps = {
 /**
  * Home of the person's Workspace, where a Member lands after signing in. Its head hangs from the
  * navbar as a Profile's does, headed Home, with what the last seven days held and a
- * ribbon of those days; the composer lies across the head's foot. From `md` the heading and the
- * composer stay in view as the page scrolls, and once the ribbon has gone with the band the week
+ * ribbon of those days; the composer lies across the head's foot. From `md` the heading settles to a
+ * page title's size as the page begins to scroll, and it and the composer stay in view, and once the ribbon has gone with the band the week
  * comes back small beside the composer. Below, what the Workspace shared with everyone and what
  * somebody selected or mentioned the person to read, in days, under a filter. Pressing a card opens
  * the piece over it, named in the address so a reload or a shared link opens it again.
@@ -116,11 +115,7 @@ export default async function Home({ searchParams }: HomeProps) {
       )}
       <HomeDayJumpProvider>
         {/* Before the band, never inside it: it stays in view as the band scrolls away. */}
-        <HomeHead>
-          <PageTitle id={HOME_HEADING} tabIndex={-1}>
-            Home
-          </PageTitle>
-        </HomeHead>
+        <HomeHead headingId={HOME_HEADING} />
         <HangingBand className={HOME_BAND_LAYER}>
           <div
             className={cn(
@@ -130,7 +125,7 @@ export default async function Home({ searchParams }: HomeProps) {
               'flex flex-col gap-4',
             )}
           >
-            {/* The heading's room: it stands here, over the band. */}
+            {/* The heading's room: it stands here, over the band, at its biggest. */}
             <div className={HOME_HEADING_ROOM} />
             <Suspense key={show} fallback={<HomeWeekSkeleton />}>
               <HomeWeek membership={session.membership} show={show} />

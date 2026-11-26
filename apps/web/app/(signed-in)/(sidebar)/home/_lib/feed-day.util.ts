@@ -162,6 +162,8 @@ export type RibbonDay = {
   readonly isQuiet: boolean;
   /** A mark in its kind's colour for each thing it held, up to as many as a day has room for. */
   readonly marks: readonly FeedCardTone[];
+  /** One mark for each kind it held at all, for a ribbon with no room to count. */
+  readonly kinds: readonly FeedCardTone[];
   /** What it held in words, `2 offered, 1 Kudos`, or `nothing written`. */
   readonly held: string;
 };
@@ -185,6 +187,7 @@ export function toRibbonDay(
     marks: counts
       .flatMap(({ tone, count }) => Array.from({ length: count }, () => tone))
       .slice(0, MOST_MARKS),
+    kinds: counts.filter(({ count }) => count > 0).map(({ tone }) => tone),
     held: quiet
       ? 'nothing written'
       : counts

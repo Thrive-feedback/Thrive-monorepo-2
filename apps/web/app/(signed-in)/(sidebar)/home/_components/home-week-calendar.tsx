@@ -18,13 +18,16 @@ export type HomeWeekCalendarProps = {
 /**
  * The week's ribbon made small, a card beside the composer once the composer has stuck and the band
  * has scrolled away with the ribbon, so a day can still be reached from anywhere in the list. Titled
- * as a month's calendar is, each day a weekday's initial over its date, today a filled square in the
- * brand's colour, with a mark in its kind's colour for each thing a day held. Pressing a day does
- * what the ribbon's day does; a day that held nothing cannot be pressed. The ribbon's own live line,
- * still on the page, says which day is being found, so this card says nothing more.
+ * quietly, so the days lead: each a column with its weekday's initial over its date in the display
+ * face, as the ribbon's dates are, and a dot in each kind's colour it held. Today's date is a filled
+ * square in the brand's colour; the day being found is ringed in it, and pulses where motion is
+ * welcome. The whole column is the button, taller than its date, so it is easy to hit. A day that
+ * held nothing is greyed and cannot be pressed. The ribbon's own live line, still on the page, says
+ * which day is being found, so this card says nothing more.
  *
  * At rest it is not there and the composer keeps the column's width; it is inert while hidden, so
- * Tab never reaches it. It shows from `md` only, where the composer sticks.
+ * Tab never reaches it. It shows from `md` only, where the composer sticks, its columns widening as
+ * the page does.
  */
 export function HomeWeekCalendar({ week, stuckMarkId }: HomeWeekCalendarProps) {
   const isStuck = useIsScrolledPast(stuckMarkId);
@@ -43,8 +46,8 @@ export function HomeWeekCalendar({ week, stuckMarkId }: HomeWeekCalendarProps) {
         isStuck && 'motion-safe:animate-enter md:flex',
       )}
     >
-      <div className="flex items-baseline justify-between gap-2 px-0.5">
-        <Text as="p" variant="label" id={titleId}>
+      <div className="flex items-baseline justify-between gap-3 px-0.5">
+        <Text as="p" variant="label" tone="muted" id={titleId}>
           Last 7 days
         </Text>
         <Text as="span" variant="caption" tone="muted">
@@ -52,13 +55,10 @@ export function HomeWeekCalendar({ week, stuckMarkId }: HomeWeekCalendarProps) {
         </Text>
       </div>
       <ol className="grid grid-cols-7 gap-0.5">
-        {days.map(({ day, name, date, isToday, isQuiet, marks, held }) => {
+        {days.map(({ day, name, date, isToday, isQuiet, kinds, held }) => {
           const isFinding = requestedDay === day;
           return (
-            <li key={day} className="flex flex-col items-center gap-1">
-              <span aria-hidden="true" className="text-caption text-fg-muted">
-                {name.weekday.slice(0, 1)}
-              </span>
+            <li key={day}>
               <button
                 type="button"
                 disabled={isQuiet}
@@ -71,26 +71,47 @@ export function HomeWeekCalendar({ week, stuckMarkId }: HomeWeekCalendarProps) {
                 }
                 onClick={() => request(day)}
                 className={cn(
-                  'flex size-6 cursor-pointer items-center justify-center rounded-container text-label tabular-nums transition-colors duration-quick disabled:cursor-default',
-                  isToday
-                    ? 'bg-action-primary text-fg-on-action enabled:hover:bg-action-primary-hover'
-                    : 'text-fg-primary enabled:hover:bg-action-primary-surface disabled:text-fg-muted',
-                  // Pulses only where motion is welcome; `aria-busy` says the same either way.
-                  isFinding && 'motion-safe:animate-pulse',
+                  'flex w-6 cursor-pointer flex-col items-center gap-1 rounded-control pt-1 pb-1.5 transition-colors duration-quick disabled:cursor-default lg:w-7 xl:w-8',
+                  'enabled:active:bg-action-primary-surface-hover enabled:hover:bg-action-primary-surface',
                 )}
               >
-                {name.numeral}
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'text-caption',
+                    isToday ? 'text-fg-accent' : 'text-fg-muted',
+                  )}
+                >
+                  {name.weekday.slice(0, 1)}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'flex size-6 items-center justify-center rounded-container font-display text-subtitle-display-4 tabular-nums lg:size-7',
+                    isToday
+                      ? 'bg-action-primary text-fg-on-action'
+                      : isQuiet
+                        ? 'text-fg-muted'
+                        : 'text-fg-primary',
+                    // Said by `aria-busy` too; the ring holds still where motion is not welcome.
+                    isFinding &&
+                      'outline-2 outline-action-primary outline-offset-1 motion-safe:animate-pulse',
+                  )}
+                >
+                  {name.numeral}
+                </span>
+                <span className="flex h-1.5 gap-0.5" aria-hidden="true">
+                  {kinds.map((tone) => (
+                    <span
+                      key={tone}
+                      className={cn(
+                        'size-1.5 rounded-full',
+                        FEED_CARD_FILL[tone],
+                      )}
+                    />
+                  ))}
+                </span>
               </button>
-              <span className="flex h-1 gap-px" aria-hidden="true">
-                {marks.map((tone, mark) => (
-                  <span
-                    // The marks are drawn from counts alone; their order is their identity.
-                    // biome-ignore lint/suspicious/noArrayIndexKey: see above
-                    key={mark}
-                    className={cn('size-1 rounded-full', FEED_CARD_FILL[tone])}
-                  />
-                ))}
-              </span>
             </li>
           );
         })}

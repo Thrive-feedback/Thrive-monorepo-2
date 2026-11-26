@@ -3,7 +3,6 @@ import {
   HangingBand,
   HangingBandFoot,
 } from '@/app/(signed-in)/(sidebar)/_components/hanging-band';
-import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
 import {
   PAGE_COLUMN,
   PAGE_COLUMN_WIDTH,
@@ -26,16 +25,14 @@ import { HomeWeekSkeleton } from './_components/home-week';
 
 /**
  * Home while the server builds it. The band already hangs from the navbar, so the bar does not turn
- * from glass to the band's ground when the page arrives, the heading is already Home, as the Kudos
- * board's is while it loads, and everything holds the room it will take, so nothing jumps. The small
+ * from glass to the band's ground when the page arrives, the heading is already Home, at the size
+ * and place it will have, as the Kudos board's is while it loads, and everything holds the room it will take, so nothing jumps. The small
  * week waits for the page: it shows only once the composer has stuck.
  */
 export default function HomeLoading() {
   return (
     <>
-      <HomeHead>
-        <PageTitle>Home</PageTitle>
-      </HomeHead>
+      <HomeHead />
       <HangingBand as="div" className={HOME_BAND_LAYER}>
         <div
           className={cn(
