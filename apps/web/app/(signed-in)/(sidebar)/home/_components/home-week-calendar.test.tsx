@@ -7,10 +7,12 @@ import { HomeWeekCalendar } from './home-week-calendar';
 import { HomeWeekRibbon } from './home-week-ribbon';
 
 /**
- * Tells the card whether the line that leaves as the composer sticks has scrolled up out of the
- * window, as the browser's observer would.
+ * Tells the card whether the strip whose foot leaves as the composer sticks has scrolled up out of
+ * the window, as the browser's observer would: all of it gone, or all of it back.
  */
 let composerHasStuck: (stuck: boolean) => void;
+/** Tells the card the strip is part way back: the page has scrolled up a little past the threshold. */
+let stripIsPartWayBack: () => void;
 
 beforeEach(() => {
   vi.stubGlobal(
@@ -28,8 +30,12 @@ beforeEach(() => {
           callback([
             {
               isIntersecting: !stuck,
-              boundingClientRect: { top: stuck ? -40 : 120 },
+              boundingClientRect: { top: stuck ? -80 : 120 },
             },
+          ]);
+        stripIsPartWayBack = () =>
+          callback([
+            { isIntersecting: true, boundingClientRect: { top: -30 } },
           ]);
       }
       observe() {}
@@ -62,10 +68,12 @@ const card = () =>
   screen.getByRole('navigation', { name: 'Last 7 days', hidden: true });
 
 describe('HomeWeekCalendar', () => {
-  it('stays out of reach while the composer has not stuck', () => {
+  it('stays out of reach while the composer has not stuck, even as it comes up to stick', () => {
     render(<Week />);
     act(() => composerHasStuck(false));
+    expect(card()).toHaveAttribute('inert');
 
+    act(() => stripIsPartWayBack());
     expect(card()).toHaveAttribute('inert');
   });
 
@@ -75,6 +83,19 @@ describe('HomeWeekCalendar', () => {
     act(() => composerHasStuck(true));
     expect(card()).not.toHaveAttribute('inert');
 
+    act(() => composerHasStuck(false));
+    expect(card()).toHaveAttribute('inert');
+  });
+
+  it('stays within reach while the page scrolls a little back up, and goes once it is well back', () => {
+    render(<Week />);
+
+    act(() => composerHasStuck(true));
+    act(() => stripIsPartWayBack());
+    expect(card()).not.toHaveAttribute('inert');
+
+    act(() => composerHasStuck(true));
+    act(() => stripIsPartWayBack());
     act(() => composerHasStuck(false));
     expect(card()).toHaveAttribute('inert');
   });

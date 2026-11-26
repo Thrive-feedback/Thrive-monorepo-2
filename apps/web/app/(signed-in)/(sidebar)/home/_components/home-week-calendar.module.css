@@ -1,24 +1,38 @@
 /*
- * The room the small week takes beside the stuck composer, and the card in it. The room opens from
- * nothing to the card's width and a gap, easing out over the medium step, so the composer narrows
- * rather than jumping narrower; only the composer's own row is laid out again, and its height never
- * changes, so nothing below it moves. The card lies in that room on its right edge, as tall as the
- * composer, and fades in as it slides the last 2 units into place, which the compositor alone does.
- * At rest the room is shut, and the card, unseen and inert, lets every press through to the composer
- * under it. A phone has no room and no card.
+ * The room the small week takes beside the stuck composer, and the card in it.
+ *
+ * Where scroll timelines exist and motion is welcome, both follow the scroll and nothing else. Home's
+ * stuck mark, a strip 16 tall whose foot leaves the window's top exactly as the composer sticks,
+ * names the timeline (`--home-stuck`). While that strip leaves, the last 16 of scroll before the
+ * composer sticks, the room opens from nothing to the card's width and a gap, and the card fades in,
+ * so the two are always at the same point. Scrolling back plays it backwards, frame for frame, and
+ * the composer narrows only by as much as the room has opened. Its height never changes, so nothing
+ * below it moves.
+ *
+ * Anywhere else (no scroll timelines, reduced motion) the room is open or shut by `[data-shown]`,
+ * which opens as the composer sticks and shuts only once the strip is all back in the window, so a
+ * scroll a little up and down at the threshold does not flip it. Without scroll timelines it eases
+ * out over the medium step; under reduced motion it is at once.
+ *
+ * The card lies in the room on its right edge, as tall as the composer, and the room cuts it off on
+ * its left, so a room that is not yet open shows only as much of the card as fits and never draws it
+ * under the composer. The cut leaves its shadow on the other three sides. At rest the room is shut,
+ * and the card, unseen and inert, takes no presses. A phone has no room and no card.
  *
  * The card is as wide as its seven columns, their gaps, its padding and its edge: 52 from `md`, 60
- * from `lg` and 66 from `xl`, where the columns are 6, 7 and 8. A width eased between two lengths,
- * and a length per breakpoint shared by the room and the card, have no utility.
+ * from `lg` and 66 from `xl`, where the columns are 6, 7 and 8. A width tied to the scroll, a cut, and
+ * a length per breakpoint shared by the room and the card have no utility.
  */
 .room {
   --card: calc(var(--space-unit) * 52);
+  --open: calc(var(--card) + var(--space-unit) * 3);
+  --shadow-room: calc(var(--space-unit) * -6);
 
   display: none;
   position: relative;
   flex-shrink: 0;
   width: 0;
-  transition: width var(--motion-duration-medium) var(--motion-ease-smooth-out);
+  clip-path: inset(var(--shadow-room) var(--shadow-room) var(--shadow-room) 0);
 }
 
 .card {
@@ -27,11 +41,6 @@
   right: 0;
   width: var(--card);
   opacity: 0;
-  translate: calc(var(--space-unit) * 2) 0;
-  pointer-events: none;
-  transition:
-    opacity var(--motion-duration-medium) var(--motion-ease-smooth-out),
-    translate var(--motion-duration-medium) var(--motion-ease-smooth-out);
 }
 
 @media (width >= 48rem) {
@@ -40,13 +49,11 @@
   }
 
   .room[data-shown] {
-    width: calc(var(--card) + var(--space-unit) * 3);
+    width: var(--open);
   }
 
   .room[data-shown] .card {
     opacity: 1;
-    translate: 0 0;
-    pointer-events: auto;
   }
 }
 
@@ -62,9 +69,50 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .room,
-  .card {
-    transition: none;
+@keyframes open {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: var(--open);
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (width >= 48rem) and (prefers-reduced-motion: no-preference) {
+  @supports (timeline-scope: --home-stuck) {
+    .room {
+      animation: open linear both;
+      animation-timeline: --home-stuck;
+      animation-range: exit-crossing 0% exit-crossing 100%;
+    }
+
+    .card {
+      animation: appear linear both;
+      animation-timeline: --home-stuck;
+      animation-range: exit-crossing 0% exit-crossing 100%;
+    }
+  }
+
+  @supports not (timeline-scope: --home-stuck) {
+    .room {
+      transition: width var(--motion-duration-medium)
+        var(--motion-ease-smooth-out);
+    }
+
+    .card {
+      transition: opacity var(--motion-duration-medium)
+        var(--motion-ease-smooth-out);
+    }
   }
 }

@@ -11,6 +11,7 @@ import { FEED_CARD_KIND_INK } from '@/components/organisms/feed-card/feed-card-t
 import { cn } from '@/lib/cn.util';
 import type { HomeShow } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import styles from './home-week.module.css';
 import { HomeWeekCalendar } from './home-week-calendar';
 import { HomeWeekRibbon } from './home-week-ribbon';
 
@@ -26,11 +27,14 @@ export type WeekSentenceProps = {
   week: HomeWeekSummary;
 };
 
-/** What the week held, as a sentence whose counts are words in their kind's colour. */
+/**
+ * What the week held, as a sentence whose counts are words in their kind's colour. From `md` it fades
+ * as it nears the heading stuck above it, as the ribbon does.
+ */
 function WeekSentence({ week }: WeekSentenceProps) {
   if (isQuiet(week.totals)) {
     return (
-      <Text variant="body-1" tone="muted">
+      <Text variant="body-1" tone="muted" className={styles.leaves}>
         Nothing written in the last 7 days yet.
       </Text>
     );
@@ -44,7 +48,11 @@ function WeekSentence({ week }: WeekSentenceProps) {
   let next = 0;
   return (
     // Balanced, so the last count never stands alone on a phone's second line.
-    <Text variant="body-1" tone="muted" className="text-balance">
+    <Text
+      variant="body-1"
+      tone="muted"
+      className={cn('text-balance', styles.leaves)}
+    >
       In the last 7 days:{' '}
       {parts.map((part, index) => {
         if (part.type === 'literal') {

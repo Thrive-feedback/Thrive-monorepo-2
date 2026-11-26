@@ -17,7 +17,12 @@
   transform-origin: left top;
 }
 
+/* From 1 named, not left to the heading's own scale, which `[data-settled]` turns to the end halfway. */
 @keyframes settle {
+  from {
+    scale: 1;
+  }
+
   to {
     scale: var(--settled-scale, 1);
   }
