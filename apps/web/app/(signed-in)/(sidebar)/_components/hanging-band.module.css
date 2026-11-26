@@ -11,61 +11,97 @@
  * The band starts under the navbar (`--bar` is the navbar's height) and is tinted all the way.
  * Neither a gradient from a token nor a mask has a utility.
  */
-.band {
-  --bar: calc(var(--space-unit) * 18);
+.band,
+.foot,
+.ground {
   /* The landing page's sheet-of-stamps edge (`.perforated` in `landing.module.css`): a bite, and
      how far apart the bites stand. */
   --bite: calc(var(--space-unit) * 1.5);
   --pitch: calc(var(--space-unit) * 5);
-
-  position: relative;
-  isolation: isolate;
-  margin-top: calc(-1 * var(--bar));
-
   /* Solid down to the bites, then the foot perforated as a sheet of stamps is: a row of round
-     bites, each half a circle taken out of the band's bottom edge. Both keep to the content box,
-     so they start where the band's own column does when it reaches back under the sidebar from
-     `md`. The third layer is that reach, just under the navbar: one corner of tint around a quarter
-     circle, which rounds the sidebar's top corner into the band and scrolls away with it. On a
-     phone it lies inside the band and changes nothing. The mask also cuts the window-held light to
-     the band. A mask shows what lies under its black, so the black is an instruction, not a colour. */
-  mask:
+     bites, each half a circle taken out of the bottom edge. Both keep to the content box, so they
+     start where the band's own column does when it reaches back under the sidebar from `md`. */
+  --perforated:
     linear-gradient(black 0 0) 0 0 / 100% calc(100% - var(--bite)) no-repeat
     content-box,
     radial-gradient(circle var(--bite) at 50% 100%, transparent 98%, black) 50%
-    100% / var(--pitch) calc(var(--bite) * 2) repeat-x content-box,
+    100% / var(--pitch) calc(var(--bite) * 2) repeat-x content-box;
+
+  isolation: isolate;
+
+  /* The band reaches over the sidebar's edge, so it takes no presses itself; what it holds does. */
+  pointer-events: none;
+}
+
+.band {
+  --bar: calc(var(--space-unit) * 18);
+
+  position: relative;
+  margin-top: calc(-1 * var(--bar));
+
+  /* The perforated foot, and a third layer for the band's reach back under the sidebar, just under
+     the navbar: one corner of tint around a quarter circle, which rounds the sidebar's top corner
+     into the band and scrolls away with it. On a phone it lies inside the band and changes nothing.
+     The mask also cuts the window-held light to the band. A mask shows what lies under its black,
+     so the black is an instruction, not a colour. */
+  mask:
+    var(--perforated),
     radial-gradient(
       circle at 0 100%,
       transparent var(--shape-page),
       black var(--shape-page)
     )
     0 var(--bar) / var(--shape-page) var(--shape-page) no-repeat border-box;
-
-  /* The band reaches over the sidebar's edge, so it takes no presses itself; what it holds does. */
-  pointer-events: none;
 }
 
 .band > * {
   pointer-events: auto;
 }
 
+/*
+ * The band's foot on its own, which a page keeps under the navbar once the band has scrolled away,
+ * as Home does behind its composer. The same ground, light and bites, laid out as the band's are,
+ * so where it lies on the band the two are one. The page gives its height and where it stands. It
+ * has no corner to round under the navbar: the band's has scrolled away before it shows.
+ */
+.foot {
+  mask: var(--perforated);
+}
+
+/*
+ * The band's ground with no edge to cut, for what a page holds over the band and keeps in view while
+ * the band scrolls under it, as Home does behind its heading. Lying on the band it is the band; the
+ * mask is only what keeps the window-held light to its own box.
+ */
+.ground {
+  mask: linear-gradient(black 0 0);
+}
+
 /* Beside the sidebar, the band reaches back under the sidebar's top corner by one page corner and is
-   padded back by as much, so what it holds stays in the column. */
+   padded back by as much, so what it holds stays in the column. Its foot reaches as far, so the
+   bites of the two stand in the same places. */
 @media (width >= 48rem) {
-  .band {
+  .band,
+  .foot {
     margin-left: calc(-1 * var(--shape-page));
     padding-left: var(--shape-page);
   }
 }
 
 .band::before,
-.band::after {
+.band::after,
+.foot::before,
+.foot::after,
+.ground::before,
+.ground::after {
   content: '';
   pointer-events: none;
 }
 
 /* The page's ground under the window's light, held to the window as the navbar is. */
-.band::before {
+.band::before,
+.foot::before,
+.ground::before {
   position: fixed;
   inset: 0;
   z-index: -2;
@@ -74,7 +110,9 @@
 }
 
 /* The tint over it, all the way down the band. */
-.band::after {
+.band::after,
+.foot::after,
+.ground::after {
   position: absolute;
   inset: 0;
   z-index: -1;

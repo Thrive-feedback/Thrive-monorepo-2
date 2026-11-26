@@ -6,7 +6,9 @@ import {
 import {
   HOME_DAY_CARDS,
   HOME_DAY_MARGIN,
+  HOME_DAY_MARGIN_STUCK,
   HOME_DAY_ROW,
+  HOME_DAY_SCROLL_MARGIN,
 } from '@/app/(signed-in)/(sidebar)/home/_lib/home-layout.constant';
 import type { HomeWeekSummary } from '@/app/(signed-in)/(sidebar)/home/_lib/home-week.type';
 import { Text } from '@/components/atoms/text';
@@ -60,7 +62,8 @@ export function HomeFeedDay({
     <section
       id={dayAnchorOf(section.day)}
       className={cn(
-        'scroll-mt-18 border-border-subtle border-t',
+        'border-border-subtle border-t',
+        HOME_DAY_SCROLL_MARGIN,
         HOME_DAY_ROW,
         quiet ? 'py-5' : 'pt-4 pb-6 md:pt-12',
       )}
@@ -68,8 +71,9 @@ export function HomeFeedDay({
       <div
         className={cn(
           HOME_DAY_MARGIN,
+          HOME_DAY_MARGIN_STUCK,
           'z-10 flex items-baseline gap-x-2 gap-y-0.5 bg-surface-base max-md:sticky max-md:top-18 max-md:flex-wrap max-md:py-2',
-          'md:sticky md:top-24 md:flex-col md:items-start md:self-start md:bg-transparent',
+          'md:flex-col md:items-start md:self-start md:bg-transparent',
         )}
       >
         <h3

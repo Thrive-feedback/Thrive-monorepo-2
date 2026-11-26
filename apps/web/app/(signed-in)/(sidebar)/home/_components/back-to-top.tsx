@@ -1,36 +1,28 @@
 'use client';
 
 import { ArrowUpIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useIsScrolledPast } from '@/app/(signed-in)/(sidebar)/home/_lib/use-is-scrolled-past';
 import { Button } from '@/components/atoms/button';
 import { cn } from '@/lib/cn.util';
 
 export type BackToTopProps = {
-  /** The page's heading: the button shows once it has scrolled out of view, and takes focus back. */
+  /** The page's heading, which takes focus back. */
   headingId: string;
+  /**
+   * What the reader must have scrolled past for the button to show. Not the heading, which may stay
+   * in view as the page scrolls.
+   */
+  pastId: string;
 };
 
 /**
  * A round button at the window's lower right that takes the reader back to the top of a long page,
- * once its heading has scrolled out of view. Watched rather than measured on every scroll, so it
- * costs nothing while the page moves. It glides up unless motion is unwelcome, and moves focus to
+ * once the page's head has scrolled away. It glides up unless motion is unwelcome, and moves focus to
  * the heading, so the keyboard starts again where the eye does. While hidden it is inert, so it is
  * neither pressed nor reached by Tab.
  */
-export function BackToTop({ headingId }: BackToTopProps) {
-  const [isShown, setIsShown] = useState(false);
-
-  useEffect(() => {
-    const heading = document.getElementById(headingId);
-    if (!heading) {
-      return;
-    }
-    const observer = new IntersectionObserver(([entry]) => {
-      setIsShown(entry ? !entry.isIntersecting : false);
-    });
-    observer.observe(heading);
-    return () => observer.disconnect();
-  }, [headingId]);
+export function BackToTop({ headingId, pastId }: BackToTopProps) {
+  const isShown = useIsScrolledPast(pastId);
 
   function goBackToTop() {
     const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -1,5 +1,10 @@
+import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-tone.type';
 import type { HomeFeedEntry } from '@/lib/feedback/home-feed-item.type';
-import type { HomeWeekCounts, HomeWeekSummary } from './home-week.type';
+import type {
+  HomeWeekCounts,
+  HomeWeekDay,
+  HomeWeekSummary,
+} from './home-week.type';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -139,6 +144,54 @@ export function groupFeedByDay(
           : null,
       };
     });
+}
+
+/** As many marks as a day has room for on a ribbon; more than this still reads as a busy day. */
+const MOST_MARKS = 4;
+
+/** A day of the week as Home's ribbons draw it, the full one in the band and the small one. */
+export type RibbonDay = {
+  readonly day: string;
+  readonly name: DayName;
+  /** Its month, short: `Nov`. */
+  readonly month: string;
+  /** The weekday, the day of the month and the month, `Sunday 22 Nov`, for a name read aloud. */
+  readonly date: string;
+  readonly isToday: boolean;
+  /** It held nothing, so it has nothing to bring into view. */
+  readonly isQuiet: boolean;
+  /** A mark in its kind's colour for each thing it held, up to as many as a day has room for. */
+  readonly marks: readonly FeedCardTone[];
+  /** What it held in words, `2 offered, 1 Kudos`, or `nothing written`. */
+  readonly held: string;
+};
+
+/** A day of the week as a ribbon draws it, from its counts and the week's. */
+export function toRibbonDay(
+  one: HomeWeekDay,
+  week: HomeWeekSummary,
+): RibbonDay {
+  const name = nameDay(one.day, week);
+  const quiet = isQuiet(one);
+  const counts = countWords(one, week.countsKudos);
+  const month = MONTH.format(midnightOf(one.day));
+  return {
+    day: one.day,
+    name,
+    month,
+    date: `${name.weekday} ${name.numeral} ${month}`,
+    isToday: one.day === week.today,
+    isQuiet: quiet,
+    marks: counts
+      .flatMap(({ tone, count }) => Array.from({ length: count }, () => tone))
+      .slice(0, MOST_MARKS),
+    held: quiet
+      ? 'nothing written'
+      : counts
+          .filter(({ count }) => count > 0)
+          .map(({ words }) => words)
+          .join(', '),
+  };
 }
 
 /** `1 offered`, `2 answers`, `1 Kudos`: what a count reads as, each in its kind's own words. */

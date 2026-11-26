@@ -11,6 +11,7 @@ import { FEED_CARD_KIND_INK } from '@/components/organisms/feed-card/feed-card-t
 import { cn } from '@/lib/cn.util';
 import type { HomeShow } from '@/lib/routes.constant';
 import type { CurrentMembership } from '@/lib/session/current-account.type';
+import { HomeWeekCalendar } from './home-week-calendar';
 import { HomeWeekRibbon } from './home-week-ribbon';
 
 export type HomeWeekProps = {
@@ -79,6 +80,26 @@ export async function HomeWeek({ membership, show }: HomeWeekProps) {
       <HomeWeekRibbon week={week} />
     </div>
   );
+}
+
+export type HomeStuckWeekProps = HomeWeekProps & {
+  /** The line that leaves the window as the composer sticks. */
+  stuckMarkId: string;
+};
+
+/**
+ * The week again, small, beside the composer once it has stuck, read from the same one call as the
+ * band's. Not counted, there is nothing to show, and the composer keeps the column's width.
+ */
+export async function HomeStuckWeek({
+  membership,
+  show,
+  stuckMarkId,
+}: HomeStuckWeekProps) {
+  const week = await readHomeWeekIfCounted(membership, show);
+  return week ? (
+    <HomeWeekCalendar week={week} stuckMarkId={stuckMarkId} />
+  ) : null;
 }
 
 /** `HomeWeek` still loading, holding the room the sentence and the days will take. */

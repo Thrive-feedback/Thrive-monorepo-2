@@ -1,5 +1,7 @@
 import { Skeleton } from '@/components/atoms/skeleton';
+import { cn } from '@/lib/cn.util';
 import {
+  FEED_COMPOSER_CHOICE,
   FEED_COMPOSER_CHOICES,
   FEED_COMPOSER_SURFACE,
 } from './feed-composer.constant';
@@ -13,9 +15,9 @@ export function FeedComposerSkeleton() {
         <Skeleton className="h-10 flex-1" />
       </div>
       <div className={FEED_COMPOSER_CHOICES}>
-        <Skeleton className="h-10" />
-        <Skeleton className="h-10" />
-        <Skeleton className="h-10" />
+        <Skeleton className={cn('h-10', FEED_COMPOSER_CHOICE)} />
+        <Skeleton className={cn('h-10', FEED_COMPOSER_CHOICE)} />
+        <Skeleton className={cn('h-10', FEED_COMPOSER_CHOICE)} />
       </div>
     </div>
   );

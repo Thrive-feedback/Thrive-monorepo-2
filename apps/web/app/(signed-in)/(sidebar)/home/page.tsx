@@ -4,15 +4,24 @@ import { FeedbackPostcard } from '@/app/(signed-in)/(sidebar)/_components/feedba
 import {
   BAND_TOP_SPACE,
   HangingBand,
+  HangingBandFoot,
 } from '@/app/(signed-in)/(sidebar)/_components/hanging-band';
 import { InvitationNotices } from '@/app/(signed-in)/(sidebar)/_components/invitation-notices';
+import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
 import {
   PAGE_COLUMN,
   PAGE_COLUMN_WIDTH,
 } from '@/app/(signed-in)/(sidebar)/_lib/page-column.constant';
 import {
   HOME_BAND_FOOT,
+  HOME_BAND_LAYER,
   HOME_COMPOSER_OVERLAP,
+  HOME_COMPOSER_ROW,
+  HOME_COMPOSER_STUCK,
+  HOME_HEADING_ROOM,
+  HOME_STUCK_FOOT,
+  HOME_STUCK_MARK,
+  HOME_STUCK_MARK_ID,
 } from '@/app/(signed-in)/(sidebar)/home/_lib/home-layout.constant';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Text } from '@/components/atoms/text';
@@ -25,7 +34,12 @@ import { HomeComposer } from './_components/home-composer';
 import { HomeDayJumpProvider } from './_components/home-day-jump';
 import { HomeFeed, HomeFeedSkeleton } from './_components/home-feed';
 import { HomeFeedFilter } from './_components/home-feed-filter';
-import { HomeWeek, HomeWeekSkeleton } from './_components/home-week';
+import { HomeHead } from './_components/home-head';
+import {
+  HomeStuckWeek,
+  HomeWeek,
+  HomeWeekSkeleton,
+} from './_components/home-week';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
 
 /** The page's heading, which the button back to the top returns focus to. */
@@ -57,10 +71,11 @@ type HomeProps = {
 /**
  * Home of the person's Workspace, where a Member lands after signing in. Its head hangs from the
  * navbar as a Profile's does, headed Home, with what the last seven days held and a
- * ribbon of those days; the composer lies across the head's foot. Below, what the Workspace shared
- * with everyone and what somebody selected or mentioned the person to read, in days, under a
- * filter. Pressing a card opens the piece over it, named in the address so a reload or a shared
- * link opens it again.
+ * ribbon of those days; the composer lies across the head's foot. From `md` the heading and the
+ * composer stay in view as the page scrolls, and once the ribbon has gone with the band the week
+ * comes back small beside the composer. Below, what the Workspace shared with everyone and what
+ * somebody selected or mentioned the person to read, in days, under a filter. Pressing a card opens
+ * the piece over it, named in the address so a reload or a shared link opens it again.
  */
 export default async function Home({ searchParams }: HomeProps) {
   const { signedIn, opened, left, switched, show, feedback } =
@@ -100,7 +115,13 @@ export default async function Home({ searchParams }: HomeProps) {
         />
       )}
       <HomeDayJumpProvider>
-        <HangingBand>
+        {/* Before the band, never inside it: it stays in view as the band scrolls away. */}
+        <HomeHead>
+          <PageTitle id={HOME_HEADING} tabIndex={-1}>
+            Home
+          </PageTitle>
+        </HomeHead>
+        <HangingBand className={HOME_BAND_LAYER}>
           <div
             className={cn(
               PAGE_COLUMN_WIDTH,
@@ -109,21 +130,44 @@ export default async function Home({ searchParams }: HomeProps) {
               'flex flex-col gap-4',
             )}
           >
-            <Text as="h1" variant="display-1" id={HOME_HEADING} tabIndex={-1}>
-              Home
-            </Text>
+            {/* The heading's room: it stands here, over the band. */}
+            <div className={HOME_HEADING_ROOM} />
             <Suspense key={show} fallback={<HomeWeekSkeleton />}>
               <HomeWeek membership={session.membership} show={show} />
             </Suspense>
           </div>
         </HangingBand>
+        <HangingBandFoot className={HOME_STUCK_FOOT} />
+        <div
+          id={HOME_STUCK_MARK_ID}
+          aria-hidden="true"
+          className={HOME_STUCK_MARK}
+        />
         {/* After the band, never inside it: it lies across the band's foot, which the band's mask
             would cut, and the band takes no presses. */}
-        <div className={cn(PAGE_COLUMN_WIDTH, HOME_COMPOSER_OVERLAP)}>
-          <Suspense fallback={<FeedComposerSkeleton />}>
-            <HomeComposer
-              session={session}
-              isUnderPostcard={feedback !== undefined}
+        <div
+          className={cn(
+            PAGE_COLUMN_WIDTH,
+            HOME_COMPOSER_OVERLAP,
+            HOME_COMPOSER_STUCK,
+            HOME_COMPOSER_ROW,
+          )}
+        >
+          <div className="flex-1">
+            <Suspense fallback={<FeedComposerSkeleton />}>
+              <HomeComposer
+                session={session}
+                isUnderPostcard={feedback !== undefined}
+              />
+            </Suspense>
+          </div>
+          {/* No key on the filter: a new filter keeps the card it has until the new one is read,
+              rather than the composer widening and narrowing again under the reader. */}
+          <Suspense fallback={null}>
+            <HomeStuckWeek
+              membership={session.membership}
+              show={show}
+              stuckMarkId={HOME_STUCK_MARK_ID}
             />
           </Suspense>
         </div>
@@ -145,7 +189,7 @@ export default async function Home({ searchParams }: HomeProps) {
             </Suspense>
           </div>
         </div>
-        <BackToTop headingId={HOME_HEADING} />
+        <BackToTop headingId={HOME_HEADING} pastId={HOME_STUCK_MARK_ID} />
       </HomeDayJumpProvider>
       {/* Always there, so a press holds the small postcard's pending mark until the postcard is
           ready, rather than committing to an empty fallback; a reload still does not wait. */}
