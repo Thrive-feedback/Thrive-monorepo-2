@@ -1,18 +1,11 @@
 /*
  * The room the small week takes beside the stuck composer, and the card in it.
  *
- * Where scroll timelines exist and motion is welcome, both follow the scroll and nothing else. Home's
- * stuck mark, a strip 16 tall whose foot leaves the window's top exactly as the composer sticks,
- * names the timeline (`--home-stuck`). While that strip leaves, the last 16 of scroll before the
- * composer sticks, the room opens from nothing to the card's width and a gap, and the card fades in,
- * so the two are always at the same point. Scrolling back plays it backwards, frame for frame, and
- * the composer narrows only by as much as the room has opened. Its height never changes, so nothing
- * below it moves.
- *
- * Anywhere else (no scroll timelines, reduced motion) the room is open or shut by `[data-shown]`,
- * which opens as the composer sticks and shuts only once the strip is all back in the window, so a
- * scroll a little up and down at the threshold does not flip it. Without scroll timelines it eases
- * out over the medium step; under reduced motion it is at once.
+ * The room is open or shut, never held part way by the scroll: `[data-shown]` opens it as the
+ * composer sticks and shuts it only once the stuck mark is all back in the window, 16 of scroll
+ * later, so a scroll a little up and down at the threshold does not flip it. It opens over the
+ * medium step, easing out, the card fading in as it slides into place, and the composer narrows with
+ * it; under reduced motion it is at once. Its height never changes, so nothing below it moves.
  *
  * The card lies in the room on its right edge, as tall as the composer, and the room cuts it off on
  * its left, so a room that is not yet open shows only as much of the card as fits and never draws it
@@ -20,8 +13,8 @@
  * and the card, unseen and inert, takes no presses. A phone has no room and no card.
  *
  * The card is as wide as its seven columns, their gaps, its padding and its edge: 52 from `md`, 60
- * from `lg` and 66 from `xl`, where the columns are 6, 7 and 8. A width tied to the scroll, a cut, and
- * a length per breakpoint shared by the room and the card have no utility.
+ * from `lg` and 66 from `xl`, where the columns are 6, 7 and 8. A cut, and a length per breakpoint
+ * shared by the room and the card, have no utility.
  */
 .room {
   --card: calc(var(--space-unit) * 52);
@@ -69,50 +62,14 @@
   }
 }
 
-@keyframes open {
-  from {
-    width: 0;
-  }
-
-  to {
-    width: var(--open);
-  }
-}
-
-@keyframes appear {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
 @media (width >= 48rem) and (prefers-reduced-motion: no-preference) {
-  @supports (timeline-scope: --home-stuck) {
-    .room {
-      animation: open linear both;
-      animation-timeline: --home-stuck;
-      animation-range: exit-crossing 0% exit-crossing 100%;
-    }
-
-    .card {
-      animation: appear linear both;
-      animation-timeline: --home-stuck;
-      animation-range: exit-crossing 0% exit-crossing 100%;
-    }
+  .room {
+    transition: width var(--motion-duration-medium)
+      var(--motion-ease-smooth-out);
   }
 
-  @supports not (timeline-scope: --home-stuck) {
-    .room {
-      transition: width var(--motion-duration-medium)
-        var(--motion-ease-smooth-out);
-    }
-
-    .card {
-      transition: opacity var(--motion-duration-medium)
-        var(--motion-ease-smooth-out);
-    }
+  .card {
+    transition: opacity var(--motion-duration-medium)
+      var(--motion-ease-smooth-out);
   }
 }

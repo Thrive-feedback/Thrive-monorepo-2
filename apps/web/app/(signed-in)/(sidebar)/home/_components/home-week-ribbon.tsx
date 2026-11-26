@@ -55,7 +55,7 @@ export function HomeWeekRibbon({ week }: HomeWeekRibbonProps) {
                 aria-label={`${name.label} ${name.numeral}, ${held}`}
                 onClick={() => request(one.day)}
                 className={cn(
-                  'flex w-full cursor-pointer flex-col items-center gap-1 rounded-control border border-transparent px-1 pt-2 pb-2.5 text-fg-secondary transition-colors duration-quick disabled:cursor-default',
+                  'flex w-full cursor-pointer flex-col items-center gap-1 rounded-control border border-transparent px-1 pt-2 pb-2.5 text-fg-secondary transition-colors duration-quick disabled:cursor-default disabled:text-fg-disabled',
                   'enabled:hover:bg-surface-base/60 enabled:hover:text-fg-primary',
                   isToday &&
                     'border-action-primary/40 bg-surface-base text-action-primary-active shadow-low',
@@ -69,7 +69,7 @@ export function HomeWeekRibbon({ week }: HomeWeekRibbonProps) {
                 <span
                   className={cn(
                     'font-display text-subtitle-display-2',
-                    quiet ? 'text-fg-muted' : 'text-fg-primary',
+                    quiet ? 'text-fg-disabled' : 'text-fg-primary',
                   )}
                 >
                   {name.numeral}
@@ -86,6 +86,10 @@ export function HomeWeekRibbon({ week }: HomeWeekRibbonProps) {
                       )}
                     />
                   ))}
+                  {/* A quiet day keeps a mark of its own, so it reads as a day that held nothing. */}
+                  {quiet && (
+                    <span className="size-1.5 rounded-full bg-surface-track" />
+                  )}
                 </span>
               </button>
             </li>

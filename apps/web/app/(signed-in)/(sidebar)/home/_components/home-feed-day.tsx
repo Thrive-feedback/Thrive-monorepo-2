@@ -36,8 +36,8 @@ export type HomeFeedDayProps = {
 
 /**
  * One day of Home, as a diary keeps it: from `md` the date stands large in a margin on the left and
- * stays in view while the day's cards scroll past; on a phone it is a row above them that does the
- * same. A day of the week says how much it held in its kinds' own words. A day that held nothing is
+ * stays in view under the composer while the day's cards scroll past; on a phone it is a row above
+ * them that does the same. A day of the week says how much it held in its kinds' own words. A day that held nothing is
  * said to have, so a quiet day reads as one rather than as something missing.
  */
 export function HomeFeedDay({
@@ -72,7 +72,7 @@ export function HomeFeedDay({
         className={cn(
           HOME_DAY_MARGIN,
           HOME_DAY_MARGIN_STUCK,
-          'z-10 flex items-baseline gap-x-2 gap-y-0.5 bg-surface-base max-md:sticky max-md:top-18 max-md:flex-wrap max-md:py-2',
+          'z-10 flex items-baseline gap-x-2 gap-y-0.5 bg-surface-base max-md:flex-wrap max-md:py-2',
           'md:flex-col md:items-start md:self-start md:bg-transparent',
         )}
       >

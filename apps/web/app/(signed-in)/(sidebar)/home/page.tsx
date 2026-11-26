@@ -21,6 +21,9 @@ import {
   HOME_STUCK_FOOT,
   HOME_STUCK_MARK,
   HOME_STUCK_MARK_ID,
+  HOME_WEEK_STRIP,
+  HOME_WEEK_STRIP_MARK,
+  HOME_WEEK_STRIP_MARK_ID,
 } from '@/app/(signed-in)/(sidebar)/home/_lib/home-layout.constant';
 import { OneTimeToast } from '@/components/atoms/one-time-toast';
 import { Text } from '@/components/atoms/text';
@@ -35,12 +38,12 @@ import { HomeFeed, HomeFeedSkeleton } from './_components/home-feed';
 import { HomeFeedFilter } from './_components/home-feed-filter';
 import { HomeHead } from './_components/home-head';
 import {
+  HomePhoneWeek,
   HomeStuckWeek,
   HomeWeek,
   HomeWeekSkeleton,
 } from './_components/home-week';
 import { HomeSearchParams } from './_lib/home-search-params.schema';
-import styles from './page.module.css';
 
 /** The page's heading, which the button back to the top returns focus to. */
 const HOME_HEADING = 'home-heading';
@@ -71,9 +74,10 @@ type HomeProps = {
 /**
  * Home of the person's Workspace, where a Member lands after signing in. Its head hangs from the
  * navbar as a Profile's does, headed Home, with what the last seven days held and a
- * ribbon of those days; the composer lies across the head's foot. From `md` the heading settles to a
- * page title's size as the page begins to scroll, and it and the composer stay in view, and once the ribbon has gone with the band the week
- * comes back small beside the composer. Below, what the Workspace shared with everyone and what
+ * ribbon of those days; the composer lies across the head's foot. The heading settles to a page
+ * title's size as the page begins to scroll and stays in view. From `md` the composer stays in view
+ * too, and once the ribbon has gone with the band the week comes back small beside it; on a phone
+ * the composer scrolls away, and the week comes back small under the heading instead. Below, what the Workspace shared with everyone and what
  * somebody selected or mentioned the person to read, in days, under a filter. Pressing a card opens
  * the piece over it, named in the address so a reload or a shared link opens it again.
  */
@@ -115,9 +119,8 @@ export default async function Home({ searchParams }: HomeProps) {
         />
       )}
       <HomeDayJumpProvider>
-        {/* The page's column, all of it, so the small week beside the composer can follow the stuck
-            mark's scroll timeline, and the heading and the composer stick through to its end. */}
-        <div className={cn(styles.handoff, 'flex flex-1 flex-col')}>
+        {/* The page's column, all of it, so the heading and the composer stick through to its end. */}
+        <div className="flex flex-1 flex-col">
           {/* Before the band, never inside it: it stays in view as the band scrolls away. */}
           <HomeHead headingId={HOME_HEADING} />
           <HangingBand className={HOME_BAND_LAYER}>
@@ -140,7 +143,7 @@ export default async function Home({ searchParams }: HomeProps) {
           <div
             id={HOME_STUCK_MARK_ID}
             aria-hidden="true"
-            className={cn(HOME_STUCK_MARK, styles.stuckMark)}
+            className={HOME_STUCK_MARK}
           />
           {/* After the band, never inside it: it lies across the band's foot, which the band's mask
             would cut, and the band takes no presses. */}
@@ -167,6 +170,21 @@ export default async function Home({ searchParams }: HomeProps) {
                 membership={session.membership}
                 show={show}
                 stuckMarkId={HOME_STUCK_MARK_ID}
+              />
+            </Suspense>
+          </div>
+          {/* On a phone the composer scrolls away, and the week stays under the heading instead. */}
+          <div
+            id={HOME_WEEK_STRIP_MARK_ID}
+            aria-hidden="true"
+            className={HOME_WEEK_STRIP_MARK}
+          />
+          <div className={HOME_WEEK_STRIP}>
+            <Suspense fallback={null}>
+              <HomePhoneWeek
+                membership={session.membership}
+                show={show}
+                shownMarkId={HOME_WEEK_STRIP_MARK_ID}
               />
             </Suspense>
           </div>

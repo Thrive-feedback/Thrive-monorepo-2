@@ -13,7 +13,7 @@ export type HomeTitleProps = {
 
 /**
  * "Home", in the band's display size at the top of the page, settling to a page title's size as the
- * page scrolls, from `md`. Where the browser can tie that to the scroll, CSS alone moves it; this
+ * page scrolls. Where the browser can tie that to the scroll, CSS alone moves it; this
  * says when the page has scrolled past the halfway mark for the browsers that cannot, and for
  * readers who would rather nothing moved.
  *
