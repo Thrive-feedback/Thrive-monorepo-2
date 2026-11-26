@@ -6,6 +6,13 @@ import {
   type OneOnOneScheduleSnapshot,
 } from '../../domain/value-object/one-on-one-schedule.vo';
 import { OneOnOneStatus } from '../../domain/value-object/one-on-one-status.vo';
+import {
+  storedTemplateRef,
+  templateColumnsOf,
+  templateKeyOf,
+  templateRefOf,
+} from '../../domain/value-object/one-on-one-template-ref.vo';
+import { ThriveTemplate } from '../../domain/value-object/thrive-template.vo';
 
 /** The only place that knows both the stored row and the 1:1 entity. */
 
@@ -17,6 +24,7 @@ type ScheduleColumns = Pick<
   | 'lengthMinutes'
   | 'startsOn'
   | 'templateKey'
+  | 'templateId'
 >;
 
 /** A calendar day is stored as a date, which Prisma reads as midnight UTC of that day. */
@@ -37,7 +45,7 @@ export function toScheduleSnapshot(
     weekday: record.weekday,
     startMinute: record.startMinute,
     lengthMinutes: record.lengthMinutes,
-    templateKey: record.templateKey,
+    templateKey: templateKeyOf(storedTemplateRef(record)),
     startsOn: dateToDay(record.startsOn),
   };
 }
@@ -59,7 +67,7 @@ export function toOneOnOneRecord(
     startMinute: schedule.startMinute,
     lengthMinutes: schedule.lengthMinutes,
     startsOn: dayToDate(schedule.startsOn),
-    templateKey: schedule.templateKey,
+    ...templateColumnsOf(templateRefOf(schedule.templateKey)),
     inviteNote: snapshot.inviteNote,
     suggestedAt: snapshot.suggestedAt,
     answerNote: snapshot.answerNote,
@@ -84,15 +92,35 @@ export function toOneOnOne(record: OneOnOneRecord): OneOnOne {
   });
 }
 
+/** A kept template's foreign key means it is always read with the 1:1; one missing is a bug. */
+function keptTemplateName(template: { readonly name: string } | null): string {
+  if (template === null) {
+    throw new Error('A 1:1 names a kept template it was not read with.');
+  }
+  return template.name;
+}
+
+/**
+ * A 1:1 as its reader is shown it, read with its meeting in progress and, for one starting from a
+ * kept template, that template's name (`ONE_ON_ONE_ROW`). Thrive's own are named from code.
+ */
 export function toOneOnOneRow(
-  record: OneOnOneRecord & { readonly meetings: readonly { id: string }[] },
+  record: OneOnOneRecord & {
+    readonly meetings: readonly { id: string }[];
+    readonly template: { readonly name: string } | null;
+  },
 ): OneOnOneRow {
+  const ref = storedTemplateRef(record);
   return {
     id: record.id,
     status: record.status,
     startedByAccountId: record.startedByAccountId,
     invitedAccountId: record.invitedAccountId,
     schedule: toScheduleSnapshot(record),
+    templateName:
+      ref.kind === 'THRIVE'
+        ? ThriveTemplate.of(ref.key).snapshot().name
+        : keptTemplateName(record.template),
     inviteNote: record.inviteNote,
     suggestedAt: record.suggestedAt,
     answerNote: record.answerNote,

@@ -5,6 +5,7 @@ import { OneOnOneRepository } from '../../domain/repository/one-on-one-repositor
 import { OneOnOneSchedule } from '../../domain/value-object/one-on-one-schedule.vo';
 import { OneOnOneNotFoundError } from '../one-on-one.errors';
 import { oneOnOneKey } from '../service/one-on-one-keys.service';
+import { OneOnOneTemplateCatalogService } from '../service/one-on-one-template-catalog.service';
 import type { OneOnOneScheduleInput } from '../types/one-on-one.types';
 
 export interface SuggestAnotherTimeInput {
@@ -27,6 +28,7 @@ export interface SuggestAnotherTimeInput {
 export class SuggestAnotherTimeUseCase {
   constructor(
     private readonly oneOnOneRepository: OneOnOneRepository,
+    private readonly templateCatalog: OneOnOneTemplateCatalogService,
     private readonly unitOfWork: UnitOfWork,
     private readonly clock: Clock,
   ) {}
@@ -43,7 +45,15 @@ export class SuggestAnotherTimeUseCase {
         if (!oneOnOne?.isIn(input.accountId)) {
           throw new OneOnOneNotFoundError();
         }
+        const keeping = oneOnOne.snapshot().schedule.templateKey;
         oneOnOne.suggestAnother(input.accountId, schedule, input.note, now);
+        // After the 1:1's own refusals, so somebody who may not change it is told that first.
+        await this.templateCatalog.assertChoosable(
+          input.workspaceId,
+          input.accountId,
+          schedule.snapshot().templateKey,
+          keeping,
+        );
         await this.oneOnOneRepository.save(oneOnOne);
       },
       { serializeOn: oneOnOneKey(input.oneOnOneId) },

@@ -9,3 +9,12 @@ export const MEETING_IN_PROGRESS = {
     take: 1,
   },
 } as const;
+
+/**
+ * What a 1:1 is read with for its reader: its meeting in progress, and the name of the kept template
+ * it starts from, both in the same query (BE_06 R9). The foreign key means a kept one is always there.
+ */
+export const ONE_ON_ONE_ROW = {
+  ...MEETING_IN_PROGRESS,
+  template: { select: { name: true } },
+} as const;

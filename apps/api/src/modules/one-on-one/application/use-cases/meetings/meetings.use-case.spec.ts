@@ -5,6 +5,7 @@ import {
   FakeOneOnOneMeetingRepository,
   FakeOneOnOneQuery,
   FakeOneOnOneRepository,
+  FakeOneOnOneTemplateRepository,
 } from '@test/support/one-on-one.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import { OneOnOne } from '../../../domain/entity/one-on-one.entity';
@@ -21,6 +22,7 @@ import {
   OneOnOneNotFoundError,
 } from '../../one-on-one.errors';
 import { OneOnOneMeetingAccessService } from '../../service/one-on-one-meeting-access.service';
+import { OneOnOneTemplateCatalogService } from '../../service/one-on-one-template-catalog.service';
 import { AddTopicUseCase } from './add-topic.use-case';
 import { FinishMeetingUseCase } from './finish-meeting.use-case';
 import { GetNextMeetingUseCase } from './get-next-meeting.use-case';
@@ -100,9 +102,13 @@ function setUp({
   const clock = new FakeClock(now);
   const idGenerator = ids();
   const unitOfWork = new FakeUnitOfWork();
+  const catalog = new OneOnOneTemplateCatalogService(
+    new FakeOneOnOneTemplateRepository(),
+  );
   const access = new OneOnOneMeetingAccessService(
     oneOnOnes,
     meetings,
+    catalog,
     idGenerator,
     clock,
   );
@@ -110,7 +116,7 @@ function setUp({
     oneOnOnes,
     meetings,
     clock,
-    next: new GetNextMeetingUseCase(oneOnOneQuery, query, clock),
+    next: new GetNextMeetingUseCase(oneOnOneQuery, query, catalog, clock),
     past: new ListPastMeetingsUseCase(oneOnOneQuery, query),
     open: new OpenMeetingUseCase(access, meetings, unitOfWork),
     start: new StartMeetingUseCase(access, meetings, unitOfWork, clock),

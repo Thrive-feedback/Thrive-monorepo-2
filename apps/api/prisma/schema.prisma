@@ -674,8 +674,12 @@ model OneOnOne {
   lengthMinutes      Int
   /// The calendar day of the first meeting, which fixes every second week and the week of the month.
   startsOn           DateTime          @db.Date
-  /// The template each meeting's agenda starts from: one of Thrive's, by key.
-  templateKey        String
+  /// One of Thrive's templates, by its key, when each meeting's agenda starts from one of those;
+  /// empty when it starts from a kept one. Exactly one of this and `templateId` is set (ADR 0096).
+  templateKey        String?
+  /// A kept template, when each meeting's agenda starts from one; empty for one of Thrive's.
+  templateId         String?
+  template           OneOnOneTemplate? @relation("OneOnOneStartsFrom", fields: [templateId], references: [id], onDelete: Restrict)
   /// personal · what the sender wrote with the invitation, if anything.
   inviteNote         String?
   /// When the person invited last sent it back with another time, which made them its sender.
@@ -694,6 +698,42 @@ model OneOnOne {
   @@map("one_on_one")
 }
 
+/// Who a 1:1 template is kept for: everyone in the Workspace, or the one Member who wrote it.
+enum OneOnOneTemplateScope {
+  WORKSPACE
+  PERSONAL
+}
+
+/// A 1:1 template a Workspace keeps for everyone, which its Admins change, or one a Member keeps for
+/// themselves, which nobody else sees (brain ADR-0060 §8, ADR-0061 §6, proposed). Thrive's own are
+/// in code, not here. A 1:1 names one by `templateId`. Removing one only marks it, so the 1:1s
+/// already starting from it keep its questions.
+model OneOnOneTemplate {
+  id               String                @id
+  /// Workspace's id, held without a foreign key (BE_03 R7).
+  workspaceId      String
+  scope            OneOnOneTemplateScope
+  /// personal · whose it is, for one kept for one Member; empty for the Workspace's.
+  ownerAccountId   String?
+  name             String
+  /// When to use it, as its writer put it; empty if they said nothing.
+  suggestedWhen    String                @default("")
+  /// The questions each agenda opens with, in order.
+  questions        String[]
+  /// When it was removed; it is then listed for nobody and chosen by nobody.
+  removedAt        DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  /// The 1:1s starting from it, and the meetings opened from it: a template they name is never
+  /// deleted, only removed, so each keeps its name and questions (ADR 0096).
+  oneOnOnes        OneOnOne[]            @relation("OneOnOneStartsFrom")
+  meetings         OneOnOneMeeting[]     @relation("OneOnOneMeetingOpenedFrom")
+
+  /// For a Workspace's templates, and one Member's own.
+  @@index([workspaceId, scope, ownerAccountId])
+  @@map("one_on_one_template")
+}
+
 /// Where an agenda topic came from: what was not reached last time, the template, or a person.
 enum OneOnOneTopicSource {
   CARRIED
@@ -710,8 +750,12 @@ model OneOnOneMeeting {
   workspaceId         String
   oneOnOneId          String
   oneOnOne            OneOnOne        @relation(fields: [oneOnOneId], references: [id], onDelete: Cascade)
-  /// The template its agenda opened from.
-  templateKey         String
+  /// One of Thrive's templates, by its key, when its agenda opened from one of those; empty when it
+  /// opened from a kept one. Exactly one of this and `templateId` is set (ADR 0096).
+  templateKey         String?
+  /// The kept template its agenda opened from; empty for one of Thrive's.
+  templateId          String?
+  template            OneOnOneTemplate? @relation("OneOnOneMeetingOpenedFrom", fields: [templateId], references: [id], onDelete: Restrict)
   /// The occurrence it stood for, set when it starts.
   occursAt            DateTime?
   startedAt           DateTime?

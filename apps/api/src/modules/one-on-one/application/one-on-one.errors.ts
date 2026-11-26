@@ -55,3 +55,16 @@ export class OneOnOneMeetingNotFoundError extends ApplicationError {
     super('No meeting with this id belongs to this 1:1.');
   }
 }
+
+/**
+ * No template with this id is in this Workspace for the caller: none at all, another Member's own,
+ * or one removed. One answer for each, so nobody learns what another Member keeps.
+ */
+export class OneOnOneTemplateNotFoundError extends ApplicationError {
+  readonly code = 'ONE_ON_ONE_TEMPLATE_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super('No template with this id is kept for the caller.');
+  }
+}

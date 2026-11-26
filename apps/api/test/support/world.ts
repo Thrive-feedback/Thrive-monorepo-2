@@ -56,6 +56,8 @@ export class ThriveWorld extends World {
   private readonly workspaceGoals = new Map<string, string>();
   /** The scenario's 1:1 and its next meeting once opened, as the 1:1 page holds their ids. */
   readonly oneOnOne: { id?: string; meetingId?: string } = {};
+  /** The 1:1 templates kept in this scenario, by name, as the templates page holds their ids. */
+  readonly oneOnOneTemplates = new Map<string, string>();
 
   constructor(options: IWorldOptions) {
     super(options);
