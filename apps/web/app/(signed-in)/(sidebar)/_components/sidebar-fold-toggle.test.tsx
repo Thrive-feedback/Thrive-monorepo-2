@@ -2,7 +2,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MD_AND_UP } from '@/lib/breakpoint.constant';
-import { SIDEBAR_STORAGE_KEY } from '@/lib/sidebar-fold.constant';
+import {
+  SIDEBAR_STORAGE_KEY,
+  SIDEBAR_TABLET_STORAGE_KEY,
+} from '@/lib/sidebar-fold.constant';
 import { SidebarFoldToggle } from './sidebar-fold-toggle';
 
 /** A window that matches the queries `matches` says it does. */
@@ -66,15 +69,17 @@ describe('SidebarFoldToggle', () => {
     expect(localStorage.getItem(SIDEBAR_STORAGE_KEY)).toBe('rail');
   });
 
-  it('keeps the rail on a tablet, where there is no room to widen it', async () => {
+  it('widens the rail on a tablet too, and remembers it for a tablet alone', async () => {
     const user = userEvent.setup();
     windowMatching((query) => query === MD_AND_UP);
-    document.documentElement.dataset.sidebarLocked = '';
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, 'rail');
     render(<SidebarFoldToggle />);
 
     await user.click(screen.getByRole('button', { name: 'Expand sidebar' }));
 
-    expect(document.documentElement.dataset.sidebar).toBe('rail');
-    expect(document.documentElement.dataset.sidebarLocked).toBe('');
+    expect(document.documentElement.dataset.sidebar).toBe('wide');
+    expect(document.documentElement.dataset.sidebarLocked).toBeUndefined();
+    expect(localStorage.getItem(SIDEBAR_TABLET_STORAGE_KEY)).toBe('wide');
+    expect(localStorage.getItem(SIDEBAR_STORAGE_KEY)).toBe('rail');
   });
 });
