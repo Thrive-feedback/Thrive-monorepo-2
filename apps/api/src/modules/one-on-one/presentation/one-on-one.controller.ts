@@ -32,7 +32,6 @@ import { EndOneOnOneUseCase } from '../application/use-cases/end-one-on-one.use-
 import { GetOneOnOneUseCase } from '../application/use-cases/get-one-on-one.use-case';
 import { InviteToOneOnOneUseCase } from '../application/use-cases/invite-to-one-on-one.use-case';
 import { ListMyOneOnOnesUseCase } from '../application/use-cases/list-my-one-on-ones.use-case';
-import { ListOneOnOneTemplatesUseCase } from '../application/use-cases/list-one-on-one-templates.use-case';
 import { RescheduleOneOnOneUseCase } from '../application/use-cases/reschedule-one-on-one.use-case';
 import { SuggestAnotherTimeUseCase } from '../application/use-cases/suggest-another-time.use-case';
 import {
@@ -41,7 +40,6 @@ import {
   InviteToOneOnOneRequestDto,
   ListMyOneOnOnesQueryDto,
   ListMyOneOnOnesResponseDto,
-  ListOneOnOneTemplatesResponseDto,
   OneOnOnePathParamsDto,
   OneOnOneResponseDto,
   OneOnOneScheduleRequestDto,
@@ -66,6 +64,7 @@ function toResponse(view: OneOnOneView) {
       startMinute: view.schedule.startMinute,
       lengthMinutes: view.schedule.lengthMinutes,
       templateKey: view.schedule.templateKey,
+      templateName: view.templateName,
       startsOn: view.schedule.startsOn,
     },
     inviteNote: view.inviteNote,
@@ -316,38 +315,5 @@ export class OneOnOneController {
       oneOnOneId: params.oneOnOneId,
       schedule: body,
     });
-  }
-}
-
-/** The 1:1 templates either person can start an agenda from. */
-@ApiTags('one-on-ones')
-@Controller({ path: 'v1/workspaces/:workspaceId/one-on-one-templates' })
-@UseGuards(WorkspaceMemberGuard)
-export class OneOnOneTemplateController {
-  constructor(
-    private readonly listOneOnOneTemplatesUseCase: ListOneOnOneTemplatesUseCase,
-  ) {}
-
-  @Get()
-  @ApiOperation({
-    summary: "List the 1:1 templates a 1:1 can start from, Thrive's first",
-  })
-  @ApiHeader(COOKIE_HEADER)
-  @ZodResponse({
-    status: HttpStatus.OK,
-    type: ListOneOnOneTemplatesResponseDto,
-  })
-  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
-  @ApiNotFoundResponse({ description: 'WORKSPACE_NOT_FOUND' })
-  listOneOnOneTemplates(@Param() _params: WorkspacePathParamsDto) {
-    return {
-      items: this.listOneOnOneTemplatesUseCase.execute().map((template) => ({
-        key: template.key,
-        scope: template.scope,
-        name: template.name,
-        suggestedWhen: template.suggestedWhen,
-        questions: [...template.questions],
-      })),
-    };
   }
 }

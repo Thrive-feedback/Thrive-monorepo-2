@@ -11,6 +11,7 @@ import {
   OneOnOnePersonNotFoundError,
 } from '../one-on-one.errors';
 import { oneOnOnePairKey } from '../service/one-on-one-keys.service';
+import { OneOnOneTemplateCatalogService } from '../service/one-on-one-template-catalog.service';
 import type { OneOnOneScheduleInput } from '../types/one-on-one.types';
 
 export interface InviteToOneOnOneInput {
@@ -37,6 +38,7 @@ export interface InviteToOneOnOneResult {
 export class InviteToOneOnOneUseCase {
   constructor(
     private readonly oneOnOneRepository: OneOnOneRepository,
+    private readonly templateCatalog: OneOnOneTemplateCatalogService,
     private readonly workspaceMembershipPort: WorkspaceMembershipPort,
     private readonly idGenerator: IdGenerator,
     private readonly unitOfWork: UnitOfWork,
@@ -60,6 +62,11 @@ export class InviteToOneOnOneUseCase {
     if (!members.includes(input.invitedAccountId)) {
       throw new OneOnOnePersonNotFoundError();
     }
+    await this.templateCatalog.assertChoosable(
+      input.workspaceId,
+      input.startedByAccountId,
+      input.schedule.templateKey,
+    );
     await this.unitOfWork.run(
       async () => {
         if (

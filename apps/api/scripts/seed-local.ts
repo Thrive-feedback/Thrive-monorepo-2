@@ -460,6 +460,67 @@ type OneOnOneSeed = {
   readonly suggested?: Schedule;
 };
 
+/**
+ * Templates kept beside Thrive's: the Workspace's, kept by the reader as its Admin, and some of
+ * people's own. A schedule names one as `kept:<key>`, which the seed swaps for its id once kept.
+ */
+type TemplateSeed = {
+  readonly key: string;
+  readonly by: Who;
+  readonly scope: 'WORKSPACE' | 'PERSONAL';
+  readonly name: string;
+  readonly suggestedWhen?: string;
+  readonly questions: readonly string[];
+};
+
+const TEMPLATES: readonly TemplateSeed[] = [
+  {
+    key: 'team-health',
+    by: 'me',
+    scope: 'WORKSPACE',
+    name: 'Team health check',
+    suggestedWhen: 'Once a quarter, with everyone on the team',
+    questions: [
+      'How sustainable does your workload feel right now?',
+      'What is one thing slowing the team down?',
+      'Who on the team deserves more credit?',
+    ],
+  },
+  {
+    key: 'project-kickoff',
+    by: 'me',
+    scope: 'WORKSPACE',
+    name: 'Project kickoff',
+    suggestedWhen: 'In the first week of a new project',
+    questions: [
+      'What does success look like for you on this project?',
+      'Where do you expect to get stuck?',
+      'How do you like to get feedback?',
+    ],
+  },
+  {
+    key: 'growth-plan',
+    by: 'me',
+    scope: 'PERSONAL',
+    name: 'Growth plan check',
+    suggestedWhen: 'Every two weeks',
+    questions: [
+      'What did you learn since we last met?',
+      'Which goal moved, and which stalled?',
+      'What do you want to try before next time?',
+    ],
+  },
+  {
+    key: 'ben-sprint',
+    by: 'ben',
+    scope: 'PERSONAL',
+    name: 'Sprint retro',
+    questions: ['What slowed us down?', 'What should we keep doing?'],
+  },
+];
+
+const KEPT = 'kept:';
+
 const WEEKLY_THURSDAY: Schedule = {
   cadence: 'WEEKLY',
   weekday: 4,
@@ -486,7 +547,7 @@ const ONE_ON_ONES: readonly OneOnOneSeed[] = [
       weekday: 2,
       startMinute: 14 * 60,
       lengthMinutes: 45,
-      templateKey: 'career-conversation',
+      templateKey: `${KEPT}growth-plan`,
     },
     answer: 'accept',
   },
@@ -895,6 +956,24 @@ Sign in once at ${WEB_BASE_URL} with that Google account, then run this again.
     });
   }
 
+  const keptTemplates = new Map<string, string>();
+  for (const template of TEMPLATES) {
+    const { key, by, ...written } = template;
+    const { id } = await call(
+      resolve(by),
+      'POST',
+      `/v1/workspaces/${workspaceId}/one-on-one-templates`,
+      written,
+    );
+    keptTemplates.set(`${KEPT}${key}`, id as string);
+  }
+  /** A schedule as the API takes it: a kept template named by its id. */
+  const withKeptTemplate = (schedule: Schedule): Schedule => ({
+    ...schedule,
+    templateKey:
+      keptTemplates.get(schedule.templateKey) ?? schedule.templateKey,
+  });
+
   const seededOneOnOnes = new Map<string, string>();
   for (const piece of ONE_ON_ONES) {
     const from = resolve(piece.from);
@@ -905,7 +984,7 @@ Sign in once at ${WEB_BASE_URL} with that Google account, then run this again.
       `/v1/workspaces/${workspaceId}/one-on-ones`,
       {
         invitedAccountId: to.accountId,
-        schedule: piece.schedule,
+        schedule: withKeptTemplate(piece.schedule),
         ...(piece.note ? { note: piece.note } : {}),
       },
     );
@@ -919,7 +998,7 @@ Sign in once at ${WEB_BASE_URL} with that Google account, then run this again.
     }
     if (piece.answer === 'suggest') {
       await call(to, 'POST', `${oneOnOne}/suggest`, {
-        schedule: piece.suggested,
+        schedule: piece.suggested && withKeptTemplate(piece.suggested),
         ...(piece.answerNote ? { note: piece.answerNote } : {}),
       });
     }
@@ -1044,6 +1123,7 @@ What is on screen for ${reader.name}:
   Waiting for you ${WEB_BASE_URL}/waiting   ${waitingForReader} Asks to answer
   Kudos board     ${WEB_BASE_URL}/kudos
   1:1s            ${WEB_BASE_URL}/one-on-ones   ${ONE_ON_ONES.length} 1:1s, one in every state
+  1:1 templates   ${WEB_BASE_URL}/one-on-ones/templates   ${TEMPLATES.length} kept beside Thrive's
 
 Run this again for another Workspace with its own people; nothing is overwritten.
 `);

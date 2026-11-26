@@ -12,7 +12,11 @@ export interface ThriveTemplateDetails {
 
 /**
  * Thrive's own 1:1 templates, the first set the prototype proposed (brain ADR-0060 §8, an
- * `ASSUMPTION` there). A Workspace's Admins and each Lead add their own beside these; these stay.
+ * `ASSUMPTION` there). A Workspace's Admins and each Member keep their own beside these; these stay.
+ *
+ * A shipped `key` is permanent: 1:1s and meetings store it (ADR 0096), and a stored key Thrive no
+ * longer has is a broken row. Never remove or rename one; to retire a template, hide it from the
+ * list and keep it here.
  */
 const THRIVE_TEMPLATES: readonly ThriveTemplateDetails[] = [
   {

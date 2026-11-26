@@ -101,6 +101,11 @@ const oneOnOneScheduleSchema = z.object({
   startMinute: z.number().int(),
   lengthMinutes: z.number().int(),
   templateKey: z.string(),
+  /**
+   * What its template is called, for both people, whichever layer it is from: Thrive's, the
+   * Workspace's, or either person's own.
+   */
+  templateName: z.string(),
   /** The calendar day of the first meeting. */
   startsOn: z.iso.date(),
 });
@@ -149,16 +154,63 @@ export class ListMyOneOnOnesResponseDto extends createZodDto(
 ) {}
 
 const oneOnOneTemplateSchema = z.object({
+  /** How a schedule names it: a key for one of Thrive's, the id for a kept one. */
   key: z.string(),
-  scope: z.enum(['THRIVE']),
+  /** Thrive's own, the Workspace's, or the caller's own. */
+  scope: z.enum(['THRIVE', 'WORKSPACE', 'PERSONAL']),
   name: z.string(),
+  /** When to use it; empty if its writer said nothing. */
   suggestedWhen: z.string(),
   questions: z.array(z.string()),
+  /** Whether the caller may change or remove it: their own, or the Workspace's for an Admin. */
+  changeable: z.boolean(),
 });
 
 export const listOneOnOneTemplatesResponseSchema = z.object({
   items: z.array(oneOnOneTemplateSchema),
+  /** Whether the caller may keep templates for everyone in the Workspace: an Admin. */
+  mayKeepForWorkspace: z.boolean(),
 });
 export class ListOneOnOneTemplatesResponseDto extends createZodDto(
   listOneOnOneTemplatesResponseSchema,
+) {}
+
+export const oneOnOneTemplatePathParamsSchema = z.object({
+  workspaceId: z.uuid(),
+  templateId: z.uuid(),
+});
+export class OneOnOneTemplatePathParamsDto extends createZodDto(
+  oneOnOneTemplatePathParamsSchema,
+) {}
+
+/** Limits and trimming are the template's own rules; this checks only the shape. */
+const oneOnOneTemplateContentSchema = z.strictObject({
+  name: z.string(),
+  /** When to use it. Blank says nothing. */
+  suggestedWhen: z.string().optional(),
+  /**
+   * The questions each agenda opens with, in order: at least one, at most 12, which the template
+   * holds to. The cap here only stops a payload far past that from being read whole.
+   */
+  questions: z.array(z.string()).max(50),
+});
+
+export const keepOneOnOneTemplateRequestSchema =
+  oneOnOneTemplateContentSchema.extend({
+    /** Just the caller's, or, for an Admin, everyone's in the Workspace. */
+    scope: z.enum(['WORKSPACE', 'PERSONAL']),
+  });
+export class KeepOneOnOneTemplateRequestDto extends createZodDto(
+  keepOneOnOneTemplateRequestSchema,
+) {}
+
+export const rewriteOneOnOneTemplateRequestSchema =
+  oneOnOneTemplateContentSchema;
+export class RewriteOneOnOneTemplateRequestDto extends createZodDto(
+  rewriteOneOnOneTemplateRequestSchema,
+) {}
+
+export const keptOneOnOneTemplateResponseSchema = z.object({ id: z.uuid() });
+export class KeptOneOnOneTemplateResponseDto extends createZodDto(
+  keptOneOnOneTemplateResponseSchema,
 ) {}

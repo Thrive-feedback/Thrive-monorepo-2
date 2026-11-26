@@ -2,7 +2,10 @@ import { describe, expect, it } from 'bun:test';
 import { FakeClock } from '@test/support/clock.fake';
 import { FakeWorkspaceMembershipPort } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
-import { FakeOneOnOneRepository } from '@test/support/one-on-one.fakes';
+import {
+  FakeOneOnOneRepository,
+  FakeOneOnOneTemplateRepository,
+} from '@test/support/one-on-one.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import {
   OneOnOneInviteNoteTooLongError,
@@ -12,6 +15,7 @@ import {
   OneOnOneAlreadyExistsError,
   OneOnOnePersonNotFoundError,
 } from '../one-on-one.errors';
+import { OneOnOneTemplateCatalogService } from '../service/one-on-one-template-catalog.service';
 import { InviteToOneOnOneUseCase } from './invite-to-one-on-one.use-case';
 
 const WORKSPACE_ID = 'workspace-acme';
@@ -31,6 +35,7 @@ function setUp(now: Date = NOW) {
   const oneOnOneRepository = new FakeOneOnOneRepository();
   const invite = new InviteToOneOnOneUseCase(
     oneOnOneRepository,
+    new OneOnOneTemplateCatalogService(new FakeOneOnOneTemplateRepository()),
     new FakeWorkspaceMembershipPort().with(WORKSPACE_ID, KRIT, MINT),
     new FakeIdGenerator('one-on-one-1', 'one-on-one-2'),
     new FakeUnitOfWork(),

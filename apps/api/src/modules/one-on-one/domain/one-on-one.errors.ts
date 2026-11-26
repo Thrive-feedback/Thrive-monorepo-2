@@ -20,7 +20,10 @@ export class OneOnOneScheduleInvalidError extends DomainError {
   }
 }
 
-/** The template a 1:1's meetings start from is none of Thrive's own. */
+/**
+ * The template a 1:1's meetings start from is not one the person may choose: none of Thrive's own,
+ * and none their Workspace or they themselves keep.
+ */
 export class OneOnOneTemplateUnknownError extends DomainError {
   readonly code = 'ONE_ON_ONE_TEMPLATE_UNKNOWN';
   readonly category = 'validation' as const;

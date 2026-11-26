@@ -10,11 +10,11 @@ import {
 } from '../../../domain/entity/one-on-one-meeting.entity';
 import { OneOnOneSchedule } from '../../../domain/value-object/one-on-one-schedule.vo';
 import { OneOnOneStatus } from '../../../domain/value-object/one-on-one-status.vo';
-import { ThriveTemplate } from '../../../domain/value-object/thrive-template.vo';
 import { OneOnOneNotFoundError } from '../../one-on-one.errors';
 import { OneOnOneQuery } from '../../query-port/one-on-one.query-port';
 import { OneOnOneMeetingQuery } from '../../query-port/one-on-one-meeting.query-port';
 import { toMeetingView } from '../../service/one-on-one-meeting-view.service';
+import { OneOnOneTemplateCatalogService } from '../../service/one-on-one-template-catalog.service';
 import type { OneOnOneNextMeetingView } from '../../types/one-on-one-meeting.types';
 
 export interface GetNextMeetingInput {
@@ -33,6 +33,7 @@ export class GetNextMeetingUseCase {
   constructor(
     private readonly oneOnOneQuery: OneOnOneQuery,
     private readonly meetingQuery: OneOnOneMeetingQuery,
+    private readonly templateCatalog: OneOnOneTemplateCatalogService,
     private readonly clock: Clock,
   ) {}
 
@@ -45,9 +46,6 @@ export class GetNextMeetingUseCase {
     if (!oneOnOne) {
       throw new OneOnOneNotFoundError();
     }
-    const template = ThriveTemplate.of(
-      oneOnOne.schedule.templateKey,
-    ).snapshot();
     const live = await this.meetingQuery.findLive(
       input.workspaceId,
       input.oneOnOneId,
@@ -65,7 +63,7 @@ export class GetNextMeetingUseCase {
         meeting: toMeetingView(live),
         carried: [],
         templateQuestions: [],
-        templateName: template.name,
+        templateName: oneOnOne.templateName,
       };
     }
     const last = await this.meetingQuery.findLastFinished(
@@ -80,13 +78,16 @@ export class GetNextMeetingUseCase {
         meeting: null,
         carried: [],
         templateQuestions: [],
-        templateName: template.name,
+        templateName: oneOnOne.templateName,
       };
     }
     // As the meeting will open, by the same rule: a question carried over is not asked twice.
     const agenda = openingAgenda(
       last ? undiscussedOf(last.topics) : [],
-      template.questions,
+      await this.templateCatalog.questionsOf(
+        input.workspaceId,
+        oneOnOne.schedule.templateKey,
+      ),
     );
     return {
       meeting: null,
@@ -96,7 +97,7 @@ export class GetNextMeetingUseCase {
       templateQuestions: agenda
         .filter((topic) => topic.source === 'TEMPLATE')
         .map((topic) => topic.text),
-      templateName: template.name,
+      templateName: oneOnOne.templateName,
     };
   }
 }

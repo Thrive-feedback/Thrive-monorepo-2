@@ -10,6 +10,11 @@ export interface OneOnOneRow {
   /** Who was invited, and answers it. */
   readonly invitedAccountId: string;
   readonly schedule: OneOnOneScheduleSnapshot;
+  /**
+   * What the template its agendas start from is called, for both people: Thrive's, the Workspace's,
+   * or either person's own, though only its owner sees that one in their list of templates.
+   */
+  readonly templateName: string;
   /** What the sender wrote with the invitation, if anything. */
   readonly inviteNote: string | null;
   /** When the person invited last sent it back with another time; `null` if they never did. */

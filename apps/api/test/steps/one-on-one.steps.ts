@@ -23,6 +23,18 @@ const REFUSALS: Readonly<Record<string, { code: string; status: number }>> = {
   },
   'the topic changed': { code: 'ONE_ON_ONE_TOPIC_CHANGED', status: 409 },
   'the 1:1 is not running': { code: 'ONE_ON_ONE_NOT_RUNNING', status: 409 },
+  'the template cannot be kept': {
+    code: 'ONE_ON_ONE_TEMPLATE_INVALID',
+    status: 400,
+  },
+  'they keep one by that name already': {
+    code: 'ONE_ON_ONE_TEMPLATE_NAME_TAKEN',
+    status: 409,
+  },
+  'the template is not theirs': {
+    code: 'ONE_ON_ONE_TEMPLATE_NOT_YOURS',
+    status: 403,
+  },
 };
 
 /** A weekly 1:1 on Thursdays at 10:00 Bangkok time, the template every scenario uses. */
@@ -49,16 +61,57 @@ function oneOnOnePath(world: ThriveWorld, name: string): string {
   return `/v1/workspaces/${world.workspaceOf(name)}/one-on-ones/${oneOnOneIdOf(world)}`;
 }
 
-function invite(world: ThriveWorld, from: string, to: string) {
+function invite(
+  world: ThriveWorld,
+  from: string,
+  to: string,
+  templateKey: string = WEEKLY.templateKey,
+) {
   return world.as(
     from,
     'POST',
     `/v1/workspaces/${world.workspaceOf(from)}/one-on-ones`,
     {
       invitedAccountId: world.person(to).accountId,
-      schedule: WEEKLY,
+      schedule: { ...WEEKLY, templateKey },
     },
   );
+}
+
+function templatesPath(world: ThriveWorld, name: string): string {
+  return `/v1/workspaces/${world.workspaceOf(name)}/one-on-one-templates`;
+}
+
+function templateIdOf(world: ThriveWorld, template: string): string {
+  const id = world.oneOnOneTemplates.get(template);
+  assert.ok(id, `No template "${template}" was kept in this scenario.`);
+  return id;
+}
+
+function keepTemplate(
+  world: ThriveWorld,
+  name: string,
+  template: string,
+  scope: 'PERSONAL' | 'WORKSPACE',
+  questions: readonly string[] = ['What is on your mind?'],
+) {
+  return world.as(name, 'POST', templatesPath(world, name), {
+    scope,
+    name: template,
+    questions,
+  });
+}
+
+/** The names of the templates `name` can start a 1:1 from. */
+async function templatesSeenBy(
+  world: ThriveWorld,
+  name: string,
+): Promise<readonly string[]> {
+  const response = world.succeeded(
+    await world.as(name, 'GET', templatesPath(world, name)),
+    `${name} listing the templates`,
+  );
+  return response.body.items.map((each: { name: string }) => each.name);
 }
 
 function accept(world: ThriveWorld, name: string) {
@@ -165,6 +218,62 @@ Given(
 );
 
 Given(
+  /^(\w+) has kept a template "([^"]+)"( for the Workspace)? asking "([^"]+)"$/,
+  async function (
+    this: ThriveWorld,
+    name: string,
+    template: string,
+    forWorkspace: string | undefined,
+    question: string,
+  ) {
+    const response = this.succeeded(
+      await keepTemplate(
+        this,
+        name,
+        template,
+        forWorkspace ? 'WORKSPACE' : 'PERSONAL',
+        [question],
+      ),
+      `${name} keeping the template "${template}"`,
+    );
+    this.oneOnOneTemplates.set(template, response.body.id);
+  },
+);
+
+Given(
+  '{person} has invited {person} to a weekly 1:1 from {string}',
+  async function (
+    this: ThriveWorld,
+    from: string,
+    to: string,
+    template: string,
+  ) {
+    const response = this.succeeded(
+      await invite(this, from, to, templateIdOf(this, template)),
+      `${from} inviting ${to} to a 1:1 from "${template}"`,
+    );
+    stateOf(this).id = response.body.id;
+  },
+);
+
+Given(
+  '{person} and {person} have a running weekly 1:1 from {string}',
+  async function (
+    this: ThriveWorld,
+    from: string,
+    to: string,
+    template: string,
+  ) {
+    const response = this.succeeded(
+      await invite(this, from, to, templateIdOf(this, template)),
+      `${from} inviting ${to} to a 1:1 from "${template}"`,
+    );
+    stateOf(this).id = response.body.id;
+    this.succeeded(await accept(this, to), `${to} accepting the 1:1`);
+  },
+);
+
+Given(
   '{person} has added {string} to the next meeting',
   async function (this: ThriveWorld, name: string, text: string) {
     this.succeeded(
@@ -210,6 +319,58 @@ Given(
     this.succeeded(
       await this.as(name, 'POST', `${oneOnOnePath(this, name)}/end`),
       `${name} ending the 1:1`,
+    );
+  },
+);
+
+When(
+  '{person} keeps a template {string} of their own',
+  async function (this: ThriveWorld, name: string, template: string) {
+    await keepTemplate(this, name, template, 'PERSONAL');
+  },
+);
+
+When(
+  '{person} keeps a template {string} of their own with no question',
+  async function (this: ThriveWorld, name: string, template: string) {
+    await keepTemplate(this, name, template, 'PERSONAL', []);
+  },
+);
+
+When(
+  '{person} keeps a template {string} for the Workspace',
+  async function (this: ThriveWorld, name: string, template: string) {
+    await keepTemplate(this, name, template, 'WORKSPACE');
+  },
+);
+
+When(
+  '{person} renames the template {string} to {string}',
+  async function (
+    this: ThriveWorld,
+    name: string,
+    template: string,
+    renamed: string,
+  ) {
+    await this.as(
+      name,
+      'PUT',
+      `${templatesPath(this, name)}/${templateIdOf(this, template)}`,
+      { name: renamed, questions: ['What is on your mind?'] },
+    );
+  },
+);
+
+When(
+  '{person} removes the template {string}',
+  async function (this: ThriveWorld, name: string, template: string) {
+    this.succeeded(
+      await this.as(
+        name,
+        'DELETE',
+        `${templatesPath(this, name)}/${templateIdOf(this, template)}`,
+      ),
+      `${name} removing the template "${template}"`,
     );
   },
 );
@@ -341,7 +502,47 @@ Then(
 );
 
 Then(
-  /^(\w+) is told (there is no such 1:1|it is not theirs to answer|they already have one|the topic is not theirs|the meeting has not started|the topic changed|the 1:1 is not running)$/,
+  '{person} cannot invite {person} to a weekly 1:1 from {string}',
+  async function (
+    this: ThriveWorld,
+    from: string,
+    to: string,
+    template: string,
+  ) {
+    const response = await invite(this, from, to, templateIdOf(this, template));
+    assert.equal(response.status, 400);
+    assert.equal(response.body.error.code, 'ONE_ON_ONE_TEMPLATE_UNKNOWN');
+  },
+);
+
+Then(
+  '{person} sees the template {string}',
+  async function (this: ThriveWorld, name: string, template: string) {
+    assert.ok((await templatesSeenBy(this, name)).includes(template));
+  },
+);
+
+Then(
+  '{person} does not see the template {string}',
+  async function (this: ThriveWorld, name: string, template: string) {
+    assert.ok(!(await templatesSeenBy(this, name)).includes(template));
+  },
+);
+
+Then(
+  "{person}'s next meeting opens with {string}",
+  async function (this: ThriveWorld, name: string, question: string) {
+    const next = await readNextMeeting(this, name);
+    assert.equal(next.meeting, null);
+    assert.ok(
+      next.templateQuestions.includes(question),
+      `"${question}" is not among the questions it opens with.`,
+    );
+  },
+);
+
+Then(
+  /^(\w+) is told (there is no such 1:1|it is not theirs to answer|they already have one|the topic is not theirs|the meeting has not started|the topic changed|the 1:1 is not running|the template is not theirs|the template cannot be kept|they keep one by that name already)$/,
   function (this: ThriveWorld, _name: string, reason: string) {
     const refusal = REFUSALS[reason];
     assert.ok(refusal, `No refusal is known as "${reason}".`);
