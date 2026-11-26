@@ -12,6 +12,7 @@ const flagValue = z.enum(['true', 'false']);
  */
 export const getFeatureFlagsResponseSchema = z.object({
   USER_DASHBOARD_FLAG: flagValue,
+  HR_LANDING_FLAG: flagValue,
 });
 
 export class GetFeatureFlagsResponseDto extends createZodDto(

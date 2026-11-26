@@ -5,10 +5,12 @@ import { LandingFinalCta } from './landing-final-cta';
 import { LandingFooter } from './landing-footer';
 import { LandingHero } from './landing-hero';
 import { LandingMoments } from './landing-moments';
-import { LandingNavbar } from './landing-navbar';
+import { LandingNavbar, type LandingNavbarProps } from './landing-navbar';
 import { LandingPost } from './landing-post';
 import { LandingToday } from './landing-today';
 import { LandingWhy } from './landing-why';
+
+export type LandingProps = LandingNavbarProps;
 
 /**
  * The landing page, told as post between teammates (`ADR-0054`): the promise over a spread of
@@ -19,11 +21,11 @@ import { LandingWhy } from './landing-why';
  * the plain page and a band in a hue's light tint with perforated edges, so each one's end is
  * plain to see; behind it all, soft circles drift at three depths as the page scrolls.
  */
-export function Landing() {
+export function Landing({ audienceSwitch }: LandingProps) {
   return (
     <div className="relative isolate flex min-h-dvh flex-col bg-surface-base">
       <OrbBackdrop spread="page" />
-      <LandingNavbar />
+      <LandingNavbar audienceSwitch={audienceSwitch} />
       <main className="flex flex-1 flex-col">
         <LandingPost>
           <LandingBand opening>

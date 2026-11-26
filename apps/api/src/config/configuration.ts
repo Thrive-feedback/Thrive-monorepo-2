@@ -120,6 +120,8 @@ export class FeatureFlagsConfig {
   constructor(
     /** Whether Your dashboard is shown in the menu and answers at its address. */
     readonly showsDashboard: boolean,
+    /** Whether the front page is the one for HR, and the page for teams answers at `/for-teams`. */
+    readonly showsHrLanding: boolean,
   ) {}
 }
 
@@ -223,7 +225,10 @@ export function loadConfiguration(
     // The auth URL is already the web origin (ADR 0027), so a second variable would only be
     // one that could disagree with it.
     web: new WebConfig(new URL(parsed.data.BETTER_AUTH_URL).origin),
-    featureFlags: new FeatureFlagsConfig(parsed.data.USER_DASHBOARD_FLAG),
+    featureFlags: new FeatureFlagsConfig(
+      parsed.data.USER_DASHBOARD_FLAG,
+      parsed.data.HR_LANDING_FLAG,
+    ),
     uiShowcase: new UiShowcaseConfig(
       new Set(parsed.data.UI_SHOWCASE_ALLOWED_EMAILS),
     ),

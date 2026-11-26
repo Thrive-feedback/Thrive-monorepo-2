@@ -2736,6 +2736,8 @@ export interface components {
         GetFeatureFlagsResponseDto_Output: {
             /** @enum {string} */
             USER_DASHBOARD_FLAG: "true" | "false";
+            /** @enum {string} */
+            HR_LANDING_FLAG: "true" | "false";
         };
         GetMyUiShowcaseAccessResponseDto_Output: {
             isAllowed: boolean;

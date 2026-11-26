@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 /** What this deployment has switched on, as it was set when the API started. */
 export interface FeatureFlags {
   readonly showsDashboard: boolean;
+  readonly showsHrLanding: boolean;
 }
 
 /**
@@ -15,6 +16,9 @@ export class GetFeatureFlagsUseCase {
   constructor(private readonly featureFlagsConfig: FeatureFlagsConfig) {}
 
   execute(): FeatureFlags {
-    return { showsDashboard: this.featureFlagsConfig.showsDashboard };
+    return {
+      showsDashboard: this.featureFlagsConfig.showsDashboard,
+      showsHrLanding: this.featureFlagsConfig.showsHrLanding,
+    };
   }
 }

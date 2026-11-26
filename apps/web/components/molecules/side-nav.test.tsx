@@ -154,6 +154,53 @@ describe('SideNav', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Waiting');
   });
 
+  it('keeps a place not open yet in the menu, greyed with its note, and not a link', () => {
+    render(
+      <SideNav
+        label="Main"
+        items={[
+          { href: '/a', label: 'Home', Icon: HouseIcon },
+          {
+            href: '/b',
+            label: 'Later',
+            Icon: PaletteIcon,
+            unavailableNote: 'Coming soon',
+          },
+        ]}
+        currentHref="/b"
+      />,
+    );
+
+    expect(
+      screen.getAllByRole('listitem').map((item) => item.textContent),
+    ).toEqual(['Home', 'LaterComing soon']);
+    expect(screen.queryByRole('link', { name: /Later/ })).toBeNull();
+  });
+
+  it('folded to its icons, names a place not open yet with its note when pointed at', async () => {
+    const user = userEvent.setup();
+    render(
+      <SideNav
+        label="Main"
+        items={[
+          {
+            href: '/b',
+            label: 'Later',
+            Icon: PaletteIcon,
+            unavailableNote: 'Coming soon',
+          },
+        ]}
+        foldsToIcons
+      />,
+    );
+
+    await user.hover(screen.getByText('Later'));
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Later · Coming soon',
+    );
+  });
+
   it('names no item by tooltip when it is not folded, since the labels show', async () => {
     const user = userEvent.setup();
     render(<SideNav label="Main" items={ITEMS} currentHref="/a" />);

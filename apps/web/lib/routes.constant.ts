@@ -84,6 +84,8 @@ function waitingSorted(sort: WaitingSortOrder) {
 
 export const ROUTES = {
   landing: '/',
+  /** The landing page for teams, once the front page is the one for HR. */
+  forTeams: '/for-teams',
   signIn: '/signin',
   /** Home of the person's Workspace, where a Member lands after signing in. */
   home: '/home',
@@ -208,6 +210,8 @@ export const ROUTES = {
     notifications: '/ui-showcase/notifications',
     /** Settings rows that need a link, a Connection or an Invitation, on sample data. */
     settings: '/ui-showcase/settings',
+    /** Every feature flag, with the value this deployment answers for it now. */
+    featureFlags: '/ui-showcase/feature-flags',
     component: (slug: string) => `/ui-showcase/${slug}`,
   },
 } as const;

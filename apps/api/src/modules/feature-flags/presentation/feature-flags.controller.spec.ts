@@ -4,9 +4,17 @@ import { GetFeatureFlagsUseCase } from '../application/use-cases/get-feature-fla
 import { getFeatureFlagsResponseSchema } from './dto/get-feature-flags.dto';
 import { FeatureFlagsController } from './feature-flags.controller';
 
-function controllerWith(showsDashboard: boolean): FeatureFlagsController {
+function controllerWith({
+  showsDashboard = false,
+  showsHrLanding = false,
+}: {
+  showsDashboard?: boolean;
+  showsHrLanding?: boolean;
+}): FeatureFlagsController {
   return new FeatureFlagsController(
-    new GetFeatureFlagsUseCase(new FeatureFlagsConfig(showsDashboard)),
+    new GetFeatureFlagsUseCase(
+      new FeatureFlagsConfig(showsDashboard, showsHrLanding),
+    ),
   );
 }
 
@@ -15,15 +23,27 @@ describe('the feature flags route', () => {
     [true, 'true'],
     [false, 'false'],
   ] as const)('answers a dashboard set to %p as %p', (showsDashboard, wire) => {
-    expect(controllerWith(showsDashboard).getFeatureFlags()).toEqual({
-      USER_DASHBOARD_FLAG: wire,
-    });
+    expect(
+      controllerWith({ showsDashboard }).getFeatureFlags().USER_DASHBOARD_FLAG,
+    ).toBe(wire);
   });
+
+  it.each([
+    [true, 'true'],
+    [false, 'false'],
+  ] as const)(
+    'answers an HR front page set to %p as %p',
+    (showsHrLanding, wire) => {
+      expect(
+        controllerWith({ showsHrLanding }).getFeatureFlags().HR_LANDING_FLAG,
+      ).toBe(wire);
+    },
+  );
 
   it('answers in the shape it publishes', () => {
     expect(
       getFeatureFlagsResponseSchema.safeParse(
-        controllerWith(false).getFeatureFlags(),
+        controllerWith({}).getFeatureFlags(),
       ).success,
     ).toBe(true);
   });

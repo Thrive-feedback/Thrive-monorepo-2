@@ -1,0 +1,7 @@
+/*
+ * A question's own chevron says whether it is open, so the browser's disclosure triangle goes.
+ * `list-none` removes it everywhere but Safari, which draws it as this pseudo-element instead.
+ */
+.question::-webkit-details-marker {
+  display: none;
+}

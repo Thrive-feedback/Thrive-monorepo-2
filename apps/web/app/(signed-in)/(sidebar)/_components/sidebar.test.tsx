@@ -94,7 +94,7 @@ describe('Sidebar', () => {
     ]);
   });
 
-  it('leaves Your dashboard out of both menus where the deployment has switched it off', async () => {
+  it('keeps Your dashboard in both menus as Coming soon, not a link, where the deployment has switched it off', async () => {
     const user = userEvent.setup();
     const nav = await draw(0, ROUTES.home, false);
 
@@ -108,30 +108,24 @@ describe('Sidebar', () => {
       'Waiting for me',
       'Teammates',
       'My Feedback',
+      'Your dashboardComing soon',
       'Received',
       'Given',
     ]);
+    expect(
+      within(nav).queryByRole('link', { name: /Your dashboard/ }),
+    ).toBeNull();
 
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
 
-    expect(
-      within(
-        within(screen.getByRole('dialog', { name: 'Menu' })).getByRole(
-          'navigation',
-          { name: 'Main' },
-        ),
-      )
-        .getAllByRole('listitem')
-        .map((item) => item.textContent),
-    ).toEqual([
-      'Home',
-      'Kudos board',
-      'Waiting for me',
-      'Teammates',
-      'My Feedback',
-      'Received',
-      'Given',
-    ]);
+    const drawer = within(
+      within(screen.getByRole('dialog', { name: 'Menu' })).getByRole(
+        'navigation',
+        { name: 'Main' },
+      ),
+    );
+    expect(drawer.getByText('Coming soon')).toBeInTheDocument();
+    expect(drawer.queryByRole('link', { name: /Your dashboard/ })).toBeNull();
   });
 
   it('marks the page that is open, wherever the person went', async () => {

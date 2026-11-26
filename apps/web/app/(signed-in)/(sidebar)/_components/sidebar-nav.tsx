@@ -1,12 +1,12 @@
 'use client';
 
 import {
+  ChartColumnIcon,
   ClockIcon,
-  HandHeartIcon,
+  HeartIcon,
   HouseIcon,
   InboxIcon,
   SendIcon,
-  SparklesIcon,
   UsersIcon,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -15,7 +15,10 @@ import { useUnreadCounts } from '@/components/organisms/notifications-provider';
 import { ROUTES } from '@/lib/routes.constant';
 
 export type SidebarNavProps = {
-  /** Whether Your dashboard is switched on for this deployment (ADR 0087). */
+  /**
+   * Whether Your dashboard is switched on for this deployment (ADR 0087). Off, it stays in the
+   * menu as Coming soon, greyed and not a link.
+   */
   showsDashboard: boolean;
 };
 
@@ -32,7 +35,7 @@ export function SidebarNav({ showsDashboard }: SidebarNavProps) {
   const unread = useUnreadCounts();
   const items: readonly SideNavEntry[] = [
     { href: ROUTES.home, label: 'Home', Icon: HouseIcon },
-    { href: ROUTES.kudos, label: 'Kudos board', Icon: HandHeartIcon },
+    { href: ROUTES.kudos, label: 'Kudos board', Icon: HeartIcon },
     {
       href: ROUTES.waiting,
       label: 'Waiting for me',
@@ -41,15 +44,12 @@ export function SidebarNav({ showsDashboard }: SidebarNavProps) {
     },
     { href: ROUTES.teammates, label: 'Teammates', Icon: UsersIcon },
     { heading: 'My Feedback' },
-    ...(showsDashboard
-      ? [
-          {
-            href: ROUTES.dashboard,
-            label: 'Your dashboard',
-            Icon: SparklesIcon,
-          },
-        ]
-      : []),
+    {
+      href: ROUTES.dashboard,
+      label: 'Your dashboard',
+      Icon: ChartColumnIcon,
+      unavailableNote: showsDashboard ? undefined : 'Coming soon',
+    },
     {
       href: ROUTES.received,
       label: 'Received',
