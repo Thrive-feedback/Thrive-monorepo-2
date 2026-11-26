@@ -49,9 +49,10 @@ export const HOME_COMPOSER_STUCK = 'md:sticky md:top-36 md:z-20';
 
 /**
  * The composer and, once it is stuck, the week in small beside it, the composer taking what the week
- * leaves. At rest the week is not there, and the composer has the column's width.
+ * leaves. At rest the week's room is shut, and the composer has the column's width. The gap between
+ * them is the week's own, so it opens with the room.
  */
-export const HOME_COMPOSER_ROW = 'flex gap-3';
+export const HOME_COMPOSER_ROW = 'flex';
 
 /**
  * From `md`, the band's foot stays behind the stuck composer, so the composer lies across the band's

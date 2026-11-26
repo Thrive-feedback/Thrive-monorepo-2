@@ -39,7 +39,7 @@ export function BackToTop({ headingId, pastId }: BackToTopProps) {
       inert={!isShown}
       onClick={goBackToTop}
       className={cn(
-        'fixed right-4 bottom-4 z-30 size-11 shadow-high transition duration-quick motion-reduce:transition-none md:right-8 md:bottom-8',
+        'fixed right-4 bottom-4 z-30 size-11 shadow-high transition duration-medium ease-smooth-out motion-reduce:transition-none md:right-8 md:bottom-8',
         isShown ? 'opacity-100' : 'translate-y-3 opacity-0',
       )}
     >

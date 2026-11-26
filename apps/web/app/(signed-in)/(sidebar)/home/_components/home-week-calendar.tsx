@@ -16,6 +16,7 @@ import {
 import { FEED_CARD_FILL } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import { cn } from '@/lib/cn.util';
 import { useDayJump } from './home-day-jump';
+import styles from './home-week-calendar.module.css';
 
 export type HomeWeekCalendarProps = {
   week: HomeWeekSummary;
@@ -32,9 +33,9 @@ export type HomeWeekCalendarProps = {
  * welcome. The ribbon's own live line, still on the page, says which day is being found, so this
  * card says nothing more.
  *
- * At rest it is not there and the composer keeps the column's width; it is inert while hidden, so
- * Tab never reaches it. It shows from `md` only, where the composer sticks, its columns widening as
- * the page does.
+ * At rest its room is shut and the composer keeps the column's width; it is inert while unseen, so
+ * Tab never reaches it. Once the composer sticks the room opens beside it and the card fades in, from
+ * `md` only, where the composer sticks, its columns widening as the page does.
  */
 export function HomeWeekCalendar({ week, stuckMarkId }: HomeWeekCalendarProps) {
   const isStuck = useIsScrolledPast(stuckMarkId);
@@ -45,34 +46,36 @@ export function HomeWeekCalendar({ week, stuckMarkId }: HomeWeekCalendarProps) {
   const last = days.at(-1)?.month;
 
   return (
-    <nav
-      aria-labelledby={titleId}
-      inert={!isStuck}
-      className={cn(
-        'hidden shrink-0 flex-col justify-between gap-3 rounded-page border border-border-muted bg-surface-base px-3 py-5 shadow-med',
-        isStuck && 'motion-safe:animate-enter md:flex',
-      )}
-    >
-      <div className="flex items-baseline justify-between gap-3 px-0.5">
-        <Text as="p" variant="label" tone="muted" id={titleId}>
-          Last 7 days
-        </Text>
-        <Text as="span" variant="caption" tone="muted">
-          {first === last ? last : `${first} – ${last}`}
-        </Text>
-      </div>
-      <ol className="grid grid-cols-7 gap-0.5">
-        {days.map((one) => (
-          <li key={one.day}>
-            <CalendarDay
-              one={one}
-              isFinding={requestedDay === one.day}
-              onPress={request}
-            />
-          </li>
-        ))}
-      </ol>
-    </nav>
+    <div className={styles.room} data-shown={isStuck ? '' : undefined}>
+      <nav
+        aria-labelledby={titleId}
+        inert={!isStuck}
+        className={cn(
+          styles.card,
+          'flex flex-col justify-between gap-3 rounded-page border border-border-muted bg-surface-base px-3 py-5 shadow-med',
+        )}
+      >
+        <div className="flex items-baseline justify-between gap-3 px-0.5">
+          <Text as="p" variant="label" tone="muted" id={titleId}>
+            Last 7 days
+          </Text>
+          <Text as="span" variant="caption" tone="muted">
+            {first === last ? last : `${first} – ${last}`}
+          </Text>
+        </div>
+        <ol className="grid grid-cols-7 gap-0.5">
+          {days.map((one) => (
+            <li key={one.day}>
+              <CalendarDay
+                one={one}
+                isFinding={requestedDay === one.day}
+                onPress={request}
+              />
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </div>
   );
 }
 
