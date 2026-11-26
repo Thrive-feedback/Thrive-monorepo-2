@@ -79,7 +79,7 @@ describe('HomeWeekCalendar', () => {
     expect(card()).toHaveAttribute('inert');
   });
 
-  it('names each day in full, marks today, and lets no quiet day be pressed', () => {
+  it('names each day in full, marks today, and marks a quiet day unavailable', () => {
     render(<Week />);
     act(() => composerHasStuck(true));
 
@@ -91,7 +91,51 @@ describe('HomeWeekCalendar', () => {
     ).toBeEnabled();
     expect(
       screen.getByRole('button', { name: 'Wednesday 18 Nov, nothing written' }),
-    ).toBeDisabled();
+    ).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('says a day in full, and what it held, when pointed at', async () => {
+    render(<Week />);
+    act(() => composerHasStuck(true));
+
+    await userEvent.hover(
+      screen.getByRole('button', { name: 'Today, Sunday 22 Nov, 1 offered' }),
+    );
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Today, Sunday 22 Nov · 1 offered',
+    );
+  });
+
+  it('keeps a quiet day reachable, finds nothing when it is pressed, and says why', async () => {
+    render(<Week />);
+    act(() => composerHasStuck(true));
+    const wednesday = screen.getByRole('button', {
+      name: 'Wednesday 18 Nov, nothing written',
+    });
+
+    await userEvent.click(wednesday);
+
+    expect(wednesday).toHaveAttribute('aria-busy', 'false');
+    expect(screen.queryByText(/^Finding/)).not.toBeInTheDocument();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Nothing written on Wednesday',
+    );
+  });
+
+  it('reaches a quiet day from the keyboard and says it held nothing', async () => {
+    render(<Week />);
+    act(() => composerHasStuck(true));
+    const wednesday = screen.getByRole('button', {
+      name: 'Wednesday 18 Nov, nothing written',
+    });
+
+    act(() => wednesday.focus());
+
+    expect(wednesday).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Nothing written on Wednesday',
+    );
   });
 
   it('asks for the day pressed, as the ribbon does, and says it is finding it', async () => {
