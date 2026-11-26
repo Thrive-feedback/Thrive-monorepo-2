@@ -16,7 +16,7 @@
  * The main sidebar folded to its rail of icons, from `data-sidebar` on `<html>`, which the script
  * before paint sets (`SIDEBAR_INIT_SCRIPT`). Layout follows the attribute rather than React state,
  * so the first paint is already the right width. It hangs from the root rather than the sidebar
- * because tooltips are portalled outside it. `rail-locked` is Settings holding it there.
+ * because tooltips are portalled outside it. `rail-locked` is a phone holding it at its width, in the menu drawer.
  */
 @custom-variant rail (:root[data-sidebar='rail'] &);
 @custom-variant rail-locked (:root[data-sidebar-locked] &);

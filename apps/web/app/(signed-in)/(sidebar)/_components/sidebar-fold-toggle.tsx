@@ -16,10 +16,11 @@ const EXPAND = 'Expand sidebar';
 
 /**
  * Folds the sidebar to its rail of icons, or widens it again, drawn as one of the sidebar's rows. The
- * choice is kept in this browser and holds from `xl`, the only width where it can be made. Which icon and words show follows
- * `data-sidebar` in CSS, so the first paint is right before hydration; the name a screen reader
- * hears and whether it is expanded come from the same attribute once hydrated. Below `xl` the window
- * holds the sidebar at its width, so it is not offered there, since it could not act.
+ * choice is kept in this browser, apart for a desktop and a tablet, where the sidebar starts as the
+ * rail but can still be widened. Which icon and words show follows `data-sidebar` in CSS, so the
+ * first paint is right before hydration; the name a screen reader hears and whether it is expanded
+ * come from the same attribute once hydrated. On a phone the sidebar is in the menu drawer at its
+ * full width, so it is not offered there, since it could not act.
  */
 export function SidebarFoldToggle() {
   const { folded, toggle } = useSidebarFold();

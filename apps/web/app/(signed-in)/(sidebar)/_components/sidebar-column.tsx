@@ -9,8 +9,8 @@ export type SidebarColumnProps = {
 /**
  * The column the sidebar stands in, against the frame's left edge and divided from the page by a
  * line, on a screen wide enough for it (`md`). It is full width or a rail of icons, as `data-sidebar`
- * on `<html>` says: a rail on a tablet, below `xl`, whatever the person chose, so the page has the
- * room, and from `xl` full width until the person folds it. The script before paint sets the
+ * on `<html>` says: a rail on a tablet, below `xl`, so the page has the room, until the person widens
+ * it there, and from `xl` full width until the person folds it. The script before paint sets the
  * attribute on each load and as the window crosses a breakpoint. It eases between the two. The whole
  * column holds just below the navbar as the page scrolls, so nothing drawn on it moves.
  *
