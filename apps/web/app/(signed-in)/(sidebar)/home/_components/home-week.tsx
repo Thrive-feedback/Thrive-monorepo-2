@@ -14,6 +14,7 @@ import type { CurrentMembership } from '@/lib/session/current-account.type';
 import styles from './home-week.module.css';
 import { HomeWeekCalendar } from './home-week-calendar';
 import { HomeWeekRibbon } from './home-week-ribbon';
+import { HomeWeekStrip } from './home-week-strip';
 
 export type HomeWeekProps = {
   membership: CurrentMembership;
@@ -108,6 +109,24 @@ export async function HomeStuckWeek({
   return week ? (
     <HomeWeekCalendar week={week} stuckMarkId={stuckMarkId} />
   ) : null;
+}
+
+export type HomePhoneWeekProps = HomeWeekProps & {
+  /** The line that leaves the window as the week's strip sticks under the heading. */
+  shownMarkId: string;
+};
+
+/**
+ * The week again, small, under the heading on a phone once the composer has scrolled away, read from
+ * the same one call as the band's. Not counted, there is nothing to show.
+ */
+export async function HomePhoneWeek({
+  membership,
+  show,
+  shownMarkId,
+}: HomePhoneWeekProps) {
+  const week = await readHomeWeekIfCounted(membership, show);
+  return week ? <HomeWeekStrip week={week} shownMarkId={shownMarkId} /> : null;
 }
 
 /** `HomeWeek` still loading, holding the room the sentence and the days will take. */

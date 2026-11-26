@@ -16,9 +16,9 @@ export type HomeHeadProps = {
 
 /**
  * Home's heading, standing where the band's contents begin, before the band and over it. At the top
- * of the page it is the band's display line; from `md` it settles to a page title as the page
- * begins to scroll and stays under the navbar, the band's ground behind it, so the week passes under
- * the heading rather than through it. On a phone it scrolls with the band, big, and needs no ground.
+ * of the page it is the band's display line; it settles to a page title as the page begins to
+ * scroll and stays under the navbar, the band's ground behind it, so the week passes under the
+ * heading rather than through it.
  * The mark it settles at comes first, in the page's flow, since the heading itself stays put.
  */
 export function HomeHead({ headingId }: HomeHeadProps) {
@@ -30,7 +30,7 @@ export function HomeHead({ headingId }: HomeHeadProps) {
         className={HOME_SETTLE_MARK}
       />
       <div className={HOME_HEAD}>
-        <HangingBandGround className="absolute inset-0 hidden md:block" />
+        <HangingBandGround className="absolute inset-0" />
         <div className={cn(PAGE_COLUMN_WIDTH, 'relative', HOME_HEADING_LINE)}>
           <HomeTitle id={headingId} />
         </div>

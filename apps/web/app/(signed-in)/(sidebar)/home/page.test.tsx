@@ -40,6 +40,7 @@ vi.mock('./_components/home-week', () => ({
   HomeWeek: ({ show }: { show: string }) => <p>The week, showing {show}</p>,
   HomeWeekSkeleton: () => null,
   HomeStuckWeek: () => null,
+  HomePhoneWeek: () => null,
 }));
 vi.mock('./_components/home-feed', () => ({
   HomeFeed: ({ show }: { show: string }) => <p>The feed, showing {show}</p>,

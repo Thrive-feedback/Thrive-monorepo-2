@@ -1,6 +1,6 @@
 /*
- * Home's heading is set in the band's display size at the top of the page and, from `md`, settles to
- * a page title's size as the page begins to scroll, so it fits the strip it then stays in under the
+ * Home's heading is set in the band's display size at the top of the page and settles to a page
+ * title's size as the page begins to scroll, so it fits the strip it then stays in under the
  * navbar. It is drawn smaller rather than set smaller: its box keeps the display line, so nothing is
  * laid out again and the compositor alone moves it. Shrinking toward its top left corner keeps it
  * where it stands, its settled line inside the strip. How much smaller is `--settled-scale`, the page
@@ -28,13 +28,11 @@
   }
 }
 
-@media (width >= 48rem) {
-  .title[data-settled] {
-    scale: var(--settled-scale, 1);
-  }
+.title[data-settled] {
+  scale: var(--settled-scale, 1);
 }
 
-@media (width >= 48rem) and (prefers-reduced-motion: no-preference) {
+@media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: scroll()) {
     .title {
       animation: settle linear both;
