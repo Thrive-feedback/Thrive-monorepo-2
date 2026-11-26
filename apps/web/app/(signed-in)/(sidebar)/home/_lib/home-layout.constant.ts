@@ -6,14 +6,31 @@
 /**
  * Home's heading, which stands where the band's contents begin, 24 down: the navbar's 18 and a gap
  * of 6. It stands before the band rather than in it, over the band, and takes no room of its own,
- * since the band keeps its room (`HOME_HEADING_ROOM`). From `md` it stays there as the page scrolls,
- * the week passing under it, so the page is always headed: the navbar's 18, then its 16, which are
- * that gap of 6, the heading's 8 and 2 clear of the composer stuck under it.
+ * since the band keeps its room (`HOME_HEADING_ROOM`). Its box is the strip it settles into: from
+ * `md` it stays there as the page scrolls, the week passing under it, so the page is always headed:
+ * the navbar's 18, then its 16, which are that gap of 6, the settled heading's 8 and 2 clear of the
+ * composer stuck under it. At the top of the page the heading is bigger than the strip and runs on
+ * below it, into the room the band keeps.
  */
 export const HOME_HEAD = 'relative z-25 -mb-16 h-16 pt-6 md:sticky md:top-18';
 
-/** The heading's line, and the room the band keeps for it above the week. */
-export const HOME_HEADING_ROOM = 'flex h-8 items-center';
+/**
+ * The heading's line in that strip, 8 high, which a page title's line fits; the heading hangs from
+ * its top, so it grows downward from where it stands and shrinks back up to it.
+ */
+export const HOME_HEADING_LINE = 'flex h-8 items-start';
+
+/** The room the band keeps above the week for the heading at the top of the page: its display line. */
+export const HOME_HEADING_ROOM = 'h-lh text-display-1';
+
+/**
+ * A line the width of the page that leaves the window once the page has scrolled 6, halfway through
+ * the 12 over which the heading settles: where it settles at once for a browser with no scroll
+ * timeline, or a reader who would rather nothing moved. It stands where the page begins, under the
+ * navbar's 18, and from `md` 12 higher. Seen by nobody and taking no room.
+ */
+export const HOME_SETTLE_MARK =
+  'pointer-events-none h-px -mb-px md:relative md:-top-12';
 
 /** Room under the band's contents for the composer, which is pulled up over the band's foot. */
 export const HOME_BAND_FOOT = 'pb-24';
@@ -86,3 +103,6 @@ export const RIBBON_DAYS_ON_A_PHONE = 5;
 
 /** The line that says the composer has stuck, by its id, for what shows only once it has. */
 export const HOME_STUCK_MARK_ID = 'home-composer-stuck';
+
+/** The line that says the heading has settled, by its id. */
+export const HOME_SETTLE_MARK_ID = 'home-heading-settled';

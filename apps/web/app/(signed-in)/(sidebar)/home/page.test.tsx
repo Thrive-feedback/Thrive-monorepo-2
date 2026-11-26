@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ROUTES } from '@/lib/routes.constant';
 import Home from './page';
 
@@ -63,10 +63,22 @@ vi.mock('./_components/home-feed-filter', () => ({
 }));
 
 beforeEach(() => {
+  // The heading watches the page scroll; at the top of a page that never moves, nothing is seen.
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
   requireMember.mockResolvedValue({
     email: 'ann@acme.test',
     membership: { workspace: { id: 'w-1', name: 'Globex' }, role: 'MEMBER' },
   });
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 function open(searchParams: Record<string, string> = {}) {

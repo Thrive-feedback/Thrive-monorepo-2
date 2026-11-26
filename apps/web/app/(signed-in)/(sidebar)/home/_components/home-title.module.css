@@ -1,0 +1,43 @@
+/*
+ * Home's heading is set in the band's display size at the top of the page and, from `md`, settles to
+ * a page title's size as the page begins to scroll, so it fits the strip it then stays in under the
+ * navbar. Where a scroll timeline exists and motion is welcome, the size follows the scroll over its
+ * first 12 units, taking no duration. Anywhere else it changes once, at the mark halfway there
+ * (`[data-settled]`, set as that mark leaves the window), easing over the fast step only where
+ * motion is welcome. Only the heading's own line is laid out again: its box above holds a fixed
+ * height, so nothing around it moves. A size between two type roles, and a scroll timeline, have no
+ * utility.
+ */
+@keyframes settle {
+  to {
+    font-size: var(--type-display-5-size);
+    line-height: var(--type-display-5-leading);
+    letter-spacing: var(--type-display-5-tracking);
+  }
+}
+
+@media (width >= 48rem) {
+  .title[data-settled] {
+    font-size: var(--type-display-5-size);
+    line-height: var(--type-display-5-leading);
+    letter-spacing: var(--type-display-5-tracking);
+  }
+}
+
+@media (width >= 48rem) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .title {
+      animation: settle linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 calc(var(--space-unit) * 12);
+    }
+  }
+
+  @supports not (animation-timeline: scroll()) {
+    .title {
+      transition-property: font-size, line-height, letter-spacing;
+      transition-duration: var(--motion-duration-fast);
+      transition-timing-function: var(--motion-ease-smooth-out);
+    }
+  }
+}
