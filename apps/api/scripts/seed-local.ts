@@ -19,7 +19,8 @@ import { assertLocalDatabase } from './seed-local.guard';
  *   included, there is no switch (ADR 0038);
  * - when each piece was written: the API stamps everything now, and a Home whose week is one busy
  *   day shows nothing of how it reads, so each piece is moved back to its day afterwards, its Asks
- *   and its request with it;
+ *   and its request with it; so is each past 1:1 meeting, held through the API and then moved back
+ *   to its week;
  * - with `SEED_JOIN_EMAIL`, the browser sessions of that Account, pointed at the seeded Workspace so
  *   the next page it opens is this one rather than a choice.
  *
@@ -427,9 +428,180 @@ const PRAISE: readonly Praise[] = [
   },
 ];
 
+type Schedule = {
+  readonly cadence: 'WEEKLY' | 'EVERY_TWO_WEEKS' | 'MONTHLY' | 'ONCE';
+  readonly weekday: number;
+  readonly startMinute: number;
+  readonly lengthMinutes: number;
+  readonly templateKey: string;
+  /** The day of a meeting held just once. */
+  readonly startsOn?: string;
+};
+
+/** The calendar day `days` from today in Bangkok, `YYYY-MM-DD`, for a meeting held just once. */
+function dayAhead(days: number): string {
+  const bangkok = new Date(Date.now() + 7 * 60 * 60 * 1000 + days * 86_400_000);
+  return bangkok.toISOString().slice(0, 10);
+}
+
+/**
+ * A 1:1: who invited whom, with when it meets and, if they wrote one, a note; and what became of it:
+ * accepted, declined (with a note, if any), ended once it ran, sent back with another time, or not
+ * answered yet.
+ */
+type OneOnOneSeed = {
+  readonly from: Who;
+  readonly to: Who;
+  readonly schedule: Schedule;
+  readonly note?: string;
+  readonly answer?: 'accept' | 'decline' | 'end' | 'suggest';
+  readonly answerNote?: string;
+  /** The time the person invited sends back instead, with `answer: 'suggest'`. */
+  readonly suggested?: Schedule;
+};
+
+const WEEKLY_THURSDAY: Schedule = {
+  cadence: 'WEEKLY',
+  weekday: 4,
+  startMinute: 10 * 60,
+  lengthMinutes: 30,
+  templateKey: 'weekly-check-in',
+};
+
+/** The reader's 1:1s, one in every state the page draws: to answer, running, waiting, turned down, over. */
+const ONE_ON_ONES: readonly OneOnOneSeed[] = [
+  // Running: weekly, sent by the reader.
+  {
+    from: 'me',
+    to: 'ben',
+    schedule: WEEKLY_THURSDAY,
+    answer: 'accept',
+  },
+  // Running: every two weeks, sent by the reader.
+  {
+    from: 'me',
+    to: 'cara',
+    schedule: {
+      cadence: 'EVERY_TWO_WEEKS',
+      weekday: 2,
+      startMinute: 14 * 60,
+      lengthMinutes: 45,
+      templateKey: 'career-conversation',
+    },
+    answer: 'accept',
+  },
+  // Running: monthly, sent to the reader.
+  {
+    from: 'grace',
+    to: 'me',
+    schedule: {
+      cadence: 'MONTHLY',
+      weekday: 5,
+      startMinute: 16 * 60,
+      lengthMinutes: 30,
+      templateKey: 'feedback-both-ways',
+    },
+    answer: 'accept',
+  },
+  // Sent by the reader, waiting on Dev.
+  {
+    from: 'me',
+    to: 'dev',
+    schedule: { ...WEEKLY_THURSDAY, weekday: 1, startMinute: 9 * 60 + 30 },
+    note: 'A regular half hour to talk about the platform migration.',
+  },
+  // Sent to the reader with a note, waiting on them.
+  {
+    from: 'elena',
+    to: 'me',
+    schedule: WEEKLY_THURSDAY,
+    note: 'Could we talk about the tech lead path? I would love your view.',
+  },
+  // A new joiner asks the reader for one meeting, just once, without a note.
+  {
+    from: 'femi',
+    to: 'me',
+    schedule: {
+      ...WEEKLY_THURSDAY,
+      cadence: 'ONCE',
+      startMinute: 11 * 60,
+      templateKey: 'new-joiner',
+      startsOn: dayAhead(5),
+    },
+  },
+  // Sent by the reader and turned down, with a note.
+  {
+    from: 'me',
+    to: 'hugo',
+    schedule: { ...WEEKLY_THURSDAY, weekday: 5 },
+    answer: 'decline',
+    answerNote: 'Not this month, I am on leave. Can we try in January?',
+  },
+  // Sent by the reader; Jun sent it back with another time, so it waits on the reader.
+  {
+    from: 'me',
+    to: 'jun',
+    schedule: WEEKLY_THURSDAY,
+    answer: 'suggest',
+    suggested: { ...WEEKLY_THURSDAY, weekday: 2, startMinute: 15 * 60 },
+    answerNote: 'Thursdays are full for me. Could Tuesday afternoons work?',
+  },
+  // Ran, then ended.
+  {
+    from: 'isla',
+    to: 'me',
+    schedule: { ...WEEKLY_THURSDAY, weekday: 2 },
+    answer: 'end',
+  },
+];
+
+/**
+ * Meetings already held in the reader's weekly 1:1 with Ben, oldest first, each run through the API
+ * as two people would and then moved back to its week: topics added, talked about and noted, and
+ * what was not reached carried over.
+ */
+type MeetingSeed = {
+  readonly weeksAgo: number;
+  /** Topics either adds before starting. */
+  readonly added: readonly { readonly by: Who; readonly text: string }[];
+  /** Notes on the topics talked about, by their text; the rest carry over. */
+  readonly discussed: Readonly<Record<string, string>>;
+};
+
+const BEN_MEETINGS: readonly MeetingSeed[] = [
+  {
+    weeksAgo: 3,
+    added: [],
+    discussed: {
+      'What went well this week?': 'Shipped the onboarding flow a day early.',
+      "What's in your way?": 'Waiting two days for a design review.',
+    },
+  },
+  {
+    weeksAgo: 2,
+    added: [{ by: 'ben', text: 'The hiring loop' }],
+    discussed: {
+      'What do you need from me?': 'More context on the Q1 priorities.',
+      'What went well this week?': 'The new joiner settled in quickly.',
+      'The hiring loop': 'Two interviews a week is the most Ben can take on.',
+    },
+  },
+  {
+    weeksAgo: 1,
+    added: [{ by: 'ben', text: 'Career path: senior engineer' }],
+    discussed: {
+      'What went well this week?': 'Billing API is in review.',
+      "What's in your way?": 'On-call was heavy; three pages at night.',
+    },
+  },
+];
+
+/** What the reader adds to Grace's next meeting before it, so one agenda is already prepared. */
+const GRACE_NEXT_TOPICS = ['Feedback on my last review', 'Conference budget'];
+
 async function call(
   person: Person,
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT',
   path: string,
   body?: unknown,
 ): Promise<{ [key: string]: unknown }> {
@@ -723,6 +895,108 @@ Sign in once at ${WEB_BASE_URL} with that Google account, then run this again.
     });
   }
 
+  const seededOneOnOnes = new Map<string, string>();
+  for (const piece of ONE_ON_ONES) {
+    const from = resolve(piece.from);
+    const to = resolve(piece.to);
+    const { id } = await call(
+      from,
+      'POST',
+      `/v1/workspaces/${workspaceId}/one-on-ones`,
+      {
+        invitedAccountId: to.accountId,
+        schedule: piece.schedule,
+        ...(piece.note ? { note: piece.note } : {}),
+      },
+    );
+    const oneOnOne = `/v1/workspaces/${workspaceId}/one-on-ones/${id as string}`;
+    seededOneOnOnes.set(`${piece.from}:${piece.to}`, id as string);
+    if (piece.answer === 'accept' || piece.answer === 'end') {
+      await call(to, 'POST', `${oneOnOne}/accept`);
+    }
+    if (piece.answer === 'end') {
+      await call(from, 'POST', `${oneOnOne}/end`);
+    }
+    if (piece.answer === 'suggest') {
+      await call(to, 'POST', `${oneOnOne}/suggest`, {
+        schedule: piece.suggested,
+        ...(piece.answerNote ? { note: piece.answerNote } : {}),
+      });
+    }
+    if (piece.answer === 'decline') {
+      await call(
+        to,
+        'POST',
+        `${oneOnOne}/decline`,
+        piece.answerNote ? { note: piece.answerNote } : {},
+      );
+    }
+  }
+
+  const me = resolve('me');
+  const ben = resolve('ben');
+  const benOneOnOne = `/v1/workspaces/${workspaceId}/one-on-ones/${seededOneOnOnes.get('me:ben')}`;
+  type SeededTopic = {
+    id: string;
+    text: string;
+    notesUpdatedAt: string | null;
+  };
+  for (const seed of BEN_MEETINGS) {
+    const { id: meetingId } = await call(me, 'POST', `${benOneOnOne}/meetings`);
+    const meeting = `${benOneOnOne}/meetings/${meetingId as string}`;
+    for (const topic of seed.added) {
+      await call(resolve(topic.by), 'POST', `${meeting}/topics`, {
+        text: topic.text,
+      });
+    }
+    await call(ben, 'POST', `${meeting}/start`);
+    const next = (await call(me, 'GET', `${benOneOnOne}/meetings/next`)) as {
+      meeting: { topics: SeededTopic[] };
+    };
+    for (const topic of next.meeting.topics) {
+      const note = seed.discussed[topic.text];
+      if (note !== undefined) {
+        await call(me, 'PATCH', `${meeting}/topics/${topic.id}`, {
+          discussed: true,
+          note,
+        });
+      }
+    }
+    const day = new Date(now - seed.weeksAgo * 7 * DAY_MS);
+    await call(ben, 'POST', `${meeting}/finish`);
+    // Moved back to its week: when it met, was noted, and finished.
+    const metAt = new Date(day.getTime() + 30 * 60 * 1000);
+    await prismaService.oneOnOneMeeting.update({
+      where: { id: meetingId as string },
+      data: {
+        occursAt: day,
+        startedAt: day,
+        finishedAt: metAt,
+        createdAt: day,
+      },
+    });
+    await prismaService.oneOnOneTopic.updateMany({
+      where: { meetingId: meetingId as string, discussedAt: { not: null } },
+      data: { discussedAt: metAt, notesUpdatedAt: metAt },
+    });
+  }
+  const graceOneOnOne = `/v1/workspaces/${workspaceId}/one-on-ones/${seededOneOnOnes.get('grace:me')}`;
+  const { id: graceMeeting } = await call(
+    me,
+    'POST',
+    `${graceOneOnOne}/meetings`,
+  );
+  for (const text of GRACE_NEXT_TOPICS) {
+    await call(
+      me,
+      'POST',
+      `${graceOneOnOne}/meetings/${graceMeeting as string}/topics`,
+      {
+        text,
+      },
+    );
+  }
+
   if (joiner) {
     // Only the one this script wrote: the developer's own sessions stay theirs.
     await prismaService.session.delete({ where: { id: joiner.sessionId } });
@@ -769,6 +1043,7 @@ What is on screen for ${reader.name}:
   Your requests   ${WEB_BASE_URL}/received?show=requests
   Waiting for you ${WEB_BASE_URL}/waiting   ${waitingForReader} Asks to answer
   Kudos board     ${WEB_BASE_URL}/kudos
+  1:1s            ${WEB_BASE_URL}/one-on-ones   ${ONE_ON_ONES.length} 1:1s, one in every state
 
 Run this again for another Workspace with its own people; nothing is overwritten.
 `);

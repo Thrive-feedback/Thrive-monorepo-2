@@ -18,6 +18,7 @@ Step definitions live with the stack that runs them: `@api` steps in `apps/api/t
 | `workspace-goals.feature`   | an Admin adding a Workspace Goal and every Member reading it; the name refused for a space, a length past 30, or a name already taken in any letter case, hidden ones included; hiding and showing again, which Members see and Admins see marked; only Admins manage them, and only in their own Workspace |
 | `workspace-goals-in-feedback.feature` | A Feedback message, given or answering, and a Request message bound on sending to every active Workspace Goal they name, in any letter case, once each, read back in the Admin's spelling; a Workspace Goal hidden before sending binds nothing, one hidden after stays bound; an answer carries only what its Giver wrote |
 | `mentions.feature`          | A Feedback message and a Request message naming a teammate by slug, read back by the name they go by; a Member of another Workspace never mentioned; a Mention shares nothing with the person named |
+| `one-on-ones.feature`       | inviting a teammate to a 1:1 and its running for both once accepted; nobody else reads it; the sender never accepts it; one 1:1 between two people at a time; a topic someone added is theirs to remove; notes only once a meeting starts, and a note the other changed is never overwritten; finishing shares the meeting with both and carries what was not reached; no writes once the 1:1 has ended |
 
 Every scenario is `@api`. No `@browser` steps exist yet (`FE_15`; Playwright is planned).
 

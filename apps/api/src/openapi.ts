@@ -31,6 +31,10 @@ export function buildOpenApiDocument(
           'feedback',
           'Feedback Requests, the Asks they hold, and the answers to them.',
         )
+        .addTag(
+          'one-on-ones',
+          'Recurring 1:1s between two Members, and the templates their agendas start from.',
+        )
         .addTag('app', 'The application itself, such as its health.')
         .build(),
     ),

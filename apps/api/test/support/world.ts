@@ -54,6 +54,8 @@ export class ThriveWorld extends World {
   private readonly storedInvitations = new Map<string, string>();
   /** The Workspace Goals added in this scenario, by name, as the Admin's screen holds their ids. */
   private readonly workspaceGoals = new Map<string, string>();
+  /** The scenario's 1:1 and its next meeting once opened, as the 1:1 page holds their ids. */
+  readonly oneOnOne: { id?: string; meetingId?: string } = {};
 
   constructor(options: IWorldOptions) {
     super(options);

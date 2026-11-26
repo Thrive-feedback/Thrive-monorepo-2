@@ -1,0 +1,133 @@
+import {
+  cursorQueryShape,
+  cursorResultShape,
+} from '@app/shared/presentation/dto/page.dto';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+
+/** A nullable string described by hand, as `one-on-one.dto.ts` explains. */
+function nullableString() {
+  return z.string().nullable().meta({ type: 'string', nullable: true });
+}
+
+/** A nullable RFC 3339 instant, described by hand for the same reason. */
+function nullableDateTime() {
+  return z.iso
+    .datetime({ offset: true })
+    .nullable()
+    .meta({ type: 'string', format: 'date-time', nullable: true });
+}
+
+export const meetingPathParamsSchema = z.object({
+  workspaceId: z.uuid(),
+  oneOnOneId: z.uuid(),
+  meetingId: z.uuid(),
+});
+export class MeetingPathParamsDto extends createZodDto(
+  meetingPathParamsSchema,
+) {}
+
+export const topicPathParamsSchema = meetingPathParamsSchema.extend({
+  topicId: z.uuid(),
+});
+export class TopicPathParamsDto extends createZodDto(topicPathParamsSchema) {}
+
+export const addTopicRequestSchema = z.strictObject({
+  /** At most 200 characters. */
+  text: z.string(),
+});
+export class AddTopicRequestDto extends createZodDto(addTopicRequestSchema) {}
+
+export const updateTopicRequestSchema = z
+  .strictObject({
+    /** A new wording: the author's, or anyone's for a template or carried topic. */
+    text: z.string().optional(),
+    /** The shared note, at most 4,000 characters. Only while the meeting runs. */
+    note: z.string().optional(),
+    /**
+     * When the caller last read the note (`notesUpdatedAt` as they saw it), with `note`. If the other
+     * person wrote it since, the write is refused with `ONE_ON_ONE_TOPIC_CHANGED`.
+     */
+    noteReadAt: z.iso.datetime({ offset: true }).nullable().optional(),
+    discussed: z.boolean().optional(),
+  })
+  .refine(
+    (change) =>
+      change.text !== undefined ||
+      change.note !== undefined ||
+      change.discussed !== undefined,
+    { message: 'Change the wording, the note or the discussed tick.' },
+  )
+  .refine(
+    (change) => change.noteReadAt === undefined || change.note !== undefined,
+    { message: 'noteReadAt goes with a note.', path: ['noteReadAt'] },
+  );
+export class UpdateTopicRequestDto extends createZodDto(
+  updateTopicRequestSchema,
+) {}
+
+export const reorderTopicsRequestSchema = z.strictObject({
+  /** Every topic on the agenda, once, in the new order. */
+  topicIds: z.array(z.uuid()),
+});
+export class ReorderTopicsRequestDto extends createZodDto(
+  reorderTopicsRequestSchema,
+) {}
+
+export const createdResponseSchema = z.object({ id: z.uuid() });
+export class CreatedMeetingThingResponseDto extends createZodDto(
+  createdResponseSchema,
+) {}
+
+const topicSchema = z.object({
+  id: z.uuid(),
+  text: z.string(),
+  source: z.enum(['CARRIED', 'TEMPLATE', 'PERSON']),
+  /** Who added it; `null` for one carried over or from the template. */
+  authorAccountId: nullableString(),
+  position: z.number().int(),
+  notes: z.string(),
+  /** Send this back as `noteReadAt` with a change to the note. */
+  notesUpdatedAt: nullableDateTime(),
+  notesUpdatedByAccountId: nullableString(),
+  discussedAt: nullableDateTime(),
+});
+
+const meetingSchema = z.object({
+  id: z.uuid(),
+  state: z.enum(['PREPARING', 'IN_PROGRESS', 'FINISHED']),
+  templateKey: z.string(),
+  occursAt: nullableDateTime(),
+  startedAt: nullableDateTime(),
+  startedByAccountId: nullableString(),
+  finishedAt: nullableDateTime(),
+  finishedByAccountId: nullableString(),
+  topics: z.array(topicSchema),
+});
+
+export const nextMeetingResponseSchema = z.object({
+  /** The meeting not finished, or `null` before either has written to it. */
+  meeting: meetingSchema.nullable(),
+  /** Before then: what was not reached last time, which it will open with. */
+  carried: z.array(z.string()),
+  /** Before then: the template's questions, which it will open with. */
+  templateQuestions: z.array(z.string()),
+  templateName: z.string(),
+});
+export class NextMeetingResponseDto extends createZodDto(
+  nextMeetingResponseSchema,
+) {}
+
+export const listPastMeetingsQuerySchema = z.strictObject(cursorQueryShape);
+export class ListPastMeetingsQueryDto extends createZodDto(
+  listPastMeetingsQuerySchema,
+) {}
+
+export const listPastMeetingsResponseSchema = z.object({
+  /** Finished meetings, newest first, each whole. */
+  items: z.array(meetingSchema),
+  ...cursorResultShape,
+});
+export class ListPastMeetingsResponseDto extends createZodDto(
+  listPastMeetingsResponseSchema,
+) {}
