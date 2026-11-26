@@ -3812,7 +3812,197 @@
             "description": "WORKSPACE_NOT_FOUND"
           }
         },
-        "summary": "List the 1:1 templates a 1:1 can start from, Thrive's first",
+        "summary": "List the 1:1 templates the caller can start an agenda from: Thrive's, the Workspace's, then their own. Not paged: each layer is capped (ADR 0096)",
+        "tags": [
+          "one-on-ones"
+        ]
+      },
+      "post": {
+        "operationId": "OneOnOneTemplateController_keepOneOnOneTemplate",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeepOneOnOneTemplateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeptOneOnOneTemplateResponseDto_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REQUEST_INVALID or ONE_ON_ONE_TEMPLATE_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "ONE_ON_ONE_TEMPLATE_NOT_YOURS"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND"
+          },
+          "409": {
+            "description": "ONE_ON_ONE_TEMPLATE_NAME_TAKEN or ONE_ON_ONE_TEMPLATE_LIMIT_REACHED"
+          }
+        },
+        "summary": "Keep a new 1:1 template: for the caller alone, or, as an Admin, for everyone in the Workspace",
+        "tags": [
+          "one-on-ones"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/one-on-one-templates/{templateId}": {
+      "put": {
+        "operationId": "OneOnOneTemplateController_rewriteOneOnOneTemplate",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "templateId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RewriteOneOnOneTemplateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Rewritten"
+          },
+          "400": {
+            "description": "REQUEST_INVALID or ONE_ON_ONE_TEMPLATE_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "ONE_ON_ONE_TEMPLATE_NOT_YOURS"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND or ONE_ON_ONE_TEMPLATE_NOT_FOUND"
+          },
+          "409": {
+            "description": "ONE_ON_ONE_TEMPLATE_NAME_TAKEN or ONE_ON_ONE_TEMPLATE_LIMIT_REACHED"
+          }
+        },
+        "summary": "Replace what a 1:1 template the caller may change says; agendas opened from it later use what it says now",
+        "tags": [
+          "one-on-ones"
+        ]
+      },
+      "delete": {
+        "operationId": "OneOnOneTemplateController_removeOneOnOneTemplate",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "templateId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Removed"
+          },
+          "400": {
+            "description": "REQUEST_INVALID"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "403": {
+            "description": "ONE_ON_ONE_TEMPLATE_NOT_YOURS"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND or ONE_ON_ONE_TEMPLATE_NOT_FOUND"
+          }
+        },
+        "summary": "Remove a 1:1 template the caller may change; the 1:1s starting from it keep its questions",
         "tags": [
           "one-on-ones"
         ]
@@ -12734,6 +12924,9 @@
                     "templateKey": {
                       "type": "string"
                     },
+                    "templateName": {
+                      "type": "string"
+                    },
                     "startsOn": {
                       "type": "string",
                       "format": "date",
@@ -12746,6 +12939,7 @@
                     "startMinute",
                     "lengthMinutes",
                     "templateKey",
+                    "templateName",
                     "startsOn"
                   ],
                   "additionalProperties": false
@@ -12954,6 +13148,9 @@
               "templateKey": {
                 "type": "string"
               },
+              "templateName": {
+                "type": "string"
+              },
               "startsOn": {
                 "type": "string",
                 "format": "date",
@@ -12966,6 +13163,7 @@
               "startMinute",
               "lengthMinutes",
               "templateKey",
+              "templateName",
               "startsOn"
             ],
             "additionalProperties": false
@@ -13154,7 +13352,9 @@
                 "scope": {
                   "type": "string",
                   "enum": [
-                    "THRIVE"
+                    "THRIVE",
+                    "WORKSPACE",
+                    "PERSONAL"
                   ]
                 },
                 "name": {
@@ -13168,6 +13368,9 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "changeable": {
+                  "type": "boolean"
                 }
               },
               "required": [
@@ -13175,14 +13378,87 @@
                 "scope",
                 "name",
                 "suggestedWhen",
-                "questions"
+                "questions",
+                "changeable"
               ],
               "additionalProperties": false
+            }
+          },
+          "mayKeepForWorkspace": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "mayKeepForWorkspace"
+        ],
+        "additionalProperties": false
+      },
+      "KeepOneOnOneTemplateRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "suggestedWhen": {
+            "type": "string"
+          },
+          "questions": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "WORKSPACE",
+              "PERSONAL"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "questions",
+          "scope"
+        ],
+        "additionalProperties": false
+      },
+      "KeptOneOnOneTemplateResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "RewriteOneOnOneTemplateRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "suggestedWhen": {
+            "type": "string"
+          },
+          "questions": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         },
         "required": [
-          "items"
+          "name",
+          "questions"
         ],
         "additionalProperties": false
       },

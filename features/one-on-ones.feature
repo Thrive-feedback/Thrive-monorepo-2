@@ -2,7 +2,9 @@ Feature: 1:1s
   Two Members of a Workspace meet one to one, on a schedule. Either may invite the other;
   nothing runs until the person invited accepts, and then the two are equal. Each meeting has
   an agenda both prepare, notes both write once it starts, and a summary when either finishes
-  it. A 1:1 is only ever read by its two people.
+  it. A 1:1 is only ever read by its two people. An agenda opens with the questions of a
+  template: one of Thrive's, one the Workspace keeps for everyone, or one a Member keeps for
+  themselves, which nobody else sees.
 
   Background:
     Given Ann owns a Workspace called "Acme"
@@ -72,3 +74,43 @@ Feature: 1:1s
     And Ben has ended the 1:1
     When Ann adds "Too late" to the next meeting
     Then Ann is told the 1:1 is not running
+
+  @api
+  Scenario: A Member's own template is theirs alone, and opens the agenda of a 1:1 started from it
+    Given Ben has kept a template "Sprint retro" asking "What slowed us?"
+    And Ben has invited Cara to a weekly 1:1 from "Sprint retro"
+    When Cara accepts the 1:1
+    Then Cara does not see the template "Sprint retro"
+    And Cara's next meeting opens with "What slowed us?"
+
+  @api
+  Scenario: Only an Admin keeps templates for the whole Workspace
+    When Ben keeps a template "Team health" for the Workspace
+    Then Ben is told the template is not theirs
+
+  @api
+  Scenario: The Workspace's templates are everyone's to use, and the Admins' to change
+    Given Ann has kept a template "Team health" for the Workspace asking "How is the team?"
+    When Ben renames the template "Team health" to "Ours"
+    Then Ben is told the template is not theirs
+    And Ben sees the template "Team health"
+
+  @api
+  Scenario: A removed template is chosen by nobody, but still opens the 1:1s that start from it
+    Given Ben has kept a template "Sprint retro" asking "What slowed us?"
+    And Ben and Cara have a running weekly 1:1 from "Sprint retro"
+    When Ben removes the template "Sprint retro"
+    Then Ben does not see the template "Sprint retro"
+    And Cara's next meeting opens with "What slowed us?"
+    And Ben cannot invite Ann to a weekly 1:1 from "Sprint retro"
+
+  @api
+  Scenario: A template needs a question
+    When Ben keeps a template "Empty" of their own with no question
+    Then Ben is told the template cannot be kept
+
+  @api
+  Scenario: Two of one's own templates never share a name
+    Given Ben has kept a template "Sprint retro" asking "What slowed us?"
+    When Ben keeps a template "sprint retro" of their own
+    Then Ben is told they keep one by that name already

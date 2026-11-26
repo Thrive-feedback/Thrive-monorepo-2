@@ -1,5 +1,5 @@
 import { OneOnOneScheduleInvalidError } from '../one-on-one.errors';
-import { ThriveTemplate } from './thrive-template.vo';
+import { templateRefOf } from './one-on-one-template-ref.vo';
 
 export const ONE_ON_ONE_CADENCES = [
   'WEEKLY',
@@ -104,13 +104,14 @@ export class OneOnOneSchedule {
 
   /**
    * A schedule chosen now, whose first meeting is the first that falls at or after `from`. One held
-   * just once meets on the day it names, which must not have passed. Its template must exist.
+   * just once meets on the day it names, which must not have passed. Whether its template may be
+   * chosen is for the use case to ask the template catalog, as kept templates live in the database.
    */
   static plan(choice: OneOnOneScheduleChoice, from: Date): OneOnOneSchedule {
     const { cadence, weekday, startMinute, lengthMinutes, templateKey } =
       OneOnOneSchedule.check(choice);
-    // A schedule chosen now names one of Thrive's templates; one stored is trusted as it was kept.
-    ThriveTemplate.of(templateKey);
+    // A Thrive key or a kept id; whether that template may be chosen is the catalog's to ask.
+    templateRefOf(templateKey);
     if (cadence === 'ONCE') {
       if (choice.startsOn === undefined) {
         throw new OneOnOneScheduleInvalidError(

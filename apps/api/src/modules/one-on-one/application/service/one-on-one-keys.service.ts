@@ -19,3 +19,15 @@ export function oneOnOnePairKey(
 export function oneOnOneKey(oneOnOneId: string): string {
   return `one-on-one:${oneOnOneId}`;
 }
+
+/**
+ * The unit-of-work key for one layer of kept templates: a Workspace's, or one Member's own. Two
+ * writes to one layer wait for each other, so neither slips a name already taken, or one template
+ * too many, past the other's check.
+ */
+export function oneOnOneTemplateLayerKey(
+  workspaceId: string,
+  ownerAccountId: string | null,
+): string {
+  return `one-on-one-templates:${workspaceId}:${ownerAccountId ?? 'workspace'}`;
+}

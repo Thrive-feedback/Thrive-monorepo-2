@@ -23,6 +23,7 @@ const ROW: OneOnOneRow = {
   answeredAt: NOW,
   endedAt: null,
   createdAt: NOW,
+  templateName: 'Weekly check-in',
   meetingInProgress: false,
 };
 

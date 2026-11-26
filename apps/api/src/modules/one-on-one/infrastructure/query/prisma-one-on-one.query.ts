@@ -7,7 +7,7 @@ import type {
   OneOnOneRowPage,
 } from '../../application/types/one-on-one.types';
 import { toOneOnOneRow } from '../mapper/one-on-one.mapper';
-import { MEETING_IN_PROGRESS } from './meeting-in-progress.record';
+import { ONE_ON_ONE_ROW } from './meeting-in-progress.record';
 
 @Injectable()
 export class PrismaOneOnOneQuery extends OneOnOneQuery {
@@ -49,7 +49,7 @@ export class PrismaOneOnOneQuery extends OneOnOneQuery {
         orderBy: { id: 'asc' },
         take: page.limit + 1,
         // One query with the page, not one per 1:1 (BE_06 R9).
-        include: MEETING_IN_PROGRESS,
+        include: ONE_ON_ONE_ROW,
       });
     const items = records.slice(0, page.limit).map(toOneOnOneRow);
     const hasMore = records.length > page.limit;
@@ -74,7 +74,7 @@ export class PrismaOneOnOneQuery extends OneOnOneQuery {
             { invitedAccountId: accountId },
           ],
         },
-        include: MEETING_IN_PROGRESS,
+        include: ONE_ON_ONE_ROW,
       });
     return record === null ? null : toOneOnOneRow(record);
   }

@@ -10,6 +10,12 @@ import type {
   OneOnOneMeetingSnapshot,
   OneOnOneTopicSnapshot,
 } from '../../domain/entity/one-on-one-meeting.entity';
+import {
+  storedTemplateRef,
+  templateColumnsOf,
+  templateKeyOf,
+  templateRefOf,
+} from '../../domain/value-object/one-on-one-template-ref.vo';
 
 /** The only place that knows both the stored meeting rows and the meeting entities. */
 
@@ -45,7 +51,7 @@ export function toMeetingSnapshot(
     id: record.id,
     workspaceId: record.workspaceId,
     oneOnOneId: record.oneOnOneId,
-    templateKey: record.templateKey,
+    templateKey: templateKeyOf(storedTemplateRef(record)),
     occursAt: record.occursAt,
     startedAt: record.startedAt,
     startedByAccountId: record.startedByAccountId,
@@ -61,7 +67,7 @@ export function toMeetingProjection(
 ): OneOnOneMeetingProjection {
   return {
     id: record.id,
-    templateKey: record.templateKey,
+    templateKey: templateKeyOf(storedTemplateRef(record)),
     occursAt: record.occursAt,
     startedAt: record.startedAt,
     startedByAccountId: record.startedByAccountId,
@@ -81,7 +87,7 @@ export function toMeetingRecord(
     id: snapshot.id,
     workspaceId: snapshot.workspaceId,
     oneOnOneId: snapshot.oneOnOneId,
-    templateKey: snapshot.templateKey,
+    ...templateColumnsOf(templateRefOf(snapshot.templateKey)),
     occursAt: snapshot.occursAt,
     startedAt: snapshot.startedAt,
     startedByAccountId: snapshot.startedByAccountId,

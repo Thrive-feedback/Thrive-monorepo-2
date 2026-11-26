@@ -1002,11 +1002,30 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the 1:1 templates a 1:1 can start from, Thrive's first */
+        /** List the 1:1 templates the caller can start an agenda from: Thrive's, the Workspace's, then their own. Not paged: each layer is capped (ADR 0096) */
         get: operations["OneOnOneTemplateController_listOneOnOneTemplates"];
         put?: never;
-        post?: never;
+        /** Keep a new 1:1 template: for the caller alone, or, as an Admin, for everyone in the Workspace */
+        post: operations["OneOnOneTemplateController_keepOneOnOneTemplate"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-one-templates/{templateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace what a 1:1 template the caller may change says; agendas opened from it later use what it says now */
+        put: operations["OneOnOneTemplateController_rewriteOneOnOneTemplate"];
+        post?: never;
+        /** Remove a 1:1 template the caller may change; the 1:1s starting from it keep its questions */
+        delete: operations["OneOnOneTemplateController_removeOneOnOneTemplate"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3007,6 +3026,7 @@ export interface components {
                     startMinute: number;
                     lengthMinutes: number;
                     templateKey: string;
+                    templateName: string;
                     /** Format: date */
                     startsOn: string;
                 };
@@ -3060,6 +3080,7 @@ export interface components {
                 startMinute: number;
                 lengthMinutes: number;
                 templateKey: string;
+                templateName: string;
                 /** Format: date */
                 startsOn: string;
             };
@@ -3107,11 +3128,29 @@ export interface components {
             items: {
                 key: string;
                 /** @enum {string} */
-                scope: "THRIVE";
+                scope: "THRIVE" | "WORKSPACE" | "PERSONAL";
                 name: string;
                 suggestedWhen: string;
                 questions: string[];
+                changeable: boolean;
             }[];
+            mayKeepForWorkspace: boolean;
+        };
+        KeepOneOnOneTemplateRequestDto: {
+            name: string;
+            suggestedWhen?: string;
+            questions: string[];
+            /** @enum {string} */
+            scope: "WORKSPACE" | "PERSONAL";
+        };
+        KeptOneOnOneTemplateResponseDto_Output: {
+            /** Format: uuid */
+            id: string;
+        };
+        RewriteOneOnOneTemplateRequestDto: {
+            name: string;
+            suggestedWhen?: string;
+            questions: string[];
         };
         NextMeetingResponseDto_Output: {
             meeting: {
@@ -6201,6 +6240,184 @@ export interface operations {
                 content?: never;
             };
             /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneTemplateController_keepOneOnOneTemplate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KeepOneOnOneTemplateRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeptOneOnOneTemplateResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID or ONE_ON_ONE_TEMPLATE_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_TEMPLATE_NOT_YOURS */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_TEMPLATE_NAME_TAKEN or ONE_ON_ONE_TEMPLATE_LIMIT_REACHED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneTemplateController_rewriteOneOnOneTemplate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RewriteOneOnOneTemplateRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Rewritten */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID or ONE_ON_ONE_TEMPLATE_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_TEMPLATE_NOT_YOURS */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_TEMPLATE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_TEMPLATE_NAME_TAKEN or ONE_ON_ONE_TEMPLATE_LIMIT_REACHED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneTemplateController_removeOneOnOneTemplate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_TEMPLATE_NOT_YOURS */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND or ONE_ON_ONE_TEMPLATE_NOT_FOUND */
             404: {
                 headers: {
                     [name: string]: unknown;
