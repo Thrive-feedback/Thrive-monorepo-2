@@ -48,6 +48,7 @@ export const SAMPLE_ONE_ON_ONE_TEMPLATES: readonly OneOnOneTemplate[] = [
   {
     key: 'weekly-check-in',
     scope: 'THRIVE',
+    changeable: false,
     name: 'Weekly check-in',
     suggestedWhen: 'The default for every 1:1',
     questions: [
@@ -59,6 +60,7 @@ export const SAMPLE_ONE_ON_ONE_TEMPLATES: readonly OneOnOneTemplate[] = [
   {
     key: 'career-conversation',
     scope: 'THRIVE',
+    changeable: false,
     name: 'Career conversation',
     suggestedWhen: 'Suggested every 6 months',
     questions: [
@@ -71,6 +73,7 @@ export const SAMPLE_ONE_ON_ONE_TEMPLATES: readonly OneOnOneTemplate[] = [
   {
     key: 'new-joiner',
     scope: 'THRIVE',
+    changeable: false,
     name: 'New joiner 30/60/90',
     suggestedWhen: 'Suggested in a new joiner’s first weeks',
     questions: [
@@ -82,6 +85,7 @@ export const SAMPLE_ONE_ON_ONE_TEMPLATES: readonly OneOnOneTemplate[] = [
   {
     key: 'feedback-both-ways',
     scope: 'THRIVE',
+    changeable: false,
     name: 'Feedback both ways',
     suggestedWhen: 'Suggested once a month',
     questions: [
@@ -97,6 +101,7 @@ const WEEKLY: OneOnOneSchedule = {
   startMinute: 10 * 60,
   lengthMinutes: 30,
   templateKey: 'weekly-check-in',
+  templateName: 'Weekly check-in',
   startsOn: '2026-11-26',
 };
 
@@ -177,6 +182,7 @@ export const SAMPLE_ONE_ON_ONES = {
         startMinute: 16 * 60,
         lengthMinutes: 30,
         templateKey: 'feedback-both-ways',
+        templateName: 'Feedback both ways',
         startsOn: '2026-12-11',
       },
       nextMeetingAt: '2026-12-11T09:00:00.000Z',
@@ -193,6 +199,7 @@ export const SAMPLE_ONE_ON_ONES = {
         startMinute: 14 * 60,
         lengthMinutes: 45,
         templateKey: 'career-conversation',
+        templateName: 'Career conversation',
         startsOn: '2026-12-01',
       },
       nextMeetingAt: '2026-12-01T07:00:00.000Z',
@@ -250,6 +257,7 @@ function onceOn(day: string, weekday: number): OneOnOneSchedule {
     startMinute: 11 * 60,
     lengthMinutes: 30,
     templateKey: 'new-joiner',
+    templateName: 'New joiner 30 / 60 / 90',
     startsOn: day,
   };
 }

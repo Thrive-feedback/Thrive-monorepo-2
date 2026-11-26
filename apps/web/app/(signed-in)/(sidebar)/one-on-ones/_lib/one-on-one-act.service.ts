@@ -42,6 +42,16 @@ export const REFUSALS: Readonly<Record<string, string>> = {
   ONE_ON_ONE_TOPIC_CHANGED:
     'This note changed since you read it. Sync to see it.',
   ONE_ON_ONE_TOPIC_ORDER_INVALID: 'The agenda changed. Sync, then reorder.',
+  ONE_ON_ONE_TEMPLATE_INVALID:
+    'A template needs a name and at least one question, each short enough to read at a glance.',
+  ONE_ON_ONE_TEMPLATE_NOT_YOURS:
+    "Only an Admin changes the Workspace's templates, and only you change your own.",
+  ONE_ON_ONE_TEMPLATE_NOT_FOUND:
+    'That template is no longer here. It may have been removed.',
+  ONE_ON_ONE_TEMPLATE_NAME_TAKEN:
+    'There is already a template by that name here. Choose another name.',
+  ONE_ON_ONE_TEMPLATE_LIMIT_REACHED:
+    'There are as many templates here as Thrive keeps. Remove one first.',
 };
 
 /** Said when the agenda a person changed is no longer the one they saw. */
@@ -61,6 +71,8 @@ export type ActOptions = {
    * in typing.
    */
   readonly revalidate?: boolean;
+  /** The pages read again once it went, when it does; the 1:1s page unless given. */
+  readonly paths?: readonly string[];
 };
 
 /**
@@ -74,7 +86,7 @@ export async function act(
     workspace: { readonly workspaceId: string },
     cookie: string | undefined,
   ) => Promise<string | undefined | Refused>,
-  { revalidate = true }: ActOptions = {},
+  { revalidate = true, paths = [ROUTES.oneOnOnes] }: ActOptions = {},
 ): Promise<OneOnOneActionResult> {
   const { membership } = await requireMemberOf(workspaceId);
   const cookie = (await headers()).get('cookie') ?? undefined;
@@ -103,7 +115,9 @@ export async function act(
     return { ok: false, message: outcome.refused };
   }
   if (revalidate) {
-    revalidatePath(ROUTES.oneOnOnes);
+    for (const path of paths) {
+      revalidatePath(path);
+    }
   }
   return { ok: true, id: outcome };
 }

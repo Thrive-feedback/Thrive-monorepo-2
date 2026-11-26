@@ -26,6 +26,8 @@ export type ScheduleDialogProps = {
   description: string;
   initial: OneOnOneScheduleChoice;
   templates: readonly OneOnOneTemplate[];
+  /** What the template `initial` names is called, kept as a choice when the list lacks it. */
+  initialTemplateName?: string;
   submitLabel: string;
   /** Said once it went. */
   done: string;
@@ -50,6 +52,7 @@ function ScheduleForm({
   onOpenChange,
   initial,
   templates,
+  initialTemplateName,
   submitLabel,
   done,
   children,
@@ -71,6 +74,11 @@ function ScheduleForm({
         <ScheduleFields
           value={schedule}
           templates={templates}
+          currentTemplate={
+            initialTemplateName === undefined
+              ? undefined
+              : { key: initial.templateKey, name: initialTemplateName }
+          }
           disabled={isSaving}
           onChange={setSchedule}
         />

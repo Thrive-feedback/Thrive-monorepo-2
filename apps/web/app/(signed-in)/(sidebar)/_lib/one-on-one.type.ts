@@ -7,9 +7,18 @@ export type OneOnOneSchedule = OneOnOne['schedule'];
 
 export type OneOnOneCadence = OneOnOneSchedule['cadence'];
 
-/** One of Thrive's 1:1 templates, which a schedule's agenda starts from. */
-export type OneOnOneTemplate =
-  components['schemas']['ListOneOnOneTemplatesResponseDto_Output']['items'][number];
+/** Every template a person can start a 1:1's agenda from, as the API lists them. */
+export type OneOnOneTemplateCatalog =
+  components['schemas']['ListOneOnOneTemplatesResponseDto_Output'];
+
+/**
+ * One template a schedule's agenda can start from: Thrive's own, the Workspace's, or the person's
+ * own. A schedule names it by its `key`.
+ */
+export type OneOnOneTemplate = OneOnOneTemplateCatalog['items'][number];
+
+/** Which layer a template is from. */
+export type OneOnOneTemplateScope = OneOnOneTemplate['scope'];
 
 /** When a 1:1 meets, as either person chooses it. */
 export type OneOnOneScheduleChoice = {
