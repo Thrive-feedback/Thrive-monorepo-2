@@ -41,7 +41,7 @@ describe('SidebarNav beside the bell', () => {
     render(
       <NotificationsProvider>
         <NotificationBell />
-        <SidebarNav showsDashboard />
+        <SidebarNav showsDashboard oneOnOnesToAnswer={0} />
       </NotificationsProvider>,
     );
     expect(

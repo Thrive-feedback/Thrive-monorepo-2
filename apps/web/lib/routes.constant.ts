@@ -104,6 +104,10 @@ export const ROUTES = {
   kudos: '/kudos',
   /** Everyone in the Workspace but the person, each with Give, Ask and Kudos. */
   teammates: '/teammates',
+  /** The person's 1:1s, either side of each, as the two are equal (brain ADR-0060, ADR-0061). */
+  oneOnOnes: '/one-on-ones',
+  /** The person's 1:1s, with one of them open beside the list. */
+  oneOnOneWith: (oneOnOneId: string) => `/one-on-ones?with=${oneOnOneId}`,
   /** The Kudos board narrowed to one month, `YYYY-MM`. */
   kudosMonth: (month: string) => `/kudos?month=${month}`,
   /** Everything written to the person. */
@@ -212,6 +216,8 @@ export const ROUTES = {
     settings: '/ui-showcase/settings',
     /** Every feature flag, with the value this deployment answers for it now. */
     featureFlags: '/ui-showcase/feature-flags',
+    /** Every state of a 1:1, from each side of it, on sample data. */
+    oneOnOnes: '/ui-showcase/one-on-ones',
     component: (slug: string) => `/ui-showcase/${slug}`,
   },
 } as const;

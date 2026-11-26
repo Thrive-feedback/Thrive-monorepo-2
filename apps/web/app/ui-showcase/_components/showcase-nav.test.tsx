@@ -20,6 +20,7 @@ describe('ShowcaseNav', () => {
     ['/ui-showcase/notifications', 'Notifications'],
     ['/ui-showcase/settings', 'Settings'],
     ['/ui-showcase/feature-flags', 'Feature flags'],
+    ['/ui-showcase/one-on-ones', '1:1s'],
   ])('marks only the page it is on at %s', (path, page) => {
     pathname.mockReturnValue(path);
     render(<ShowcaseNav />);
