@@ -1,18 +1,14 @@
 'use client';
 
 import {
-  countWords,
-  isQuiet,
   nameDay,
+  toRibbonDay,
 } from '@/app/(signed-in)/(sidebar)/home/_lib/feed-day.util';
 import { RIBBON_DAYS_ON_A_PHONE } from '@/app/(signed-in)/(sidebar)/home/_lib/home-layout.constant';
 import type { HomeWeekSummary } from '@/app/(signed-in)/(sidebar)/home/_lib/home-week.type';
 import { FEED_CARD_FILL } from '@/components/organisms/feed-card/feed-card-tone.constant';
 import { cn } from '@/lib/cn.util';
 import { useDayJump } from './home-day-jump';
-
-/** As many marks as a day has room for; more than this still reads as a busy day. */
-const MOST_MARKS = 4;
 
 export type HomeWeekRibbonProps = {
   week: HomeWeekSummary;
@@ -32,19 +28,14 @@ export function HomeWeekRibbon({ week }: HomeWeekRibbonProps) {
     <nav aria-label="Jump to a day">
       <ol className="grid grid-cols-5 gap-1 md:grid-cols-7 md:gap-1.5">
         {week.days.map((one, index) => {
-          const name = nameDay(one.day, week);
-          const isToday = one.day === week.today;
-          const quiet = isQuiet(one);
+          const {
+            name,
+            isToday,
+            isQuiet: quiet,
+            marks,
+            held,
+          } = toRibbonDay(one, week);
           const isFinding = requestedDay === one.day;
-          const marks = countWords(one, week.countsKudos)
-            .flatMap(({ tone, count }) =>
-              Array.from({ length: count }, () => tone),
-            )
-            .slice(0, MOST_MARKS);
-          const held = countWords(one, week.countsKudos)
-            .filter(({ count }) => count > 0)
-            .map(({ words }) => words)
-            .join(', ');
           return (
             <li
               key={one.day}
@@ -59,7 +50,7 @@ export function HomeWeekRibbon({ week }: HomeWeekRibbonProps) {
                 disabled={quiet}
                 aria-busy={isFinding}
                 aria-current={isToday ? 'date' : undefined}
-                aria-label={`${name.label} ${name.numeral}, ${quiet ? 'nothing written' : held}`}
+                aria-label={`${name.label} ${name.numeral}, ${held}`}
                 onClick={() => request(one.day)}
                 className={cn(
                   'flex w-full cursor-pointer flex-col items-center gap-1 rounded-control border border-transparent px-1 pt-2 pb-2.5 text-fg-secondary transition-colors duration-quick disabled:cursor-default',

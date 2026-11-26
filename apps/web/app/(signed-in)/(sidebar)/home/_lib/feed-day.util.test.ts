@@ -4,6 +4,7 @@ import {
   dayBefore,
   groupFeedByDay,
   nameDay,
+  toRibbonDay,
 } from './feed-day.util';
 import { offeredOn, weekEndingSunday } from './home-feed.fixture';
 
@@ -195,6 +196,43 @@ describe('Home in days without a week', () => {
       weekday: 'Sunday',
       numeral: '22',
       detail: 'Nov 2026',
+    });
+  });
+});
+
+describe('a day as a ribbon draws it', () => {
+  it('says what it held in words, with a mark for each thing up to four', () => {
+    const week = weekEndingSunday({
+      '2026-11-22': { offered: 2, kudos: 3 },
+    });
+    const today = week.days.at(-1);
+    if (!today) {
+      throw new Error('The week has no today.');
+    }
+
+    expect(toRibbonDay(today, week)).toMatchObject({
+      date: 'Sunday 22 Nov',
+      month: 'Nov',
+      isToday: true,
+      isQuiet: false,
+      marks: ['primary', 'primary', 'secondary', 'secondary'],
+      held: '2 offered, 3 Kudos',
+    });
+  });
+
+  it('says a quiet day held nothing, and gives it no marks', () => {
+    const week = weekEndingSunday();
+    const wednesday = week.days[2];
+    if (!wednesday) {
+      throw new Error('The week has no Wednesday.');
+    }
+
+    expect(toRibbonDay(wednesday, week)).toMatchObject({
+      date: 'Wednesday 18 Nov',
+      isToday: false,
+      isQuiet: true,
+      marks: [],
+      held: 'nothing written',
     });
   });
 });

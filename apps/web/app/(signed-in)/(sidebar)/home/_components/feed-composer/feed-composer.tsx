@@ -12,6 +12,7 @@ import { feedbackTagTriggers } from '@/components/organisms/feedback-tag-trigger
 import { cutFieldToMessageLength } from '@/lib/feedback/message-length.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import {
+  FEED_COMPOSER_CHOICE,
   FEED_COMPOSER_CHOICES,
   FEED_COMPOSER_SURFACE,
 } from './feed-composer.constant';
@@ -74,6 +75,7 @@ export function FeedComposer({
           <Button
             key={choice}
             variant={COMPOSE_CHOICE_OUTLINES[choice]}
+            className={FEED_COMPOSER_CHOICE}
             onClick={() => onChoose(choice)}
           >
             {COMPOSE_CHOICE_TITLES[choice]}

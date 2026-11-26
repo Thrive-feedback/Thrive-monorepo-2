@@ -1,0 +1,115 @@
+import { act, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { weekEndingSunday } from '@/app/(signed-in)/(sidebar)/home/_lib/home-feed.fixture';
+import { HomeDayJumpProvider } from './home-day-jump';
+import { HomeWeekCalendar } from './home-week-calendar';
+import { HomeWeekRibbon } from './home-week-ribbon';
+
+/**
+ * Tells the card whether the line that leaves as the composer sticks has scrolled up out of the
+ * window, as the browser's observer would.
+ */
+let composerHasStuck: (stuck: boolean) => void;
+
+beforeEach(() => {
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      constructor(
+        callback: (
+          entries: {
+            isIntersecting: boolean;
+            boundingClientRect: { top: number };
+          }[],
+        ) => void,
+      ) {
+        composerHasStuck = (stuck) =>
+          callback([
+            {
+              isIntersecting: !stuck,
+              boundingClientRect: { top: stuck ? -40 : 120 },
+            },
+          ]);
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+const WEEK = weekEndingSunday({
+  '2026-11-19': { kudos: 2 },
+  '2026-11-22': { offered: 1 },
+});
+
+/** Home's week as the page draws it: the ribbon in the band, and the small card by the composer. */
+function Week() {
+  return (
+    <HomeDayJumpProvider>
+      <HomeWeekRibbon week={WEEK} />
+      <div id="stuck-mark" />
+      <HomeWeekCalendar week={WEEK} stuckMarkId="stuck-mark" />
+    </HomeDayJumpProvider>
+  );
+}
+
+const card = () =>
+  screen.getByRole('navigation', { name: 'Last 7 days', hidden: true });
+
+describe('HomeWeekCalendar', () => {
+  it('stays out of reach while the composer has not stuck', () => {
+    render(<Week />);
+    act(() => composerHasStuck(false));
+
+    expect(card()).toHaveAttribute('inert');
+  });
+
+  it('comes within reach once the composer has stuck, and goes again when it is back at rest', () => {
+    render(<Week />);
+
+    act(() => composerHasStuck(true));
+    expect(card()).not.toHaveAttribute('inert');
+
+    act(() => composerHasStuck(false));
+    expect(card()).toHaveAttribute('inert');
+  });
+
+  it('names each day in full, marks today, and lets no quiet day be pressed', () => {
+    render(<Week />);
+    act(() => composerHasStuck(true));
+
+    expect(
+      screen.getByRole('button', { name: 'Today, Sunday 22 Nov, 1 offered' }),
+    ).toHaveAttribute('aria-current', 'date');
+    expect(
+      screen.getByRole('button', { name: 'Thursday 19 Nov, 2 Kudos' }),
+    ).toBeEnabled();
+    expect(
+      screen.getByRole('button', { name: 'Wednesday 18 Nov, nothing written' }),
+    ).toBeDisabled();
+  });
+
+  it('asks for the day pressed, as the ribbon does, and says it is finding it', async () => {
+    render(<Week />);
+    act(() => composerHasStuck(true));
+    const thursday = screen.getByRole('button', {
+      name: 'Thursday 19 Nov, 2 Kudos',
+    });
+
+    await userEvent.click(thursday);
+
+    expect(thursday).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByText('Finding Thursday…')).toBeInTheDocument();
+  });
+
+  it('is titled with the month its days fall in', () => {
+    render(<Week />);
+
+    expect(card()).toHaveTextContent(/^Last 7 daysNov/);
+  });
+});

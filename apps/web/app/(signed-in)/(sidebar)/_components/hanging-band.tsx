@@ -21,8 +21,9 @@ export type HangingBandProps = {
  *
  * Nothing that wraps it may carry a transform, a filter, `will-change`, `contain` or a
  * `backdrop-filter`: any of them makes the wrapper the box the light is held to, and the light
- * would then scroll with the page. What must reach past the band's foot, such as Home's composer,
- * stands after it, never inside it, since the band's mask cuts everything it holds.
+ * would then scroll with the page. What must reach past the band's foot or stay in view as it
+ * scrolls, such as Home's composer and heading, stands beside it, never inside it, since the band's
+ * mask cuts everything it holds and nothing inside it can stick past it.
  */
 export function HangingBand({
   as: Element = 'header',
@@ -34,4 +35,33 @@ export function HangingBand({
       {children}
     </Element>
   );
+}
+
+export type HangingBandFootProps = {
+  /** Its height and where it stands, which are the page's. */
+  className?: string;
+};
+
+/**
+ * The band's foot on its own, with the same ground, light and bites, for a page to keep under the
+ * navbar once the band has scrolled away, as Home does behind its composer. It stands after the band,
+ * at the band's full width, so its bites fall where the band's do. Decoration, hidden from screen
+ * readers and from the pointer.
+ */
+export function HangingBandFoot({ className }: HangingBandFootProps) {
+  return <div aria-hidden="true" className={cn(styles.foot, className)} />;
+}
+
+export type HangingBandGroundProps = {
+  /** Its size and where it stands, which are the page's. */
+  className?: string;
+};
+
+/**
+ * The band's ground on its own, the same light and tint with no bites, behind what a page keeps in
+ * view over the band while the band scrolls under it, as Home does behind its heading. Lying on the
+ * band it cannot be told from it. Decoration, hidden from screen readers and from the pointer.
+ */
+export function HangingBandGround({ className }: HangingBandGroundProps) {
+  return <div aria-hidden="true" className={cn(styles.ground, className)} />;
 }
