@@ -51,6 +51,7 @@ const TEMPLATES: OneOnOneTemplate[] = [
   {
     key: 'weekly-check-in',
     scope: 'THRIVE',
+    changeable: false,
     name: 'Weekly check-in',
     suggestedWhen: 'The default for every 1:1',
     questions: ['What went well this week?'],
