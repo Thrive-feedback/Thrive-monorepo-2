@@ -50,10 +50,12 @@ function oneOnOne(
     suggestedAt: null,
     answerNote: null,
     nextMeetingAt: '2026-12-03T03:00:00.000Z',
+    nextMeetingSkippedAt: null,
     answeredAt: '2026-11-20T04:00:00.000Z',
     endedAt: null,
     createdAt: '2026-11-20T03:00:00.000Z',
     meetingInProgress: false,
+    hasFinishedMeeting: false,
     ...overrides,
   };
 }
@@ -71,10 +73,12 @@ const invitedWithNote = oneOnOne('3', 'elena', {
   startedByAccountId: 'elena',
   invitedAccountId: ME,
   nextMeetingAt: null,
+  nextMeetingSkippedAt: null,
 });
 const declinedWithNote = oneOnOne('4', 'hugo', {
   status: 'DECLINED',
   nextMeetingAt: null,
+  nextMeetingSkippedAt: null,
   answerNote: 'Not this month.',
 });
 
@@ -160,7 +164,7 @@ describe('OneOnOneStrip', () => {
     draw([runningWeekly, invitedWithNote], runningWeekly.id);
 
     const fold = screen.getAllByRole('button', {
-      name: 'Fold the list of 1:1s',
+      name: 'Hide the list of 1:1s',
     })[0];
     if (!fold) {
       throw new Error('No fold button');
@@ -194,9 +198,11 @@ describe('OneOnOneStrip', () => {
   it('lists what is upcoming soonest first, the one meeting today marked Today', () => {
     const later = oneOnOne('5', 'hugo', {
       nextMeetingAt: '2026-12-10T03:00:00.000Z',
+      nextMeetingSkippedAt: null,
     });
     const sooner = oneOnOne('6', 'elena', {
       nextMeetingAt: '2026-12-01T03:00:00.000Z',
+      nextMeetingSkippedAt: null,
     });
     draw([later, runningWeekly, sooner], runningWeekly.id, TODAY);
 
@@ -254,7 +260,9 @@ describe('OneOnOneStrip', () => {
         startsOn: '2026-11-26',
       },
       nextMeetingAt: null,
+      nextMeetingSkippedAt: null,
       meetingInProgress: true,
+      hasFinishedMeeting: false,
     });
     draw([runningWeekly, inProgress, declinedWithNote], inProgress.id);
 
@@ -264,6 +272,19 @@ describe('OneOnOneStrip', () => {
     );
     expect(screen.getByText('Meeting in progress')).toBeVisible();
     expect(screen.queryByText(/^Met /)).not.toBeInTheDocument();
+  });
+
+  it('marks a 1:1 whose meeting day passed unstarted Overdue, saying which day it was', () => {
+    const overdue = oneOnOne('6', 'mint', {
+      // Thu 3 Dec as its day starts in Bangkok, read on Fri 4 Dec.
+      nextMeetingAt: '2026-12-02T17:00:00.000Z',
+      nextMeetingSkippedAt: '2026-12-09T17:00:00.000Z',
+    });
+    draw([overdue], overdue.id, '2026-12-04');
+
+    expect(screen.getByText('Overdue')).toBeVisible();
+    expect(screen.getByText(/was Thu 3 Dec/)).toBeVisible();
+    expect(screen.queryByText('Today')).not.toBeInTheDocument();
   });
 
   it('marks Upcoming when a 1:1 meets today, and Pending when an answer waits on the reader', () => {

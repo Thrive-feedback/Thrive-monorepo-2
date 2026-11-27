@@ -97,6 +97,22 @@ export function DialogClose(props: DialogCloseProps) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
+/** The × in the corner, on the title's line: below the sheet's handle on a phone, in the card's padding from `md`. */
+const dialogClose = cva(
+  // As tall as the title's line, from the same top padding, so the two share a middle in every
+  // dialog and on every device.
+  'absolute right-5 flex size-(--text-subtitle-2--line-height) cursor-pointer items-center justify-center rounded-full text-fg-secondary transition-colors hover:bg-action-neutral-surface-hover hover:text-fg-primary',
+  {
+    variants: {
+      placement: {
+        adaptive: 'top-10 md:top-6',
+        screen: 'top-6',
+      },
+    },
+    defaultVariants: { placement: 'adaptive' },
+  },
+);
+
 const dialogContent = cva(
   [
     'fixed z-50 mx-auto flex flex-col gap-6 overflow-y-auto border border-border-muted bg-surface-raised p-6 text-fg-primary shadow-high',
@@ -276,12 +292,7 @@ export function DialogContent({
           <DialogPrimitive.Close
             data-slot="dialog-close"
             aria-label="Close"
-            className={cn(
-              // On the title's line: as tall as it, from the same top padding, so the two share a
-              // middle in every dialog and on every device.
-              'absolute top-6 right-5 flex size-(--text-subtitle-2--line-height) cursor-pointer items-center justify-center rounded-full text-fg-secondary transition-colors hover:bg-action-neutral-surface-hover hover:text-fg-primary',
-              placement !== 'screen' && 'top-10 md:top-6',
-            )}
+            className={dialogClose({ placement })}
           >
             <XIcon aria-hidden="true" className="size-5" />
           </DialogPrimitive.Close>

@@ -10,14 +10,9 @@ import { FinishMeetingDialog } from '@/app/(signed-in)/(sidebar)/one-on-ones/_co
 import { MeetingAgenda } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-agenda';
 import type { MeetingPeople } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-summary';
 import { UseTemplateButton } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/use-template-button';
+import { stepOf } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/meeting-step.util';
 import type { NextMeeting as NextMeetingData } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
 import { startMeeting } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service';
-import {
-  dayInBangkok,
-  describeMeeting,
-  describeTime,
-  todayInBangkok,
-} from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-schedule.util';
 import { PendingSaves } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/pending-saves';
 import { useMeetingStateWatch } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-meeting-state-watch';
 import { Button } from '@/components/atoms/button';
@@ -28,8 +23,14 @@ export type NextMeetingProps = {
   workspaceId: string;
   oneOnOneId: string;
   next: NextMeetingData;
-  /** When the schedule says it next meets, for a meeting not started yet. */
+  /** The start of the day the meeting due is on: before today while it is overdue. */
   nextMeetingAt: string | null;
+  /** When the meeting due is skipped if nobody starts it. */
+  nextMeetingSkippedAt: string | null;
+  /** Held once: overdue for a week, then over. */
+  isOnce: boolean;
+  /** Today on the schedule's clock, `YYYY-MM-DD`, from the server, as the list has it. */
+  today: string;
   people: MeetingPeople;
   /** The templates the meeting can use while it is prepared. */
   templates: readonly OneOnOneTemplate[];
@@ -74,6 +75,9 @@ export function NextMeeting({
   oneOnOneId,
   next,
   nextMeetingAt,
+  nextMeetingSkippedAt,
+  isOnce,
+  today,
   people,
   templates,
 }: NextMeetingProps) {
@@ -109,12 +113,22 @@ export function NextMeeting({
   const ids = useId();
   const meeting = next.meeting;
   const inProgress = meeting?.state === 'IN_PROGRESS';
-  // A meeting is the whole of its day; one still open once that day is over was left open.
-  const [today] = useState(() => todayInBangkok());
-  const isStuck =
-    inProgress &&
-    meeting?.occursAt != null &&
-    dayInBangkok(meeting.occursAt) < today;
+  const step = stepOf({
+    meeting: meeting
+      ? {
+          state: meeting.state,
+          occursAt: meeting.occursAt,
+          startedAt: meeting.startedAt,
+          topicCount: meeting.topics.length,
+        }
+      : null,
+    nextMeetingAt,
+    nextMeetingSkippedAt,
+    carriedFromSkipped: next.carriedFromSkipped,
+    isOnce,
+    today,
+  });
+  const isOverdue = step.word === 'Overdue';
   const agendaCount = meeting ? meeting.topics.length : next.carried.length;
   const discussedCount =
     meeting?.topics.filter((topic) => topic.discussedAt).length ?? 0;
@@ -140,31 +154,30 @@ export function NextMeeting({
           'flex flex-col items-start gap-3 rounded-control border px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-6',
           inProgress
             ? 'border-action-primary-border bg-action-primary/8'
-            : 'border-border-muted bg-surface-base',
+            : isOverdue
+              ? 'border-status-warning-border bg-status-warning-surface'
+              : 'border-border-muted bg-surface-base',
         )}
       >
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          {/* Where it stands, said as a word in the product's plum, then when. */}
+          {/* Where it stands, said as a word, plum, or the warning's colour while overdue; then when. */}
           <Text as="p" variant="subtitle-3" className="tabular-nums">
-            <span className="font-medium text-fg-accent">
-              {inProgress ? 'In progress' : 'Preparing'}
+            <span
+              className={cn(
+                'font-medium',
+                isOverdue ? 'text-status-warning-active' : 'text-fg-accent',
+              )}
+            >
+              {step.word}
             </span>
             <span aria-hidden="true" className="text-fg-muted">
               {' · '}
             </span>
             <span className="sr-only">, </span>
-            {inProgress && meeting?.startedAt
-              ? `since ${describeTime(meeting.startedAt)}`
-              : nextMeetingAt
-                ? describeMeeting(nextMeetingAt)
-                : 'no time set'}
+            {step.when}
           </Text>
           <Text as="p" variant="body-3" tone="muted" className="max-w-prose">
-            {inProgress
-              ? `Tick each topic as you talk about it and note what you agreed. Finish shares the summary with you and ${people.otherName}.`
-              : meeting
-                ? `The agenda is saved. When you meet, either of you presses Start.`
-                : `Add what you'd like to talk about, use a template, or reorder what's here. When you meet, either of you presses Start.`}
+            {step.body}
           </Text>
         </div>
         {inProgress ? (
@@ -192,13 +205,13 @@ export function NextMeeting({
         )}
       </div>
 
-      {isStuck && (
+      {step.leftOpen && (
         <div
           role="status"
           className="flex flex-wrap items-center justify-between gap-3 rounded-control bg-status-warning-surface px-4 py-3"
         >
           <Text as="p" variant="body-2">
-            This meeting is still open. Finish it to start the next one.
+            {step.leftOpen}
           </Text>
           <Button
             variant="secondary"

@@ -21,7 +21,7 @@ export function DragHandle({ className, ...rest }: DragHandleProps) {
     <button
       type="button"
       className={cn(
-        'relative grid size-6 shrink-0 cursor-grab touch-none place-content-center rounded-element before:absolute before:-inset-x-2 before:-inset-y-2.5 text-fg-muted transition-colors duration-quick ease-smooth-out hover:bg-action-neutral-surface-hover hover:text-fg-secondary focus-visible:outline-2 focus-visible:outline-action-primary active:cursor-grabbing disabled:cursor-not-allowed',
+        'relative grid size-6 shrink-0 cursor-grab touch-none place-content-center rounded-element text-fg-muted transition-colors duration-quick ease-smooth-out before:absolute before:-inset-x-2 before:-inset-y-2.5 hover:bg-action-neutral-surface-hover hover:text-fg-secondary focus-visible:outline-2 focus-visible:outline-action-primary active:cursor-grabbing disabled:cursor-not-allowed',
         className,
       )}
       {...rest}

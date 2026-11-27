@@ -14,6 +14,7 @@ const GALLERIES = [
   { href: ROUTES.uiShowcase.settings, label: 'Settings' },
   { href: ROUTES.uiShowcase.featureFlags, label: 'Feature flags' },
   { href: ROUTES.uiShowcase.oneOnOnes, label: '1:1s' },
+  { href: ROUTES.uiShowcase.oneOnOnesMissed, label: 'Missed 1:1s' },
 ] as const;
 
 /**

@@ -34,12 +34,18 @@ export const readNextMeeting = cache(
   },
 );
 
-/** A 1:1's finished meetings, newest first, each whole: its topics and the notes on them. */
+/**
+ * A 1:1's finished meetings, newest first, each whole: its topics and the notes on them; and the
+ * meeting days skipped, `YYYY-MM-DD`, oldest first.
+ */
 export const readPastMeetings = cache(
   async (
     membership: CurrentMembership,
     oneOnOneId: string,
-  ): Promise<readonly Meeting[]> => {
+  ): Promise<{
+    readonly items: readonly Meeting[];
+    readonly skippedDays: readonly string[];
+  }> => {
     const cookie = (await headers()).get('cookie') ?? undefined;
     const page = unwrap(
       await apiClient().GET(
@@ -54,6 +60,6 @@ export const readPastMeetings = cache(
         },
       ),
     );
-    return page.items;
+    return { items: page.items, skippedDays: page.skippedDays };
   },
 );

@@ -21,17 +21,27 @@ export function isOnce(oneOnOne: OneOnOne): boolean {
 }
 
 /**
- * Whether it was a meeting held just once and that meeting is over: it still runs in the API's
- * terms, but has no next meeting, so it belongs with what is past. While its meeting is started and
- * not finished it is not over, though its slot has passed: the two can still note and finish it.
+ * Whether it was a meeting held just once that is over: met, or skipped a week past its day. It
+ * still runs in the API's terms, but has nothing due, so it belongs with what is past. While its
+ * meeting is started and not finished it is not over: the two can still note and finish it.
  */
-export function isMet(oneOnOne: OneOnOne): boolean {
+export function isOver(oneOnOne: OneOnOne): boolean {
   return (
     oneOnOne.status === 'ACTIVE' &&
     isOnce(oneOnOne) &&
     oneOnOne.nextMeetingAt === null &&
     !oneOnOne.meetingInProgress
   );
+}
+
+/** Whether it was held once and is over because its meeting was finished. */
+export function isMet(oneOnOne: OneOnOne): boolean {
+  return isOver(oneOnOne) && oneOnOne.hasFinishedMeeting;
+}
+
+/** Whether it was held once and is over because nobody started it in the week after its day. */
+export function wasSkipped(oneOnOne: OneOnOne): boolean {
+  return isOver(oneOnOne) && !oneOnOne.hasFinishedMeeting;
 }
 
 /** Where a 1:1 stands for its reader, in the order the page lists them. */
@@ -53,7 +63,7 @@ export const ONE_ON_ONE_GROUPS: readonly OneOnOneGroup[] = [
 export function groupOf(oneOnOne: OneOnOne): OneOnOneGroup {
   switch (oneOnOne.status) {
     case 'ACTIVE':
-      return isMet(oneOnOne) ? 'past' : 'running';
+      return isOver(oneOnOne) ? 'past' : 'running';
     case 'DECLINED':
       return 'declined';
     case 'ENDED':
@@ -98,7 +108,7 @@ export function inListOrder(
     ONE_ON_ONE_GROUPS.indexOf(groupOf(oneOnOne));
   const when = (oneOnOne: OneOnOne) => {
     // A met once-only 1:1 is still ACTIVE, so it is asked first: it is past, most recent first.
-    if (isMet(oneOnOne)) {
+    if (isOver(oneOnOne)) {
       return -Date.parse(`${oneOnOne.schedule.startsOn}T00:00:00.000Z`);
     }
     if (oneOnOne.status === 'ACTIVE') {

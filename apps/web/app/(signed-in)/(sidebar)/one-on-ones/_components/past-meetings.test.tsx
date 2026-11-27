@@ -126,9 +126,36 @@ describe('PastMeetings', () => {
     ).toBeInTheDocument();
   });
 
+  it('lists the days skipped among those held, a run as one row, and says when a meeting ran late or early', () => {
+    render(
+      <PastMeetings
+        meetings={[
+          // For Thu 26 Nov, held early on Tue 24 Nov.
+          finished('m3', '2026-11-26', {
+            startedAt: '2026-11-24T03:00:00.000Z',
+          }),
+          // For Thu 5 Nov, held late on Sat 7 Nov.
+          finished('m1', '2026-11-05', {
+            startedAt: '2026-11-07T03:00:00.000Z',
+          }),
+        ]}
+        skippedDays={['2026-11-12', '2026-11-19']}
+        other={MINT}
+      />,
+    );
+
+    // The outer list only: an open meeting's summary lists its topics too.
+    const [list] = screen.getAllByRole('list');
+    const rows = [...(list?.children ?? [])].map((row) => row.textContent);
+    expect(rows[0]).toContain('Thu 26 Nov');
+    expect(rows[0]).toContain('Held early, Tue 24 Nov');
+    expect(rows[1]).toBe('Thu 12 Nov – Thu 19 NovSkipped 2 meetings');
+    expect(rows[2]).toContain('Held late, Sat 7 Nov');
+  });
+
   it('says so when no meeting has finished yet', () => {
     render(<PastMeetings meetings={[]} other={MINT} />);
 
-    expect(screen.getByText(/No finished meetings yet/)).toBeVisible();
+    expect(screen.getByText(/No past meetings yet/)).toBeVisible();
   });
 });

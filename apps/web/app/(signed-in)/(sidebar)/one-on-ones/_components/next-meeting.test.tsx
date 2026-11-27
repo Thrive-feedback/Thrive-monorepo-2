@@ -112,7 +112,15 @@ function meeting(overrides: Partial<Meeting> = {}): Meeting {
   };
 }
 
-function page(next: Partial<NextMeetingData>) {
+/** When the meeting due is on, and when it is skipped; by default Thu 3 Dec, today in these tests. */
+type Due = { readonly at: string; readonly skippedAt: string };
+
+const DUE_TODAY: Due = {
+  at: '2026-12-03T03:00:00.000Z',
+  skippedAt: '2026-12-09T17:00:00.000Z',
+};
+
+function page(next: Partial<NextMeetingData>, due: Due = DUE_TODAY) {
   return (
     <>
       <NextMeeting
@@ -122,10 +130,16 @@ function page(next: Partial<NextMeetingData>) {
           meeting: null,
           carried: [],
           templateQuestions: [],
+          carriedFromSkipped: null,
+          carriedTopics: [],
           templateName: null,
           ...next,
         }}
-        nextMeetingAt="2026-12-03T03:00:00.000Z"
+        nextMeetingAt={due.at}
+        nextMeetingSkippedAt={due.skippedAt}
+        isOnce={false}
+        // The day the clock these tests set falls on, in Bangkok.
+        today="2026-12-03"
         people={PEOPLE}
         templates={TEMPLATES}
       />
@@ -135,9 +149,9 @@ function page(next: Partial<NextMeetingData>) {
 }
 
 /** Draws it, and returns how to draw it again as a Sync would, with what the page read next. */
-function draw(next: Partial<NextMeetingData> = {}) {
-  const view = render(page(next));
-  return (again: Partial<NextMeetingData>) => view.rerender(page(again));
+function draw(next: Partial<NextMeetingData> = {}, due: Due = DUE_TODAY) {
+  const view = render(page(next, due));
+  return (again: Partial<NextMeetingData>) => view.rerender(page(again, due));
 }
 
 /** The agenda's topics in the order shown, by their drag handles. */
@@ -203,7 +217,8 @@ describe('NextMeeting', () => {
   it('shows what the agenda will open with, and opens it with the first topic added', async () => {
     draw({ carried: ['Launch retro'] });
 
-    expect(screen.getByText('Thu 3 Dec')).toBeVisible();
+    // Its day is today, on the clock these tests run on.
+    expect(screen.getByText('Today')).toBeVisible();
     expect(screen.getByText('From last time')).toBeVisible();
     expect(screen.getByText('1 topic')).toBeVisible();
     await userEvent.type(
@@ -265,7 +280,7 @@ describe('NextMeeting', () => {
       name: 'Add from template',
     });
     expect(
-      within(dialog).getByText(/Replaces Weekly check-in’s questions/),
+      within(dialog).getByText(/Replaces the questions from Weekly check-in/),
     ).toBeVisible();
     // The one in use is said so, not offered again.
     expect(within(dialog).getByText('In use')).toBeVisible();
@@ -298,9 +313,7 @@ describe('NextMeeting', () => {
     // Where it stands is a word at the top of its box, not a row of steps.
     expect(screen.getByText('Preparing')).toBeVisible();
     expect(screen.queryByText('Share the summary')).not.toBeInTheDocument();
-    expect(
-      screen.getByText(/The agenda is saved\. When you meet/),
-    ).toBeVisible();
+    expect(screen.getByText(/Agenda saved\. When you meet/)).toBeVisible();
     expect(screen.getByText('3 topics')).toBeVisible();
   });
 
@@ -322,7 +335,7 @@ describe('NextMeeting', () => {
     expect(screen.getByText('In progress')).toBeVisible();
     expect(screen.getByText(/since 10:00/)).toBeVisible();
     expect(screen.getByText('1 of 2 discussed')).toBeVisible();
-    expect(screen.getByText(/Finish shares the summary/)).toBeVisible();
+    expect(screen.getByText(/Finishing shares the summary/)).toBeVisible();
   });
 
   it('lets the agenda be moved and trimmed before anybody has written to it', async () => {
@@ -909,7 +922,40 @@ describe('NextMeeting', () => {
 
     expect(
       screen.getByText(
-        'This meeting is still open. Finish it to start the next one.',
+        'The meeting from Sun 1 Nov is still open. Finish it to prepare the next one.',
+      ),
+    ).toBeVisible();
+  });
+
+  it('says a meeting whose day passed unstarted is overdue, until when, and still offers Start', () => {
+    // Due Tue 1 Dec (its day starts at 17:00 UTC the day before), skipped as Tue 8 Dec starts.
+    draw(
+      { meeting: meeting() },
+      { at: '2026-11-30T17:00:00.000Z', skippedAt: '2026-12-07T17:00:00.000Z' },
+    );
+
+    expect(screen.getByText('Overdue')).toBeVisible();
+    expect(screen.getByText('Tue 1 Dec')).toBeVisible();
+    expect(
+      screen.getByText(
+        'You haven’t met yet. You can still start until Mon 7 Dec. After that it’s skipped and the agenda moves to Tue 8 Dec.',
+      ),
+    ).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Start meeting' })).toBeEnabled();
+  });
+
+  it('marks only the topics written for a skipped day as carried from it', () => {
+    draw({
+      meeting: meeting(),
+      carriedFromSkipped: '2026-11-26',
+      carriedTopics: [{ topicId: 't1', from: '2026-11-26' }],
+    });
+
+    expect(screen.getByText('From Thu 26 Nov (skipped)')).toBeVisible();
+    expect(screen.getByText('Added by Mint')).toBeVisible();
+    expect(
+      screen.getByText(
+        'Carried over from Thu 26 Nov, which was skipped. When you meet, either of you can start.',
       ),
     ).toBeVisible();
   });

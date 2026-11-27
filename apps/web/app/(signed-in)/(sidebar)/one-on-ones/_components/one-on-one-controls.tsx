@@ -176,7 +176,7 @@ function DeclineForm({
       {isSuggesting ? (
         <>
           <DialogHeader>
-            <DialogTitle>Suggest another time to {shortName}</DialogTitle>
+            <DialogTitle>Suggest another day to {shortName}</DialogTitle>
             <DialogDescription>
               {`${shortName} gets it back to accept or decline.`}
             </DialogDescription>
@@ -203,7 +203,7 @@ function DeclineForm({
                   () =>
                     suggestAnotherTime(workspaceId, oneOnOneId, another, note),
                   {
-                    done: `Sent back to ${shortName} with another time`,
+                    done: `Suggested another day to ${shortName}`,
                     onSuccess: () => onClose(),
                   },
                 )
@@ -233,11 +233,10 @@ function DeclineForm({
             />
             <span className="flex flex-col gap-0.5">
               <span className="text-fg-primary text-subtitle-4">
-                Suggest another time instead
+                Suggest another day instead
               </span>
               <Text as="span" variant="body-3" tone="muted">
-                If it’s the time, not the 1:1, send it back with one that suits
-                you.
+                If it’s the day that doesn’t work, suggest one that does. you.
               </Text>
             </span>
           </button>
@@ -248,14 +247,14 @@ function DeclineForm({
               disabled={isPending}
               onClick={() => onClose()}
             >
-              Not now
+              Go back
             </Button>
             <Button
               variant="warning"
               loading={isPending}
               onClick={() =>
                 run(() => declineOneOnOne(workspaceId, oneOnOneId, note), {
-                  done: `Declined. ${shortName} will see it.`,
+                  done: `You declined. ${shortName} will see that.`,
                   onSuccess: () => {
                     onClose();
                     router.push(ROUTES.oneOnOnes);
@@ -296,11 +295,11 @@ export function AnswerInvitation({
         loading={isPending}
         onClick={() =>
           run(() => acceptOneOnOne(workspaceId, oneOnOneId), {
-            done: `You and ${shortName} have a 1:1`,
+            done: `You and ${shortName} now have a 1:1`,
           })
         }
       >
-        {wasSuggested ? 'Accept this time' : 'Accept'}
+        {wasSuggested ? 'Accept this day' : 'Accept'}
       </Button>
       <DeclineButton
         workspaceId={workspaceId}
@@ -330,7 +329,7 @@ export function Withdraw({
         open={isOpen}
         onOpenChange={setIsOpen}
         title={`Withdraw your invitation to ${shortName}?`}
-        description={`It leaves ${shortName}’s list, and yours. You can send another any time.`}
+        description="It’s removed for you both. You can send a new one any time."
         confirm="Withdraw"
         keep="Keep the invitation"
         isPending={isPending}
@@ -401,7 +400,7 @@ export function RunningControls({
         open={isRescheduling}
         onOpenChange={setIsRescheduling}
         title={`When you and ${shortName} meet`}
-        description={`It holds at once, for you and ${shortName}; the next meeting is the first under the new schedule.`}
+        description="This changes it for you both, starting with the next meeting."
         initial={choiceOf(schedule)}
         submitLabel="Save"
         done={isOnce ? 'Day changed' : 'Schedule changed'}
@@ -418,8 +417,8 @@ export function RunningControls({
         }
         description={
           isOnce
-            ? `It won’t take place. It moves to History for you both. Either of you can create a new 1:1 any time.`
-            : 'No more meetings are kept. It moves to History for you both, where you still read its past meetings. Either of you can create a new 1:1 any time.'
+            ? 'This meeting won’t happen. It moves to History for you both.'
+            : 'No more meetings will be scheduled. It moves to History, where you can both still read past meetings.'
         }
         confirm={isOnce ? 'Cancel meeting' : 'End schedule'}
         keep={isOnce ? 'Keep the meeting' : 'Keep the schedule'}

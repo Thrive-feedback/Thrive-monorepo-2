@@ -28,10 +28,12 @@ function oneOnOne(id: string, overrides: Partial<OneOnOne>): OneOnOne {
     suggestedAt: null,
     answerNote: null,
     nextMeetingAt: null,
+    nextMeetingSkippedAt: null,
     answeredAt: null,
     endedAt: null,
     createdAt: '2026-11-20T03:00:00.000Z',
     meetingInProgress: false,
+    hasFinishedMeeting: false,
     ...overrides,
   };
 }
@@ -100,6 +102,7 @@ describe('where a 1:1 stands for its reader', () => {
     const upcoming = oneOnOne('once-upcoming', {
       schedule: once,
       nextMeetingAt: '2026-12-02T04:00:00.000Z',
+      nextMeetingSkippedAt: null,
     });
     const met = oneOnOne('once-met', { schedule: once, nextMeetingAt: null });
 
@@ -117,7 +120,9 @@ describe('where a 1:1 stands for its reader', () => {
     const inProgress = oneOnOne('once-in-progress', {
       schedule: { ...soon.schedule, cadence: 'ONCE', startsOn: '2026-11-24' },
       nextMeetingAt: null,
+      nextMeetingSkippedAt: null,
       meetingInProgress: true,
+      hasFinishedMeeting: false,
     });
 
     expect(groupOf(inProgress)).toBe('running');

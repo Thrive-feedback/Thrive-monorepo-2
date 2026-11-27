@@ -75,7 +75,7 @@ export function UseTemplateDialog({
           template.key,
         ),
       {
-        done: `Using ${template.name}`,
+        done: `Added ${template.name} to the agenda`,
         onSuccess: () => onOpenChange(false),
       },
     );
@@ -95,8 +95,8 @@ export function UseTemplateDialog({
             <DialogTitle>Add from template</DialogTitle>
             <DialogDescription>
               {current
-                ? `Replaces ${current.name}’s questions. Topics you added stay.`
-                : 'Its questions join the agenda for you both.'}
+                ? `Replaces the questions from ${current.name}. Topics you added stay.`
+                : 'Its questions are added to the agenda for you both.'}
             </DialogDescription>
           </div>
           <Button asChild variant="ghost" size="sm">

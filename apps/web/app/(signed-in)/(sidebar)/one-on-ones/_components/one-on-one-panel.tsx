@@ -8,7 +8,9 @@ import {
   groupOf,
   isMet,
   isOnce,
+  isOver,
   startedByReader,
+  wasSkipped,
   wasSuggested,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-state.util';
 import type { OneOnOneMeetings } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
@@ -58,6 +60,11 @@ export type OneOnOnePanelProps = {
   meetings?: OneOnOneMeetings;
   /** What Write as Feedback and Give Kudos need, from a finished meeting. */
   compose?: PastMeetingsCompose;
+  /**
+   * Today on the schedule's clock, `YYYY-MM-DD`, from the server, as the list has it: whether the
+   * next meeting is today, or overdue, is said alike in both, on the server and in the browser.
+   */
+  today: string;
 };
 
 /** The reader's own account id: whichever of the two the 1:1 is not "with". */
@@ -154,6 +161,7 @@ function Running({
   teammates,
   meetings,
   compose,
+  today,
 }: {
   oneOnOne: OneOnOne;
   person: OneOnOnePerson;
@@ -163,6 +171,7 @@ function Running({
   teammates: readonly Teammate[];
   meetings?: OneOnOneMeetings;
   compose?: PastMeetingsCompose;
+  today: string;
 }) {
   const headingId = headingIdOf(oneOnOne);
   const once = isOnce(oneOnOne);
@@ -178,13 +187,16 @@ function Running({
         headingId={headingId}
         person={person}
         end={
-          <RunningControls
-            workspaceId={workspaceId}
-            oneOnOneId={oneOnOne.id}
-            shortName={person.shortName}
-            isOnce={once}
-            schedule={schedule}
-          />
+          // While a meeting is under way the schedule stays as it is: Finish comes first.
+          oneOnOne.meetingInProgress ? undefined : (
+            <RunningControls
+              workspaceId={workspaceId}
+              oneOnOneId={oneOnOne.id}
+              shortName={person.shortName}
+              isOnce={once}
+              schedule={schedule}
+            />
+          )
         }
       >
         {scheduleLine(schedule)}
@@ -201,7 +213,12 @@ function Running({
                 : 'Next meeting'}
             </TabsTrigger>
             {/* Drawn while there are none yet, greyed, so where they will be is plain. */}
-            <TabsTrigger value="past" disabled={meetings.past.length === 0}>
+            <TabsTrigger
+              value="past"
+              disabled={
+                meetings.past.length === 0 && meetings.skippedDays.length === 0
+              }
+            >
               Past meetings
               {meetings.past.length > 0 && (
                 <span className="text-fg-muted tabular-nums">
@@ -216,6 +233,9 @@ function Running({
               oneOnOneId={oneOnOne.id}
               next={meetings.next}
               nextMeetingAt={oneOnOne.nextMeetingAt}
+              nextMeetingSkippedAt={oneOnOne.nextMeetingSkippedAt}
+              isOnce={once}
+              today={today}
               people={people}
               templates={templates}
             />
@@ -223,6 +243,7 @@ function Running({
           <TabsContent value="past">
             <PastMeetings
               meetings={meetings.past}
+              skippedDays={meetings.skippedDays}
               other={teammates.find(
                 (teammate) => teammate.accountId === person.accountId,
               )}
@@ -261,7 +282,7 @@ function Running({
  * whose meeting was started and is not finished, as the list counts it too.
  */
 function isDrawnRunning(oneOnOne: OneOnOne): boolean {
-  return oneOnOne.status === 'ACTIVE' && !isMet(oneOnOne);
+  return oneOnOne.status === 'ACTIVE' && !isOver(oneOnOne);
 }
 
 /**
@@ -297,6 +318,7 @@ function PanelBody({
   templates,
   meetings,
   compose,
+  today,
 }: OneOnOnePanelProps) {
   const person = otherPersonOf(oneOnOne, teammates);
   const schedule = oneOnOne.schedule;
@@ -320,25 +342,37 @@ function PanelBody({
           teammates={teammates}
           meetings={meetings}
           compose={compose}
+          today={today}
         />
       </>
     );
   }
 
   if (group === 'past') {
-    // A meeting held once is met once its time is over, or cancelled if it was ended before.
+    // A meeting held once is met once its meeting is finished, skipped a week past its day if
+    // nobody started it, or cancelled if it was ended before. A schedule ended says what it was.
+    const heldAt = meetings?.past[0]?.startedAt ?? null;
+    const scheduleWas = describeSchedule(schedule);
     const line = isMet(oneOnOne)
-      ? `Met on ${describeDay(schedule.startsOn)}`
-      : isOnce(oneOnOne)
-        ? `Cancelled${oneOnOne.endedAt ? ` on ${describeCalendarDay(oneOnOne.endedAt)}` : ''} · it was set for ${describeDay(schedule.startsOn)}`
-        : `Schedule ended${oneOnOne.endedAt ? ` on ${describeCalendarDay(oneOnOne.endedAt)}` : ''} · it met ${describeSchedule(schedule).toLowerCase()}`;
+      ? `Met on ${heldAt ? describeMeeting(heldAt) : describeDay(schedule.startsOn)}`
+      : wasSkipped(oneOnOne)
+        ? `Skipped · was set for ${describeDay(schedule.startsOn)}`
+        : isOnce(oneOnOne)
+          ? `Cancelled${oneOnOne.endedAt ? ` ${describeCalendarDay(oneOnOne.endedAt)}` : ''} · was set for ${describeDay(schedule.startsOn)}`
+          : `Schedule ended${oneOnOne.endedAt ? ` ${describeCalendarDay(oneOnOne.endedAt)}` : ''} · was ${scheduleWas.charAt(0).toLowerCase()}${scheduleWas.slice(1)}`;
+    const skippedDays = meetings?.skippedDays ?? [];
     return (
       <section aria-labelledby={headingId} className={PANEL}>
         <Head headingId={headingId} person={person} isQuiet>
           {line}
         </Head>
-        {meetings && meetings.past.length > 0 ? (
+        {meetings && (meetings.past.length > 0 || skippedDays.length > 0) ? (
           <div className="flex flex-col gap-3 border-border-subtle border-t pt-4">
+            {wasSkipped(oneOnOne) && (
+              <Text as="p" variant="body-2" tone="muted" className="max-w-2xl">
+                Nobody started it in the week after its day.
+              </Text>
+            )}
             <Text as="h3" variant="subtitle-4">
               Past meetings{' '}
               <span className="font-normal text-body-3 text-fg-muted tabular-nums">
@@ -347,6 +381,7 @@ function PanelBody({
             </Text>
             <PastMeetings
               meetings={meetings.past}
+              skippedDays={skippedDays}
               other={teammates.find(
                 (teammate) => teammate.accountId === person.accountId,
               )}
@@ -355,7 +390,9 @@ function PanelBody({
           </div>
         ) : (
           <Text as="p" variant="body-2" tone="muted" className="max-w-2xl">
-            No more meetings are kept, and none was finished in it.
+            {wasSkipped(oneOnOne)
+              ? 'Nobody started it in the week after its day.'
+              : 'No meetings were finished before it ended.'}
           </Text>
         )}
       </section>
@@ -374,7 +411,7 @@ function PanelBody({
           <TheirWords who={person.shortName} words={oneOnOne.answerNote} />
         )}
         <Text as="p" variant="body-2" tone="muted" className="max-w-2xl">
-          Nothing was started for either of you.
+          Nothing was scheduled.
           {oneOnOne.answeredAt &&
             ` This leaves your list on ${leavesListOn(oneOnOne.answeredAt)}.`}
         </Text>
@@ -426,7 +463,7 @@ function PanelBody({
         <Text as="p" variant="body-2" tone="muted">
           {isOnce(oneOnOne)
             ? `${scheduleLine(schedule)}. Nothing is set until you accept.`
-            : `${scheduleLine(schedule)}, starting ${describeDay(schedule.startsOn)}. Nothing starts until you accept, and either of you can change it after.`}
+            : `${scheduleLine(schedule)}, starting ${describeDay(schedule.startsOn)}. Nothing starts until you accept, and you can both change it later.`}
         </Text>
         {oneOnOne.inviteNote && (
           <TheirWords who={person.shortName} words={oneOnOne.inviteNote} />

@@ -120,11 +120,14 @@ function sample(
     inviteNote: null,
     suggestedAt: null,
     answerNote: null,
-    nextMeetingAt: '2026-12-03T03:00:00.000Z',
+    // Thu 3 Dec as the API says a day: its start, midnight in Bangkok.
+    nextMeetingAt: '2026-12-02T17:00:00.000Z',
+    nextMeetingSkippedAt: null,
     answeredAt: '2026-11-20T04:00:00.000Z',
     endedAt: null,
     createdAt: '2026-11-20T03:00:00.000Z',
     meetingInProgress: false,
+    hasFinishedMeeting: false,
     ...overrides,
   };
 }
@@ -132,12 +135,13 @@ function sample(
 const WAITING = {
   status: 'INVITED',
   nextMeetingAt: null,
+  nextMeetingSkippedAt: null,
   answeredAt: null,
 } as const satisfies Partial<OneOnOne>;
 
 /** One sample for each case the page draws, named for the gallery's captions. */
-/** The day the samples are read on: Mint's weekly 1:1 meets on it, so the list shows Today. */
-export const SAMPLE_TODAY = '2026-11-27';
+/** The day the samples are read on, a Thursday: Mint's weekly 1:1 meets on it, so the list shows Today. */
+export const SAMPLE_TODAY = '2026-11-26';
 
 export const SAMPLE_ONE_ON_ONES = {
   invitedWithNote: sample(
@@ -166,7 +170,9 @@ export const SAMPLE_ONE_ON_ONES = {
     },
   ),
   runningWeekly: sample('0196b4c8-0000-7000-8000-000000000003', 'mint', 'me', {
-    nextMeetingAt: '2026-11-27T03:00:00.000Z',
+    // Thu 26 Nov as the API says a day: its start, midnight in Bangkok.
+    nextMeetingAt: '2026-11-25T17:00:00.000Z',
+    nextMeetingSkippedAt: null,
   }),
   runningMonthly: sample(
     '0196b4c8-0000-7000-8000-000000000004',
@@ -181,6 +187,7 @@ export const SAMPLE_ONE_ON_ONES = {
         startsOn: '2026-12-11',
       },
       nextMeetingAt: '2026-12-11T09:00:00.000Z',
+      nextMeetingSkippedAt: null,
     },
   ),
   runningEveryTwoWeeks: sample(
@@ -196,6 +203,7 @@ export const SAMPLE_ONE_ON_ONES = {
         startsOn: '2026-12-01',
       },
       nextMeetingAt: '2026-12-01T07:00:00.000Z',
+      nextMeetingSkippedAt: null,
     },
   ),
   yourInvitationWaiting: sample(
@@ -220,6 +228,7 @@ export const SAMPLE_ONE_ON_ONES = {
     {
       status: 'DECLINED',
       nextMeetingAt: null,
+      nextMeetingSkippedAt: null,
       answeredAt: '2026-11-24T05:00:00.000Z',
       answerNote: 'Not this month, I am on leave. Can we try in January?',
     },
@@ -231,12 +240,14 @@ export const SAMPLE_ONE_ON_ONES = {
     {
       status: 'DECLINED',
       nextMeetingAt: null,
+      nextMeetingSkippedAt: null,
       answeredAt: '2026-11-25T05:00:00.000Z',
     },
   ),
   ended: sample('0196b4c8-0000-7000-8000-000000000009', 'leo', 'them', {
     status: 'ENDED',
     nextMeetingAt: null,
+    nextMeetingSkippedAt: null,
     endedAt: '2026-11-26T05:00:00.000Z',
   }),
 } satisfies Record<string, OneOnOne>;
@@ -301,10 +312,13 @@ export const SAMPLE_ONE_ON_ONES_MORE = {
   onceUpcoming: sample('0196b4c8-0000-7000-8000-00000000000d', 'tom', 'me', {
     schedule: onceOn('2026-12-04', 5),
     nextMeetingAt: '2026-12-04T04:00:00.000Z',
+    nextMeetingSkippedAt: null,
   }),
   onceMet: sample('0196b4c8-0000-7000-8000-00000000000e', 'ana', 'them', {
     schedule: onceOn('2026-11-24', 2),
     nextMeetingAt: null,
+    nextMeetingSkippedAt: null,
+    hasFinishedMeeting: true,
   }),
 } satisfies Record<string, OneOnOne>;
 
@@ -379,12 +393,16 @@ export const SAMPLE_NEXT_MEETINGS = {
     meeting: null,
     carried: ['Career path: senior engineer'],
     templateQuestions: [],
+    carriedFromSkipped: null,
+    carriedTopics: [],
     templateName: null,
   },
   preparing: {
     meeting: LIVE,
     carried: [],
     templateQuestions: [],
+    carriedFromSkipped: null,
+    carriedTopics: [],
     templateName: 'Weekly check-in',
   },
   inProgress: {
@@ -408,6 +426,8 @@ export const SAMPLE_NEXT_MEETINGS = {
     },
     carried: [],
     templateQuestions: [],
+    carriedFromSkipped: null,
+    carriedTopics: [],
     templateName: 'Weekly check-in',
   },
 } satisfies Record<string, NextMeeting>;

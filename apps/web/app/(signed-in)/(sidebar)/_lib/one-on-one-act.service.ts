@@ -11,7 +11,7 @@ export const COULD_NOT = "That didn't go through. Please try again.";
 
 /** What to say when the API refused a write to a 1:1 or its meetings, by its error code. */
 export const REFUSALS: Readonly<Record<string, string>> = {
-  ONE_ON_ONE_WITH_YOURSELF: 'A 1:1 is with somebody else.',
+  ONE_ON_ONE_WITH_YOURSELF: 'You can’t have a 1:1 with yourself.',
   ONE_ON_ONE_PERSON_NOT_FOUND: "That person isn't in this Workspace any more.",
   ONE_ON_ONE_ALREADY_EXISTS:
     'You already have a 1:1 with this person, or one is waiting on an answer.',
@@ -29,14 +29,19 @@ export const REFUSALS: Readonly<Record<string, string>> = {
   ONE_ON_ONE_NOT_YOURS_TO_CHANGE:
     'Only the person who sent the invitation can change it before it is answered.',
   ONE_ON_ONE_NOT_IN_IT: 'Only the two people in this 1:1 can do that.',
-  ONE_ON_ONE_NOT_RUNNING: 'This 1:1 is not running any more.',
+  ONE_ON_ONE_MEETING_IN_PROGRESS: 'A meeting is in progress. Finish it first.',
+  ONE_ON_ONE_NOT_RUNNING:
+    'This 1:1 isn’t active any more. Sync to see the latest.',
   ONE_ON_ONE_TIME_PASSED:
     'The time it was sent for has passed. Decline or withdraw it, then create a new 1:1.',
   ONE_ON_ONE_MEETING_NOT_FOUND: 'That meeting is no longer here. Sync to see.',
   ONE_ON_ONE_MEETING_NOT_STARTED: 'Start the meeting to take notes in it.',
   ONE_ON_ONE_MEETING_ALREADY_STARTED: 'It has already started. Sync to see.',
   ONE_ON_ONE_MEETING_FINISHED: 'This meeting has finished. Sync to see.',
-  ONE_ON_ONE_MEETING_TEXT_INVALID: 'That is too long, or empty.',
+  // Topics and notes share this refusal; only a topic's limit is short enough to be the cause
+  // when one is typed.
+  ONE_ON_ONE_MEETING_TEXT_INVALID:
+    'That’s empty or too long. A topic is up to 200 characters.',
   ONE_ON_ONE_TOPIC_NOT_YOURS: 'Only the person who added it can change it.',
   ONE_ON_ONE_TOPIC_NOT_FOUND: 'That topic is no longer here. Sync to see.',
   ONE_ON_ONE_TOPIC_CHANGED:

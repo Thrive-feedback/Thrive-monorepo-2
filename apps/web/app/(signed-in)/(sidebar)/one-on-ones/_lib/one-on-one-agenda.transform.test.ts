@@ -20,6 +20,8 @@ describe('the next meeting’s agenda', () => {
       meeting: null,
       carried: ['Launch retro', 'Hiring'],
       templateQuestions: [],
+      carriedFromSkipped: null,
+      carriedTopics: [],
       templateName: null,
     };
 
@@ -56,6 +58,8 @@ describe('the next meeting’s agenda', () => {
       },
       carried: [],
       templateQuestions: [],
+      carriedFromSkipped: null,
+      carriedTopics: [],
       templateName: 'Weekly check-in',
     };
 

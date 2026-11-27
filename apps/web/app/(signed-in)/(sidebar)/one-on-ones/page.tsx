@@ -4,7 +4,7 @@ import type { OneOnOne } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type'
 import {
   awaitsReadersAnswer,
   inListOrder,
-  isMet,
+  isOver,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-state.util';
 import {
   readMyOneOnOnes,
@@ -69,6 +69,8 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
     readOneOnOneTemplateCatalog(membership),
     readWorkspaceGoalNames(membership),
   ]);
+  // Once per page, so the list and the open 1:1 never straddle midnight in Bangkok.
+  const today = todayInBangkok();
   const listed = inListOrder(oneOnOnes);
   const named = listed.find((oneOnOne) => oneOnOne.id === openId);
   const open = named ?? openByDefault(listed);
@@ -87,7 +89,7 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
       (oneOnOne) =>
         oneOnOne.status !== 'DECLINED' &&
         oneOnOne.status !== 'ENDED' &&
-        !isMet(oneOnOne),
+        !isOver(oneOnOne),
     )
     .map(
       (oneOnOne) =>
@@ -95,7 +97,7 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
           otherAccountOf(oneOnOne),
           oneOnOne.status === 'ACTIVE'
             ? 'You already have a 1:1'
-            : 'A 1:1 is waiting on an answer',
+            : 'An invitation is waiting for an answer',
         ] as const,
     );
 
@@ -115,8 +117,8 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
           </div>
           {/* One line from `lg`, where the page has the width for it; narrower, it wraps. */}
           <Text as="p" variant="body-2" tone="muted" className="lg:text-nowrap">
-            Regular time with one teammate. Invite someone, and once they
-            accept, either of you can change when it meets.
+            Regular time with one teammate. Invite someone; once they accept,
+            you can both change the schedule.
           </Text>
         </div>
         <div className="ms-auto">
@@ -129,8 +131,9 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
       </div>
       {openId !== undefined && named === undefined && (
         <Text as="p" variant="body-2" role="status" tone="muted">
-          That 1:1 is no longer in your list.
-          {open ? ' Here is the first one instead.' : ''}
+          {open
+            ? 'That 1:1 isn’t in your list any more, so your first one is open instead.'
+            : 'That 1:1 isn’t in your list any more.'}
         </Text>
       )}
       {open === undefined ? (
@@ -142,17 +145,22 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
               oneOnOnes={listed}
               selectedId={open.id}
               teammates={teammates}
-              today={todayInBangkok()}
+              today={today}
             />
           </div>
           <div className={ONE_ON_ONES_PANEL_COLUMN}>
             <OneOnOnePanel
               key={open.id}
               oneOnOne={open}
+              today={today}
               workspaceId={membership.workspace.id}
               teammates={teammates}
               templates={catalog.items}
-              meetings={next && past ? { next, past } : undefined}
+              meetings={
+                next && past
+                  ? { next, past: past.items, skippedDays: past.skippedDays }
+                  : undefined
+              }
               compose={{
                 workspaceId: membership.workspace.id,
                 teammates,

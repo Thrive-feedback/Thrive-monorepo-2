@@ -220,6 +220,8 @@ export const ROUTES = {
     featureFlags: '/ui-showcase/feature-flags',
     /** Every state of a 1:1, from each side of it, on sample data. */
     oneOnOnes: '/ui-showcase/one-on-ones',
+    /** What a 1:1 shows when a meeting day passes unstarted, in every case, and a simulator. */
+    oneOnOnesMissed: '/ui-showcase/one-on-ones/missed',
     component: (slug: string) => `/ui-showcase/${slug}`,
   },
 } as const;
