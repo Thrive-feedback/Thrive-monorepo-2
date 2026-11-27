@@ -91,6 +91,8 @@ function openWith(topics: readonly { id: string; text: string }[]) {
     },
     carried: [],
     templateQuestions: [],
+    carriedFromSkipped: null,
+    carriedTopics: [],
     templateName: 'Weekly check-in',
   };
 }
@@ -356,6 +358,8 @@ describe('where the next meeting stands', () => {
           meeting: null,
           carried: [],
           templateQuestions: [],
+          carriedFromSkipped: null,
+          carriedTopics: [],
           templateName: 'Weekly check-in',
         }),
       ),

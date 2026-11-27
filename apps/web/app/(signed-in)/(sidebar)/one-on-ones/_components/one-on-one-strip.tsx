@@ -11,6 +11,7 @@ import {
   type OneOnOneGroup,
   type OneOnOneTab,
   tabOf,
+  wasSkipped,
   wasSuggested,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-state.util';
 import { otherPersonOf } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-person.util';
@@ -55,6 +56,16 @@ export type OneOnOneStripProps = {
    */
   today: string;
 };
+
+/** Whether its meeting day passed and nobody started it: still due, overdue, until the next day. */
+function isOverdue(oneOnOne: OneOnOne, today: string): boolean {
+  return (
+    groupOf(oneOnOne) === 'running' &&
+    !oneOnOne.meetingInProgress &&
+    oneOnOne.nextMeetingAt !== null &&
+    dayInBangkok(oneOnOne.nextMeetingAt) < today
+  );
+}
 
 /** Whether a running 1:1 meets on `today`. */
 function meetsOn(oneOnOne: OneOnOne, today: string): boolean {
@@ -104,6 +115,9 @@ function foldedStatusOf(
   if (group === 'past' && isMet(oneOnOne)) {
     return 'Met';
   }
+  if (group === 'past' && wasSkipped(oneOnOne)) {
+    return 'Skipped';
+  }
   return GROUP_NAMES[group];
 }
 
@@ -117,17 +131,19 @@ const MARK = {
   today: 'bg-action-primary',
 } as const;
 
-/** Only Upcoming is drawn empty, and only beside another tab: the others are hidden when empty. */
+/** Upcoming is the one tab drawn empty and chosen: the others, while empty, are greyed. */
 const NOTHING_UPCOMING =
-  'Nothing is set yet. Create 1:1 to set a time with someone.';
+  'Nothing is set yet. Create 1:1 to set a day with someone.';
 
 /** What a card says under the name: where the 1:1 stands, in its voice, and when. */
 function StateLine({
   oneOnOne,
   shortName,
+  today,
 }: {
   oneOnOne: OneOnOne;
   shortName: string;
+  today: string;
 }) {
   switch (groupOf(oneOnOne)) {
     case 'answer':
@@ -135,9 +151,9 @@ function StateLine({
       return (
         <span className="font-medium text-fg-accent">
           {wasSuggested(oneOnOne)
-            ? 'Suggests another time'
+            ? 'Suggests another day'
             : isOnce(oneOnOne)
-              ? 'Invites you, once'
+              ? 'Invites you · one meeting'
               : 'Invites you'}
         </span>
       );
@@ -154,7 +170,11 @@ function StateLine({
           {isOnce(oneOnOne) ? 'Once' : CADENCE_WORDS[oneOnOne.schedule.cadence]}
           {oneOnOne.nextMeetingAt && (
             <span className="block tabular-nums">
-              {isOnce(oneOnOne) ? '' : 'Next '}
+              {isOverdue(oneOnOne, today)
+                ? 'was '
+                : isOnce(oneOnOne)
+                  ? ''
+                  : 'Next '}
               {describeMeeting(oneOnOne.nextMeetingAt)}
             </span>
           )}
@@ -176,6 +196,8 @@ function StateLine({
     default:
       return isMet(oneOnOne) ? (
         <>Met {describeDay(oneOnOne.schedule.startsOn)}</>
+      ) : wasSkipped(oneOnOne) ? (
+        <>Skipped · was set for {describeDay(oneOnOne.schedule.startsOn)}</>
       ) : (
         <>
           Ended
@@ -234,9 +256,18 @@ function Card({ oneOnOne, teammates, isOpen, group, today }: CardProps) {
                 Today
               </Badge>
             )}
+            {isOverdue(oneOnOne, today) && (
+              <Badge size="sm" tone="warning">
+                Overdue
+              </Badge>
+            )}
           </span>
           <Text as="span" variant="body-3" tone="muted">
-            <StateLine oneOnOne={oneOnOne} shortName={person.shortName} />
+            <StateLine
+              oneOnOne={oneOnOne}
+              shortName={person.shortName}
+              today={today}
+            />
           </Text>
         </span>
       </OneOnOneLink>
@@ -301,7 +332,7 @@ export function OneOnOneStrip({
       onClick={toggle}
       aria-expanded={!isCollapsed}
       aria-label={
-        isCollapsed ? 'Show the list of 1:1s' : 'Fold the list of 1:1s'
+        isCollapsed ? 'Show the list of 1:1s' : 'Hide the list of 1:1s'
       }
       className="hidden size-8 shrink-0 place-content-center rounded-control text-fg-secondary transition-colors duration-quick ease-smooth-out hover:bg-action-neutral-surface-hover hover:text-fg-primary focus-visible:outline-2 focus-visible:outline-action-primary lg:grid"
     >

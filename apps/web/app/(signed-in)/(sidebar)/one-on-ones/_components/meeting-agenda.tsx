@@ -42,14 +42,15 @@ import {
   reorderTopics,
   updateTopic,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service';
+import { describeDay } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-schedule.util';
 import { useAutosave } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-autosave';
 import { Button } from '@/components/atoms/button';
 import { Checkbox } from '@/components/atoms/checkbox';
+import { DragHandle } from '@/components/atoms/drag-handle';
 import { Input } from '@/components/atoms/input';
 import { Label } from '@/components/atoms/label';
 import { Text } from '@/components/atoms/text';
 import { Textarea } from '@/components/atoms/textarea';
-import { DragHandle } from '@/components/molecules/drag-handle';
 import { RemoveButton } from '@/components/molecules/remove-button';
 import { cn } from '@/lib/cn.util';
 
@@ -60,12 +61,19 @@ const STATUS_WORDS = {
   failed: 'Not saved',
 } as const;
 
-/** Where a topic came from, said quietly under it. */
+/**
+ * Where a topic came from, said quietly beside it. A topic written for a meeting day that was then
+ * skipped moved on with the agenda, and says so; one added since says who added it, as usual.
+ */
 function sourceOf(
   topic: AgendaTopic,
   templateName: string | null,
   people: MeetingPeople,
+  carriedFrom: string | null,
 ): string {
+  if (carriedFrom) {
+    return `From ${describeDay(carriedFrom)} (skipped)`;
+  }
   switch (topic.source) {
     case 'CARRIED':
       return 'From last time';
@@ -119,7 +127,7 @@ function TopicNote({ topic, people, save, track, onConflict }: TopicNoteProps) {
         id={`${id}-note`}
         value={note.value}
         rows={2}
-        placeholder="What did you say? Both of you read this."
+        placeholder="What did you agree? You both see this."
         onChange={(event) => note.change(event.currentTarget.value)}
         onBlur={() => void note.flush()}
       />
@@ -500,7 +508,16 @@ export function MeetingAgenda({
                     item.source !== 'PERSON' ||
                     item.authorAccountId === people.readerAccountId
                   }
-                  source={sourceOf(item, next.templateName, people)}
+                  source={sourceOf(
+                    item,
+                    next.templateName,
+                    people,
+                    inProgress
+                      ? null
+                      : (next.carriedTopics.find(
+                          (each) => each.topicId === item.topic?.id,
+                        )?.from ?? null),
+                  )}
                   isPending={isPending}
                   people={people}
                   onRemove={() => remove(item)}

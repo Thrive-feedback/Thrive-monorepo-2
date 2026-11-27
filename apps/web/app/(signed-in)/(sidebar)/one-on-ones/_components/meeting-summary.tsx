@@ -59,7 +59,7 @@ export function MeetingSummary({ meeting }: { meeting: Meeting }) {
         </ol>
       ) : (
         <Text as="p" variant="body-2" tone="muted">
-          No topic was ticked as discussed.
+          No topics were ticked.
         </Text>
       )}
       {carried.length > 0 && (

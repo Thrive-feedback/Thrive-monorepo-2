@@ -56,7 +56,7 @@ export function FinishMeetingDialog({
         <DialogHeader>
           <DialogTitle>Finish this meeting?</DialogTitle>
           <DialogDescription>
-            You both see this summary in Past meetings.
+            You’ll both find this summary in Past meetings.
           </DialogDescription>
         </DialogHeader>
         <MeetingSummary meeting={meeting} />
@@ -73,7 +73,7 @@ export function FinishMeetingDialog({
             loading={isPending}
             onClick={() =>
               run(() => finishMeeting(workspaceId, oneOnOneId, meeting.id), {
-                done: 'Finished and shared',
+                done: 'Meeting finished and shared',
                 onSuccess: () => onOpenChange(false),
               })
             }

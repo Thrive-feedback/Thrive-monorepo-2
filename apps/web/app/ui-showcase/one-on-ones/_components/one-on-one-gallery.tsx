@@ -1,3 +1,4 @@
+import NextLink from 'next/link';
 import type { OneOnOne } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import { inListOrder } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-state.util';
 import { OneOnOnePanel } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/one-on-one-panel';
@@ -19,7 +20,7 @@ import {
   SAMPLE_UPCOMING_ONLY,
 } from '@/app/ui-showcase/one-on-ones/_lib/one-on-one-samples.constant';
 import { Text } from '@/components/atoms/text';
-import { MissedMeetingCases } from './missed-meeting-cases';
+import { ROUTES } from '@/lib/routes.constant';
 
 /** No Workspace is read here; the actions it calls answer with an error, as nobody is signed in. */
 const SAMPLE_WORKSPACE_ID = '0196b4c8-0000-7000-8000-0000000000ff';
@@ -46,6 +47,7 @@ function Case({
       </figcaption>
       <OneOnOnePanel
         oneOnOne={oneOnOne}
+        today={SAMPLE_TODAY}
         workspaceId={SAMPLE_WORKSPACE_ID}
         teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
         templates={SAMPLE_ONE_ON_ONE_TEMPLATES}
@@ -268,10 +270,11 @@ export function OneOnOneGallery() {
               <OneOnOnePanel
                 // Its own id per state, so the three panels never share a heading id.
                 oneOnOne={{ ...SAMPLE_ONE_ON_ONES.runningWeekly, id }}
+                today={SAMPLE_TODAY}
                 workspaceId={SAMPLE_WORKSPACE_ID}
                 teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
                 templates={SAMPLE_ONE_ON_ONE_TEMPLATES}
-                meetings={{ next, past: SAMPLE_PAST_MEETINGS }}
+                meetings={{ next, past: SAMPLE_PAST_MEETINGS, skippedDays: [] }}
               />
             </figure>
           ))}
@@ -279,10 +282,15 @@ export function OneOnOneGallery() {
       </GallerySection>
 
       <GallerySection
-        title="Missed meetings · proposed"
-        description="Not built yet: what a weekly 1:1 with Mint on Thursdays shows when a meeting day passes without anyone pressing Start, day by day, and one held once. Overdue until the next meeting day, and still startable late; skipped once that day comes, with its agenda moved on; the schedule never moves, and an early start is that day's meeting. Static, from the panel's own atoms and tokens, to agree on before the API and the panel learn it."
+        title="Missed meetings"
+        description="What a 1:1 shows when a meeting day passes without anyone pressing Start, in every case and in a simulator, is on its own page."
       >
-        <MissedMeetingCases />
+        <NextLink
+          href={ROUTES.uiShowcase.oneOnOnesMissed}
+          className="w-fit text-button-sm text-fg-accent underline-offset-4 hover:underline"
+        >
+          Open Missed 1:1s
+        </NextLink>
       </GallerySection>
 
       <GallerySection

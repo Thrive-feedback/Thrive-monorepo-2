@@ -86,7 +86,9 @@ export function CreateOneOnOneDialog({
         toast.error(result.message);
         return;
       }
-      toast.success('Invitation sent');
+      toast.success(
+        person ? `Invitation sent to ${person.name}` : 'Invitation sent',
+      );
       handleOpenChange(false);
       router.push(
         result.id ? ROUTES.oneOnOneWith(result.id) : ROUTES.oneOnOnes,
@@ -106,8 +108,8 @@ export function CreateOneOnOneDialog({
           </DialogTitle>
           <DialogDescription>
             {step === 1
-              ? 'Who is it with? They’re asked to accept before anything is set.'
-              : 'When it meets. Either of you can change it later.'}
+              ? 'Choose a teammate. Nothing is scheduled until they accept.'
+              : 'Pick how often and which day. You can both change it later.'}
           </DialogDescription>
         </DialogHeader>
 

@@ -14,6 +14,8 @@ import {
 } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import type { Meeting } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
 import {
+  dayInBangkok,
+  describeDay,
   describeMeeting,
   describeTime,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-schedule.util';
@@ -33,13 +35,18 @@ export type PastMeetingsCompose = {
 
 export type PastMeetingsProps = {
   meetings: readonly Meeting[];
+  /** The meeting days skipped, `YYYY-MM-DD`, oldest first: listed among the meetings held. */
+  skippedDays?: readonly string[];
   /** The other person, whom Write as Feedback and Give Kudos are for. */
   other: Teammate | undefined;
   /** What the cards need; without it, the summary is read only. */
   compose?: PastMeetingsCompose;
 };
 
-/** "16:50–17:05 · 4 discussed · 2 carried over": when it ran and what it came to. */
+/**
+ * "Held late, Fri 4 Dec · 16:50–17:05 · 4 discussed · 2 carried over": when it ran, if not on the
+ * day it counted for, and what it came to.
+ */
 function metaOf(meeting: Meeting, heldAt: string | null): string {
   const discussed = meeting.topics.filter((topic) => topic.discussedAt).length;
   const carried = meeting.topics.length - discussed;
@@ -49,7 +56,14 @@ function metaOf(meeting: Meeting, heldAt: string | null): string {
       : heldAt
         ? describeTime(heldAt)
         : null;
+  const heldOn = heldAt ? dayInBangkok(heldAt) : null;
+  const forDay = meeting.occursAt ? dayInBangkok(meeting.occursAt) : null;
+  const off =
+    heldAt && heldOn && forDay && heldOn !== forDay
+      ? `${heldOn < forDay ? 'Held early' : 'Held late'}, ${describeMeeting(heldAt)}`
+      : null;
   return [
+    off,
     when,
     `${discussed} discussed`,
     carried > 0 ? `${carried} carried over` : null,
@@ -64,12 +78,64 @@ const MEETING_CHOICES = [
   'kudos',
 ] as const satisfies readonly ComposeChoice[];
 
+/** A meeting held, or a run of days skipped in a row, as Past meetings lists them, newest first. */
+type PastRow =
+  | { readonly kind: 'held'; readonly day: string; readonly meeting: Meeting }
+  | {
+      readonly kind: 'skipped';
+      readonly first: string;
+      readonly last: string;
+      readonly count: number;
+    };
+
+/** The meetings held and the days skipped, newest first, skips in a row as one row. */
+function rowsOf(
+  meetings: readonly Meeting[],
+  skippedDays: readonly string[],
+): PastRow[] {
+  const days: (
+    | { readonly kind: 'held'; readonly day: string; readonly meeting: Meeting }
+    | { readonly kind: 'skipped'; readonly day: string }
+  )[] = [
+    ...meetings.map((meeting) => ({
+      kind: 'held' as const,
+      day: dayInBangkok(
+        meeting.occursAt ?? meeting.startedAt ?? meeting.finishedAt ?? '',
+      ),
+      meeting,
+    })),
+    ...skippedDays.map((day) => ({ kind: 'skipped' as const, day })),
+  ].sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0));
+  const rows: PastRow[] = [];
+  for (const each of days) {
+    const previous = rows.at(-1);
+    if (each.kind === 'held') {
+      rows.push(each);
+    } else if (previous?.kind === 'skipped') {
+      rows[rows.length - 1] = {
+        ...previous,
+        first: each.day,
+        count: previous.count + 1,
+      };
+    } else {
+      rows.push({ kind: 'skipped', first: each.day, last: each.day, count: 1 });
+    }
+  }
+  return rows;
+}
+
 /**
- * The meetings a 1:1 has finished, newest first, each opening to its summary. Beside each, Give and
+ * The meetings a 1:1 has finished, newest first, each opening to its summary, with the meeting days
+ * nobody started (skipped) among them; skips in a row share one row. Beside each, Give and
  * Kudos, outlined in their voices as a teammate's row offers them, open the usual cards for the other
  * person, started from that meeting; whoever writes chooses who reads it, as always (ADR-0060 §10).
  */
-export function PastMeetings({ meetings, other, compose }: PastMeetingsProps) {
+export function PastMeetings({
+  meetings,
+  skippedDays = [],
+  other,
+  compose,
+}: PastMeetingsProps) {
   const ids = useId();
   const [openId, setOpenId] = useState<string | null>(meetings[0]?.id ?? null);
   const [message, setMessage] = useState<string | undefined>(undefined);
@@ -89,10 +155,10 @@ export function PastMeetings({ meetings, other, compose }: PastMeetingsProps) {
     [openCard, other],
   );
 
-  if (meetings.length === 0) {
+  if (meetings.length === 0 && skippedDays.length === 0) {
     return (
       <Text as="p" variant="body-2" tone="muted">
-        No finished meetings yet. Each one you finish is kept here for you both.
+        No past meetings yet. Each meeting you finish appears here for you both.
       </Text>
     );
   }
@@ -100,10 +166,31 @@ export function PastMeetings({ meetings, other, compose }: PastMeetingsProps) {
   return (
     <>
       <ol className="flex flex-col gap-3">
-        {meetings.map((meeting) => {
+        {rowsOf(meetings, skippedDays).map((row) => {
+          if (row.kind === 'skipped') {
+            return (
+              <li
+                key={`skipped-${row.first}`}
+                className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-control border border-border-subtle border-dashed px-4 py-3"
+              >
+                <Text as="span" variant="subtitle-3" tone="muted">
+                  {row.count === 1
+                    ? describeDay(row.first)
+                    : `${describeDay(row.first)} – ${describeDay(row.last)}`}
+                </Text>
+                <Text as="span" variant="body-3" tone="warning">
+                  {row.count === 1
+                    ? 'Skipped'
+                    : `Skipped ${row.count} meetings`}
+                </Text>
+              </li>
+            );
+          }
+          const { meeting } = row;
           const isOpen = openId === meeting.id;
-          // When it was really held, which may differ from the slot it stood for.
+          // When it was really held, which may differ from the day it counted for.
           const heldAt = meeting.startedAt ?? meeting.occursAt;
+          const forDay = meeting.occursAt ?? heldAt;
           return (
             <li
               key={meeting.id}
@@ -119,7 +206,7 @@ export function PastMeetings({ meetings, other, compose }: PastMeetingsProps) {
                 >
                   <span className="flex flex-col gap-0.5">
                     <Text as="span" variant="subtitle-3">
-                      {heldAt ? describeMeeting(heldAt) : 'A meeting'}
+                      {forDay ? describeMeeting(forDay) : 'A meeting'}
                     </Text>
                     <Text
                       as="span"

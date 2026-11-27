@@ -105,10 +105,12 @@ function oneOnOne(overrides: Partial<OneOnOne>): OneOnOne {
     suggestedAt: null,
     answerNote: null,
     nextMeetingAt: '2026-12-03T03:00:00.000Z',
+    nextMeetingSkippedAt: null,
     answeredAt: null,
     endedAt: null,
     createdAt: '2026-11-20T03:00:00.000Z',
     meetingInProgress: false,
+    hasFinishedMeeting: false,
     ...overrides,
   };
 }
@@ -117,6 +119,7 @@ function panel(shown: OneOnOne, meetings?: OneOnOneMeetings) {
   return (
     <OneOnOnePanel
       oneOnOne={shown}
+      today="2026-11-27"
       workspaceId={WORKSPACE_ID}
       teammates={TEAMMATES}
       templates={TEMPLATES}
@@ -180,6 +183,8 @@ const NOTHING_NEXT = {
   meeting: null,
   carried: [],
   templateQuestions: ['What went well this week?'],
+  carriedFromSkipped: null,
+  carriedTopics: [],
   templateName: 'Weekly check-in',
 };
 
@@ -236,6 +241,7 @@ describe('OneOnOnePanel', () => {
         startedByAccountId: MINT,
         invitedAccountId: ME,
         nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
         inviteNote: 'How the launch went',
       }),
     );
@@ -259,6 +265,7 @@ describe('OneOnOnePanel', () => {
       startedByAccountId: MINT,
       invitedAccountId: ME,
       nextMeetingAt: null,
+      nextMeetingSkippedAt: null,
     });
     const drawAgain = draw(invited);
     await userEvent.click(screen.getByRole('button', { name: 'Accept' }));
@@ -280,6 +287,7 @@ describe('OneOnOnePanel', () => {
         startedByAccountId: MINT,
         invitedAccountId: ME,
         nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
       }),
     );
 
@@ -308,6 +316,7 @@ describe('OneOnOnePanel', () => {
       oneOnOne({
         status: 'INVITED',
         nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
         inviteNote: 'How the launch went',
       }),
     );
@@ -334,6 +343,7 @@ describe('OneOnOnePanel', () => {
       oneOnOne({
         status: 'DECLINED',
         nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
         answeredAt: '2026-11-26T03:00:00.000Z',
         answerNote: 'Next month?',
       }),
@@ -352,15 +362,16 @@ describe('OneOnOnePanel', () => {
       oneOnOne({
         status: 'ENDED',
         nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
         endedAt: '2026-11-26T03:00:00.000Z',
       }),
     );
 
-    expect(screen.getByText(/Schedule ended on 26 Nov/)).toBeVisible();
     expect(
-      screen.getByText(
-        'No more meetings are kept, and none was finished in it.',
-      ),
+      screen.getByText(/Schedule ended 26 Nov · was weekly on Thursday/),
+    ).toBeVisible();
+    expect(
+      screen.getByText('No meetings were finished before it ended.'),
     ).toBeVisible();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
@@ -370,9 +381,10 @@ describe('OneOnOnePanel', () => {
       oneOnOne({
         status: 'ENDED',
         nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
         endedAt: '2026-11-26T03:00:00.000Z',
       }),
-      { next: NOTHING_NEXT, past: [FINISHED] },
+      { next: NOTHING_NEXT, past: [FINISHED], skippedDays: [] },
     );
 
     expect(
@@ -388,7 +400,9 @@ describe('OneOnOnePanel', () => {
       oneOnOne({
         schedule: ONCE,
         nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
         meetingInProgress: true,
+        hasFinishedMeeting: false,
       }),
       {
         next: {
@@ -401,6 +415,7 @@ describe('OneOnOnePanel', () => {
           },
         },
         past: [],
+        skippedDays: [],
       },
     );
 
@@ -418,6 +433,7 @@ describe('OneOnOnePanel', () => {
     const drawAgain = draw(running, {
       next: { ...NOTHING_NEXT, meeting: inProgress },
       past: [],
+      skippedDays: [],
     });
     await userEvent.click(screen.getByRole('button', { name: 'Finish' }));
     const dialog = await screen.findByRole('dialog', {
@@ -431,7 +447,11 @@ describe('OneOnOnePanel', () => {
       pressed.blur();
     }
 
-    drawAgain(running, { next: NOTHING_NEXT, past: [FINISHED] });
+    drawAgain(running, {
+      next: NOTHING_NEXT,
+      past: [FINISHED],
+      skippedDays: [],
+    });
 
     expect(screen.getByRole('heading', { name: 'Mint Boonmee' })).toHaveFocus();
   });
@@ -465,6 +485,7 @@ describe('OneOnOnePanel', () => {
         startedByAccountId: MINT,
         invitedAccountId: ME,
         nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
       }),
     );
 
@@ -472,7 +493,7 @@ describe('OneOnOnePanel', () => {
     await userEvent.click(decline);
     const dialog = await screen.findByRole('dialog');
     await userEvent.click(
-      within(dialog).getByRole('button', { name: 'Not now' }),
+      within(dialog).getByRole('button', { name: 'Go back' }),
     );
 
     await waitFor(() => expect(decline).toHaveFocus());
@@ -539,7 +560,13 @@ describe('OneOnOnePanel', () => {
   });
 
   it('says a meeting held once has met, with nothing to do', () => {
-    draw(oneOnOne({ schedule: ONCE, nextMeetingAt: null }));
+    draw(
+      oneOnOne({
+        schedule: ONCE,
+        nextMeetingAt: null,
+        hasFinishedMeeting: true,
+      }),
+    );
 
     expect(screen.getByText('Met on Wed 2 Dec')).toBeVisible();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
@@ -552,6 +579,7 @@ describe('OneOnOnePanel', () => {
         startedByAccountId: MINT,
         invitedAccountId: ME,
         nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
         suggestedAt: '2026-11-25T08:00:00.000Z',
         inviteNote: 'Tuesday suits me better.',
       }),
@@ -565,7 +593,7 @@ describe('OneOnOnePanel', () => {
     ).toBeVisible();
     expect(screen.getByText('Tuesday suits me better.')).toBeVisible();
     expect(
-      screen.getByRole('button', { name: 'Accept this time' }),
+      screen.getByRole('button', { name: 'Accept this day' }),
     ).toBeVisible();
   });
 
@@ -576,17 +604,18 @@ describe('OneOnOnePanel', () => {
         startedByAccountId: MINT,
         invitedAccountId: ME,
         nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
       }),
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'Decline' }));
     await userEvent.click(
       await screen.findByRole('button', {
-        name: /Suggest another time instead/,
+        name: /Suggest another day instead/,
       }),
     );
     const dialog = await screen.findByRole('dialog', {
-      name: 'Suggest another time to Mint',
+      name: 'Suggest another day to Mint',
     });
     await userEvent.type(
       within(dialog).getByRole('textbox', { name: 'A note for Mint' }),
@@ -603,5 +632,34 @@ describe('OneOnOnePanel', () => {
       expect.objectContaining({ cadence: 'WEEKLY', weekday: 4 }),
       'Tuesday?',
     );
+  });
+
+  it('keeps the schedule as it is while a meeting is under way: no menu to change or end it', () => {
+    draw(oneOnOne({ meetingInProgress: true }));
+
+    expect(
+      screen.queryByRole('button', { name: SCHEDULE_MENU }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('says a meeting held once that nobody started was skipped, and when it was set for', () => {
+    draw(
+      oneOnOne({
+        schedule: ONCE,
+        nextMeetingAt: null,
+        hasFinishedMeeting: false,
+      }),
+      {
+        next: NOTHING_NEXT,
+        past: [],
+        skippedDays: ['2026-12-02'],
+      },
+    );
+
+    expect(screen.getByText('Skipped · was set for Wed 2 Dec')).toBeVisible();
+    expect(
+      screen.getByText('Nobody started it in the week after its day.'),
+    ).toBeVisible();
+    expect(screen.getByText('Skipped')).toBeVisible();
   });
 });

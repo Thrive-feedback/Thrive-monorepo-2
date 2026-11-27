@@ -22,9 +22,9 @@ import { useId, useRef } from 'react';
 import { usePrefersReducedMotion } from '@/app/(signed-in)/(sidebar)/_lib/use-prefers-reduced-motion';
 import { MAX_TEMPLATE_QUESTION_LENGTH } from '@/app/(signed-in)/(sidebar)/settings/one-on-ones/_lib/one-on-one-template.util';
 import { Button } from '@/components/atoms/button';
+import { DragHandle } from '@/components/atoms/drag-handle';
 import { Input } from '@/components/atoms/input';
 import { Label } from '@/components/atoms/label';
-import { DragHandle } from '@/components/molecules/drag-handle';
 import { RemoveButton } from '@/components/molecules/remove-button';
 import { cn } from '@/lib/cn.util';
 
