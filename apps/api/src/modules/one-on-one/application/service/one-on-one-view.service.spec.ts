@@ -24,6 +24,9 @@ const ROW: OneOnOneRow = {
   templateName: 'Weekly check-in',
   meetingInProgress: false,
   hasFinishedMeeting: false,
+  meetingInProgressFor: null,
+  lastHeldFor: null,
+  skippedDays: [],
 };
 
 describe('reading a 1:1 for one person in it', () => {
@@ -41,21 +44,35 @@ describe('reading a 1:1 for one person in it', () => {
     ).toBeNull();
   });
 
-  it('has no next meeting once a meeting held once is over', () => {
+  it('has no next meeting once a meeting held once is a week past its day, unstarted', () => {
     const once = {
       ...ROW,
       schedule: { ...ROW.schedule, cadence: 'ONCE' as const },
     };
 
-    // All of 26 Nov, Bangkok time: over at midnight.
+    // Thu 26 Nov: overdue through Wed 2 Dec, over as Thu 3 Dec starts in Bangkok.
     expect(
-      service.toView(once, 'krit', new Date('2026-11-26T03:15:00.000Z'))
+      service.toView(once, 'krit', new Date('2026-12-02T16:00:00.000Z'))
         ?.nextMeetingAt,
     ).not.toBeNull();
     expect(
-      service.toView(once, 'krit', new Date('2026-11-26T17:00:00.000Z'))
+      service.toView(once, 'krit', new Date('2026-12-02T17:00:00.000Z'))
         ?.nextMeetingAt,
     ).toBeNull();
+  });
+
+  it('says a meeting whose day passed is still the one due, and when it is skipped', () => {
+    const view = service.toView(
+      ROW,
+      'krit',
+      new Date('2026-11-27T03:00:00.000Z'),
+    );
+
+    // Thu 26 Nov, as its day starts in Bangkok; skipped as Thu 3 Dec starts.
+    expect(view?.nextMeetingAt?.toISOString()).toBe('2026-11-25T17:00:00.000Z');
+    expect(view?.nextMeetingSkippedAt?.toISOString()).toBe(
+      '2026-12-02T17:00:00.000Z',
+    );
   });
 
   it('has no next meeting once a meeting held once was finished, before its day as well', () => {
@@ -67,13 +84,21 @@ describe('reading a 1:1 for one person in it', () => {
         startsOn: '2026-12-03',
       },
       hasFinishedMeeting: true,
+      lastHeldFor: new Date('2026-12-02T17:00:00.000Z'),
     };
 
     expect(service.toView(met, 'krit', NOW)?.nextMeetingAt).toBeNull();
     // A weekly one goes on after a meeting is finished.
     expect(
-      service.toView({ ...ROW, hasFinishedMeeting: true }, 'krit', NOW)
-        ?.nextMeetingAt,
+      service.toView(
+        {
+          ...ROW,
+          hasFinishedMeeting: true,
+          lastHeldFor: new Date('2026-11-25T17:00:00.000Z'),
+        },
+        'krit',
+        NOW,
+      )?.nextMeetingAt,
     ).not.toBeNull();
   });
 

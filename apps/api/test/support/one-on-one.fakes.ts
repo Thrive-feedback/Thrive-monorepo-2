@@ -171,6 +171,21 @@ export class FakeOneOnOneMeetingQuery extends OneOnOneMeetingQuery {
     return last ? projectionOf(last) : null;
   }
 
+  async listHeldFor(
+    workspaceId: string,
+    oneOnOneId: string,
+  ): Promise<readonly Date[]> {
+    return this.meetings.all().flatMap((meeting) => {
+      const snapshot = meeting.snapshot();
+      return snapshot.workspaceId === workspaceId &&
+        snapshot.oneOnOneId === oneOnOneId &&
+        snapshot.finishedAt !== null &&
+        snapshot.occursAt !== null
+        ? [snapshot.occursAt]
+        : [];
+    });
+  }
+
   async listFinished(
     workspaceId: string,
     oneOnOneId: string,
@@ -232,6 +247,8 @@ export class FakeOneOnOneQuery extends OneOnOneQuery {
       createdAt: new Date(0),
       meetingInProgress: false,
       hasFinishedMeeting: false,
+      meetingInProgressFor: null,
+      lastHeldFor: null,
     };
   }
 }

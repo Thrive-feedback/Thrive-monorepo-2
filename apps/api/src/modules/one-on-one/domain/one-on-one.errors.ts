@@ -142,6 +142,16 @@ export class OneOnOneTimePassedError extends DomainError {
   }
 }
 
+/** A schedule is changed or ended while a meeting is under way: that meeting is finished first. */
+export class OneOnOneMeetingInProgressError extends DomainError {
+  readonly code = 'ONE_ON_ONE_MEETING_IN_PROGRESS';
+  readonly category = 'conflict' as const;
+
+  constructor() {
+    super('A meeting is in progress. Finish it first.');
+  }
+}
+
 /** A schedule is changed while the 1:1 still runs, or before it is answered. */
 export class OneOnOneNotRunningError extends DomainError {
   readonly code = 'ONE_ON_ONE_NOT_RUNNING';

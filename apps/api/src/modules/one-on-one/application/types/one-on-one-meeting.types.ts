@@ -15,6 +15,10 @@ export interface OneOnOneTopicProjection {
   readonly notesUpdatedAt: Date | null;
   readonly notesUpdatedByAccountId: string | null;
   readonly discussedAt: Date | null;
+  /** When it was put on the agenda. */
+  readonly addedAt: Date;
+  /** The skipped meeting day it was written for, kept at a schedule change; `null` otherwise. */
+  readonly carriedFrom: string | null;
 }
 
 /** One meeting as stored, read for its two people: its agenda in order. */
@@ -42,6 +46,16 @@ export interface OneOnOneMeetingView extends OneOnOneMeetingProjection {
  */
 export interface OneOnOneNextMeetingView {
   readonly meeting: OneOnOneMeetingView | null;
+  /**
+   * The earliest meeting day skipped that topics on the agenda were written for, `YYYY-MM-DD`: the
+   * agenda moved on from it. `null` when none was.
+   */
+  readonly carriedFromSkipped: string | null;
+  /** Each topic written for a meeting day then skipped, with that day. */
+  readonly carriedTopics: readonly {
+    readonly topicId: string;
+    readonly from: string;
+  }[];
   /** When nothing is written yet: what was not reached last time, which it will open with. */
   readonly carried: readonly string[];
   /**
@@ -62,4 +76,6 @@ export interface OneOnOneMeetingCursorPageRequest {
 export interface OneOnOneMeetingViewPage {
   readonly items: readonly OneOnOneMeetingView[];
   readonly nextAfterId: string | null;
+  /** The meeting days skipped, `YYYY-MM-DD`, oldest first. */
+  readonly skippedDays: readonly string[];
 }

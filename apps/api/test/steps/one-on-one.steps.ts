@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { Given, Then, When } from '@cucumber/cucumber';
+import { harness } from '../support/harness';
 import type { ApiResponse, ThriveWorld } from '../support/world';
 
 /**
@@ -39,6 +40,11 @@ const REFUSALS: Readonly<Record<string, { code: string; status: number }>> = {
     code: 'ONE_ON_ONE_TEMPLATE_NOT_YOURS',
     status: 403,
   },
+  'a meeting is in progress': {
+    code: 'ONE_ON_ONE_MEETING_IN_PROGRESS',
+    status: 409,
+  },
+  'its day has passed': { code: 'ONE_ON_ONE_TIME_PASSED', status: 409 },
 };
 
 /** A weekly 1:1 on Thursdays, the schedule every scenario uses: a day, with no time of day. */
@@ -489,11 +495,287 @@ When(
   },
 );
 
+async function finishNext(world: ThriveWorld, name: string) {
+  const meetingId = await nextMeetingId(world, name);
+  const response = await world.as(
+    name,
+    'POST',
+    `${meetingPath(world, name, meetingId)}/finish`,
+  );
+  // Finished, it is no longer the next meeting: the next step opens the one after it.
+  stateOf(world).meetingId = undefined;
+  return response;
+}
+
 When(
   '{person} finishes the next meeting',
   async function (this: ThriveWorld, name: string) {
-    const meetingId = await nextMeetingId(this, name);
-    await this.as(name, 'POST', `${meetingPath(this, name, meetingId)}/finish`);
+    await finishNext(this, name);
+  },
+);
+
+Given(
+  '{person} has finished the next meeting',
+  async function (this: ThriveWorld, name: string) {
+    this.succeeded(await finishNext(this, name), `${name} finishing it`);
+  },
+);
+
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+] as const;
+
+/** `2026-12-03` for "Thu 3 Dec 2026", the way the page writes a day. */
+function dayOf(written: string): string {
+  const match = /^\w{3} (\d{1,2}) (\w{3}) (\d{4})$/.exec(written);
+  assert.ok(match, `"${written}" is not a day written as "Thu 3 Dec 2026".`);
+  const [, day, month, year] = match;
+  const index = (MONTHS as readonly string[]).indexOf(month ?? '');
+  assert.ok(index >= 0, `"${month}" is not a month.`);
+  return `${year}-${String(index + 1).padStart(2, '0')}-${day?.padStart(2, '0')}`;
+}
+
+/** The calendar day an instant falls on in Bangkok, where 1:1s keep their days (ADR 0095). */
+function calendarDayOf(instant: string): string {
+  return new Date(Date.parse(instant) + CALENDAR_UTC_OFFSET_HOURS * 3_600_000)
+    .toISOString()
+    .slice(0, 10);
+}
+
+Given('today is {}', function (this: ThriveWorld, written: string) {
+  // Midday in Bangkok, so the day is the same on either side of the offset.
+  harness().clock.set(new Date(`${dayOf(written)}T05:00:00.000Z`));
+});
+
+/** Moves a running 1:1 to `days` ("Mondays"), weekly; the answer is left for the scenario to judge. */
+function moveTo(world: ThriveWorld, name: string, days: string) {
+  const weekday =
+    [
+      'Mondays',
+      'Tuesdays',
+      'Wednesdays',
+      'Thursdays',
+      'Fridays',
+      'Saturdays',
+      'Sundays',
+    ].indexOf(days) + 1;
+  assert.ok(weekday > 0, `"${days}" is not a day of the week.`);
+  return world.as(name, 'PUT', `${oneOnOnePath(world, name)}/schedule`, {
+    cadence: 'WEEKLY',
+    weekday,
+  });
+}
+
+When(
+  '{person} moves the 1:1 to {word}',
+  async function (this: ThriveWorld, name: string, days: string) {
+    this.succeeded(
+      await moveTo(this, name, days),
+      `${name} moving the 1:1 to ${days}`,
+    );
+  },
+);
+
+When(
+  '{person} tries to move the 1:1 to {word}',
+  async function (this: ThriveWorld, name: string, days: string) {
+    await moveTo(this, name, days);
+  },
+);
+
+When(
+  '{person} tries to end the 1:1',
+  async function (this: ThriveWorld, name: string) {
+    await this.as(name, 'POST', `${oneOnOnePath(this, name)}/end`);
+  },
+);
+
+When('{person} ends the 1:1', async function (this: ThriveWorld, name: string) {
+  this.succeeded(
+    await this.as(name, 'POST', `${oneOnOnePath(this, name)}/end`),
+    `${name} ending the 1:1`,
+  );
+});
+
+Given(
+  '{person} has invited {person} to a 1:1 held once on {}',
+  async function (
+    this: ThriveWorld,
+    from: string,
+    to: string,
+    written: string,
+  ) {
+    const response = this.succeeded(
+      await this.as(
+        from,
+        'POST',
+        `/v1/workspaces/${this.workspaceOf(from)}/one-on-ones`,
+        {
+          invitedAccountId: this.person(to).accountId,
+          schedule: { cadence: 'ONCE', weekday: 1, startsOn: dayOf(written) },
+        },
+      ),
+      `${from} inviting ${to} to a 1:1 held once`,
+    );
+    stateOf(this).id = response.body.id;
+  },
+);
+
+Then(
+  '{person} sees nothing skipped',
+  async function (this: ThriveWorld, name: string) {
+    const past = await readPast(this, name);
+    assert.deepEqual(past.skippedDays, []);
+  },
+);
+
+Then(
+  "{person}'s next meeting carries nothing from a skipped day",
+  async function (this: ThriveWorld, name: string) {
+    const next = await readNextMeeting(this, name);
+    assert.deepEqual(next.carriedTopics, []);
+    assert.equal(next.carriedFromSkipped, null);
+  },
+);
+
+Then(
+  /^(\w+)'s next meeting carries "([^"]+)" from ([^,]+)$/,
+  async function (this: ThriveWorld, name: string, text: string, from: string) {
+    const next = await readNextMeeting(this, name);
+    const id = next.meeting?.topics.find(
+      (topic: { text: string }) => topic.text === text,
+    )?.id;
+    assert.ok(id, `"${text}" is not on the next meeting.`);
+    assert.equal(
+      next.carriedTopics.find(
+        (each: { topicId: string }) => each.topicId === id,
+      )?.from,
+      dayOf(from),
+    );
+  },
+);
+
+Then(
+  /^(\w+)'s next meeting carries "([^"]+)" from (.+), and not "([^"]+)"$/,
+  async function (
+    this: ThriveWorld,
+    name: string,
+    carried: string,
+    from: string,
+    added: string,
+  ) {
+    const next = await readNextMeeting(this, name);
+    const idOf = (text: string) =>
+      next.meeting?.topics.find(
+        (topic: { text: string }) => topic.text === text,
+      )?.id;
+    const fromOf = (text: string) =>
+      next.carriedTopics.find(
+        (each: { topicId: string }) => each.topicId === idOf(text),
+      )?.from ?? null;
+    assert.equal(fromOf(carried), dayOf(from));
+    assert.equal(fromOf(added), null);
+    assert.equal(next.carriedFromSkipped, dayOf(from));
+  },
+);
+
+Given(
+  '{person} and {person} have a 1:1 held once on {}',
+  async function (
+    this: ThriveWorld,
+    from: string,
+    to: string,
+    written: string,
+  ) {
+    const startsOn = dayOf(written);
+    const response = this.succeeded(
+      await this.as(
+        from,
+        'POST',
+        `/v1/workspaces/${this.workspaceOf(from)}/one-on-ones`,
+        {
+          invitedAccountId: this.person(to).accountId,
+          schedule: { cadence: 'ONCE', weekday: 1, startsOn },
+        },
+      ),
+      `${from} inviting ${to} to a 1:1 held once`,
+    );
+    stateOf(this).id = response.body.id;
+    this.succeeded(await accept(this, to), `${to} accepting the 1:1`);
+  },
+);
+
+/** The 1:1 as `name` reads it. */
+async function readOneOnOne(world: ThriveWorld, name: string) {
+  return world.succeeded(
+    await world.as(name, 'GET', oneOnOnePath(world, name)),
+    `${name} opening the 1:1`,
+  ).body;
+}
+
+/** The past meetings, and the days skipped, as `name` reads them. */
+async function readPast(world: ThriveWorld, name: string) {
+  return world.succeeded(
+    await world.as(name, 'GET', `${oneOnOnePath(world, name)}/meetings`),
+    `${name} reading the past meetings`,
+  ).body;
+}
+
+Then(
+  /^(\w+) sees the next meeting overdue from (.+), skipped from (.+)$/,
+  async function (
+    this: ThriveWorld,
+    name: string,
+    due: string,
+    skipped: string,
+  ) {
+    const oneOnOne = await readOneOnOne(this, name);
+    assert.ok(oneOnOne.nextMeetingAt, 'It has a meeting due.');
+    assert.equal(calendarDayOf(oneOnOne.nextMeetingAt), dayOf(due));
+    assert.ok(oneOnOne.nextMeetingSkippedAt, 'It says when it is skipped.');
+    assert.equal(calendarDayOf(oneOnOne.nextMeetingSkippedAt), dayOf(skipped));
+  },
+);
+
+Then(
+  '{person} sees the next meeting on {}',
+  async function (this: ThriveWorld, name: string, written: string) {
+    const oneOnOne = await readOneOnOne(this, name);
+    assert.ok(oneOnOne.nextMeetingAt, 'It has a next meeting.');
+    assert.equal(calendarDayOf(oneOnOne.nextMeetingAt), dayOf(written));
+  },
+);
+
+Then(
+  /^(\w+) sees the meeting for (.+) held on (.+)$/,
+  async function (this: ThriveWorld, name: string, due: string, held: string) {
+    const past = await readPast(this, name);
+    const meeting = past.items.find(
+      (each: { occursAt: string | null }) =>
+        each.occursAt !== null && calendarDayOf(each.occursAt) === dayOf(due),
+    );
+    assert.ok(meeting, `No meeting was held for ${due}.`);
+    assert.equal(calendarDayOf(meeting.startedAt), dayOf(held));
+  },
+);
+
+Then(
+  /^(\w+) sees (?!nothing )(.+?) skipped$/,
+  async function (this: ThriveWorld, name: string, days: string) {
+    const past = await readPast(this, name);
+    const expected = days.split(' and ').map(dayOf);
+    assert.deepEqual(past.skippedDays, expected);
   },
 );
 
@@ -633,7 +915,7 @@ Then(
 );
 
 Then(
-  /^(\w+) is told (there is no such 1:1|it is not theirs to answer|they already have one|the topic is not theirs|the meeting has not started|the meeting has already started|the topic changed|the 1:1 is not running|the template is not theirs|the template cannot be kept|they keep one by that name already)$/,
+  /^(\w+) is told (there is no such 1:1|it is not theirs to answer|they already have one|the topic is not theirs|the meeting has not started|the meeting has already started|the topic changed|the 1:1 is not running|the template is not theirs|the template cannot be kept|they keep one by that name already|a meeting is in progress|its day has passed)$/,
   function (this: ThriveWorld, _name: string, reason: string) {
     const refusal = REFUSALS[reason];
     assert.ok(refusal, `No refusal is known as "${reason}".`);

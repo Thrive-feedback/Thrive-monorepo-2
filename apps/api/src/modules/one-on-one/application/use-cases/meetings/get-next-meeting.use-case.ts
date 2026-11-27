@@ -25,6 +25,12 @@ export interface GetNextMeetingInput {
  * A query: the next meeting of a 1:1 as its panel shows it — the live one, or what it will open
  * with.
  */
+/** Nothing on the agenda was written for a day since skipped. */
+const NOTHING_CARRIED = {
+  carriedFromSkipped: null,
+  carriedTopics: [],
+} as const;
+
 @Injectable()
 export class GetNextMeetingUseCase {
   constructor(
@@ -59,6 +65,15 @@ export class GetNextMeetingUseCase {
       const { templateKey } = live;
       return {
         meeting: toMeetingView(live),
+        ...(live.startedAt === null
+          ? await this.carriedFromSkipped(
+              input.workspaceId,
+              input.oneOnOneId,
+              schedule,
+              live.topics,
+              now,
+            )
+          : NOTHING_CARRIED),
         carried: [],
         templateQuestions: [],
         templateName:
@@ -77,6 +92,7 @@ export class GetNextMeetingUseCase {
     if (!mayOpen) {
       return {
         meeting: null,
+        ...NOTHING_CARRIED,
         carried: [],
         templateQuestions: [],
         templateName: null,
@@ -85,9 +101,42 @@ export class GetNextMeetingUseCase {
     // It opens with what was not reached last time, and no template until somebody uses one.
     return {
       meeting: null,
+      ...NOTHING_CARRIED,
       carried: last ? undiscussedOf(last.topics) : [],
       templateQuestions: [],
       templateName: null,
     };
+  }
+
+  /**
+   * Which topics were written for a meeting day that was then skipped, each with that day, and the
+   * earliest of them: the agenda moved on from it to the day due. Topics added since say what they
+   * are as usual.
+   */
+  private async carriedFromSkipped(
+    workspaceId: string,
+    oneOnOneId: string,
+    schedule: OneOnOneSchedule,
+    topics: readonly {
+      readonly id: string;
+      readonly addedAt: Date;
+      readonly carriedFrom: string | null;
+    }[],
+    now: Date,
+  ): Promise<
+    Pick<OneOnOneNextMeetingView, 'carriedFromSkipped' | 'carriedTopics'>
+  > {
+    const heldFor = await this.meetingQuery.listHeldFor(
+      workspaceId,
+      oneOnOneId,
+    );
+    const carriedTopics = topics.flatMap((topic) => {
+      // Kept at a change of schedule, or worked out from the one it runs on now.
+      const from =
+        topic.carriedFrom ?? schedule.carriedFrom(topic.addedAt, now, heldFor);
+      return from === null ? [] : [{ topicId: topic.id, from }];
+    });
+    const earliest = carriedTopics.map((each) => each.from).sort()[0];
+    return { carriedFromSkipped: earliest ?? null, carriedTopics };
   }
 }

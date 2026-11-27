@@ -17,6 +17,12 @@ import { PrismaOneOnOneRepository } from './prisma-one-on-one.repository';
 import { PrismaOneOnOneMeetingRepository } from './prisma-one-on-one-meeting.repository';
 import { PrismaOneOnOneTemplateRepository } from './prisma-one-on-one-template.repository';
 
+/** What a 1:1's meetings say when none was held or started. */
+const NO_MEETINGS = { heldFor: [], hasMeetingInProgress: false } as const;
+
+/** When the topics in these specs were put on the agenda. */
+const ADDED_AT = new Date('2026-11-26T03:00:00.000Z');
+
 const prismaService = new PrismaService(loadConfiguration().database);
 const context = new PrismaTransactionContext(prismaService);
 const repository = new PrismaOneOnOneTemplateRepository(context);
@@ -205,11 +211,13 @@ describe('A 1:1 from a kept template, stored', () => {
       oneOnOneId,
       carried: [],
       newTopicId: () => uuidv7(),
+      at: ADDED_AT,
     });
     meeting.useTemplate({
       templateKey: keptId,
       questions: own.snapshot().questions,
       newTopicId: () => uuidv7(),
+      at: ADDED_AT,
     });
     await meetings.save(meeting);
 
@@ -235,7 +243,7 @@ describe('A 1:1 from a kept template, stored', () => {
       )?.snapshot().templateKey,
     ).toBe(keptId);
 
-    oneOnOne.reschedule(MINT, weekly('career-conversation'), NOW);
+    oneOnOne.reschedule(MINT, weekly('career-conversation'), NOW, NO_MEETINGS);
     await oneOnOnes.save(oneOnOne);
 
     expect(

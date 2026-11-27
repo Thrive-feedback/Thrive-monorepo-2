@@ -42,6 +42,23 @@ export class PrismaOneOnOneMeetingQuery extends OneOnOneMeetingQuery {
     return record ? toMeetingProjection(record) : null;
   }
 
+  async listHeldFor(
+    workspaceId: string,
+    oneOnOneId: string,
+  ): Promise<readonly Date[]> {
+    const records =
+      await this.prismaTransactionContext.client.oneOnOneMeeting.findMany({
+        where: {
+          workspaceId,
+          oneOnOneId,
+          finishedAt: { not: null },
+          occursAt: { not: null },
+        },
+        select: { occursAt: true },
+      });
+    return records.flatMap(({ occursAt }) => (occursAt ? [occursAt] : []));
+  }
+
   async listFinished(
     workspaceId: string,
     oneOnOneId: string,

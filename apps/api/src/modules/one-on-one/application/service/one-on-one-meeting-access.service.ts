@@ -88,6 +88,7 @@ export class OneOnOneMeetingAccessService {
       oneOnOneId,
       carried: last?.undiscussed() ?? [],
       newTopicId: () => this.idGenerator.next(),
+      at: this.clock.now(),
     });
   }
 }

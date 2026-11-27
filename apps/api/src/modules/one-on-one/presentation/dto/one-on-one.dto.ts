@@ -125,8 +125,17 @@ export const oneOnOneResponseSchema = z.object({
   suggestedAt: nullableDateTime(),
   /** What was written turning it down, for whoever sent it. */
   answerNote: nullableString(),
-  /** When it next meets; `null` unless it is running. */
+  /**
+   * The start of the day the meeting due is on, in Bangkok (UTC+7): before today while it is
+   * overdue, today, or to come. For a meeting in progress, the day it counts for. `null` unless it
+   * runs and has one due.
+   */
   nextMeetingAt: nullableDateTime(),
+  /**
+   * When the meeting due is skipped if nobody starts it: the next meeting day, or a week after its
+   * day for one held once. `null` when none is due or one is in progress.
+   */
+  nextMeetingSkippedAt: nullableDateTime(),
   answeredAt: nullableDateTime(),
   endedAt: nullableDateTime(),
   createdAt: z.iso.datetime({ offset: true }),
@@ -135,6 +144,11 @@ export const oneOnOneResponseSchema = z.object({
    * not over yet, though its slot has passed: the two can still note and finish it.
    */
   meetingInProgress: z.boolean(),
+  /**
+   * Whether one of its meetings was finished: a 1:1 held once with none due is then met; with
+   * none finished, it was skipped.
+   */
+  hasFinishedMeeting: z.boolean(),
 });
 export class OneOnOneResponseDto extends createZodDto(oneOnOneResponseSchema) {}
 

@@ -34,14 +34,25 @@ export interface OneOnOneRow {
    * next meeting, though the day it was set for is still to come.
    */
   readonly hasFinishedMeeting: boolean;
+  /** The day the meeting in progress counts for; `null` when none is. */
+  readonly meetingInProgressFor: Date | null;
+  /** The day the last meeting held counted for, which says which day is due; `null` if none was. */
+  readonly lastHeldFor: Date | null;
+  /** Days skipped under a schedule since changed or ended, `YYYY-MM-DD`. */
+  readonly skippedDays: readonly string[];
 }
 
 /** One 1:1 as its reader sees it: who it is with, and when it next meets. */
 export interface OneOnOneView extends OneOnOneRow {
   /** The other person in it, whichever of the two sent the invitation. */
   readonly withAccountId: string;
-  /** `null` unless it is running. */
+  /**
+   * The start of the day the meeting due is on: in the past while it is overdue, today, or to come.
+   * The day a meeting in progress counts for. `null` unless it is running and has one due.
+   */
   readonly nextMeetingAt: Date | null;
+  /** When the meeting due is skipped if nobody starts it; `null` when none is due or one is started. */
+  readonly nextMeetingSkippedAt: Date | null;
 }
 
 export interface OneOnOneCursorPageRequest {

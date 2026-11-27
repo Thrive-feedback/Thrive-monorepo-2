@@ -11,6 +11,9 @@ import { PrismaOneOnOneMeetingQuery } from '../query/prisma-one-on-one-meeting.q
 import { PrismaOneOnOneRepository } from './prisma-one-on-one.repository';
 import { PrismaOneOnOneMeetingRepository } from './prisma-one-on-one-meeting.repository';
 
+/** When the topics in these specs were put on the agenda. */
+const ADDED_AT = new Date('2026-11-26T03:00:00.000Z');
+
 const configuration = loadConfiguration();
 const prismaService = new PrismaService(configuration.database);
 const context = new PrismaTransactionContext(prismaService);
@@ -52,11 +55,13 @@ function opened(workspaceId: string, oneOnOneId: string) {
     oneOnOneId,
     carried: ['Launch retro'],
     newTopicId: () => uuidv7(),
+    at: ADDED_AT,
   });
   meeting.useTemplate({
     templateKey: 'weekly-check-in',
     questions: ['What went well this week?'],
     newTopicId: () => uuidv7(),
+    at: ADDED_AT,
   });
   return meeting;
 }
@@ -74,7 +79,7 @@ describe('storing meetings', () => {
     const meeting = opened(workspaceId, oneOnOneId);
     await meetings.save(meeting);
     const [first, second] = meeting.snapshot().topics;
-    meeting.addTopic(uuidv7(), 'ben', 'Career path');
+    meeting.addTopic(uuidv7(), 'ben', 'Career path', ADDED_AT);
     meeting.removeTopic(first?.id ?? '', 'ann');
     meeting.start('ann', NOW, NOW);
     meeting.writeTopicNote(second?.id ?? '', 'ben', 'Went well', null, NOW);

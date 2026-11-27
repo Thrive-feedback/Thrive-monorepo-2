@@ -70,10 +70,12 @@ function toResponse(view: OneOnOneView) {
     suggestedAt: view.suggestedAt?.toISOString() ?? null,
     answerNote: view.answerNote,
     nextMeetingAt: view.nextMeetingAt?.toISOString() ?? null,
+    nextMeetingSkippedAt: view.nextMeetingSkippedAt?.toISOString() ?? null,
     answeredAt: view.answeredAt?.toISOString() ?? null,
     endedAt: view.endedAt?.toISOString() ?? null,
     createdAt: view.createdAt.toISOString(),
     meetingInProgress: view.meetingInProgress,
+    hasFinishedMeeting: view.hasFinishedMeeting,
   };
 }
 
@@ -285,7 +287,9 @@ export class OneOnOneController {
   @ApiNotFoundResponse({
     description: 'WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND',
   })
-  @ApiConflictResponse({ description: 'ONE_ON_ONE_ALREADY_OVER' })
+  @ApiConflictResponse({
+    description: 'ONE_ON_ONE_ALREADY_OVER or ONE_ON_ONE_MEETING_IN_PROGRESS',
+  })
   async endOneOnOne(
     @CurrentActor() actor: Actor,
     @Param() params: OneOnOnePathParamsDto,
@@ -315,7 +319,9 @@ export class OneOnOneController {
   @ApiNotFoundResponse({
     description: 'WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND',
   })
-  @ApiConflictResponse({ description: 'ONE_ON_ONE_NOT_RUNNING' })
+  @ApiConflictResponse({
+    description: 'ONE_ON_ONE_NOT_RUNNING or ONE_ON_ONE_MEETING_IN_PROGRESS',
+  })
   async rescheduleOneOnOne(
     @CurrentActor() actor: Actor,
     @Param() params: OneOnOnePathParamsDto,

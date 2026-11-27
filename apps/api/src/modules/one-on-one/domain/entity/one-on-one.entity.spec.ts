@@ -3,6 +3,7 @@ import {
   OneOnOneAlreadyOverError,
   OneOnOneAnswerNoteTooLongError,
   OneOnOneInviteNoteTooLongError,
+  OneOnOneMeetingInProgressError,
   OneOnOneNotAwaitingAnswerError,
   OneOnOneNotInItError,
   OneOnOneNotRunningError,
@@ -14,6 +15,9 @@ import {
 } from '../one-on-one.errors';
 import { OneOnOneSchedule } from '../value-object/one-on-one-schedule.vo';
 import { OneOnOne } from './one-on-one.entity';
+
+/** What a 1:1's meetings say when none was held or started. */
+const NO_MEETINGS = { heldFor: [], hasMeetingInProgress: false } as const;
 
 const KRIT = 'account-krit';
 const MINT = 'account-mint';
@@ -124,23 +128,23 @@ describe('an invitation to a 1:1', () => {
   });
 
   it('is withdrawn only by whoever sent it', () => {
-    expect(() => invited().end(MINT, NOW)).toThrow(
+    expect(() => invited().end(MINT, NOW, NO_MEETINGS)).toThrow(
       OneOnOneNotYoursToWithdrawError,
     );
     const oneOnOne = invited();
 
-    oneOnOne.end(KRIT, NOW);
+    oneOnOne.end(KRIT, NOW, NO_MEETINGS);
 
     expect(oneOnOne.snapshot().status).toBe('ENDED');
   });
 
   it('is changed only by whoever sent it, before it is answered', () => {
-    expect(() => invited().reschedule(MINT, scheduleOn(2), NOW)).toThrow(
-      OneOnOneNotYoursToChangeError,
-    );
+    expect(() =>
+      invited().reschedule(MINT, scheduleOn(2), NOW, NO_MEETINGS),
+    ).toThrow(OneOnOneNotYoursToChangeError);
     const oneOnOne = invited();
 
-    oneOnOne.reschedule(KRIT, scheduleOn(2), NOW);
+    oneOnOne.reschedule(KRIT, scheduleOn(2), NOW, NO_MEETINGS);
 
     expect(oneOnOne.snapshot().schedule.weekday).toBe(2);
   });
@@ -155,37 +159,41 @@ describe('a running 1:1', () => {
 
   it('is ended by either person', () => {
     const byInvited = running();
-    byInvited.end(MINT, NOW);
+    byInvited.end(MINT, NOW, NO_MEETINGS);
     const bySender = running();
-    bySender.end(KRIT, NOW);
+    bySender.end(KRIT, NOW, NO_MEETINGS);
 
     expect(byInvited.snapshot().status).toBe('ENDED');
     expect(bySender.snapshot().status).toBe('ENDED');
   });
 
   it('is not ended by somebody outside it', () => {
-    expect(() => running().end(LEO, NOW)).toThrow(OneOnOneNotInItError);
+    expect(() => running().end(LEO, NOW, NO_MEETINGS)).toThrow(
+      OneOnOneNotInItError,
+    );
   });
 
   it('cannot be ended twice', () => {
     const oneOnOne = running();
-    oneOnOne.end(KRIT, NOW);
+    oneOnOne.end(KRIT, NOW, NO_MEETINGS);
 
-    expect(() => oneOnOne.end(MINT, NOW)).toThrow(OneOnOneAlreadyOverError);
+    expect(() => oneOnOne.end(MINT, NOW, NO_MEETINGS)).toThrow(
+      OneOnOneAlreadyOverError,
+    );
   });
 
   it('is rescheduled by either person, at once', () => {
     const byInvited = running();
-    byInvited.reschedule(MINT, scheduleOn(2), NOW);
+    byInvited.reschedule(MINT, scheduleOn(2), NOW, NO_MEETINGS);
     const bySender = running();
-    bySender.reschedule(KRIT, scheduleOn(5), NOW);
+    bySender.reschedule(KRIT, scheduleOn(5), NOW, NO_MEETINGS);
 
     expect(byInvited.snapshot().schedule.weekday).toBe(2);
     expect(bySender.snapshot().schedule.weekday).toBe(5);
   });
 
   it('is not rescheduled by somebody outside it', () => {
-    expect(() => running().reschedule(LEO, SCHEDULE, NOW)).toThrow(
+    expect(() => running().reschedule(LEO, SCHEDULE, NOW, NO_MEETINGS)).toThrow(
       OneOnOneNotInItError,
     );
   });
@@ -196,6 +204,31 @@ describe('a running 1:1', () => {
     expect(oneOnOne.isIn(KRIT)).toBe(true);
     expect(oneOnOne.isIn(MINT)).toBe(true);
     expect(oneOnOne.isIn(LEO)).toBe(false);
+  });
+  it('is not changed or ended while a meeting is in progress', () => {
+    const inProgress = { heldFor: [], hasMeetingInProgress: true } as const;
+
+    expect(() =>
+      running().reschedule(KRIT, scheduleOn(2), NOW, inProgress),
+    ).toThrow(OneOnOneMeetingInProgressError);
+    expect(() => running().end(MINT, NOW, inProgress)).toThrow(
+      OneOnOneMeetingInProgressError,
+    );
+  });
+
+  it('keeps the overdue day as skipped when it ends', () => {
+    const oneOnOne = running();
+    // Its first meeting day, Thu 26 Nov, passed unstarted.
+    oneOnOne.end(KRIT, new Date('2026-11-27T05:00:00.000Z'), NO_MEETINGS);
+
+    expect(oneOnOne.snapshot().skippedDays).toEqual(['2026-11-26']);
+  });
+
+  it('counts its meetings from the day it is accepted', () => {
+    const oneOnOne = invited();
+    oneOnOne.accept(MINT, new Date('2026-12-09T05:00:00.000Z'));
+
+    expect(oneOnOne.snapshot().schedule.startsOn > '2026-12-09').toBe(true);
   });
 });
 
@@ -260,8 +293,8 @@ describe('a 1:1 held just once', () => {
     NOW,
   );
   const DURING = new Date('2026-12-02T03:15:00.000Z');
-  /** Midnight in Bangkok as 3 December starts: the day it met on is over. */
-  const AFTER = new Date('2026-12-02T17:00:00.000Z');
+  /** Midnight in Bangkok as 9 December starts: a week past its day, never started, it is over. */
+  const AFTER = new Date('2026-12-08T17:00:00.000Z');
 
   function once() {
     return OneOnOne.invite({
@@ -312,7 +345,7 @@ describe('a 1:1 held just once', () => {
     expect(() => passed.suggestAnother(MINT, SCHEDULE, null, AFTER)).toThrow(
       OneOnOneTimePassedError,
     );
-    expect(() => passed.reschedule(KRIT, SCHEDULE, AFTER)).toThrow(
+    expect(() => passed.reschedule(KRIT, SCHEDULE, AFTER, NO_MEETINGS)).toThrow(
       OneOnOneTimePassedError,
     );
     expect(() => passed.decline(MINT, AFTER, null)).not.toThrow();
@@ -335,13 +368,15 @@ describe('a 1:1 held just once', () => {
   it('can be cancelled before it happens, but not ended once over', () => {
     const cancelled = once();
     cancelled.accept(MINT, NOW);
-    cancelled.end(KRIT, NOW);
+    cancelled.end(KRIT, NOW, NO_MEETINGS);
     const met = once();
     met.accept(MINT, NOW);
 
     expect(cancelled.snapshot().status).toBe('ENDED');
-    expect(() => met.end(KRIT, AFTER)).toThrow(OneOnOneAlreadyOverError);
-    expect(() => met.reschedule(KRIT, SCHEDULE, AFTER)).toThrow(
+    expect(() => met.end(KRIT, AFTER, NO_MEETINGS)).toThrow(
+      OneOnOneAlreadyOverError,
+    );
+    expect(() => met.reschedule(KRIT, SCHEDULE, AFTER, NO_MEETINGS)).toThrow(
       OneOnOneNotRunningError,
     );
   });

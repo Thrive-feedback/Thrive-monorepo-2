@@ -133,6 +133,8 @@ export class OneOnOneMeetingController {
       carried: [...next.carried],
       templateQuestions: [...next.templateQuestions],
       templateName: next.templateName,
+      carriedFromSkipped: next.carriedFromSkipped,
+      carriedTopics: next.carriedTopics.map((each) => ({ ...each })),
     };
   }
 
@@ -159,6 +161,7 @@ export class OneOnOneMeetingController {
     return {
       items: page.items.map(toMeetingResponse),
       nextCursor: toCursor(page.nextAfterId),
+      skippedDays: [...page.skippedDays],
     };
   }
 

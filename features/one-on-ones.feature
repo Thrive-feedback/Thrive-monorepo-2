@@ -34,6 +34,149 @@ Feature: 1:1s
     Then Ann sees the 1:1 has no next meeting
 
   @api
+  Scenario: A meeting whose day passed unstarted is overdue until the next meeting day
+    Given today is Thu 3 Dec 2026
+    And Ann and Ben have a running weekly 1:1
+    And Ann has added "Launch retro" to the next meeting
+    When today is Fri 4 Dec 2026
+    Then Ann sees the next meeting overdue from Thu 3 Dec 2026, skipped from Thu 10 Dec 2026
+    And Ann's next meeting has "Launch retro"
+
+  @api
+  Scenario: A meeting started late is the missed day's, and the schedule does not move
+    Given today is Thu 3 Dec 2026
+    And Ann and Ben have a running weekly 1:1
+    And today is Sat 5 Dec 2026
+    And Ann has started the next meeting
+    When Ben finishes the next meeting
+    Then Ann sees the meeting for Thu 3 Dec 2026 held on Sat 5 Dec 2026
+    And Ann sees the next meeting on Thu 10 Dec 2026
+
+  @api
+  Scenario: A meeting never started is skipped when the next day comes, and its agenda moves on
+    Given today is Thu 3 Dec 2026
+    And Ann and Ben have a running weekly 1:1
+    And Ann has added "Launch retro" to the next meeting
+    When today is Thu 17 Dec 2026
+    Then Ann sees Thu 3 Dec 2026 and Thu 10 Dec 2026 skipped
+    And Ann sees the next meeting on Thu 17 Dec 2026
+    And Ann's next meeting has "Launch retro"
+
+  @api
+  Scenario: A meeting started before its day is that day's, so there are never two in one round
+    Given today is Thu 3 Dec 2026
+    And Ann and Ben have a running weekly 1:1
+    And Ann has started the next meeting
+    And Ben has finished the next meeting
+    And today is Sat 5 Dec 2026
+    And Ann has started the next meeting
+    When Ben finishes the next meeting
+    Then Ann sees the meeting for Thu 10 Dec 2026 held on Sat 5 Dec 2026
+    And Ann sees the next meeting on Thu 17 Dec 2026
+
+  @api
+  Scenario: A meeting held once is overdue for seven days, then skipped and over
+    Given today is Thu 3 Dec 2026
+    And Ann and Ben have a 1:1 held once on Thu 3 Dec 2026
+    When today is Wed 9 Dec 2026
+    Then Ann sees the next meeting overdue from Thu 3 Dec 2026, skipped from Thu 10 Dec 2026
+    When today is Thu 10 Dec 2026
+    Then Ann sees the 1:1 has no next meeting
+    And Ann sees Thu 3 Dec 2026 skipped
+
+  @api
+  Scenario: Changing the schedule while a meeting is overdue skips that day at once
+    Given today is Thu 3 Dec 2026
+    And Ann and Ben have a running weekly 1:1
+    And Ann has added "Launch retro" to the next meeting
+    And today is Fri 4 Dec 2026
+    When Ann moves the 1:1 to Mondays
+    Then Ann sees Thu 3 Dec 2026 skipped
+    And Ann sees the next meeting on Mon 7 Dec 2026
+    And Ann's next meeting has "Launch retro"
+    And Ann's next meeting carries "Launch retro" from Thu 3 Dec 2026
+
+  @api
+  Scenario: An invitation accepted days later counts its meetings from the day it was accepted
+    Given today is Thu 3 Dec 2026
+    And Ann has invited Ben to a weekly 1:1
+    And today is Wed 23 Dec 2026
+    When Ben accepts the 1:1
+    Then Ann sees nothing skipped
+    And Ann sees the next meeting on Thu 24 Dec 2026
+
+  @api
+  Scenario: A schedule changed after a meeting held early meets on its new first day
+    Given today is Thu 3 Dec 2026
+    And Ann and Ben have a running weekly 1:1
+    And Ann has started the next meeting
+    And Ben has finished the next meeting
+    And today is Mon 7 Dec 2026
+    And Ann has started the next meeting
+    And Ben has finished the next meeting
+    When Ann moves the 1:1 to Tuesdays
+    Then Ann sees the next meeting on Tue 8 Dec 2026
+    And Ann sees nothing skipped
+
+  @api
+  Scenario: A schedule is neither changed nor ended while a meeting is in progress
+    Given Ann and Ben have a running weekly 1:1
+    And Ann has started the next meeting
+    When Ann tries to move the 1:1 to Mondays
+    Then Ann is told a meeting is in progress
+    When Ben tries to end the 1:1
+    Then Ben is told a meeting is in progress
+
+  @api
+  Scenario: Ending a schedule while a meeting is overdue skips that day
+    Given today is Thu 3 Dec 2026
+    And Ann and Ben have a running weekly 1:1
+    And today is Fri 4 Dec 2026
+    When Ann ends the 1:1
+    Then Ann sees Thu 3 Dec 2026 skipped
+
+  @api
+  Scenario: An invitation to a meeting held once is not accepted once its day has passed
+    Given today is Thu 3 Dec 2026
+    And Ann has invited Ben to a 1:1 held once on Thu 3 Dec 2026
+    And today is Fri 4 Dec 2026
+    When Ben accepts the 1:1
+    Then Ben is told its day has passed
+
+  @api
+  Scenario: Only the topics written for a day that was skipped say they were carried from it
+    Given today is Thu 3 Dec 2026
+    And Ann and Ben have a running weekly 1:1
+    And Ann has added "Launch retro" to the next meeting
+    And today is Thu 10 Dec 2026
+    When Ann adds "Offsite" to the next meeting
+    Then Ann's next meeting carries "Launch retro" from Thu 3 Dec 2026, and not "Offsite"
+
+  @api
+  Scenario: A topic written after a meeting held says nothing of an older skipped day when the schedule changes
+    Given today is Thu 3 Dec 2026
+    And Ann and Ben have a running weekly 1:1
+    And today is Thu 10 Dec 2026
+    And Ann has started the next meeting
+    And Ben has finished the next meeting
+    And today is Mon 14 Dec 2026
+    And Ann has added "Launch retro" to the next meeting
+    And today is Tue 15 Dec 2026
+    When Ann moves the 1:1 to Fridays
+    Then Ann sees Thu 3 Dec 2026 skipped
+    And Ann's next meeting has "Launch retro"
+    And Ann's next meeting carries nothing from a skipped day
+
+  @api
+  Scenario: A topic written before the first meeting day says it was carried once that day is skipped
+    Given today is Mon 30 Nov 2026
+    And Ann and Ben have a running weekly 1:1
+    And today is Tue 1 Dec 2026
+    And Ann has added "Launch retro" to the next meeting
+    When today is Thu 10 Dec 2026
+    Then Ann's next meeting carries "Launch retro" from Thu 3 Dec 2026
+
+  @api
   Scenario: Nobody else reads a 1:1
     Given Ann has invited Ben to a weekly 1:1
     When Cara opens Ann's 1:1 with Ben

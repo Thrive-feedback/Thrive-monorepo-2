@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { OneOnOneRepository } from '../../domain/repository/one-on-one-repository.port';
 import { OneOnOneNotFoundError } from '../one-on-one.errors';
 import { oneOnOneKey } from '../service/one-on-one-keys.service';
+import { OneOnOneMeetingsSoFarService } from '../service/one-on-one-meetings-so-far.service';
 
 export interface EndOneOnOneInput {
   /** The Workspace the caller is a Member of, resolved before this runs. */
@@ -22,6 +23,7 @@ export interface EndOneOnOneInput {
 export class EndOneOnOneUseCase {
   constructor(
     private readonly oneOnOneRepository: OneOnOneRepository,
+    private readonly meetingsSoFar: OneOnOneMeetingsSoFarService,
     private readonly unitOfWork: UnitOfWork,
     private readonly clock: Clock,
   ) {}
@@ -37,7 +39,11 @@ export class EndOneOnOneUseCase {
         if (!oneOnOne?.isIn(input.accountId)) {
           throw new OneOnOneNotFoundError();
         }
-        oneOnOne.end(input.accountId, now);
+        const meetings = await this.meetingsSoFar.of(
+          input.workspaceId,
+          input.oneOnOneId,
+        );
+        oneOnOne.end(input.accountId, now, meetings);
         await this.oneOnOneRepository.save(oneOnOne);
       },
       { serializeOn: oneOnOneKey(input.oneOnOneId) },

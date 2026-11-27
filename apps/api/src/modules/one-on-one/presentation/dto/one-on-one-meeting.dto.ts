@@ -126,6 +126,13 @@ export const nextMeetingResponseSchema = z.object({
   templateQuestions: z.array(z.string()).meta({ deprecated: true }),
   /** What the template used for the meeting is called; `null` when none was used. */
   templateName: nullableString(),
+  /**
+   * The earliest meeting day skipped that topics on the agenda were written for, `YYYY-MM-DD` in
+   * Bangkok: the agenda moved on from it to the day due. `null` when none was.
+   */
+  carriedFromSkipped: z.iso.date().nullable(),
+  /** Each topic written for a meeting day then skipped, with that day (`YYYY-MM-DD`, Bangkok). */
+  carriedTopics: z.array(z.object({ topicId: z.string(), from: z.iso.date() })),
 });
 export class NextMeetingResponseDto extends createZodDto(
   nextMeetingResponseSchema,
@@ -140,6 +147,12 @@ export const listPastMeetingsResponseSchema = z.object({
   /** Finished meetings, newest first, each whole. */
   items: z.array(meetingSchema),
   ...cursorResultShape,
+  /**
+   * The meeting days skipped, `YYYY-MM-DD` in Bangkok, oldest first: each day the schedule met on
+   * that nobody started before the next one came (a week, for one held once). Only those as far back
+   * as this page's oldest meeting while more pages follow; every one on the last page.
+   */
+  skippedDays: z.array(z.iso.date()),
 });
 export class ListPastMeetingsResponseDto extends createZodDto(
   listPastMeetingsResponseSchema,

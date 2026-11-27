@@ -3,7 +3,11 @@ import { Injectable } from '@nestjs/common';
 import type { OneOnOne } from '../../domain/entity/one-on-one.entity';
 import { OneOnOneRepository } from '../../domain/repository/one-on-one-repository.port';
 import { toOneOnOne, toOneOnOneRecord } from '../mapper/one-on-one.mapper';
-import { MEETING_IN_PROGRESS } from '../query/meeting-in-progress.record';
+import {
+  inProgressOf,
+  lastFinishedOf,
+  MEETING_IN_PROGRESS,
+} from '../query/meeting-in-progress.record';
 
 /** The states in which a 1:1 is not over. */
 const OPEN_STATUSES = ['INVITED', 'ACTIVE'] as const;
@@ -55,8 +59,8 @@ export class PrismaOneOnOneRepository extends OneOnOneRepository {
     return found.some((record) =>
       toOneOnOne(record).isOpenAt(
         at,
-        record.meetings.length > 0,
-        record._count.meetings > 0,
+        inProgressOf(record.meetings) !== null,
+        lastFinishedOf(record.meetings) !== null,
       ),
     );
   }
