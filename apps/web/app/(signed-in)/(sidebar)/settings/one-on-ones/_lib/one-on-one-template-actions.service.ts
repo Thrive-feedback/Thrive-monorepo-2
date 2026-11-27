@@ -6,9 +6,13 @@ import type {
   OneOnOneActionResult,
   OneOnOneTemplateScope,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
+import {
+  act,
+  COULD_NOT,
+  REFUSALS,
+} from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-act.service';
 import { apiClient } from '@/lib/api-client.service';
 import { ROUTES } from '@/lib/routes.constant';
-import { act, COULD_NOT, REFUSALS } from './one-on-one-act.service';
 import {
   MAX_TEMPLATE_NAME_LENGTH,
   MAX_TEMPLATE_QUESTION_LENGTH,
@@ -27,8 +31,8 @@ const Draft = z.object({
     .max(MAX_TEMPLATE_QUESTIONS),
 });
 
-/** A template changing is read again on its page, and on the 1:1s page, whose dialogs list it. */
-const PATHS = [ROUTES.oneOnOneTemplates, ROUTES.oneOnOnes];
+/** A template changing is read again where it is kept, and on the 1:1s page, whose picker lists it. */
+const PATHS = [ROUTES.settings.oneOnOnes, ROUTES.oneOnOnes];
 
 /**
  * What was written, trimmed, with blank questions left out; `null` when it is not a template yet,

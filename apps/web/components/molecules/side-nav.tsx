@@ -176,10 +176,12 @@ export const sideNavLink = cva(
         true: 'text-fg-secondary hover:bg-action-neutral-surface-hover hover:text-fg-primary',
         false: 'cursor-default text-fg-disabled',
       },
+      // The page open is the row a glance finds first: the deeper primary surface, with the
+      // primary's own ink on it, in both modes; a pointer over it leaves it as it is.
       marksCurrentFromMd: {
         false:
-          'aria-[current]:bg-action-primary-surface aria-[current]:text-action-primary',
-        true: 'md:aria-[current]:bg-action-primary-surface md:aria-[current]:text-action-primary',
+          'aria-[current]:bg-action-primary-surface-hover aria-[current]:text-action-primary-fg aria-[current]:hover:bg-action-primary-surface-hover aria-[current]:hover:text-action-primary-fg',
+        true: 'md:aria-[current]:bg-action-primary-surface-hover md:aria-[current]:text-action-primary-fg md:aria-[current]:hover:bg-action-primary-surface-hover md:aria-[current]:hover:text-action-primary-fg',
       },
     },
     defaultVariants: { available: true, marksCurrentFromMd: false },

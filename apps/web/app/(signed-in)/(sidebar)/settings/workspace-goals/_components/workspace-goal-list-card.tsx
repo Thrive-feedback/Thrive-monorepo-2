@@ -4,7 +4,7 @@ import { WorkspaceGoalListSkeleton } from './workspace-goal-list';
 export type WorkspaceGoalListCardProps = {
   /** Named once it is known; the card waiting on the session says only "your Workspace". */
   workspaceName?: string;
-  /** At the end of the title's row, such as Add a Workspace Goal for an Admin. */
+  /** At the end of the title's row, such as Add goal for an Admin. */
   action?: React.ReactNode;
   children: React.ReactNode;
 };

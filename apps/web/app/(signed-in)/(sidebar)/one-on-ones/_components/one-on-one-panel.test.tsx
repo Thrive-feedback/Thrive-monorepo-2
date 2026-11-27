@@ -88,8 +88,6 @@ const TEMPLATES: OneOnOneTemplate[] = [
 const SCHEDULE = {
   cadence: 'WEEKLY',
   weekday: 4,
-  startMinute: 600,
-  lengthMinutes: 30,
   templateKey: 'weekly-check-in',
   templateName: 'Weekly check-in',
   startsOn: '2026-11-26',
@@ -128,6 +126,25 @@ function panel(shown: OneOnOne, meetings?: OneOnOneMeetings) {
 }
 
 /** Draws it, and returns how to draw it again as the page does once something changed. */
+/** The schedule's menu at the end of the head, where Change and End are kept. */
+const SCHEDULE_MENU = 'Schedule options for your 1:1 with Mint';
+
+/** What the schedule's menu offers, read as a person opens it. */
+async function scheduleOptions(): Promise<string[]> {
+  await userEvent.click(screen.getByRole('button', { name: SCHEDULE_MENU }));
+  const items = (await screen.findAllByRole('menuitem')).map(
+    (item) => item.textContent ?? '',
+  );
+  await userEvent.keyboard('{Escape}');
+  return items;
+}
+
+/** Opens the schedule's menu and picks one of its actions. */
+async function chooseSchedule(action: string) {
+  await userEvent.click(screen.getByRole('button', { name: SCHEDULE_MENU }));
+  await userEvent.click(await screen.findByRole('menuitem', { name: action }));
+}
+
 function draw(shown: OneOnOne, meetings?: OneOnOneMeetings) {
   const view = render(panel(shown, meetings));
   return (again: OneOnOne, againMeetings?: OneOnOneMeetings) =>
@@ -177,37 +194,36 @@ beforeEach(() => {
 
 const SCHEDULE_NEXT = '2026-12-03T03:00:00.000Z';
 
-/** A meeting held just once, on Wednesday 2 December at 11:00. */
+/** A meeting held just once, on Wednesday 2 December. */
 const ONCE = {
   ...SCHEDULE,
   cadence: 'ONCE',
   weekday: 3,
-  startMinute: 660,
   startsOn: '2026-12-02',
 } as const;
 
 describe('OneOnOnePanel', () => {
-  it('shows a running 1:1: when it next meets and what its agenda opens with', () => {
+  it('shows a running 1:1: when it next meets, and no template, which is chosen while preparing', () => {
     draw(oneOnOne({}));
 
     expect(screen.getByRole('heading', { name: 'Mint Boonmee' })).toBeVisible();
+    expect(screen.getByText('Weekly on Thursday')).toBeVisible();
+    expect(screen.getByText('Thu 3 Dec')).toBeVisible();
+    expect(screen.queryByText(/agenda starts from/i)).not.toBeInTheDocument();
+    // Change and End are kept in one menu at the end of the head, not as buttons of their own.
     expect(
-      screen.getByText('Weekly on Thursday at 10:00, 30 minutes'),
-    ).toBeVisible();
-    expect(screen.getByText('Thu 3 Dec, 10:00')).toBeVisible();
-    expect(screen.getByText('What went well this week?')).toBeVisible();
-    expect(
-      screen.getByRole('button', { name: 'Change schedule' }),
-    ).toBeVisible();
+      screen.queryByRole('button', { name: 'Change schedule' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: SCHEDULE_MENU })).toBeVisible();
   });
 
-  it('gives both people the same controls, whoever sent the invitation', () => {
+  it('gives both people the same controls, whoever sent the invitation', async () => {
     draw(oneOnOne({ startedByAccountId: MINT, invitedAccountId: ME }));
 
-    expect(
-      screen.getByRole('button', { name: 'Change schedule' }),
-    ).toBeVisible();
-    expect(screen.getByRole('button', { name: 'End schedule' })).toBeVisible();
+    expect(await scheduleOptions()).toEqual([
+      'Change schedule',
+      'End schedule',
+    ]);
     expect(
       screen.queryByText('What you each see before a meeting'),
     ).not.toBeInTheDocument();
@@ -391,7 +407,7 @@ describe('OneOnOnePanel', () => {
     expect(screen.getByRole('button', { name: 'Finish' })).toBeVisible();
   });
 
-  it('gives focus to the heading once Finish and share takes its button away', async () => {
+  it('gives focus to the heading once Finish takes its button away', async () => {
     const inProgress: Meeting = {
       ...FINISHED,
       state: 'IN_PROGRESS',
@@ -408,7 +424,7 @@ describe('OneOnOnePanel', () => {
       name: 'Finish this meeting?',
     });
     await userEvent.click(
-      within(dialog).getByRole('button', { name: 'Finish and share' }),
+      within(dialog).getByRole('button', { name: 'Finish' }),
     );
     const pressed = document.activeElement;
     if (pressed instanceof HTMLElement) {
@@ -423,27 +439,23 @@ describe('OneOnOnePanel', () => {
   it('opens Change schedule on the schedule as it now stands, after an edit left by Cancel', async () => {
     const running = oneOnOne({});
     const drawAgain = draw(running);
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Change schedule' }),
-    );
+    await chooseSchedule('Change schedule');
     let dialog = await screen.findByRole('dialog');
     expect(
-      within(dialog).getByRole('button', { name: 'Time 10:00' }),
-    ).toBeVisible();
+      within(dialog).getByRole('combobox', { name: 'Day' }),
+    ).toHaveTextContent('Thursday');
     await userEvent.click(
       within(dialog).getByRole('button', { name: 'Cancel' }),
     );
 
-    // Mint moved it to 11:00, and the page read it again.
-    drawAgain({ ...running, schedule: { ...SCHEDULE, startMinute: 660 } });
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Change schedule' }),
-    );
+    // Mint moved it to Friday, and the page read it again.
+    drawAgain({ ...running, schedule: { ...SCHEDULE, weekday: 5 } });
+    await chooseSchedule('Change schedule');
     dialog = await screen.findByRole('dialog');
 
     expect(
-      within(dialog).getByRole('button', { name: 'Time 11:00' }),
-    ).toBeVisible();
+      within(dialog).getByRole('combobox', { name: 'Day' }),
+    ).toHaveTextContent('Friday');
   });
 
   it('gives focus back to what opened a dialog closed without acting', async () => {
@@ -466,11 +478,11 @@ describe('OneOnOnePanel', () => {
     await waitFor(() => expect(decline).toHaveFocus());
   });
 
-  it('gives focus back to Change schedule after Cancel', async () => {
+  it('gives focus back to the schedule’s menu after Cancel', async () => {
     draw(oneOnOne({}));
 
-    const change = screen.getByRole('button', { name: 'Change schedule' });
-    await userEvent.click(change);
+    const change = screen.getByRole('button', { name: SCHEDULE_MENU });
+    await chooseSchedule('Change schedule');
     const dialog = await screen.findByRole('dialog');
     await userEvent.click(
       within(dialog).getByRole('button', { name: 'Cancel' }),
@@ -482,7 +494,7 @@ describe('OneOnOnePanel', () => {
   it('ends a schedule only once the person confirms', async () => {
     draw(oneOnOne({}));
 
-    await userEvent.click(screen.getByRole('button', { name: 'End schedule' }));
+    await chooseSchedule('End schedule');
     const dialog = await screen.findByRole('dialog', {
       name: 'End your schedule with Mint?',
     });
@@ -502,9 +514,7 @@ describe('OneOnOnePanel', () => {
       oneOnOne({ schedule: ONCE, nextMeetingAt: '2026-12-02T04:00:00.000Z' }),
     );
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Cancel meeting' }),
-    );
+    await chooseSchedule('Cancel meeting');
     const dialog = await screen.findByRole('dialog', {
       name: 'Cancel your meeting with Mint?',
     });
@@ -518,25 +528,20 @@ describe('OneOnOnePanel', () => {
     );
   });
 
-  it('runs a meeting held once with its own controls: change the time, or cancel it', () => {
+  it('runs a meeting held once with its own controls: change the day, or cancel it', async () => {
     draw(
       oneOnOne({ schedule: ONCE, nextMeetingAt: '2026-12-02T04:00:00.000Z' }),
     );
 
     expect(screen.getByText('Meeting')).toBeVisible();
-    expect(
-      screen.getByText('Once, on Wed 2 Dec at 11:00, 30 minutes'),
-    ).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Change time' })).toBeVisible();
-    expect(
-      screen.getByRole('button', { name: 'Cancel meeting' }),
-    ).toBeVisible();
+    expect(screen.getByText('Once, on Wed 2 Dec')).toBeVisible();
+    expect(await scheduleOptions()).toEqual(['Change day', 'Cancel meeting']);
   });
 
   it('says a meeting held once has met, with nothing to do', () => {
     draw(oneOnOne({ schedule: ONCE, nextMeetingAt: null }));
 
-    expect(screen.getByText('Met on Wed 2 Dec at 11:00')).toBeVisible();
+    expect(screen.getByText('Met on Wed 2 Dec')).toBeVisible();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 

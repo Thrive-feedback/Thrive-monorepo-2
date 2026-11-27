@@ -8,6 +8,14 @@
 }
 
 /*
+ * The tallest a dialog's card may be: the window less the section inset above and below, so a
+ * long one never touches the window's edges. The phone's sheet keeps its own height.
+ */
+.bounds {
+  --dialog-card-max-height: calc(100dvh - 2 * var(--inset-section));
+}
+
+/*
  * The sheet a dialog is on a phone (ADR 0084). It slides up from below the window as it opens and
  * back down as it closes, and its handle drags it through `--sheet-drag`: under the finger it moves
  * at once, let go it settles on the enter step. The slide is on `translate` and the drag on

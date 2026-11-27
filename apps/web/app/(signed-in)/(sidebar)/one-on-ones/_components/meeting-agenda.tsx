@@ -17,14 +17,11 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import {
-  ChevronDownIcon,
-  GripVerticalIcon,
-  PlusIcon,
-  XIcon,
-} from 'lucide-react';
+import { ChevronDownIcon, PlusIcon } from 'lucide-react';
 import { useEffect, useId, useOptimistic, useRef, useState } from 'react';
 import type { OneOnOneActionResult } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
+import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/_lib/use-one-on-one-action';
+import { usePrefersReducedMotion } from '@/app/(signed-in)/(sidebar)/_lib/use-prefers-reduced-motion';
 import {
   type MeetingPeople,
   nameOf,
@@ -46,14 +43,14 @@ import {
   updateTopic,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service';
 import { useAutosave } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-autosave';
-import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-one-on-one-action';
-import { usePrefersReducedMotion } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-prefers-reduced-motion';
 import { Button } from '@/components/atoms/button';
 import { Checkbox } from '@/components/atoms/checkbox';
 import { Input } from '@/components/atoms/input';
 import { Label } from '@/components/atoms/label';
 import { Text } from '@/components/atoms/text';
 import { Textarea } from '@/components/atoms/textarea';
+import { DragHandle } from '@/components/molecules/drag-handle';
+import { RemoveButton } from '@/components/molecules/remove-button';
 import { cn } from '@/lib/cn.util';
 
 const STATUS_WORDS = {
@@ -66,14 +63,14 @@ const STATUS_WORDS = {
 /** Where a topic came from, said quietly under it. */
 function sourceOf(
   topic: AgendaTopic,
-  templateName: string,
+  templateName: string | null,
   people: MeetingPeople,
 ): string {
   switch (topic.source) {
     case 'CARRIED':
       return 'From last time';
     case 'TEMPLATE':
-      return `From ${templateName}`;
+      return templateName ? `From ${templateName}` : 'From a template';
     default:
       return `Added by ${nameOf(people, topic.authorAccountId)}`;
   }
@@ -252,20 +249,14 @@ function TopicRow({
       )}
     >
       <div className="flex min-h-10 items-center gap-2">
-        <button
-          type="button"
+        <DragHandle
           ref={setActivatorNodeRef}
           data-agenda-grip
           aria-label={`Move ${item.text}`}
-          // The icon stays 24px; an invisible ring around it makes the handle 40 by 44 for a finger,
-          // reaching into the row's padding and the gap beside it, never over the next control.
-          className="relative grid size-6 shrink-0 cursor-grab touch-none place-content-center rounded-element before:absolute before:-inset-x-2 before:-inset-y-2.5 text-fg-muted transition-colors duration-quick ease-smooth-out hover:bg-action-neutral-surface-hover hover:text-fg-secondary focus-visible:outline-2 focus-visible:outline-action-primary active:cursor-grabbing disabled:cursor-not-allowed"
           disabled={isPending}
           {...attributes}
           {...listeners}
-        >
-          <GripVerticalIcon aria-hidden="true" className="size-4" />
-        </button>
+        />
         {inProgress && topic && (
           <Checkbox
             id={`${id}-discussed`}
@@ -317,18 +308,14 @@ function TopicRow({
         )}
         <div className="flex shrink-0 items-center">
           {mayRemove ? (
-            <Button
-              variant="ghost-danger"
-              size="sm"
+            <RemoveButton
               aria-label={`Remove: ${item.text}`}
               disabled={isPending}
               onClick={onRemove}
-            >
-              <XIcon aria-hidden="true" className="size-4" />
-            </Button>
+            />
           ) : (
             // Where Remove would be, so every row's chevron stands in one column.
-            <span aria-hidden="true" className="w-10 shrink-0" />
+            <span aria-hidden="true" className="w-9 shrink-0" />
           )}
         </div>
       </div>

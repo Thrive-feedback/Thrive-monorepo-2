@@ -14,6 +14,8 @@ import {
 import { AddWorkspaceGoalForm } from './add-workspace-goal-form';
 
 const ADD_A_WORKSPACE_GOAL = 'Add a Workspace Goal';
+/** The button's own words: short, as the card's title already says these are Workspace Goals. */
+const ADD_GOAL = 'Add goal';
 
 export type AddWorkspaceGoalProps = {
   /** The Workspace the page was drawn for; adding is refused once the person is no longer in it. */
@@ -33,7 +35,7 @@ export function AddWorkspaceGoal({ workspaceId }: AddWorkspaceGoalProps) {
       <DialogTrigger asChild>
         <Button variant="outlined" size="sm" className="shrink-0">
           <PlusIcon aria-hidden="true" className="size-4" />
-          {ADD_A_WORKSPACE_GOAL}
+          {ADD_GOAL}
         </Button>
       </DialogTrigger>
       <DialogContent hasCloseButton={false}>

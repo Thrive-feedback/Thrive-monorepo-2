@@ -94,7 +94,7 @@ describe('WorkspaceGoalList', () => {
 
     expect(
       screen.getByText(
-        'No Workspace Goals yet. Add your first one with Add a Workspace Goal.',
+        'No Workspace Goals yet. Add your first one with Add goal.',
       ),
     ).toBeInTheDocument();
   });

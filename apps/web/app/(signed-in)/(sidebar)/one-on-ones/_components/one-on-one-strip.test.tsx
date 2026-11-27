@@ -42,8 +42,6 @@ function oneOnOne(
     schedule: {
       cadence: 'WEEKLY',
       weekday: 4,
-      startMinute: 600,
-      lengthMinutes: 30,
       templateKey: 'weekly-check-in',
       templateName: 'Weekly check-in',
       startsOn: '2026-11-26',
@@ -115,20 +113,27 @@ beforeEach(() => {
 });
 
 describe('OneOnOneStrip', () => {
-  it('has no tabs at all while everything is upcoming', () => {
+  it('draws every tab while everything is upcoming, Pending and History greyed and not to be chosen', () => {
     draw([runningWeekly, onceUpcoming], runningWeekly.id);
 
-    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Upcoming' })).toBeEnabled();
+    expect(screen.getByRole('tab', { name: 'Pending' })).toBeDisabled();
+    expect(screen.getByRole('tab', { name: 'History' })).toBeDisabled();
     expect(screen.getByText('Mint Boonmee')).toBeVisible();
     expect(screen.getByText('Tom Becker')).toBeVisible();
   });
 
-  it('shows only the tabs that hold something, with no counts, marking one waiting on the reader', () => {
+  it('lets only the tabs that hold something be chosen, with no counts, marking one waiting on the reader', () => {
     draw([runningWeekly, invitedWithNote], runningWeekly.id);
 
-    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
-      'Upcoming',
-      'Pending, some waiting on you',
+    expect(
+      screen
+        .getAllByRole('tab')
+        .map((tab) => [tab.textContent, tab.hasAttribute('disabled')]),
+    ).toEqual([
+      ['Upcoming', false],
+      ['Pending, some waiting on you', false],
+      ['History', true],
     ]);
   });
 
@@ -233,9 +238,7 @@ describe('OneOnOneStrip', () => {
       declinedWithNote,
     ]);
 
-    expect(
-      screen.queryByRole('tab', { name: /Pending/ }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Pending/ })).toBeDisabled();
     expect(screen.getByRole('tab', { name: /Upcoming/ })).toHaveAttribute(
       'aria-selected',
       'true',
@@ -269,6 +272,7 @@ describe('OneOnOneStrip', () => {
     expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
       'Upcoming, one meets today',
       'Pending, some waiting on you',
+      'History',
     ]);
   });
 });

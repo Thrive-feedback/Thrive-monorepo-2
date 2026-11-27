@@ -4,10 +4,9 @@ import { useState } from 'react';
 import type {
   OneOnOneActionResult,
   OneOnOneScheduleChoice,
-  OneOnOneTemplate,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
+import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/_lib/use-one-on-one-action';
 import { ScheduleFields } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/schedule-fields';
-import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-one-on-one-action';
 import { Button } from '@/components/atoms/button';
 import {
   Dialog,
@@ -25,22 +24,21 @@ export type ScheduleDialogProps = {
   title: string;
   description: string;
   initial: OneOnOneScheduleChoice;
-  templates: readonly OneOnOneTemplate[];
-  /** What the template `initial` names is called, kept as a choice when the list lacks it. */
-  initialTemplateName?: string;
   submitLabel: string;
   /** Said once it went. */
   done: string;
   /** What else belongs under the fields. */
   children?: React.ReactNode;
   onSubmit: (schedule: OneOnOneScheduleChoice) => Promise<OneOnOneActionResult>;
-  /** What opens it, which takes focus back when it closes. */
-  trigger: React.ReactNode;
+  /** What opens it, which takes focus back when it closes. Left out when a menu item opens it. */
+  trigger?: React.ReactNode;
+  /** Where focus goes when it closes, for one opened without a trigger, as from a menu. */
+  returnFocusTo?: () => HTMLElement | null;
 };
 
 type ScheduleFormProps = Omit<
   ScheduleDialogProps,
-  'open' | 'title' | 'description' | 'trigger'
+  'open' | 'title' | 'description' | 'trigger' | 'returnFocusTo'
 >;
 
 /**
@@ -51,8 +49,6 @@ type ScheduleFormProps = Omit<
 function ScheduleForm({
   onOpenChange,
   initial,
-  templates,
-  initialTemplateName,
   submitLabel,
   done,
   children,
@@ -73,12 +69,6 @@ function ScheduleForm({
       <div className="flex flex-col gap-4">
         <ScheduleFields
           value={schedule}
-          templates={templates}
-          currentTemplate={
-            initialTemplateName === undefined
-              ? undefined
-              : { key: initial.templateKey, name: initialTemplateName }
-          }
           disabled={isSaving}
           onChange={setSchedule}
         />
@@ -110,12 +100,23 @@ export function ScheduleDialog({
   title,
   description,
   trigger,
+  returnFocusTo,
   ...form
 }: ScheduleDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="gap-5">
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent
+        className="gap-5"
+        onCloseAutoFocus={
+          returnFocusTo
+            ? (event) => {
+                event.preventDefault();
+                returnFocusTo()?.focus();
+              }
+            : undefined
+        }
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

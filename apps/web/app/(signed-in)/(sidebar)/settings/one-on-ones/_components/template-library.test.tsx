@@ -16,7 +16,7 @@ const keepOneOnOneTemplate = vi.fn();
 const rewriteOneOnOneTemplate = vi.fn();
 const removeOneOnOneTemplate = vi.fn();
 vi.mock(
-  '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-template-actions.service',
+  '@/app/(signed-in)/(sidebar)/settings/one-on-ones/_lib/one-on-one-template-actions.service',
   () => ({
     keepOneOnOneTemplate: (...args: unknown[]) => keepOneOnOneTemplate(...args),
     rewriteOneOnOneTemplate: (...args: unknown[]) =>
@@ -26,8 +26,8 @@ vi.mock(
   }),
 );
 
-const { NewTemplate, TemplateLibrary } = await import(
-  '@/app/(signed-in)/(sidebar)/one-on-ones/templates/_components/template-library'
+const { TemplateLibrary } = await import(
+  '@/app/(signed-in)/(sidebar)/settings/one-on-ones/_components/template-library'
 );
 
 const WORKSPACE_ID = '0196b4c8-0000-7000-8000-0000000000aa';
@@ -71,11 +71,6 @@ function catalog(
 function draw(listed: OneOnOneTemplateCatalog) {
   render(
     <>
-      <NewTemplate
-        workspaceId={WORKSPACE_ID}
-        workspaceName="Acme"
-        mayKeepForWorkspace={listed.mayKeepForWorkspace}
-      />
       <TemplateLibrary
         workspaceId={WORKSPACE_ID}
         workspaceName="Acme"
@@ -84,6 +79,26 @@ function draw(listed: OneOnOneTemplateCatalog) {
       <Toaster />
     </>,
   );
+}
+
+/** Opens a template's menu and picks one of its actions, as a person does. */
+async function choose(action: 'Edit' | 'Copy' | 'Remove', template: string) {
+  await userEvent.click(
+    screen.getByRole('button', { name: `Manage ${template}` }),
+  );
+  await userEvent.click(await screen.findByRole('menuitem', { name: action }));
+}
+
+/** The actions a template's menu offers. */
+async function actionsOf(template: string): Promise<string[]> {
+  await userEvent.click(
+    screen.getByRole('button', { name: `Manage ${template}` }),
+  );
+  const items = (await screen.findAllByRole('menuitem')).map(
+    (item) => item.textContent ?? '',
+  );
+  await userEvent.keyboard('{Escape}');
+  return items;
 }
 
 function section(name: string) {
@@ -98,65 +113,79 @@ beforeEach(() => {
 });
 
 describe('TemplateLibrary', () => {
-  it("shows the person's own first, then the Workspace's, then Thrive's, each with its questions in order", () => {
+  it("shows the person's own first, then the Workspace's, then Thrive's, each a card of its own", () => {
     draw(catalog([WEEKLY, OURS, MINE]));
 
     expect(
       screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent),
-    ).toEqual(['Yours', 'Acme’s', 'Thrive’s']);
-    const yours = within(section('Yours'));
-    expect(yours.getByRole('heading', { name: 'Sprint retro' })).toBeVisible();
-    expect(yours.getByText('After each sprint')).toBeVisible();
-    expect(
-      yours
-        .getAllByRole('listitem')
-        .slice(1)
-        .map((li) => li.textContent),
-    ).toEqual(['What slowed us?', 'What helped?']);
+    ).toEqual(['Your templates', 'Acme’s templates', 'Thrive’s templates']);
+    const yours = within(section('Your templates'));
+    const card = yours.getByRole('button', { name: /^Sprint retro/ });
+    expect(card).toHaveTextContent('After each sprint');
+    expect(card).toHaveTextContent('2 questions');
+    expect(yours.queryByText('What slowed us?')).not.toBeVisible();
   });
 
-  it('offers Edit and Remove only where the person may change it, and Copy everywhere', () => {
+  it('opens a template to its agenda, in order, and folds it away again', async () => {
+    draw(catalog([MINE]));
+    const card = screen.getByRole('button', { name: /^Sprint retro/ });
+    expect(card).toHaveAttribute('aria-expanded', 'false');
+
+    await userEvent.click(card);
+
+    expect(card).toHaveAttribute('aria-expanded', 'true');
+    const agenda = document.getElementById(
+      card.getAttribute('aria-controls') ?? '',
+    );
+    expect(
+      within(agenda as HTMLElement)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['What slowed us?', 'What helped?']);
+    await userEvent.click(card);
+    expect(screen.queryByText('What slowed us?')).not.toBeVisible();
+  });
+
+  it('offers Edit and Remove only where the person may change it, and Copy everywhere', async () => {
     draw(catalog([WEEKLY, OURS, MINE]));
 
-    const yours = within(section('Yours'));
-    expect(
-      yours.getByRole('button', { name: 'Edit Sprint retro' }),
-    ).toBeVisible();
-    expect(
-      yours.getByRole('button', { name: 'Remove Sprint retro' }),
-    ).toBeVisible();
-    const ours = within(section('Acme’s'));
-    expect(ours.queryByRole('button', { name: /^Edit/ })).toBeNull();
-    expect(ours.queryByRole('button', { name: /^Remove/ })).toBeNull();
-    expect(
-      ours.getByRole('button', { name: 'Copy Team health' }),
-    ).toBeVisible();
-    expect(
-      within(section('Thrive’s')).getByRole('button', {
-        name: 'Copy Weekly check-in',
-      }),
-    ).toBeVisible();
+    expect(await actionsOf('Sprint retro')).toEqual(['Edit', 'Copy', 'Remove']);
+    expect(await actionsOf('Team health')).toEqual(['Copy']);
+    expect(await actionsOf('Weekly check-in')).toEqual(['Copy']);
   });
 
   it('says what an empty layer holds, and that Admins change the Workspace’s', () => {
     draw(catalog([WEEKLY]));
 
     expect(
-      within(section('Yours')).getByText(/Nothing of your own yet/),
+      within(section('Your templates')).getByText(
+        /Copy one below, or start a new one/,
+      ),
     ).toBeVisible();
     expect(
-      within(section('Acme’s')).getByText('Acme keeps none yet.'),
+      within(section('Acme’s templates')).getByText('None yet.'),
     ).toBeVisible();
-    expect(screen.getByText(/Admins change them/)).toBeVisible();
+    expect(
+      screen.getByText('Everyone can use these. Admins change them.'),
+    ).toBeVisible();
+    // A Member starts a new one only as their own, from their own card.
+    expect(
+      within(section('Your templates')).getByRole('button', {
+        name: 'New template',
+      }),
+    ).toBeVisible();
+    expect(
+      within(section('Acme’s templates')).queryByRole('button', {
+        name: /New template/,
+      }),
+    ).not.toBeInTheDocument();
   });
 
-  it("copies one of Thrive's as the person's own, under its own name, putting focus in a question just added", async () => {
+  it("copies one of Thrive's as the person's own, under its own name, with a question added under the rest", async () => {
     keepOneOnOneTemplate.mockResolvedValue({ ok: true, id: KRITS_ID });
     draw(catalog([WEEKLY]));
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Copy Weekly check-in' }),
-    );
+    await choose('Copy', 'Weekly check-in');
     const dialog = screen.getByRole('dialog', {
       name: 'Copy “Weekly check-in”',
     });
@@ -165,10 +194,17 @@ describe('TemplateLibrary', () => {
     );
     // A Member is not asked who it is for: it can only be their own.
     expect(within(dialog).queryByText('Who it’s for')).toBeNull();
-    await userEvent.click(
-      within(dialog).getByRole('button', { name: 'Add a question' }),
+    // The questions are rows as an agenda's topics are, with no numbers drawn.
+    expect(within(dialog).queryByText('1')).not.toBeInTheDocument();
+    const adding = within(dialog).getByRole('textbox', {
+      name: 'Add a question',
+    });
+    await userEvent.type(adding, 'What else?{Enter}');
+    expect(within(dialog).getByLabelText('Question 3')).toHaveValue(
+      'What else?',
     );
-    expect(within(dialog).getByLabelText('Question 3')).toHaveFocus();
+    expect(adding).toHaveValue('');
+    expect(adding).toHaveFocus();
     await userEvent.click(
       within(dialog).getByRole('button', { name: 'Save copy' }),
     );
@@ -180,7 +216,7 @@ describe('TemplateLibrary', () => {
         {
           name: 'Weekly check-in',
           suggestedWhen: 'The default for every 1:1',
-          questions: [...WEEKLY.questions, ''],
+          questions: [...WEEKLY.questions, 'What else?'],
         },
       ),
     );
@@ -188,11 +224,13 @@ describe('TemplateLibrary', () => {
     await waitFor(() => expect(dialog).not.toBeInTheDocument());
   });
 
-  it('lets an Admin keep a new template for everyone, and waits for a name and a question', async () => {
+  it('lets an Admin start a new template for everyone from the Workspace’s card, and waits for a name and a question', async () => {
     keepOneOnOneTemplate.mockResolvedValue({ ok: true, id: OURS_ID });
     draw(catalog([WEEKLY], true));
 
-    await userEvent.click(screen.getByRole('button', { name: 'New template' }));
+    await userEvent.click(
+      screen.getByRole('button', { name: 'New template for everyone in Acme' }),
+    );
     const dialog = screen.getByRole('dialog', { name: 'A new template' });
     const save = within(dialog).getByRole('button', { name: 'Save template' });
     expect(save).toBeDisabled();
@@ -201,11 +239,12 @@ describe('TemplateLibrary', () => {
       'Team health',
     );
     expect(save).toBeDisabled();
+    expect(within(dialog).getByLabelText('Everyone in Acme')).toBeChecked();
+    // Written and not yet added, it is still kept with the template.
     await userEvent.type(
-      within(dialog).getByLabelText('Question 1'),
+      within(dialog).getByRole('textbox', { name: 'Add a question' }),
       'How is the team?',
     );
-    await userEvent.click(within(dialog).getByLabelText('Everyone in Acme'));
     await userEvent.click(save);
 
     await waitFor(() =>
@@ -229,9 +268,7 @@ describe('TemplateLibrary', () => {
     });
     draw(catalog([MINE]));
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Edit Sprint retro' }),
-    );
+    await choose('Edit', 'Sprint retro');
     const dialog = screen.getByRole('dialog', {
       name: 'Edit “Sprint retro”',
     });
@@ -252,19 +289,17 @@ describe('TemplateLibrary', () => {
     expect(name).toHaveValue('Weekly check-in');
   });
 
-  it('removes a template only once the person confirms, saying what becomes of its 1:1s', async () => {
+  it('removes a template only once the person confirms, saying what becomes of the meetings that used it', async () => {
     removeOneOnOneTemplate.mockResolvedValue({ ok: true });
     draw(catalog([MINE]));
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Remove Sprint retro' }),
-    );
+    await choose('Remove', 'Sprint retro');
     const dialog = screen.getByRole('dialog', {
       name: 'Remove “Sprint retro”?',
     });
     expect(
       within(dialog).getByText(
-        /keep its questions until someone picks another/,
+        /Meetings that already used it keep its questions/,
       ),
     ).toBeVisible();
     await userEvent.click(
@@ -272,9 +307,7 @@ describe('TemplateLibrary', () => {
     );
     expect(removeOneOnOneTemplate).not.toHaveBeenCalled();
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Remove Sprint retro' }),
-    );
+    await choose('Remove', 'Sprint retro');
     await userEvent.click(
       within(
         screen.getByRole('dialog', { name: 'Remove “Sprint retro”?' }),
@@ -294,9 +327,7 @@ describe('TemplateLibrary', () => {
     rewriteOneOnOneTemplate.mockResolvedValue({ ok: true });
     draw(catalog([MINE]));
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Edit Sprint retro' }),
-    );
+    await choose('Edit', 'Sprint retro');
     const dialog = screen.getByRole('dialog', {
       name: 'Edit “Sprint retro”',
     });
@@ -328,13 +359,58 @@ describe('TemplateLibrary', () => {
     await waitFor(() => expect(dialog).not.toBeInTheDocument());
   });
 
+  it('takes a question out with its ×, and offers each a grip to move it', async () => {
+    rewriteOneOnOneTemplate.mockResolvedValue({ ok: true });
+    draw(catalog([MINE]));
+
+    await choose('Edit', 'Sprint retro');
+    const dialog = screen.getByRole('dialog', {
+      name: 'Edit “Sprint retro”',
+    });
+    expect(
+      within(dialog).getByRole('button', { name: 'Move What helped?' }),
+    ).toBeVisible();
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Remove What slowed us?' }),
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(rewriteOneOnOneTemplate).toHaveBeenCalledWith(
+        WORKSPACE_ID,
+        KRITS_ID,
+        expect.objectContaining({ questions: ['What helped?'] }),
+      ),
+    );
+  });
+
+  it('cancels a question picked up with the keyboard on Escape, and keeps the dialog open with what was written', async () => {
+    draw(catalog([MINE]));
+
+    await choose('Edit', 'Sprint retro');
+    const dialog = screen.getByRole('dialog', {
+      name: 'Edit “Sprint retro”',
+    });
+    const name = within(dialog).getByRole('textbox', { name: 'Name' });
+    await userEvent.type(name, ' 2');
+    within(dialog)
+      .getByRole('button', { name: 'Move What slowed us?' })
+      .focus();
+    await userEvent.keyboard(' ');
+    await userEvent.keyboard('{Escape}');
+
+    expect(dialog).toBeInTheDocument();
+    expect(name).toHaveValue('Sprint retro 2');
+    // A second Escape, with nothing picked up, closes it as usual.
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+  });
+
   it('names an Admin’s copy of the Workspace’s a copy only while it is kept for everyone too', async () => {
     keepOneOnOneTemplate.mockResolvedValue({ ok: true, id: KRITS_ID });
     draw(catalog([{ ...OURS, changeable: true }], true));
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Copy Team health' }),
-    );
+    await choose('Copy', 'Team health');
     const dialog = screen.getByRole('dialog', { name: 'Copy “Team health”' });
     const name = within(dialog).getByRole('textbox', { name: 'Name' });
     expect(name).toHaveValue('Team health');
@@ -354,9 +430,7 @@ describe('TemplateLibrary', () => {
       />,
     );
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Remove Sprint retro' }),
-    );
+    await choose('Remove', 'Sprint retro');
     const dialog = screen.getByRole('dialog', {
       name: 'Remove “Sprint retro”?',
     });
@@ -376,7 +450,9 @@ describe('TemplateLibrary', () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByRole('heading', { name: 'Yours' })).toHaveFocus(),
+      expect(
+        screen.getByRole('heading', { name: 'Your templates' }),
+      ).toHaveFocus(),
     );
   });
 });

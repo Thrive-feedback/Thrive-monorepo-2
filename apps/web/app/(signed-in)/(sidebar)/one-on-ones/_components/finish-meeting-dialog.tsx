@@ -1,9 +1,9 @@
 'use client';
 
+import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/_lib/use-one-on-one-action';
 import { MeetingSummary } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-summary';
 import type { Meeting } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
 import { finishMeeting } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service';
-import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-one-on-one-action';
 import { Button } from '@/components/atoms/button';
 import {
   Dialog,
@@ -78,7 +78,7 @@ export function FinishMeetingDialog({
               })
             }
           >
-            Finish and share
+            Finish
           </Button>
         </DialogFooter>
       </DialogContent>

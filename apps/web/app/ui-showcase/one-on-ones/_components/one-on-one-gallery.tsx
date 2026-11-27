@@ -19,6 +19,7 @@ import {
   SAMPLE_UPCOMING_ONLY,
 } from '@/app/ui-showcase/one-on-ones/_lib/one-on-one-samples.constant';
 import { Text } from '@/components/atoms/text';
+import { MissedMeetingCases } from './missed-meeting-cases';
 
 /** No Workspace is read here; the actions it calls answer with an error, as nobody is signed in. */
 const SAMPLE_WORKSPACE_ID = '0196b4c8-0000-7000-8000-0000000000ff';
@@ -92,7 +93,7 @@ const CASES: readonly {
   {
     group: 'Running',
     description:
-      'When it next meets and what its agenda starts from. The two are equal: either changes the schedule, which holds at once, and either ends it, which asks first.',
+      'When it next meets. The two are equal: either changes the schedule, which holds at once, and either ends it, which asks first.',
     cases: [
       {
         title: 'Running · weekly',
@@ -101,12 +102,12 @@ const CASES: readonly {
       },
       {
         title: 'Running · monthly',
-        note: 'Grace sent it. On the second Friday, from Feedback both ways.',
+        note: 'Grace sent it. On the second Friday.',
         oneOnOne: SAMPLE_ONE_ON_ONES.runningMonthly,
       },
       {
         title: 'Running · every two weeks',
-        note: '45 minutes, from the Career conversation template.',
+        note: '45 minutes.',
         oneOnOne: SAMPLE_ONE_ON_ONES.runningEveryTwoWeeks,
       },
       {
@@ -188,19 +189,18 @@ export function OneOnOneGallery() {
     >
       <GallerySection
         title="Create a 1:1"
-        description="At the head of the page, the one way to begin. A two-step dialog: who it is with, with Mint and Dev greyed and the reason said; then when it meets, its template and an optional note."
+        description="At the head of the page, the one way to begin. A two-step dialog: who it is with, with Mint and Dev greyed and the reason said; then when it meets and an optional note."
       >
         <OneOnOnesCreate
           workspaceId={SAMPLE_WORKSPACE_ID}
           teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
-          templates={SAMPLE_ONE_ON_ONE_TEMPLATES}
           unavailable={SAMPLE_UNAVAILABLE}
         />
       </GallerySection>
 
       <GallerySection
         title="The list"
-        description="Up to three tabs, opened on the open 1:1’s. Upcoming: what meets, soonest first, without a heading. Pending: invitations waiting on the reader first, drawn like every card and counted in plum on the tab, then theirs waiting on the other person. History: what was declined and what has ended. Pending and History hide while empty; with Upcoming alone there is no tab bar, just the list (the last one here). From lg a 288px column that scrolls on its own while the page stays put; narrower than lg, each tab is one row that scrolls sideways."
+        description="Up to three tabs, opened on the open 1:1’s. Upcoming: what meets, soonest first, without a heading. Pending: invitations waiting on the reader first, drawn like every card and counted in plum on the tab, then theirs waiting on the other person. History: what was declined and what has ended. Pending and History stay drawn while empty, greyed and not to be chosen (the last one here). From lg a 288px column that scrolls on its own while the page stays put; narrower than lg, each tab is one row that scrolls sideways."
       >
         <div className="flex flex-wrap gap-10">
           {(['upcoming', 'pending', 'history'] as const).map((tab) => (
@@ -237,7 +237,7 @@ export function OneOnOneGallery() {
 
       <GallerySection
         title="Meetings"
-        description="A running 1:1's panel: Next meeting and Past meetings. Before anyone writes, the agenda shows what it will open with: what was not reached last time, then the template. Preparing: either person adds, reorders and removes topics (their own, or the template's and last time's). Each topic is one line, with where it came from beside it. In progress: a Discussed tick on each topic, and one topic's note open at a time, starting at the first not talked about; ticking it moves on to the next. Finish shows the summary before sharing it. Past meetings open to their summary; each meeting offers Give and Kudos for the other person, outlined in their voices as a teammate's row does. Start and Finish reach the other person within seconds; notes save themselves and arrive with Sync."
+        description="A running 1:1's panel: Next meeting and Past meetings. Before anyone writes, the agenda shows what it will open with: what was not reached last time. Preparing: either person uses a template, whose questions take the place of the last one's, and adds, reorders and removes topics (their own, or the template's and last time's). Each topic is one line, with where it came from beside it. In progress: a Discussed tick on each topic, and one topic's note open at a time, starting at the first not talked about; ticking it moves on to the next. Finish shows the summary before sharing it. Past meetings open to their summary; each meeting offers Give and Kudos for the other person, outlined in their voices as a teammate's row does. Start and Finish reach the other person within seconds; notes save themselves and arrive with Sync."
       >
         <div className="flex max-w-3xl flex-col gap-10">
           {(
@@ -276,6 +276,13 @@ export function OneOnOneGallery() {
             </figure>
           ))}
         </div>
+      </GallerySection>
+
+      <GallerySection
+        title="Missed meetings · proposed"
+        description="Not built yet: what a weekly 1:1 with Mint on Thursdays shows when a meeting day passes without anyone pressing Start, day by day, and one held once. Overdue until the next meeting day, and still startable late; skipped once that day comes, with its agenda moved on; the schedule never moves, and an early start is that day's meeting. Static, from the panel's own atoms and tokens, to agree on before the API and the panel learn it."
+      >
+        <MissedMeetingCases />
       </GallerySection>
 
       <GallerySection

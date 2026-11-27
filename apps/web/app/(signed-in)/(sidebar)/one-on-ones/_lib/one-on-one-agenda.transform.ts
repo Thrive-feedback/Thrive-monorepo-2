@@ -17,7 +17,7 @@ export type AgendaTopic = {
 /**
  * The next meeting's agenda, the same shape before and after anybody writes to it: the open
  * meeting's topics in order, or, before then, what it will open with — what was not reached last
- * time, then the template's questions — keyed by place.
+ * time — keyed by place.
  */
 export function agendaOf(next: NextMeeting): readonly AgendaTopic[] {
   if (next.meeting) {
@@ -29,16 +29,10 @@ export function agendaOf(next: NextMeeting): readonly AgendaTopic[] {
       topic,
     }));
   }
-  return [
-    ...next.carried.map((text) => ({ text, source: 'CARRIED' as const })),
-    ...next.templateQuestions.map((text) => ({
-      text,
-      source: 'TEMPLATE' as const,
-    })),
-  ].map(({ text, source }, position) => ({
+  return next.carried.map((text, position) => ({
     key: `preview-${position}`,
     text,
-    source,
+    source: 'CARRIED' as const,
     authorAccountId: null,
     topic: null,
   }));

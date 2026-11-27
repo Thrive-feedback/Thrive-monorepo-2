@@ -4,18 +4,22 @@ import { PlayIcon, RefreshCwIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import type { OneOnOneTemplate } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
+import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/_lib/use-one-on-one-action';
 import { FinishMeetingDialog } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/finish-meeting-dialog';
 import { MeetingAgenda } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-agenda';
 import type { MeetingPeople } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-summary';
+import { UseTemplateButton } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/use-template-button';
 import type { NextMeeting as NextMeetingData } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
 import { startMeeting } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service';
 import {
+  dayInBangkok,
   describeMeeting,
   describeTime,
+  todayInBangkok,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-schedule.util';
 import { PendingSaves } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/pending-saves';
 import { useMeetingStateWatch } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-meeting-state-watch';
-import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-one-on-one-action';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
@@ -26,9 +30,9 @@ export type NextMeetingProps = {
   next: NextMeetingData;
   /** When the schedule says it next meets, for a meeting not started yet. */
   nextMeetingAt: string | null;
-  /** How long a meeting lasts, to tell one left open long after it ended. */
-  lengthMinutes: number;
   people: MeetingPeople;
+  /** The templates the meeting can use while it is prepared. */
+  templates: readonly OneOnOneTemplate[];
 };
 
 /**
@@ -56,8 +60,8 @@ function useSync() {
  * The next meeting of a running 1:1, in its panel (brain ADR-0060 §5 and §6; ADR-0061, proposed).
  * Where it stands is one word at the top of its box, Preparing or In progress, beside the one thing
  * to press next.
- * Before it starts, either person prepares the agenda: it opens with what was not reached last time
- * and the template's questions, and the first write keeps it. Either presses Start whenever they
+ * Before it starts, either person prepares the agenda: it opens with what was not reached last time,
+ * either may use a template for it, and the first write keeps it. Either presses Start whenever they
  * meet; then each topic takes a "discussed" tick and a note both read. Finish shows the summary to
  * check, then shares it with both.
  *
@@ -70,8 +74,8 @@ export function NextMeeting({
   oneOnOneId,
   next,
   nextMeetingAt,
-  lengthMinutes,
   people,
+  templates,
 }: NextMeetingProps) {
   const { isPending, run } = useOneOnOneAction();
   const { isSyncing, sync } = useSync();
@@ -105,14 +109,13 @@ export function NextMeeting({
   const ids = useId();
   const meeting = next.meeting;
   const inProgress = meeting?.state === 'IN_PROGRESS';
-  const [nowMs] = useState(() => Date.now());
+  // A meeting is the whole of its day; one still open once that day is over was left open.
+  const [today] = useState(() => todayInBangkok());
   const isStuck =
     inProgress &&
     meeting?.occursAt != null &&
-    Date.parse(meeting.occursAt) + (lengthMinutes + 60) * 60_000 < nowMs;
-  const agendaCount = meeting
-    ? meeting.topics.length
-    : next.carried.length + next.templateQuestions.length;
+    dayInBangkok(meeting.occursAt) < today;
+  const agendaCount = meeting ? meeting.topics.length : next.carried.length;
   const discussedCount =
     meeting?.topics.filter((topic) => topic.discussedAt).length ?? 0;
   useMeetingStateWatch({
@@ -161,7 +164,7 @@ export function NextMeeting({
               ? `Tick each topic as you talk about it and note what you agreed. Finish shares the summary with you and ${people.otherName}.`
               : meeting
                 ? `The agenda is saved. When you meet, either of you presses Start.`
-                : `Add what you'd like to talk about, or reorder what's here. When you meet, either of you presses Start.`}
+                : `Add what you'd like to talk about, use a template, or reorder what's here. When you meet, either of you presses Start.`}
           </Text>
         </div>
         {inProgress ? (
@@ -221,18 +224,33 @@ export function NextMeeting({
                 : `${agendaCount} ${agendaCount === 1 ? 'topic' : 'topics'}`}
             </span>
           </Text>
-          <Button
-            variant="ghost"
-            size="sm"
-            loading={isSyncing}
-            prefixIcon={
-              <RefreshCwIcon aria-hidden="true" className="size-3.5" />
-            }
-            onClick={sync}
-            aria-label={`Sync with ${people.otherName}`}
-          >
-            Sync
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={isSyncing}
+              prefixIcon={
+                <RefreshCwIcon aria-hidden="true" className="size-3.5" />
+              }
+              onClick={sync}
+              aria-label={`Sync with ${people.otherName}`}
+            >
+              Sync
+            </Button>
+            {!inProgress && (
+              <UseTemplateButton
+                workspaceId={workspaceId}
+                oneOnOneId={oneOnOneId}
+                meetingId={meeting?.id ?? null}
+                templates={templates}
+                current={
+                  meeting?.templateKey && next.templateName
+                    ? { key: meeting.templateKey, name: next.templateName }
+                    : null
+                }
+              />
+            )}
+          </div>
         </div>
         <MeetingAgenda
           workspaceId={workspaceId}

@@ -248,8 +248,8 @@ function Card({ oneOnOne, teammates, isOpen, group, today }: CardProps) {
  * Everyone the person has a 1:1 with, in up to three tabs. **Upcoming** is where they spend their
  * time: what meets, soonest first. **Pending** holds the few waiting on an answer: an invitation to
  * them first, then theirs waiting on somebody else. **History** holds
- * what was turned down and what is over. Pending and History are hidden while empty, which is most of
- * the time, and with only Upcoming left there is no tab bar at all, just the list. It opens on the
+ * what was turned down and what is over. Every tab is always drawn, so the list keeps one shape;
+ * Pending and History, while empty, are greyed and can't be chosen. It opens on the
  * open 1:1's tab. From `lg` it is a column beside the open 1:1, which the page scrolls on its own;
  * narrower, each tab is one row that scrolls sideways.
  *
@@ -271,17 +271,18 @@ export function OneOnOneStrip({
       .filter(({ items }) => items.length > 0);
   const countOf = (each: OneOnOneTab) =>
     groupsOf(each).reduce((sum, { items }) => sum + items.length, 0);
-  const shown = TAB_ORDER.filter(
+  // Every tab is drawn; Pending and History, while empty, can't be chosen. Upcoming always can.
+  const choosable = TAB_ORDER.filter(
     (each) => each === 'upcoming' || countOf(each) > 0,
   );
   const selected = oneOnOnes.find((oneOnOne) => oneOnOne.id === selectedId);
   const opening = initialTab ?? (selected ? tabOf(selected) : 'upcoming');
   const [chosenTab, setTab] = useState<OneOnOneTab>(opening);
-  // A tab emptied while the list is open, as by answering the last invitation, is no longer drawn:
-  // the list shows the open 1:1's tab instead, or Upcoming.
-  const tab = shown.includes(chosenTab)
+  // A tab emptied while the list is open, as by answering the last invitation, can no longer be
+  // chosen: the list shows the open 1:1's tab instead, or Upcoming.
+  const tab = choosable.includes(chosenTab)
     ? chosenTab
-    : selected && shown.includes(tabOf(selected))
+    : selected && choosable.includes(tabOf(selected))
       ? tabOf(selected)
       : 'upcoming';
   const waitsOnReader = oneOnOnes.some(
@@ -434,21 +435,6 @@ export function OneOnOneStrip({
   // Folded, the full list still draws below `lg`, where it is a row.
   const openListClass = cn('lg:w-72', isCollapsed && 'lg:hidden');
 
-  if (shown.length === 1) {
-    return (
-      <>
-        {folded}
-        <nav
-          aria-label="Your 1:1s"
-          className={cn('flex flex-col gap-2', openListClass)}
-        >
-          <div className="hidden justify-end lg:flex">{foldButton}</div>
-          {groupsIn('upcoming')}
-        </nav>
-      </>
-    );
-  }
-
   return (
     <>
       {folded}
@@ -470,10 +456,11 @@ export function OneOnOneStrip({
           {/* The fold button ends the tabs' own line, from `lg` where the list can fold. */}
           <div className="flex items-end gap-1">
             <TabsList aria-label="Which 1:1s" className="min-w-0 flex-1">
-              {shown.map((each) => (
+              {TAB_ORDER.map((each) => (
                 <TabsTrigger
                   key={each}
                   value={each}
+                  disabled={!choosable.includes(each)}
                   className="min-w-0 flex-1 justify-center gap-1.5 px-1"
                 >
                   {TAB_NAMES[each]}
@@ -500,7 +487,7 @@ export function OneOnOneStrip({
             </TabsList>
             <div className="pb-1">{foldButton}</div>
           </div>
-          {shown.map((each) => (
+          {TAB_ORDER.map((each) => (
             <TabsContent key={each} value={each}>
               {groupsIn(each)}
             </TabsContent>

@@ -4,14 +4,14 @@ import { ApiError, unwrap } from '@repo/api';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import type { OneOnOneActionResult } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
-import { apiClient } from '@/lib/api-client.service';
-import { requireMemberOf } from '@/lib/session/session.service';
 import {
   AGENDA_CHANGED,
   act,
   COULD_NOT,
   refuse,
-} from './one-on-one-act.service';
+} from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-act.service';
+import { apiClient } from '@/lib/api-client.service';
+import { requireMemberOf } from '@/lib/session/session.service';
 
 const Id = z.uuid();
 const Topic = z.string().trim().min(1).max(200);
@@ -139,6 +139,40 @@ export async function addTopic(
       ),
     );
     return added.id;
+  });
+}
+
+const TemplateKey = z.string().trim().min(1).max(100);
+
+/**
+ * Uses a template for the next meeting while it is prepared, opening it first if needed: its
+ * questions take the place of the last template's.
+ */
+export async function chooseTemplateForMeeting(
+  workspaceId: string,
+  oneOnOneId: string,
+  meetingId: string | null,
+  templateKey: string,
+): Promise<OneOnOneActionResult> {
+  const key = TemplateKey.safeParse(templateKey);
+  if (!key.success) {
+    return { ok: false, message: 'Choose one of the templates.' };
+  }
+  if (!idsOf({ oneOnOneId, ...(meetingId ? { meetingId } : {}) })) {
+    return { ok: false, message: COULD_NOT };
+  }
+  return act(workspaceId, async (workspace, cookie) => {
+    const path = { ...workspace, oneOnOneId };
+    const id = await liveMeeting(path, cookie, meetingId);
+    // Answered 204 with no body, so there is nothing to unwrap; a refusal throws.
+    await apiClient().PUT(
+      '/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/template',
+      {
+        params: { path: { ...path, meetingId: id }, header: { cookie } },
+        body: { templateKey: key.data },
+      },
+    );
+    return id;
   });
 }
 

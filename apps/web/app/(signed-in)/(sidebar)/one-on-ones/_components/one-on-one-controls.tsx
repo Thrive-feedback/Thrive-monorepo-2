@@ -1,13 +1,13 @@
 'use client';
 
-import { CalendarClockIcon } from 'lucide-react';
+import { CalendarClockIcon, CalendarXIcon, EllipsisIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type {
   OneOnOneSchedule,
   OneOnOneScheduleChoice,
-  OneOnOneTemplate,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
+import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/_lib/use-one-on-one-action';
 import { ScheduleDialog } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/schedule-dialog';
 import { ScheduleFields } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/schedule-fields';
 import {
@@ -18,7 +18,6 @@ import {
   suggestAnotherTime,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-actions.service';
 import { choiceOf } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-schedule.util';
-import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-one-on-one-action';
 import { Button } from '@/components/atoms/button';
 import {
   Dialog,
@@ -29,6 +28,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/atoms/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/atoms/dropdown-menu';
 import { Text } from '@/components/atoms/text';
 import { TextAreaField } from '@/components/molecules/text-area-field';
 import { ROUTES } from '@/lib/routes.constant';
@@ -43,8 +49,10 @@ type Base = {
 };
 
 type ConfirmProps = {
-  /** What opens it, which takes focus back when it closes. */
-  trigger: React.ReactNode;
+  /** What opens it, which takes focus back when it closes. Left out when a menu item opens it. */
+  trigger?: React.ReactNode;
+  /** Where focus goes when it closes, for one opened without a trigger, as from a menu. */
+  returnFocusTo?: () => HTMLElement | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
@@ -59,6 +67,7 @@ type ConfirmProps = {
 /** A step that cannot be taken back, said plainly before it is taken. */
 function Confirm({
   trigger,
+  returnFocusTo,
   open,
   onOpenChange,
   title,
@@ -71,8 +80,18 @@ function Confirm({
 }: ConfirmProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="gap-5">
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent
+        className="gap-5"
+        onCloseAutoFocus={
+          returnFocusTo
+            ? (event) => {
+                event.preventDefault();
+                returnFocusTo()?.focus();
+              }
+            : undefined
+        }
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -98,7 +117,6 @@ function Confirm({
 type AnswerProps = Base & {
   /** What the invitation was sent with, which another time starts from. */
   schedule: OneOnOneSchedule;
-  templates: readonly OneOnOneTemplate[];
 };
 
 /**
@@ -127,7 +145,6 @@ function DeclineForm({
   oneOnOneId,
   shortName,
   schedule,
-  templates,
   onClose,
 }: AnswerProps & { onClose: () => void }) {
   const { isPending, run } = useOneOnOneAction();
@@ -161,16 +178,11 @@ function DeclineForm({
           <DialogHeader>
             <DialogTitle>Suggest another time to {shortName}</DialogTitle>
             <DialogDescription>
-              {`${shortName} gets it back to accept or decline. Bangkok time.`}
+              {`${shortName} gets it back to accept or decline.`}
             </DialogDescription>
           </DialogHeader>
           <ScheduleFields
             value={another}
-            templates={templates}
-            currentTemplate={{
-              key: schedule.templateKey,
-              name: schedule.templateName,
-            }}
             disabled={isPending}
             onChange={setAnother}
           />
@@ -274,7 +286,6 @@ export function AnswerInvitation({
   oneOnOneId,
   shortName,
   schedule,
-  templates,
   wasSuggested = false,
 }: AnswerInvitationProps) {
   const { isPending, run } = useOneOnOneAction();
@@ -296,7 +307,6 @@ export function AnswerInvitation({
         oneOnOneId={oneOnOneId}
         shortName={shortName}
         schedule={schedule}
-        templates={templates}
       />
     </div>
   );
@@ -339,15 +349,15 @@ export function Withdraw({
 }
 
 export type RunningControlsProps = Base & {
-  /** A meeting held just once: its time is changed, and it is cancelled rather than ended. */
+  /** A meeting held just once: its day is changed, and it is cancelled rather than ended. */
   isOnce?: boolean;
   schedule: OneOnOneSchedule;
-  templates: readonly OneOnOneTemplate[];
 };
 
 /**
- * What can be done to a running 1:1, by either person, as the two are equal: change when it meets,
- * which holds at once, or end it, after saying what ending keeps.
+ * What can be done to a running 1:1, by either person, as the two are equal, behind one quiet menu
+ * at the end of its head: change when it meets, which holds at once, or end it, after saying what
+ * ending keeps. Each opens its own dialog, and focus comes back to the menu's button.
  */
 export function RunningControls({
   workspaceId,
@@ -355,36 +365,50 @@ export function RunningControls({
   shortName,
   isOnce = false,
   schedule,
-  templates,
 }: RunningControlsProps) {
   const { isPending, run } = useOneOnOneAction();
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const back = () => menuButton.current;
   return (
-    <div className="flex flex-wrap gap-2">
-      <ScheduleDialog
-        trigger={
-          <Button variant="secondary">
-            {isOnce ? 'Change time' : 'Change schedule'}
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            ref={menuButton}
+            variant="ghost"
+            size="icon"
+            aria-label={`Schedule options for your 1:1 with ${shortName}`}
+          >
+            <EllipsisIcon aria-hidden="true" className="size-4" />
           </Button>
-        }
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => setIsRescheduling(true)}>
+            <CalendarClockIcon aria-hidden="true" className="size-4" />
+            {isOnce ? 'Change day' : 'Change schedule'}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem tone="danger" onSelect={() => setIsEnding(true)}>
+            <CalendarXIcon aria-hidden="true" className="size-4" />
+            {isOnce ? 'Cancel meeting' : 'End schedule'}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <ScheduleDialog
+        returnFocusTo={back}
         open={isRescheduling}
         onOpenChange={setIsRescheduling}
         title={`When you and ${shortName} meet`}
-        description={`Bangkok time. It holds at once, for you and ${shortName}; the next meeting is the first under the new schedule.`}
+        description={`It holds at once, for you and ${shortName}; the next meeting is the first under the new schedule.`}
         initial={choiceOf(schedule)}
-        templates={templates}
-        initialTemplateName={schedule.templateName}
         submitLabel="Save"
-        done={isOnce ? 'Time changed' : 'Schedule changed'}
+        done={isOnce ? 'Day changed' : 'Schedule changed'}
         onSubmit={(next) => rescheduleOneOnOne(workspaceId, oneOnOneId, next)}
       />
       <Confirm
-        trigger={
-          <Button variant="ghost-danger">
-            {isOnce ? 'Cancel meeting' : 'End schedule'}
-          </Button>
-        }
+        returnFocusTo={back}
         open={isEnding}
         onOpenChange={setIsEnding}
         title={
@@ -409,6 +433,6 @@ export function RunningControls({
           })
         }
       />
-    </div>
+    </>
   );
 }

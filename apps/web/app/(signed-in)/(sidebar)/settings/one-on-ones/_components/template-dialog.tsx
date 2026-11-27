@@ -1,20 +1,18 @@
 'use client';
 
-import { PlusIcon, XIcon } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import type {
   OneOnOneActionResult,
   OneOnOneTemplateScope,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
+import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/_lib/use-one-on-one-action';
 import {
   isKeepable,
   MAX_TEMPLATE_NAME_LENGTH,
-  MAX_TEMPLATE_QUESTION_LENGTH,
   MAX_TEMPLATE_QUESTIONS,
   MAX_TEMPLATE_SUGGESTED_WHEN_LENGTH,
   type TemplateDraft,
-} from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-template.util';
-import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-one-on-one-action';
+} from '@/app/(signed-in)/(sidebar)/settings/one-on-ones/_lib/one-on-one-template.util';
 import { Button } from '@/components/atoms/button';
 import {
   Dialog,
@@ -25,11 +23,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/atoms/dialog';
-import { Input } from '@/components/atoms/input';
 import { Label } from '@/components/atoms/label';
 import { RadioGroup, RadioGroupItem } from '@/components/atoms/radio-group';
 import { Text } from '@/components/atoms/text';
 import { TextField } from '@/components/molecules/text-field';
+import { type QuestionRow, TemplateQuestions } from './template-questions';
 
 /** Who a template being kept is for: the person alone, or everyone in the Workspace. */
 export type KeptScope = Exclude<OneOnOneTemplateScope, 'THRIVE'>;
@@ -37,8 +35,10 @@ export type KeptScope = Exclude<OneOnOneTemplateScope, 'THRIVE'>;
 export type TemplateDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** What opens it, which takes focus back when it closes. */
-  trigger: React.ReactNode;
+  /** What opens it, which takes focus back when it closes. Left out when a menu item opens it. */
+  trigger?: React.ReactNode;
+  /** Where focus goes when it closes, for one opened without a trigger, as from a menu. */
+  returnFocusTo?: () => HTMLElement | null;
   title: string;
   description: string;
   /**
@@ -63,11 +63,10 @@ export type TemplateDialogProps = {
 
 type FormProps = Omit<
   TemplateDialogProps,
-  'open' | 'trigger' | 'title' | 'description'
->;
-
-/** One question being written, with a key of its own so a removal never moves another's text. */
-type QuestionRow = { readonly key: number; readonly text: string };
+  'open' | 'trigger' | 'returnFocusTo' | 'title' | 'description'
+> & {
+  onMovingChange: (isMoving: boolean) => void;
+};
 
 /**
  * The fields and buttons, drawn only while the dialog is open, so each opening starts again from
@@ -81,6 +80,7 @@ function TemplateForm({
   submitLabel,
   done,
   onSubmit,
+  onMovingChange,
 }: FormProps) {
   const id = useId();
   const startFor = (forScope: KeptScope): TemplateDraft =>
@@ -89,20 +89,24 @@ function TemplateForm({
   const nextKey = useRef(start.questions.length);
   /** Whether the person wrote the name; until then it follows who the template is for. */
   const nameWritten = useRef(false);
-  /** The question to put focus in once it is drawn: one just added, or the one before a removal. */
-  const focusKey = useRef<number | null>(null);
-  const addButton = useRef<HTMLButtonElement>(null);
   const [name, setName] = useState(start.name);
   const [suggestedWhen, setSuggestedWhen] = useState(start.suggestedWhen);
   const [scope, setScope] = useState<KeptScope>(initialScope);
   const [questions, setQuestions] = useState<readonly QuestionRow[]>(() =>
-    start.questions.map((text, key) => ({ key, text })),
+    start.questions
+      .filter((text) => text.trim() !== '')
+      .map((text, key) => ({ key, text })),
   );
+  const [adding, setAdding] = useState('');
   const { isPending, run } = useOneOnOneAction();
   const draft: TemplateDraft = {
     name,
     suggestedWhen,
-    questions: questions.map((question) => question.text),
+    // A question written in Add and not added yet is kept with the rest, as the person meant it.
+    questions: [
+      ...questions.map((question) => question.text),
+      ...(adding.trim() === '' ? [] : [adding]),
+    ],
   };
   const isFull = questions.length >= MAX_TEMPLATE_QUESTIONS;
 
@@ -114,27 +118,6 @@ function TemplateForm({
     if (!nameWritten.current) {
       setName(startFor(value).name);
     }
-  }
-
-  function addQuestion() {
-    const key = nextKey.current++;
-    focusKey.current = key;
-    setQuestions((rows) => [...rows, { key, text: '' }]);
-  }
-
-  function removeQuestion(index: number) {
-    const before = questions[index - 1] ?? questions[index + 1];
-    focusKey.current = before?.key ?? null;
-    setQuestions((rows) => rows.filter((_, at) => at !== index));
-    if (!before) {
-      addButton.current?.focus();
-    }
-  }
-
-  function changeQuestion(index: number, text: string) {
-    setQuestions((rows) =>
-      rows.map((row, at) => (at === index ? { ...row, text } : row)),
-    );
   }
 
   function submit(event: React.FormEvent) {
@@ -205,63 +188,16 @@ function TemplateForm({
             {questions.length} of {MAX_TEMPLATE_QUESTIONS}
           </Text>
         </legend>
-        <ol className="flex flex-col gap-2">
-          {questions.map((question, index) => (
-            <li key={question.key} className="flex items-center gap-2">
-              <Text
-                as="span"
-                variant="body-3"
-                tone="muted"
-                aria-hidden="true"
-                className="w-5 shrink-0 text-end tabular-nums"
-              >
-                {index + 1}
-              </Text>
-              <Input
-                ref={(input) => {
-                  if (input && focusKey.current === question.key) {
-                    focusKey.current = null;
-                    input.focus();
-                  }
-                }}
-                aria-label={`Question ${index + 1}`}
-                placeholder={
-                  index === 0 ? 'For example, what slowed us down?' : undefined
-                }
-                value={question.text}
-                maxLength={MAX_TEMPLATE_QUESTION_LENGTH}
-                disabled={isPending}
-                className="min-w-0 flex-1"
-                onChange={(event) =>
-                  changeQuestion(index, event.currentTarget.value)
-                }
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={`Remove question ${index + 1}`}
-                disabled={isPending || questions.length === 1}
-                onClick={() => removeQuestion(index)}
-              >
-                <XIcon aria-hidden="true" className="size-4" />
-              </Button>
-            </li>
-          ))}
-        </ol>
-        <div className="ps-7">
-          <Button
-            ref={addButton}
-            type="button"
-            variant="ghost"
-            size="sm"
-            prefixIcon={<PlusIcon aria-hidden="true" className="size-4" />}
-            disabled={isPending || isFull}
-            onClick={addQuestion}
-          >
-            Add a question
-          </Button>
-        </div>
+        <TemplateQuestions
+          questions={questions}
+          onQuestionsChange={setQuestions}
+          adding={adding}
+          onAddingChange={setAdding}
+          nextKey={() => nextKey.current++}
+          disabled={isPending}
+          isFull={isFull}
+          onMovingChange={onMovingChange}
+        />
       </fieldset>
       <DialogFooter>
         <Button
@@ -293,19 +229,45 @@ export function TemplateDialog({
   open,
   onOpenChange,
   trigger,
+  returnFocusTo,
   title,
   description,
   ...form
 }: TemplateDialogProps) {
+  /** Whether a question is picked up: Escape then puts it back, and leaves the dialog open. */
+  const isMoving = useRef(false);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="gap-5">
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent
+        className="gap-5"
+        onEscapeKeyDown={(event) => {
+          if (isMoving.current) {
+            event.preventDefault();
+          }
+        }}
+        onCloseAutoFocus={
+          returnFocusTo
+            ? (event) => {
+                event.preventDefault();
+                returnFocusTo()?.focus();
+              }
+            : undefined
+        }
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        {open && <TemplateForm onOpenChange={onOpenChange} {...form} />}
+        {open && (
+          <TemplateForm
+            onOpenChange={onOpenChange}
+            onMovingChange={(moving) => {
+              isMoving.current = moving;
+            }}
+            {...form}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -40,7 +40,7 @@ const {
   removeOneOnOneTemplate,
   rewriteOneOnOneTemplate,
 } = await import(
-  '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-template-actions.service'
+  '@/app/(signed-in)/(sidebar)/settings/one-on-ones/_lib/one-on-one-template-actions.service'
 );
 
 const TEMPLATES = `${TEST_API_BASE_URL}/v1/workspaces/${WORKSPACE_ID}/one-on-one-templates`;
@@ -68,7 +68,7 @@ beforeEach(() => {
 });
 
 describe('keeping 1:1 templates', () => {
-  it('sends what was written trimmed, without blank questions, and reads both pages again', async () => {
+  it('sends what was written trimmed, without blank questions, and reads the 1:1s page again', async () => {
     const received = apiAccepts('post', TEMPLATES, () =>
       HttpResponse.json({ id: TEMPLATE_ID }, { status: 201 }),
     );
@@ -86,7 +86,6 @@ describe('keeping 1:1 templates', () => {
       suggestedWhen: 'After each sprint',
       questions: ['What slowed us?', 'What helped?'],
     });
-    expect(revalidatePath).toHaveBeenCalledWith('/one-on-ones/templates');
     expect(revalidatePath).toHaveBeenCalledWith('/one-on-ones');
   });
 

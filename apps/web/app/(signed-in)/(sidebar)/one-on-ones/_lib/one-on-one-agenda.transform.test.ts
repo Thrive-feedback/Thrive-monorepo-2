@@ -15,12 +15,12 @@ const TOPIC = {
 };
 
 describe('the next meeting’s agenda', () => {
-  it('is what it will open with before anybody writes: carried first, then the template', () => {
+  it('is what it will open with before anybody writes: what was not reached last time, keyed by place', () => {
     const next: NextMeeting = {
       meeting: null,
-      carried: ['Launch retro'],
-      templateQuestions: ['What went well?', 'What is in your way?'],
-      templateName: 'Weekly check-in',
+      carried: ['Launch retro', 'Hiring'],
+      templateQuestions: [],
+      templateName: null,
     };
 
     expect(agendaOf(next)).toEqual([
@@ -33,15 +33,8 @@ describe('the next meeting’s agenda', () => {
       },
       {
         key: 'preview-1',
-        text: 'What went well?',
-        source: 'TEMPLATE',
-        authorAccountId: null,
-        topic: null,
-      },
-      {
-        key: 'preview-2',
-        text: 'What is in your way?',
-        source: 'TEMPLATE',
+        text: 'Hiring',
+        source: 'CARRIED',
         authorAccountId: null,
         topic: null,
       },

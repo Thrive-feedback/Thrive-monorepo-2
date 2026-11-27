@@ -90,9 +90,10 @@ describe('OneOnOneGallery', () => {
     expect(
       within(upcoming as HTMLElement).getByRole('tab', { name: /Upcoming/ }),
     ).toHaveAttribute('aria-selected', 'true');
+    // With Upcoming alone, Pending and History are still drawn, greyed and not to be chosen.
     expect(
-      within(alone as HTMLElement).queryByRole('tablist'),
-    ).not.toBeInTheDocument();
+      within(alone as HTMLElement).getByRole('tab', { name: 'History' }),
+    ).toBeDisabled();
     const ids = [...container.querySelectorAll('[id]')].map(
       (element) => element.id,
     );

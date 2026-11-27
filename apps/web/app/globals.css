@@ -47,6 +47,23 @@
     font-family: var(--family-main);
   }
 
+  /*
+   * Everything that can be pressed shows the hand, as Tailwind 3 did and Tailwind 4 no longer
+   * does: a plain `<button>` written outside the atoms, a row that opens, a tab, a menu item, a
+   * summary. Disabled ones keep the arrow. A utility (`cursor-grab`, `cursor-not-allowed`) still
+   * wins, as the base layer sits under the utilities.
+   */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  [role='tab']:not(:disabled),
+  [role='menuitem']:not([data-disabled]),
+  [role='option']:not([data-disabled]),
+  summary,
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled) {
+    cursor: pointer;
+  }
+
   /* Focus stays visible on every interactive element, from one token. `data-focus-preview`
      paints the same ring on a control that is not focused, so the component showcase can show
      the focused state beside the others instead of asking the reader to tab to it. */

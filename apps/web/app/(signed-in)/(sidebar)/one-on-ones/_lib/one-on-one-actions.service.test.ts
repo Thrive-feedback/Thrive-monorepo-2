@@ -51,9 +51,6 @@ const ONE_ON_ONE = `${ONE_ON_ONES}/${ONE_ON_ONE_ID}`;
 const WEEKLY = {
   cadence: 'WEEKLY',
   weekday: 4,
-  startMinute: 600,
-  lengthMinutes: 30,
-  templateKey: 'weekly-check-in',
 } as const;
 
 /** Answers the route, keeping the body the API was given. */

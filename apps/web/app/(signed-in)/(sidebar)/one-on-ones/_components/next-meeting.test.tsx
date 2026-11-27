@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { OneOnOneTemplate } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import type {
   Meeting,
   MeetingTopic,
@@ -22,6 +23,7 @@ const reorderTopics = vi.fn();
 const reorderPreviewTopics = vi.fn();
 const updateTopic = vi.fn();
 const checkMeetingState = vi.fn();
+const chooseTemplateForMeeting = vi.fn();
 vi.mock(
   '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service',
   () => ({
@@ -34,8 +36,29 @@ vi.mock(
     startMeeting: (...args: unknown[]) => startMeeting(...args),
     updateTopic: (...args: unknown[]) => updateTopic(...args),
     checkMeetingState: (...args: unknown[]) => checkMeetingState(...args),
+    chooseTemplateForMeeting: (...args: unknown[]) =>
+      chooseTemplateForMeeting(...args),
   }),
 );
+
+const TEMPLATES: readonly OneOnOneTemplate[] = [
+  {
+    key: 'weekly-check-in',
+    scope: 'THRIVE',
+    name: 'Weekly check-in',
+    suggestedWhen: 'The default for every 1:1',
+    questions: ['What went well this week?'],
+    changeable: false,
+  },
+  {
+    key: 'career-conversation',
+    scope: 'THRIVE',
+    name: 'Career conversation',
+    suggestedWhen: '',
+    questions: ['Where next?'],
+    changeable: false,
+  },
+];
 
 const { NextMeeting } = await import(
   '@/app/(signed-in)/(sidebar)/one-on-ones/_components/next-meeting'
@@ -98,13 +121,13 @@ function page(next: Partial<NextMeetingData>) {
         next={{
           meeting: null,
           carried: [],
-          templateQuestions: ['What went well this week?'],
-          templateName: 'Weekly check-in',
+          templateQuestions: [],
+          templateName: null,
           ...next,
         }}
         nextMeetingAt="2026-12-03T03:00:00.000Z"
-        lengthMinutes={30}
         people={PEOPLE}
+        templates={TEMPLATES}
       />
       <Toaster />
     </>
@@ -180,9 +203,9 @@ describe('NextMeeting', () => {
   it('shows what the agenda will open with, and opens it with the first topic added', async () => {
     draw({ carried: ['Launch retro'] });
 
-    expect(screen.getByText('Thu 3 Dec, 10:00')).toBeVisible();
+    expect(screen.getByText('Thu 3 Dec')).toBeVisible();
     expect(screen.getByText('From last time')).toBeVisible();
-    expect(screen.getByText('From Weekly check-in')).toBeVisible();
+    expect(screen.getByText('1 topic')).toBeVisible();
     await userEvent.type(
       screen.getByRole('textbox', { name: 'Add a topic' }),
       'Career path',
@@ -195,6 +218,78 @@ describe('NextMeeting', () => {
       null,
       'Career path',
     );
+  });
+
+  it('uses a template for the meeting being prepared, opening it first when nobody has written to it', async () => {
+    chooseTemplateForMeeting.mockResolvedValue({ ok: true, id: MEETING_ID });
+    draw({ carried: ['Launch retro'] });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Add from template' }),
+    );
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Add from template',
+    });
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: /^Career conversation/ }),
+    );
+    expect(within(dialog).getByText('Where next?')).toBeVisible();
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Use Career conversation' }),
+    );
+
+    expect(chooseTemplateForMeeting).toHaveBeenCalledExactlyOnceWith(
+      'workspace-acme',
+      ONE_ON_ONE_ID,
+      null,
+      'career-conversation',
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('names the template used, offers to change it, marks it in use, and says where its questions came from', async () => {
+    draw({
+      meeting: meeting({
+        topics: [topic('t1', 'What went well this week?')],
+      }),
+      templateName: 'Weekly check-in',
+    });
+
+    expect(screen.getByText('From Weekly check-in')).toBeVisible();
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Add from template' }),
+    );
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Add from template',
+    });
+    expect(
+      within(dialog).getByText(/Replaces Weekly check-in’s questions/),
+    ).toBeVisible();
+    // The one in use is said so, not offered again.
+    expect(within(dialog).getByText('In use')).toBeVisible();
+    expect(
+      within(dialog).queryByRole('button', { name: 'Use Weekly check-in' }),
+    ).not.toBeInTheDocument();
+    // Templates are kept in Settings, a link away.
+    expect(
+      within(dialog).getByRole('link', { name: 'Manage templates' }),
+    ).toHaveAttribute('href', '/settings/one-on-ones');
+  });
+
+  it('offers no template once the meeting runs', () => {
+    draw({
+      meeting: meeting({
+        state: 'IN_PROGRESS',
+        startedAt: '2026-12-03T03:00:00.000Z',
+        occursAt: '2026-12-03T03:00:00.000Z',
+      }),
+    });
+
+    expect(
+      screen.queryByRole('button', { name: 'Add from template' }),
+    ).not.toBeInTheDocument();
   });
 
   it('says which step it is at and what to do next, in each state', () => {
@@ -231,7 +326,7 @@ describe('NextMeeting', () => {
   });
 
   it('lets the agenda be moved and trimmed before anybody has written to it', async () => {
-    draw({ carried: ['Launch retro'] });
+    draw({ carried: ['Launch retro', 'What went well this week?'] });
 
     expect(
       screen.getByRole('button', { name: 'Move Launch retro' }),
@@ -366,7 +461,7 @@ describe('NextMeeting', () => {
     expect(within(dialog).getByText('Shipped on time')).toBeVisible();
     expect(within(dialog).getByText('Carries over to next time')).toBeVisible();
     await userEvent.click(
-      within(dialog).getByRole('button', { name: 'Finish and share' }),
+      within(dialog).getByRole('button', { name: 'Finish' }),
     );
 
     expect(finishMeeting).toHaveBeenCalledExactlyOnceWith(
@@ -508,7 +603,7 @@ describe('NextMeeting', () => {
 
   it('moves a topic on the agenda nobody has written to, naming the agenda as the reader saw it', async () => {
     layOutRows();
-    draw({ carried: ['Launch retro'] });
+    draw({ carried: ['Launch retro', 'What went well this week?'] });
 
     const grip = screen.getByRole('button', { name: 'Move Launch retro' });
     grip.focus();

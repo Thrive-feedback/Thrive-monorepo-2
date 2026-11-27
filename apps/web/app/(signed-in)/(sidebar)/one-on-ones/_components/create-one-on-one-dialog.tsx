@@ -3,10 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import type {
-  OneOnOneScheduleChoice,
-  OneOnOneTemplate,
-} from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
+import type { OneOnOneScheduleChoice } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import { inviteToOneOnOne } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-actions.service';
 import { DEFAULT_SCHEDULE } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-schedule.util';
 import { Button } from '@/components/atoms/button';
@@ -33,7 +30,6 @@ export type CreateOneOnOneDialogProps = {
   onOpenChange: (open: boolean) => void;
   workspaceId: string;
   teammates: readonly Teammate[];
-  templates: readonly OneOnOneTemplate[];
   /** Teammates the person already has a 1:1 with, each with the reason said for them. */
   unavailable: ReadonlyMap<string, string>;
   /** What opens it, which takes focus back when it closes. */
@@ -41,8 +37,7 @@ export type CreateOneOnOneDialogProps = {
 };
 
 /**
- * Creating a 1:1 in two steps: who it is with, then when it meets, what its agenda starts from and,
- * if the person likes, what they would like to talk about. The teammate is invited, and accepts or
+ * Creating a 1:1 in two steps: who it is with, then when it meets and, if the person likes, what they would like to talk about. The teammate is invited, and accepts or
  * declines.
  */
 export function CreateOneOnOneDialog({
@@ -50,7 +45,6 @@ export function CreateOneOnOneDialog({
   onOpenChange,
   workspaceId,
   teammates,
-  templates,
   unavailable,
   trigger,
 }: CreateOneOnOneDialogProps) {
@@ -113,7 +107,7 @@ export function CreateOneOnOneDialog({
           <DialogDescription>
             {step === 1
               ? 'Who is it with? They’re asked to accept before anything is set.'
-              : 'When it meets, in Bangkok time. Either of you can change it later.'}
+              : 'When it meets. Either of you can change it later.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -128,7 +122,6 @@ export function CreateOneOnOneDialog({
           <div className="flex flex-col gap-4">
             <ScheduleFields
               value={schedule}
-              templates={templates}
               disabled={isSending}
               onChange={setSchedule}
             />
