@@ -66,6 +66,14 @@ export class UpdateTopicRequestDto extends createZodDto(
   updateTopicRequestSchema,
 ) {}
 
+export const useTemplateForMeetingRequestSchema = z.strictObject({
+  /** One of Thrive's template keys, or the id of a kept template, from `GET one-on-one-templates`. */
+  templateKey: z.string(),
+});
+export class UseTemplateForMeetingRequestDto extends createZodDto(
+  useTemplateForMeetingRequestSchema,
+) {}
+
 export const reorderTopicsRequestSchema = z.strictObject({
   /** Every topic on the agenda, once, in the new order. */
   topicIds: z.array(z.uuid()),
@@ -96,7 +104,8 @@ const topicSchema = z.object({
 const meetingSchema = z.object({
   id: z.uuid(),
   state: z.enum(['PREPARING', 'IN_PROGRESS', 'FINISHED']),
-  templateKey: z.string(),
+  /** The template used for it while it was prepared; `null` when none was. */
+  templateKey: nullableString(),
   occursAt: nullableDateTime(),
   startedAt: nullableDateTime(),
   startedByAccountId: nullableString(),
@@ -110,9 +119,13 @@ export const nextMeetingResponseSchema = z.object({
   meeting: meetingSchema.nullable(),
   /** Before then: what was not reached last time, which it will open with. */
   carried: z.array(z.string()),
-  /** Before then: the template's questions, which it will open with. */
-  templateQuestions: z.array(z.string()),
-  templateName: z.string(),
+  /**
+   * Deprecated: always empty. A meeting no longer opens with a template's questions; either person
+   * uses a template while it is prepared (`PUT …/meetings/{meetingId}/template`).
+   */
+  templateQuestions: z.array(z.string()).meta({ deprecated: true }),
+  /** What the template used for the meeting is called; `null` when none was used. */
+  templateName: nullableString(),
 });
 export class NextMeetingResponseDto extends createZodDto(
   nextMeetingResponseSchema,

@@ -177,9 +177,17 @@ export class OneOnOne {
    * and is not finished still holds the two, though its slot has passed. Two people keep one open
    * 1:1 at a time.
    */
-  isOpenAt(at: Date, hasMeetingInProgress = false): boolean {
+  isOpenAt(
+    at: Date,
+    hasMeetingInProgress = false,
+    hasFinishedMeeting = false,
+  ): boolean {
     if (this.status.isRunning() && hasMeetingInProgress) {
       return true;
+    }
+    // A one-time 1:1 whose meeting is finished is met, so the two may start another.
+    if (this.schedule.isOnce() && hasFinishedMeeting) {
+      return false;
     }
     return (
       (this.status.isAwaitingAnswer() || this.status.isRunning()) &&

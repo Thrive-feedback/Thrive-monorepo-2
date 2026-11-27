@@ -36,7 +36,8 @@ export interface OneOnOneMeetingSnapshot {
   readonly id: string;
   readonly workspaceId: string;
   readonly oneOnOneId: string;
-  readonly templateKey: string;
+  /** The template used for it while it was prepared; `null` when none was. */
+  readonly templateKey: string | null;
   readonly occursAt: Date | null;
   readonly startedAt: Date | null;
   readonly startedByAccountId: string | null;
@@ -95,23 +96,6 @@ export function undiscussedOf(
 }
 
 /**
- * The agenda a next meeting opens with: what was not reached last time first, then the template's
- * questions not already among them, so a question carried over is not asked twice.
- */
-export function openingAgenda(
-  carried: readonly string[],
-  templateQuestions: readonly string[],
-): readonly { readonly text: string; readonly source: OneOnOneTopicSource }[] {
-  const carriedTexts = new Set(carried.map((text) => text.trim()));
-  return [
-    ...carried.map((text) => ({ text, source: 'CARRIED' as const })),
-    ...templateQuestions
-      .filter((text) => !carriedTexts.has(text.trim()))
-      .map((text) => ({ text, source: 'TEMPLATE' as const })),
-  ];
-}
-
-/**
  * One meeting of a 1:1 (brain ADR-0060 §5, §6 and §10; ADR-0061, proposed): its agenda, the notes
  * both write on each topic, and when it was started and finished. Both people are equal in it.
  *
@@ -120,7 +104,8 @@ export function openingAgenda(
  * shares its summary with both and closes it for good. A 1:1 has one meeting that is not finished
  * at a time, and an open one stays open until somebody finishes it.
  *
- * Before Start the agenda is prepared: topics are added, removed and reordered. Notes on topics and
+ * Before Start the agenda is prepared: topics are added, removed and reordered, and either person
+ * may use a template for it, whose questions take the place of the last template's. Notes on topics and
  * the "discussed" tick come with Start. Anyone reorders; a topic a person wrote is theirs to remove,
  * and what came from the template or from last time anyone may remove.
  */
@@ -129,7 +114,7 @@ export class OneOnOneMeeting {
     private readonly id: string,
     private readonly workspaceId: string,
     private readonly oneOnOneId: string,
-    private readonly templateKey: string,
+    private templateKey: string | null,
     private occursAt: Date | null,
     private startedAt: Date | null,
     private startedByAccountId: string | null,
@@ -139,37 +124,34 @@ export class OneOnOneMeeting {
   ) {}
 
   /**
-   * The next meeting's agenda, opened by the first write to it: what was not reached last time
-   * first, then the template's questions not already among them.
+   * The next meeting's agenda, opened by the first write to it with what was not reached last time,
+   * and no template until somebody uses one.
    */
   static open(details: {
     readonly id: string;
     readonly workspaceId: string;
     readonly oneOnOneId: string;
-    readonly templateKey: string;
     readonly carried: readonly string[];
-    readonly templateQuestions: readonly string[];
     readonly newTopicId: () => string;
   }): OneOnOneMeeting {
-    const topics: OneOnOneTopicSnapshot[] = openingAgenda(
-      details.carried,
-      details.templateQuestions,
-    ).map(({ text, source }, position) => ({
-      id: details.newTopicId(),
-      text: topicText(text),
-      source,
-      authorAccountId: null,
-      position,
-      notes: '',
-      notesUpdatedAt: null,
-      notesUpdatedByAccountId: null,
-      discussedAt: null,
-    }));
+    const topics: OneOnOneTopicSnapshot[] = details.carried.map(
+      (text, position) => ({
+        id: details.newTopicId(),
+        text: topicText(text),
+        source: 'CARRIED',
+        authorAccountId: null,
+        position,
+        notes: '',
+        notesUpdatedAt: null,
+        notesUpdatedByAccountId: null,
+        discussedAt: null,
+      }),
+    );
     return new OneOnOneMeeting(
       details.id,
       details.workspaceId,
       details.oneOnOneId,
-      details.templateKey,
+      null,
       null,
       null,
       null,
@@ -268,6 +250,47 @@ export class OneOnOneMeeting {
     if (topic.source === 'PERSON' && topic.authorAccountId !== byAccountId) {
       throw new OneOnOneTopicNotYoursError();
     }
+  }
+
+  /**
+   * Either person uses a template for the agenda while it is prepared. Its questions take the place
+   * of the last template's, after everything else; one already on the agenda is not asked twice.
+   * What was carried over and what people added stay.
+   */
+  useTemplate(details: {
+    readonly templateKey: string;
+    readonly questions: readonly string[];
+    readonly newTopicId: () => string;
+  }): void {
+    this.assertNotFinished();
+    if (this.state() === 'IN_PROGRESS') {
+      throw new OneOnOneMeetingAlreadyStartedError();
+    }
+    const kept = this.topics.filter((topic) => topic.source !== 'TEMPLATE');
+    const asked = new Set(kept.map((topic) => topic.text));
+    const added: OneOnOneTopicSnapshot[] = [];
+    for (const question of details.questions) {
+      const text = topicText(question);
+      if (!asked.has(text)) {
+        asked.add(text);
+        added.push({
+          id: details.newTopicId(),
+          text,
+          source: 'TEMPLATE',
+          authorAccountId: null,
+          position: 0,
+          notes: '',
+          notesUpdatedAt: null,
+          notesUpdatedByAccountId: null,
+          discussedAt: null,
+        });
+      }
+    }
+    this.topics = [...kept, ...added].map((topic, position) => ({
+      ...topic,
+      position,
+    }));
+    this.templateKey = details.templateKey;
   }
 
   /** Either person puts the agenda in a new order, naming every topic once. */

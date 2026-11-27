@@ -231,6 +231,7 @@ export class FakeOneOnOneQuery extends OneOnOneQuery {
       templateName,
       createdAt: new Date(0),
       meetingInProgress: false,
+      hasFinishedMeeting: false,
     };
   }
 }

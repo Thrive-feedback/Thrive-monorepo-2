@@ -4,10 +4,7 @@ import {
   mayOpenMeeting,
   meetingWritable,
 } from '../../../domain/entity/one-on-one.entity';
-import {
-  openingAgenda,
-  undiscussedOf,
-} from '../../../domain/entity/one-on-one-meeting.entity';
+import { undiscussedOf } from '../../../domain/entity/one-on-one-meeting.entity';
 import { OneOnOneSchedule } from '../../../domain/value-object/one-on-one-schedule.vo';
 import { OneOnOneStatus } from '../../../domain/value-object/one-on-one-status.vo';
 import { OneOnOneNotFoundError } from '../../one-on-one.errors';
@@ -59,11 +56,15 @@ export class GetNextMeetingUseCase {
       live &&
       meetingWritable(status, schedule, live.startedAt !== null, now)
     ) {
+      const { templateKey } = live;
       return {
         meeting: toMeetingView(live),
         carried: [],
         templateQuestions: [],
-        templateName: oneOnOne.templateName,
+        templateName:
+          templateKey === null
+            ? null
+            : await this.templateCatalog.nameOf(input.workspaceId, templateKey),
       };
     }
     const last = await this.meetingQuery.findLastFinished(
@@ -78,26 +79,15 @@ export class GetNextMeetingUseCase {
         meeting: null,
         carried: [],
         templateQuestions: [],
-        templateName: oneOnOne.templateName,
+        templateName: null,
       };
     }
-    // As the meeting will open, by the same rule: a question carried over is not asked twice.
-    const agenda = openingAgenda(
-      last ? undiscussedOf(last.topics) : [],
-      await this.templateCatalog.questionsOf(
-        input.workspaceId,
-        oneOnOne.schedule.templateKey,
-      ),
-    );
+    // It opens with what was not reached last time, and no template until somebody uses one.
     return {
       meeting: null,
-      carried: agenda
-        .filter((topic) => topic.source === 'CARRIED')
-        .map((topic) => topic.text),
-      templateQuestions: agenda
-        .filter((topic) => topic.source === 'TEMPLATE')
-        .map((topic) => topic.text),
-      templateName: oneOnOne.templateName,
+      carried: last ? undiscussedOf(last.topics) : [],
+      templateQuestions: [],
+      templateName: null,
     };
   }
 }

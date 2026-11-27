@@ -1135,6 +1135,23 @@ export interface paths {
         patch: operations["OneOnOneMeetingController_updateTopic"];
         trace?: never;
     };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Use a template for a meeting being prepared: its questions take the place of the last template's */
+        put: operations["OneOnOneMeetingController_useTemplateForMeeting"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/topics/order": {
         parameters: {
             query?: never;
@@ -3023,8 +3040,6 @@ export interface components {
                     /** @enum {string} */
                     cadence: "WEEKLY" | "EVERY_TWO_WEEKS" | "MONTHLY" | "ONCE";
                     weekday: number;
-                    startMinute: number;
-                    lengthMinutes: number;
                     templateKey: string;
                     templateName: string;
                     /** Format: date */
@@ -3053,9 +3068,8 @@ export interface components {
                 /** @enum {string} */
                 cadence: "WEEKLY" | "EVERY_TWO_WEEKS" | "MONTHLY" | "ONCE";
                 weekday: number;
-                startMinute: number;
-                lengthMinutes: number;
-                templateKey: string;
+                /** @deprecated */
+                templateKey?: string;
                 /** Format: date */
                 startsOn?: string;
             };
@@ -3077,8 +3091,6 @@ export interface components {
                 /** @enum {string} */
                 cadence: "WEEKLY" | "EVERY_TWO_WEEKS" | "MONTHLY" | "ONCE";
                 weekday: number;
-                startMinute: number;
-                lengthMinutes: number;
                 templateKey: string;
                 templateName: string;
                 /** Format: date */
@@ -3103,9 +3115,8 @@ export interface components {
                 /** @enum {string} */
                 cadence: "WEEKLY" | "EVERY_TWO_WEEKS" | "MONTHLY" | "ONCE";
                 weekday: number;
-                startMinute: number;
-                lengthMinutes: number;
-                templateKey: string;
+                /** @deprecated */
+                templateKey?: string;
                 /** Format: date */
                 startsOn?: string;
             };
@@ -3118,9 +3129,8 @@ export interface components {
             /** @enum {string} */
             cadence: "WEEKLY" | "EVERY_TWO_WEEKS" | "MONTHLY" | "ONCE";
             weekday: number;
-            startMinute: number;
-            lengthMinutes: number;
-            templateKey: string;
+            /** @deprecated */
+            templateKey?: string;
             /** Format: date */
             startsOn?: string;
         };
@@ -3158,7 +3168,7 @@ export interface components {
                 id: string;
                 /** @enum {string} */
                 state: "PREPARING" | "IN_PROGRESS" | "FINISHED";
-                templateKey: string;
+                templateKey: string | null;
                 /** Format: date-time */
                 occursAt: string | null;
                 /** Format: date-time */
@@ -3184,8 +3194,9 @@ export interface components {
                 }[];
             } | null;
             carried: string[];
+            /** @deprecated */
             templateQuestions: string[];
-            templateName: string;
+            templateName: string | null;
         };
         ListPastMeetingsResponseDto_Output: {
             items: {
@@ -3193,7 +3204,7 @@ export interface components {
                 id: string;
                 /** @enum {string} */
                 state: "PREPARING" | "IN_PROGRESS" | "FINISHED";
-                templateKey: string;
+                templateKey: string | null;
                 /** Format: date-time */
                 occursAt: string | null;
                 /** Format: date-time */
@@ -3237,6 +3248,9 @@ export interface components {
             /** Format: date-time */
             noteReadAt?: string | null;
             discussed?: boolean;
+        };
+        UseTemplateForMeetingRequestDto: {
+            templateKey: string;
         };
         ReorderTopicsRequestDto: {
             topicIds: string[];
@@ -6866,6 +6880,63 @@ export interface operations {
                 content?: never;
             };
             /** @description ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_NOT_STARTED, ONE_ON_ONE_MEETING_FINISHED or ONE_ON_ONE_TOPIC_CHANGED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_useTemplateForMeeting: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+                meetingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UseTemplateForMeetingRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Used */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID or ONE_ON_ONE_TEMPLATE_UNKNOWN */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_ALREADY_STARTED or ONE_ON_ONE_MEETING_FINISHED */
             409: {
                 headers: {
                     [name: string]: unknown;

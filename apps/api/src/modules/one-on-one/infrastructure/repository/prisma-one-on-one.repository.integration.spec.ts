@@ -30,8 +30,6 @@ const SCHEDULE = OneOnOneSchedule.plan(
   {
     cadence: 'EVERY_TWO_WEEKS',
     weekday: 2,
-    startMinute: 14 * 60,
-    lengthMinutes: 45,
     templateKey: 'career-conversation',
   },
   NOW,
@@ -117,8 +115,6 @@ describe('storing 1:1s', () => {
         {
           cadence: 'ONCE',
           weekday: 3,
-          startMinute: 600,
-          lengthMinutes: 30,
           templateKey: 'weekly-check-in',
           startsOn: '2026-12-02',
         },

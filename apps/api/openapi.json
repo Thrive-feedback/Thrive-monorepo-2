@@ -4607,6 +4607,83 @@
         ]
       }
     },
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/template": {
+      "put": {
+        "operationId": "OneOnOneMeetingController_useTemplateForMeeting",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "oneOnOneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "meetingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UseTemplateForMeetingRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Used"
+          },
+          "400": {
+            "description": "REQUEST_INVALID or ONE_ON_ONE_TEMPLATE_UNKNOWN"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND"
+          },
+          "409": {
+            "description": "ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_ALREADY_STARTED or ONE_ON_ONE_MEETING_FINISHED"
+          }
+        },
+        "summary": "Use a template for a meeting being prepared: its questions take the place of the last template's",
+        "tags": [
+          "one-on-ones"
+        ]
+      }
+    },
     "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/topics/order": {
       "put": {
         "operationId": "OneOnOneMeetingController_reorderTopics",
@@ -12911,16 +12988,6 @@
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
                     },
-                    "startMinute": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "lengthMinutes": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
                     "templateKey": {
                       "type": "string"
                     },
@@ -12936,8 +13003,6 @@
                   "required": [
                     "cadence",
                     "weekday",
-                    "startMinute",
-                    "lengthMinutes",
                     "templateKey",
                     "templateName",
                     "startsOn"
@@ -13040,17 +13105,8 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
               },
-              "startMinute": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "lengthMinutes": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
               "templateKey": {
+                "deprecated": true,
                 "type": "string"
               },
               "startsOn": {
@@ -13061,10 +13117,7 @@
             },
             "required": [
               "cadence",
-              "weekday",
-              "startMinute",
-              "lengthMinutes",
-              "templateKey"
+              "weekday"
             ],
             "additionalProperties": false
           },
@@ -13135,16 +13188,6 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
               },
-              "startMinute": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "lengthMinutes": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
               "templateKey": {
                 "type": "string"
               },
@@ -13160,8 +13203,6 @@
             "required": [
               "cadence",
               "weekday",
-              "startMinute",
-              "lengthMinutes",
               "templateKey",
               "templateName",
               "startsOn"
@@ -13247,17 +13288,8 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
               },
-              "startMinute": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "lengthMinutes": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
               "templateKey": {
+                "deprecated": true,
                 "type": "string"
               },
               "startsOn": {
@@ -13268,10 +13300,7 @@
             },
             "required": [
               "cadence",
-              "weekday",
-              "startMinute",
-              "lengthMinutes",
-              "templateKey"
+              "weekday"
             ],
             "additionalProperties": false
           },
@@ -13310,17 +13339,8 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
-          "startMinute": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "lengthMinutes": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
           "templateKey": {
+            "deprecated": true,
             "type": "string"
           },
           "startsOn": {
@@ -13331,10 +13351,7 @@
         },
         "required": [
           "cadence",
-          "weekday",
-          "startMinute",
-          "lengthMinutes",
-          "templateKey"
+          "weekday"
         ],
         "additionalProperties": false
       },
@@ -13482,7 +13499,8 @@
                 ]
               },
               "templateKey": {
-                "type": "string"
+                "type": "string",
+                "nullable": true
               },
               "occursAt": {
                 "type": "string",
@@ -13599,10 +13617,12 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "deprecated": true
           },
           "templateName": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -13635,7 +13655,8 @@
                   ]
                 },
                 "templateKey": {
-                  "type": "string"
+                  "type": "string",
+                  "nullable": true
                 },
                 "occursAt": {
                   "type": "string",
@@ -13811,6 +13832,18 @@
             "type": "boolean"
           }
         },
+        "additionalProperties": false
+      },
+      "UseTemplateForMeetingRequestDto": {
+        "type": "object",
+        "properties": {
+          "templateKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "templateKey"
+        ],
         "additionalProperties": false
       },
       "ReorderTopicsRequestDto": {

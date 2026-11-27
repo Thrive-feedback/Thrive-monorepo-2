@@ -34,6 +34,7 @@ import { InviteToOneOnOneUseCase } from '../application/use-cases/invite-to-one-
 import { ListMyOneOnOnesUseCase } from '../application/use-cases/list-my-one-on-ones.use-case';
 import { RescheduleOneOnOneUseCase } from '../application/use-cases/reschedule-one-on-one.use-case';
 import { SuggestAnotherTimeUseCase } from '../application/use-cases/suggest-another-time.use-case';
+import { DEFAULT_THRIVE_TEMPLATE_KEY } from '../domain/value-object/thrive-template.vo';
 import {
   CreatedOneOnOneResponseDto,
   DeclineOneOnOneRequestDto,
@@ -61,8 +62,6 @@ function toResponse(view: OneOnOneView) {
     schedule: {
       cadence: view.schedule.cadence,
       weekday: view.schedule.weekday,
-      startMinute: view.schedule.startMinute,
-      lengthMinutes: view.schedule.lengthMinutes,
       templateKey: view.schedule.templateKey,
       templateName: view.templateName,
       startsOn: view.schedule.startsOn,
@@ -75,6 +74,19 @@ function toResponse(view: OneOnOneView) {
     endedAt: view.endedAt?.toISOString() ?? null,
     createdAt: view.createdAt.toISOString(),
     meetingInProgress: view.meetingInProgress,
+  };
+}
+
+/**
+ * A schedule as the use cases take it. `templateKey` is deprecated and may be left out: a meeting no
+ * longer opens with it, and the schedule keeps Thrive's Weekly check-in until the field is removed.
+ */
+function scheduleOf(
+  schedule: OneOnOneScheduleRequestDto,
+): OneOnOneScheduleRequestDto & { readonly templateKey: string } {
+  return {
+    ...schedule,
+    templateKey: schedule.templateKey ?? DEFAULT_THRIVE_TEMPLATE_KEY,
   };
 }
 
@@ -148,7 +160,7 @@ export class OneOnOneController {
       workspaceId: params.workspaceId,
       startedByAccountId: actor.accountId,
       invitedAccountId: body.invitedAccountId,
-      schedule: body.schedule,
+      schedule: scheduleOf(body.schedule),
       note: body.note ?? null,
     });
   }
@@ -227,7 +239,7 @@ export class OneOnOneController {
       workspaceId: params.workspaceId,
       accountId: actor.accountId,
       oneOnOneId: params.oneOnOneId,
-      schedule: body.schedule,
+      schedule: scheduleOf(body.schedule),
       note: body.note ?? null,
     });
   }
@@ -313,7 +325,7 @@ export class OneOnOneController {
       workspaceId: params.workspaceId,
       accountId: actor.accountId,
       oneOnOneId: params.oneOnOneId,
-      schedule: body,
+      schedule: scheduleOf(body),
     });
   }
 }

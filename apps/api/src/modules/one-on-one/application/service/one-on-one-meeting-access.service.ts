@@ -9,7 +9,6 @@ import {
   OneOnOneMeetingNotFoundError,
   OneOnOneNotFoundError,
 } from '../one-on-one.errors';
-import { OneOnOneTemplateCatalogService } from './one-on-one-template-catalog.service';
 
 /** Who may read and write a 1:1's meetings, and the next meeting opened when it is first written to. */
 @Injectable()
@@ -17,7 +16,6 @@ export class OneOnOneMeetingAccessService {
   constructor(
     private readonly oneOnOneRepository: OneOnOneRepository,
     private readonly meetingRepository: OneOnOneMeetingRepository,
-    private readonly templateCatalog: OneOnOneTemplateCatalogService,
     private readonly idGenerator: IdGenerator,
     private readonly clock: Clock,
   ) {}
@@ -74,12 +72,11 @@ export class OneOnOneMeetingAccessService {
   }
 
   /**
-   * The next meeting, opened now, for a 1:1 with none open: what was not reached last time first,
-   * then the questions of the 1:1's template, as it reads now. Saved by the caller, in its unit of work, which has
-   * already found no meeting open.
+   * The next meeting, opened now, for a 1:1 with none open, with what was not reached last time.
+   * Saved by the caller, in its unit of work, which has already found no meeting open.
    */
   async openNext(oneOnOne: OneOnOne): Promise<OneOnOneMeeting> {
-    const { id: oneOnOneId, workspaceId, schedule } = oneOnOne.snapshot();
+    const { id: oneOnOneId, workspaceId } = oneOnOne.snapshot();
     const last = await this.meetingRepository.findLastFinished(
       workspaceId,
       oneOnOneId,
@@ -89,12 +86,7 @@ export class OneOnOneMeetingAccessService {
       id: this.idGenerator.next(),
       workspaceId,
       oneOnOneId,
-      templateKey: schedule.templateKey,
       carried: last?.undiscussed() ?? [],
-      templateQuestions: await this.templateCatalog.questionsOf(
-        workspaceId,
-        schedule.templateKey,
-      ),
       newTopicId: () => this.idGenerator.next(),
     });
   }

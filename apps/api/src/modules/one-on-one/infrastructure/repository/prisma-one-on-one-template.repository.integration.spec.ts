@@ -146,8 +146,6 @@ describe('PrismaOneOnOneQuery, naming the template', () => {
         {
           cadence: 'WEEKLY',
           weekday: 4,
-          startMinute: 600,
-          lengthMinutes: 30,
           templateKey: own.snapshot().id,
         },
         NOW,
@@ -179,8 +177,6 @@ describe('A 1:1 from a kept template, stored', () => {
       {
         cadence: 'WEEKLY',
         weekday: 4,
-        startMinute: 600,
-        lengthMinutes: 30,
         templateKey,
       },
       NOW,
@@ -207,9 +203,12 @@ describe('A 1:1 from a kept template, stored', () => {
       id: uuidv7(),
       workspaceId,
       oneOnOneId,
-      templateKey: keptId,
       carried: [],
-      templateQuestions: own.snapshot().questions,
+      newTopicId: () => uuidv7(),
+    });
+    meeting.useTemplate({
+      templateKey: keptId,
+      questions: own.snapshot().questions,
       newTopicId: () => uuidv7(),
     });
     await meetings.save(meeting);

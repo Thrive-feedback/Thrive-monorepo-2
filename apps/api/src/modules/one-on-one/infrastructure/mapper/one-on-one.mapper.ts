@@ -18,13 +18,7 @@ import { ThriveTemplate } from '../../domain/value-object/thrive-template.vo';
 
 type ScheduleColumns = Pick<
   OneOnOneRecord,
-  | 'cadence'
-  | 'weekday'
-  | 'startMinute'
-  | 'lengthMinutes'
-  | 'startsOn'
-  | 'templateKey'
-  | 'templateId'
+  'cadence' | 'weekday' | 'startsOn' | 'templateKey' | 'templateId'
 >;
 
 /** A calendar day is stored as a date, which Prisma reads as midnight UTC of that day. */
@@ -43,8 +37,6 @@ export function toScheduleSnapshot(
   return {
     cadence: record.cadence,
     weekday: record.weekday,
-    startMinute: record.startMinute,
-    lengthMinutes: record.lengthMinutes,
     templateKey: templateKeyOf(storedTemplateRef(record)),
     startsOn: dateToDay(record.startsOn),
   };
@@ -64,8 +56,6 @@ export function toOneOnOneRecord(
     status: snapshot.status,
     cadence: schedule.cadence,
     weekday: schedule.weekday,
-    startMinute: schedule.startMinute,
-    lengthMinutes: schedule.lengthMinutes,
     startsOn: dayToDate(schedule.startsOn),
     ...templateColumnsOf(templateRefOf(schedule.templateKey)),
     inviteNote: snapshot.inviteNote,
@@ -107,6 +97,7 @@ function keptTemplateName(template: { readonly name: string } | null): string {
 export function toOneOnOneRow(
   record: OneOnOneRecord & {
     readonly meetings: readonly { id: string }[];
+    readonly _count: { readonly meetings: number };
     readonly template: { readonly name: string } | null;
   },
 ): OneOnOneRow {
@@ -128,5 +119,6 @@ export function toOneOnOneRow(
     endedAt: record.endedAt,
     createdAt: record.createdAt,
     meetingInProgress: record.meetings.length > 0,
+    hasFinishedMeeting: record._count.meetings > 0,
   };
 }

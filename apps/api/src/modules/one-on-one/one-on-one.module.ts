@@ -22,6 +22,7 @@ import { RemoveTopicUseCase } from './application/use-cases/meetings/remove-topi
 import { ReorderTopicsUseCase } from './application/use-cases/meetings/reorder-topics.use-case';
 import { StartMeetingUseCase } from './application/use-cases/meetings/start-meeting.use-case';
 import { UpdateTopicUseCase } from './application/use-cases/meetings/update-topic.use-case';
+import { UseTemplateForMeetingUseCase } from './application/use-cases/meetings/use-template-for-meeting.use-case';
 import { RescheduleOneOnOneUseCase } from './application/use-cases/reschedule-one-on-one.use-case';
 import { SuggestAnotherTimeUseCase } from './application/use-cases/suggest-another-time.use-case';
 import { KeepOneOnOneTemplateUseCase } from './application/use-cases/templates/keep-one-on-one-template.use-case';
@@ -90,6 +91,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     StartMeetingUseCase,
     FinishMeetingUseCase,
     AddTopicUseCase,
+    UseTemplateForMeetingUseCase,
     UpdateTopicUseCase,
     RemoveTopicUseCase,
     ReorderTopicsUseCase,

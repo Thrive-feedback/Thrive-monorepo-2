@@ -40,6 +40,7 @@ import { RemoveTopicUseCase } from '../application/use-cases/meetings/remove-top
 import { ReorderTopicsUseCase } from '../application/use-cases/meetings/reorder-topics.use-case';
 import { StartMeetingUseCase } from '../application/use-cases/meetings/start-meeting.use-case';
 import { UpdateTopicUseCase } from '../application/use-cases/meetings/update-topic.use-case';
+import { UseTemplateForMeetingUseCase } from '../application/use-cases/meetings/use-template-for-meeting.use-case';
 import { OneOnOnePathParamsDto } from './dto/one-on-one.dto';
 import {
   AddTopicRequestDto,
@@ -51,6 +52,7 @@ import {
   ReorderTopicsRequestDto,
   TopicPathParamsDto,
   UpdateTopicRequestDto,
+  UseTemplateForMeetingRequestDto,
 } from './dto/one-on-one-meeting.dto';
 import { WorkspaceMemberGuard } from './workspace-member.guard';
 
@@ -102,6 +104,7 @@ export class OneOnOneMeetingController {
     private readonly updateTopicUseCase: UpdateTopicUseCase,
     private readonly removeTopicUseCase: RemoveTopicUseCase,
     private readonly reorderTopicsUseCase: ReorderTopicsUseCase,
+    private readonly useTemplateForMeetingUseCase: UseTemplateForMeetingUseCase,
   ) {}
 
   @Get('meetings/next')
@@ -342,6 +345,37 @@ export class OneOnOneMeetingController {
       oneOnOneId: params.oneOnOneId,
       meetingId: params.meetingId,
       topicId: params.topicId,
+    });
+  }
+
+  @Put('meetings/:meetingId/template')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      "Use a template for a meeting being prepared: its questions take the place of the last template's",
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ApiNoContentResponse({ description: 'Used' })
+  @ApiBadRequestResponse({
+    description: 'REQUEST_INVALID or ONE_ON_ONE_TEMPLATE_UNKNOWN',
+  })
+  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
+  @ApiNotFoundResponse({ description: NOT_FOUND })
+  @ApiConflictResponse({
+    description:
+      'ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_ALREADY_STARTED or ONE_ON_ONE_MEETING_FINISHED',
+  })
+  async useTemplateForMeeting(
+    @CurrentActor() actor: Actor,
+    @Param() params: MeetingPathParamsDto,
+    @Body() body: UseTemplateForMeetingRequestDto,
+  ): Promise<void> {
+    await this.useTemplateForMeetingUseCase.execute({
+      workspaceId: params.workspaceId,
+      accountId: actor.accountId,
+      oneOnOneId: params.oneOnOneId,
+      meetingId: params.meetingId,
+      templateKey: body.templateKey,
     });
   }
 
