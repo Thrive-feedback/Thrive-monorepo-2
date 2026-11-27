@@ -7,6 +7,7 @@ import { AccountLinker } from '@app/modules/notifications/application/port/accou
 import { DirectMessenger } from '@app/modules/notifications/application/port/direct-messenger.port';
 import { AiCompleter } from '@app/shared/application/ai-completer.port';
 import { ChatPoster } from '@app/shared/application/chat-poster.port';
+import { Clock } from '@app/shared/application/clock.port';
 import { EmailSender } from '@app/shared/application/email-sender.port';
 import { After, AfterAll, Before, BeforeAll } from '@cucumber/cucumber';
 import { Test } from '@nestjs/testing';
@@ -15,6 +16,7 @@ import { FakeEmailSender } from './email-sender.fake';
 import { harness, setHarness } from './harness';
 import { FakeChatInstaller, FakeChatPoster } from './integrations.fakes';
 import { FakeAccountLinker, FakeDirectMessenger } from './notifications.fakes';
+import { ScenarioClock } from './scenario-clock';
 import { WorkspaceFixtures } from './workspace.integration-fixtures';
 import type { ThriveWorld } from './world';
 
@@ -48,6 +50,8 @@ BeforeAll({ timeout: BOOT_TIMEOUT_MS }, async () => {
   const accountLinker = new FakeAccountLinker();
   const directMessenger = new FakeDirectMessenger();
   const aiCompleter = new FakeAiCompleter();
+  // The time is the world's too: a scenario may say which day it is.
+  const clock = new ScenarioClock();
   // Imported only now, so the placeholders above are in place before the configuration loads.
   const { AppModule } = await import('@app/app.module');
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
@@ -63,6 +67,8 @@ BeforeAll({ timeout: BOOT_TIMEOUT_MS }, async () => {
     .useValue(directMessenger)
     .overrideProvider(AiCompleter)
     .useValue(aiCompleter)
+    .overrideProvider(Clock)
+    .useValue(clock)
     .compile();
   const app = moduleRef.createNestApplication();
   // Port 0: the system picks a free one, so a running dev server is never in the way.
@@ -79,6 +85,7 @@ BeforeAll({ timeout: BOOT_TIMEOUT_MS }, async () => {
     accountLinker,
     directMessenger,
     aiCompleter,
+    clock,
     prismaService: app.get(PrismaService),
     auth: app.get(AUTH),
     configuration: app.get(CONFIGURATION),
@@ -95,6 +102,7 @@ Before(function (this: ThriveWorld) {
     accountLinker,
     directMessenger,
     aiCompleter,
+    clock,
   } = harness();
   // The application boots once for the whole run, so the fakes it holds are returned to how
   // they started rather than carrying one scenario's setup into the next.
@@ -103,6 +111,7 @@ Before(function (this: ThriveWorld) {
   accountLinker.reset();
   directMessenger.reset();
   aiCompleter.reset();
+  clock.reset();
   this.fixtures = new WorkspaceFixtures(prismaService, auth, configuration);
 });
 

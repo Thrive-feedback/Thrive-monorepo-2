@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import { FakeClock } from '@test/support/clock.fake';
 import {
+  FakeOneOnOneMeetingQuery,
+  FakeOneOnOneMeetingRepository,
   FakeOneOnOneRepository,
   FakeOneOnOneTemplateRepository,
 } from '@test/support/one-on-one.fakes';
@@ -14,6 +16,7 @@ import {
 } from '../../domain/one-on-one.errors';
 import { OneOnOneSchedule } from '../../domain/value-object/one-on-one-schedule.vo';
 import { OneOnOneNotFoundError } from '../one-on-one.errors';
+import { OneOnOneMeetingsSoFarService } from '../service/one-on-one-meetings-so-far.service';
 import { OneOnOneTemplateCatalogService } from '../service/one-on-one-template-catalog.service';
 import { AcceptOneOnOneUseCase } from './accept-one-on-one.use-case';
 import { DeclineOneOnOneUseCase } from './decline-one-on-one.use-case';
@@ -64,12 +67,19 @@ function setUp() {
     ),
     end: new EndOneOnOneUseCase(
       oneOnOneRepository,
+      new OneOnOneMeetingsSoFarService(
+        new FakeOneOnOneMeetingQuery(new FakeOneOnOneMeetingRepository()),
+      ),
       new FakeUnitOfWork(),
       clock,
     ),
     reschedule: new RescheduleOneOnOneUseCase(
       oneOnOneRepository,
       new OneOnOneTemplateCatalogService(new FakeOneOnOneTemplateRepository()),
+      new OneOnOneMeetingsSoFarService(
+        new FakeOneOnOneMeetingQuery(new FakeOneOnOneMeetingRepository()),
+      ),
+      new FakeOneOnOneMeetingRepository(),
       new FakeUnitOfWork(),
       clock,
     ),

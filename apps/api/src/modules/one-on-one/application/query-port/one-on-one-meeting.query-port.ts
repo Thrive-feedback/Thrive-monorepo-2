@@ -16,6 +16,12 @@ export abstract class OneOnOneMeetingQuery {
     oneOnOneId: string,
   ): Promise<OneOnOneMeetingProjection | null>;
 
+  /** The days the finished meetings of one 1:1 counted for, in no order. */
+  abstract listHeldFor(
+    workspaceId: string,
+    oneOnOneId: string,
+  ): Promise<readonly Date[]>;
+
   /** The finished meetings of one 1:1, newest first. */
   abstract listFinished(
     workspaceId: string,

@@ -3691,7 +3691,7 @@
             "description": "WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND"
           },
           "409": {
-            "description": "ONE_ON_ONE_ALREADY_OVER"
+            "description": "ONE_ON_ONE_ALREADY_OVER or ONE_ON_ONE_MEETING_IN_PROGRESS"
           }
         },
         "summary": "End a running 1:1, or withdraw an invitation the caller sent that is not yet answered",
@@ -3761,7 +3761,7 @@
             "description": "WORKSPACE_NOT_FOUND or ONE_ON_ONE_NOT_FOUND"
           },
           "409": {
-            "description": "ONE_ON_ONE_NOT_RUNNING"
+            "description": "ONE_ON_ONE_NOT_RUNNING or ONE_ON_ONE_MEETING_IN_PROGRESS"
           }
         },
         "summary": "Change when a 1:1 meets: either person once it runs, the sender before it is answered",
@@ -13029,6 +13029,12 @@
                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                   "nullable": true
                 },
+                "nextMeetingSkippedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                  "nullable": true
+                },
                 "answeredAt": {
                   "type": "string",
                   "format": "date-time",
@@ -13048,6 +13054,9 @@
                 },
                 "meetingInProgress": {
                   "type": "boolean"
+                },
+                "hasFinishedMeeting": {
+                  "type": "boolean"
                 }
               },
               "required": [
@@ -13061,10 +13070,12 @@
                 "suggestedAt",
                 "answerNote",
                 "nextMeetingAt",
+                "nextMeetingSkippedAt",
                 "answeredAt",
                 "endedAt",
                 "createdAt",
-                "meetingInProgress"
+                "meetingInProgress",
+                "hasFinishedMeeting"
               ],
               "additionalProperties": false
             }
@@ -13229,6 +13240,12 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "nullable": true
           },
+          "nextMeetingSkippedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "nullable": true
+          },
           "answeredAt": {
             "type": "string",
             "format": "date-time",
@@ -13248,6 +13265,9 @@
           },
           "meetingInProgress": {
             "type": "boolean"
+          },
+          "hasFinishedMeeting": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -13261,10 +13281,12 @@
           "suggestedAt",
           "answerNote",
           "nextMeetingAt",
+          "nextMeetingSkippedAt",
           "answeredAt",
           "endedAt",
           "createdAt",
-          "meetingInProgress"
+          "meetingInProgress",
+          "hasFinishedMeeting"
         ],
         "additionalProperties": false
       },
@@ -13623,13 +13645,42 @@
           "templateName": {
             "type": "string",
             "nullable": true
+          },
+          "carriedFromSkipped": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "nullable": true
+          },
+          "carriedTopics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "topicId": {
+                  "type": "string"
+                },
+                "from": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                }
+              },
+              "required": [
+                "topicId",
+                "from"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
           "meeting",
           "carried",
           "templateQuestions",
-          "templateName"
+          "templateName",
+          "carriedFromSkipped",
+          "carriedTopics"
         ],
         "additionalProperties": false
       },
@@ -13766,11 +13817,20 @@
           "nextCursor": {
             "type": "string",
             "nullable": true
+          },
+          "skippedDays": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
           }
         },
         "required": [
           "items",
-          "nextCursor"
+          "nextCursor",
+          "skippedDays"
         ],
         "additionalProperties": false
       },

@@ -37,6 +37,8 @@ function toTopic(record: TopicRecord): OneOnOneTopicSnapshot {
     notesUpdatedAt: record.notesUpdatedAt,
     notesUpdatedByAccountId: record.notesUpdatedByAccountId,
     discussedAt: record.discussedAt,
+    addedAt: record.addedAt,
+    carriedFrom: record.carriedFrom,
   };
 }
 

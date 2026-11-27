@@ -13,6 +13,11 @@ import {
   templateRefOf,
 } from '../../domain/value-object/one-on-one-template-ref.vo';
 import { ThriveTemplate } from '../../domain/value-object/thrive-template.vo';
+import {
+  inProgressOf,
+  lastFinishedOf,
+  type StartedMeetings,
+} from '../query/meeting-in-progress.record';
 
 /** The only place that knows both the stored row and the 1:1 entity. */
 
@@ -63,6 +68,7 @@ export function toOneOnOneRecord(
     answerNote: snapshot.answerNote,
     answeredAt: snapshot.answeredAt,
     endedAt: snapshot.endedAt,
+    skippedDays: [...snapshot.skippedDays],
   };
 }
 
@@ -79,6 +85,7 @@ export function toOneOnOne(record: OneOnOneRecord): OneOnOne {
     answerNote: record.answerNote,
     answeredAt: record.answeredAt,
     endedAt: record.endedAt,
+    skippedDays: record.skippedDays,
   });
 }
 
@@ -96,8 +103,7 @@ function keptTemplateName(template: { readonly name: string } | null): string {
  */
 export function toOneOnOneRow(
   record: OneOnOneRecord & {
-    readonly meetings: readonly { id: string }[];
-    readonly _count: { readonly meetings: number };
+    readonly meetings: StartedMeetings;
     readonly template: { readonly name: string } | null;
   },
 ): OneOnOneRow {
@@ -118,7 +124,10 @@ export function toOneOnOneRow(
     answeredAt: record.answeredAt,
     endedAt: record.endedAt,
     createdAt: record.createdAt,
-    meetingInProgress: record.meetings.length > 0,
-    hasFinishedMeeting: record._count.meetings > 0,
+    meetingInProgress: inProgressOf(record.meetings) !== null,
+    meetingInProgressFor: inProgressOf(record.meetings)?.occursAt ?? null,
+    hasFinishedMeeting: lastFinishedOf(record.meetings) !== null,
+    lastHeldFor: lastFinishedOf(record.meetings)?.occursAt ?? null,
+    skippedDays: record.skippedDays,
   };
 }

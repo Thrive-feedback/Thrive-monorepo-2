@@ -9,6 +9,7 @@ import type {
   FakeAccountLinker,
   FakeDirectMessenger,
 } from './notifications.fakes';
+import type { ScenarioClock } from './scenario-clock';
 
 /**
  * The application the scenarios run against: booted once per run, wired as it ships, with
@@ -28,6 +29,8 @@ export interface Harness {
   readonly directMessenger: FakeDirectMessenger;
   /** What the model answers in a scenario; nothing reaches a provider. */
   readonly aiCompleter: FakeAiCompleter;
+  /** The time as the scenario sees it: real, unless the scenario says which day it is. */
+  readonly clock: ScenarioClock;
   readonly prismaService: PrismaService;
   readonly auth: Auth;
   readonly configuration: Configuration;

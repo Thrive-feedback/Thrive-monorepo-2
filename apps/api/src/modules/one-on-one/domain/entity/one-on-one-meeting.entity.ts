@@ -30,6 +30,13 @@ export interface OneOnOneTopicSnapshot {
   readonly notesUpdatedAt: Date | null;
   readonly notesUpdatedByAccountId: string | null;
   readonly discussedAt: Date | null;
+  /** When it was put on the agenda: which meeting day it was written for. */
+  readonly addedAt: Date;
+  /**
+   * The meeting day it was written for, kept when that day was skipped and the schedule then
+   * changed, `YYYY-MM-DD`; `null` otherwise, when it is worked out from the schedule if at all.
+   */
+  readonly carriedFrom: string | null;
 }
 
 export interface OneOnOneMeetingSnapshot {
@@ -133,6 +140,8 @@ export class OneOnOneMeeting {
     readonly oneOnOneId: string;
     readonly carried: readonly string[];
     readonly newTopicId: () => string;
+    /** Now: when its first topics are put on it. */
+    readonly at: Date;
   }): OneOnOneMeeting {
     const topics: OneOnOneTopicSnapshot[] = details.carried.map(
       (text, position) => ({
@@ -145,6 +154,8 @@ export class OneOnOneMeeting {
         notesUpdatedAt: null,
         notesUpdatedByAccountId: null,
         discussedAt: null,
+        addedAt: details.at,
+        carriedFrom: null,
       }),
     );
     return new OneOnOneMeeting(
@@ -212,7 +223,7 @@ export class OneOnOneMeeting {
   }
 
   /** Either person adds a topic, at the end of the agenda, before or during the meeting. */
-  addTopic(topicId: string, byAccountId: string, text: string): void {
+  addTopic(topicId: string, byAccountId: string, text: string, at: Date): void {
     this.assertNotFinished();
     this.topics = [
       ...this.topics,
@@ -226,6 +237,8 @@ export class OneOnOneMeeting {
         notesUpdatedAt: null,
         notesUpdatedByAccountId: null,
         discussedAt: null,
+        addedAt: at,
+        carriedFrom: null,
       },
     ];
   }
@@ -261,6 +274,7 @@ export class OneOnOneMeeting {
     readonly templateKey: string;
     readonly questions: readonly string[];
     readonly newTopicId: () => string;
+    readonly at: Date;
   }): void {
     this.assertNotFinished();
     if (this.state() === 'IN_PROGRESS') {
@@ -283,6 +297,8 @@ export class OneOnOneMeeting {
           notesUpdatedAt: null,
           notesUpdatedByAccountId: null,
           discussedAt: null,
+          addedAt: details.at,
+          carriedFrom: null,
         });
       }
     }
@@ -291,6 +307,23 @@ export class OneOnOneMeeting {
       position,
     }));
     this.templateKey = details.templateKey;
+  }
+
+  /**
+   * Before the schedule changes, keeps on each topic the skipped meeting day it was written for, as
+   * the old schedule works it out: the new one cannot. Only an agenda still being prepared moves on.
+   */
+  keepCarriedFrom(
+    carriedFrom: (topic: OneOnOneTopicSnapshot) => string | null,
+  ): void {
+    if (this.state() !== 'PREPARING') {
+      return;
+    }
+    this.topics = this.topics.map((topic) =>
+      topic.carriedFrom === null
+        ? { ...topic, carriedFrom: carriedFrom(topic) }
+        : topic,
+    );
   }
 
   /** Either person puts the agenda in a new order, naming every topic once. */

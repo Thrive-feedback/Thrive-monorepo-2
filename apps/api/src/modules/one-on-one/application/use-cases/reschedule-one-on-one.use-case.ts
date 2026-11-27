@@ -1,10 +1,12 @@
 import { Clock } from '@app/shared/application/clock.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable } from '@nestjs/common';
+import { OneOnOneMeetingRepository } from '../../domain/repository/one-on-one-meeting-repository.port';
 import { OneOnOneRepository } from '../../domain/repository/one-on-one-repository.port';
 import { OneOnOneSchedule } from '../../domain/value-object/one-on-one-schedule.vo';
 import { OneOnOneNotFoundError } from '../one-on-one.errors';
 import { oneOnOneKey } from '../service/one-on-one-keys.service';
+import { OneOnOneMeetingsSoFarService } from '../service/one-on-one-meetings-so-far.service';
 import { OneOnOneTemplateCatalogService } from '../service/one-on-one-template-catalog.service';
 import type { OneOnOneScheduleInput } from '../types/one-on-one.types';
 
@@ -27,6 +29,8 @@ export class RescheduleOneOnOneUseCase {
   constructor(
     private readonly oneOnOneRepository: OneOnOneRepository,
     private readonly templateCatalog: OneOnOneTemplateCatalogService,
+    private readonly meetingsSoFar: OneOnOneMeetingsSoFarService,
+    private readonly meetingRepository: OneOnOneMeetingRepository,
     private readonly unitOfWork: UnitOfWork,
     private readonly clock: Clock,
   ) {}
@@ -44,7 +48,25 @@ export class RescheduleOneOnOneUseCase {
           throw new OneOnOneNotFoundError();
         }
         const keeping = oneOnOne.snapshot().schedule.templateKey;
-        oneOnOne.reschedule(input.accountId, schedule, now);
+        const meetings = await this.meetingsSoFar.of(
+          input.workspaceId,
+          input.oneOnOneId,
+        );
+        const before = OneOnOneSchedule.restore(oneOnOne.snapshot().schedule);
+        oneOnOne.reschedule(input.accountId, schedule, now, meetings);
+        // The agenda being prepared moves to the new schedule's first day. Each topic keeps the day
+        // it was written for, if the old schedule skipped it (or skips it now, overdue), as the new
+        // schedule cannot tell.
+        const live = await this.meetingRepository.findLive(
+          input.workspaceId,
+          input.oneOnOneId,
+        );
+        if (live) {
+          live.keepCarriedFrom((topic) =>
+            before.carriedFrom(topic.addedAt, now, meetings.heldFor, true),
+          );
+          await this.meetingRepository.save(live);
+        }
         // After the 1:1's own refusals, so somebody who may not change it is told that first.
         await this.templateCatalog.assertChoosable(
           input.workspaceId,

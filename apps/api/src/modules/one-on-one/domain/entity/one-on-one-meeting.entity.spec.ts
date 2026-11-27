@@ -11,6 +11,9 @@ import {
 } from '../one-on-one-meeting.errors';
 import { OneOnOneMeeting, undiscussedOf } from './one-on-one-meeting.entity';
 
+/** When the topics in these specs were put on the agenda. */
+const ADDED_AT = new Date('2026-11-26T03:00:00.000Z');
+
 const KRIT = 'account-krit';
 const MINT = 'account-mint';
 const NOW = new Date('2026-11-26T03:00:00.000Z');
@@ -29,11 +32,13 @@ function opened() {
     oneOnOneId: 'one-on-one-1',
     carried: ['Launch retro'],
     newTopicId,
+    at: ADDED_AT,
   });
   meeting.useTemplate({
     templateKey: 'weekly-check-in',
     questions: ['What went well this week?'],
     newTopicId,
+    at: ADDED_AT,
   });
   return meeting;
 }
@@ -52,6 +57,7 @@ describe('a meeting being prepared', () => {
       oneOnOneId: 'one-on-one-1',
       carried: ['Launch retro'],
       newTopicId: () => 'topic-1',
+      at: ADDED_AT,
     });
 
     expect(meeting.state()).toBe('PREPARING');
@@ -75,12 +81,13 @@ describe('a meeting being prepared', () => {
 
   it("replaces the last template's questions, and keeps what was carried and added", () => {
     const meeting = opened();
-    meeting.addTopic('topic-9', MINT, 'Career path');
+    meeting.addTopic('topic-9', MINT, 'Career path', ADDED_AT);
 
     meeting.useTemplate({
       templateKey: 'career-conversation',
       questions: ['Where next?', ' Career path ', 'Launch retro'],
       newTopicId: () => 'topic-10',
+      at: ADDED_AT,
     });
 
     const { templateKey, topics } = meeting.snapshot();
@@ -99,6 +106,7 @@ describe('a meeting being prepared', () => {
         templateKey: 'career-conversation',
         questions: ['Where next?'],
         newTopicId: () => 'topic-10',
+        at: ADDED_AT,
       });
     const meeting = started();
     expect(use(meeting)).toThrow(OneOnOneMeetingAlreadyStartedError);
@@ -108,7 +116,7 @@ describe('a meeting being prepared', () => {
 
   it('takes topics from either person, at the end', () => {
     const meeting = opened();
-    meeting.addTopic('topic-9', MINT, '  Career path  ');
+    meeting.addTopic('topic-9', MINT, '  Career path  ', ADDED_AT);
 
     const added = meeting.snapshot().topics.at(-1);
     expect(added).toMatchObject({
@@ -120,17 +128,17 @@ describe('a meeting being prepared', () => {
   });
 
   it('refuses a blank topic, or one over 200 characters', () => {
-    expect(() => opened().addTopic('t', KRIT, '  ')).toThrow(
+    expect(() => opened().addTopic('t', KRIT, '  ', ADDED_AT)).toThrow(
       OneOnOneMeetingTextInvalidError,
     );
-    expect(() => opened().addTopic('t', KRIT, 'x'.repeat(201))).toThrow(
-      OneOnOneMeetingTextInvalidError,
-    );
+    expect(() =>
+      opened().addTopic('t', KRIT, 'x'.repeat(201), ADDED_AT),
+    ).toThrow(OneOnOneMeetingTextInvalidError);
   });
 
   it('lets only the author remove what they wrote, and anyone remove the rest', () => {
     const meeting = opened();
-    meeting.addTopic('topic-9', MINT, 'Career path');
+    meeting.addTopic('topic-9', MINT, 'Career path', ADDED_AT);
 
     expect(() => meeting.removeTopic('topic-9', KRIT)).toThrow(
       OneOnOneTopicNotYoursError,
@@ -237,7 +245,7 @@ describe('a finished meeting', () => {
 
     expect(meeting.state()).toBe('FINISHED');
     expect(meeting.snapshot().finishedByAccountId).toBe(MINT);
-    expect(() => meeting.addTopic('t', KRIT, 'More')).toThrow(
+    expect(() => meeting.addTopic('t', KRIT, 'More', ADDED_AT)).toThrow(
       OneOnOneMeetingFinishedError,
     );
     expect(() => meeting.finish(KRIT, LATER)).toThrow(

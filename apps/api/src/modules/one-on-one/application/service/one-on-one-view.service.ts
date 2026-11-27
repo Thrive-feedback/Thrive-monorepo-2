@@ -25,13 +25,30 @@ export class OneOnOneViewService {
     if (withAccountId === null) {
       return null;
     }
+    if (!OneOnOneStatus.of(row.status).isRunning()) {
+      return {
+        ...row,
+        withAccountId,
+        nextMeetingAt: null,
+        nextMeetingSkippedAt: null,
+      };
+    }
+    // A meeting started counts for its own day, late or early; it is never skipped.
+    if (row.meetingInProgress) {
+      return {
+        ...row,
+        withAccountId,
+        nextMeetingAt: row.meetingInProgressFor,
+        nextMeetingSkippedAt: null,
+      };
+    }
     const schedule = OneOnOneSchedule.restore(row.schedule);
-    // A one-time 1:1 whose meeting is finished is met, even before the day it was set for.
-    const isMet = schedule.isOnce() && row.hasFinishedMeeting;
-    const nextMeetingAt =
-      OneOnOneStatus.of(row.status).isRunning() && !isMet
-        ? schedule.upcomingAt(now)
-        : null;
-    return { ...row, withAccountId, nextMeetingAt };
+    const due = schedule.dueAt(now, row.lastHeldFor);
+    return {
+      ...row,
+      withAccountId,
+      nextMeetingAt: due,
+      nextMeetingSkippedAt: due === null ? null : schedule.skippedAt(due),
+    };
   }
 }

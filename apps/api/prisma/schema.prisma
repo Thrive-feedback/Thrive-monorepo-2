@@ -685,6 +685,9 @@ model OneOnOne {
   answerNote         String?
   answeredAt         DateTime?
   endedAt            DateTime?
+  /// Meeting days skipped under a schedule since changed or ended, `YYYY-MM-DD`, oldest first; the
+  /// days skipped under the schedule it has now are worked out, never stored.
+  skippedDays        String[]          @default([])
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
   meetings           OneOnOneMeeting[]
@@ -788,6 +791,11 @@ model OneOnOneTopic {
   notesUpdatedByAccountId String?
   discussedAt             DateTime?
 
+  /// When it was put on the agenda, by the domain's clock: which meeting day it was written for.
+  addedAt                 DateTime            @default(now())
+  /// The meeting day it was written for, when that day was skipped and the schedule then changed,
+  /// `YYYY-MM-DD`: kept at the change, as the new schedule can no longer work it out.
+  carriedFrom             String?
   @@index([meetingId, position])
   @@map("one_on_one_topic")
 }

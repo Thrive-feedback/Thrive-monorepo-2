@@ -1,3 +1,4 @@
+import { Clock } from '@app/shared/application/clock.port';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable } from '@nestjs/common';
@@ -29,6 +30,7 @@ export class UseTemplateForMeetingUseCase {
     private readonly meetingRepository: OneOnOneMeetingRepository,
     private readonly unitOfWork: UnitOfWork,
     private readonly idGenerator: IdGenerator,
+    private readonly clock: Clock,
   ) {}
 
   async execute(input: UseTemplateForMeetingInput): Promise<void> {
@@ -52,6 +54,7 @@ export class UseTemplateForMeetingUseCase {
             input.templateKey,
           ),
           newTopicId: () => this.idGenerator.next(),
+          at: this.clock.now(),
         });
         await this.meetingRepository.save(meeting);
       },

@@ -20,7 +20,8 @@ export interface OpenMeetingResult {
 
 /**
  * Opens the next meeting's agenda, or answers the one already open: what was not reached last time,
- * then the template's questions. Idempotent, as a 1:1 has one meeting not finished at a time.
+ * and nothing from a template until somebody uses one. Idempotent, as a 1:1 has one meeting not
+ * finished at a time.
  */
 @Injectable()
 export class OpenMeetingUseCase {

@@ -8,6 +8,9 @@ import { OneOnOneSchedule } from '../../domain/value-object/one-on-one-schedule.
 import { PrismaOneOnOneQuery } from '../query/prisma-one-on-one.query';
 import { PrismaOneOnOneRepository } from './prisma-one-on-one.repository';
 
+/** What a 1:1's meetings say when none was held or started. */
+const NO_MEETINGS = { heldFor: [], hasMeetingInProgress: false } as const;
+
 const configuration = loadConfiguration();
 const prismaService = new PrismaService(configuration.database);
 const context = new PrismaTransactionContext(prismaService);
@@ -133,7 +136,8 @@ describe('storing 1:1s', () => {
         workspaceId,
         'ann',
         'ben',
-        new Date('2026-12-03T00:00:00.000Z'),
+        // A week past its day, never started: over.
+        new Date('2026-12-09T00:00:00.000Z'),
       ),
     ).toBe(false);
   });
@@ -155,7 +159,7 @@ describe('storing 1:1s', () => {
     expect(
       await repository.existsOpenBetween(workspaceId, 'ben', 'ann', NOW),
     ).toBe(true);
-    oneOnOne.end('ann', NOW);
+    oneOnOne.end('ann', NOW, NO_MEETINGS);
     await repository.save(oneOnOne);
     expect(
       await repository.existsOpenBetween(workspaceId, 'ann', 'ben', NOW),
@@ -170,7 +174,7 @@ describe('listing a person’s 1:1s', () => {
     const received = invited(workspaceId, 'cara', 'ann');
     const others = invited(workspaceId, 'cara', 'dev');
     const ended = invited(workspaceId, 'ann', 'dev');
-    ended.end('ann', NOW);
+    ended.end('ann', NOW, NO_MEETINGS);
     for (const oneOnOne of [sent, received, others, ended]) {
       await repository.save(oneOnOne);
     }

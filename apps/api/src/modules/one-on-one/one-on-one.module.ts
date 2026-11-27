@@ -5,6 +5,7 @@ import { OneOnOneQuery } from './application/query-port/one-on-one.query-port';
 import { OneOnOneMeetingQuery } from './application/query-port/one-on-one-meeting.query-port';
 import { OneOnOneTemplateQuery } from './application/query-port/one-on-one-template.query-port';
 import { OneOnOneMeetingAccessService } from './application/service/one-on-one-meeting-access.service';
+import { OneOnOneMeetingsSoFarService } from './application/service/one-on-one-meetings-so-far.service';
 import { OneOnOneTemplateCatalogService } from './application/service/one-on-one-template-catalog.service';
 import { OneOnOneViewService } from './application/service/one-on-one-view.service';
 import { AcceptOneOnOneUseCase } from './application/use-cases/accept-one-on-one.use-case';
@@ -85,6 +86,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     },
     { provide: OneOnOneMeetingQuery, useClass: PrismaOneOnOneMeetingQuery },
     OneOnOneMeetingAccessService,
+    OneOnOneMeetingsSoFarService,
     GetNextMeetingUseCase,
     ListPastMeetingsUseCase,
     OpenMeetingUseCase,

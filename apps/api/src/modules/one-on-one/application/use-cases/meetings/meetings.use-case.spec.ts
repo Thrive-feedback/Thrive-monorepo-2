@@ -36,6 +36,9 @@ import { StartMeetingUseCase } from './start-meeting.use-case';
 import { UpdateTopicUseCase } from './update-topic.use-case';
 import { UseTemplateForMeetingUseCase } from './use-template-for-meeting.use-case';
 
+/** What a 1:1's meetings say when none was held or started. */
+const NO_MEETINGS = { heldFor: [], hasMeetingInProgress: false } as const;
+
 const WORKSPACE_ID = 'workspace-acme';
 const ONE_ON_ONE_ID = 'one-on-one-1';
 const KRIT = 'account-krit';
@@ -62,9 +65,8 @@ const ONCE_CHOICE = {
   startsOn: '2026-11-26',
 } as const;
 
-/** 10:40 Bangkok time: the one-time meeting's slot has passed. */
-/** Midnight in Bangkok as 27 November starts: the day the meeting was on is over. */
-const AFTER_THE_SLOT = new Date('2026-11-26T17:00:00.000Z');
+/** Midnight in Bangkok as 3 December starts: a week past the one-time meeting's day, it is over. */
+const AFTER_THE_SLOT = new Date('2026-12-02T17:00:00.000Z');
 
 function setUp({
   ended = false,
@@ -94,7 +96,7 @@ function setUp({
   });
   oneOnOne.accept(MINT, NOW);
   if (ended) {
-    oneOnOne.end(KRIT, NOW);
+    oneOnOne.end(KRIT, NOW, NO_MEETINGS);
   }
   const oneOnOnes = new FakeOneOnOneRepository().with(oneOnOne);
   const meetings = new FakeOneOnOneMeetingRepository();
@@ -117,11 +119,17 @@ function setUp({
     meetings,
     clock,
     next: new GetNextMeetingUseCase(oneOnOneQuery, query, catalog, clock),
-    past: new ListPastMeetingsUseCase(oneOnOneQuery, query),
+    past: new ListPastMeetingsUseCase(oneOnOneQuery, query, clock),
     open: new OpenMeetingUseCase(access, meetings, unitOfWork),
-    start: new StartMeetingUseCase(access, meetings, unitOfWork, clock),
+    start: new StartMeetingUseCase(access, meetings, query, unitOfWork, clock),
     finish: new FinishMeetingUseCase(access, meetings, unitOfWork, clock),
-    addTopic: new AddTopicUseCase(access, meetings, unitOfWork, idGenerator),
+    addTopic: new AddTopicUseCase(
+      access,
+      meetings,
+      unitOfWork,
+      idGenerator,
+      clock,
+    ),
     updateTopic: new UpdateTopicUseCase(access, meetings, unitOfWork, clock),
     removeTopic: new RemoveTopicUseCase(access, meetings, unitOfWork),
     useTemplate: new UseTemplateForMeetingUseCase(
@@ -130,6 +138,7 @@ function setUp({
       meetings,
       unitOfWork,
       idGenerator,
+      clock,
     ),
   };
 }

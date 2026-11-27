@@ -3052,12 +3052,15 @@ export interface components {
                 /** Format: date-time */
                 nextMeetingAt: string | null;
                 /** Format: date-time */
+                nextMeetingSkippedAt: string | null;
+                /** Format: date-time */
                 answeredAt: string | null;
                 /** Format: date-time */
                 endedAt: string | null;
                 /** Format: date-time */
                 createdAt: string;
                 meetingInProgress: boolean;
+                hasFinishedMeeting: boolean;
             }[];
             nextCursor: string | null;
         };
@@ -3103,12 +3106,15 @@ export interface components {
             /** Format: date-time */
             nextMeetingAt: string | null;
             /** Format: date-time */
+            nextMeetingSkippedAt: string | null;
+            /** Format: date-time */
             answeredAt: string | null;
             /** Format: date-time */
             endedAt: string | null;
             /** Format: date-time */
             createdAt: string;
             meetingInProgress: boolean;
+            hasFinishedMeeting: boolean;
         };
         SuggestAnotherTimeRequestDto: {
             schedule: {
@@ -3197,6 +3203,13 @@ export interface components {
             /** @deprecated */
             templateQuestions: string[];
             templateName: string | null;
+            /** Format: date */
+            carriedFromSkipped: string | null;
+            carriedTopics: {
+                topicId: string;
+                /** Format: date */
+                from: string;
+            }[];
         };
         ListPastMeetingsResponseDto_Output: {
             items: {
@@ -3230,6 +3243,7 @@ export interface components {
                 }[];
             }[];
             nextCursor: string | null;
+            skippedDays: string[];
         };
         CreatedMeetingThingResponseDto: {
             /** Format: uuid */
@@ -6152,7 +6166,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description ONE_ON_ONE_ALREADY_OVER */
+            /** @description ONE_ON_ONE_ALREADY_OVER or ONE_ON_ONE_MEETING_IN_PROGRESS */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -6215,7 +6229,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description ONE_ON_ONE_NOT_RUNNING */
+            /** @description ONE_ON_ONE_NOT_RUNNING or ONE_ON_ONE_MEETING_IN_PROGRESS */
             409: {
                 headers: {
                     [name: string]: unknown;

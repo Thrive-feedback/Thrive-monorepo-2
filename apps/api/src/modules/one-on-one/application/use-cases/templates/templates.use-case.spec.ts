@@ -3,6 +3,8 @@ import { FakeClock } from '@test/support/clock.fake';
 import { FakeWorkspaceMembershipPort } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
 import {
+  FakeOneOnOneMeetingQuery,
+  FakeOneOnOneMeetingRepository,
   FakeOneOnOneRepository,
   FakeOneOnOneTemplateQuery,
   FakeOneOnOneTemplateRepository,
@@ -22,6 +24,7 @@ import {
 import { OneOnOneSchedule } from '../../../domain/value-object/one-on-one-schedule.vo';
 import { OneOnOneTemplateContent } from '../../../domain/value-object/one-on-one-template-content.vo';
 import { OneOnOneTemplateNotFoundError } from '../../one-on-one.errors';
+import { OneOnOneMeetingsSoFarService } from '../../service/one-on-one-meetings-so-far.service';
 import { OneOnOneTemplateCatalogService } from '../../service/one-on-one-template-catalog.service';
 import { InviteToOneOnOneUseCase } from '../invite-to-one-on-one.use-case';
 import { RescheduleOneOnOneUseCase } from '../reschedule-one-on-one.use-case';
@@ -97,6 +100,10 @@ function setUp() {
     reschedule: new RescheduleOneOnOneUseCase(
       oneOnOnes,
       catalog,
+      new OneOnOneMeetingsSoFarService(
+        new FakeOneOnOneMeetingQuery(new FakeOneOnOneMeetingRepository()),
+      ),
+      new FakeOneOnOneMeetingRepository(),
       unitOfWork,
       clock,
     ),

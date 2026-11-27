@@ -2,6 +2,7 @@ import {
   OneOnOneAlreadyOverError,
   OneOnOneAnswerNoteTooLongError,
   OneOnOneInviteNoteTooLongError,
+  OneOnOneMeetingInProgressError,
   OneOnOneNotAwaitingAnswerError,
   OneOnOneNotInItError,
   OneOnOneNotRunningError,
@@ -41,6 +42,19 @@ export interface OneOnOneSnapshot {
   readonly answerNote: string | null;
   readonly answeredAt: Date | null;
   readonly endedAt: Date | null;
+  /**
+   * Meeting days skipped under a schedule since changed or ended, `YYYY-MM-DD`, oldest first: kept,
+   * as they can no longer be worked out from the schedule it has now.
+   */
+  readonly skippedDays: readonly string[];
+}
+
+/** What the 1:1's meetings say, for a change of schedule or an end to freeze the days skipped. */
+export interface OneOnOneMeetingsSoFar {
+  /** The days the meetings held counted for. */
+  readonly heldFor: readonly Date[];
+  /** Whether one is started and not finished: its day is then not skipped. */
+  readonly hasMeetingInProgress: boolean;
 }
 
 /**
@@ -100,6 +114,7 @@ export class OneOnOne {
     private answerNote: string | null,
     private answeredAt: Date | null,
     private endedAt: Date | null,
+    private skippedDays: readonly string[],
   ) {}
 
   /** Somebody invites a teammate to a 1:1, saying when it meets; the teammate is asked to accept. */
@@ -130,6 +145,7 @@ export class OneOnOne {
       null,
       null,
       null,
+      [],
     );
   }
 
@@ -146,6 +162,7 @@ export class OneOnOne {
     readonly answerNote: string | null;
     readonly answeredAt: Date | null;
     readonly endedAt: Date | null;
+    readonly skippedDays: readonly string[];
   }): OneOnOne {
     return new OneOnOne(
       details.id,
@@ -159,6 +176,7 @@ export class OneOnOne {
       details.answerNote,
       details.answeredAt,
       details.endedAt,
+      details.skippedDays,
     );
   }
 
@@ -189,10 +207,11 @@ export class OneOnOne {
     if (this.schedule.isOnce() && hasFinishedMeeting) {
       return false;
     }
-    return (
-      (this.status.isAwaitingAnswer() || this.status.isRunning()) &&
-      !this.schedule.isOverAt(at)
-    );
+    // An invitation to a one-time meeting whose day has passed holds nobody: it can't be accepted.
+    if (this.status.isAwaitingAnswer()) {
+      return !this.schedule.hasDayPassedAt(at);
+    }
+    return this.status.isRunning() && !this.schedule.isOverAt(at);
   }
 
   /**
@@ -234,11 +253,13 @@ export class OneOnOne {
       throw new OneOnOneNotYoursToAnswerError();
     }
     const next = this.status.accept();
-    if (this.schedule.isOverAt(at)) {
+    if (this.schedule.hasDayPassedAt(at)) {
       throw new OneOnOneTimePassedError();
     }
     this.status = next;
     this.answeredAt = at;
+    // Its meetings count from the day it is accepted, not from when it was sent.
+    this.schedule = this.schedule.startingFrom(at);
   }
 
   /**
@@ -290,7 +311,7 @@ export class OneOnOne {
    * Either person ends a running 1:1, with no approval from the other; before it is answered, only
    * whoever sent the invitation can withdraw it. What was written in it stays readable to both.
    */
-  end(byAccountId: string, at: Date): void {
+  end(byAccountId: string, at: Date, meetings: OneOnOneMeetingsSoFar): void {
     if (!this.isIn(byAccountId)) {
       throw new OneOnOneNotInItError();
     }
@@ -303,15 +324,48 @@ export class OneOnOne {
     if (this.status.isRunning() && this.schedule.isOverAt(at)) {
       throw new OneOnOneAlreadyOverError();
     }
+    this.assertNoMeetingInProgress(meetings);
+    this.freezeSkipped(at, meetings);
     this.status = this.status.end();
     this.endedAt = at;
+  }
+
+  /**
+   * Keeps the days skipped under the schedule it has now, with one overdue today, before a change
+   * or an end makes them impossible to work out again.
+   */
+  /** A meeting under way is finished first: ending or moving the 1:1 would strand it. */
+  private assertNoMeetingInProgress(meetings: OneOnOneMeetingsSoFar): void {
+    if (this.status.isRunning() && meetings.hasMeetingInProgress) {
+      throw new OneOnOneMeetingInProgressError();
+    }
+  }
+
+  private freezeSkipped(at: Date, meetings: OneOnOneMeetingsSoFar): void {
+    if (!this.status.isRunning()) {
+      return;
+    }
+    const days = new Set([
+      ...this.skippedDays,
+      ...this.schedule.skippedDaysClosingAt(
+        at,
+        meetings.heldFor,
+        meetings.hasMeetingInProgress,
+      ),
+    ]);
+    this.skippedDays = [...days].sort();
   }
 
   /**
    * Either person changes when a running 1:1 meets, and it holds at once. Before it is answered, only
    * the sender changes what the invitation says.
    */
-  reschedule(byAccountId: string, schedule: OneOnOneSchedule, at: Date): void {
+  reschedule(
+    byAccountId: string,
+    schedule: OneOnOneSchedule,
+    at: Date,
+    meetings: OneOnOneMeetingsSoFar,
+  ): void {
     if (!this.isIn(byAccountId)) {
       throw new OneOnOneNotInItError();
     }
@@ -326,6 +380,8 @@ export class OneOnOne {
       throw new OneOnOneNotRunningError();
     }
     this.assertInvitationNotPassed(at);
+    this.assertNoMeetingInProgress(meetings);
+    this.freezeSkipped(at, meetings);
     this.schedule = schedule;
   }
 
@@ -335,7 +391,7 @@ export class OneOnOne {
    * or there would be two open 1:1s between the same people.
    */
   private assertInvitationNotPassed(at: Date): void {
-    if (this.status.isAwaitingAnswer() && this.schedule.isOverAt(at)) {
+    if (this.status.isAwaitingAnswer() && this.schedule.hasDayPassedAt(at)) {
       throw new OneOnOneTimePassedError();
     }
   }
@@ -353,6 +409,7 @@ export class OneOnOne {
       answerNote: this.answerNote,
       answeredAt: this.answeredAt,
       endedAt: this.endedAt,
+      skippedDays: this.skippedDays,
     };
   }
 }

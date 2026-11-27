@@ -1,3 +1,4 @@
+import { Clock } from '@app/shared/application/clock.port';
 import { IdGenerator } from '@app/shared/application/id-generator.port';
 import { UnitOfWork } from '@app/shared/application/unit-of-work.port';
 import { Injectable } from '@nestjs/common';
@@ -23,6 +24,7 @@ export class AddTopicUseCase {
     private readonly meetingRepository: OneOnOneMeetingRepository,
     private readonly unitOfWork: UnitOfWork,
     private readonly idGenerator: IdGenerator,
+    private readonly clock: Clock,
   ) {}
 
   async execute(input: AddTopicInput): Promise<{ readonly id: string }> {
@@ -35,7 +37,7 @@ export class AddTopicUseCase {
           input.meetingId,
           input.accountId,
         );
-        meeting.addTopic(id, input.accountId, input.text);
+        meeting.addTopic(id, input.accountId, input.text, this.clock.now());
         await this.meetingRepository.save(meeting);
       },
       { serializeOn: oneOnOneKey(input.oneOnOneId) },

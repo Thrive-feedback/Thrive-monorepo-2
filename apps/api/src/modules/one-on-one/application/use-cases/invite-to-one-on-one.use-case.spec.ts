@@ -158,7 +158,8 @@ describe('a 1:1 held just once', () => {
       note: null,
     });
     oneOnOneRepository.saved(id)?.accept(MINT, NOW);
-    const afterIt = setUp(new Date('2026-12-03T03:00:00.000Z'));
+    // A week past its day, never started: over.
+    const afterIt = setUp(new Date('2026-12-09T03:00:00.000Z'));
     afterIt.oneOnOneRepository.with(
       ...[oneOnOneRepository.saved(id)].filter((each) => each !== undefined),
     );
