@@ -1,6 +1,4 @@
-import { LayoutTemplateIcon } from 'lucide-react';
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
 import { PageTitle } from '@/app/(signed-in)/(sidebar)/_components/page-title';
 import type { OneOnOne } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import {
@@ -10,16 +8,14 @@ import {
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-state.util';
 import {
   readMyOneOnOnes,
-  readOneOnOneTemplates,
+  readOneOnOneTemplateCatalog,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-ones.service';
 import { toSessionWriter } from '@/app/(signed-in)/(sidebar)/_lib/postcard-writer.util';
-import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { HandwrittenNote } from '@/components/molecules/handwritten-note';
 import { cn } from '@/lib/cn.util';
 import { readTeammates } from '@/lib/feedback/teammates.service';
 import { readWorkspaceGoalNames } from '@/lib/feedback/workspace-goal-names.service';
-import { ROUTES } from '@/lib/routes.constant';
 import { requireMember } from '@/lib/session/session.service';
 import { OneOnOnePanel } from './_components/one-on-one-panel';
 import { OneOnOneStrip } from './_components/one-on-one-strip';
@@ -67,10 +63,10 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
   const { membership, email } = session;
   // The Workspace Goals depend on nothing else here, so they are read with the first batch; only a
   // 1:1 with meetings uses them, for Write as Feedback and Give Kudos.
-  const [oneOnOnes, teammates, templates, workspaceGoals] = await Promise.all([
+  const [oneOnOnes, teammates, catalog, workspaceGoals] = await Promise.all([
     readMyOneOnOnes(membership),
     readTeammates(membership, email),
-    readOneOnOneTemplates(membership),
+    readOneOnOneTemplateCatalog(membership),
     readWorkspaceGoalNames(membership),
   ]);
   const listed = inListOrder(oneOnOnes);
@@ -123,17 +119,10 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
             accept, either of you can change when it meets.
           </Text>
         </div>
-        <div className="ms-auto flex items-center gap-2">
-          <Button asChild variant="ghost">
-            <NextLink href={ROUTES.oneOnOneTemplates}>
-              <LayoutTemplateIcon aria-hidden="true" className="size-4" />
-              Templates
-            </NextLink>
-          </Button>
+        <div className="ms-auto">
           <OneOnOnesCreate
             workspaceId={membership.workspace.id}
             teammates={teammates}
-            templates={templates}
             unavailable={unavailable}
           />
         </div>
@@ -162,7 +151,7 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
               oneOnOne={open}
               workspaceId={membership.workspace.id}
               teammates={teammates}
-              templates={templates}
+              templates={catalog.items}
               meetings={next && past ? { next, past } : undefined}
               compose={{
                 workspaceId: membership.workspace.id,

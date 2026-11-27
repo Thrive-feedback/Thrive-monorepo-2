@@ -22,7 +22,6 @@ import {
   describeMeeting,
   describeSchedule,
   leavesListOn,
-  timeOf,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-schedule.util';
 import { StatusText } from '@/components/atoms/status-text';
 import {
@@ -50,10 +49,11 @@ export type OneOnOnePanelProps = {
   oneOnOne: OneOnOne;
   workspaceId: string;
   teammates: readonly Teammate[];
+  /** The templates a meeting being prepared can use. */
   templates: readonly OneOnOneTemplate[];
   /**
    * The meetings of a running 1:1: its next one and those finished. Without them, as the showcase
-   * draws some states, a running 1:1 shows when it next meets and its template.
+   * draws some states, a running 1:1 shows when it next meets.
    */
   meetings?: OneOnOneMeetings;
   /** What Write as Feedback and Give Kudos need, from a finished meeting. */
@@ -139,16 +139,9 @@ function TheirWords({ who, words }: { who: string; words: string }) {
   );
 }
 
-function templateOf(
-  schedule: OneOnOneSchedule,
-  templates: readonly OneOnOneTemplate[],
-): OneOnOneTemplate | undefined {
-  return templates.find((template) => template.key === schedule.templateKey);
-}
-
-/** "Weekly on Thursday at 10:00, 30 minutes", or "Once, on Wed 2 Dec at 11:00, 30 minutes". */
+/** "Weekly on Thursday", or "Once, on Wed 2 Dec": a 1:1 is kept by the day. */
 function scheduleLine(schedule: OneOnOneSchedule): string {
-  return `${describeSchedule(schedule)}, ${schedule.lengthMinutes} minutes`;
+  return describeSchedule(schedule);
 }
 
 /** A running 1:1: when it next meets, and its meetings, next and past. */
@@ -171,7 +164,6 @@ function Running({
   meetings?: OneOnOneMeetings;
   compose?: PastMeetingsCompose;
 }) {
-  const template = templateOf(schedule, templates);
   const headingId = headingIdOf(oneOnOne);
   const once = isOnce(oneOnOne);
   const reader = readerAccountOf(oneOnOne);
@@ -192,7 +184,6 @@ function Running({
             shortName={person.shortName}
             isOnce={once}
             schedule={schedule}
-            templates={templates}
           />
         }
       >
@@ -209,7 +200,8 @@ function Running({
                 ? 'This meeting'
                 : 'Next meeting'}
             </TabsTrigger>
-            <TabsTrigger value="past">
+            {/* Drawn while there are none yet, greyed, so where they will be is plain. */}
+            <TabsTrigger value="past" disabled={meetings.past.length === 0}>
               Past meetings
               {meetings.past.length > 0 && (
                 <span className="text-fg-muted tabular-nums">
@@ -224,8 +216,8 @@ function Running({
               oneOnOneId={oneOnOne.id}
               next={meetings.next}
               nextMeetingAt={oneOnOne.nextMeetingAt}
-              lengthMinutes={schedule.lengthMinutes}
               people={people}
+              templates={templates}
             />
           </TabsContent>
           <TabsContent value="past">
@@ -239,8 +231,8 @@ function Running({
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="grid gap-x-8 gap-y-6 border-border-subtle border-t pt-6 md:grid-cols-5">
-          <div className="flex flex-col gap-1.5 md:col-span-2">
+        <div className="border-border-subtle border-t pt-6">
+          <div className="flex flex-col gap-1.5">
             <Text as="h3" variant="label" tone="muted">
               {once ? 'Meeting' : 'Next meeting'}
             </Text>
@@ -257,26 +249,6 @@ function Running({
                 ? describeMeeting(oneOnOne.nextMeetingAt)
                 : 'Not set'}
             </Text>
-            <Text as="p" variant="body-3" tone="muted">
-              Bangkok time · {schedule.lengthMinutes} minutes
-            </Text>
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-3">
-            <Text as="h3" variant="label" tone="muted">
-              The agenda starts from {schedule.templateName}
-            </Text>
-            {/* Another person's own template is theirs to read; its questions reach the agenda. */}
-            {template && (
-              <ul className="flex list-disc flex-col gap-1.5 ps-5 marker:text-fg-muted">
-                {template.questions.map((question) => (
-                  <li key={question}>
-                    <Text as="span" variant="body-2">
-                      {question}
-                    </Text>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
         </div>
       )}
@@ -356,7 +328,7 @@ function PanelBody({
   if (group === 'past') {
     // A meeting held once is met once its time is over, or cancelled if it was ended before.
     const line = isMet(oneOnOne)
-      ? `Met on ${describeDay(schedule.startsOn)} at ${timeOf(schedule.startMinute)}`
+      ? `Met on ${describeDay(schedule.startsOn)}`
       : isOnce(oneOnOne)
         ? `Cancelled${oneOnOne.endedAt ? ` on ${describeCalendarDay(oneOnOne.endedAt)}` : ''} · it was set for ${describeDay(schedule.startsOn)}`
         : `Schedule ended${oneOnOne.endedAt ? ` on ${describeCalendarDay(oneOnOne.endedAt)}` : ''} · it met ${describeSchedule(schedule).toLowerCase()}`;
@@ -463,7 +435,6 @@ function PanelBody({
       <AnswerInvitation
         {...control}
         schedule={schedule}
-        templates={templates}
         wasSuggested={suggested}
       />
     </section>

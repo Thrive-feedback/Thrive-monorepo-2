@@ -30,7 +30,7 @@ export async function WorkspaceGoalList({
     return (
       <Text variant="body-2" tone="muted" className="py-4">
         {canManage
-          ? 'No Workspace Goals yet. Add your first one with Add a Workspace Goal.'
+          ? 'No Workspace Goals yet. Add your first one with Add goal.'
           : "Your Admins haven't set any Workspace Goals yet."}
       </Text>
     );

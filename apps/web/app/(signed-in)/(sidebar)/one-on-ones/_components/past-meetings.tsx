@@ -14,7 +14,7 @@ import {
 } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
 import type { Meeting } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
 import {
-  describeMeetingDay,
+  describeMeeting,
   describeTime,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-schedule.util';
 import { Button } from '@/components/atoms/button';
@@ -119,7 +119,7 @@ export function PastMeetings({ meetings, other, compose }: PastMeetingsProps) {
                 >
                   <span className="flex flex-col gap-0.5">
                     <Text as="span" variant="subtitle-3">
-                      {heldAt ? describeMeetingDay(heldAt) : 'A meeting'}
+                      {heldAt ? describeMeeting(heldAt) : 'A meeting'}
                     </Text>
                     <Text
                       as="span"
@@ -146,12 +146,10 @@ export function PastMeetings({ meetings, other, compose }: PastMeetingsProps) {
                           key={each}
                           variant={COMPOSE_CHOICE_OUTLINES[each]}
                           size="sm"
-                          aria-label={`${PERSON_COMPOSE_ACTIONS[each].name(other.name)}, from the meeting on ${describeMeetingDay(heldAt)}`}
+                          aria-label={`${PERSON_COMPOSE_ACTIONS[each].name(other.name)}, from the meeting on ${describeMeeting(heldAt)}`}
                           onPointerEnter={warmComposeCards}
                           onFocus={warmComposeCards}
-                          onClick={() =>
-                            write(each, describeMeetingDay(heldAt))
-                          }
+                          onClick={() => write(each, describeMeeting(heldAt))}
                         >
                           {PERSON_COMPOSE_ACTIONS[each].word}
                         </Button>

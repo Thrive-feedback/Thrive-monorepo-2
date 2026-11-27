@@ -1,7 +1,6 @@
-import { Trash2Icon } from 'lucide-react';
 import { useId } from 'react';
-import { Button } from '@/components/atoms/button';
 import { Input } from '@/components/atoms/input';
+import { RemoveButton } from '@/components/molecules/remove-button';
 import type { MemberRole } from '@/lib/session/current-account.type';
 import { RoleSelect } from './role-select';
 
@@ -57,18 +56,11 @@ export function InviteEmailRow({
           value={role}
           onChange={onRoleChange}
         />
-        {/* An outlined square as tall as the field beside it, so the row reads as one line of
-            controls; the bin turns red on hover, saying what pressing it does. */}
         {isRemovable && (
-          <Button
-            variant="secondary"
-            size="icon"
+          <RemoveButton
             aria-label={`Remove ${label.toLowerCase()}`}
             onClick={onRemove}
-            className="size-11 shrink-0 rounded-input text-fg-secondary enabled:hover:text-status-error"
-          >
-            <Trash2Icon aria-hidden="true" className="size-4" />
-          </Button>
+          />
         )}
       </div>
       {errorMessage && (

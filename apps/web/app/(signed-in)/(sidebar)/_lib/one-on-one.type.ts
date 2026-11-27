@@ -20,15 +20,11 @@ export type OneOnOneTemplate = OneOnOneTemplateCatalog['items'][number];
 /** Which layer a template is from. */
 export type OneOnOneTemplateScope = OneOnOneTemplate['scope'];
 
-/** When a 1:1 meets, as either person chooses it. */
+/** When a 1:1 meets, as either person chooses it: how often and on which day, with no time of day. */
 export type OneOnOneScheduleChoice = {
   readonly cadence: OneOnOneCadence;
   /** 1 is Monday and 7 is Sunday. */
   readonly weekday: number;
-  /** Minutes after midnight, Bangkok time. */
-  readonly startMinute: number;
-  readonly lengthMinutes: number;
-  readonly templateKey: string;
   /** The day of a meeting held just once, `YYYY-MM-DD`; the weekday follows from it. */
   readonly startsOn?: string;
 };

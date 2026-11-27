@@ -39,7 +39,7 @@ describe('Workspace Goals', () => {
     // Offered in the Goals card's title row; its form waits in a dialog until pressed.
     const goals = screen.getByRole('region', { name: 'Workspace Goals' });
     expect(
-      within(goals).getByRole('button', { name: 'Add a Workspace Goal' }),
+      within(goals).getByRole('button', { name: 'Add goal' }),
     ).toBeInTheDocument();
     expect(screen.queryByText('add form')).toBeNull();
   });
@@ -50,8 +50,6 @@ describe('Workspace Goals', () => {
     render(await WorkspaceGoals());
 
     expect(screen.getByText('workspace goals')).toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: 'Add a Workspace Goal' }),
-    ).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add goal' })).toBeNull();
   });
 });

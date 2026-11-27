@@ -14,7 +14,7 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 async function openTheDialog() {
   const user = userEvent.setup();
   render(<AddWorkspaceGoal workspaceId="w-1" />);
-  const trigger = screen.getByRole('button', { name: 'Add a Workspace Goal' });
+  const trigger = screen.getByRole('button', { name: 'Add goal' });
   await user.click(trigger);
   return { user, trigger };
 }
@@ -73,7 +73,7 @@ describe('AddWorkspaceGoal', () => {
     const user = userEvent.setup();
     render(<AddWorkspaceGoal workspaceId="w-1" />);
     const trigger = screen.getByRole('button', {
-      name: 'Add a Workspace Goal',
+      name: 'Add goal',
     });
     await user.click(trigger);
 

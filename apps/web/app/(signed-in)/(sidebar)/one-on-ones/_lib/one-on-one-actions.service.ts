@@ -6,21 +6,18 @@ import type {
   OneOnOneActionResult,
   OneOnOneScheduleChoice,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
+import {
+  act,
+  COULD_NOT,
+  REFUSALS,
+} from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-act.service';
 import { apiClient } from '@/lib/api-client.service';
-import { act, COULD_NOT, REFUSALS } from './one-on-one-act.service';
 
 const Id = z.uuid();
 const AccountId = z.uuid();
 const ScheduleChoice = z.object({
   cadence: z.enum(['WEEKLY', 'EVERY_TWO_WEEKS', 'MONTHLY', 'ONCE']),
   weekday: z.number().int().min(1).max(7),
-  startMinute: z
-    .number()
-    .int()
-    .min(0)
-    .max(24 * 60 - 1),
-  lengthMinutes: z.number().int(),
-  templateKey: z.string().min(1),
   startsOn: z.iso.date().optional(),
 });
 const Note = z.string().max(280);

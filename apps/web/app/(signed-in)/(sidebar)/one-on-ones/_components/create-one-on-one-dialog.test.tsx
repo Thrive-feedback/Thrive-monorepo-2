@@ -1,7 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { OneOnOneTemplate } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import { Toaster } from '@/components/atoms/toaster';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { ROUTES } from '@/lib/routes.constant';
@@ -47,17 +46,6 @@ const TEAMMATES: Teammate[] = [
   },
 ];
 
-const TEMPLATES: OneOnOneTemplate[] = [
-  {
-    key: 'weekly-check-in',
-    scope: 'THRIVE',
-    changeable: false,
-    name: 'Weekly check-in',
-    suggestedWhen: 'The default for every 1:1',
-    questions: ['What went well this week?'],
-  },
-];
-
 function draw() {
   render(
     <>
@@ -66,7 +54,6 @@ function draw() {
         onOpenChange={() => {}}
         workspaceId="workspace-acme"
         teammates={TEAMMATES}
-        templates={TEMPLATES}
         unavailable={new Map([['account-leo', 'You already have a 1:1']])}
         trigger={<button type="button">Create 1:1</button>}
       />
@@ -141,7 +128,7 @@ describe('CreateOneOnOneDialog', () => {
     expect(inviteToOneOnOne).toHaveBeenCalledExactlyOnceWith(
       'workspace-acme',
       'account-mint',
-      expect.objectContaining({ templateKey: 'weekly-check-in' }),
+      expect.not.objectContaining({ templateKey: expect.anything() }),
       'Career advice',
     );
   });
@@ -173,7 +160,6 @@ describe('CreateOneOnOneDialog', () => {
       <OneOnOnesCreate
         workspaceId="workspace-acme"
         teammates={TEAMMATES}
-        templates={TEMPLATES}
         unavailable={[]}
       />,
     );

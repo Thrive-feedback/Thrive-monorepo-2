@@ -125,8 +125,10 @@ export function TimePicker({
   // A minute off the step, typed elsewhere, still shows; the column offers the steps.
   const minute = value === null ? null : value % 60;
 
+  // Modal, so its own scroll lock takes over from a dialog it opens in: the dialog's lets no wheel
+  // turn anything drawn outside it, and the columns are.
   return (
-    <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
+    <Popover.Root modal open={isOpen} onOpenChange={setIsOpen}>
       <Popover.Trigger asChild disabled={disabled}>
         <button
           id={id}

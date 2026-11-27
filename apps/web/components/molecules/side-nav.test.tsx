@@ -52,7 +52,7 @@ describe('SideNav', () => {
     render(<SideNav label="Main" items={ITEMS} currentHref="/a" />);
 
     expect(screen.getByRole('link', { name: 'First' })).toHaveClass(
-      'aria-[current]:bg-action-primary-surface',
+      'aria-[current]:bg-action-primary-surface-hover',
     );
   });
 
@@ -67,8 +67,12 @@ describe('SideNav', () => {
     );
 
     const first = screen.getByRole('link', { name: 'First' });
-    expect(first).toHaveClass('md:aria-[current]:bg-action-primary-surface');
-    expect(first).not.toHaveClass('aria-[current]:bg-action-primary-surface');
+    expect(first).toHaveClass(
+      'md:aria-[current]:bg-action-primary-surface-hover',
+    );
+    expect(first).not.toHaveClass(
+      'aria-[current]:bg-action-primary-surface-hover',
+    );
   });
 
   it('lists an item’s children under it, always shown, in order', () => {

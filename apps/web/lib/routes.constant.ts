@@ -106,8 +106,6 @@ export const ROUTES = {
   teammates: '/teammates',
   /** The person's 1:1s, either side of each, as the two are equal (brain ADR-0060, ADR-0061). */
   oneOnOnes: '/one-on-ones',
-  /** The templates a 1:1's agenda starts from: Thrive's, the Workspace's and the person's own. */
-  oneOnOneTemplates: '/one-on-ones/templates',
   /** The person's 1:1s, with one of them open beside the list. */
   oneOnOneWith: (oneOnOneId: string) => `/one-on-ones?with=${oneOnOneId}`,
   /** The Kudos board narrowed to one month, `YYYY-MM`. */
@@ -188,6 +186,8 @@ export const ROUTES = {
     workspaceGoals: '/settings/workspace-goals',
     /** Who is in the Workspace, and, for Admins, inviting more and the Invitations still open. */
     teammates: '/settings/teammates',
+    /** The 1:1 templates: the person's own, the Workspace's (changed by Admins) and Thrive's. */
+    oneOnOnes: '/settings/one-on-ones',
     /** The colour mode. */
     appearance: '/settings/appearance',
     /**

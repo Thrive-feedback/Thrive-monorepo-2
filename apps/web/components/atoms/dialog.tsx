@@ -98,7 +98,10 @@ export function DialogClose(props: DialogCloseProps) {
 }
 
 const dialogContent = cva(
-  'fixed z-50 mx-auto flex flex-col gap-6 overflow-y-auto border border-border-muted bg-surface-raised p-6 text-fg-primary shadow-high',
+  [
+    'fixed z-50 mx-auto flex flex-col gap-6 overflow-y-auto border border-border-muted bg-surface-raised p-6 text-fg-primary shadow-high',
+    styles.bounds,
+  ],
   {
     variants: {
       placement: {
@@ -107,13 +110,13 @@ const dialogContent = cva(
         // card drops the drag's transform, so it never becomes the containing block of something
         // fixed inside it, such as a Drawer.
         adaptive: [
-          'inset-x-0 bottom-0 max-h-3/4 rounded-t-surface pt-10 md:inset-x-4 md:top-1/2 md:bottom-auto md:max-h-full md:max-w-128 md:-translate-y-1/2 md:transform-none md:rounded-surface md:pt-6 md:motion-safe:data-[state=closed]:animate-exit md:motion-safe:data-[state=open]:animate-enter',
+          'inset-x-0 bottom-0 max-h-3/4 rounded-t-surface pt-10 md:inset-x-4 md:top-1/2 md:bottom-auto md:max-h-(--dialog-card-max-height) md:max-w-128 md:-translate-y-1/2 md:transform-none md:rounded-surface md:pt-6 md:motion-safe:data-[state=closed]:animate-exit md:motion-safe:data-[state=open]:animate-enter',
           styles.sheet,
         ],
         // The card in the middle at every width, for a caller that lays it out over the whole
         // window itself.
         screen:
-          'inset-x-4 top-1/2 max-h-full max-w-128 -translate-y-1/2 rounded-surface motion-safe:data-[state=closed]:animate-exit motion-safe:data-[state=open]:animate-enter',
+          'inset-x-4 top-1/2 max-h-(--dialog-card-max-height) max-w-128 -translate-y-1/2 rounded-surface motion-safe:data-[state=closed]:animate-exit motion-safe:data-[state=open]:animate-enter',
       },
     },
     defaultVariants: { placement: 'adaptive' },
@@ -273,7 +276,12 @@ export function DialogContent({
           <DialogPrimitive.Close
             data-slot="dialog-close"
             aria-label="Close"
-            className="absolute top-4 right-4 cursor-pointer rounded-full p-1 text-fg-secondary transition-colors hover:bg-action-neutral-surface-hover hover:text-fg-primary"
+            className={cn(
+              // On the title's line: as tall as it, from the same top padding, so the two share a
+              // middle in every dialog and on every device.
+              'absolute top-6 right-5 flex size-(--text-subtitle-2--line-height) cursor-pointer items-center justify-center rounded-full text-fg-secondary transition-colors hover:bg-action-neutral-surface-hover hover:text-fg-primary',
+              placement !== 'screen' && 'top-10 md:top-6',
+            )}
           >
             <XIcon aria-hidden="true" className="size-5" />
           </DialogPrimitive.Close>

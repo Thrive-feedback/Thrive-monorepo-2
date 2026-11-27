@@ -3,7 +3,6 @@ import type {
   OneOnOneSchedule,
   OneOnOneScheduleChoice,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
-import { timeLabel } from '@/lib/time-of-day.util';
 
 /**
  * The clock a 1:1's schedule is kept on: the API keeps every schedule in the one calendar clock,
@@ -40,32 +39,13 @@ export const WEEKDAYS: readonly {
   { value: 7, name: 'Sunday', short: 'Sun' },
 ];
 
-export const LENGTHS: readonly number[] = [15, 20, 30, 45, 60];
-
 const ORDINALS = ['first', 'second', 'third', 'fourth'] as const;
 
-/** What a new 1:1 starts at: weekly, on Thursdays at 10:00, for 30 minutes, the weekly check-in. */
+/** What a new 1:1 starts at: weekly, on Thursdays. A 1:1 is kept by the day, with no time of day. */
 export const DEFAULT_SCHEDULE: OneOnOneScheduleChoice = {
   cadence: 'WEEKLY',
   weekday: 4,
-  startMinute: 10 * 60,
-  lengthMinutes: 30,
-  templateKey: 'weekly-check-in',
 };
-
-/** `10:00` for 600: a schedule's start, written as the time picker writes it. */
-export const timeOf = timeLabel;
-
-/** 600 for `10:00`, or `null` for anything that is not a time of day. */
-export function minuteOf(time: string): number | null {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(time);
-  if (!match) {
-    return null;
-  }
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  return hours < 24 && minutes < 60 ? hours * 60 + minutes : null;
-}
 
 function weekdayName(weekday: number): string {
   return WEEKDAYS.find((day) => day.value === weekday)?.name ?? '';
@@ -77,45 +57,29 @@ function weekOfMonth(day: string): number {
 }
 
 /**
- * The schedule said as a sentence: "Weekly on Thursday at 10:00", "Every 2 weeks on Monday at
- * 09:00", "Monthly on the second Friday at 16:00", "Once, on Wed 2 Dec at 11:00".
+ * The schedule said as a sentence, by the day alone: "Weekly on Thursday", "Every 2 weeks on
+ * Monday", "Monthly on the second Friday", "Once, on Wed 2 Dec".
  */
 export function describeSchedule(schedule: OneOnOneSchedule): string {
   const day = weekdayName(schedule.weekday);
-  const at = timeOf(schedule.startMinute);
   if (schedule.cadence === 'ONCE') {
-    return `Once, on ${describeDay(schedule.startsOn)} at ${at}`;
+    return `Once, on ${describeDay(schedule.startsOn)}`;
   }
   if (schedule.cadence === 'MONTHLY') {
     const ordinal = ORDINALS[weekOfMonth(schedule.startsOn) - 1] ?? 'first';
-    return `Monthly on the ${ordinal} ${day} at ${at}`;
+    return `Monthly on the ${ordinal} ${day}`;
   }
-  return `${CADENCE_WORDS[schedule.cadence]} on ${day} at ${at}`;
+  return `${CADENCE_WORDS[schedule.cadence]} on ${day}`;
 }
 
-/** The short form a card has room for: "Thu 10:00 · weekly", or "Wed 2 Dec, 11:00 · once". */
+/** The short form a card has room for: "Thu · weekly", or "Wed 2 Dec · once". */
 export function describeScheduleShort(schedule: OneOnOneSchedule): string {
   if (schedule.cadence === 'ONCE') {
-    return `${describeDay(schedule.startsOn)}, ${timeOf(schedule.startMinute)} · once`;
+    return `${describeDay(schedule.startsOn)} · once`;
   }
   const day =
     WEEKDAYS.find((weekday) => weekday.value === schedule.weekday)?.short ?? '';
-  return `${day} ${timeOf(schedule.startMinute)} · ${CADENCE_WORDS[schedule.cadence].toLowerCase()}`;
-}
-
-const NEXT_MEETING = new Intl.DateTimeFormat('en-GB', {
-  timeZone: SCHEDULE_TIME_ZONE,
-  weekday: 'short',
-  day: 'numeric',
-  month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-});
-
-/** "Thu 27 Nov, 10:00" for an instant, on the schedule's clock. */
-export function describeMeeting(instant: string): string {
-  return NEXT_MEETING.format(new Date(instant));
+  return `${day} · ${CADENCE_WORDS[schedule.cadence].toLowerCase()}`;
 }
 
 const TIME_OF_DAY = new Intl.DateTimeFormat('en-GB', {
@@ -155,8 +119,11 @@ const MEETING_DAY = new Intl.DateTimeFormat('en-GB', {
   month: 'short',
 });
 
-/** "Thu 26 Nov" for an instant, on the schedule's clock: the day a meeting was held. */
-export function describeMeetingDay(instant: string): string {
+/**
+ * "Thu 26 Nov" for an instant, on the schedule's clock: the day a meeting is, or was, held. A 1:1
+ * is kept by the day, so a meeting names no time.
+ */
+export function describeMeeting(instant: string): string {
   return MEETING_DAY.format(new Date(instant));
 }
 
@@ -181,9 +148,6 @@ export function choiceOf(schedule: OneOnOneSchedule): OneOnOneScheduleChoice {
   return {
     cadence: schedule.cadence,
     weekday: schedule.weekday,
-    startMinute: schedule.startMinute,
-    lengthMinutes: schedule.lengthMinutes,
-    templateKey: schedule.templateKey,
     ...(schedule.cadence === 'ONCE' ? { startsOn: schedule.startsOn } : {}),
   };
 }

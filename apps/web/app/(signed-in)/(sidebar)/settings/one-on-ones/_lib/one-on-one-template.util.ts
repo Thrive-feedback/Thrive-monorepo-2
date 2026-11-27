@@ -17,7 +17,7 @@ export type TemplateDraft = {
 export const EMPTY_DRAFT: TemplateDraft = {
   name: '',
   suggestedWhen: '',
-  questions: [''],
+  questions: [],
 };
 
 /** What a template says, as a draft to rewrite. */

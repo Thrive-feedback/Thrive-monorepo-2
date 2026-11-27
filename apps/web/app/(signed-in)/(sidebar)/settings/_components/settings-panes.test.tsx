@@ -25,11 +25,12 @@ describe('SettingsPanes', () => {
       '/settings/workspace',
       '/settings/workspace-goals',
       '/settings/teammates',
+      '/settings/one-on-ones',
       '/settings/appearance',
     ]);
   });
 
-  it("groups the Workspace's own sections under a Workspace heading, and Appearance under Other", () => {
+  it("groups the Workspace's own sections under a Workspace heading, 1:1s under Tools, and Appearance under Other", () => {
     render(<SettingsPanes>section</SettingsPanes>);
 
     const menu = screen.getByRole('navigation', { name: 'Settings sections' });
@@ -41,6 +42,8 @@ describe('SettingsPanes', () => {
       'General',
       'Goals',
       'Teammates',
+      'Tools',
+      '1:1s',
       'Other',
       'Appearance',
     ]);

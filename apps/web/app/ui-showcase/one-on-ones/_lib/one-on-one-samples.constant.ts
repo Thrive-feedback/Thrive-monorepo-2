@@ -98,8 +98,6 @@ export const SAMPLE_ONE_ON_ONE_TEMPLATES: readonly OneOnOneTemplate[] = [
 const WEEKLY: OneOnOneSchedule = {
   cadence: 'WEEKLY',
   weekday: 4,
-  startMinute: 10 * 60,
-  lengthMinutes: 30,
   templateKey: 'weekly-check-in',
   templateName: 'Weekly check-in',
   startsOn: '2026-11-26',
@@ -162,7 +160,6 @@ export const SAMPLE_ONE_ON_ONES = {
       schedule: {
         ...WEEKLY,
         weekday: 3,
-        startMinute: 11 * 60,
         startsOn: '2026-12-02',
       },
       createdAt: '2026-11-24T03:00:00.000Z',
@@ -179,8 +176,6 @@ export const SAMPLE_ONE_ON_ONES = {
       schedule: {
         cadence: 'MONTHLY',
         weekday: 5,
-        startMinute: 16 * 60,
-        lengthMinutes: 30,
         templateKey: 'feedback-both-ways',
         templateName: 'Feedback both ways',
         startsOn: '2026-12-11',
@@ -196,8 +191,6 @@ export const SAMPLE_ONE_ON_ONES = {
       schedule: {
         cadence: 'EVERY_TWO_WEEKS',
         weekday: 2,
-        startMinute: 14 * 60,
-        lengthMinutes: 45,
         templateKey: 'career-conversation',
         templateName: 'Career conversation',
         startsOn: '2026-12-01',
@@ -214,7 +207,6 @@ export const SAMPLE_ONE_ON_ONES = {
       schedule: {
         ...WEEKLY,
         weekday: 1,
-        startMinute: 9 * 60 + 30,
         startsOn: '2026-11-30',
       },
       inviteNote: 'A regular half hour to talk about the platform migration.',
@@ -254,8 +246,6 @@ function onceOn(day: string, weekday: number): OneOnOneSchedule {
   return {
     cadence: 'ONCE',
     weekday,
-    startMinute: 11 * 60,
-    lengthMinutes: 30,
     templateKey: 'new-joiner',
     templateName: 'New joiner 30 / 60 / 90',
     startsOn: day,
@@ -273,7 +263,6 @@ export const SAMPLE_ONE_ON_ONES_MORE = {
       schedule: {
         ...WEEKLY,
         weekday: 2,
-        startMinute: 15 * 60,
         startsOn: '2026-12-01',
       },
       inviteNote: 'Thursdays are full for me. Could Tuesday afternoons work?',
@@ -290,7 +279,6 @@ export const SAMPLE_ONE_ON_ONES_MORE = {
       schedule: {
         ...WEEKLY,
         weekday: 5,
-        startMinute: 9 * 60,
         startsOn: '2026-11-27',
       },
       inviteNote: 'Mornings are easier for me.',
@@ -390,8 +378,8 @@ export const SAMPLE_NEXT_MEETINGS = {
   untouched: {
     meeting: null,
     carried: ['Career path: senior engineer'],
-    templateQuestions: ['What went well this week?', "What's in your way?"],
-    templateName: 'Weekly check-in',
+    templateQuestions: [],
+    templateName: null,
   },
   preparing: {
     meeting: LIVE,

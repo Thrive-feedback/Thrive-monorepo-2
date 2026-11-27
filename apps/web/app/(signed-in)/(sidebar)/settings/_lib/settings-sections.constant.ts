@@ -2,6 +2,7 @@ import {
   Building2Icon,
   CircleUserRoundIcon,
   HashIcon,
+  MessagesSquareIcon,
   PaletteIcon,
   UsersIcon,
 } from 'lucide-react';
@@ -28,8 +29,9 @@ export const ACCOUNT_SECTION: SettingsSection = {
 
 /**
  * The menu, in order, grouped as the main sidebar groups My Feedback: the person's Account first,
- * then, under a Workspace heading, what belongs to the Workspace they are in, and under Other what
- * belongs to neither, such as how the app looks on this device. A heading holds every item after
+ * then, under a Workspace heading, what belongs to the Workspace they are in, under Tools how each
+ * tool is set up, and under Other what belongs to none of those, such as how the app looks on this
+ * device. A heading holds every item after
  * it until the next one, so Account, under none, comes first.
  */
 export const SETTINGS_MENU: readonly (SettingsSection | SideNavHeading)[] = [
@@ -52,6 +54,13 @@ export const SETTINGS_MENU: readonly (SettingsSection | SideNavHeading)[] = [
     label: 'Teammates',
     Icon: UsersIcon,
     note: "who's on the team",
+  },
+  { heading: 'Tools' },
+  {
+    href: ROUTES.settings.oneOnOnes,
+    label: '1:1s',
+    Icon: MessagesSquareIcon,
+    note: 'how you meet',
   },
   { heading: 'Other' },
   {
