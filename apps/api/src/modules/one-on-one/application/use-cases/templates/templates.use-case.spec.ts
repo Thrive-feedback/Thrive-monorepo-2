@@ -3,7 +3,6 @@ import { FakeClock } from '@test/support/clock.fake';
 import { FakeWorkspaceMembershipPort } from '@test/support/feedback.fakes';
 import { FakeIdGenerator } from '@test/support/id-generator.fake';
 import {
-  FakeOneOnOneMeetingRepository,
   FakeOneOnOneRepository,
   FakeOneOnOneTemplateQuery,
   FakeOneOnOneTemplateRepository,
@@ -23,7 +22,6 @@ import {
 import { OneOnOneSchedule } from '../../../domain/value-object/one-on-one-schedule.vo';
 import { OneOnOneTemplateContent } from '../../../domain/value-object/one-on-one-template-content.vo';
 import { OneOnOneTemplateNotFoundError } from '../../one-on-one.errors';
-import { OneOnOneMeetingAccessService } from '../../service/one-on-one-meeting-access.service';
 import { OneOnOneTemplateCatalogService } from '../../service/one-on-one-template-catalog.service';
 import { InviteToOneOnOneUseCase } from '../invite-to-one-on-one.use-case';
 import { RescheduleOneOnOneUseCase } from '../reschedule-one-on-one.use-case';
@@ -44,8 +42,6 @@ const MINTS_ID = '0199b6a0-0000-7000-8000-000000000003';
 const CHOICE = {
   cadence: 'WEEKLY',
   weekday: 4,
-  startMinute: 600,
-  lengthMinutes: 30,
   templateKey: 'weekly-check-in',
 };
 
@@ -338,28 +334,22 @@ describe('Starting a 1:1 from a kept template', () => {
     ).rejects.toThrow(OneOnOneTemplateUnknownError);
   });
 
-  it("opens the next agenda with the template's questions as it reads now, removed or not", async () => {
+  it("answers a template's name and questions as it reads now, removed or not", async () => {
     const world = setUp();
     await withThreeLayers(world);
-    const access = new OneOnOneMeetingAccessService(
-      world.oneOnOnes,
-      new FakeOneOnOneMeetingRepository(),
-      world.catalog,
-      new FakeIdGenerator('meeting-1', 'topic-1', 'topic-2'),
-      new FakeClock(NOW),
-    );
     await world.remove.execute({
       workspaceId: WORKSPACE_ID,
       accountId: KRIT,
       templateId: KRITS_ID,
     });
 
-    const meeting = await access.openNext(running('with-mint', KRITS_ID));
-
-    expect(meeting.snapshot().topics.map((topic) => topic.text)).toEqual([
+    expect(await world.catalog.questionsOf(WORKSPACE_ID, KRITS_ID)).toEqual([
       'What slowed us?',
       'What helped?',
     ]);
+    expect(await world.catalog.nameOf(WORKSPACE_ID, 'weekly-check-in')).toBe(
+      'Weekly check-in',
+    );
     expect(await world.catalog.questionsOf(WORKSPACE_ID, MINTS_ID)).toEqual([
       'What is on your mind?',
     ]);

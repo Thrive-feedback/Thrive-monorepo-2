@@ -10,9 +10,6 @@ export const ONE_ON_ONE_CADENCES = [
 
 export type OneOnOneCadence = (typeof ONE_ON_ONE_CADENCES)[number];
 
-/** How long a meeting may be booked for, in minutes. */
-export const ONE_ON_ONE_LENGTHS = [15, 20, 30, 45, 60] as const;
-
 /**
  * The calendar clock a schedule is kept on: the one fixed offset every Member reads a calendar on
  * (Feedback's `CALENDAR_UTC_OFFSET_HOURS`, ADR 0095). Held here as well because a domain imports
@@ -20,25 +17,21 @@ export const ONE_ON_ONE_LENGTHS = [15, 20, 30, 45, 60] as const;
  */
 const CALENDAR_UTC_OFFSET_HOURS = 7;
 
-const MINUTES_IN_A_DAY = 24 * 60;
-const MS_IN_A_MINUTE = 60_000;
-const MS_IN_A_DAY = MINUTES_IN_A_DAY * MS_IN_A_MINUTE;
-const OFFSET_MS = CALENDAR_UTC_OFFSET_HOURS * 60 * MS_IN_A_MINUTE;
+const MS_IN_A_DAY = 24 * 60 * 60_000;
+const OFFSET_MS = CALENDAR_UTC_OFFSET_HOURS * 60 * 60_000;
 /** Far enough ahead that any cadence has met at least once. */
 const DAYS_LOOKED_AHEAD = 70;
 const DAY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 /**
- * What somebody chooses: how often, on which weekday, from what time, for how long, from which
- * template. A meeting held just once names its day instead, and its weekday follows from it.
+ * What somebody chooses: how often, on which weekday, from which template. A 1:1 is kept by the
+ * day, with no time of day: a meeting is that whole day. A meeting held just once names its day
+ * instead, and its weekday follows from it.
  */
 export interface OneOnOneScheduleChoice {
   readonly cadence: string;
   /** 1 is Monday and 7 is Sunday. Ignored for one held just once, which takes its day's. */
   readonly weekday: number;
-  /** Minutes after midnight in the calendar clock. */
-  readonly startMinute: number;
-  readonly lengthMinutes: number;
   readonly templateKey: string;
   /** The day of a meeting held just once, `YYYY-MM-DD`; ignored for the other cadences. */
   readonly startsOn?: string;
@@ -47,8 +40,6 @@ export interface OneOnOneScheduleChoice {
 export interface OneOnOneScheduleSnapshot {
   readonly cadence: OneOnOneCadence;
   readonly weekday: number;
-  readonly startMinute: number;
-  readonly lengthMinutes: number;
   readonly templateKey: string;
   /** The calendar day of the first meeting, `YYYY-MM-DD`. */
   readonly startsOn: string;
@@ -96,8 +87,6 @@ export class OneOnOneSchedule {
   private constructor(
     private readonly cadence: OneOnOneCadence,
     private readonly weekday: number,
-    private readonly startMinute: number,
-    private readonly lengthMinutes: number,
     private readonly templateKey: string,
     private readonly startsOn: number,
   ) {}
@@ -108,8 +97,7 @@ export class OneOnOneSchedule {
    * chosen is for the use case to ask the template catalog, as kept templates live in the database.
    */
   static plan(choice: OneOnOneScheduleChoice, from: Date): OneOnOneSchedule {
-    const { cadence, weekday, startMinute, lengthMinutes, templateKey } =
-      OneOnOneSchedule.check(choice);
+    const { cadence, weekday, templateKey } = OneOnOneSchedule.check(choice);
     // A Thrive key or a kept id; whether that template may be chosen is the catalog's to ask.
     templateRefOf(templateKey);
     if (cadence === 'ONCE') {
@@ -122,49 +110,31 @@ export class OneOnOneSchedule {
       const schedule = new OneOnOneSchedule(
         cadence,
         weekdayOf(once),
-        startMinute,
-        lengthMinutes,
         templateKey,
         once,
       );
-      if (schedule.startOf(once) < from) {
+      if (once < dayOf(from)) {
         throw new OneOnOneScheduleInvalidError('its day has passed.');
       }
       return schedule;
     }
+    // Today counts while it lasts: a meeting is the whole of its day.
     let day = dayOf(from);
-    const minuteNow = Math.floor(
-      ((from.getTime() + OFFSET_MS) % MS_IN_A_DAY) / MS_IN_A_MINUTE,
-    );
-    const firstIsToday = weekdayOf(day) === weekday && startMinute >= minuteNow;
-    if (!firstIsToday) {
-      day += 1;
-    }
     while (
       weekdayOf(day) !== weekday ||
       (cadence === 'MONTHLY' && weekOfMonthOf(day) > 4)
     ) {
       day += 1;
     }
-    return new OneOnOneSchedule(
-      cadence,
-      weekday,
-      startMinute,
-      lengthMinutes,
-      templateKey,
-      day,
-    );
+    return new OneOnOneSchedule(cadence, weekday, templateKey, day);
   }
 
   /** Rebuilds one already stored; only the repository calls this. */
   static restore(snapshot: OneOnOneScheduleSnapshot): OneOnOneSchedule {
-    const { cadence, weekday, startMinute, lengthMinutes, templateKey } =
-      OneOnOneSchedule.check(snapshot);
+    const { cadence, weekday, templateKey } = OneOnOneSchedule.check(snapshot);
     return new OneOnOneSchedule(
       cadence,
       weekday,
-      startMinute,
-      lengthMinutes,
       templateKey,
       dayFromText(snapshot.startsOn),
     );
@@ -186,20 +156,6 @@ export class OneOnOneSchedule {
       choice.weekday > 7
     ) {
       throw new OneOnOneScheduleInvalidError('its weekday is not a day.');
-    }
-    if (
-      !Number.isInteger(choice.startMinute) ||
-      choice.startMinute < 0 ||
-      choice.startMinute >= MINUTES_IN_A_DAY
-    ) {
-      throw new OneOnOneScheduleInvalidError('its time is not in a day.');
-    }
-    if (
-      !(ONE_ON_ONE_LENGTHS as readonly number[]).includes(choice.lengthMinutes)
-    ) {
-      throw new OneOnOneScheduleInvalidError(
-        `it lasts ${ONE_ON_ONE_LENGTHS.join(', ')} minutes.`,
-      );
     }
     if (choice.templateKey.trim() === '') {
       throw new OneOnOneScheduleInvalidError('it starts from a template.');
@@ -224,10 +180,9 @@ export class OneOnOneSchedule {
     }
   }
 
+  /** When a day starts on the calendar clock: a meeting is the whole of it. */
   private startOf(day: number): Date {
-    return new Date(
-      day * MS_IN_A_DAY + this.startMinute * MS_IN_A_MINUTE - OFFSET_MS,
-    );
+    return new Date(day * MS_IN_A_DAY - OFFSET_MS);
   }
 
   /**
@@ -249,13 +204,11 @@ export class OneOnOneSchedule {
   }
 
   /**
-   * When the meeting to show as the next one starts: the first that has not ended by `instant`, so
-   * one in progress still counts. `null` once a meeting held just once is over.
+   * When the meeting to show as the next one starts: the first whose day has not ended by
+   * `instant`, so today's still counts. `null` once a meeting held just once is over.
    */
   upcomingAt(instant: Date): Date | null {
-    return this.nextAtOrAfter(
-      new Date(instant.getTime() - this.lengthMinutes * MS_IN_A_MINUTE + 1),
-    );
+    return this.nextAtOrAfter(new Date(instant.getTime() - MS_IN_A_DAY + 1));
   }
 
   /** Whether it was held just once and that meeting has ended; a recurring one is never over. */
@@ -272,8 +225,6 @@ export class OneOnOneSchedule {
     return {
       cadence: this.cadence,
       weekday: this.weekday,
-      startMinute: this.startMinute,
-      lengthMinutes: this.lengthMinutes,
       templateKey: this.templateKey,
       startsOn: dayToText(this.startsOn),
     };

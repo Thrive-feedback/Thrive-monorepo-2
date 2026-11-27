@@ -40,6 +40,16 @@ function toTopic(record: TopicRecord): OneOnOneTopicSnapshot {
   };
 }
 
+/** The meeting's template as the wire carries it; `null` when nobody used one for it. */
+function meetingTemplateKeyOf(record: {
+  readonly templateKey: string | null;
+  readonly templateId: string | null;
+}): string | null {
+  return record.templateKey === null && record.templateId === null
+    ? null
+    : templateKeyOf(storedTemplateRef(record));
+}
+
 function inAgendaOrder(topics: readonly TopicRecord[]): TopicRecord[] {
   return [...topics].sort((a, b) => a.position - b.position);
 }
@@ -51,7 +61,7 @@ export function toMeetingSnapshot(
     id: record.id,
     workspaceId: record.workspaceId,
     oneOnOneId: record.oneOnOneId,
-    templateKey: templateKeyOf(storedTemplateRef(record)),
+    templateKey: meetingTemplateKeyOf(record),
     occursAt: record.occursAt,
     startedAt: record.startedAt,
     startedByAccountId: record.startedByAccountId,
@@ -67,7 +77,7 @@ export function toMeetingProjection(
 ): OneOnOneMeetingProjection {
   return {
     id: record.id,
-    templateKey: templateKeyOf(storedTemplateRef(record)),
+    templateKey: meetingTemplateKeyOf(record),
     occursAt: record.occursAt,
     startedAt: record.startedAt,
     startedByAccountId: record.startedByAccountId,
@@ -87,7 +97,9 @@ export function toMeetingRecord(
     id: snapshot.id,
     workspaceId: snapshot.workspaceId,
     oneOnOneId: snapshot.oneOnOneId,
-    ...templateColumnsOf(templateRefOf(snapshot.templateKey)),
+    ...(snapshot.templateKey === null
+      ? { templateKey: null, templateId: null }
+      : templateColumnsOf(templateRefOf(snapshot.templateKey))),
     occursAt: snapshot.occursAt,
     startedAt: snapshot.startedAt,
     startedByAccountId: snapshot.startedByAccountId,

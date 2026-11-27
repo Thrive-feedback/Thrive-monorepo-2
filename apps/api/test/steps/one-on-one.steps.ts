@@ -21,6 +21,10 @@ const REFUSALS: Readonly<Record<string, { code: string; status: number }>> = {
     code: 'ONE_ON_ONE_MEETING_NOT_STARTED',
     status: 409,
   },
+  'the meeting has already started': {
+    code: 'ONE_ON_ONE_MEETING_ALREADY_STARTED',
+    status: 409,
+  },
   'the topic changed': { code: 'ONE_ON_ONE_TOPIC_CHANGED', status: 409 },
   'the 1:1 is not running': { code: 'ONE_ON_ONE_NOT_RUNNING', status: 409 },
   'the template cannot be kept': {
@@ -37,14 +41,14 @@ const REFUSALS: Readonly<Record<string, { code: string; status: number }>> = {
   },
 };
 
-/** A weekly 1:1 on Thursdays at 10:00 Bangkok time, the template every scenario uses. */
+/** A weekly 1:1 on Thursdays, the schedule every scenario uses: a day, with no time of day. */
 const WEEKLY = {
   cadence: 'WEEKLY',
   weekday: 4,
-  startMinute: 600,
-  lengthMinutes: 30,
-  templateKey: 'weekly-check-in',
 } as const;
+
+/** The calendar clock's offset from UTC (ADR 0095): a day there starts at 17:00 UTC the day before. */
+const CALENDAR_UTC_OFFSET_HOURS = 7;
 
 /** The scenario's one 1:1 and its next meeting once opened, kept on the world (BE_13 R5). */
 function stateOf(world: ThriveWorld) {
@@ -61,19 +65,14 @@ function oneOnOnePath(world: ThriveWorld, name: string): string {
   return `/v1/workspaces/${world.workspaceOf(name)}/one-on-ones/${oneOnOneIdOf(world)}`;
 }
 
-function invite(
-  world: ThriveWorld,
-  from: string,
-  to: string,
-  templateKey: string = WEEKLY.templateKey,
-) {
+function invite(world: ThriveWorld, from: string, to: string) {
   return world.as(
     from,
     'POST',
     `/v1/workspaces/${world.workspaceOf(from)}/one-on-ones`,
     {
       invitedAccountId: world.person(to).accountId,
-      schedule: { ...WEEKLY, templateKey },
+      schedule: WEEKLY,
     },
   );
 }
@@ -194,6 +193,31 @@ async function writeNote(
   );
 }
 
+/** Uses a template for the next meeting, opening it first if nobody has written to it yet. */
+async function useTemplate(
+  world: ThriveWorld,
+  name: string,
+  template: string,
+): Promise<ApiResponse> {
+  const meetingId = await nextMeetingId(world, name);
+  return world.as(
+    name,
+    'PUT',
+    `${meetingPath(world, name, meetingId)}/template`,
+    { templateKey: templateIdOf(world, template) },
+  );
+}
+
+/** The texts on the next meeting's agenda as `name` reads it, in order. */
+async function agendaOf(
+  world: ThriveWorld,
+  name: string,
+): Promise<readonly string[]> {
+  const next = await readNextMeeting(world, name);
+  assert.ok(next.meeting, 'Nobody has written to the next meeting yet.');
+  return next.meeting.topics.map((topic: { text: string }) => topic.text);
+}
+
 Given(
   '{person} has invited {person} to a weekly 1:1',
   async function (this: ThriveWorld, from: string, to: string) {
@@ -211,6 +235,32 @@ Given(
     const response = this.succeeded(
       await invite(this, from, to),
       `${from} inviting ${to} to a 1:1`,
+    );
+    stateOf(this).id = response.body.id;
+    this.succeeded(await accept(this, to), `${to} accepting the 1:1`);
+  },
+);
+
+Given(
+  '{person} and {person} have a 1:1 held once next week',
+  async function (this: ThriveWorld, from: string, to: string) {
+    // A week from today on the calendar clock, so the day is still to come whenever it runs.
+    const startsOn = new Date(
+      Date.now() + CALENDAR_UTC_OFFSET_HOURS * 3_600_000 + 7 * 86_400_000,
+    )
+      .toISOString()
+      .slice(0, 10);
+    const response = this.succeeded(
+      await this.as(
+        from,
+        'POST',
+        `/v1/workspaces/${this.workspaceOf(from)}/one-on-ones`,
+        {
+          invitedAccountId: this.person(to).accountId,
+          schedule: { cadence: 'ONCE', weekday: 1, startsOn },
+        },
+      ),
+      `${from} inviting ${to} to a 1:1 held once`,
     );
     stateOf(this).id = response.body.id;
     this.succeeded(await accept(this, to), `${to} accepting the 1:1`);
@@ -241,44 +291,21 @@ Given(
 );
 
 Given(
-  '{person} has invited {person} to a weekly 1:1 from {string}',
-  async function (
-    this: ThriveWorld,
-    from: string,
-    to: string,
-    template: string,
-  ) {
-    const response = this.succeeded(
-      await invite(this, from, to, templateIdOf(this, template)),
-      `${from} inviting ${to} to a 1:1 from "${template}"`,
-    );
-    stateOf(this).id = response.body.id;
-  },
-);
-
-Given(
-  '{person} and {person} have a running weekly 1:1 from {string}',
-  async function (
-    this: ThriveWorld,
-    from: string,
-    to: string,
-    template: string,
-  ) {
-    const response = this.succeeded(
-      await invite(this, from, to, templateIdOf(this, template)),
-      `${from} inviting ${to} to a 1:1 from "${template}"`,
-    );
-    stateOf(this).id = response.body.id;
-    this.succeeded(await accept(this, to), `${to} accepting the 1:1`);
-  },
-);
-
-Given(
   '{person} has added {string} to the next meeting',
   async function (this: ThriveWorld, name: string, text: string) {
     this.succeeded(
       await addTopic(this, name, text),
       `${name} adding "${text}"`,
+    );
+  },
+);
+
+Given(
+  '{person} has used {string} for the next meeting',
+  async function (this: ThriveWorld, name: string, template: string) {
+    this.succeeded(
+      await useTemplate(this, name, template),
+      `${name} using "${template}"`,
     );
   },
 );
@@ -456,6 +483,13 @@ When(
 );
 
 When(
+  '{person} uses {string} for the next meeting',
+  async function (this: ThriveWorld, name: string, template: string) {
+    await useTemplate(this, name, template);
+  },
+);
+
+When(
   '{person} finishes the next meeting',
   async function (this: ThriveWorld, name: string) {
     const meetingId = await nextMeetingId(this, name);
@@ -473,6 +507,54 @@ Then(
     assert.equal(response.body.status, 'ACTIVE');
     assert.equal(response.body.withAccountId, this.person(other).accountId);
     assert.ok(response.body.nextMeetingAt, 'A running 1:1 has a next meeting.');
+  },
+);
+
+Then(
+  '{person} sees the 1:1 meets weekly on Thursday, with no time of day',
+  async function (this: ThriveWorld, name: string) {
+    const response = this.succeeded(
+      await this.as(name, 'GET', oneOnOnePath(this, name)),
+      `${name} opening the 1:1`,
+    );
+    const { schedule } = response.body;
+    assert.equal(schedule.cadence, 'WEEKLY');
+    assert.equal(schedule.weekday, 4);
+    assert.ok(!('startMinute' in schedule), 'A schedule keeps no time.');
+    assert.ok(!('lengthMinutes' in schedule), 'A schedule keeps no length.');
+  },
+);
+
+Then(
+  "{person}'s next meeting is on a Thursday, from the start of that day",
+  async function (this: ThriveWorld, name: string) {
+    const response = this.succeeded(
+      await this.as(name, 'GET', oneOnOnePath(this, name)),
+      `${name} opening the 1:1`,
+    );
+    const at = new Date(response.body.nextMeetingAt);
+    const local = new Date(
+      at.getTime() + CALENDAR_UTC_OFFSET_HOURS * 3_600_000,
+    );
+    assert.equal(local.getUTCDay(), 4, 'It meets on a Thursday.');
+    assert.equal(
+      local.getUTCHours() * 60 + local.getUTCMinutes(),
+      0,
+      'It starts with the day.',
+    );
+  },
+);
+
+Then(
+  '{person} sees the 1:1 has no next meeting',
+  async function (this: ThriveWorld, name: string) {
+    const response = this.succeeded(
+      await this.as(name, 'GET', oneOnOnePath(this, name)),
+      `${name} opening the 1:1`,
+    );
+    assert.equal(response.body.status, 'ACTIVE');
+    assert.equal(response.body.nextMeetingAt, null, 'Its one meeting is met.');
+    assert.equal(response.body.meetingInProgress, false);
   },
 );
 
@@ -502,16 +584,37 @@ Then(
 );
 
 Then(
-  '{person} cannot invite {person} to a weekly 1:1 from {string}',
-  async function (
-    this: ThriveWorld,
-    from: string,
-    to: string,
-    template: string,
-  ) {
-    const response = await invite(this, from, to, templateIdOf(this, template));
+  '{person} cannot use {string} for the next meeting',
+  async function (this: ThriveWorld, name: string, template: string) {
+    const response = await useTemplate(this, name, template);
     assert.equal(response.status, 400);
     assert.equal(response.body.error.code, 'ONE_ON_ONE_TEMPLATE_UNKNOWN');
+  },
+);
+
+Then(
+  "{person}'s next meeting has {string}",
+  async function (this: ThriveWorld, name: string, text: string) {
+    assert.ok(
+      (await agendaOf(this, name)).includes(text),
+      `"${text}" is not on the next meeting's agenda.`,
+    );
+  },
+);
+
+Then(
+  /^(\w+)'s next meeting has only "([^"]+)"(?: and "([^"]+)")?$/,
+  async function (
+    this: ThriveWorld,
+    name: string,
+    first: string,
+    // Cucumber passes `null` for the second name when the step names one topic.
+    second: string | null,
+  ) {
+    assert.deepEqual(
+      await agendaOf(this, name),
+      second === null ? [first] : [first, second],
+    );
   },
 );
 
@@ -530,19 +633,7 @@ Then(
 );
 
 Then(
-  "{person}'s next meeting opens with {string}",
-  async function (this: ThriveWorld, name: string, question: string) {
-    const next = await readNextMeeting(this, name);
-    assert.equal(next.meeting, null);
-    assert.ok(
-      next.templateQuestions.includes(question),
-      `"${question}" is not among the questions it opens with.`,
-    );
-  },
-);
-
-Then(
-  /^(\w+) is told (there is no such 1:1|it is not theirs to answer|they already have one|the topic is not theirs|the meeting has not started|the topic changed|the 1:1 is not running|the template is not theirs|the template cannot be kept|they keep one by that name already)$/,
+  /^(\w+) is told (there is no such 1:1|it is not theirs to answer|they already have one|the topic is not theirs|the meeting has not started|the meeting has already started|the topic changed|the 1:1 is not running|the template is not theirs|the template cannot be kept|they keep one by that name already)$/,
   function (this: ThriveWorld, _name: string, reason: string) {
     const refusal = REFUSALS[reason];
     assert.ok(refusal, `No refusal is known as "${reason}".`);

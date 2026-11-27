@@ -26,8 +26,6 @@ const NOW = new Date('2026-11-26T03:00:00.000Z');
 const SCHEDULE = {
   cadence: 'WEEKLY',
   weekday: 4,
-  startMinute: 600,
-  lengthMinutes: 30,
   templateKey: 'weekly-check-in',
 };
 

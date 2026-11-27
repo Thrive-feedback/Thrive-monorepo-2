@@ -1,10 +1,11 @@
 Feature: 1:1s
-  Two Members of a Workspace meet one to one, on a schedule. Either may invite the other;
+  Two Members of a Workspace meet one to one, on a schedule of days: how often, and on which
+  day, with no time of day. Either may invite the other;
   nothing runs until the person invited accepts, and then the two are equal. Each meeting has
   an agenda both prepare, notes both write once it starts, and a summary when either finishes
-  it. A 1:1 is only ever read by its two people. An agenda opens with the questions of a
-  template: one of Thrive's, one the Workspace keeps for everyone, or one a Member keeps for
-  themselves, which nobody else sees.
+  it. A 1:1 is only ever read by its two people. An agenda opens with what was not reached last
+  time; while it is prepared, either person may use a template for it: one of Thrive's, one the
+  Workspace keeps for everyone, or one a Member keeps for themselves, which nobody else sees.
 
   Background:
     Given Ann owns a Workspace called "Acme"
@@ -17,6 +18,20 @@ Feature: 1:1s
     When Ben accepts the 1:1
     Then Ann sees the 1:1 with Ben running
     And Ben sees the 1:1 with Ann running
+
+  @api
+  Scenario: A 1:1 is set by its day alone, and meets all that day
+    Given Ann has invited Ben to a weekly 1:1
+    When Ben accepts the 1:1
+    Then Ann sees the 1:1 meets weekly on Thursday, with no time of day
+    And Ann's next meeting is on a Thursday, from the start of that day
+
+  @api
+  Scenario: A 1:1 held once is met once its meeting is finished, though its day is still to come
+    Given Ann and Ben have a 1:1 held once next week
+    And Ann has started the next meeting
+    When Ben finishes the next meeting
+    Then Ann sees the 1:1 has no next meeting
 
   @api
   Scenario: Nobody else reads a 1:1
@@ -76,12 +91,36 @@ Feature: 1:1s
     Then Ann is told the 1:1 is not running
 
   @api
-  Scenario: A Member's own template is theirs alone, and opens the agenda of a 1:1 started from it
+  Scenario: A new meeting opens with nothing from a template
+    Given Ann and Ben have a running weekly 1:1
+    When Ben adds "Career path" to the next meeting
+    Then Ben's next meeting has only "Career path"
+
+  @api
+  Scenario: A Member's own template is theirs alone, and is used for a meeting while it is prepared
     Given Ben has kept a template "Sprint retro" asking "What slowed us?"
-    And Ben has invited Cara to a weekly 1:1 from "Sprint retro"
-    When Cara accepts the 1:1
-    Then Cara does not see the template "Sprint retro"
-    And Cara's next meeting opens with "What slowed us?"
+    And Ben and Cara have a running weekly 1:1
+    When Ben uses "Sprint retro" for the next meeting
+    Then Cara's next meeting has "What slowed us?"
+    And Cara does not see the template "Sprint retro"
+
+  @api
+  Scenario: Using another template replaces the first one's questions, and keeps the rest
+    Given Ben has kept a template "Sprint retro" asking "What slowed us?"
+    And Ben has kept a template "Career chat" asking "Where next?"
+    And Ann and Ben have a running weekly 1:1
+    And Ben has added "Offsite" to the next meeting
+    And Ben has used "Sprint retro" for the next meeting
+    When Ben uses "Career chat" for the next meeting
+    Then Ben's next meeting has only "Offsite" and "Where next?"
+
+  @api
+  Scenario: A template is not used for a meeting that has started
+    Given Ben has kept a template "Sprint retro" asking "What slowed us?"
+    And Ann and Ben have a running weekly 1:1
+    And Ann has started the next meeting
+    When Ben uses "Sprint retro" for the next meeting
+    Then Ben is told the meeting has already started
 
   @api
   Scenario: Only an Admin keeps templates for the whole Workspace
@@ -96,13 +135,12 @@ Feature: 1:1s
     And Ben sees the template "Team health"
 
   @api
-  Scenario: A removed template is chosen by nobody, but still opens the 1:1s that start from it
+  Scenario: A removed template is used by nobody
     Given Ben has kept a template "Sprint retro" asking "What slowed us?"
-    And Ben and Cara have a running weekly 1:1 from "Sprint retro"
+    And Ann and Ben have a running weekly 1:1
     When Ben removes the template "Sprint retro"
     Then Ben does not see the template "Sprint retro"
-    And Cara's next meeting opens with "What slowed us?"
-    And Ben cannot invite Ann to a weekly 1:1 from "Sprint retro"
+    And Ben cannot use "Sprint retro" for the next meeting
 
   @api
   Scenario: A template needs a question

@@ -9,31 +9,33 @@ import {
   OneOnOneTopicNotYoursError,
   OneOnOneTopicOrderInvalidError,
 } from '../one-on-one-meeting.errors';
-import {
-  OneOnOneMeeting,
-  openingAgenda,
-  undiscussedOf,
-} from './one-on-one-meeting.entity';
+import { OneOnOneMeeting, undiscussedOf } from './one-on-one-meeting.entity';
 
 const KRIT = 'account-krit';
 const MINT = 'account-mint';
 const NOW = new Date('2026-11-26T03:00:00.000Z');
 const LATER = new Date('2026-11-26T03:10:00.000Z');
 
+/** Opened with one topic carried over, then the Weekly check-in used for it. */
 function opened() {
   let next = 0;
-  return OneOnOneMeeting.open({
+  const newTopicId = () => {
+    next += 1;
+    return `topic-${next}`;
+  };
+  const meeting = OneOnOneMeeting.open({
     id: 'meeting-1',
     workspaceId: 'workspace-acme',
     oneOnOneId: 'one-on-one-1',
-    templateKey: 'weekly-check-in',
     carried: ['Launch retro'],
-    templateQuestions: ['What went well this week?'],
-    newTopicId: () => {
-      next += 1;
-      return `topic-${next}`;
-    },
+    newTopicId,
   });
+  meeting.useTemplate({
+    templateKey: 'weekly-check-in',
+    questions: ['What went well this week?'],
+    newTopicId,
+  });
+  return meeting;
 }
 
 function started() {
@@ -43,10 +45,26 @@ function started() {
 }
 
 describe('a meeting being prepared', () => {
-  it('opens with what was not reached last time, then the template', () => {
-    const meeting = opened();
+  it('opens with what was not reached last time, and no template', () => {
+    const meeting = OneOnOneMeeting.open({
+      id: 'meeting-2',
+      workspaceId: 'workspace-acme',
+      oneOnOneId: 'one-on-one-1',
+      carried: ['Launch retro'],
+      newTopicId: () => 'topic-1',
+    });
 
     expect(meeting.state()).toBe('PREPARING');
+    expect(meeting.snapshot().templateKey).toBeNull();
+    expect(
+      meeting.snapshot().topics.map((topic) => [topic.text, topic.source]),
+    ).toEqual([['Launch retro', 'CARRIED']]);
+  });
+
+  it('takes a template after what is already on the agenda', () => {
+    const meeting = opened();
+
+    expect(meeting.snapshot().templateKey).toBe('weekly-check-in');
     expect(
       meeting.snapshot().topics.map((topic) => [topic.text, topic.source]),
     ).toEqual([
@@ -55,23 +73,37 @@ describe('a meeting being prepared', () => {
     ]);
   });
 
-  it('does not ask a template question twice when it was carried over', () => {
-    const meeting = OneOnOneMeeting.open({
-      id: 'meeting-2',
-      workspaceId: 'workspace-acme',
-      oneOnOneId: 'one-on-one-1',
-      templateKey: 'weekly-check-in',
-      carried: ['What do you need from me?'],
-      templateQuestions: ['What went well?', 'What do you need from me?'],
-      newTopicId: () => crypto.randomUUID(),
+  it("replaces the last template's questions, and keeps what was carried and added", () => {
+    const meeting = opened();
+    meeting.addTopic('topic-9', MINT, 'Career path');
+
+    meeting.useTemplate({
+      templateKey: 'career-conversation',
+      questions: ['Where next?', ' Career path ', 'Launch retro'],
+      newTopicId: () => 'topic-10',
     });
 
-    expect(
-      meeting.snapshot().topics.map((topic) => [topic.text, topic.source]),
-    ).toEqual([
-      ['What do you need from me?', 'CARRIED'],
-      ['What went well?', 'TEMPLATE'],
+    const { templateKey, topics } = meeting.snapshot();
+    expect(templateKey).toBe('career-conversation');
+    expect(topics.map((topic) => [topic.text, topic.source])).toEqual([
+      ['Launch retro', 'CARRIED'],
+      ['Career path', 'PERSON'],
+      ['Where next?', 'TEMPLATE'],
     ]);
+    expect(topics.map((topic) => topic.position)).toEqual([0, 1, 2]);
+  });
+
+  it('takes no template once it has started, or is finished', () => {
+    const use = (meeting: OneOnOneMeeting) => () =>
+      meeting.useTemplate({
+        templateKey: 'career-conversation',
+        questions: ['Where next?'],
+        newTopicId: () => 'topic-10',
+      });
+    const meeting = started();
+    expect(use(meeting)).toThrow(OneOnOneMeetingAlreadyStartedError);
+    meeting.finish(MINT, LATER);
+    expect(use(meeting)).toThrow(OneOnOneMeetingFinishedError);
   });
 
   it('takes topics from either person, at the end', () => {
@@ -214,14 +246,7 @@ describe('a finished meeting', () => {
   });
 });
 
-describe('what a next meeting opens with', () => {
-  it('asks a template question carried over once, however it was spaced', () => {
-    expect(openingAgenda(['Wins '], ['Wins', 'Blockers'])).toEqual([
-      { text: 'Wins ', source: 'CARRIED' },
-      { text: 'Blockers', source: 'TEMPLATE' },
-    ]);
-  });
-
+describe('what a next meeting carries over', () => {
   it('carries what was not talked about, in agenda order', () => {
     expect(
       undiscussedOf([

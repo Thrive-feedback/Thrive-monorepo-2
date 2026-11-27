@@ -25,8 +25,6 @@ function scheduleOn(weekday: number) {
     {
       cadence: 'WEEKLY',
       weekday,
-      startMinute: 600,
-      lengthMinutes: 30,
       templateKey: 'weekly-check-in',
     },
     NOW,
@@ -256,15 +254,14 @@ describe('a 1:1 held just once', () => {
     {
       cadence: 'ONCE',
       weekday: 3,
-      startMinute: 600,
-      lengthMinutes: 30,
       templateKey: 'weekly-check-in',
       startsOn: '2026-12-02',
     },
     NOW,
   );
   const DURING = new Date('2026-12-02T03:15:00.000Z');
-  const AFTER = new Date('2026-12-02T04:00:00.000Z');
+  /** Midnight in Bangkok as 3 December starts: the day it met on is over. */
+  const AFTER = new Date('2026-12-02T17:00:00.000Z');
 
   function once() {
     return OneOnOne.invite({
@@ -295,6 +292,8 @@ describe('a 1:1 held just once', () => {
 
     expect(oneOnOne.isOpenAt(AFTER)).toBe(false);
     expect(oneOnOne.isOpenAt(AFTER, true)).toBe(true);
+    // Its meeting finished, it is met before its day, so the two may start another.
+    expect(oneOnOne.isOpenAt(DURING, false, true)).toBe(false);
   });
 
   it('holds nobody to an invitation whose time has passed, which can no longer be accepted', () => {

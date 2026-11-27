@@ -20,7 +20,8 @@ export interface OneOnOneTopicProjection {
 /** One meeting as stored, read for its two people: its agenda in order. */
 export interface OneOnOneMeetingProjection {
   readonly id: string;
-  readonly templateKey: string;
+  /** The template used for it while it was prepared; `null` when none was. */
+  readonly templateKey: string | null;
   readonly occursAt: Date | null;
   readonly startedAt: Date | null;
   readonly startedByAccountId: string | null;
@@ -43,9 +44,13 @@ export interface OneOnOneNextMeetingView {
   readonly meeting: OneOnOneMeetingView | null;
   /** When nothing is written yet: what was not reached last time, which it will open with. */
   readonly carried: readonly string[];
-  /** When nothing is written yet: the template's questions, which it will open with. */
+  /**
+   * Always empty: a meeting no longer opens with a template's questions, which are used while it is
+   * prepared. Kept until the web stops reading it (GEN_08 R7).
+   */
   readonly templateQuestions: readonly string[];
-  readonly templateName: string;
+  /** What the template used for the live meeting is called; `null` when none was used. */
+  readonly templateName: string | null;
 }
 
 export interface OneOnOneMeetingCursorPageRequest {

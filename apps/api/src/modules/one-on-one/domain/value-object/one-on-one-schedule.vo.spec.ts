@@ -11,38 +11,37 @@ function choice(
   return {
     cadence: 'WEEKLY',
     weekday: 4,
-    startMinute: 10 * 60 + 30,
-    lengthMinutes: 30,
     templateKey: 'weekly-check-in',
     ...overrides,
   };
 }
 
 describe('a 1:1 schedule', () => {
-  it('meets later the same day when its time has not passed yet', () => {
+  it('meets today when today is its day, as a meeting is the whole of its day', () => {
     const schedule = OneOnOneSchedule.plan(choice({}), THURSDAY_TEN);
 
     expect(schedule.snapshot().startsOn).toBe('2026-11-26');
-    expect(schedule.nextAtOrAfter(THURSDAY_TEN)?.toISOString()).toBe(
-      '2026-11-26T03:30:00.000Z',
+    // The day starts at midnight on the calendar clock: 17:00 UTC the day before.
+    expect(schedule.upcomingAt(THURSDAY_TEN)?.toISOString()).toBe(
+      '2026-11-25T17:00:00.000Z',
     );
   });
 
-  it('first meets next week when its time today has passed', () => {
+  it('first meets on the next of its weekday when today is another day', () => {
     const schedule = OneOnOneSchedule.plan(
-      choice({ startMinute: 9 * 60 }),
+      choice({ weekday: 3 }),
       THURSDAY_TEN,
     );
 
-    expect(schedule.snapshot().startsOn).toBe('2026-12-03');
+    expect(schedule.snapshot().startsOn).toBe('2026-12-02');
     expect(schedule.nextAtOrAfter(THURSDAY_TEN)?.toISOString()).toBe(
-      '2026-12-03T02:00:00.000Z',
+      '2026-12-01T17:00:00.000Z',
     );
   });
 
   it('skips the week between meetings every two weeks', () => {
     const schedule = OneOnOneSchedule.plan(
-      choice({ cadence: 'EVERY_TWO_WEEKS', weekday: 1, startMinute: 9 * 60 }),
+      choice({ cadence: 'EVERY_TWO_WEEKS', weekday: 1 }),
       THURSDAY_TEN,
     );
 
@@ -51,12 +50,12 @@ describe('a 1:1 schedule', () => {
       schedule
         .nextAtOrAfter(new Date('2026-12-01T00:00:00.000Z'))
         ?.toISOString(),
-    ).toBe('2026-12-14T02:00:00.000Z');
+    ).toBe('2026-12-13T17:00:00.000Z');
   });
 
   it('meets monthly on the same week of the month as its first meeting', () => {
     const schedule = OneOnOneSchedule.plan(
-      choice({ cadence: 'MONTHLY', weekday: 5, startMinute: 16 * 60 }),
+      choice({ cadence: 'MONTHLY', weekday: 5 }),
       THURSDAY_TEN,
     );
 
@@ -65,32 +64,36 @@ describe('a 1:1 schedule', () => {
       schedule
         .nextAtOrAfter(new Date('2026-11-28T00:00:00.000Z'))
         ?.toISOString(),
-    ).toBe('2026-12-25T09:00:00.000Z');
+    ).toBe('2026-12-24T17:00:00.000Z');
   });
 
   it('never starts a monthly one in the fifth week, which some months lack', () => {
     const schedule = OneOnOneSchedule.plan(
-      choice({ cadence: 'MONTHLY', weekday: 1, startMinute: 9 * 60 }),
+      choice({ cadence: 'MONTHLY', weekday: 1 }),
       THURSDAY_TEN,
     );
 
     expect(schedule.snapshot().startsOn).toBe('2026-12-07');
   });
 
-  it('comes back the same from what it stores', () => {
+  it('comes back the same from what it stores, which holds no time of day', () => {
     const planned = OneOnOneSchedule.plan(choice({}), THURSDAY_TEN);
 
     const restored = OneOnOneSchedule.restore(planned.snapshot());
 
     expect(restored.snapshot()).toEqual(planned.snapshot());
+    expect(Object.keys(planned.snapshot()).sort()).toEqual([
+      'cadence',
+      'startsOn',
+      'templateKey',
+      'weekday',
+    ]);
   });
 
   it.each([
     [{ cadence: 'DAILY' }],
     [{ weekday: 0 }],
     [{ weekday: 8 }],
-    [{ startMinute: 24 * 60 }],
-    [{ lengthMinutes: 25 }],
     [{ templateKey: ' ' }],
   ])('refuses %p', (overrides) => {
     expect(() =>
@@ -98,7 +101,7 @@ describe('a 1:1 schedule', () => {
     ).toThrow(OneOnOneScheduleInvalidError);
   });
 
-  it('meets once, on the day named, and is over once that meeting has ended', () => {
+  it('meets once, on the day named, and is over once that day has ended', () => {
     const schedule = OneOnOneSchedule.plan(
       choice({ cadence: 'ONCE', weekday: 1, startsOn: '2026-12-02' }),
       THURSDAY_TEN,
@@ -106,20 +109,27 @@ describe('a 1:1 schedule', () => {
 
     expect(schedule.snapshot().weekday).toBe(3);
     expect(schedule.nextAtOrAfter(THURSDAY_TEN)?.toISOString()).toBe(
-      '2026-12-02T03:30:00.000Z',
+      '2026-12-01T17:00:00.000Z',
     );
-    // In progress, 10:30 to 11:00 Bangkok time: still the meeting to show.
+    // 23:00 that day in Bangkok: still the meeting to show.
     expect(
-      schedule.upcomingAt(new Date('2026-12-02T03:45:00.000Z'))?.toISOString(),
-    ).toBe('2026-12-02T03:30:00.000Z');
-    expect(schedule.isOverAt(new Date('2026-12-02T03:45:00.000Z'))).toBe(false);
+      schedule.upcomingAt(new Date('2026-12-02T16:00:00.000Z'))?.toISOString(),
+    ).toBe('2026-12-01T17:00:00.000Z');
+    expect(schedule.isOverAt(new Date('2026-12-02T16:00:00.000Z'))).toBe(false);
+    // Midnight, as the next day starts.
     expect(
-      schedule.upcomingAt(new Date('2026-12-02T04:00:00.000Z')),
+      schedule.upcomingAt(new Date('2026-12-02T17:00:00.000Z')),
     ).toBeNull();
-    expect(schedule.isOverAt(new Date('2026-12-02T04:00:00.000Z'))).toBe(true);
+    expect(schedule.isOverAt(new Date('2026-12-02T17:00:00.000Z'))).toBe(true);
   });
 
-  it('refuses a meeting held once without its day, or on a day that has passed', () => {
+  it('takes a meeting held once today, and refuses one without its day or on a day gone', () => {
+    expect(
+      OneOnOneSchedule.plan(
+        choice({ cadence: 'ONCE', startsOn: '2026-11-26' }),
+        THURSDAY_TEN,
+      ).snapshot().startsOn,
+    ).toBe('2026-11-26');
     expect(() =>
       OneOnOneSchedule.plan(choice({ cadence: 'ONCE' }), THURSDAY_TEN),
     ).toThrow(OneOnOneScheduleInvalidError);

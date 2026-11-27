@@ -9,7 +9,10 @@ import {
 } from '@test/support/one-on-one.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
 import { OneOnOne } from '../../../domain/entity/one-on-one.entity';
-import { OneOnOneNotRunningError } from '../../../domain/one-on-one.errors';
+import {
+  OneOnOneNotRunningError,
+  OneOnOneTemplateUnknownError,
+} from '../../../domain/one-on-one.errors';
 import {
   OneOnOneMeetingAlreadyStartedError,
   OneOnOneMeetingNotStartedError,
@@ -31,6 +34,7 @@ import { OpenMeetingUseCase } from './open-meeting.use-case';
 import { RemoveTopicUseCase } from './remove-topic.use-case';
 import { StartMeetingUseCase } from './start-meeting.use-case';
 import { UpdateTopicUseCase } from './update-topic.use-case';
+import { UseTemplateForMeetingUseCase } from './use-template-for-meeting.use-case';
 
 const WORKSPACE_ID = 'workspace-acme';
 const ONE_ON_ONE_ID = 'one-on-one-1';
@@ -54,14 +58,13 @@ function ids() {
 const ONCE_CHOICE = {
   cadence: 'ONCE',
   weekday: 4,
-  startMinute: 600,
-  lengthMinutes: 30,
   templateKey: 'weekly-check-in',
   startsOn: '2026-11-26',
 } as const;
 
 /** 10:40 Bangkok time: the one-time meeting's slot has passed. */
-const AFTER_THE_SLOT = new Date('2026-11-26T03:40:00.000Z');
+/** Midnight in Bangkok as 27 November starts: the day the meeting was on is over. */
+const AFTER_THE_SLOT = new Date('2026-11-26T17:00:00.000Z');
 
 function setUp({
   ended = false,
@@ -83,8 +86,6 @@ function setUp({
         : {
             cadence: 'WEEKLY',
             weekday: 4,
-            startMinute: 600,
-            lengthMinutes: 30,
             templateKey: 'weekly-check-in',
           },
       NOW,
@@ -108,7 +109,6 @@ function setUp({
   const access = new OneOnOneMeetingAccessService(
     oneOnOnes,
     meetings,
-    catalog,
     idGenerator,
     clock,
   );
@@ -124,6 +124,13 @@ function setUp({
     addTopic: new AddTopicUseCase(access, meetings, unitOfWork, idGenerator),
     updateTopic: new UpdateTopicUseCase(access, meetings, unitOfWork, clock),
     removeTopic: new RemoveTopicUseCase(access, meetings, unitOfWork),
+    useTemplate: new UseTemplateForMeetingUseCase(
+      access,
+      catalog,
+      meetings,
+      unitOfWork,
+      idGenerator,
+    ),
   };
 }
 
@@ -133,9 +140,20 @@ const as = (accountId: string) => ({
   accountId,
 });
 
+/** The next meeting opened by Krit, who uses the Weekly check-in for it. */
+async function prepared(world: ReturnType<typeof setUp>) {
+  const opened = await world.open.execute(as(KRIT));
+  await world.useTemplate.execute({
+    ...as(KRIT),
+    meetingId: opened.id,
+    templateKey: 'weekly-check-in',
+  });
+  return opened;
+}
+
 /** A meeting opened, started and run by Krit and Mint, with one topic discussed. */
 async function aMeetingRun(world: ReturnType<typeof setUp>) {
-  const { id: meetingId } = await world.open.execute(as(KRIT));
+  const { id: meetingId } = await prepared(world);
   await world.start.execute({ ...as(MINT), meetingId });
   const [first] = world.meetings.saved(meetingId)?.snapshot().topics ?? [];
   await world.updateTopic.execute({
@@ -149,17 +167,17 @@ async function aMeetingRun(world: ReturnType<typeof setUp>) {
 }
 
 describe('the next meeting of a 1:1', () => {
-  it('shows what it will open with before anybody writes to it', async () => {
+  it('shows it opens with no template before anybody writes to it', async () => {
     const world = setUp();
 
     const next = await world.next.execute(as(MINT));
 
     expect(next.meeting).toBeNull();
-    expect(next.templateName).toBe('Weekly check-in');
-    expect(next.templateQuestions[0]).toBe('What went well this week?');
+    expect(next.templateName).toBeNull();
+    expect(next.templateQuestions).toEqual([]);
   });
 
-  it('opens once, whoever opens it, with the template questions', async () => {
+  it('opens once, whoever opens it, with no template questions', async () => {
     const world = setUp();
 
     const first = await world.open.execute(as(KRIT));
@@ -168,7 +186,42 @@ describe('the next meeting of a 1:1', () => {
     expect(first.opened).toBe(true);
     expect(again).toEqual({ id: first.id, opened: false });
     expect(world.meetings.all()).toHaveLength(1);
-    expect(world.meetings.saved(first.id)?.snapshot().topics).toHaveLength(3);
+    expect(world.meetings.saved(first.id)?.snapshot().topics).toHaveLength(0);
+  });
+
+  it('takes the questions of a template either person uses, named for both', async () => {
+    const world = setUp();
+    const { id: meetingId } = await prepared(world);
+
+    const next = await world.next.execute(as(MINT));
+
+    expect(next.templateName).toBe('Weekly check-in');
+    expect(next.meeting?.topics.map((topic) => topic.source)).toEqual([
+      'TEMPLATE',
+      'TEMPLATE',
+      'TEMPLATE',
+    ]);
+    await world.useTemplate.execute({
+      ...as(MINT),
+      meetingId,
+      templateKey: 'career-conversation',
+    });
+    expect(
+      (await world.next.execute(as(KRIT))).meeting?.topics[0]?.text,
+    ).not.toBe('What went well this week?');
+  });
+
+  it('uses no template that is not one somebody may choose', async () => {
+    const world = setUp();
+    const { id: meetingId } = await world.open.execute(as(KRIT));
+
+    await expect(
+      world.useTemplate.execute({
+        ...as(KRIT),
+        meetingId,
+        templateKey: 'no-such-template',
+      }),
+    ).rejects.toThrow(OneOnOneTemplateUnknownError);
   });
 
   it('is nobody else’s to read or write', async () => {
@@ -214,7 +267,7 @@ describe('the next meeting of a 1:1', () => {
 describe('preparing and running a meeting', () => {
   it('lets only the author remove the topic they added', async () => {
     const world = setUp();
-    const { id: meetingId } = await world.open.execute(as(KRIT));
+    const { id: meetingId } = await prepared(world);
     const { id: topicId } = await world.addTopic.execute({
       ...as(MINT),
       meetingId,
@@ -230,7 +283,7 @@ describe('preparing and running a meeting', () => {
 
   it('lets only the author reword the topic they added, and anyone a template one', async () => {
     const world = setUp();
-    const { id: meetingId } = await world.open.execute(as(KRIT));
+    const { id: meetingId } = await prepared(world);
     const { id: topicId } = await world.addTopic.execute({
       ...as(MINT),
       meetingId,
@@ -269,7 +322,7 @@ describe('preparing and running a meeting', () => {
 
   it('takes notes only once started, and refuses one that would overwrite the other’s', async () => {
     const world = setUp();
-    const { id: meetingId } = await world.open.execute(as(KRIT));
+    const { id: meetingId } = await prepared(world);
     const topicId =
       world.meetings.saved(meetingId)?.snapshot().topics[0]?.id ?? '';
 
@@ -302,7 +355,7 @@ describe('preparing and running a meeting', () => {
 describe('a one-time 1:1', () => {
   it('keeps its open meeting writable after its slot, so a talk that runs over is noted and finished', async () => {
     const before = setUp({ once: true });
-    const { id: meetingId } = await before.open.execute(as(KRIT));
+    const { id: meetingId } = await prepared(before);
     await before.start.execute({ ...as(KRIT), meetingId });
     const late = setUp({ once: true, now: AFTER_THE_SLOT });
     const saved = before.meetings.saved(meetingId);
@@ -403,7 +456,7 @@ describe('finishing a meeting', () => {
       "What's in your way?",
       'What do you need from me?',
     ]);
-    expect(next.templateQuestions).toEqual(['What went well this week?']);
+    expect(next.templateQuestions).toEqual([]);
     const { id } = await world.open.execute(as(KRIT));
     expect(
       world.meetings

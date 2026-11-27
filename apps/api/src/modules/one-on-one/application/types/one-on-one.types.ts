@@ -29,6 +29,11 @@ export interface OneOnOneRow {
    * left it open. A one-time 1:1 in that state is not yet over, whatever its slot says.
    */
   readonly meetingInProgress: boolean;
+  /**
+   * Whether one of its meetings has been finished. A one-time 1:1 in that state is met, and has no
+   * next meeting, though the day it was set for is still to come.
+   */
+  readonly hasFinishedMeeting: boolean;
 }
 
 /** One 1:1 as its reader sees it: who it is with, and when it next meets. */
@@ -59,8 +64,6 @@ export interface OneOnOneViewPage {
 export interface OneOnOneScheduleInput {
   readonly cadence: string;
   readonly weekday: number;
-  readonly startMinute: number;
-  readonly lengthMinutes: number;
   readonly templateKey: string;
   /** The day of a meeting held just once, `YYYY-MM-DD`. */
   readonly startsOn?: string;

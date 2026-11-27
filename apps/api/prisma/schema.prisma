@@ -669,9 +669,6 @@ model OneOnOne {
   cadence            OneOnOneCadence
   /// 1 is Monday and 7 is Sunday, in the calendar clock.
   weekday            Int
-  /// Minutes after midnight in the calendar clock.
-  startMinute        Int
-  lengthMinutes      Int
   /// The calendar day of the first meeting, which fixes every second week and the week of the month.
   startsOn           DateTime          @db.Date
   /// One of Thrive's templates, by its key, when each meeting's agenda starts from one of those;

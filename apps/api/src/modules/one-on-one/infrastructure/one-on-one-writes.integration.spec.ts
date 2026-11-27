@@ -7,14 +7,12 @@ import { FakeClock } from '@test/support/clock.fake';
 import { v7 as uuidv7 } from 'uuid';
 import { oneOnOneKey } from '../application/service/one-on-one-keys.service';
 import { OneOnOneMeetingAccessService } from '../application/service/one-on-one-meeting-access.service';
-import { OneOnOneTemplateCatalogService } from '../application/service/one-on-one-template-catalog.service';
 import { AcceptOneOnOneUseCase } from '../application/use-cases/accept-one-on-one.use-case';
 import { OpenMeetingUseCase } from '../application/use-cases/meetings/open-meeting.use-case';
 import { OneOnOne } from '../domain/entity/one-on-one.entity';
 import { OneOnOneSchedule } from '../domain/value-object/one-on-one-schedule.vo';
 import { PrismaOneOnOneRepository } from './repository/prisma-one-on-one.repository';
 import { PrismaOneOnOneMeetingRepository } from './repository/prisma-one-on-one-meeting.repository';
-import { PrismaOneOnOneTemplateRepository } from './repository/prisma-one-on-one-template.repository';
 
 const prismaService = new PrismaService(loadConfiguration().database);
 const context = new PrismaTransactionContext(prismaService);
@@ -26,9 +24,6 @@ const clock = new FakeClock(NOW);
 const access = new OneOnOneMeetingAccessService(
   oneOnOnes,
   meetings,
-  new OneOnOneTemplateCatalogService(
-    new PrismaOneOnOneTemplateRepository(context),
-  ),
   { next: () => uuidv7() },
   clock,
 );
@@ -49,8 +44,6 @@ async function anInvitation(): Promise<OneOnOne> {
       {
         cadence: 'WEEKLY',
         weekday: 4,
-        startMinute: 600,
-        lengthMinutes: 30,
         templateKey: 'weekly-check-in',
       },
       NOW,

@@ -431,9 +431,6 @@ const PRAISE: readonly Praise[] = [
 type Schedule = {
   readonly cadence: 'WEEKLY' | 'EVERY_TWO_WEEKS' | 'MONTHLY' | 'ONCE';
   readonly weekday: number;
-  readonly startMinute: number;
-  readonly lengthMinutes: number;
-  readonly templateKey: string;
   /** The day of a meeting held just once. */
   readonly startsOn?: string;
 };
@@ -524,9 +521,6 @@ const KEPT = 'kept:';
 const WEEKLY_THURSDAY: Schedule = {
   cadence: 'WEEKLY',
   weekday: 4,
-  startMinute: 10 * 60,
-  lengthMinutes: 30,
-  templateKey: 'weekly-check-in',
 };
 
 /** The reader's 1:1s, one in every state the page draws: to answer, running, waiting, turned down, over. */
@@ -545,9 +539,6 @@ const ONE_ON_ONES: readonly OneOnOneSeed[] = [
     schedule: {
       cadence: 'EVERY_TWO_WEEKS',
       weekday: 2,
-      startMinute: 14 * 60,
-      lengthMinutes: 45,
-      templateKey: `${KEPT}growth-plan`,
     },
     answer: 'accept',
   },
@@ -558,9 +549,6 @@ const ONE_ON_ONES: readonly OneOnOneSeed[] = [
     schedule: {
       cadence: 'MONTHLY',
       weekday: 5,
-      startMinute: 16 * 60,
-      lengthMinutes: 30,
-      templateKey: 'feedback-both-ways',
     },
     answer: 'accept',
   },
@@ -568,7 +556,7 @@ const ONE_ON_ONES: readonly OneOnOneSeed[] = [
   {
     from: 'me',
     to: 'dev',
-    schedule: { ...WEEKLY_THURSDAY, weekday: 1, startMinute: 9 * 60 + 30 },
+    schedule: { ...WEEKLY_THURSDAY, weekday: 1 },
     note: 'A regular half hour to talk about the platform migration.',
   },
   // Sent to the reader with a note, waiting on them.
@@ -585,8 +573,6 @@ const ONE_ON_ONES: readonly OneOnOneSeed[] = [
     schedule: {
       ...WEEKLY_THURSDAY,
       cadence: 'ONCE',
-      startMinute: 11 * 60,
-      templateKey: 'new-joiner',
       startsOn: dayAhead(5),
     },
   },
@@ -604,7 +590,7 @@ const ONE_ON_ONES: readonly OneOnOneSeed[] = [
     to: 'jun',
     schedule: WEEKLY_THURSDAY,
     answer: 'suggest',
-    suggested: { ...WEEKLY_THURSDAY, weekday: 2, startMinute: 15 * 60 },
+    suggested: { ...WEEKLY_THURSDAY, weekday: 2 },
     answerNote: 'Thursdays are full for me. Could Tuesday afternoons work?',
   },
   // Ran, then ended.
@@ -967,12 +953,6 @@ Sign in once at ${WEB_BASE_URL} with that Google account, then run this again.
     );
     keptTemplates.set(`${KEPT}${key}`, id as string);
   }
-  /** A schedule as the API takes it: a kept template named by its id. */
-  const withKeptTemplate = (schedule: Schedule): Schedule => ({
-    ...schedule,
-    templateKey:
-      keptTemplates.get(schedule.templateKey) ?? schedule.templateKey,
-  });
 
   const seededOneOnOnes = new Map<string, string>();
   for (const piece of ONE_ON_ONES) {
@@ -984,7 +964,7 @@ Sign in once at ${WEB_BASE_URL} with that Google account, then run this again.
       `/v1/workspaces/${workspaceId}/one-on-ones`,
       {
         invitedAccountId: to.accountId,
-        schedule: withKeptTemplate(piece.schedule),
+        schedule: piece.schedule,
         ...(piece.note ? { note: piece.note } : {}),
       },
     );
@@ -998,7 +978,7 @@ Sign in once at ${WEB_BASE_URL} with that Google account, then run this again.
     }
     if (piece.answer === 'suggest') {
       await call(to, 'POST', `${oneOnOne}/suggest`, {
-        schedule: piece.suggested && withKeptTemplate(piece.suggested),
+        schedule: piece.suggested,
         ...(piece.answerNote ? { note: piece.answerNote } : {}),
       });
     }
@@ -1023,6 +1003,10 @@ Sign in once at ${WEB_BASE_URL} with that Google account, then run this again.
   for (const seed of BEN_MEETINGS) {
     const { id: meetingId } = await call(me, 'POST', `${benOneOnOne}/meetings`);
     const meeting = `${benOneOnOne}/meetings/${meetingId as string}`;
+    // Each was prepared from Thrive's Weekly check-in, used while it was prepared.
+    await call(me, 'PUT', `${meeting}/template`, {
+      templateKey: 'weekly-check-in',
+    });
     for (const topic of seed.added) {
       await call(resolve(topic.by), 'POST', `${meeting}/topics`, {
         text: topic.text,
@@ -1076,6 +1060,20 @@ Sign in once at ${WEB_BASE_URL} with that Google account, then run this again.
     );
   }
 
+  // The reader prepares the next meeting with Cara from their own Growth plan template.
+  const caraOneOnOne = `/v1/workspaces/${workspaceId}/one-on-ones/${seededOneOnOnes.get('me:cara')}`;
+  const { id: caraMeeting } = await call(
+    me,
+    'POST',
+    `${caraOneOnOne}/meetings`,
+  );
+  await call(
+    me,
+    'PUT',
+    `${caraOneOnOne}/meetings/${caraMeeting as string}/template`,
+    { templateKey: keptTemplates.get(`${KEPT}growth-plan`) },
+  );
+
   if (joiner) {
     // Only the one this script wrote: the developer's own sessions stay theirs.
     await prismaService.session.delete({ where: { id: joiner.sessionId } });
@@ -1123,7 +1121,7 @@ What is on screen for ${reader.name}:
   Waiting for you ${WEB_BASE_URL}/waiting   ${waitingForReader} Asks to answer
   Kudos board     ${WEB_BASE_URL}/kudos
   1:1s            ${WEB_BASE_URL}/one-on-ones   ${ONE_ON_ONES.length} 1:1s, one in every state
-  1:1 templates   ${WEB_BASE_URL}/one-on-ones/templates   ${TEMPLATES.length} kept beside Thrive's
+                  Templates on that page: ${TEMPLATES.length} kept beside Thrive's
 
 Run this again for another Workspace with its own people; nothing is overwritten.
 `);

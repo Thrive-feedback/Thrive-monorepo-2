@@ -12,8 +12,6 @@ const ROW: OneOnOneRow = {
   schedule: {
     cadence: 'WEEKLY',
     weekday: 4,
-    startMinute: 600,
-    lengthMinutes: 30,
     templateKey: 'weekly-check-in',
     startsOn: '2026-11-26',
   },
@@ -25,6 +23,7 @@ const ROW: OneOnOneRow = {
   createdAt: NOW,
   templateName: 'Weekly check-in',
   meetingInProgress: false,
+  hasFinishedMeeting: false,
 };
 
 describe('reading a 1:1 for one person in it', () => {
@@ -48,15 +47,34 @@ describe('reading a 1:1 for one person in it', () => {
       schedule: { ...ROW.schedule, cadence: 'ONCE' as const },
     };
 
-    // 10:00 to 10:30 on 26 Nov, Bangkok time.
+    // All of 26 Nov, Bangkok time: over at midnight.
     expect(
       service.toView(once, 'krit', new Date('2026-11-26T03:15:00.000Z'))
         ?.nextMeetingAt,
     ).not.toBeNull();
     expect(
-      service.toView(once, 'krit', new Date('2026-11-26T03:30:00.000Z'))
+      service.toView(once, 'krit', new Date('2026-11-26T17:00:00.000Z'))
         ?.nextMeetingAt,
     ).toBeNull();
+  });
+
+  it('has no next meeting once a meeting held once was finished, before its day as well', () => {
+    const met = {
+      ...ROW,
+      schedule: {
+        ...ROW.schedule,
+        cadence: 'ONCE' as const,
+        startsOn: '2026-12-03',
+      },
+      hasFinishedMeeting: true,
+    };
+
+    expect(service.toView(met, 'krit', NOW)?.nextMeetingAt).toBeNull();
+    // A weekly one goes on after a meeting is finished.
+    expect(
+      service.toView({ ...ROW, hasFinishedMeeting: true }, 'krit', NOW)
+        ?.nextMeetingAt,
+    ).not.toBeNull();
   });
 
   it('reads nothing for somebody outside it', () => {

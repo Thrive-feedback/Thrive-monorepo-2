@@ -53,7 +53,11 @@ export class PrismaOneOnOneRepository extends OneOnOneRepository {
       include: MEETING_IN_PROGRESS,
     });
     return found.some((record) =>
-      toOneOnOne(record).isOpenAt(at, record.meetings.length > 0),
+      toOneOnOne(record).isOpenAt(
+        at,
+        record.meetings.length > 0,
+        record._count.meetings > 0,
+      ),
     );
   }
 

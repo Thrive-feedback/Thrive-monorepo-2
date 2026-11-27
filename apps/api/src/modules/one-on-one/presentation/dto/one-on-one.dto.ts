@@ -41,19 +41,20 @@ export class OneOnOnePathParamsDto extends createZodDto(
 ) {}
 
 /**
- * When a 1:1 meets. Only the shape is checked here; which weekdays, times and lengths a schedule
- * keeps, and which templates exist, are the schedule's rules, each with its own code.
+ * When a 1:1 meets: how often and on which day, with no time of day, as a meeting is that whole
+ * day. Only the shape is checked here; which weekdays a schedule keeps, and which templates exist,
+ * are the schedule's rules, each with its own code.
  */
 export const oneOnOneScheduleRequestSchema = z.strictObject({
   cadence: z.enum(ONE_ON_ONE_CADENCES),
   /** 1 is Monday and 7 is Sunday. */
   weekday: z.number().int(),
-  /** Minutes after midnight, Bangkok time (UTC+7). */
-  startMinute: z.number().int(),
-  /** 15, 20, 30, 45 or 60. */
-  lengthMinutes: z.number().int(),
-  /** The key of one of Thrive's templates, from `GET one-on-one-templates`. */
-  templateKey: z.string(),
+  /**
+   * Deprecated: leave it out. A meeting no longer opens with the schedule's template; either person
+   * uses one while it is prepared (`PUT …/meetings/{meetingId}/template`). Still kept with the
+   * schedule, as Thrive's Weekly check-in when left out, until the field is removed.
+   */
+  templateKey: z.string().optional().meta({ deprecated: true }),
   /** The day of a meeting held `ONCE`, which needs it; ignored for the other cadences. */
   startsOn: z.iso.date().optional(),
 });
@@ -98,8 +99,6 @@ export class CreatedOneOnOneResponseDto extends createZodDto(
 const oneOnOneScheduleSchema = z.object({
   cadence: z.enum(ONE_ON_ONE_CADENCES),
   weekday: z.number().int(),
-  startMinute: z.number().int(),
-  lengthMinutes: z.number().int(),
   templateKey: z.string(),
   /**
    * What its template is called, for both people, whichever layer it is from: Thrive's, the

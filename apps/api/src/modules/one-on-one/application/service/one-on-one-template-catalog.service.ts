@@ -49,18 +49,31 @@ export class OneOnOneTemplateCatalogService {
     }
   }
 
-  /**
-   * The questions an agenda starting from this template opens with. A removed template still
-   * answers, so the 1:1s starting from it keep their questions. A kept one that is not there is a
-   * broken reference, which the foreign key forbids, so it is said loudly.
-   */
+  /** The questions a meeting using this template is given. */
   async questionsOf(
     workspaceId: string,
     templateKey: string,
   ): Promise<readonly string[]> {
+    return (await this.detailsOf(workspaceId, templateKey)).questions;
+  }
+
+  /** What this template is called, as both people of a meeting using it read it. */
+  async nameOf(workspaceId: string, templateKey: string): Promise<string> {
+    return (await this.detailsOf(workspaceId, templateKey)).name;
+  }
+
+  /**
+   * A template's name and questions. A removed template still answers, so a meeting that used it
+   * keeps its name. A kept one that is not there is a broken reference, which the foreign key
+   * forbids, so it is said loudly.
+   */
+  private async detailsOf(
+    workspaceId: string,
+    templateKey: string,
+  ): Promise<{ readonly name: string; readonly questions: readonly string[] }> {
     const ref = templateRefOf(templateKey);
     if (ref.kind === 'THRIVE') {
-      return ThriveTemplate.of(ref.key).snapshot().questions;
+      return ThriveTemplate.of(ref.key).snapshot();
     }
     const template = await this.templateRepository.findById(
       workspaceId,
@@ -68,9 +81,9 @@ export class OneOnOneTemplateCatalogService {
     );
     if (!template) {
       throw new Error(
-        `A 1:1 starts from template ${ref.id}, which this Workspace does not keep.`,
+        `Template ${ref.id} is named, but this Workspace does not keep it.`,
       );
     }
-    return template.snapshot().questions;
+    return template.snapshot();
   }
 }

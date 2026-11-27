@@ -34,8 +34,6 @@ async function aRunningOneOnOne() {
       {
         cadence: 'WEEKLY',
         weekday: 4,
-        startMinute: 600,
-        lengthMinutes: 30,
         templateKey: 'weekly-check-in',
       },
       NOW,
@@ -48,15 +46,19 @@ async function aRunningOneOnOne() {
 }
 
 function opened(workspaceId: string, oneOnOneId: string) {
-  return OneOnOneMeeting.open({
+  const meeting = OneOnOneMeeting.open({
     id: uuidv7(),
     workspaceId,
     oneOnOneId,
-    templateKey: 'weekly-check-in',
     carried: ['Launch retro'],
-    templateQuestions: ['What went well this week?'],
     newTopicId: () => uuidv7(),
   });
+  meeting.useTemplate({
+    templateKey: 'weekly-check-in',
+    questions: ['What went well this week?'],
+    newTopicId: () => uuidv7(),
+  });
+  return meeting;
 }
 
 afterAll(async () => {

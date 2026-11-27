@@ -25,9 +25,13 @@ export class OneOnOneViewService {
     if (withAccountId === null) {
       return null;
     }
-    const nextMeetingAt = OneOnOneStatus.of(row.status).isRunning()
-      ? OneOnOneSchedule.restore(row.schedule).upcomingAt(now)
-      : null;
+    const schedule = OneOnOneSchedule.restore(row.schedule);
+    // A one-time 1:1 whose meeting is finished is met, even before the day it was set for.
+    const isMet = schedule.isOnce() && row.hasFinishedMeeting;
+    const nextMeetingAt =
+      OneOnOneStatus.of(row.status).isRunning() && !isMet
+        ? schedule.upcomingAt(now)
+        : null;
     return { ...row, withAccountId, nextMeetingAt };
   }
 }
