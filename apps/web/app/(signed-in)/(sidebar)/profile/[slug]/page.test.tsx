@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Profile } from './_lib/profile.type';
@@ -166,20 +166,41 @@ describe('Profile', () => {
     expect(readProfile).not.toHaveBeenCalled();
   });
 
-  it('opens on the Feedback, with a chip for each list the way Received is narrowed', async () => {
+  it('opens on the Feedback, with what everyone sees and what is for the reader as two titled groups of chips', async () => {
     render(await open('ben'));
 
-    expect(screen.getByRole('button', { name: 'Feedback' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
+    const everyone = screen.getByRole('group', { name: 'Everyone sees' });
+    const forYou = screen.getByRole('group', { name: 'For you' });
+    expect([
+      within(everyone)
+        .getAllByRole('button')
+        .map((chip) => [chip.textContent, chip.getAttribute('aria-pressed')]),
+      within(forYou)
+        .getAllByRole('button')
+        .map((chip) => [chip.textContent, chip.getAttribute('aria-pressed')]),
+      screen.getByText('The feedback list') !== null,
+    ]).toEqual([
+      [
+        ['Feedback', 'true'],
+        ['Kudos', 'false'],
+      ],
+      [
+        ['Between you two', 'false'],
+        ['Shared with you', 'false'],
+        ['Open asks', 'false'],
+      ],
+      true,
+    ]);
+  });
+
+  it('says, under For you, that this part differs for everyone who opens it', async () => {
+    render(await open('ben'));
+
+    expect(
+      screen.getByRole('group', { name: 'For you' }),
+    ).toHaveAccessibleDescription(
+      'This part is different for everyone who opens it.',
     );
-    for (const name of ['Shared with you', 'Kudos']) {
-      expect(screen.getByRole('button', { name })).toHaveAttribute(
-        'aria-pressed',
-        'false',
-      );
-    }
-    expect(screen.getByText('The feedback list')).toBeInTheDocument();
   });
 
   it('goes to the list a chip names when it is pressed', async () => {
@@ -191,27 +212,44 @@ describe('Profile', () => {
     expect(push).toHaveBeenCalledWith('/profile/ben?show=kudos');
   });
 
-  it('on a teammate’s, offers what was shared with the reader as a list of its own', async () => {
-    render(await open('ben', { show: 'shared' }));
+  it.each([
+    ['between', 'Between you two'],
+    ['shared', 'Shared with you'],
+    ['asks', 'Open asks'],
+  ])(
+    'on a teammate’s, opens the %s list for the reader',
+    async (show, name) => {
+      render(await open('ben', { show }));
 
+      expect([
+        screen.getByRole('button', { name }).getAttribute('aria-pressed'),
+        screen.getByText(`The ${show} list`) !== null,
+      ]).toEqual(['true', true]);
+    },
+  );
+
+  it('on the reader’s own, is a mirror of what everyone sees, with nothing for them alone', async () => {
+    render(await open('ann'));
+
+    expect([
+      screen.queryByRole('group', { name: 'For you' }),
+      screen.getByRole('group', { name: 'Everyone sees' }),
+    ]).toEqual([null, expect.anything()]);
     expect(
-      screen.getByRole('button', { name: 'Shared with you' }),
-    ).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByText('The shared list')).toBeInTheDocument();
-  });
-
-  it('on the reader’s own, offers nothing as shared with them, and opens on the Feedback if asked', async () => {
-    render(await open('ann', { show: 'shared' }));
-
-    expect(
-      screen.queryByRole('button', { name: 'Shared with you' }),
-    ).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Feedback' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
+      screen.getByRole('group', { name: 'Everyone sees' }),
+    ).toHaveAccessibleDescription(
+      'This is what everyone sees on your Profile.',
     );
-    expect(screen.getByText('The feedback list')).toBeInTheDocument();
   });
+
+  it.each(['between', 'shared', 'asks'])(
+    'on the reader’s own, opens on the Feedback when asked for the %s list',
+    async (show) => {
+      render(await open('ann', { show }));
+
+      expect(screen.getByText('The feedback list')).toBeInTheDocument();
+    },
+  );
 
   it('shows the list the address names', async () => {
     render(await open('ben', { show: 'kudos' }));

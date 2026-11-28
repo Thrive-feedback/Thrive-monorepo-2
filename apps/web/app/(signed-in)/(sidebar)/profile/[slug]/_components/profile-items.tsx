@@ -24,6 +24,20 @@ function emptyOf(show: ProfileShow, name: string, isYou: boolean) {
       description: `Feedback for ${name} that somebody chose to show you will appear here. Each teammate sees only what was shared with them.`,
     } as const;
   }
+  if (show === 'between') {
+    return {
+      art: 'primary',
+      title: `Nothing between you and ${name} yet.`,
+      description: `Feedback and kudos you and ${name} gave each other, or that someone gave you both, will show here.`,
+    } as const;
+  }
+  if (show === 'asks') {
+    return {
+      art: 'tertiary',
+      title: `No open asks between you and ${name}.`,
+      description: `When you ask ${name} for feedback, or ${name} asks you, it waits here until it is answered.`,
+    } as const;
+  }
   if (show === 'kudos') {
     return {
       art: 'secondary',

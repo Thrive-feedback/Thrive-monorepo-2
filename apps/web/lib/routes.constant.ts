@@ -62,7 +62,13 @@ function givenViewing(view: PersonalView) {
 }
 
 /** The lists a Profile shows, in the order offered. The first is what it opens on. */
-export const PROFILE_SHOWS = ['feedback', 'shared', 'kudos'] as const;
+export const PROFILE_SHOWS = [
+  'feedback',
+  'kudos',
+  'between',
+  'shared',
+  'asks',
+] as const;
 
 export type ProfileShow = (typeof PROFILE_SHOWS)[number];
 

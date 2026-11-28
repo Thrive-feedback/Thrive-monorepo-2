@@ -1,9 +1,9 @@
 'use server';
 
 import { z } from 'zod';
-import type { PersonalItemsPage } from '@/app/(signed-in)/(sidebar)/_lib/personal-item.type';
 import { readNextPageAsMember } from '@/app/(signed-in)/(sidebar)/_lib/read-next-page.service';
 import { PROFILE_SHOWS } from '@/lib/routes.constant';
+import type { ProfileItemsPage } from './profile-item.type';
 import { readProfileItems } from './profile-items.service';
 
 const NextProfilePageInput = z.object({
@@ -22,7 +22,7 @@ const NextProfilePageInput = z.object({
  */
 export async function readNextProfilePage(
   input: unknown,
-): Promise<PersonalItemsPage | null> {
+): Promise<ProfileItemsPage | null> {
   const parsed = NextProfilePageInput.safeParse(input);
   if (!parsed.success) {
     return null;
