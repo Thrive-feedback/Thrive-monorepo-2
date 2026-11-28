@@ -488,4 +488,24 @@ export abstract class FeedbackRequestQuery {
     giverAccountId: string,
     askId: string,
   ): Promise<FeedbackAskWithVisibilityRow | null>;
+
+  /**
+   * Whether one piece of Feedback is on a Member's Profile for one reader: in what everyone reads,
+   * what was shared with the reader, or what is between the two. The same filters as those lists,
+   * with the id added, so the answer cannot disagree with them.
+   */
+  abstract isFeedbackOnProfileFor(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    feedbackId: string,
+  ): Promise<boolean>;
+
+  /** Whether one Ask is still open between a reader and a Member: `pendingAsksBetween`'s filter. */
+  abstract isAskOpenBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    askId: string,
+  ): Promise<boolean>;
 }

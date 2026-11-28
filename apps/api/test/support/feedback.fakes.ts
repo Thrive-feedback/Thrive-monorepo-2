@@ -767,6 +767,53 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
         })),
       );
   }
+
+  /** Every page of a list at once: a fake's lists are short. */
+  private static readonly ALL = { after: null, limit: 10_000 } as const;
+
+  async isFeedbackOnProfileFor(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    feedbackId: string,
+  ): Promise<boolean> {
+    const all = FakeFeedbackRequestQuery.ALL;
+    const lists = await Promise.all([
+      this.everyoneFeedbackTo(workspaceId, memberAccountId, all, null),
+      this.sharedFeedbackTo(
+        workspaceId,
+        memberAccountId,
+        readerAccountId,
+        all,
+        null,
+      ),
+      this.feedbackBetween(
+        workspaceId,
+        readerAccountId,
+        memberAccountId,
+        all,
+        null,
+      ),
+    ]);
+    return lists.some((list) =>
+      list.items.some((row) => row.id === feedbackId),
+    );
+  }
+
+  async isAskOpenBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    askId: string,
+  ): Promise<boolean> {
+    const open = await this.pendingAsksBetween(
+      workspaceId,
+      readerAccountId,
+      memberAccountId,
+      FakeFeedbackRequestQuery.ALL,
+    );
+    return open.items.some((row) => row.id === askId);
+  }
 }
 
 /** A request row's Visibility as the store's enum column holds it, which is one of the three. */
@@ -1080,5 +1127,25 @@ export class FakeKudosQuery extends KudosQuery {
     return [...counts]
       .map(([month, count]) => ({ month, count }))
       .sort((a, b) => b.month.localeCompare(a.month));
+  }
+
+  async isKudosOnProfileFor(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    kudosId: string,
+  ): Promise<boolean> {
+    const all = { after: null, limit: 10_000 } as const;
+    const lists = await Promise.all([
+      this.onHome(workspaceId, all, memberAccountId, null),
+      this.kudosBetween(
+        workspaceId,
+        readerAccountId,
+        memberAccountId,
+        all,
+        null,
+      ),
+    ]);
+    return lists.some((list) => list.items.some((row) => row.id === kudosId));
   }
 }

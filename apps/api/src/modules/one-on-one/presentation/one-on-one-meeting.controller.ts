@@ -36,6 +36,7 @@ import { FinishMeetingUseCase } from '../application/use-cases/meetings/finish-m
 import { GetNextMeetingUseCase } from '../application/use-cases/meetings/get-next-meeting.use-case';
 import { ListPastMeetingsUseCase } from '../application/use-cases/meetings/list-past-meetings.use-case';
 import { OpenMeetingUseCase } from '../application/use-cases/meetings/open-meeting.use-case';
+import { RemoveTemplateFromMeetingUseCase } from '../application/use-cases/meetings/remove-template-from-meeting.use-case';
 import { RemoveTopicUseCase } from '../application/use-cases/meetings/remove-topic.use-case';
 import { ReorderTopicsUseCase } from '../application/use-cases/meetings/reorder-topics.use-case';
 import { StartMeetingUseCase } from '../application/use-cases/meetings/start-meeting.use-case';
@@ -48,6 +49,7 @@ import {
   ListPastMeetingsQueryDto,
   ListPastMeetingsResponseDto,
   MeetingPathParamsDto,
+  MeetingTemplatePathParamsDto,
   NextMeetingResponseDto,
   ReorderTopicsRequestDto,
   TopicPathParamsDto,
@@ -78,6 +80,8 @@ function toMeetingResponse(view: OneOnOneMeetingView) {
       notesUpdatedAt: iso(topic.notesUpdatedAt),
       notesUpdatedByAccountId: topic.notesUpdatedByAccountId,
       discussedAt: iso(topic.discussedAt),
+      broughtFrom: topic.broughtFrom && { ...topic.broughtFrom },
+      templateKey: topic.templateKey,
     })),
   };
 }
@@ -105,6 +109,7 @@ export class OneOnOneMeetingController {
     private readonly removeTopicUseCase: RemoveTopicUseCase,
     private readonly reorderTopicsUseCase: ReorderTopicsUseCase,
     private readonly useTemplateForMeetingUseCase: UseTemplateForMeetingUseCase,
+    private readonly removeTemplateFromMeetingUseCase: RemoveTemplateFromMeetingUseCase,
   ) {}
 
   @Get('meetings/next')
@@ -133,6 +138,7 @@ export class OneOnOneMeetingController {
       carried: [...next.carried],
       templateQuestions: [...next.templateQuestions],
       templateName: next.templateName,
+      templates: next.templates.map((template) => ({ ...template })),
       carriedFromSkipped: next.carriedFromSkipped,
       carriedTopics: next.carriedTopics.map((each) => ({ ...each })),
     };
@@ -162,6 +168,7 @@ export class OneOnOneMeetingController {
       items: page.items.map(toMeetingResponse),
       nextCursor: toCursor(page.nextAfterId),
       skippedDays: [...page.skippedDays],
+      templates: page.templates.map((template) => ({ ...template })),
     };
   }
 
@@ -264,9 +271,13 @@ export class OneOnOneMeetingController {
     description: 'REQUEST_INVALID or ONE_ON_ONE_MEETING_TEXT_INVALID',
   })
   @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
-  @ApiNotFoundResponse({ description: NOT_FOUND })
+  @ApiNotFoundResponse({
+    description:
+      'WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND, ONE_ON_ONE_MEETING_NOT_FOUND or ONE_ON_ONE_TOPIC_SOURCE_NOT_FOUND',
+  })
   @ApiConflictResponse({
-    description: 'ONE_ON_ONE_NOT_RUNNING or ONE_ON_ONE_MEETING_FINISHED',
+    description:
+      'ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_FINISHED or ONE_ON_ONE_TOPIC_ALREADY_ON_AGENDA',
   })
   addTopic(
     @CurrentActor() actor: Actor,
@@ -279,6 +290,7 @@ export class OneOnOneMeetingController {
       oneOnOneId: params.oneOnOneId,
       meetingId: params.meetingId,
       text: body.text,
+      broughtFrom: body.broughtFrom ?? null,
     });
   }
 
@@ -355,7 +367,7 @@ export class OneOnOneMeetingController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary:
-      "Use a template for a meeting being prepared: its questions take the place of the last template's",
+      "Use a template for a meeting being prepared: its questions are added after the agenda's topics, and one in use is not used again",
   })
   @ApiHeader(COOKIE_HEADER)
   @ApiNoContentResponse({ description: 'Used' })
@@ -366,7 +378,7 @@ export class OneOnOneMeetingController {
   @ApiNotFoundResponse({ description: NOT_FOUND })
   @ApiConflictResponse({
     description:
-      'ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_ALREADY_STARTED or ONE_ON_ONE_MEETING_FINISHED',
+      'ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_ALREADY_STARTED, ONE_ON_ONE_MEETING_FINISHED or ONE_ON_ONE_TEMPLATE_IN_USE',
   })
   async useTemplateForMeeting(
     @CurrentActor() actor: Actor,
@@ -379,6 +391,38 @@ export class OneOnOneMeetingController {
       oneOnOneId: params.oneOnOneId,
       meetingId: params.meetingId,
       templateKey: body.templateKey,
+    });
+  }
+
+  @Delete('meetings/:meetingId/template/:templateKey')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Take a template off a meeting being prepared: every question it asked leaves the agenda at once',
+  })
+  @ApiHeader(COOKIE_HEADER)
+  @ApiNoContentResponse({
+    description: 'Taken off, or it was not on the agenda',
+  })
+  @ApiBadRequestResponse({
+    description: 'REQUEST_INVALID or ONE_ON_ONE_TEMPLATE_UNKNOWN',
+  })
+  @ApiUnauthorizedResponse({ description: 'NOT_SIGNED_IN' })
+  @ApiNotFoundResponse({ description: NOT_FOUND })
+  @ApiConflictResponse({
+    description:
+      'ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_ALREADY_STARTED or ONE_ON_ONE_MEETING_FINISHED',
+  })
+  async removeTemplateFromMeeting(
+    @CurrentActor() actor: Actor,
+    @Param() params: MeetingTemplatePathParamsDto,
+  ): Promise<void> {
+    await this.removeTemplateFromMeetingUseCase.execute({
+      workspaceId: params.workspaceId,
+      accountId: actor.accountId,
+      oneOnOneId: params.oneOnOneId,
+      meetingId: params.meetingId,
+      templateKey: params.templateKey,
     });
   }
 

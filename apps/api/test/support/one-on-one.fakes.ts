@@ -1,3 +1,7 @@
+import {
+  FeedbackAboutPersonPort,
+  type ProfileItemKind,
+} from '@app/modules/feedback';
 import { OneOnOneQuery } from '@app/modules/one-on-one/application/query-port/one-on-one.query-port';
 import { OneOnOneMeetingQuery } from '@app/modules/one-on-one/application/query-port/one-on-one-meeting.query-port';
 import { OneOnOneTemplateQuery } from '@app/modules/one-on-one/application/query-port/one-on-one-template.query-port';
@@ -302,6 +306,26 @@ export class FakeOneOnOneTemplateQuery extends OneOnOneTemplateQuery {
     super();
   }
 
+  /** How many times names were read, to check one read names every template an agenda used. */
+  nameReads = 0;
+
+  async namesOf(
+    workspaceId: string,
+    templateIds: readonly string[],
+  ): Promise<readonly { id: string; name: string }[]> {
+    this.nameReads += 1;
+    const found = await Promise.all(
+      templateIds.map((id) => this.repository.findById(workspaceId, id)),
+    );
+    return found.flatMap((template) => {
+      if (!template) {
+        return [];
+      }
+      const { id, name } = template.snapshot();
+      return [{ id, name }];
+    });
+  }
+
   async listSeenBy(
     workspaceId: string,
     accountId: string,
@@ -324,4 +348,51 @@ export class FakeOneOnOneTemplateQuery extends OneOnOneTemplateQuery {
       },
     );
   }
+}
+
+/**
+ * Which items are on each Member's Profile for each reader, as the Feedback module would answer: a
+ * test puts there the items one reader finds about one other person, and nothing else is.
+ */
+export class FakeFeedbackAboutPersonPort extends FeedbackAboutPersonPort {
+  private readonly onProfile: string[] = [];
+
+  /** One item `readerAccountId` finds on `aboutAccountId`'s Profile. */
+  with(
+    reader: {
+      readonly workspaceId: string;
+      readonly readerAccountId: string;
+      readonly aboutAccountId: string;
+    },
+    item: { readonly kind: ProfileItemKind; readonly id: string },
+  ): this {
+    this.onProfile.push(keyOf({ ...reader, ...item }));
+    return this;
+  }
+
+  async isOnProfileFor(input: {
+    readonly workspaceId: string;
+    readonly readerAccountId: string;
+    readonly aboutAccountId: string;
+    readonly kind: ProfileItemKind;
+    readonly id: string;
+  }): Promise<boolean> {
+    return this.onProfile.includes(keyOf(input));
+  }
+}
+
+function keyOf(item: {
+  readonly workspaceId: string;
+  readonly readerAccountId: string;
+  readonly aboutAccountId: string;
+  readonly kind: ProfileItemKind;
+  readonly id: string;
+}): string {
+  return [
+    item.workspaceId,
+    item.readerAccountId,
+    item.aboutAccountId,
+    item.kind,
+    item.id,
+  ].join('|');
 }

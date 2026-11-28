@@ -11,6 +11,12 @@ export interface OneOnOneTemplateRow {
   readonly questions: readonly string[];
 }
 
+/** A kept template's name, by its id. */
+export interface OneOnOneTemplateNameRow {
+  readonly id: string;
+  readonly name: string;
+}
+
 /** What somebody writes for a template: its name, when to use it, and its questions. */
 export interface OneOnOneTemplateContentInput {
   readonly name: string;

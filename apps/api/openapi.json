@@ -4510,10 +4510,10 @@
             "description": "NOT_SIGNED_IN"
           },
           "404": {
-            "description": "WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND"
+            "description": "WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND, ONE_ON_ONE_MEETING_NOT_FOUND or ONE_ON_ONE_TOPIC_SOURCE_NOT_FOUND"
           },
           "409": {
-            "description": "ONE_ON_ONE_NOT_RUNNING or ONE_ON_ONE_MEETING_FINISHED"
+            "description": "ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_FINISHED or ONE_ON_ONE_TOPIC_ALREADY_ON_AGENDA"
           }
         },
         "summary": "Add a topic to a meeting's agenda",
@@ -4758,10 +4758,86 @@
             "description": "WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND"
           },
           "409": {
+            "description": "ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_ALREADY_STARTED, ONE_ON_ONE_MEETING_FINISHED or ONE_ON_ONE_TEMPLATE_IN_USE"
+          }
+        },
+        "summary": "Use a template for a meeting being prepared: its questions are added after the agenda's topics, and one in use is not used again",
+        "tags": [
+          "one-on-ones"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/template/{templateKey}": {
+      "delete": {
+        "operationId": "OneOnOneMeetingController_removeTemplateFromMeeting",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "oneOnOneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "meetingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "templateKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "description": "The browser's cookie header, forwarded by the web server.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Taken off, or it was not on the agenda"
+          },
+          "400": {
+            "description": "REQUEST_INVALID or ONE_ON_ONE_TEMPLATE_UNKNOWN"
+          },
+          "401": {
+            "description": "NOT_SIGNED_IN"
+          },
+          "404": {
+            "description": "WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND"
+          },
+          "409": {
             "description": "ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_ALREADY_STARTED or ONE_ON_ONE_MEETING_FINISHED"
           }
         },
-        "summary": "Use a template for a meeting being prepared: its questions take the place of the last template's",
+        "summary": "Take a template off a meeting being prepared: every question it asked leaves the agenda at once",
         "tags": [
           "one-on-ones"
         ]
@@ -13985,6 +14061,34 @@
                       "format": "date-time",
                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                       "nullable": true
+                    },
+                    "broughtFrom": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "FEEDBACK",
+                            "KUDOS",
+                            "ASK"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "id"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "templateKey": {
+                      "type": "string",
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -13996,7 +14100,9 @@
                     "notes",
                     "notesUpdatedAt",
                     "notesUpdatedByAccountId",
-                    "discussedAt"
+                    "discussedAt",
+                    "broughtFrom",
+                    "templateKey"
                   ],
                   "additionalProperties": false
                 }
@@ -14031,7 +14137,27 @@
           },
           "templateName": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "deprecated": true
+          },
+          "templates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "additionalProperties": false
+            }
           },
           "carriedFromSkipped": {
             "type": "string",
@@ -14066,6 +14192,7 @@
           "carried",
           "templateQuestions",
           "templateName",
+          "templates",
           "carriedFromSkipped",
           "carriedTopics"
         ],
@@ -14170,6 +14297,34 @@
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                         "nullable": true
+                      },
+                      "broughtFrom": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "FEEDBACK",
+                              "KUDOS",
+                              "ASK"
+                            ]
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "id"
+                        ],
+                        "additionalProperties": false,
+                        "nullable": true
+                      },
+                      "templateKey": {
+                        "type": "string",
+                        "nullable": true
                       }
                     },
                     "required": [
@@ -14181,7 +14336,9 @@
                       "notes",
                       "notesUpdatedAt",
                       "notesUpdatedByAccountId",
-                      "discussedAt"
+                      "discussedAt",
+                      "broughtFrom",
+                      "templateKey"
                     ],
                     "additionalProperties": false
                   }
@@ -14212,12 +14369,32 @@
               "format": "date",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
             }
+          },
+          "templates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
           "items",
           "nextCursor",
-          "skippedDays"
+          "skippedDays",
+          "templates"
         ],
         "additionalProperties": false
       },
@@ -14253,6 +14430,28 @@
         "properties": {
           "text": {
             "type": "string"
+          },
+          "broughtFrom": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "FEEDBACK",
+                  "KUDOS",
+                  "ASK"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "required": [
+              "kind",
+              "id"
+            ]
           }
         },
         "required": [

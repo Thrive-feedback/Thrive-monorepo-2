@@ -188,6 +188,13 @@ export class OneOnOne {
     );
   }
 
+  /** The other of its two people, for one of them. */
+  otherThan(accountId: string): string {
+    return accountId === this.startedByAccountId
+      ? this.invitedAccountId
+      : this.startedByAccountId;
+  }
+
   /**
    * Whether it still holds the two to something: an invitation not yet answered, or a running 1:1,
    * unless it is a one-time meeting whose time is over. An invitation to a one-time meeting that has

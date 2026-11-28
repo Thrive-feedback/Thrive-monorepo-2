@@ -1,4 +1,7 @@
-import type { OneOnOneTemplateRow } from '../types/one-on-one-template.types';
+import type {
+  OneOnOneTemplateNameRow,
+  OneOnOneTemplateRow,
+} from '../types/one-on-one-template.types';
 
 export abstract class OneOnOneTemplateQuery {
   /**
@@ -9,4 +12,13 @@ export abstract class OneOnOneTemplateQuery {
     workspaceId: string,
     accountId: string,
   ): Promise<readonly OneOnOneTemplateRow[]>;
+
+  /**
+   * What the kept templates with these ids are called, removed ones too, in one read: the templates
+   * an agenda's topics came from, to name them. An id not kept in this Workspace is left out.
+   */
+  abstract namesOf(
+    workspaceId: string,
+    templateIds: readonly string[],
+  ): Promise<readonly OneOnOneTemplateNameRow[]>;
 }

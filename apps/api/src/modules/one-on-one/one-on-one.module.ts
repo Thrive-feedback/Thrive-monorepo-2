@@ -1,4 +1,5 @@
 import { DatabaseModule } from '@app/infrastructure/database/database.module';
+import { FeedbackModule } from '@app/modules/feedback';
 import { WorkspaceModule } from '@app/modules/workspace';
 import { Module } from '@nestjs/common';
 import { OneOnOneQuery } from './application/query-port/one-on-one.query-port';
@@ -7,6 +8,7 @@ import { OneOnOneTemplateQuery } from './application/query-port/one-on-one-templ
 import { OneOnOneMeetingAccessService } from './application/service/one-on-one-meeting-access.service';
 import { OneOnOneMeetingsSoFarService } from './application/service/one-on-one-meetings-so-far.service';
 import { OneOnOneTemplateCatalogService } from './application/service/one-on-one-template-catalog.service';
+import { OneOnOneTemplateNamesService } from './application/service/one-on-one-template-names.service';
 import { OneOnOneViewService } from './application/service/one-on-one-view.service';
 import { AcceptOneOnOneUseCase } from './application/use-cases/accept-one-on-one.use-case';
 import { DeclineOneOnOneUseCase } from './application/use-cases/decline-one-on-one.use-case';
@@ -19,6 +21,7 @@ import { FinishMeetingUseCase } from './application/use-cases/meetings/finish-me
 import { GetNextMeetingUseCase } from './application/use-cases/meetings/get-next-meeting.use-case';
 import { ListPastMeetingsUseCase } from './application/use-cases/meetings/list-past-meetings.use-case';
 import { OpenMeetingUseCase } from './application/use-cases/meetings/open-meeting.use-case';
+import { RemoveTemplateFromMeetingUseCase } from './application/use-cases/meetings/remove-template-from-meeting.use-case';
 import { RemoveTopicUseCase } from './application/use-cases/meetings/remove-topic.use-case';
 import { ReorderTopicsUseCase } from './application/use-cases/meetings/reorder-topics.use-case';
 import { StartMeetingUseCase } from './application/use-cases/meetings/start-meeting.use-case';
@@ -48,10 +51,11 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
  * One-on-one owns the recurring 1:1s two Members of a Workspace keep (brain ADR-0060, proposed):
  * their schedules, their meetings: agendas and the notes both write on each topic, and the templates
  * a Workspace and each Member keep beside Thrive's own. It depends on
- * Workspace, for who is a Member and who is an Admin; Workspace never depends on it.
+ * Workspace, for who is a Member and who is an Admin, and on Feedback, for whether an item brought
+ * onto an agenda is one its caller may already read; neither depends on it.
  */
 @Module({
-  imports: [DatabaseModule, WorkspaceModule],
+  imports: [DatabaseModule, WorkspaceModule, FeedbackModule],
   controllers: [
     OneOnOneController,
     OneOnOneTemplateController,
@@ -76,6 +80,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     },
     { provide: OneOnOneTemplateQuery, useClass: PrismaOneOnOneTemplateQuery },
     OneOnOneTemplateCatalogService,
+    OneOnOneTemplateNamesService,
     ListOneOnOneTemplatesUseCase,
     KeepOneOnOneTemplateUseCase,
     RewriteOneOnOneTemplateUseCase,
@@ -94,6 +99,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     FinishMeetingUseCase,
     AddTopicUseCase,
     UseTemplateForMeetingUseCase,
+    RemoveTemplateFromMeetingUseCase,
     UpdateTopicUseCase,
     RemoveTopicUseCase,
     ReorderTopicsUseCase,

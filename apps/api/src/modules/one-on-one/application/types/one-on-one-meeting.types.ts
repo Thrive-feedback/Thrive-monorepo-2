@@ -1,5 +1,6 @@
 import type {
   OneOnOneMeetingState,
+  OneOnOneTopicBroughtFrom,
   OneOnOneTopicSource,
 } from '../../domain/entity/one-on-one-meeting.entity';
 
@@ -19,12 +20,16 @@ export interface OneOnOneTopicProjection {
   readonly addedAt: Date;
   /** The skipped meeting day it was written for, kept at a schedule change; `null` otherwise. */
   readonly carriedFrom: string | null;
+  /** The Feedback or Kudos a person brought it from; `null` for every other topic. */
+  readonly broughtFrom: OneOnOneTopicBroughtFrom | null;
+  /** The template that asked it, by its key; `null` unless it came from a template (ADR 0099). */
+  readonly templateKey: string | null;
 }
 
 /** One meeting as stored, read for its two people: its agenda in order. */
 export interface OneOnOneMeetingProjection {
   readonly id: string;
-  /** The template used for it while it was prepared; `null` when none was. */
+  /** The template used last for it while it was prepared; `null` when none was. */
   readonly templateKey: string | null;
   readonly occursAt: Date | null;
   readonly startedAt: Date | null;
@@ -63,8 +68,19 @@ export interface OneOnOneNextMeetingView {
    * prepared. Kept until the web stops reading it (GEN_08 R7).
    */
   readonly templateQuestions: readonly string[];
-  /** What the template used for the live meeting is called; `null` when none was used. */
+  /**
+   * What the template used last for the live meeting is called; `null` when none was used. Every
+   * template used is in `templates` now; kept until the web stops reading it (GEN_08 R7).
+   */
   readonly templateName: string | null;
+  /** The templates whose questions are on the live meeting's agenda, in agenda order (ADR 0099). */
+  readonly templates: readonly OneOnOneTemplateName[];
+}
+
+/** A template a topic came from, by its key, with what it is called. */
+export interface OneOnOneTemplateName {
+  readonly key: string;
+  readonly name: string;
 }
 
 export interface OneOnOneMeetingCursorPageRequest {
@@ -78,4 +94,6 @@ export interface OneOnOneMeetingViewPage {
   readonly nextAfterId: string | null;
   /** The meeting days skipped, `YYYY-MM-DD`, oldest first. */
   readonly skippedDays: readonly string[];
+  /** What each template a topic on this page came from is called, each once. */
+  readonly templates: readonly OneOnOneTemplateName[];
 }

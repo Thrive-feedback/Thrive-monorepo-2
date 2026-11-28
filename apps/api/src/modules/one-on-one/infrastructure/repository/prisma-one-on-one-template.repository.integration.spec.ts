@@ -136,6 +136,29 @@ describe('PrismaOneOnOneTemplateQuery', () => {
       ['PERSONAL', 'Zebra'],
     ]);
   });
+
+  it('names templates by id in one read, removed ones too, never one kept in another Workspace', async () => {
+    const workspaceId = aWorkspaceId();
+    const retro = kept(workspaceId, 'PERSONAL', KRIT, 'Sprint retro');
+    const removed = kept(workspaceId, 'WORKSPACE', KRIT, 'Old health check');
+    removed.remove({ accountId: KRIT, isAdmin: true }, NOW);
+    const elsewhere = kept(aWorkspaceId(), 'PERSONAL', KRIT, 'Not here');
+    for (const template of [retro, removed, elsewhere]) {
+      await repository.save(template);
+    }
+
+    const named = await query.namesOf(workspaceId, [
+      retro.snapshot().id,
+      removed.snapshot().id,
+      elsewhere.snapshot().id,
+    ]);
+
+    expect([...named].sort((a, b) => a.name.localeCompare(b.name))).toEqual([
+      { id: removed.snapshot().id, name: 'Old health check' },
+      { id: retro.snapshot().id, name: 'Sprint retro' },
+    ]);
+    expect(await query.namesOf(workspaceId, [])).toEqual([]);
+  });
 });
 
 describe('PrismaOneOnOneQuery, naming the template', () => {

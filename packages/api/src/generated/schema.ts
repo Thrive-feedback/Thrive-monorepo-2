@@ -1160,10 +1160,27 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Use a template for a meeting being prepared: its questions take the place of the last template's */
+        /** Use a template for a meeting being prepared: its questions are added after the agenda's topics, and one in use is not used again */
         put: operations["OneOnOneMeetingController_useTemplateForMeeting"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/template/{templateKey}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Take a template off a meeting being prepared: every question it asked leaves the agenda at once */
+        delete: operations["OneOnOneMeetingController_removeTemplateFromMeeting"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3282,12 +3299,24 @@ export interface components {
                     notesUpdatedByAccountId: string | null;
                     /** Format: date-time */
                     discussedAt: string | null;
+                    broughtFrom: {
+                        /** @enum {string} */
+                        kind: "FEEDBACK" | "KUDOS" | "ASK";
+                        /** Format: uuid */
+                        id: string;
+                    } | null;
+                    templateKey: string | null;
                 }[];
             } | null;
             carried: string[];
             /** @deprecated */
             templateQuestions: string[];
+            /** @deprecated */
             templateName: string | null;
+            templates: {
+                key: string;
+                name: string;
+            }[];
             /** Format: date */
             carriedFromSkipped: string | null;
             carriedTopics: {
@@ -3325,10 +3354,21 @@ export interface components {
                     notesUpdatedByAccountId: string | null;
                     /** Format: date-time */
                     discussedAt: string | null;
+                    broughtFrom: {
+                        /** @enum {string} */
+                        kind: "FEEDBACK" | "KUDOS" | "ASK";
+                        /** Format: uuid */
+                        id: string;
+                    } | null;
+                    templateKey: string | null;
                 }[];
             }[];
             nextCursor: string | null;
             skippedDays: string[];
+            templates: {
+                key: string;
+                name: string;
+            }[];
         };
         CreatedMeetingThingResponseDto: {
             /** Format: uuid */
@@ -3340,6 +3380,12 @@ export interface components {
         };
         AddTopicRequestDto: {
             text: string;
+            broughtFrom?: {
+                /** @enum {string} */
+                kind: "FEEDBACK" | "KUDOS" | "ASK";
+                /** Format: uuid */
+                id: string;
+            };
         };
         UpdateTopicRequestDto: {
             text?: string;
@@ -6894,14 +6940,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND */
+            /** @description WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND, ONE_ON_ONE_MEETING_NOT_FOUND or ONE_ON_ONE_TOPIC_SOURCE_NOT_FOUND */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description ONE_ON_ONE_NOT_RUNNING or ONE_ON_ONE_MEETING_FINISHED */
+            /** @description ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_FINISHED or ONE_ON_ONE_TOPIC_ALREADY_ON_AGENDA */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -7057,6 +7103,60 @@ export interface operations {
         };
         responses: {
             /** @description Used */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description REQUEST_INVALID or ONE_ON_ONE_TEMPLATE_UNKNOWN */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND, ONE_ON_ONE_NOT_FOUND or ONE_ON_ONE_MEETING_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ONE_ON_ONE_NOT_RUNNING, ONE_ON_ONE_MEETING_ALREADY_STARTED, ONE_ON_ONE_MEETING_FINISHED or ONE_ON_ONE_TEMPLATE_IN_USE */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OneOnOneMeetingController_removeTemplateFromMeeting: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                oneOnOneId: string;
+                meetingId: string;
+                templateKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Taken off, or it was not on the agenda */
             204: {
                 headers: {
                     [name: string]: unknown;

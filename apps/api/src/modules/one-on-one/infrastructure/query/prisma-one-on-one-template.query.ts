@@ -1,7 +1,10 @@
 import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-transaction.context';
 import { Injectable } from '@nestjs/common';
 import { OneOnOneTemplateQuery } from '../../application/query-port/one-on-one-template.query-port';
-import type { OneOnOneTemplateRow } from '../../application/types/one-on-one-template.types';
+import type {
+  OneOnOneTemplateNameRow,
+  OneOnOneTemplateRow,
+} from '../../application/types/one-on-one-template.types';
 import { toOneOnOneTemplateRow } from '../mapper/one-on-one-template.mapper';
 
 @Injectable()
@@ -39,5 +42,19 @@ export class PrismaOneOnOneTemplateQuery extends OneOnOneTemplateQuery {
         },
       });
     return records.map(toOneOnOneTemplateRow);
+  }
+
+  async namesOf(
+    workspaceId: string,
+    templateIds: readonly string[],
+  ): Promise<readonly OneOnOneTemplateNameRow[]> {
+    if (templateIds.length === 0) {
+      return [];
+    }
+    // Removed ones too: a meeting that used one keeps its name.
+    return this.prismaTransactionContext.client.oneOnOneTemplate.findMany({
+      where: { workspaceId, id: { in: [...templateIds] } },
+      select: { id: true, name: true },
+    });
   }
 }

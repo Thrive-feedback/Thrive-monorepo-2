@@ -6,6 +6,7 @@ import { NotificationsModule } from '@app/modules/notifications';
 import { WorkspaceModule } from '@app/modules/workspace';
 import { WorkspaceGoalModule } from '@app/modules/workspace-goal';
 import { Module } from '@nestjs/common';
+import { FeedbackAboutPersonAdapter } from './application/adapter/feedback-about-person.adapter';
 import { FeedbackSummaryOutboxHandler } from './application/adapter/feedback-summary-outbox.adapter';
 import { FeedbackRequestQuery } from './application/query-port/feedback-request.query-port';
 import { KudosQuery } from './application/query-port/kudos.query-port';
@@ -33,6 +34,7 @@ import { ListWorkspaceKudosUseCase } from './application/use-cases/list-workspac
 import { OfferFeedbackUseCase } from './application/use-cases/offer-feedback.use-case';
 import { RefreshFeedbackSummaryUseCase } from './application/use-cases/refresh-feedback-summary.use-case';
 import { SendFeedbackRequestUseCase } from './application/use-cases/send-feedback-request.use-case';
+import { FeedbackAboutPersonPort } from './domain/port/feedback-about-person.port';
 import { FeedbackRepository } from './domain/repository/feedback-repository.port';
 import { FeedbackRequestRepository } from './domain/repository/feedback-request-repository.port';
 import { FeedbackSummaryRepository } from './domain/repository/feedback-summary-repository.port';
@@ -59,7 +61,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
 
 /**
  * Feedback owns Feedback Requests, their Asks, the Feedback written — in answer or offered — and
- * Kudos.
+ * Kudos. It publishes what one Member may already read about another, for a 1:1.
  * It depends on Workspace, for whether an Account is a Member of the Workspace Feedback is asked
  * for or given in, and on Identity, for the name each Giver is known by and whose slug a Mention
  * names; and on Workspace Goal, for which hashtags name an active Workspace Goal. None depends on
@@ -127,10 +129,12 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     GetMyFeedbackSummaryUseCase,
     RefreshFeedbackSummaryUseCase,
     FeedbackSummaryOutboxHandler,
+    { provide: FeedbackAboutPersonPort, useClass: FeedbackAboutPersonAdapter },
     WorkspaceMemberGuard,
   ],
   // The composition root names the handler the relay drains (ADR 0076 D1), so it has to be
-  // reachable from outside this module.
-  exports: [FeedbackSummaryOutboxHandler],
+  // reachable from outside this module. One-on-one reads what two Members may already read about
+  // each other through the port.
+  exports: [FeedbackSummaryOutboxHandler, FeedbackAboutPersonPort],
 })
 export class FeedbackModule {}

@@ -11,7 +11,7 @@ import { OneOnOneNotFoundError } from '../../one-on-one.errors';
 import { OneOnOneQuery } from '../../query-port/one-on-one.query-port';
 import { OneOnOneMeetingQuery } from '../../query-port/one-on-one-meeting.query-port';
 import { toMeetingView } from '../../service/one-on-one-meeting-view.service';
-import { OneOnOneTemplateCatalogService } from '../../service/one-on-one-template-catalog.service';
+import { OneOnOneTemplateNamesService } from '../../service/one-on-one-template-names.service';
 import type { OneOnOneNextMeetingView } from '../../types/one-on-one-meeting.types';
 
 export interface GetNextMeetingInput {
@@ -36,7 +36,7 @@ export class GetNextMeetingUseCase {
   constructor(
     private readonly oneOnOneQuery: OneOnOneQuery,
     private readonly meetingQuery: OneOnOneMeetingQuery,
-    private readonly templateCatalog: OneOnOneTemplateCatalogService,
+    private readonly templateNames: OneOnOneTemplateNamesService,
     private readonly clock: Clock,
   ) {}
 
@@ -63,6 +63,20 @@ export class GetNextMeetingUseCase {
       meetingWritable(status, schedule, live.startedAt !== null, now)
     ) {
       const { templateKey } = live;
+      // Every template on the agenda, each once, in the order its questions first appear.
+      const inUse = [
+        ...new Set(
+          live.topics.flatMap((topic) =>
+            topic.templateKey === null ? [] : [topic.templateKey],
+          ),
+        ),
+      ];
+      const templates = await this.templateNames.namesOf(
+        input.workspaceId,
+        templateKey !== null && !inUse.includes(templateKey)
+          ? [...inUse, templateKey]
+          : inUse,
+      );
       return {
         meeting: toMeetingView(live),
         ...(live.startedAt === null
@@ -77,9 +91,9 @@ export class GetNextMeetingUseCase {
         carried: [],
         templateQuestions: [],
         templateName:
-          templateKey === null
-            ? null
-            : await this.templateCatalog.nameOf(input.workspaceId, templateKey),
+          templates.find((template) => template.key === templateKey)?.name ??
+          null,
+        templates: templates.filter((template) => inUse.includes(template.key)),
       };
     }
     const last = await this.meetingQuery.findLastFinished(
@@ -96,6 +110,7 @@ export class GetNextMeetingUseCase {
         carried: [],
         templateQuestions: [],
         templateName: null,
+        templates: [],
       };
     }
     // It opens with what was not reached last time, and no template until somebody uses one.
@@ -105,6 +120,7 @@ export class GetNextMeetingUseCase {
       carried: last ? undiscussedOf(last.topics) : [],
       templateQuestions: [],
       templateName: null,
+      templates: [],
     };
   }
 

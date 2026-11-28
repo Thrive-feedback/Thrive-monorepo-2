@@ -32,9 +32,30 @@ export const topicPathParamsSchema = meetingPathParamsSchema.extend({
 });
 export class TopicPathParamsDto extends createZodDto(topicPathParamsSchema) {}
 
+export const meetingTemplatePathParamsSchema = meetingPathParamsSchema.extend({
+  /** One of Thrive's template keys, or the id of a kept template, as `topics[].templateKey` names it. */
+  templateKey: z.string().min(1),
+});
+export class MeetingTemplatePathParamsDto extends createZodDto(
+  meetingTemplatePathParamsSchema,
+) {}
+
+/** An item of the other person's Profile, read through `GET …/members/{accountId}/profile-items`. */
+const broughtFromSchema = z.object({
+  kind: z.enum(['FEEDBACK', 'KUDOS', 'ASK']),
+  id: z.uuid(),
+});
+
 export const addTopicRequestSchema = z.strictObject({
   /** At most 200 characters. */
   text: z.string(),
+  /**
+   * The item of the other person's Profile it is brought from: a piece of Feedback, a Kudos, or an
+   * Ask still open between the two. Refused with `ONE_ON_ONE_TOPIC_SOURCE_NOT_FOUND` when it is not
+   * on that Profile for the caller, and with `ONE_ON_ONE_TOPIC_ALREADY_ON_AGENDA` when it is on this
+   * agenda already.
+   */
+  broughtFrom: broughtFromSchema.optional(),
 });
 export class AddTopicRequestDto extends createZodDto(addTopicRequestSchema) {}
 
@@ -99,12 +120,22 @@ const topicSchema = z.object({
   notesUpdatedAt: nullableDateTime(),
   notesUpdatedByAccountId: nullableString(),
   discussedAt: nullableDateTime(),
+  /** The Profile item a person brought it from; `null` for every other topic. */
+  broughtFrom: broughtFromSchema.nullable(),
+  /**
+   * The template that asked it, by its key, for one from a template; `null` for every other. Its
+   * name is in the next meeting's `templates`.
+   */
+  templateKey: nullableString(),
 });
+
+/** A template a topic came from, by its key, with what it is called. */
+const templateNameSchema = z.object({ key: z.string(), name: z.string() });
 
 const meetingSchema = z.object({
   id: z.uuid(),
   state: z.enum(['PREPARING', 'IN_PROGRESS', 'FINISHED']),
-  /** The template used for it while it was prepared; `null` when none was. */
+  /** The template used last for it while it was prepared; `null` when none was. */
   templateKey: nullableString(),
   occursAt: nullableDateTime(),
   startedAt: nullableDateTime(),
@@ -124,8 +155,16 @@ export const nextMeetingResponseSchema = z.object({
    * uses a template while it is prepared (`PUT …/meetings/{meetingId}/template`).
    */
   templateQuestions: z.array(z.string()).meta({ deprecated: true }),
-  /** What the template used for the meeting is called; `null` when none was used. */
-  templateName: nullableString(),
+  /**
+   * Deprecated: what the template used last for the meeting is called; `null` when none was used.
+   * An agenda takes several templates now, each named in `templates`.
+   */
+  templateName: nullableString().meta({ deprecated: true }),
+  /**
+   * The templates whose questions are on the meeting's agenda, each once, in agenda order, with what
+   * each is called. A template in use is not used again until all its questions are removed.
+   */
+  templates: z.array(templateNameSchema),
   /**
    * The earliest meeting day skipped that topics on the agenda were written for, `YYYY-MM-DD` in
    * Bangkok: the agenda moved on from it to the day due. `null` when none was.
@@ -153,6 +192,8 @@ export const listPastMeetingsResponseSchema = z.object({
    * as this page's oldest meeting while more pages follow; every one on the last page.
    */
   skippedDays: z.array(z.iso.date()),
+  /** What each template a topic on this page came from is called, each once (`topics[].templateKey`). */
+  templates: z.array(templateNameSchema),
 });
 export class ListPastMeetingsResponseDto extends createZodDto(
   listPastMeetingsResponseSchema,

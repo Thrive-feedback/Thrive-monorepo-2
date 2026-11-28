@@ -57,11 +57,6 @@ export class OneOnOneTemplateCatalogService {
     return (await this.detailsOf(workspaceId, templateKey)).questions;
   }
 
-  /** What this template is called, as both people of a meeting using it read it. */
-  async nameOf(workspaceId: string, templateKey: string): Promise<string> {
-    return (await this.detailsOf(workspaceId, templateKey)).name;
-  }
-
   /**
    * A template's name and questions. A removed template still answers, so a meeting that used it
    * keeps its name. A kept one that is not there is a broken reference, which the foreign key

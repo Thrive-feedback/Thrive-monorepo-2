@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'bun:test';
 import { FakeClock } from '@test/support/clock.fake';
 import {
+  FakeFeedbackAboutPersonPort,
   FakeOneOnOneMeetingQuery,
   FakeOneOnOneMeetingRepository,
   FakeOneOnOneQuery,
   FakeOneOnOneRepository,
+  FakeOneOnOneTemplateQuery,
   FakeOneOnOneTemplateRepository,
 } from '@test/support/one-on-one.fakes';
 import { FakeUnitOfWork } from '@test/support/unit-of-work.fake';
@@ -16,6 +18,8 @@ import {
 import {
   OneOnOneMeetingAlreadyStartedError,
   OneOnOneMeetingNotStartedError,
+  OneOnOneTemplateInUseError,
+  OneOnOneTopicAlreadyOnAgendaError,
   OneOnOneTopicChangedError,
   OneOnOneTopicNotYoursError,
 } from '../../../domain/one-on-one-meeting.errors';
@@ -23,14 +27,17 @@ import { OneOnOneSchedule } from '../../../domain/value-object/one-on-one-schedu
 import {
   OneOnOneMeetingNotFoundError,
   OneOnOneNotFoundError,
+  OneOnOneTopicSourceNotFoundError,
 } from '../../one-on-one.errors';
 import { OneOnOneMeetingAccessService } from '../../service/one-on-one-meeting-access.service';
 import { OneOnOneTemplateCatalogService } from '../../service/one-on-one-template-catalog.service';
+import { OneOnOneTemplateNamesService } from '../../service/one-on-one-template-names.service';
 import { AddTopicUseCase } from './add-topic.use-case';
 import { FinishMeetingUseCase } from './finish-meeting.use-case';
 import { GetNextMeetingUseCase } from './get-next-meeting.use-case';
 import { ListPastMeetingsUseCase } from './list-past-meetings.use-case';
 import { OpenMeetingUseCase } from './open-meeting.use-case';
+import { RemoveTemplateFromMeetingUseCase } from './remove-template-from-meeting.use-case';
 import { RemoveTopicUseCase } from './remove-topic.use-case';
 import { StartMeetingUseCase } from './start-meeting.use-case';
 import { UpdateTopicUseCase } from './update-topic.use-case';
@@ -105,9 +112,12 @@ function setUp({
   const clock = new FakeClock(now);
   const idGenerator = ids();
   const unitOfWork = new FakeUnitOfWork();
-  const catalog = new OneOnOneTemplateCatalogService(
-    new FakeOneOnOneTemplateRepository(),
+  const templates = new FakeOneOnOneTemplateRepository();
+  const catalog = new OneOnOneTemplateCatalogService(templates);
+  const names = new OneOnOneTemplateNamesService(
+    new FakeOneOnOneTemplateQuery(templates),
   );
+  const feedback = new FakeFeedbackAboutPersonPort();
   const access = new OneOnOneMeetingAccessService(
     oneOnOnes,
     meetings,
@@ -118,14 +128,16 @@ function setUp({
     oneOnOnes,
     meetings,
     clock,
-    next: new GetNextMeetingUseCase(oneOnOneQuery, query, catalog, clock),
-    past: new ListPastMeetingsUseCase(oneOnOneQuery, query, clock),
+    feedback,
+    next: new GetNextMeetingUseCase(oneOnOneQuery, query, names, clock),
+    past: new ListPastMeetingsUseCase(oneOnOneQuery, query, names, clock),
     open: new OpenMeetingUseCase(access, meetings, unitOfWork),
     start: new StartMeetingUseCase(access, meetings, query, unitOfWork, clock),
     finish: new FinishMeetingUseCase(access, meetings, unitOfWork, clock),
     addTopic: new AddTopicUseCase(
       access,
       meetings,
+      feedback,
       unitOfWork,
       idGenerator,
       clock,
@@ -139,6 +151,11 @@ function setUp({
       unitOfWork,
       idGenerator,
       clock,
+    ),
+    removeTemplate: new RemoveTemplateFromMeetingUseCase(
+      access,
+      meetings,
+      unitOfWork,
     ),
   };
 }
@@ -215,9 +232,71 @@ describe('the next meeting of a 1:1', () => {
       meetingId,
       templateKey: 'career-conversation',
     });
-    expect(
-      (await world.next.execute(as(KRIT))).meeting?.topics[0]?.text,
-    ).not.toBe('What went well this week?');
+
+    // A second template adds its questions after the first's, and both are named for either person.
+    const after = await world.next.execute(as(KRIT));
+    expect(after.meeting?.topics[0]?.text).toBe('What went well this week?');
+    expect(after.meeting?.topics.at(-1)?.templateKey).toBe(
+      'career-conversation',
+    );
+    expect(after.templates).toEqual([
+      { key: 'weekly-check-in', name: 'Weekly check-in' },
+      { key: 'career-conversation', name: 'Career conversation' },
+    ]);
+  });
+
+  it('lets either person take a template off, every question it asked at once', async () => {
+    const world = setUp();
+    const { id: meetingId } = await prepared(world);
+    await world.addTopic.execute({
+      ...as(MINT),
+      meetingId,
+      text: 'Offsite',
+      broughtFrom: null,
+    });
+
+    // Krit used it; Mint takes it off.
+    await world.removeTemplate.execute({
+      ...as(MINT),
+      meetingId,
+      templateKey: 'weekly-check-in',
+    });
+
+    const next = await world.next.execute(as(KRIT));
+    expect(next.meeting?.topics.map((topic) => topic.text)).toEqual([
+      'Offsite',
+    ]);
+    expect(next.templates).toEqual([]);
+  });
+
+  it('names the templates the topics of past meetings came from', async () => {
+    const world = setUp();
+    const { id: meetingId } = await prepared(world);
+    await world.start.execute({ ...as(KRIT), meetingId });
+    await world.finish.execute({ ...as(MINT), meetingId });
+
+    const past = await world.past.execute({
+      ...as(KRIT),
+      page: { afterId: null, limit: 10 },
+    });
+
+    expect(past.items[0]?.topics[0]?.templateKey).toBe('weekly-check-in');
+    expect(past.templates).toEqual([
+      { key: 'weekly-check-in', name: 'Weekly check-in' },
+    ]);
+  });
+
+  it('uses a template once while its questions are on the agenda', async () => {
+    const world = setUp();
+    const { id: meetingId } = await prepared(world);
+
+    await expect(
+      world.useTemplate.execute({
+        ...as(KRIT),
+        meetingId,
+        templateKey: 'weekly-check-in',
+      }),
+    ).rejects.toThrow(OneOnOneTemplateInUseError);
   });
 
   it('uses no template that is not one somebody may choose', async () => {
@@ -494,5 +573,70 @@ describe('finishing a meeting', () => {
     expect(forKrit.items.map((meeting) => meeting.id)).toEqual([second, first]);
     expect(forMint.items).toEqual(forKrit.items);
     expect(forKrit.items[0]?.topics[0]?.notes).toBe('Shipped on time');
+  });
+});
+
+describe('bringing an item of the other person’s Profile onto the agenda', () => {
+  const KRIT_ABOUT_MINT = {
+    workspaceId: WORKSPACE_ID,
+    readerAccountId: KRIT,
+    aboutAccountId: MINT,
+  } as const;
+
+  it('adds a topic that names the item, once', async () => {
+    const world = setUp();
+    world.feedback.with(KRIT_ABOUT_MINT, { kind: 'KUDOS', id: 'kudos-1' });
+    const { id: meetingId } = await world.open.execute(as(KRIT));
+    const brought = {
+      ...as(KRIT),
+      meetingId,
+      text: 'Nok to Mint: for staying late',
+      broughtFrom: { kind: 'KUDOS', id: 'kudos-1' },
+    } as const;
+
+    await world.addTopic.execute(brought);
+
+    const [topic] = world.meetings.saved(meetingId)?.snapshot().topics ?? [];
+    expect(topic?.broughtFrom).toEqual({ kind: 'KUDOS', id: 'kudos-1' });
+    expect(topic?.authorAccountId).toBe(KRIT);
+    await expect(world.addTopic.execute(brought)).rejects.toBeInstanceOf(
+      OneOnOneTopicAlreadyOnAgendaError,
+    );
+  });
+
+  it('brings an Ask still open between the two', async () => {
+    const world = setUp();
+    world.feedback.with(KRIT_ABOUT_MINT, { kind: 'ASK', id: 'ask-1' });
+    const { id: meetingId } = await world.open.execute(as(KRIT));
+
+    await world.addTopic.execute({
+      ...as(KRIT),
+      meetingId,
+      text: 'Mint asked you: How did the doc land?',
+      broughtFrom: { kind: 'ASK', id: 'ask-1' },
+    });
+
+    const [topic] = world.meetings.saved(meetingId)?.snapshot().topics ?? [];
+    expect(topic?.broughtFrom).toEqual({ kind: 'ASK', id: 'ask-1' });
+  });
+
+  it('refuses what is not on the other person’s Profile for the caller', async () => {
+    const world = setUp();
+    // On Mint's Profile for Krit, not on Krit's for Mint.
+    world.feedback.with(KRIT_ABOUT_MINT, {
+      kind: 'FEEDBACK',
+      id: 'feedback-1',
+    });
+    const { id: meetingId } = await world.open.execute(as(MINT));
+
+    await expect(
+      world.addTopic.execute({
+        ...as(MINT),
+        meetingId,
+        text: 'Feedback from Krit',
+        broughtFrom: { kind: 'FEEDBACK', id: 'feedback-1' },
+      }),
+    ).rejects.toBeInstanceOf(OneOnOneTopicSourceNotFoundError);
+    expect(world.meetings.saved(meetingId)?.snapshot().topics).toHaveLength(0);
   });
 });
