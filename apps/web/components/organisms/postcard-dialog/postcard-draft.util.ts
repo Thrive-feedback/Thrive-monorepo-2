@@ -128,7 +128,7 @@ export function blankDraft(card: PostcardCard): CardState {
   return {
     recipientAccountIds:
       card.kind === 'answer' ? NOBODY : card.defaultRecipientAccountIds,
-    message: card.kind === 'answer' ? '' : card.defaultMessage,
+    message: card.defaultMessage ?? '',
     // A new card opens on any picture; an answer is written on the Requester's card.
     templateKey:
       card.kind === 'answer' ? card.ask.templateKey : randomTemplateKey(),

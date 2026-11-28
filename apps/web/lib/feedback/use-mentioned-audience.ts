@@ -5,6 +5,16 @@ import type { Visibility } from '@/lib/feedback/visibility.type';
 
 const names = new Intl.ListFormat('en', { type: 'conjunction' });
 
+/**
+ * Who else can read it as the writer left it: their own choice and who they ticked by hand, without
+ * what the text's Mentions add, which follows the text. Enough to pick up where they were, as when
+ * the writing dialog switches style.
+ */
+export type KeptAudience = {
+  readonly chosen: Visibility;
+  readonly ticked: ReadonlySet<string>;
+};
+
 /** What the people dialog says under someone a Mention keeps selected. */
 const MENTIONED = 'Mentioned in your message';
 
@@ -25,15 +35,22 @@ export function useMentionedAudience({
   message,
   teammates,
   readsAnyway,
+  initial,
 }: {
   message: string;
   /** Everyone who can be mentioned or selected. Never the writer. */
   teammates: readonly Teammate[];
   /** Who reads it whatever the Visibility: the Receivers, or the Givers asked. */
   readsAnyway: readonly string[];
+  /** Where the writer left it, to start from; Everyone, with nobody ticked, unless given. */
+  initial?: KeptAudience;
 }) {
-  const [chosen, setChosen] = useState<Visibility>('EVERYONE');
-  const [ticked, setTicked] = useState<ReadonlySet<string>>(new Set());
+  const [chosen, setChosen] = useState<Visibility>(
+    initial?.chosen ?? 'EVERYONE',
+  );
+  const [ticked, setTicked] = useState<ReadonlySet<string>>(
+    initial?.ticked ?? new Set(),
+  );
   const [notice, setNotice] = useState<string | null>(null);
 
   const outsidersIn = (text: string) =>
@@ -56,6 +73,8 @@ export function useMentionedAudience({
   return {
     visibility,
     selectedAccountIds,
+    /** Where the writer has left it, to pick up from elsewhere. */
+    kept: { chosen, ticked } satisfies KeptAudience,
     lockedAccountIds,
     /** Those people, each with the reason the people dialog shows for keeping them selected. */
     lockedPeople: new Map<string, string>(

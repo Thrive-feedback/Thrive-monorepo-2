@@ -14,6 +14,8 @@ export type PostcardTitleRowProps = {
    */
   person?: PostcardWriter;
   className?: string;
+  /** Controls set beside Close, such as the switch between the postcard and the plain style. */
+  children?: React.ReactNode;
   /** Close was pressed. */
   onClose: () => void;
 };
@@ -58,13 +60,20 @@ export function PostcardTitleRow({
   title,
   person,
   className,
+  children,
   onClose,
 }: PostcardTitleRowProps) {
   return (
-    <div className={cn('flex w-full max-w-2xl items-center gap-2', className)}>
+    <div
+      className={cn(
+        'flex w-full max-w-2xl flex-wrap items-center gap-2',
+        className,
+      )}
+    >
       <DialogTitle className="flex-1 text-subtitle-display-1">
         {titleWithFace(title, person)}
       </DialogTitle>
+      {children}
       <Button variant="secondary" size="icon" onClick={onClose}>
         <XIcon aria-hidden="true" className="size-5" />
         <span className="sr-only">Close</span>

@@ -12,6 +12,12 @@ export const SENT_AWAY =
 export const POSTCARD_SCREEN =
   'translate-none inset-0 top-0 mx-0 max-h-none max-w-none gap-0 overflow-y-auto overflow-x-hidden rounded-none border-0 bg-transparent p-4 shadow-none focus-visible:outline-hidden md:p-8';
 
+/**
+ * On the screen and its scrim when the writer switched style: the dialog was already open, so the
+ * new one is simply there, with no entrance to replay.
+ */
+export const SWITCHED_IN = 'motion-safe:data-[state=open]:animate-none';
+
 /** The column everything sits in, wider than the card, so the tools fit on one line beside Send. */
 export const POSTCARD_PAGE =
   'mx-auto my-auto flex w-full max-w-5xl flex-col items-center gap-4';
@@ -75,6 +81,23 @@ export const BAR_LABELS = {
 const CHOOSING_THE_CARD = {
   cover: CARD_NOTES.pickPicture,
   card: null,
+};
+
+/** Who is chosen after "To", for the cards that choose: what choosing means, and for whom. */
+export const RECIPIENTS: Readonly<
+  Record<
+    Exclude<PostcardKind, 'answer'>,
+    { label: string; description: string }
+  >
+> = {
+  give: {
+    label: "Choose who it's for",
+    description: 'They can always read it.',
+  },
+  ask: {
+    label: 'Choose who to ask',
+    description: 'They each answer in their own words.',
+  },
 };
 
 /** The words each card uses, so the three read as one family. */

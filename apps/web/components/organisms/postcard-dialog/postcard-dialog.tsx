@@ -1,14 +1,20 @@
 'use client';
 
+import { useRef, useState } from 'react';
 import { Dialog } from '@/components/atoms/dialog';
+import { useFeedbackStyle } from '@/components/organisms/feedback-style-provider';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { PlainFeedbackEditor } from './plain-feedback-editor';
 import type {
+  PagePin,
   PostcardAnswer,
   PostcardAsk,
   PostcardCard,
   PostcardDraft,
   PostcardKind,
   PostcardWriter,
+  StyleSwitching,
+  WrittenSoFar,
 } from './postcard-draft.type';
 import { NOBODY } from './postcard-draft.util';
 import { PostcardEditor } from './postcard-editor';
@@ -81,6 +87,11 @@ export type PostcardDialogProps = PostcardDialogCommonProps &
  * Every opening is a new card, whatever was on the last one, holding only what the caller says
  * was typed first. Closing — Close or Escape — asks first unless `asksBeforeClosing` is off, and
  * nothing outside the card closes it.
+ *
+ * In the plain style the same Feedback is written as words on a sheet instead
+ * (`PlainFeedbackEditor`). Switching style while writing keeps the message, who it is for and who
+ * else can read it; a postcard's picture, stamp and stickers have nowhere to go on a sheet, so they
+ * are left behind.
  */
 export function PostcardDialog(props: PostcardDialogProps) {
   const {
@@ -113,20 +124,58 @@ export function PostcardDialog(props: PostcardDialogProps) {
         };
 
   const openings = useOpenings(open);
+  const { style } = useFeedbackStyle();
+  // What a switch of style carried over, and where it found the page, for this opening alone.
+  const [carried, setCarried] = useState<{
+    opening: number;
+    written: WrittenSoFar;
+    pin: PagePin | null;
+  } | null>(null);
+  const current = carried?.opening === openings ? carried : null;
+  // Shared by both styles, so closing gives focus back to what opened the dialog, whichever shows,
+  // and a switch's taking one style away is not taken for a close.
+  const openerRef = useRef<HTMLElement | null>(null);
+  const isSwitchingRef = useRef(false);
+  const shownCard: PostcardCard = !current
+    ? card
+    : card.kind === 'answer'
+      ? { ...card, defaultMessage: current.written.message }
+      : {
+          ...card,
+          defaultMessage: current.written.message,
+          defaultRecipientAccountIds: current.written.recipientAccountIds,
+          defaultAudience: current.written.audience,
+        };
+  const switching: StyleSwitching = {
+    onSwitch: (written, pin) => setCarried({ opening: openings, written, pin }),
+    isSwitchedIn: current !== null,
+    pin: current?.pin ?? null,
+    openerRef,
+    isSwitchingRef,
+    // From the caller's card, never the carried one, so what the writer chose stays theirs.
+    openingRecipientAccountIds:
+      card.kind === 'answer' ? NOBODY : card.defaultRecipientAccountIds,
+  };
+  const editorKey = `${openings}:${card.kind}:${style}`;
+  const editor = {
+    title,
+    writer,
+    card: shownCard,
+    switching,
+    onClose: () => onOpenChange(false),
+    onCloseAutoFocus,
+    asksBeforeClosing,
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* A new opening, or a different card, gets a new editor: each starts blank and keeps one
-          kind for its life. */}
-      <PostcardEditor
-        key={`${openings}:${card.kind}`}
-        title={title}
-        writer={writer}
-        card={card}
-        onClose={() => onOpenChange(false)}
-        onCloseAutoFocus={onCloseAutoFocus}
-        asksBeforeClosing={asksBeforeClosing}
-      />
+      {/* A new opening, a different card or a switch of style gets a new editor: each starts blank,
+          but for what a switch carried, and keeps one kind for its life. */}
+      {style === 'plain' ? (
+        <PlainFeedbackEditor key={editorKey} {...editor} />
+      ) : (
+        <PostcardEditor key={editorKey} {...editor} />
+      )}
     </Dialog>
   );
 }

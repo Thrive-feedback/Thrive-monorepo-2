@@ -10,7 +10,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** The colour mode, kept in this browser rather than on the account. */
+/**
+ * The colour mode and the style Feedback is written in, kept in this browser rather than on the
+ * account.
+ */
 export default async function Appearance() {
   await requireMember();
 

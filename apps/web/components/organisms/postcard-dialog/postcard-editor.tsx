@@ -1,12 +1,9 @@
 import { ArrowRightIcon } from 'lucide-react';
-import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { DialogContent } from '@/components/atoms/dialog';
-import { feedbackTagTriggers } from '@/components/organisms/feedback-tag-triggers.util';
-import { SELECTED_PEOPLE } from '@/components/organisms/visibility-picker';
+import { FeedbackStyleSwitch } from '@/components/organisms/feedback-style-switch';
 import { cn } from '@/lib/cn.util';
-import { chosenPeople } from '@/lib/feedback/chosen-people.util';
-import { useMentionedAudience } from '@/lib/feedback/use-mentioned-audience';
 import {
   CardNotesButton,
   CardNotesContext,
@@ -27,14 +24,9 @@ import type {
   PostcardCard,
   PostcardSide,
   PostcardWriter,
+  StyleSwitching,
 } from './postcard-draft.type';
-import {
-  applyChange,
-  blankDraft,
-  isReady,
-  NOBODY,
-  sendNote,
-} from './postcard-draft.util';
+import { isReady, sendNote } from './postcard-draft.util';
 import {
   BAR_LABELS,
   CARD_NOTE_AFTER_TOOLS,
@@ -73,15 +65,11 @@ import { PostcardTurnButton } from './postcard-turn-button';
 import { PostcardVisibilityTool } from './postcard-visibility-tool';
 import { useCardStickers } from './use-card-stickers';
 import { useCardTextTools } from './use-card-text-tools';
+import { useFeedbackDraft } from './use-feedback-draft';
 import { PostcardDrawerContainer } from './use-postcard-drawer-container';
 import { usePostcardOpener } from './use-postcard-opener';
 import { usePostcardSend } from './use-postcard-send';
-
-function isSameList(one: readonly string[], other: readonly string[]) {
-  return (
-    one.length === other.length && one.every((item) => other.includes(item))
-  );
-}
+import { useStyleSwitch } from './use-style-switch';
 
 export type PostcardEditorProps = {
   title: string;
@@ -89,14 +77,16 @@ export type PostcardEditorProps = {
   card: PostcardCard;
   /** Whether Close and Escape ask before leaving; `PostcardDialog` says. */
   asksBeforeClosing?: boolean;
+  /** What this opening shares with the plain sheet it switches with. */
+  switching: StyleSwitching;
   /** The writer chose to leave, or the card has been sent: the dialog should close. */
   onClose: () => void;
   onCloseAutoFocus?: (event: Event) => void;
 };
 
 /**
- * One opening of `PostcardDialog`: its content and everything written on it, for whichever card
- * it is — given, asked or answered. Mounted afresh for each opening, so nothing carries from one
+ * One opening of `PostcardDialog` in the postcard style: its content and everything written on
+ * it, for whichever card it is — given, asked or answered. Mounted afresh for each opening, so nothing carries from one
  * card to the next and nothing has to be reset.
  *
  * Every change goes through one stable `change`, and the parts that typing does not touch — the
@@ -111,26 +101,43 @@ export function PostcardEditor({
   onClose,
   onCloseAutoFocus,
   asksBeforeClosing = true,
+  switching,
 }: PostcardEditorProps) {
-  const [draft, change] = useReducer(applyChange, card, blankDraft);
-  // The kind is fixed for each editor (the dialog keys it), and only who it is for is read once,
-  // as it opens; everything else on `card` is read live, so a caller's newer `onSend` or
-  // `teammates` is the one used.
+  const {
+    draft,
+    change,
+    audience,
+    triggers,
+    selectedReaders,
+    visibilityToolProps,
+    handleRecipientsChange,
+    changeMessage,
+    handOver,
+    writtenSoFar,
+    hasWrittenWords,
+  } = useFeedbackDraft(card, switching.openingRecipientAccountIds);
+  // The kind is fixed for each editor (the dialog keys it); everything else on `card` is read live,
+  // so a caller's newer `onSend` or `teammates` is the one used.
   const { kind } = card;
   const copy = COPY[kind];
-  const { teammates, workspaceGoals } = card;
-  const [openingRecipients] = useState(() =>
-    card.kind === 'answer' ? NOBODY : card.defaultRecipientAccountIds,
-  );
   // Held here because the Stamp tool and the printed box both open it.
   const [isStampPickerOpen, setIsStampPickerOpen] = useState(false);
   const { areNotesShown, handleToggleNotes } = useCardNotes();
   const contentRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const sendRef = useRef<HTMLButtonElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
-  const { noteOpener, handleCloseAutoFocus } =
-    usePostcardOpener(onCloseAutoFocus);
+  const styleSwitch = useStyleSwitch({
+    switching,
+    contentRef,
+    pageRef,
+    writtenSoFar,
+  });
+  const { noteOpener, handleCloseAutoFocus } = usePostcardOpener(
+    onCloseAutoFocus,
+    styleSwitch.opener,
+  );
   const {
     isEditingText,
     setIsEditingText,
@@ -140,59 +147,6 @@ export function PostcardEditor({
     handleEscape,
   } = useCardTextTools({ messageRef, contentRef, toolbarRef });
 
-  // The same rules as the composer on Home: who the text mentions decides who can read it.
-  const audience = useMentionedAudience({
-    message: draft.message,
-    teammates,
-    readsAnyway: draft.recipientAccountIds,
-  });
-  const triggers = useMemo(
-    () => feedbackTagTriggers(workspaceGoals, teammates),
-    [workspaceGoals, teammates],
-  );
-
-  // Who can be picked under Selected people. Whoever Feedback is for reads it anyway, so they are
-  // not among them; the people asked can be, because selecting one lets them read the others'
-  // answers, which is the Requester's call.
-  const people = useMemo(
-    () =>
-      kind === 'give'
-        ? teammates.filter(
-            (teammate) =>
-              !draft.recipientAccountIds.includes(teammate.accountId),
-          )
-        : teammates,
-    [kind, teammates, draft.recipientAccountIds],
-  );
-  // The people picked who still count: none under any other choice, and only who can be picked.
-  const selectedReaders: ReadonlySet<string> = new Set(
-    audience.visibility === SELECTED_PEOPLE
-      ? people
-          .filter((person) => audience.selectedAccountIds.has(person.accountId))
-          .map((person) => person.accountId)
-      : [],
-  );
-  const recipientNames = useMemo(
-    () =>
-      chosenPeople(teammates, draft.recipientAccountIds).map(
-        (person) => person.name,
-      ),
-    [teammates, draft.recipientAccountIds],
-  );
-
-  function handOver() {
-    return card.kind === 'answer'
-      ? card.onSend({
-          message: draft.message,
-          stickers: draft.stickers,
-          textStyle: draft.textStyle,
-        })
-      : card.onSend({
-          ...draft,
-          visibility: audience.visibility,
-          selectedAccountIds: selectedReaders,
-        });
-  }
   const {
     side,
     status: sendStatus,
@@ -211,7 +165,7 @@ export function PostcardEditor({
   const placeSticker = useCallback(
     (id: string, stickerKey: string) =>
       change({ kind: 'addSticker', id, stickerKey, side }),
-    [side],
+    [side, change],
   );
   // The sticker selected, or `STAMP_ID` for the stamp: one thing on the card at a time.
   const {
@@ -243,26 +197,17 @@ export function PostcardEditor({
     asksBeforeClosing,
   });
 
-  const handleRecipientsChange = useCallback(
-    (recipientAccountIds: readonly string[]) =>
-      change({ kind: 'card', fields: { recipientAccountIds } }),
-    [],
-  );
-  function handleMessageChange(message: string) {
-    audience.noteMessage(message);
-    change({ kind: 'card', fields: { message } });
-  }
   const handleTemplateChange = useCallback(
     (templateKey: string) => change({ kind: 'card', fields: { templateKey } }),
-    [],
+    [change],
   );
   const handleToneChange = useCallback(
     (tone: PaperTone) => change({ kind: 'card', fields: { tone } }),
-    [],
+    [change],
   );
   const handleTextStyleChange = useCallback(
     (fields: Partial<PostcardTextStyle>) => change({ kind: 'style', fields }),
-    [],
+    [change],
   );
   const handleMessageFocus = useCallback(() => {
     setIsEditingText(true);
@@ -275,7 +220,7 @@ export function PostcardEditor({
       change({ kind: 'card', fields: { stampKey } });
       setSelectedId(STAMP_ID);
     },
-    [setSelectedId],
+    [setSelectedId, change],
   );
   const handleSelectStamp = useCallback(
     () => setSelectedId(STAMP_ID),
@@ -294,15 +239,11 @@ export function PostcardEditor({
     toolbarRef.current
       ?.querySelector<HTMLElement>('[data-stamp-tool]')
       ?.focus();
-  }, [setSelectedId]);
+  }, [setSelectedId, change]);
 
   // Anything the writer has done, beyond who the caller already chose it was for.
   const hasWritten =
-    draft.message.trim() !== '' ||
-    !isSameList(draft.recipientAccountIds, openingRecipients) ||
-    selectedReaders.size > 0 ||
-    draft.stickers.length > 0 ||
-    draft.stampKey !== null;
+    hasWrittenWords || draft.stickers.length > 0 || draft.stampKey !== null;
 
   function handleFlip() {
     setIsEditingText(false);
@@ -324,6 +265,9 @@ export function PostcardEditor({
   // The cursor belongs on the card: on "To" while nobody is chosen, on the message once somebody
   // is. Whatever had it before is the opener, which gets it back on close.
   function handleOpenAutoFocus(event: Event) {
+    if (styleSwitch.arriveSwitchedIn(event)) {
+      return;
+    }
     noteOpener();
     const target =
       kind !== 'answer' && draft.recipientAccountIds.length === 0
@@ -336,19 +280,8 @@ export function PostcardEditor({
   }
 
   // Beside Send on either side, so who can read it is never a turn away from sending.
-  const visibilityTool = card.kind !== 'answer' && (
-    <PostcardVisibilityTool
-      kind={card.kind}
-      value={audience.visibility}
-      people={people}
-      selectedAccountIds={audience.selectedAccountIds}
-      recipientNames={recipientNames}
-      note={audience.notice ?? audience.lockedReason}
-      isOnlyMeDisabled={audience.onlyMeDisabled}
-      lockedPeople={audience.lockedPeople}
-      onValueChange={audience.choose}
-      onSelectedChange={audience.select}
-    />
+  const visibilityTool = visibilityToolProps && (
+    <PostcardVisibilityTool {...visibilityToolProps} />
   );
 
   // The bar holds the text's tools while the message is styled, the front's while the front shows,
@@ -372,7 +305,7 @@ export function PostcardEditor({
       label={copy.messageLabel}
       placeholder={copy.placeholder}
       isRuled={kind !== 'ask'}
-      onMessageChange={handleMessageChange}
+      onMessageChange={changeMessage}
       onMessageFocus={handleMessageFocus}
     />
   );
@@ -442,8 +375,8 @@ export function PostcardEditor({
             onEscapeKeyDown={handleEscapeKeyDown}
             onInteractOutside={(event) => event.preventDefault()}
             onFocus={handleFocus}
-            overlayClassName={styles.scrim}
-            className={POSTCARD_SCREEN}
+            overlayClassName={cn(styles.scrim, styleSwitch.switchedInClassName)}
+            className={cn(POSTCARD_SCREEN, styleSwitch.switchedInClassName)}
           >
             {/* Under everything, so the card flies over its own contrail; it scrolls with the card. The
           card leaves past the right edge, which hides rather than scrolls. */}
@@ -452,12 +385,19 @@ export function PostcardEditor({
               course={flight.contrail}
             />
             {/* A card that has been sent is inert while it flies off, so nothing edits what has gone. */}
-            <div inert={sendStatus !== 'writing'} className={POSTCARD_PAGE}>
+            <div
+              ref={pageRef}
+              inert={sendStatus !== 'writing'}
+              className={POSTCARD_PAGE}
+              style={styleSwitch.pageStyle}
+            >
               <PostcardTitleRow
                 title={title}
                 onClose={askToClose}
                 className={cn(isFlying && SENT_AWAY)}
-              />
+              >
+                <FeedbackStyleSwitch {...styleSwitch.switchProps} />
+              </PostcardTitleRow>
 
               <div className={POSTCARD_CARD_COLUMN}>
                 <div

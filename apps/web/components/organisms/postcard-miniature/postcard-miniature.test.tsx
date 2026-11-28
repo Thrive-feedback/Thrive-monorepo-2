@@ -1,12 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { FeedbackStyleProvider } from '@/components/organisms/feedback-style-provider';
 import type {
   AnsweredPostcard,
   GivenPostcard,
 } from '@/components/organisms/postcard-dialog/postcard-read.type';
 import { DEFAULT_TEXT_STYLE } from '@/components/organisms/postcard-dialog/postcard-style.constant';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
-import { PostcardMiniature } from './postcard-miniature';
+import {
+  PlainFeedbackMiniature,
+  PostcardMiniature,
+} from './postcard-miniature';
 
 const SENT_ON = '2026-10-31T03:00:00.000Z';
 const BEN = { name: 'Ben Carter', photoUrl: null, inactive: false };
@@ -152,5 +156,52 @@ describe('PostcardMiniature', () => {
     render(<PostcardMiniature card={GIVEN} />);
 
     expect(screen.queryByRole('paragraph')).not.toBeInTheDocument();
+  });
+});
+
+describe('PostcardMiniature for someone who writes plain', () => {
+  it('still draws the postcard in a list, stamp and postmark and all', () => {
+    render(
+      <FeedbackStyleProvider initialStyle="plain">
+        <PostcardMiniature
+          card={{ ...GIVEN, stampKey: 'system/postcard_stamp_2' }}
+        />
+      </FeedbackStyleProvider>,
+    );
+
+    expect(
+      screen.getByRole('img', { name: /stamp$/, hidden: true }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/^Posted /)).toBeInTheDocument();
+  });
+});
+
+describe('PlainFeedbackMiniature', () => {
+  it('draws the words on a plain sheet, with no stamp, postmark or stickers', () => {
+    render(
+      <PlainFeedbackMiniature
+        card={{
+          ...GIVEN,
+          stampKey: 'system/postcard_stamp_2',
+          stickers: [A_STICKER],
+        }}
+      />,
+    );
+
+    expect(screen.getByText('The plan was clear.')).toBeInTheDocument();
+    expect(screen.getByText('31 Oct 2026')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('img', { name: /stamp$/, hidden: true }),
+    ).toBeNull();
+    expect(screen.queryByText(/^Posted /)).toBeNull();
+    expect(stickersDrawn()).toHaveLength(0);
+  });
+
+  // jsdom cannot apply a breakpoint: the words and the lines are both there, one shown from md.
+  it('holds lines for a phone, where the words would be too small to read', () => {
+    render(<PlainFeedbackMiniature card={GIVEN} />);
+
+    expect(writingLines()).toHaveLength(1);
+    expect(writingLines()[0]?.parentElement).toHaveClass('md:hidden');
   });
 });
