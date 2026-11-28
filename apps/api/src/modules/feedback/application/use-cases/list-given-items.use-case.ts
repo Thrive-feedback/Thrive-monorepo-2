@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Visibility } from '../../domain/value-object/visibility.vo';
-import {
-  FeedbackRequestQuery,
-  type GivenFeedbackRow,
-  type ReceivedFeedbackRow,
-} from '../query-port/feedback-request.query-port';
+import { FeedbackRequestQuery } from '../query-port/feedback-request.query-port';
 import { KudosQuery } from '../query-port/kudos.query-port';
-import { PersonalItemsService } from '../service/personal-items.service';
+import {
+  PersonalItemsService,
+  withAnswersReadableBy,
+} from '../service/personal-items.service';
 import type { CursorPageRequest } from '../types/kudos.types';
 import type { PersonalItemsView } from '../types/personal-item.types';
 
@@ -16,38 +14,6 @@ export interface ListGivenItemsInput {
   /** Whose Given list to read: the signed-in caller, always. Never read from the query. */
   readonly giverAccountId: string;
   readonly page: CursorPageRequest;
-}
-
-/**
- * The piece with only the answers its Giver may read. Who was asked and where each stands stays, and
- * another Giver's words go, by the rule that opens a postcard (ADR 0072, ADR 0081).
- */
-function withAnswersReadableBy(
-  readerAccountId: string,
-  row: GivenFeedbackRow,
-): ReceivedFeedbackRow {
-  const { request } = row;
-  return {
-    ...row,
-    request: request && {
-      ...request,
-      asks: request.asks.map(({ answerAudience, ...ask }) => ({
-        ...ask,
-        answer:
-          answerAudience &&
-          Visibility.of({
-            value: answerAudience.visibility,
-            selectedAccountIds: answerAudience.selectedAccountIds,
-          }).letsRead({
-            readerAccountId,
-            giverAccountId: ask.giverAccountId,
-            receiverAccountIds: [request.requesterAccountId],
-          })
-            ? ask.answer
-            : null,
-      })),
-    },
-  };
 }
 
 /**

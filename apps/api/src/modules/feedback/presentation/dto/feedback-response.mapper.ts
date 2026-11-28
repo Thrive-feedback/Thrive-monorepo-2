@@ -10,6 +10,7 @@ import type { KudosView } from '../../application/types/kudos.types';
 import type {
   PersonalFeedbackView,
   PersonalItemView,
+  ProfileItemView,
   ReceivedItemView,
 } from '../../application/types/personal-item.types';
 import type { KudosCardSnapshot } from '../../domain/value-object/kudos-card.vo';
@@ -177,6 +178,24 @@ export function toPersonalItemResponse(item: PersonalItemView) {
     return { kind: item.kind, ...toKudosResponse(item) };
   }
   return { ...toFeedItemResponse(item), visibility: item.visibility };
+}
+
+/** One thing on a Profile on the wire, an Ask waiting between two people among them. */
+export function toProfileItemResponse(item: ProfileItemView) {
+  if (item.kind !== 'ASK') {
+    return toPersonalItemResponse(item);
+  }
+  return {
+    kind: item.kind,
+    id: item.id,
+    feedbackRequestId: item.feedbackRequestId,
+    message: item.message,
+    tags: toTagsResponse(item.tags),
+    requester: toPersonResponse(item.requester),
+    asked: toPersonResponse(item.asked),
+    postcard: toPostcardResponse(item.postcard),
+    createdAt: item.createdAt.toISOString(),
+  };
 }
 
 /** One thing in the caller's Received on the wire, a request among them. */

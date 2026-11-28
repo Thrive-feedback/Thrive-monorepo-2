@@ -19,7 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { ListProfileItemsUseCase } from '../application/use-cases/list-profile-items.use-case';
-import { toPersonalItemResponse } from './dto/feedback-response.mapper';
+import { toProfileItemResponse } from './dto/feedback-response.mapper';
 import {
   ListProfileItemsQueryDto,
   ListProfileItemsResponseDto,
@@ -28,10 +28,11 @@ import { MemberPathParamsDto } from './dto/path-params.dto';
 import { WorkspaceMemberGuard } from './workspace-member.guard';
 
 /**
- * What one Member's Profile shows of what was written to them, as one list paged by one cursor
- * (ADR 0059). Anyone in the Workspace may read anyone's, because it holds only what the caller
- * already reads on Home; who the caller is comes from the session, so nothing here can name
- * somebody else and read what was shared with them.
+ * What one Member's Profile shows of what was written to them, or of what passed between them and
+ * the caller, as one list paged by one cursor (ADR 0059, ADR 0097). Anyone in the Workspace may read
+ * anyone's, because it holds only what the caller already reads elsewhere; who the caller is comes
+ * from the session, so nothing here can name somebody else and read what was shared with them or
+ * between them.
  */
 @ApiTags('feedback')
 @Controller({
@@ -46,7 +47,7 @@ export class ProfileItemsController {
   @Get()
   @ApiOperation({
     summary:
-      'List the Feedback everyone reads, the Feedback shared with the caller, or the Kudos, written to a Member, as their Profile shows them',
+      "List one of a Member's Profile lists: what everyone sees (Feedback, Kudos) or what the caller sees (between them, shared with them, open Asks), optionally from an instant on",
   })
   @ApiHeader(COOKIE_HEADER)
   @ZodResponse({ status: HttpStatus.OK, type: ListProfileItemsResponseDto })
@@ -63,11 +64,12 @@ export class ProfileItemsController {
       accountId: params.accountId,
       readerAccountId: actor.accountId,
       show: query.show,
+      since: query.since,
       page: { afterId: query.cursor, limit: query.limit },
     });
     return {
       readerAccountId: actor.accountId,
-      items: shown.items.map(toPersonalItemResponse),
+      items: shown.items.map(toProfileItemResponse),
       nextCursor: toCursor(shown.nextAfterId),
     };
   }
