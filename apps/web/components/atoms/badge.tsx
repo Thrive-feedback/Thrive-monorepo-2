@@ -171,9 +171,9 @@ export type CountBadgeProps = {
 };
 
 /**
- * How many things are waiting on the person, in the red that asks for them: a small solid badge
- * with the number, `99+` past ninety-nine, and the real number in words. Every count in the
- * navigation and the bell is one of these, so they read, look and cap alike.
+ * How many things are waiting on the person, in the red that asks for them: a small solid circle
+ * with the number, stretched to a pill for `99+` past ninety-nine, and the real number in words.
+ * Every count in the navigation and the bell is one of these, so they read, look and cap alike.
  */
 export function CountBadge({
   count,
@@ -190,7 +190,7 @@ export function CountBadge({
         aria-hidden="true"
         className={cn(
           badgeVariants({ tone: 'attention' }),
-          'px-1.5 tabular-nums',
+          'h-5 min-w-5 rounded-full px-1 py-0 tabular-nums',
           className,
         )}
       >

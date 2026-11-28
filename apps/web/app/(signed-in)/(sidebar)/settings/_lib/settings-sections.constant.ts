@@ -8,13 +8,12 @@ import {
 } from 'lucide-react';
 import type {
   SideNavHeading,
-  SideNavItem,
+  SideNavLinkItem,
 } from '@/components/molecules/side-nav';
 import { ROUTES } from '@/lib/routes.constant';
 
 /** A section of Settings: always a page, so always somewhere to go. */
-export type SettingsSection = Omit<SideNavItem, 'children'> & {
-  readonly href: string;
+export type SettingsSection = Omit<SideNavLinkItem, 'children'> & {
   /** Written by hand beside the section's title, as Home's is: what the page is about, in a few words. */
   readonly note: string;
 };

@@ -34,7 +34,7 @@ const FEATURE_FLAG_CATALOG: {
     title: 'Your dashboard',
     whenOn: 'The menu links to Your dashboard, and its page answers.',
     whenOff:
-      'The menu shows it greyed as Coming soon, not a link, and the page answers not found.',
+      'The menu shows it greyed as Under construction, not a link, and the page answers not found.',
     pages: [ROUTES.dashboard],
   },
   showsHrLanding: {

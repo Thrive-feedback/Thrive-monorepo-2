@@ -9,6 +9,7 @@ import { Sidebar } from './sidebar';
 import { SidebarDrawer, SidebarDrawerTrigger } from './sidebar-drawer';
 
 const MEMBERSHIP = { workspace: { id: 'w-1', name: 'Acme' }, role: 'MEMBER' };
+let role = 'MEMBER';
 
 const usePathname = vi.fn((): string => ROUTES.home);
 vi.mock('next/navigation', () => ({
@@ -18,7 +19,7 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('@/lib/session/session.service', () => ({
   requireMember: async () => ({
-    membership: MEMBERSHIP,
+    membership: { ...MEMBERSHIP, role },
     email: 'ann@acme.test',
     name: 'Ann Lee',
     photoUrl: null,
@@ -80,7 +81,7 @@ function sidebar() {
 }
 
 describe('Sidebar', () => {
-  it('lists where to go in order, with Kudos board under Home, My Feedback over Received and Given, and Tools over 1:1s', async () => {
+  it('lists where to go in order, with Kudos board under Home, My Feedback over Received, Given and Your dashboard, and Tools over 1:1s and Retrospective', async () => {
     const nav = await draw(0);
 
     expect(
@@ -93,15 +94,16 @@ describe('Sidebar', () => {
       'Waiting for me',
       'Teammates',
       'My Feedback',
-      'Your dashboard',
       'Received',
       'Given',
+      'Your dashboard',
       'Tools',
       '1:1s',
+      'Retrospective, Idea',
     ]);
   });
 
-  it('keeps Your dashboard in both menus as Coming soon, not a link, where the deployment has switched it off', async () => {
+  it('keeps Your dashboard in both menus as Under construction, not a link, where the deployment has switched it off', async () => {
     const user = userEvent.setup();
     const nav = await draw(0, ROUTES.home, false);
 
@@ -115,11 +117,12 @@ describe('Sidebar', () => {
       'Waiting for me',
       'Teammates',
       'My Feedback',
-      'Your dashboardComing soon',
       'Received',
       'Given',
+      'Your dashboard, Under construction',
       'Tools',
       '1:1s',
+      'Retrospective, Idea',
     ]);
     expect(
       within(nav).queryByRole('link', { name: /Your dashboard/ }),
@@ -133,8 +136,36 @@ describe('Sidebar', () => {
         { name: 'Main' },
       ),
     );
-    expect(drawer.getByText('Coming soon')).toBeInTheDocument();
+    expect(drawer.getByText(', Under construction')).toBeInTheDocument();
     expect(drawer.queryByRole('link', { name: /Your dashboard/ })).toBeNull();
+  });
+
+  it('shows an admin People analytics, with Insights and Performance review not open yet', async () => {
+    role = 'ADMIN';
+    const nav = await draw(0);
+    role = 'MEMBER';
+
+    expect(
+      within(nav)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent)
+        .slice(-3),
+    ).toEqual([
+      'People analytics',
+      'Insights, Idea',
+      'Performance review, Under construction',
+    ]);
+    expect(
+      within(nav).queryByRole('link', { name: /Insights|Performance review/ }),
+    ).toBeNull();
+  });
+
+  it('keeps People analytics from someone who does not run the Workspace', async () => {
+    const nav = await draw(0);
+
+    expect(within(nav).queryByText('People analytics')).toBeNull();
+    expect(within(nav).queryByText('Insights')).toBeNull();
+    expect(within(nav).queryByText('Performance review')).toBeNull();
   });
 
   it('marks the page that is open, wherever the person went', async () => {
@@ -256,11 +287,12 @@ describe('Sidebar', () => {
       'Waiting for me2, 2 unread',
       'Teammates',
       'My Feedback',
-      'Your dashboard',
       'Received',
       'Given',
+      'Your dashboard',
       'Tools',
       '1:1s',
+      'Retrospective, Idea',
     ]);
     expect(
       within(sidebar()).getByRole('link', { name: 'Settings' }),

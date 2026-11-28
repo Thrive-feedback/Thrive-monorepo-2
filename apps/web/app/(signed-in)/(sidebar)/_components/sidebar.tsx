@@ -31,6 +31,11 @@ export async function Sidebar() {
       readOneOnOnesToAnswer(membership),
     ]);
 
+  const nav = {
+    showsDashboard,
+    oneOnOnesToAnswer,
+    isAdmin: membership.role === 'ADMIN',
+  };
   const compose = {
     workspaceId: membership.workspace.id,
     teammates,
@@ -46,10 +51,7 @@ export async function Sidebar() {
           in reach. The negative margin and matching padding leave room for a focus ring. */}
           <div className="-m-1 flex min-h-0 flex-col gap-4 overflow-y-auto p-1">
             <ComposeMenu {...compose} />
-            <SidebarNav
-              showsDashboard={showsDashboard}
-              oneOnOnesToAnswer={oneOnOnesToAnswer}
-            />
+            <SidebarNav {...nav} />
           </div>
           <div className="mt-auto shrink-0">
             <SidebarAccount
@@ -62,10 +64,7 @@ export async function Sidebar() {
         </div>
       </SidebarColumn>
       <SidebarDrawerContent>
-        <SidebarNav
-          showsDashboard={showsDashboard}
-          oneOnOnesToAnswer={oneOnOnesToAnswer}
-        />
+        <SidebarNav {...nav} />
         <div className="mt-auto">
           <SidebarAccount
             name={session.profile?.displayName ?? session.name}
