@@ -15,21 +15,29 @@ export type UseTemplateButtonProps = {
   /** The meeting being prepared, or `null` before anybody has written to it. */
   meetingId: string | null;
   templates: readonly OneOnOneTemplate[];
-  current: UseTemplateDialogProps['current'];
+  inUse: UseTemplateDialogProps['inUse'];
+  /** Told once a template's questions are on the agenda, with its key. */
+  onUsed?: (templateKey: string) => void;
 };
 
 /**
  * Add from template, beside Sync while an agenda is prepared: it opens the picker, whose head links
- * to Settings, where templates are kept. Its questions take the place of the last template's.
+ * to Settings, where templates are kept. Its questions are added after the agenda's topics.
  */
 export function UseTemplateButton({
   workspaceId,
   oneOnOneId,
   meetingId,
   templates,
-  current,
+  inUse,
+  onUsed,
 }: UseTemplateButtonProps) {
   const [isChoosing, setIsChoosing] = useState(false);
+  // The template last put on the agenda, said once the picker has closed: there is no toast.
+  const [used, setUsed] = useState<{ name: string; times: number }>({
+    name: '',
+    times: 0,
+  });
   const button = useRef<HTMLButtonElement>(null);
 
   return (
@@ -50,11 +58,20 @@ export function UseTemplateButton({
         oneOnOneId={oneOnOneId}
         meetingId={meetingId}
         templates={templates}
-        current={current}
+        inUse={inUse}
         open={isChoosing}
         onOpenChange={setIsChoosing}
         returnFocusTo={() => button.current}
+        onUsed={(template) => {
+          setUsed((last) => ({ name: template.name, times: last.times + 1 }));
+          onUsed?.(template.key);
+        }}
       />
+      <span role="status" className="sr-only">
+        {used.times > 0 && (
+          <span key={used.times}>{`Added ${used.name} to the agenda`}</span>
+        )}
+      </span>
     </>
   );
 }

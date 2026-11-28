@@ -156,6 +156,71 @@ describe('writing to a meeting', () => {
     expect(calls).toEqual(['open', 'add']);
   });
 
+  it('sends what a topic was brought from, and says plainly when it is no longer to be brought', async () => {
+    const sent: unknown[] = [];
+    const brought = {
+      kind: 'KUDOS',
+      id: '0199a0f0-0000-7000-8000-0000000000e1',
+    } as const;
+    server.use(
+      http.post(`${MEETING}/topics`, async ({ request }) => {
+        sent.push(await request.json());
+        return sent.length === 1
+          ? HttpResponse.json({ id: TOPIC_A }, { status: 201 })
+          : refusal('ONE_ON_ONE_TOPIC_SOURCE_NOT_FOUND', 404);
+      }),
+    );
+
+    const added = await addTopic(
+      WORKSPACE_ID,
+      ONE_ON_ONE_ID,
+      MEETING_ID,
+      'Kudos from Nok: for staying late',
+      brought,
+    );
+    const refused = await addTopic(
+      WORKSPACE_ID,
+      ONE_ON_ONE_ID,
+      MEETING_ID,
+      'Kudos from Nok: for staying late',
+      brought,
+    );
+
+    expect(added).toEqual({ ok: true, id: TOPIC_A });
+    expect(sent[0]).toEqual({
+      text: 'Kudos from Nok: for staying late',
+      broughtFrom: brought,
+    });
+    expect(refused).toMatchObject({
+      ok: false,
+      message: 'That isn’t something you can bring to this 1:1 any more.',
+    });
+  });
+
+  it('sends nothing for a source that is not a piece of Feedback or a Kudos', async () => {
+    const calls: string[] = [];
+    server.use(
+      http.post(`${MEETING}/topics`, () => {
+        calls.push('add');
+        return HttpResponse.json({ id: TOPIC_A }, { status: 201 });
+      }),
+    );
+
+    const result = await addTopic(
+      WORKSPACE_ID,
+      ONE_ON_ONE_ID,
+      MEETING_ID,
+      'Something',
+      { kind: 'FEEDBACK', id: 'not-an-id' },
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      message: "That didn't go through. Please try again.",
+    });
+    expect(calls).toEqual([]);
+  });
+
   it('says a refusal in words, by its code, and anything unknown plainly', async () => {
     server.use(
       http.post(`${MEETING}/start`, () =>

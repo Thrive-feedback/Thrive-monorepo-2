@@ -175,8 +175,10 @@ describe('Profile', () => {
       within(everyone)
         .getAllByRole('button')
         .map((chip) => [chip.textContent, chip.getAttribute('aria-pressed')]),
+      // The chips, which press; the "i" beside the title is a button too, but none of them.
       within(forYou)
         .getAllByRole('button')
+        .filter((chip) => chip.hasAttribute('aria-pressed'))
         .map((chip) => [chip.textContent, chip.getAttribute('aria-pressed')]),
       screen.getByText('The feedback list') !== null,
     ]).toEqual([
@@ -193,11 +195,13 @@ describe('Profile', () => {
     ]);
   });
 
-  it('says, under For you, that this part differs for everyone who opens it', async () => {
+  it('sets For you apart as a group of its own, saying behind an “i” that it differs for each reader', async () => {
     render(await open('ben'));
 
+    const forYou = screen.getByRole('group', { name: 'For you' });
+    expect(forYou).not.toHaveAccessibleDescription();
     expect(
-      screen.getByRole('group', { name: 'For you' }),
+      within(forYou).getByRole('button', { name: 'About For you' }),
     ).toHaveAccessibleDescription(
       'This part is different for everyone who opens it.',
     );

@@ -1,0 +1,55 @@
+/*
+ * Bringing something onto the agenda reads as it moving down to it: what was added drops a little
+ * into its place, once, as it appears. Taking a topic off is the same motion the other way: it fades
+ * as it slides aside, then the gap it leaves closes, so the rows below rise into its place rather
+ * than jumping. A keyframe has no utility, which is why this is CSS. Whoever asked for less motion
+ * sees a topic simply appear and go.
+ */
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    translate: 0 -0.75rem;
+  }
+}
+
+.dropIn {
+  animation: drop-in var(--motion-duration-medium) var(--motion-ease-smooth-out)
+    both;
+}
+
+/* `--row-height` is the row's own height as it was pressed, so the close starts from where it stood. */
+@keyframes leave {
+  /* A gentler curve for the fade than for the close, so the words are seen going, not blinked away.
+     It is `--motion-ease-in-out` written out: a keyframe's curve does not read a custom property. */
+  0% {
+    height: var(--row-height);
+    opacity: 1;
+    translate: 0 0;
+    animation-timing-function: ease-in-out;
+  }
+  45% {
+    height: var(--row-height);
+    opacity: 0;
+    translate: 1rem 0;
+  }
+  100% {
+    height: 0;
+    padding-block: 0;
+    border-bottom-width: 0;
+    opacity: 0;
+    translate: 1rem 0;
+  }
+}
+
+.leave {
+  overflow: hidden;
+  animation: leave var(--motion-duration-very-slow)
+    var(--motion-ease-smooth-out) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropIn,
+  .leave {
+    animation: none;
+  }
+}

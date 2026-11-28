@@ -21,7 +21,9 @@ import { OneOnOnePanel } from './_components/one-on-one-panel';
 import { OneOnOneStrip } from './_components/one-on-one-strip';
 import { OneOnOnesCreate } from './_components/one-on-ones-create';
 import { OneOnOnesEmpty } from './_components/one-on-ones-empty';
+import { contextWindowOf } from './_lib/meeting-context.util';
 import {
+  readMeetingContext,
   readNextMeeting,
   readPastMeetings,
 } from './_lib/one-on-one-meetings.service';
@@ -83,6 +85,26 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
         readPastMeetings(membership, open.id),
       ])
     : [undefined, undefined];
+  // While its meeting runs, everything but the meeting steps back, and comes forward again under the
+  // pointer or the keyboard, so the list and Create 1:1 are still there to reach.
+  const isMeeting = open?.status === 'ACTIVE' && open.meetingInProgress;
+  // Only a running 1:1 being prepared reads Before you meet: while its meeting runs the agenda takes
+  // its place, so the six reads are not paid on every tick and note. It reads the other person's
+  // Profile from when the last meeting held began, which only the meetings just read can say.
+  const context =
+    open?.status === 'ACTIVE' && past && !isMeeting
+      ? await readMeetingContext(
+          membership,
+          otherAccountOf(open),
+          contextWindowOf(past.items, today),
+        )
+      : undefined;
+  // Dimmed well back, so the meeting leads; under the pointer or the keyboard it comes forward again
+  // in full. The main sidebar is left as it is: only the page's own parts step back.
+  const stepsBack = cn(
+    'transition-opacity duration-medium ease-smooth-out motion-reduce:transition-none',
+    isMeeting && 'opacity-20 focus-within:opacity-100 hover:opacity-100',
+  );
   // Two people keep one 1:1 that is not over at a time, so the dialogs say who already has one.
   const unavailable = oneOnOnes
     .filter(
@@ -103,7 +125,12 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
 
   return (
     <div className={cn(ONE_ON_ONES_COLUMN, styles.frame)}>
-      <div className="flex shrink-0 flex-wrap items-end gap-x-4 gap-y-3">
+      <div
+        className={cn(
+          'flex shrink-0 flex-wrap items-end gap-x-4 gap-y-3',
+          stepsBack,
+        )}
+      >
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-4">
             <PageTitle>1:1s</PageTitle>
@@ -140,7 +167,7 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
         <OneOnOnesEmpty />
       ) : (
         <div className="flex flex-col gap-6 lg:min-h-0 lg:flex-1 lg:flex-row lg:gap-8">
-          <div className={ONE_ON_ONES_LIST_COLUMN}>
+          <div className={cn(ONE_ON_ONES_LIST_COLUMN, stepsBack)}>
             <OneOnOneStrip
               oneOnOnes={listed}
               selectedId={open.id}
@@ -152,13 +179,20 @@ export default async function OneOnOnes({ searchParams }: OneOnOnesProps) {
             <OneOnOnePanel
               key={open.id}
               oneOnOne={open}
+              readerName={toSessionWriter(session).name}
               today={today}
               workspaceId={membership.workspace.id}
               teammates={teammates}
               templates={catalog.items}
               meetings={
                 next && past
-                  ? { next, past: past.items, skippedDays: past.skippedDays }
+                  ? {
+                      next,
+                      past: past.items,
+                      skippedDays: past.skippedDays,
+                      pastTemplates: past.templates,
+                      context,
+                    }
                   : undefined
               }
               compose={{

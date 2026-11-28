@@ -118,6 +118,7 @@ function oneOnOne(overrides: Partial<OneOnOne>): OneOnOne {
 function panel(shown: OneOnOne, meetings?: OneOnOneMeetings) {
   return (
     <OneOnOnePanel
+      readerName="Krit Chaiwong"
       oneOnOne={shown}
       today="2026-11-27"
       workspaceId={WORKSPACE_ID}
@@ -175,6 +176,8 @@ const FINISHED: Meeting = {
       notesUpdatedAt: '2026-11-26T03:10:00.000Z',
       notesUpdatedByAccountId: ME,
       discussedAt: '2026-11-26T03:10:00.000Z',
+      broughtFrom: null,
+      templateKey: null,
     },
   ],
 };
@@ -183,6 +186,7 @@ const NOTHING_NEXT = {
   meeting: null,
   carried: [],
   templateQuestions: ['What went well this week?'],
+  templates: [],
   carriedFromSkipped: null,
   carriedTopics: [],
   templateName: 'Weekly check-in',
@@ -384,7 +388,12 @@ describe('OneOnOnePanel', () => {
         nextMeetingSkippedAt: null,
         endedAt: '2026-11-26T03:00:00.000Z',
       }),
-      { next: NOTHING_NEXT, past: [FINISHED], skippedDays: [] },
+      {
+        next: NOTHING_NEXT,
+        past: [FINISHED],
+        skippedDays: [],
+        pastTemplates: [],
+      },
     );
 
     expect(
@@ -416,6 +425,7 @@ describe('OneOnOnePanel', () => {
         },
         past: [],
         skippedDays: [],
+        pastTemplates: [],
       },
     );
 
@@ -434,6 +444,7 @@ describe('OneOnOnePanel', () => {
       next: { ...NOTHING_NEXT, meeting: inProgress },
       past: [],
       skippedDays: [],
+      pastTemplates: [],
     });
     await userEvent.click(screen.getByRole('button', { name: 'Finish' }));
     const dialog = await screen.findByRole('dialog', {
@@ -451,6 +462,7 @@ describe('OneOnOnePanel', () => {
       next: NOTHING_NEXT,
       past: [FINISHED],
       skippedDays: [],
+      pastTemplates: [],
     });
 
     expect(screen.getByRole('heading', { name: 'Mint Boonmee' })).toHaveFocus();
@@ -653,6 +665,7 @@ describe('OneOnOnePanel', () => {
         next: NOTHING_NEXT,
         past: [],
         skippedDays: ['2026-12-02'],
+        pastTemplates: [],
       },
     );
 

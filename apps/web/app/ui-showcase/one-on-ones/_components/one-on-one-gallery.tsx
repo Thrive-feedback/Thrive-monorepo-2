@@ -1,13 +1,20 @@
 import NextLink from 'next/link';
 import type { OneOnOne } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import { inListOrder } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-state.util';
+import { MeetingSummary } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-summary';
 import { OneOnOnePanel } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/one-on-one-panel';
 import { OneOnOneStrip } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/one-on-one-strip';
 import { OneOnOnesCreate } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/one-on-ones-create';
 import { OneOnOnesEmpty } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/one-on-ones-empty';
+import { PastMeetings } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/past-meetings';
 import { GallerySection } from '@/app/ui-showcase/_components/gallery-section';
 import { ShowcasePage } from '@/app/ui-showcase/_components/showcase-page';
+import { StayInShowcase } from '@/app/ui-showcase/_components/stay-in-showcase';
 import {
+  SAMPLE_MEETING_CONTEXTS,
+  SAMPLE_MEETING_PEOPLE,
+  SAMPLE_NEXT_MEETING_AFTER_SKIPPED,
+  SAMPLE_NEXT_MEETING_WITH_BROUGHT,
   SAMPLE_NEXT_MEETINGS,
   SAMPLE_ONE_ON_ONE_LIST,
   SAMPLE_ONE_ON_ONE_TEAMMATES,
@@ -15,6 +22,7 @@ import {
   SAMPLE_ONE_ON_ONES,
   SAMPLE_ONE_ON_ONES_MORE,
   SAMPLE_PAST_MEETINGS,
+  SAMPLE_PAST_TEMPLATES,
   SAMPLE_TODAY,
   SAMPLE_UNAVAILABLE,
   SAMPLE_UPCOMING_ONLY,
@@ -46,6 +54,7 @@ function Case({
         </Text>
       </figcaption>
       <OneOnOnePanel
+        readerName="Krit Chaiwong"
         oneOnOne={oneOnOne}
         today={SAMPLE_TODAY}
         workspaceId={SAMPLE_WORKSPACE_ID}
@@ -185,122 +194,240 @@ export function OneOnOneGallery() {
         <>
           Every state of a 1:1 on sample data. Buttons open their dialogs as in
           the app; sending calls the real actions, which answer with an error
-          here, since nobody is signed in.
+          here, since nobody is signed in. Links into the app stay here.
         </>
       }
     >
-      <GallerySection
-        title="Create a 1:1"
-        description="At the head of the page, the one way to begin. A two-step dialog: who it is with, with Mint and Dev greyed and the reason said; then when it meets and an optional note."
-      >
-        <OneOnOnesCreate
-          workspaceId={SAMPLE_WORKSPACE_ID}
-          teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
-          unavailable={SAMPLE_UNAVAILABLE}
-        />
-      </GallerySection>
+      <StayInShowcase>
+        <GallerySection
+          title="Create a 1:1"
+          description="At the head of the page, the one way to begin. A two-step dialog: who it is with, with Mint and Dev greyed and the reason said; then when it meets and an optional note."
+        >
+          <OneOnOnesCreate
+            workspaceId={SAMPLE_WORKSPACE_ID}
+            teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
+            unavailable={SAMPLE_UNAVAILABLE}
+          />
+        </GallerySection>
 
-      <GallerySection
-        title="The list"
-        description="Up to three tabs, opened on the open 1:1’s. Upcoming: what meets, soonest first, without a heading. Pending: invitations waiting on the reader first, drawn like every card and counted in plum on the tab, then theirs waiting on the other person. History: what was declined and what has ended. Pending and History stay drawn while empty, greyed and not to be chosen (the last one here). From lg a 288px column that scrolls on its own while the page stays put; narrower than lg, each tab is one row that scrolls sideways."
-      >
-        <div className="flex flex-wrap gap-10">
-          {(['upcoming', 'pending', 'history'] as const).map((tab) => (
-            <div key={tab} className="w-72 max-w-full">
+        <GallerySection
+          title="The list"
+          description="Up to three tabs, opened on the open 1:1’s. Upcoming: what meets, soonest first, without a heading. Pending: invitations waiting on the reader first, drawn like every card and counted in plum on the tab, then theirs waiting on the other person. History: what was declined and what has ended. Pending and History stay drawn while empty, greyed and not to be chosen (the last one here). From lg a 288px column that scrolls on its own while the page stays put; narrower than lg, each tab is one row that scrolls sideways."
+        >
+          <div className="flex flex-wrap gap-10">
+            {(['upcoming', 'pending', 'history'] as const).map((tab) => (
+              <div key={tab} className="w-72 max-w-full">
+                <OneOnOneStrip
+                  oneOnOnes={inListOrder(SAMPLE_ONE_ON_ONE_LIST)}
+                  selectedId={SAMPLE_ONE_ON_ONES.invitedWithNote.id}
+                  teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
+                  initialTab={tab}
+                  today={SAMPLE_TODAY}
+                />
+              </div>
+            ))}
+            <div className="w-72 max-w-full">
               <OneOnOneStrip
-                oneOnOnes={inListOrder(SAMPLE_ONE_ON_ONE_LIST)}
-                selectedId={SAMPLE_ONE_ON_ONES.invitedWithNote.id}
+                oneOnOnes={inListOrder(SAMPLE_UPCOMING_ONLY)}
+                selectedId={SAMPLE_ONE_ON_ONES.runningWeekly.id}
                 teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
-                initialTab={tab}
                 today={SAMPLE_TODAY}
               />
             </div>
-          ))}
-          <div className="w-72 max-w-full">
-            <OneOnOneStrip
-              oneOnOnes={inListOrder(SAMPLE_UPCOMING_ONLY)}
-              selectedId={SAMPLE_ONE_ON_ONES.runningWeekly.id}
-              teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
-              today={SAMPLE_TODAY}
-            />
           </div>
-        </div>
-      </GallerySection>
+        </GallerySection>
 
-      {CASES.map(({ group, description, cases }) => (
-        <GallerySection key={group} title={group} description={description}>
+        {CASES.map(({ group, description, cases }) => (
+          <GallerySection key={group} title={group} description={description}>
+            <div className="flex max-w-3xl flex-col gap-10">
+              {cases.map((each) => (
+                <Case key={each.title} {...each} />
+              ))}
+            </div>
+          </GallerySection>
+        ))}
+
+        <GallerySection
+          title="Meetings"
+          description="A running 1:1's panel: Next meeting and Past meetings. Before anyone writes, the agenda shows what it will open with: what was not reached last time. Preparing: either person uses templates, each adding its questions after the rest, and takes one off whole from the picker; adds, reorders and removes topics (their own, or a template's and last time's). Each topic is one line, with where it came from beside it, and #goals and @mentions drawn as pills. What the reader adds lands at the foot, scrolled into view. In progress: a breathing dot and a track along the card's foot as far as the agenda has got; a Discussed tick on each topic, and one topic's note open at a time, edged faintly, starting at the first not talked about; ticking it moves on to the next. Finish shows the summary before sharing it. Past meetings open to their summary; each meeting offers Give and Kudos for the other person, outlined in their voices as a teammate's row does. Start and Finish reach the other person within seconds; notes save themselves and arrive with Sync."
+        >
           <div className="flex max-w-3xl flex-col gap-10">
-            {cases.map((each) => (
-              <Case key={each.title} {...each} />
+            {(
+              [
+                [
+                  'Nothing written yet',
+                  SAMPLE_NEXT_MEETINGS.untouched,
+                  '0196b4c8-0000-7000-8000-0000000004a1',
+                ],
+                [
+                  'Preparing, two templates on one agenda',
+                  SAMPLE_NEXT_MEETINGS.preparing,
+                  '0196b4c8-0000-7000-8000-0000000004a2',
+                ],
+                [
+                  'In progress, one of five discussed',
+                  SAMPLE_NEXT_MEETINGS.inProgress,
+                  '0196b4c8-0000-7000-8000-0000000004a3',
+                ],
+              ] as const
+            ).map(([title, next, id]) => (
+              <figure key={title} className="flex flex-col gap-3">
+                <figcaption>
+                  <Text as="h3" variant="subtitle-3">
+                    Meeting · {title}
+                  </Text>
+                </figcaption>
+                <OneOnOnePanel
+                  readerName="Krit Chaiwong"
+                  // Its own id per state, so the three panels never share a heading id.
+                  oneOnOne={{ ...SAMPLE_ONE_ON_ONES.runningWeekly, id }}
+                  today={SAMPLE_TODAY}
+                  workspaceId={SAMPLE_WORKSPACE_ID}
+                  teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
+                  templates={SAMPLE_ONE_ON_ONE_TEMPLATES}
+                  meetings={{
+                    next,
+                    past: SAMPLE_PAST_MEETINGS,
+                    skippedDays: [],
+                    pastTemplates: SAMPLE_PAST_TEMPLATES,
+                  }}
+                />
+              </figure>
             ))}
           </div>
         </GallerySection>
-      ))}
 
-      <GallerySection
-        title="Meetings"
-        description="A running 1:1's panel: Next meeting and Past meetings. Before anyone writes, the agenda shows what it will open with: what was not reached last time. Preparing: either person uses a template, whose questions take the place of the last one's, and adds, reorders and removes topics (their own, or the template's and last time's). Each topic is one line, with where it came from beside it. In progress: a Discussed tick on each topic, and one topic's note open at a time, starting at the first not talked about; ticking it moves on to the next. Finish shows the summary before sharing it. Past meetings open to their summary; each meeting offers Give and Kudos for the other person, outlined in their voices as a teammate's row does. Start and Finish reach the other person within seconds; notes save themselves and arrive with Sync."
-      >
-        <div className="flex max-w-3xl flex-col gap-10">
-          {(
-            [
-              [
-                'Nothing written yet',
-                SAMPLE_NEXT_MEETINGS.untouched,
-                '0196b4c8-0000-7000-8000-0000000004a1',
-              ],
-              [
-                'Preparing',
-                SAMPLE_NEXT_MEETINGS.preparing,
-                '0196b4c8-0000-7000-8000-0000000004a2',
-              ],
-              [
-                'In progress',
-                SAMPLE_NEXT_MEETINGS.inProgress,
-                '0196b4c8-0000-7000-8000-0000000004a3',
-              ],
-            ] as const
-          ).map(([title, next, id]) => (
-            <figure key={title} className="flex flex-col gap-3">
+        <GallerySection
+          title="Summaries"
+          description="What a meeting came to: each topic talked about with its note, then what carries over, every one saying where it came from (a template by name, Feedback, Kudos, last time, or who added it). Finish shows it before sharing; Past meetings keeps it, each meeting folded to one line until opened."
+        >
+          <div className="flex max-w-3xl flex-col gap-10">
+            <figure className="flex flex-col gap-3">
               <figcaption>
                 <Text as="h3" variant="subtitle-3">
-                  Meeting · {title}
+                  Summary · as Finish shows it
                 </Text>
               </figcaption>
-              <OneOnOnePanel
-                // Its own id per state, so the three panels never share a heading id.
-                oneOnOne={{ ...SAMPLE_ONE_ON_ONES.runningWeekly, id }}
-                today={SAMPLE_TODAY}
-                workspaceId={SAMPLE_WORKSPACE_ID}
-                teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
-                templates={SAMPLE_ONE_ON_ONE_TEMPLATES}
-                meetings={{ next, past: SAMPLE_PAST_MEETINGS, skippedDays: [] }}
+              <div className="rounded-page border border-border-muted p-inset-card">
+                <MeetingSummary
+                  meeting={SAMPLE_NEXT_MEETINGS.inProgress.meeting}
+                  people={SAMPLE_MEETING_PEOPLE}
+                  templates={SAMPLE_NEXT_MEETINGS.inProgress.templates}
+                />
+              </div>
+            </figure>
+            <figure className="flex flex-col gap-3">
+              <figcaption>
+                <Text as="h3" variant="subtitle-3">
+                  Past meetings · the newest open
+                </Text>
+              </figcaption>
+              <PastMeetings
+                meetings={SAMPLE_PAST_MEETINGS}
+                templates={SAMPLE_PAST_TEMPLATES}
+                people={SAMPLE_MEETING_PEOPLE}
+                other={SAMPLE_ONE_ON_ONE_TEAMMATES.find(
+                  (teammate) =>
+                    teammate.accountId === SAMPLE_MEETING_PEOPLE.otherAccountId,
+                )}
               />
             </figure>
-          ))}
-        </div>
-      </GallerySection>
+          </div>
+        </GallerySection>
 
-      <GallerySection
-        title="Missed meetings"
-        description="What a 1:1 shows when a meeting day passes without anyone pressing Start, in every case and in a simulator, is on its own page."
-      >
-        <NextLink
-          href={ROUTES.uiShowcase.oneOnOnesMissed}
-          className="w-fit text-button-sm text-fg-accent underline-offset-4 hover:underline"
+        <GallerySection
+          title="Before you meet"
+          description="Above the agenda, what the reader may already read about the other person since they last met: the Feedback the two wrote to each other, kept to them or not, and what the other's Profile shows the reader (Everyone, Shared with you, and Kudos naming them). Before the first meeting held, the last 30 days. Each card is on its kind's ground, its #goals and @mentions drawn as pills, and can be brought onto the agenda once, as a topic that says it came from Feedback or Kudos; taken off the agenda, it can be brought again. Open while preparing; hidden while the meeting runs, when the agenda is what the two have before them."
         >
-          Open Missed 1:1s
-        </NextLink>
-      </GallerySection>
+          <div className="flex max-w-3xl flex-col gap-10">
+            {(
+              [
+                [
+                  'Preparing, one item already on the agenda',
+                  SAMPLE_NEXT_MEETING_WITH_BROUGHT,
+                  SAMPLE_MEETING_CONTEXTS.sinceLastMeeting,
+                  '0196b4c8-0000-7000-8000-0000000006a1',
+                ],
+                [
+                  'In progress: hidden, the agenda takes its place',
+                  SAMPLE_NEXT_MEETINGS.inProgress,
+                  SAMPLE_MEETING_CONTEXTS.sinceLastMeeting,
+                  '0196b4c8-0000-7000-8000-0000000006a2',
+                ],
+                [
+                  'Before the first meeting: the last 30 days',
+                  SAMPLE_NEXT_MEETINGS.untouched,
+                  SAMPLE_MEETING_CONTEXTS.firstMeeting,
+                  '0196b4c8-0000-7000-8000-0000000006a3',
+                ],
+                [
+                  'After a skipped day',
+                  SAMPLE_NEXT_MEETING_AFTER_SKIPPED,
+                  SAMPLE_MEETING_CONTEXTS.sinceLastMeeting,
+                  '0196b4c8-0000-7000-8000-0000000006a4',
+                ],
+                [
+                  'Nothing new',
+                  SAMPLE_NEXT_MEETINGS.preparing,
+                  SAMPLE_MEETING_CONTEXTS.nothingNew,
+                  '0196b4c8-0000-7000-8000-0000000006a5',
+                ],
+                [
+                  'More than one page came',
+                  SAMPLE_NEXT_MEETINGS.preparing,
+                  SAMPLE_MEETING_CONTEXTS.morePages,
+                  '0196b4c8-0000-7000-8000-0000000006a6',
+                ],
+              ] as const
+            ).map(([title, next, context, id]) => (
+              <figure key={title} className="flex flex-col gap-3">
+                <figcaption>
+                  <Text as="h3" variant="subtitle-3">
+                    Before you meet · {title}
+                  </Text>
+                </figcaption>
+                <OneOnOnePanel
+                  readerName="Krit Chaiwong"
+                  // Its own id per case, so the panels never share a heading id.
+                  oneOnOne={{ ...SAMPLE_ONE_ON_ONES.runningWeekly, id }}
+                  today={SAMPLE_TODAY}
+                  workspaceId={SAMPLE_WORKSPACE_ID}
+                  teammates={SAMPLE_ONE_ON_ONE_TEAMMATES}
+                  templates={SAMPLE_ONE_ON_ONE_TEMPLATES}
+                  meetings={{
+                    next,
+                    past: SAMPLE_PAST_MEETINGS,
+                    skippedDays: [],
+                    pastTemplates: SAMPLE_PAST_TEMPLATES,
+                    context,
+                  }}
+                />
+              </figure>
+            ))}
+          </div>
+        </GallerySection>
 
-      <GallerySection
-        title="Empty page"
-        description="The page before the reader has any: what a 1:1 is in Thrive, with Create 1:1 above it."
-      >
-        <div className="max-w-3xl">
-          <OneOnOnesEmpty />
-        </div>
-      </GallerySection>
+        <GallerySection
+          title="Missed meetings"
+          description="What a 1:1 shows when a meeting day passes without anyone pressing Start, in every case and in a simulator, is on its own page."
+        >
+          <NextLink
+            href={ROUTES.uiShowcase.oneOnOnesMissed}
+            className="w-fit text-button-sm text-fg-accent underline-offset-4 hover:underline"
+          >
+            Open Missed 1:1s
+          </NextLink>
+        </GallerySection>
+
+        <GallerySection
+          title="Empty page"
+          description="The page before the reader has any: what a 1:1 is in Thrive, with Create 1:1 above it."
+        >
+          <div className="max-w-3xl">
+            <OneOnOnesEmpty />
+          </div>
+        </GallerySection>
+      </StayInShowcase>
     </ShowcasePage>
   );
 }

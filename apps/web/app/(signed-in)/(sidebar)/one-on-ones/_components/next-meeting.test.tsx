@@ -1,5 +1,13 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { OneOnOneTemplate } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import type {
@@ -7,7 +15,14 @@ import type {
   MeetingTopic,
   NextMeeting as NextMeetingData,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
+import {
+  COLLAPSED_KEY,
+  forgetListCollapsed,
+} from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-list-collapsed';
 import { Toaster } from '@/components/atoms/toaster';
+import { SampleDataProvider } from '@/components/organisms/sample-data-provider';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
+import { SIDEBAR_STORAGE_KEY } from '@/lib/sidebar-fold.constant';
 
 const refresh = vi.fn();
 vi.mock('next/navigation', async (importOriginal) => ({
@@ -24,6 +39,7 @@ const reorderPreviewTopics = vi.fn();
 const updateTopic = vi.fn();
 const checkMeetingState = vi.fn();
 const chooseTemplateForMeeting = vi.fn();
+const removeTemplateFromMeeting = vi.fn();
 vi.mock(
   '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service',
   () => ({
@@ -38,6 +54,8 @@ vi.mock(
     checkMeetingState: (...args: unknown[]) => checkMeetingState(...args),
     chooseTemplateForMeeting: (...args: unknown[]) =>
       chooseTemplateForMeeting(...args),
+    removeTemplateFromMeeting: (...args: unknown[]) =>
+      removeTemplateFromMeeting(...args),
   }),
 );
 
@@ -70,6 +88,7 @@ const ONE_ON_ONE_ID = '0196b4c8-0000-7000-8000-000000000001';
 const MEETING_ID = '0196b4c8-0000-7000-8000-0000000000a1';
 const PEOPLE = {
   readerAccountId: ME,
+  readerName: 'Krit',
   otherAccountId: MINT,
   otherName: 'Mint',
 };
@@ -89,6 +108,8 @@ function topic(
     notesUpdatedAt: null,
     notesUpdatedByAccountId: null,
     discussedAt: null,
+    broughtFrom: null,
+    templateKey: null,
     ...overrides,
   };
 }
@@ -130,6 +151,7 @@ function page(next: Partial<NextMeetingData>, due: Due = DUE_TODAY) {
           meeting: null,
           carried: [],
           templateQuestions: [],
+          templates: [],
           carriedFromSkipped: null,
           carriedTopics: [],
           templateName: null,
@@ -202,12 +224,18 @@ beforeEach(() => {
     reorderTopics,
     reorderPreviewTopics,
     updateTopic,
+    chooseTemplateForMeeting,
+    removeTemplateFromMeeting,
   ]) {
     action.mockReset().mockResolvedValue({ ok: true });
   }
 });
 
 afterEach(() => {
+  vi.unstubAllGlobals();
+  delete document.documentElement.dataset.sidebar;
+  localStorage.clear();
+  forgetListCollapsed();
   checkMeetingState.mockReset();
   vi.useRealTimers();
   vi.restoreAllMocks();
@@ -262,31 +290,67 @@ describe('NextMeeting', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
     );
+    // No toast: its questions are seen landing; a screen reader is told in words, once.
+    expect(
+      screen.getAllByText('Added Career conversation to the agenda'),
+    ).toHaveLength(1);
   });
 
-  it('names the template used, offers to change it, marks it in use, and says where its questions came from', async () => {
+  it('says which template asked each question, and offers to take each one in use off the agenda', async () => {
     draw({
       meeting: meeting({
-        topics: [topic('t1', 'What went well this week?')],
+        topics: [
+          topic('t1', 'What went well this week?', {
+            templateKey: 'weekly-check-in',
+          }),
+          topic('t2', 'Where do you want to be in a year?', {
+            templateKey: 'career-conversation',
+          }),
+        ],
       }),
-      templateName: 'Weekly check-in',
+      templateName: 'Career conversation',
+      templates: [
+        { key: 'weekly-check-in', name: 'Weekly check-in' },
+        { key: 'career-conversation', name: 'Career conversation' },
+      ],
     });
 
     expect(screen.getByText('From Weekly check-in')).toBeVisible();
+    expect(screen.getByText('From Career conversation')).toBeVisible();
     await userEvent.click(
       screen.getByRole('button', { name: 'Add from template' }),
     );
     const dialog = await screen.findByRole('dialog', {
       name: 'Add from template',
     });
+    // Another template adds to the agenda; nothing is replaced.
     expect(
-      within(dialog).getByText(/Replaces the questions from Weekly check-in/),
+      within(dialog).getByText(/added after the agenda’s topics/),
     ).toBeVisible();
-    // The one in use is said so, not offered again.
-    expect(within(dialog).getByText('In use')).toBeVisible();
+    // Each one in use offers to come off the agenda instead of being used again.
     expect(
       within(dialog).queryByRole('button', { name: 'Use Weekly check-in' }),
     ).not.toBeInTheDocument();
+    expect(
+      within(dialog).getByRole('button', {
+        name: 'Remove from agenda: Career conversation',
+      }),
+    ).toBeVisible();
+    await userEvent.click(
+      within(dialog).getByRole('button', {
+        name: 'Remove from agenda: Weekly check-in',
+      }),
+    );
+    expect(removeTemplateFromMeeting).toHaveBeenCalledExactlyOnceWith(
+      'workspace-acme',
+      ONE_ON_ONE_ID,
+      MEETING_ID,
+      'weekly-check-in',
+    );
+    // It stays open, so another can be chosen in its place, and says what went.
+    expect(
+      await within(dialog).findByText('Took Weekly check-in off the agenda'),
+    ).toBeInTheDocument();
     // Templates are kept in Settings, a link away.
     expect(
       within(dialog).getByRole('link', { name: 'Manage templates' }),
@@ -336,6 +400,16 @@ describe('NextMeeting', () => {
     expect(screen.getByText(/since 10:00/)).toBeVisible();
     expect(screen.getByText('1 of 2 discussed')).toBeVisible();
     expect(screen.getByText(/Finishing shares the summary/)).toBeVisible();
+    // The track along the card's foot is as far along as the agenda, and only decoration.
+    const track = document.querySelector('[data-meeting-progress]');
+    expect(track).toHaveAttribute('aria-hidden', 'true');
+    expect(track?.firstElementChild).toHaveStyle({ transform: 'scaleX(0.5)' });
+  });
+
+  it('shows no progress track while the meeting is only being prepared', () => {
+    draw({ meeting: meeting() });
+
+    expect(document.querySelector('[data-meeting-progress]')).toBeNull();
   });
 
   it('lets the agenda be moved and trimmed before anybody has written to it', async () => {
@@ -344,9 +418,16 @@ describe('NextMeeting', () => {
     expect(
       screen.getByRole('button', { name: 'Move Launch retro' }),
     ).toBeVisible();
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Remove: What went well this week?' }),
-    );
+    const remove = screen.getByRole('button', {
+      name: 'Remove: What went well this week?',
+    });
+    const row = remove.closest('li') as HTMLElement;
+    await userEvent.click(remove);
+
+    // It goes first, out of reach, and the removal is sent once it has gone.
+    expect(row).toHaveAttribute('inert');
+    expect(removePreviewTopic).not.toHaveBeenCalled();
+    fireEvent.animationEnd(row);
 
     // By its place and its words, so a topic the other person moved meanwhile is not removed.
     expect(removePreviewTopic).toHaveBeenCalledExactlyOnceWith(
@@ -390,6 +471,47 @@ describe('NextMeeting', () => {
       ONE_ON_ONE_ID,
       MEETING_ID,
     );
+  });
+
+  it('folds the sidebar and the list of 1:1s once the meeting starts, so it has the room', async () => {
+    // A desktop window, where the sidebar stands wide beside the page and may fold.
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: !query.includes('reduce'),
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    document.documentElement.dataset.sidebar = 'wide';
+    localStorage.removeItem(COLLAPSED_KEY);
+    forgetListCollapsed();
+    draw({ meeting: meeting() });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Start meeting' }),
+    );
+
+    await waitFor(() =>
+      expect(document.documentElement.dataset.sidebar).toBe('rail'),
+    );
+    expect(localStorage.getItem(SIDEBAR_STORAGE_KEY)).toBe('rail');
+    expect(localStorage.getItem(COLLAPSED_KEY)).toBe('1');
+  });
+
+  it('leaves the sidebar and the list as they are when the meeting does not start', async () => {
+    startMeeting.mockResolvedValue({
+      ok: false,
+      message: 'Mint already started it.',
+    });
+    localStorage.removeItem(COLLAPSED_KEY);
+    forgetListCollapsed();
+    draw({ meeting: meeting() });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Start meeting' }),
+    );
+
+    expect(await screen.findByText('Mint already started it.')).toBeVisible();
+    expect(localStorage.getItem(COLLAPSED_KEY)).toBeNull();
   });
 
   it('ticks a topic discussed while it runs', async () => {
@@ -461,10 +583,12 @@ describe('NextMeeting', () => {
           topic('t1', 'Launch retro', {
             discussedAt: '2026-12-03T03:05:00.000Z',
             notes: 'Shipped on time',
+            templateKey: 'weekly-check-in',
           }),
-          topic('t2', 'Hiring'),
+          topic('t2', 'Hiring', { source: 'CARRIED' }),
         ],
       }),
+      templates: [{ key: 'weekly-check-in', name: 'Weekly check-in' }],
     });
 
     await userEvent.click(screen.getByRole('button', { name: 'Finish' }));
@@ -473,6 +597,11 @@ describe('NextMeeting', () => {
     });
     expect(within(dialog).getByText('Shipped on time')).toBeVisible();
     expect(within(dialog).getByText('Carries over to next time')).toBeVisible();
+    // Each topic says where it came from, under the dialog's title, one heading level down.
+    expect(
+      within(dialog).getByRole('heading', { level: 3, name: /Launch retro/ }),
+    ).toHaveTextContent(/From Weekly check-in$/);
+    expect(within(dialog).getByText('From last time')).toBeVisible();
     await userEvent.click(
       within(dialog).getByRole('button', { name: 'Finish' }),
     );
@@ -635,10 +764,10 @@ describe('NextMeeting', () => {
 
   it('gives focus to the next topic when the one that had it is removed', async () => {
     const syncWith = draw({ meeting: meeting() });
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Remove: Launch retro' }),
-    );
-    // The removal went, and the page read the agenda without it.
+    const remove = screen.getByRole('button', { name: 'Remove: Launch retro' });
+    await userEvent.click(remove);
+    // The row went, then the removal was sent, and the page read the agenda without it.
+    fireEvent.animationEnd(remove.closest('li') as HTMLElement);
     const [, ...rest] = meeting().topics;
     const pressed = document.activeElement;
     if (pressed instanceof HTMLElement) {
@@ -650,6 +779,29 @@ describe('NextMeeting', () => {
     expect(
       screen.getByRole('button', { name: 'Move Career path' }),
     ).toHaveFocus();
+  });
+
+  it('brings a topic back into its place when taking it off was refused', async () => {
+    removeTopic.mockResolvedValue({
+      ok: false,
+      message: 'Mint changed the agenda. Sync and try again.',
+    });
+    draw({ meeting: meeting() });
+    const remove = screen.getByRole('button', { name: 'Remove: Launch retro' });
+    const row = remove.closest('li') as HTMLElement;
+    await userEvent.click(remove);
+    fireEvent.animationEnd(row);
+
+    expect(
+      await screen.findByText('Mint changed the agenda. Sync and try again.'),
+    ).toBeVisible();
+    expect(row).not.toHaveAttribute('inert');
+    // It went out of reach while it left; focus is given back where the press was.
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Remove: Launch retro' }),
+      ).toHaveFocus(),
+    );
   });
 
   it('saves the note being typed and reads the page before showing the summary to check', async () => {
@@ -957,6 +1109,368 @@ describe('NextMeeting', () => {
       screen.getByText(
         'Carried over from Thu 26 Nov, which was skipped. When you meet, either of you can start.',
       ),
+    ).toBeVisible();
+  });
+});
+
+describe('before the meeting', () => {
+  it('shows what came since the last meeting above the agenda, and says where a brought topic came from', () => {
+    render(
+      <NextMeeting
+        workspaceId="workspace-acme"
+        oneOnOneId={ONE_ON_ONE_ID}
+        next={{
+          meeting: meeting({
+            topics: [
+              topic('t1', 'Feedback from Ploy: The demo was clear.', {
+                source: 'PERSON',
+                authorAccountId: ME,
+                broughtFrom: {
+                  kind: 'FEEDBACK',
+                  id: '0196b4c8-0000-7000-8000-000000000101',
+                },
+              }),
+            ],
+          }),
+          carried: [],
+          templateQuestions: [],
+          templates: [],
+          carriedFromSkipped: null,
+          carriedTopics: [],
+          templateName: null,
+        }}
+        nextMeetingAt={DUE_TODAY.at}
+        nextMeetingSkippedAt={DUE_TODAY.skippedAt}
+        isOnce={false}
+        today="2026-12-03"
+        people={PEOPLE}
+        templates={TEMPLATES}
+        context={{
+          since: '2026-11-26T03:00:00.000Z',
+          lookback: 'LAST_MEETING',
+          tabs: {
+            FEEDBACK: {
+              count: 1,
+              nextCursor: null,
+              items: [
+                {
+                  kind: 'FEEDBACK',
+                  messageTags: NO_TEXT_TAGS,
+                  id: '0196b4c8-0000-7000-8000-000000000101',
+                  giver: {
+                    accountId: 'account-ploy',
+                    name: 'Ploy',
+                    photoUrl: null,
+                  },
+                  receiverAccountIds: [MINT],
+                  message: 'The demo was clear.',
+                  question: null,
+                  writtenAt: '2026-11-30T03:00:00.000Z',
+                },
+              ],
+            },
+            KUDOS: { items: [], count: 0, nextCursor: null },
+            BETWEEN: { items: [], count: 0, nextCursor: null },
+            SHARED: { items: [], count: 0, nextCursor: null },
+            OPEN_ASKS: { items: [], count: 0, nextCursor: null },
+          },
+        }}
+      />,
+    );
+
+    const before = screen.getByRole('region', { name: /Before you meet/ });
+    expect(within(before).getByText('On the agenda')).toBeVisible();
+    expect(screen.getByText('From Feedback')).toBeVisible();
+  });
+  it('is not shown once the meeting has started: the agenda is what the two have', () => {
+    render(
+      <NextMeeting
+        workspaceId="workspace-acme"
+        oneOnOneId={ONE_ON_ONE_ID}
+        next={{
+          meeting: meeting({
+            state: 'IN_PROGRESS',
+            startedAt: '2026-12-03T03:00:00.000Z',
+            startedByAccountId: ME,
+          }),
+          carried: [],
+          templateQuestions: [],
+          templates: [],
+          carriedFromSkipped: null,
+          carriedTopics: [],
+          templateName: null,
+        }}
+        nextMeetingAt={DUE_TODAY.at}
+        nextMeetingSkippedAt={DUE_TODAY.skippedAt}
+        isOnce={false}
+        today="2026-12-03"
+        people={PEOPLE}
+        templates={TEMPLATES}
+        context={{
+          since: '2026-11-26T03:00:00.000Z',
+          lookback: 'LAST_MEETING',
+          tabs: {
+            FEEDBACK: { items: [], count: 0, nextCursor: null },
+            KUDOS: { items: [], count: 0, nextCursor: null },
+            BETWEEN: { items: [], count: 0, nextCursor: null },
+            SHARED: { items: [], count: 0, nextCursor: null },
+            OPEN_ASKS: { items: [], count: 0, nextCursor: null },
+          },
+        }}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('region', { name: /Before you meet/ }),
+    ).toBeNull();
+  });
+});
+
+describe('the agenda as topics come and go', () => {
+  const scrollIntoView = vi.fn();
+
+  beforeEach(() => {
+    scrollIntoView.mockReset();
+    // jsdom does not scroll; each call says what was brought into view.
+    Element.prototype.scrollIntoView = scrollIntoView;
+  });
+
+  /** Whether the person asked for less motion; every other media query answers no. */
+  function asksForLessMotion(reduce: boolean) {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query.includes('reduce') ? reduce : false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+  }
+
+  function withTopics(...more: MeetingTopic[]) {
+    return { meeting: meeting({ topics: [...meeting().topics, ...more] }) };
+  }
+
+  /** The form Add a topic is in: what is scrolled into view when the reader adds. */
+  function addForm() {
+    return screen.getByRole('textbox', { name: 'Add a topic' }).closest('form');
+  }
+
+  it('brings Add a topic into view when the reader adds a topic, typed or brought from a card', () => {
+    const syncWith = draw({ meeting: meeting() });
+
+    syncWith(
+      withTopics(
+        topic('t9', 'Kudos from Nok', {
+          source: 'PERSON',
+          authorAccountId: ME,
+          broughtFrom: {
+            kind: 'KUDOS',
+            id: '0196b4c8-0000-7000-8000-000000000501',
+          },
+        }),
+      ),
+    );
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.contexts[0]).toBe(addForm());
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      block: 'nearest',
+      behavior: 'smooth',
+    });
+  });
+
+  it('leaves the page where it is when a topic the other person wrote arrives on Sync', () => {
+    const syncWith = draw({ meeting: meeting() });
+
+    syncWith(
+      withTopics(
+        topic('t9', 'Their worry', { source: 'PERSON', authorAccountId: MINT }),
+      ),
+    );
+
+    expect(screen.getByText('Their worry')).toBeVisible();
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it("brings a template's questions into view only when the reader used it", async () => {
+    chooseTemplateForMeeting.mockResolvedValue({ ok: true, id: MEETING_ID });
+    const syncWith = draw({ meeting: meeting() });
+
+    // The other person used one; it arrives on Sync and does not move the page.
+    syncWith(
+      withTopics(
+        topic('t8', 'Where next?', { templateKey: 'career-conversation' }),
+      ),
+    );
+    expect(scrollIntoView).not.toHaveBeenCalled();
+
+    // The reader uses one; its questions land and are brought into view.
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Add from template' }),
+    );
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Add from template',
+    });
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Use Weekly check-in' }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    syncWith(
+      withTopics(
+        topic('t8', 'Where next?', { templateKey: 'career-conversation' }),
+        topic('t9', 'What went well this week?', {
+          templateKey: 'weekly-check-in',
+        }),
+      ),
+    );
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.contexts[0]).toBe(addForm());
+  });
+
+  it('brings each add into view with less motion too, at once rather than smoothly', () => {
+    asksForLessMotion(true);
+    const syncWith = draw({ meeting: meeting() });
+    const mine = (id: string, text: string) =>
+      topic(id, text, { source: 'PERSON', authorAccountId: ME });
+
+    syncWith(withTopics(mine('t9', 'First')));
+    syncWith(withTopics(mine('t9', 'First'), mine('t10', 'Second')));
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+    expect(scrollIntoView).toHaveBeenLastCalledWith({
+      block: 'nearest',
+      behavior: 'auto',
+    });
+
+    // Each was brought into view once: a reorder or a removal later does not scroll again.
+    syncWith(withTopics(mine('t10', 'Second'), mine('t9', 'First')));
+    syncWith(withTopics(mine('t10', 'Second')));
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+  });
+
+  it('takes a topic off at once, with no motion, for someone who asked for less', async () => {
+    asksForLessMotion(true);
+    draw({ meeting: meeting() });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Remove: Launch retro' }),
+    );
+
+    expect(removeTopic).toHaveBeenCalledExactlyOnceWith(
+      'workspace-acme',
+      ONE_ON_ONE_ID,
+      MEETING_ID,
+      't1',
+    );
+  });
+
+  it('sends a removal even when its motion never says it ended', async () => {
+    // Time held still, so the backstop is reached by moving the clock, not by waiting for it. The
+    // clocks this file fakes for every test are swapped for ones that fake the timers too.
+    vi.useRealTimers();
+    vi.useFakeTimers({
+      toFake: ['Date', 'setTimeout', 'clearTimeout'],
+      shouldAdvanceTime: true,
+    });
+    vi.setSystemTime(new Date('2026-12-03T03:10:00.000Z'));
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    draw({ meeting: meeting() });
+
+    await user.click(
+      screen.getByRole('button', { name: 'Remove: Launch retro' }),
+    );
+
+    expect(removeTopic).not.toHaveBeenCalled();
+    await act(() => vi.advanceTimersByTimeAsync(800));
+    expect(removeTopic).toHaveBeenCalledTimes(1);
+  });
+
+  it('takes one topic off at a time: the rest wait while one leaves', async () => {
+    const syncWith = draw({ meeting: meeting() });
+    const first = screen.getByRole('button', { name: 'Remove: Launch retro' });
+
+    await userEvent.click(first);
+
+    expect(
+      screen.getByRole('button', { name: 'Remove: My worry' }),
+    ).toBeDisabled();
+    fireEvent.animationEnd(first.closest('li') as HTMLElement);
+    await waitFor(() => expect(removeTopic).toHaveBeenCalledTimes(1));
+    // The removal went, and the page read the agenda without it.
+    const [, ...rest] = meeting().topics;
+    syncWith({ meeting: meeting({ topics: rest }) });
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Remove: My worry' }),
+      ).toBeEnabled(),
+    );
+  });
+});
+
+describe('on sample data, as in the showcase', () => {
+  // Sonner keeps its toasts between renders, so one test's would still show in the next.
+  afterEach(() => {
+    toast.dismiss();
+  });
+
+  it('never asks the server where the meeting stands, however long it is shown', async () => {
+    vi.useRealTimers();
+    vi.useFakeTimers({
+      toFake: ['Date', 'setInterval', 'clearInterval'],
+      shouldAdvanceTime: true,
+    });
+    vi.setSystemTime(new Date('2026-12-03T03:10:00.000Z'));
+    // In view, as the watch would ask while it is: so only the sample data stops it.
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    render(
+      <SampleDataProvider>{page({ meeting: meeting() })}</SampleDataProvider>,
+    );
+
+    // Well past the watch's ten seconds, twice over.
+    await act(() => vi.advanceTimersByTimeAsync(25_000));
+
+    expect(checkMeetingState).not.toHaveBeenCalled();
+  });
+
+  it('keeps a note on the page and sends nothing', async () => {
+    render(
+      <SampleDataProvider>
+        {page({
+          meeting: meeting({
+            state: 'IN_PROGRESS',
+            startedAt: '2026-12-03T03:00:00.000Z',
+            occursAt: '2026-12-03T03:00:00.000Z',
+          }),
+        })}
+      </SampleDataProvider>,
+    );
+    const [note] = screen.getAllByRole('textbox', { name: /Notes on/ });
+    if (!note) {
+      throw new Error('No note field');
+    }
+
+    await userEvent.type(note, 'Went well');
+    await userEvent.tab();
+
+    expect(updateTopic).not.toHaveBeenCalled();
+    expect(note).toHaveValue('Went well');
+  });
+
+  it('sends nothing on Start meeting, and says so', async () => {
+    render(
+      <SampleDataProvider>{page({ meeting: meeting() })}</SampleDataProvider>,
+    );
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Start meeting' }),
+    );
+
+    expect(startMeeting).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText('In the showcase, nothing is sent.'),
     ).toBeVisible();
   });
 });

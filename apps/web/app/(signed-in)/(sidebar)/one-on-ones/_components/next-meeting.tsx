@@ -6,18 +6,24 @@ import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import type { OneOnOneTemplate } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/_lib/use-one-on-one-action';
+import { BeforeYouMeet } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/before-you-meet';
 import { FinishMeetingDialog } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/finish-meeting-dialog';
 import { MeetingAgenda } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-agenda';
 import type { MeetingPeople } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-summary';
 import { UseTemplateButton } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/use-template-button';
 import { stepOf } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/meeting-step.util';
-import type { NextMeeting as NextMeetingData } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
+import type {
+  MeetingContextView,
+  NextMeeting as NextMeetingData,
+} from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
 import { startMeeting } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service';
 import { PendingSaves } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/pending-saves';
+import { useMeetingFocus } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-meeting-focus';
 import { useMeetingStateWatch } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-meeting-state-watch';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
 import { cn } from '@/lib/cn.util';
+import styles from './next-meeting.module.css';
 
 export type NextMeetingProps = {
   workspaceId: string;
@@ -34,6 +40,8 @@ export type NextMeetingProps = {
   people: MeetingPeople;
   /** The templates the meeting can use while it is prepared. */
   templates: readonly OneOnOneTemplate[];
+  /** What is read before it, about the other person, by tab; absent where it is not read. */
+  context?: MeetingContextView;
 };
 
 /**
@@ -80,6 +88,7 @@ export function NextMeeting({
   today,
   people,
   templates,
+  context,
 }: NextMeetingProps) {
   const { isPending, run } = useOneOnOneAction();
   const { isSyncing, sync } = useSync();
@@ -111,6 +120,9 @@ export function NextMeeting({
     });
   }
   const ids = useId();
+  const focusOnMeeting = useMeetingFocus();
+  // The template the reader last used here, so the agenda knows its questions are theirs to see land.
+  const [templateUsed, setTemplateUsed] = useState<string | null>(null);
   const meeting = next.meeting;
   const inProgress = meeting?.state === 'IN_PROGRESS';
   const step = stepOf({
@@ -145,13 +157,15 @@ export function NextMeeting({
   });
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-2">
       {/* Side by side from `sm`, the button centred on the words; on a phone it goes under them. Flat
           on the page with a hairline while it is being prepared, as cards lie on the page; on the
           plum ground of the product while it runs, so a meeting under way is seen at a glance. */}
       <div
         className={cn(
           'flex flex-col items-start gap-3 rounded-control border px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-6',
+          // Room for the track along its foot while it runs, inside its rounded edge.
+          inProgress && 'relative overflow-hidden',
           inProgress
             ? 'border-action-primary-border bg-action-primary/8'
             : isOverdue
@@ -162,6 +176,16 @@ export function NextMeeting({
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           {/* Where it stands, said as a word, plum, or the warning's colour while overdue; then when. */}
           <Text as="p" variant="subtitle-3" className="tabular-nums">
+            {/* Live while it runs: a dot that breathes, before the word that says so. */}
+            {inProgress && (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'relative me-2.5 inline-block size-2 rounded-full bg-action-primary align-middle',
+                  styles.breathes,
+                )}
+              />
+            )}
             <span
               className={cn(
                 'font-medium',
@@ -195,13 +219,34 @@ export function NextMeeting({
             loading={isPending}
             prefixIcon={<PlayIcon aria-hidden="true" className="size-4" />}
             onClick={() =>
-              run(() =>
-                startMeeting(workspaceId, oneOnOneId, meeting?.id ?? null),
+              // Started, the sidebar and the list fold away, so the meeting has the room.
+              run(
+                () =>
+                  startMeeting(workspaceId, oneOnOneId, meeting?.id ?? null),
+                { onSuccess: focusOnMeeting },
               )
             }
           >
             Start meeting
           </Button>
+        )}
+        {/* How far the agenda has got, along the card's foot. The agenda's heading says the same in
+            words. */}
+        {inProgress && (
+          <div
+            aria-hidden="true"
+            data-meeting-progress
+            className="absolute inset-x-0 bottom-0 h-0.75 overflow-hidden bg-action-primary/15"
+          >
+            {/* Grown by scale, not width, so ticking a topic moves it without laying the card out
+                again on every frame. */}
+            <div
+              className="h-full origin-left bg-action-primary transition-transform duration-slow ease-smooth-out motion-reduce:transition-none rtl:origin-right"
+              style={{
+                transform: `scaleX(${agendaCount === 0 ? 0 : discussedCount / agendaCount})`,
+              }}
+            />
+          </div>
         )}
       </div>
 
@@ -224,9 +269,27 @@ export function NextMeeting({
         </div>
       )}
 
+      {/* Read while it is prepared; once it starts, the agenda is what the two have before them. */}
+      {context && !inProgress && (
+        <BeforeYouMeet
+          workspaceId={workspaceId}
+          oneOnOneId={oneOnOneId}
+          meetingId={meeting?.id ?? null}
+          context={context}
+          people={people}
+          today={today}
+          onAgenda={
+            meeting?.topics.flatMap((topic) =>
+              topic.broughtFrom ? [topic.broughtFrom] : [],
+            ) ?? []
+          }
+          skippedFrom={next.carriedFromSkipped}
+        />
+      )}
+
       <section
         aria-labelledby={`${ids}-agenda`}
-        className="flex flex-col gap-2"
+        className="mt-1 flex flex-col gap-2"
       >
         <div className="flex items-center justify-between gap-3">
           <Text as="h3" id={`${ids}-agenda`} variant="subtitle-4">
@@ -256,11 +319,8 @@ export function NextMeeting({
                 oneOnOneId={oneOnOneId}
                 meetingId={meeting?.id ?? null}
                 templates={templates}
-                current={
-                  meeting?.templateKey && next.templateName
-                    ? { key: meeting.templateKey, name: next.templateName }
-                    : null
-                }
+                inUse={next.templates}
+                onUsed={setTemplateUsed}
               />
             )}
           </div>
@@ -272,6 +332,7 @@ export function NextMeeting({
           people={people}
           headingId={`${ids}-agenda`}
           track={saves.track}
+          templateUsed={templateUsed}
         />
       </section>
 
@@ -282,6 +343,8 @@ export function NextMeeting({
           workspaceId={workspaceId}
           oneOnOneId={oneOnOneId}
           meeting={meeting}
+          people={people}
+          templates={next.templates}
           returnFocusTo={() => opener.current}
         />
       )}

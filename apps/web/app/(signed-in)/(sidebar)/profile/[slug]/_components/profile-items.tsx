@@ -28,7 +28,7 @@ function emptyOf(show: ProfileShow, name: string, isYou: boolean) {
     return {
       art: 'primary',
       title: `Nothing between you and ${name} yet.`,
-      description: `Feedback and kudos you and ${name} gave each other, or that someone gave you both, will show here.`,
+      description: `Feedback and Kudos you and ${name} gave each other, or that someone gave you both, will show here.`,
     } as const;
   }
   if (show === 'asks') {
@@ -41,7 +41,7 @@ function emptyOf(show: ProfileShow, name: string, isYou: boolean) {
   if (show === 'kudos') {
     return {
       art: 'secondary',
-      title: isYou ? 'No kudos for you yet.' : `No kudos for ${name} yet.`,
+      title: isYou ? 'No Kudos for you yet.' : `No Kudos for ${name} yet.`,
       description: isYou
         ? 'Kudos that @mention you will show here.'
         : `Kudos that @mention ${name} will show here.`,
@@ -50,10 +50,10 @@ function emptyOf(show: ProfileShow, name: string, isYou: boolean) {
   return {
     art: 'primary',
     title: isYou
-      ? 'No feedback everyone can read yet.'
-      : `No feedback for ${name} that everyone can read yet.`,
+      ? 'No Feedback everyone can read yet.'
+      : `No Feedback for ${name} that everyone can read yet.`,
     description: isYou
-      ? 'Feedback written to you and shared with everyone in the Workspace will show here. The rest is in Received, for you.'
+      ? 'Feedback written to you and shared with everyone in the Workspace will show here. Everything else written to you is in Received.'
       : `Feedback written to ${name} and shared with everyone in the Workspace will show here.`,
   } as const;
 }

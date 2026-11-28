@@ -5,10 +5,14 @@ import type {
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
 import type {
   Meeting,
+  MeetingContextCard,
+  MeetingContextTabView,
+  MeetingContextView,
   MeetingTopic,
   NextMeeting,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
 import type { Teammate } from '@/lib/feedback/teammate.type';
+import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 
 /** Who reads every sample: the person signed in, on one side of each 1:1. */
 const ME = 'sample-me';
@@ -356,13 +360,18 @@ function sampleTopic(
     notesUpdatedAt: null,
     notesUpdatedByAccountId: null,
     discussedAt: null,
+    broughtFrom: null,
+    templateKey: null,
     ...overrides,
   };
 }
 
 const AGENDA: MeetingTopic[] = [
   sampleTopic('a1', 'Career path: senior engineer', { source: 'CARRIED' }),
-  sampleTopic('a2', 'What went well this week?', { position: 1 }),
+  sampleTopic('a2', 'What went well this week?', {
+    position: 1,
+    templateKey: 'weekly-check-in',
+  }),
   sampleTopic('a3', 'The hiring loop', {
     source: 'PERSON',
     authorAccountId: 'mint',
@@ -373,12 +382,23 @@ const AGENDA: MeetingTopic[] = [
     authorAccountId: ME,
     position: 3,
   }),
+  // A second template on the same agenda: its question after the rest, naming its own template.
+  sampleTopic('a5', 'Where do you want to be in a year?', {
+    position: 4,
+    templateKey: 'career-conversation',
+  }),
+];
+
+/** The templates the agenda above uses, in agenda order. */
+const AGENDA_TEMPLATES = [
+  { key: 'weekly-check-in', name: 'Weekly check-in' },
+  { key: 'career-conversation', name: 'Career conversation' },
 ];
 
 const LIVE: Meeting = {
   id: '0196b4c8-0000-7000-8000-0000000003b1',
   state: 'PREPARING',
-  templateKey: 'weekly-check-in',
+  templateKey: 'career-conversation',
   occursAt: null,
   startedAt: null,
   startedByAccountId: null,
@@ -393,6 +413,7 @@ export const SAMPLE_NEXT_MEETINGS = {
     meeting: null,
     carried: ['Career path: senior engineer'],
     templateQuestions: [],
+    templates: [],
     carriedFromSkipped: null,
     carriedTopics: [],
     templateName: null,
@@ -401,9 +422,10 @@ export const SAMPLE_NEXT_MEETINGS = {
     meeting: LIVE,
     carried: [],
     templateQuestions: [],
+    templates: AGENDA_TEMPLATES,
     carriedFromSkipped: null,
     carriedTopics: [],
-    templateName: 'Weekly check-in',
+    templateName: 'Career conversation',
   },
   inProgress: {
     meeting: {
@@ -426,11 +448,15 @@ export const SAMPLE_NEXT_MEETINGS = {
     },
     carried: [],
     templateQuestions: [],
+    templates: AGENDA_TEMPLATES,
     carriedFromSkipped: null,
     carriedTopics: [],
-    templateName: 'Weekly check-in',
+    templateName: 'Career conversation',
   },
 } satisfies Record<string, NextMeeting>;
+
+/** What the templates the finished meetings' topics came from are called. */
+export const SAMPLE_PAST_TEMPLATES = AGENDA_TEMPLATES;
 
 /** Mint's finished meetings, newest first. */
 export const SAMPLE_PAST_MEETINGS: readonly Meeting[] = [
@@ -445,11 +471,13 @@ export const SAMPLE_PAST_MEETINGS: readonly Meeting[] = [
     finishedByAccountId: 'mint',
     topics: [
       sampleTopic('b1', 'What went well this week?', {
+        templateKey: 'weekly-check-in',
         notes: 'Shipped the onboarding flow a day early.',
         discussedAt: '2026-11-20T03:10:00.000Z',
       }),
       sampleTopic('b2', "What's in your way?", {
         position: 1,
+        templateKey: 'weekly-check-in',
         notes: 'Waiting two days for a design review.',
         discussedAt: '2026-11-20T03:20:00.000Z',
       }),
@@ -458,6 +486,242 @@ export const SAMPLE_PAST_MEETINGS: readonly Meeting[] = [
         authorAccountId: 'mint',
         position: 2,
       }),
+      // Brought from Before you meet and not reached: it carries over saying where it came from.
+      sampleTopic(
+        'b4',
+        'Cara sent to Mint: Thank you for staying late on Tuesday.',
+        {
+          source: 'PERSON',
+          authorAccountId: ME,
+          position: 3,
+          broughtFrom: {
+            kind: 'KUDOS',
+            id: '0196b4c8-0000-7000-8000-000000000502',
+          },
+        },
+      ),
     ],
   },
 ];
+
+/** The two people of Mint's 1:1 as its meetings name them: the reader, and Mint. */
+export const SAMPLE_MEETING_PEOPLE = {
+  readerAccountId: ME,
+  readerName: 'Krit',
+  otherAccountId: 'mint',
+  otherName: 'Mint',
+};
+
+const GRACE = { accountId: 'grace', name: 'Grace Kim', photoUrl: null };
+const CARA = { accountId: 'cara', name: 'Cara Diaz', photoUrl: null };
+const OMAR = { accountId: 'omar', name: 'Omar Haddad', photoUrl: null };
+const DEV = { accountId: 'dev', name: 'Dev Patel', photoUrl: null };
+const MINT_SAMPLE = { accountId: 'mint', name: 'Mint Boonmee', photoUrl: null };
+const ME_SAMPLE = { accountId: ME, name: 'Krit Chaiwong', photoUrl: null };
+
+function contextFeedback(
+  id: string,
+  overrides: Partial<Extract<MeetingContextCard, { kind: 'FEEDBACK' }>>,
+): MeetingContextCard {
+  return {
+    kind: 'FEEDBACK',
+    messageTags: NO_TEXT_TAGS,
+    id: `0196b4c8-0000-7000-8000-0000000005${id}`,
+    giver: GRACE,
+    receiverAccountIds: ['mint'],
+    message: '',
+    question: null,
+    writtenAt: '2026-11-25T03:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function contextTab(
+  items: readonly MeetingContextCard[],
+  count = items.length,
+): MeetingContextTabView {
+  return {
+    items,
+    count,
+    // A sample has no next batch to read, so its count never passes what it holds.
+    nextCursor: null,
+  };
+}
+
+const KUDOS_FROM_CARA: MeetingContextCard = {
+  kind: 'KUDOS',
+  // A Mention and a Workspace Goal, drawn as pills in the voices Feedback draws them in.
+  messageTags: {
+    workspaceGoals: [{ name: 'Ownership' }],
+    mentions: [{ slug: 'mint', displayName: 'Mint Boonmee' }],
+  },
+  id: '0196b4c8-0000-7000-8000-000000000502',
+  giver: CARA,
+  recipientAccountIds: ['mint'],
+  message:
+    'Thank you @mint for staying late on Tuesday to get the release out. #Ownership',
+  writtenAt: '2026-11-25T09:00:00.000Z',
+};
+
+const KUDOS_FROM_ME: MeetingContextCard = {
+  kind: 'KUDOS',
+  messageTags: NO_TEXT_TAGS,
+  id: '0196b4c8-0000-7000-8000-000000000508',
+  giver: ME_SAMPLE,
+  recipientAccountIds: ['mint'],
+  message: 'For taking the pager over the long weekend without being asked.',
+  writtenAt: '2026-11-23T09:00:00.000Z',
+};
+
+const KUDOS_FROM_MINT: MeetingContextCard = {
+  kind: 'KUDOS',
+  messageTags: NO_TEXT_TAGS,
+  id: '0196b4c8-0000-7000-8000-000000000509',
+  giver: MINT_SAMPLE,
+  recipientAccountIds: [ME],
+  message: 'For the clearest onboarding I have had anywhere.',
+  writtenAt: '2026-11-21T09:00:00.000Z',
+};
+
+/** Every tab read before Mint's next meeting, with one card of every kind and reach. */
+const EVERY_TAB: MeetingContextView['tabs'] = {
+  FEEDBACK: contextTab([
+    contextFeedback('03', {
+      message:
+        'The demo walkthrough on Friday was the clearest one we have had. Next time, open with the customer’s problem before the screens, so sales can retell it.',
+      writtenAt: '2026-11-24T03:00:00.000Z',
+    }),
+    contextFeedback('06', {
+      giver: DEV,
+      question: 'How did the onboarding doc land?',
+      message:
+        'It landed well. The setup section saved me a day. The part on deploys assumes you already know our CI.',
+      writtenAt: '2026-11-21T03:00:00.000Z',
+    }),
+  ]),
+  KUDOS: contextTab([KUDOS_FROM_CARA, KUDOS_FROM_ME]),
+  BETWEEN: contextTab([
+    contextFeedback('01', {
+      giver: ME_SAMPLE,
+      message:
+        'When you took over the incident on Monday you kept everyone calm. One thing for next time: post the status in the channel every 30 minutes, even when nothing has changed.',
+      writtenAt: '2026-11-26T03:00:00.000Z',
+    }),
+    contextFeedback('07', {
+      giver: OMAR,
+      receiverAccountIds: [ME, 'mint', 'dev', 'grace'],
+      message:
+        'The four of you turned the migration around in a week. The runbook you wrote is now the team’s template.',
+      writtenAt: '2026-11-24T08:00:00.000Z',
+    }),
+    KUDOS_FROM_ME,
+    contextFeedback('05', {
+      giver: MINT_SAMPLE,
+      receiverAccountIds: [ME],
+      message:
+        'I’d like more context before a task lands on me. I found out about the migration from the board.',
+      writtenAt: '2026-11-22T03:00:00.000Z',
+    }),
+    KUDOS_FROM_MINT,
+  ]),
+  SHARED: contextTab([
+    contextFeedback('04', {
+      giver: OMAR,
+      message:
+        'In the planning meeting you cut Nok off twice. I don’t think you meant to, but she went quiet after that.',
+      writtenAt: '2026-11-23T03:00:00.000Z',
+    }),
+  ]),
+  OPEN_ASKS: contextTab([
+    {
+      kind: 'ASK',
+      messageTags: NO_TEXT_TAGS,
+      id: '0196b4c8-0000-7000-8000-000000000601',
+      requester: MINT_SAMPLE,
+      askedAccountId: ME,
+      question: 'How did my first on-call week look from your side?',
+      askedAt: '2026-11-05T03:00:00.000Z',
+    },
+    {
+      kind: 'ASK',
+      messageTags: NO_TEXT_TAGS,
+      id: '0196b4c8-0000-7000-8000-000000000602',
+      requester: ME_SAMPLE,
+      askedAccountId: 'mint',
+      question: 'Was the sprint plan clear enough to start from?',
+      askedAt: '2026-11-23T03:00:00.000Z',
+    },
+  ]),
+};
+
+const NOTHING = contextTab([]);
+
+/** What is read before Mint's next meeting, in each case the section draws. */
+export const SAMPLE_MEETING_CONTEXTS = {
+  sinceLastMeeting: {
+    since: '2026-11-19T03:02:00.000Z',
+    lookback: 'LAST_MEETING',
+    tabs: EVERY_TAB,
+  },
+  firstMeeting: {
+    since: '2026-10-26T17:00:00.000Z',
+    lookback: 'FIRST_30_DAYS',
+    tabs: { ...EVERY_TAB, BETWEEN: NOTHING, SHARED: NOTHING },
+  },
+  nothingNew: {
+    since: '2026-11-19T03:02:00.000Z',
+    lookback: 'LAST_MEETING',
+    tabs: {
+      FEEDBACK: NOTHING,
+      KUDOS: NOTHING,
+      BETWEEN: NOTHING,
+      SHARED: NOTHING,
+      OPEN_ASKS: NOTHING,
+    },
+  },
+  morePages: {
+    since: '2026-11-19T03:02:00.000Z',
+    lookback: 'LAST_MEETING',
+    tabs: {
+      ...EVERY_TAB,
+      FEEDBACK: contextTab(
+        Array.from({ length: 7 }, (_, index) =>
+          contextFeedback(`1${index}`, {
+            message: `Feedback ${index + 1} of the week: the reviews got faster and kinder.`,
+            writtenAt: `2026-11-2${index}T03:00:00.000Z`,
+          }),
+        ),
+      ),
+    },
+  },
+} satisfies Record<string, MeetingContextView>;
+
+/** Mint's next meeting being prepared, with the Kudos from Cara already brought onto it. */
+export const SAMPLE_NEXT_MEETING_WITH_BROUGHT: NextMeeting = {
+  ...SAMPLE_NEXT_MEETINGS.preparing,
+  meeting: {
+    ...LIVE,
+    topics: [
+      ...AGENDA,
+      sampleTopic(
+        'a5',
+        'Kudos from Cara: Thank you for staying late on Tuesday…',
+        {
+          source: 'PERSON',
+          authorAccountId: ME,
+          position: AGENDA.length,
+          broughtFrom: {
+            kind: 'KUDOS',
+            id: '0196b4c8-0000-7000-8000-000000000502',
+          },
+        },
+      ),
+    ],
+  },
+};
+
+/** Mint's next meeting after a skipped day, whose agenda moved on from it. */
+export const SAMPLE_NEXT_MEETING_AFTER_SKIPPED: NextMeeting = {
+  ...SAMPLE_NEXT_MEETINGS.preparing,
+  carriedFromSkipped: '2026-11-26',
+};
