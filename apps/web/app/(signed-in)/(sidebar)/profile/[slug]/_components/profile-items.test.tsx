@@ -56,6 +56,41 @@ function theApiAnswers(body: object, init?: ResponseInit) {
 
 const NOTHING = { readerAccountId: READER, items: [], nextCursor: null };
 
+const ASK_ID = '0199a0f0-0000-7000-8000-0000000000e1';
+const ANN = {
+  accountId: READER,
+  name: 'Ann Lee',
+  photoUrl: null,
+  status: 'ACTIVE',
+} as const;
+const BEN_PERSON = {
+  accountId: BEN_ID,
+  name: 'Ben',
+  photoUrl: null,
+  status: 'ACTIVE',
+} as const;
+
+type WirePerson = typeof ANN | typeof BEN_PERSON;
+
+/** An Ask still waiting between the two, from one to the other, as the API sends it. */
+function pendingAsk({ from, to }: { from: WirePerson; to: WirePerson }) {
+  return {
+    kind: 'ASK',
+    id: ASK_ID,
+    feedbackRequestId: '0199a0f0-0000-7000-8000-0000000000e2',
+    message: 'How did the demo land?',
+    tags: { workspaceGoals: [], mentions: [] },
+    requester: from,
+    asked: to,
+    postcard: null,
+    createdAt: '2026-10-31T03:00:00.000Z',
+  };
+}
+
+function betweenWith(...items: object[]) {
+  return { readerAccountId: READER, items, nextCursor: null };
+}
+
 describe('ProfileItems', () => {
   it('asks for the list that is open', async () => {
     const asked = theApiAnswers(NOTHING);
@@ -187,6 +222,100 @@ describe('ProfileItems', () => {
     expect(screen.getByRole('article')).toHaveTextContent(
       '@Ben fixed the build.',
     );
+  });
+
+  it('asks for what is between the reader and them, and says when nothing is yet', async () => {
+    const asked = theApiAnswers(NOTHING);
+
+    render(
+      await ProfileItems({
+        membership: MEMBERSHIP,
+        profile: BEN,
+        show: 'between',
+      }),
+    );
+
+    expect(asked.map((url) => url.searchParams.get('show'))).toEqual([
+      'BETWEEN_US',
+    ]);
+    expect(
+      screen.getByRole('heading', { name: 'Nothing between you and Ben yet.' }),
+    ).toBeInTheDocument();
+  });
+
+  it('asks for the Asks open between the reader and them, and says when there are none', async () => {
+    const asked = theApiAnswers(NOTHING);
+
+    render(
+      await ProfileItems({
+        membership: MEMBERSHIP,
+        profile: BEN,
+        show: 'asks',
+      }),
+    );
+
+    expect(asked.map((url) => url.searchParams.get('show'))).toEqual([
+      'OPEN_ASKS',
+    ]);
+    expect(
+      screen.getByRole('heading', {
+        name: 'No open asks between you and Ben.',
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('opens an Ask the teammate sent the reader on the postcard it is answered on', async () => {
+    theApiAnswers(betweenWith(pendingAsk({ from: BEN_PERSON, to: ANN })));
+
+    render(
+      await ProfileItems({
+        membership: MEMBERSHIP,
+        profile: BEN,
+        show: 'asks',
+      }),
+    );
+
+    expect(
+      screen.getByRole('link', {
+        name: 'Answer in the postcard: Ben asked you for feedback',
+      }),
+    ).toHaveAttribute('href', `/waiting?ask=${ASK_ID}`);
+  });
+
+  it('opens the reader’s requests from an Ask they sent the teammate', async () => {
+    theApiAnswers(betweenWith(pendingAsk({ from: ANN, to: BEN_PERSON })));
+
+    render(
+      await ProfileItems({
+        membership: MEMBERSHIP,
+        profile: BEN,
+        show: 'asks',
+      }),
+    );
+
+    expect(
+      screen.getByRole('link', {
+        name: 'Your requests: you asked Ben for feedback',
+      }),
+    ).toHaveAttribute('href', '/received?show=requests');
+  });
+
+  it('says how many days an open Ask has waited', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-21T05:00:00.000Z'));
+    theApiAnswers(betweenWith(pendingAsk({ from: ANN, to: BEN_PERSON })));
+
+    render(
+      await ProfileItems({
+        membership: MEMBERSHIP,
+        profile: BEN,
+        show: 'asks',
+      }),
+    );
+    const waited = screen.getByText('waiting 21 days');
+    vi.useRealTimers();
+
+    expect(waited).toBeInTheDocument();
   });
 
   it('says so when the list could not be read', async () => {

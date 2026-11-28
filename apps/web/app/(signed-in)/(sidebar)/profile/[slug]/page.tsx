@@ -40,10 +40,11 @@ type ProfilePageProps = {
 
 /**
  * Anyone's Profile in the Workspace, the reader's own included: who they are and where they stand
- * there, then what was written to them that the reader may read from outside — the Feedback shown to
- * everyone, asked for or not; on someone else's, the Feedback somebody shared with the reader, in a
- * list of its own; and the Kudos that name them. The reader's own shows them what everyone sees; the
- * rest of what was written to them is in Received.
+ * there, then their lists in two parts. What everyone sees: the Feedback to them that everyone
+ * reads, asked for or not, and the Kudos that name them. On someone else's, what is for the reader
+ * alone: what passed between the two at every Visibility, the Feedback to them somebody shared with
+ * the reader, and the Asks open between the two. The reader's own is a mirror of what everyone
+ * sees; the rest of what was written to them is in Received.
  *
  * On someone else's, Give, Ask and Kudos open that card for them, unless they have left. On the
  * reader's own, the way on is their Account in Settings. Pressing a postcard opens it over the
@@ -100,7 +101,7 @@ export default async function ProfilePage({
         )}
       </ProfileHeader>
       <div className={cn(PAGE_COLUMN, 'flex flex-1 flex-col gap-6')}>
-        <ProfileFilter slug={profile.slug} shows={shows} show={show} />
+        <ProfileFilter slug={profile.slug} show={show} isYou={isYou} />
         <Suspense
           key={show}
           fallback={<PersonalItemsLoading view={PERSONAL_VIEWS[0]} />}
