@@ -12,6 +12,8 @@ const TOPIC = {
   notesUpdatedAt: null,
   notesUpdatedByAccountId: null,
   discussedAt: null,
+  broughtFrom: null,
+  templateKey: null,
 };
 
 describe('the next meeting’s agenda', () => {
@@ -20,6 +22,7 @@ describe('the next meeting’s agenda', () => {
       meeting: null,
       carried: ['Launch retro', 'Hiring'],
       templateQuestions: [],
+      templates: [],
       carriedFromSkipped: null,
       carriedTopics: [],
       templateName: null,
@@ -58,6 +61,7 @@ describe('the next meeting’s agenda', () => {
       },
       carried: [],
       templateQuestions: [],
+      templates: [],
       carriedFromSkipped: null,
       carriedTopics: [],
       templateName: 'Weekly check-in',

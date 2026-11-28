@@ -25,7 +25,10 @@ import { usePrefersReducedMotion } from '@/app/(signed-in)/(sidebar)/_lib/use-pr
 import {
   type MeetingPeople,
   nameOf,
+  type TopicOrigin,
+  topicSourceOf,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-summary';
+import { TopicText } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/topic-text';
 import {
   type AgendaTopic,
   agendaOf,
@@ -42,7 +45,7 @@ import {
   reorderTopics,
   updateTopic,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service';
-import { describeDay } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-schedule.util';
+import { useArrivals } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-arrivals';
 import { useAutosave } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/use-autosave';
 import { Button } from '@/components/atoms/button';
 import { Checkbox } from '@/components/atoms/checkbox';
@@ -52,7 +55,11 @@ import { Label } from '@/components/atoms/label';
 import { Text } from '@/components/atoms/text';
 import { Textarea } from '@/components/atoms/textarea';
 import { RemoveButton } from '@/components/molecules/remove-button';
+import { FEED_CARD_FILL } from '@/components/organisms/feed-card/feed-card-tone.constant';
+import type { FeedCardTone } from '@/components/organisms/feed-card/feed-card-tone.type';
+import { useIsSampleData } from '@/components/organisms/sample-data-provider';
 import { cn } from '@/lib/cn.util';
+import styles from './meeting-agenda.module.css';
 
 const STATUS_WORDS = {
   idle: '',
@@ -61,27 +68,14 @@ const STATUS_WORDS = {
   failed: 'Not saved',
 } as const;
 
-/**
- * Where a topic came from, said quietly beside it. A topic written for a meeting day that was then
- * skipped moved on with the agenda, and says so; one added since says who added it, as usual.
- */
-function sourceOf(
-  topic: AgendaTopic,
-  templateName: string | null,
-  people: MeetingPeople,
-  carriedFrom: string | null,
-): string {
-  if (carriedFrom) {
-    return `From ${describeDay(carriedFrom)} (skipped)`;
-  }
-  switch (topic.source) {
-    case 'CARRIED':
-      return 'From last time';
-    case 'TEMPLATE':
-      return templateName ? `From ${templateName}` : 'From a template';
-    default:
-      return `Added by ${nameOf(people, topic.authorAccountId)}`;
-  }
+/** Where an agenda topic came from: a previewed one, not open yet, has only its source and author. */
+function originOf(item: AgendaTopic): TopicOrigin {
+  return {
+    source: item.source,
+    authorAccountId: item.authorAccountId,
+    broughtFrom: item.topic?.broughtFrom ?? null,
+    templateKey: item.topic?.templateKey ?? null,
+  };
 }
 
 type TopicNoteProps = {
@@ -188,7 +182,29 @@ type TopicRowProps = {
   isOpen: boolean;
   onToggle: () => void;
   onConflict: () => void;
+  /** Just put on the agenda, by either person: it drops into its place, once. */
+  isArriving: boolean;
+  onArrived: () => void;
+  /** Taken off: it slides aside and its gap closes, then `onLeft` sends the removal. */
+  isLeaving: boolean;
+  onLeft: () => void;
 };
+
+/**
+ * How long after a removal starts it is sent even if its motion never says it ended: the motion
+ * (`--motion-duration-very-slow`, 500ms) and a margin.
+ */
+const LEAVE_BACKSTOP_MS = 800;
+
+/** A topic on its way off the agenda. */
+type Leaving = {
+  readonly key: string;
+  readonly text: string;
+};
+
+function isSame(item: Leaving, other: Leaving): boolean {
+  return item.key === other.key && item.text === other.text;
+}
 
 /** The first line of a note, to read beside a closed topic. */
 function firstLineOf(notes: string): string {
@@ -199,6 +215,15 @@ function firstLineOf(notes: string): string {
       ?.trim() ?? ''
   );
 }
+
+/** The voice a topic brought from Before you meet takes, as its card did: plum, orange or blue. */
+const BROUGHT_TONE: Readonly<
+  Record<NonNullable<MeetingTopic['broughtFrom']>['kind'], FeedCardTone>
+> = {
+  FEEDBACK: 'primary',
+  KUDOS: 'secondary',
+  ASK: 'tertiary',
+};
 
 /**
  * One topic on the agenda, on one line, so a long agenda stays short: dragged by its handle into a
@@ -223,11 +248,48 @@ function TopicRow({
   isOpen,
   onToggle,
   onConflict,
+  isArriving,
+  onArrived,
+  isLeaving,
+  onLeft,
 }: TopicRowProps) {
   const id = useId();
   const reducedMotion = usePrefersReducedMotion();
+  const row = useRef<HTMLLIElement | null>(null);
+  // Left once, whichever comes first: the end of its motion, or the backstop below.
+  const hasLeft = useRef(false);
+  const leave = useRef(onLeft);
+  useEffect(() => {
+    leave.current = onLeft;
+  });
+  // A tab in the background, or a browser that skips the motion, may never say it ended; the
+  // removal is sent anyway, a little after the motion would have ended.
+  useEffect(() => {
+    if (!isLeaving) {
+      hasLeft.current = false;
+      return;
+    }
+    const backstop = setTimeout(() => {
+      if (!hasLeft.current) {
+        hasLeft.current = true;
+        leave.current();
+      }
+    }, LEAVE_BACKSTOP_MS);
+    return () => clearTimeout(backstop);
+  }, [isLeaving]);
   const { topic } = item;
   const discussed = topic?.discussedAt != null;
+  // Brought from Before you meet: its words wrap rather than cut off, after a dot in its kind's colour.
+  const brought = topic?.broughtFrom?.kind ?? null;
+  const dot = brought && (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'me-2 inline-block size-2 rounded-full align-middle',
+        FEED_CARD_FILL[BROUGHT_TONE[brought]],
+      )}
+    />
+  );
   const {
     attributes,
     listeners,
@@ -244,15 +306,40 @@ function TopicRow({
   });
   return (
     <li
-      ref={setNodeRef}
+      ref={(node) => {
+        setNodeRef(node);
+        row.current = node;
+      }}
       style={{
         transform: CSS.Translate.toString(transform),
         transition,
       }}
+      // Out of reach while it goes, so nothing in it is pressed or read on its way out.
+      inert={isLeaving}
+      // Its own motion only, not one inside it that ends and bubbles up.
+      onAnimationEnd={(event) => {
+        if (event.target !== event.currentTarget) {
+          return;
+        }
+        if (isLeaving) {
+          if (!hasLeft.current) {
+            hasLeft.current = true;
+            onLeft();
+          }
+        } else if (isArriving) {
+          onArrived();
+        }
+      }}
       className={cn(
+        isArriving && !isLeaving && styles.dropIn,
+        isLeaving && styles.leave,
         // Padded on every side, so a row lifted by its handle reads as a card with room around its
         // words; the list is pulled out by the same amount, so at rest the words line up as before.
         'relative flex flex-col border-border-subtle border-b bg-surface-base px-3 py-1.5 last:border-b-0',
+        // The topic being talked about, its note open, edged in the product's colour, so where the
+        // two are on the agenda is seen at a glance. Inside its edge, so it never touches a neighbour.
+        isOpen &&
+          'rounded-control border-transparent ring-1 ring-action-primary-border/30 ring-inset',
         isDragging && 'z-10 rounded-control border-transparent shadow-med',
       )}
     >
@@ -268,6 +355,8 @@ function TopicRow({
         {inProgress && topic && (
           <Checkbox
             id={`${id}-discussed`}
+            // Drawn at 16px; pressed anywhere in 24px around it.
+            className="relative after:absolute after:-inset-1"
             checked={discussed}
             disabled={isPending}
             onCheckedChange={(checked) => onDiscussed(topic, checked === true)}
@@ -284,16 +373,23 @@ function TopicRow({
           >
             <span
               className={cn(
-                'min-w-0 truncate text-body-1',
+                'min-w-0 text-body-1',
+                brought ? 'flex-1 break-words py-1' : 'truncate',
                 // Talked about: struck through, as a list crosses off what is done.
                 discussed
                   ? 'text-fg-secondary line-through decoration-fg-muted'
                   : 'text-fg-primary',
               )}
             >
-              {item.text}
+              {dot}
+              <TopicText text={item.text} />
             </span>
-            <span className="min-w-0 flex-1 truncate text-body-3 text-fg-muted">
+            <span
+              className={cn(
+                'min-w-0 truncate text-body-3 text-fg-muted',
+                brought ? 'shrink-0' : 'flex-1',
+              )}
+            >
               {isOpen ? source : firstLineOf(topic.notes) || source}
             </span>
             <ChevronDownIcon
@@ -306,10 +402,23 @@ function TopicRow({
           </button>
         ) : (
           <span className="flex min-w-0 flex-1 items-baseline gap-3 px-1">
-            <Text as="span" variant="body-1" className="min-w-0 truncate">
-              {item.text}
+            <Text
+              as="span"
+              variant="body-1"
+              className={cn(
+                'min-w-0',
+                brought ? 'flex-1 break-words py-1' : 'truncate',
+              )}
+            >
+              {dot}
+              <TopicText text={item.text} />
             </Text>
-            <span className="min-w-0 flex-1 truncate text-body-3 text-fg-muted">
+            <span
+              className={cn(
+                'min-w-0 truncate text-body-3 text-fg-muted',
+                brought ? 'shrink-0' : 'flex-1',
+              )}
+            >
               {source}
             </span>
           </span>
@@ -318,8 +427,16 @@ function TopicRow({
           {mayRemove ? (
             <RemoveButton
               aria-label={`Remove: ${item.text}`}
-              disabled={isPending}
-              onClick={onRemove}
+              data-remove-for={item.key}
+              disabled={isPending || isLeaving}
+              onClick={() => {
+                // The height it closes from, as it stands now: a row's height depends on its words.
+                row.current?.style.setProperty(
+                  '--row-height',
+                  `${row.current.offsetHeight}px`,
+                );
+                onRemove();
+              }}
             />
           ) : (
             // Where Remove would be, so every row's chevron stands in one column.
@@ -351,6 +468,11 @@ export type MeetingAgendaProps = {
   headingId: string;
   /** Told of each note saved, so Finish can wait for them to land. */
   track?: (save: Promise<unknown>) => void;
+  /**
+   * The template the reader last used here, by its key: the questions it asked are theirs to see
+   * land, and are scrolled into view; another template's, used by the other person, are not.
+   */
+  templateUsed?: string | null;
 };
 
 /**
@@ -369,9 +491,11 @@ export function MeetingAgenda({
   people,
   headingId,
   track,
+  templateUsed = null,
 }: MeetingAgendaProps) {
   const ids = useId();
   const { isPending, run } = useOneOnOneAction();
+  const isSample = useIsSampleData();
   const [newTopic, setNewTopic] = useState('');
   const meeting = next.meeting;
   const inProgress = meeting?.state === 'IN_PROGRESS';
@@ -380,8 +504,66 @@ export function MeetingAgenda({
   const items = order
     .map((key) => agenda.find((item) => item.key === key))
     .filter((item): item is AgendaTopic => item !== undefined);
+  const arrivals = useArrivals(items);
+  const reducedMotion = usePrefersReducedMotion();
+  // Topics on their way off, by key and words: a previewed agenda numbers its keys, so once one goes
+  // another takes its key, and the words tell the two apart. Each is let go once the agenda read
+  // back no longer holds it, or when its removal was refused.
+  const [leaving, setLeaving] = useState<readonly Leaving[]>([]);
+  const stillLeaving = leaving.filter((each) =>
+    items.some((item) => isSame(item, each)),
+  );
+  if (stillLeaving.length !== leaving.length) {
+    setLeaving(stillLeaving);
+  }
   const list = useRef<HTMLOListElement>(null);
   const addInput = useRef<HTMLInputElement>(null);
+  const addForm = useRef<HTMLFormElement>(null);
+  // What the reader puts on the agenda, from Before you meet far above it, typed, or from a template
+  // they used, lands at its foot: the agenda is scrolled until Add a topic is in view, so what was
+  // added is seen landing. Only as far as needed, never past it. What the other person added, brought
+  // in by a Sync, does not move the page. Each topic is brought into view once: with less motion an
+  // arrival is never marked done, and a reorder or a removal must not scroll again.
+  const revealing = items
+    .filter(
+      (item) =>
+        arrivals.isArriving(item.key) &&
+        (item.source === 'TEMPLATE'
+          ? templateUsed !== null && item.topic?.templateKey === templateUsed
+          : item.authorAccountId === people.readerAccountId),
+    )
+    .map((item) => item.key)
+    .join('\n');
+  const revealed = useRef(new Set<string>());
+  useEffect(() => {
+    const fresh = revealing
+      .split('\n')
+      .filter((key) => key !== '' && !revealed.current.has(key));
+    if (fresh.length === 0) {
+      return;
+    }
+    for (const key of fresh) {
+      revealed.current.add(key);
+    }
+    addForm.current?.scrollIntoView({
+      block: 'nearest',
+      behavior: reducedMotion ? 'auto' : 'smooth',
+    });
+  }, [revealing, reducedMotion]);
+  // Back on the Remove of a topic whose removal was refused: it went out of reach while it left, and
+  // stays disabled until the page has read itself again, so focus waits for that.
+  const [refocus, setRefocus] = useState<string | null>(null);
+  useEffect(() => {
+    if (refocus === null || isPending) {
+      return;
+    }
+    list.current
+      ?.querySelector<HTMLButtonElement>(
+        `[data-remove-for="${globalThis.CSS.escape(refocus)}"]`,
+      )
+      ?.focus();
+    setRefocus(null);
+  }, [refocus, isPending]);
   // The topic whose note is open while the meeting runs; until somebody chooses, the first one not
   // talked about yet, so starting the meeting puts the person at the first topic to discuss.
   const [chosenOpen, setChosenOpen] = useState<string | null | undefined>(
@@ -450,7 +632,16 @@ export function MeetingAgenda({
     });
   }
 
+  /** Takes a topic off: it goes first, then the removal is sent; with less motion, at once. */
   function remove(item: AgendaTopic) {
+    if (reducedMotion) {
+      send(item);
+      return;
+    }
+    setLeaving((each) => [...each, { key: item.key, text: item.text }]);
+  }
+
+  function send(item: AgendaTopic) {
     const position = order.indexOf(item.key);
     removedAt.current = position;
     run(
@@ -459,9 +650,12 @@ export function MeetingAgenda({
           ? removeTopic(workspaceId, oneOnOneId, meeting.id, item.topic.id)
           : removePreviewTopic(workspaceId, oneOnOneId, position, item.text),
       {
-        // Kept, it would move focus at the next change of the list, which nobody asked for.
+        // Kept, it would move focus at the next change of the list, which nobody asked for. The
+        // topic comes back into its place.
         onRefused: () => {
           removedAt.current = null;
+          setLeaving((each) => each.filter((one) => !isSame(item, one)));
+          setRefocus(item.key);
         },
       },
     );
@@ -508,17 +702,19 @@ export function MeetingAgenda({
                     item.source !== 'PERSON' ||
                     item.authorAccountId === people.readerAccountId
                   }
-                  source={sourceOf(
-                    item,
-                    next.templateName,
+                  source={topicSourceOf(originOf(item), {
+                    templates: next.templates,
+                    templateName: next.templateName,
                     people,
-                    inProgress
+                    carriedFrom: inProgress
                       ? null
                       : (next.carriedTopics.find(
                           (each) => each.topicId === item.topic?.id,
                         )?.from ?? null),
-                  )}
-                  isPending={isPending}
+                  })}
+                  // One topic leaves at a time: a second removal waits for the first, as the first
+                  // may open the meeting and give every topic a new key.
+                  isPending={isPending || leaving.length > 0}
                   people={people}
                   onRemove={() => remove(item)}
                   isOpen={inProgress && openKey === item.key}
@@ -526,6 +722,10 @@ export function MeetingAgenda({
                     setChosenOpen(openKey === item.key ? null : item.key)
                   }
                   onConflict={() => setChosenOpen(item.key)}
+                  isArriving={arrivals.isArriving(item.key)}
+                  onArrived={() => arrivals.arrived(item.key)}
+                  isLeaving={leaving.some((each) => isSame(item, each))}
+                  onLeft={() => send(item)}
                   onDiscussed={(topic, discussed) => {
                     // Ticking the open topic moves on to the next one to talk about.
                     if (discussed && openKey === item.key) {
@@ -545,18 +745,24 @@ export function MeetingAgenda({
                   }}
                   track={track}
                   saveNote={(topic, notes) =>
-                    meeting
-                      ? updateTopic(
-                          workspaceId,
-                          oneOnOneId,
-                          meeting.id,
-                          topic.id,
-                          { note: notes, noteReadAt: topic.notesUpdatedAt },
-                        )
-                      : Promise.resolve({
+                    // Sample data, as in the showcase: a note is kept on the page, not sent.
+                    isSample
+                      ? Promise.resolve({
                           ok: false,
-                          message: 'Start the meeting to take notes in it.',
+                          message: 'In the showcase, nothing is sent.',
                         })
+                      : meeting
+                        ? updateTopic(
+                            workspaceId,
+                            oneOnOneId,
+                            meeting.id,
+                            topic.id,
+                            { note: notes, noteReadAt: topic.notesUpdatedAt },
+                          )
+                        : Promise.resolve({
+                            ok: false,
+                            message: 'Start the meeting to take notes in it.',
+                          })
                   }
                 />
               ))}
@@ -565,7 +771,8 @@ export function MeetingAgenda({
         </DndContext>
       )}
       <form
-        className="flex gap-2"
+        ref={addForm}
+        className="flex gap-2 scroll-mb-6"
         onSubmit={(event) => {
           event.preventDefault();
           add();

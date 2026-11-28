@@ -119,7 +119,7 @@ describe('ProfileItems', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'No feedback for Ben that everyone can read yet.',
+        name: 'No Feedback for Ben that everyone can read yet.',
       }),
     ).toBeInTheDocument();
   });
@@ -137,7 +137,7 @@ describe('ProfileItems', () => {
     );
 
     expect(
-      screen.getByText(/The rest is in Received, for you\.$/),
+      screen.getByText(/Everything else written to you is in Received\.$/),
     ).toBeInTheDocument();
   });
 
@@ -174,7 +174,7 @@ describe('ProfileItems', () => {
     );
 
     expect(
-      screen.getByRole('heading', { name: 'No kudos for Ben yet.' }),
+      screen.getByRole('heading', { name: 'No Kudos for Ben yet.' }),
     ).toBeInTheDocument();
   });
 

@@ -12,6 +12,9 @@ import {
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-act.service';
 import { apiClient } from '@/lib/api-client.service';
 import { requireMemberOf } from '@/lib/session/session.service';
+import { MEETING_CONTEXT_TABS } from './meeting-context.util';
+import type { MeetingContextCard } from './one-on-one-meeting.type';
+import { readContextPage } from './one-on-one-meetings.service';
 
 const Id = z.uuid();
 const Topic = z.string().trim().min(1).max(200);
@@ -112,18 +115,35 @@ export async function finishMeeting(
   });
 }
 
-/** Adds a topic to the next meeting's agenda, opening it first if needed. */
+/** What a topic is brought from: an item of the other person's Profile, named by its id. */
+const BroughtFrom = z.strictObject({
+  kind: z.enum(['FEEDBACK', 'KUDOS', 'ASK']),
+  id: Id,
+});
+
+export type BroughtFrom = z.input<typeof BroughtFrom>;
+
+/**
+ * Adds a topic to the next meeting's agenda, opening it first if needed. One brought from what was
+ * read before the meeting names it, and the API checks the reader may read it.
+ */
 export async function addTopic(
   workspaceId: string,
   oneOnOneId: string,
   meetingId: string | null,
   text: string,
+  broughtFrom?: BroughtFrom,
 ): Promise<OneOnOneActionResult> {
   const topic = Topic.safeParse(text);
   if (!topic.success) {
     return { ok: false, message: 'A topic is a line, up to 200 characters.' };
   }
-  if (!idsOf({ oneOnOneId, ...(meetingId ? { meetingId } : {}) })) {
+  const source =
+    broughtFrom === undefined ? undefined : BroughtFrom.safeParse(broughtFrom);
+  if (
+    !idsOf({ oneOnOneId, ...(meetingId ? { meetingId } : {}) }) ||
+    (source !== undefined && !source.success)
+  ) {
     return { ok: false, message: COULD_NOT };
   }
   return act(workspaceId, async (workspace, cookie) => {
@@ -134,7 +154,10 @@ export async function addTopic(
         '/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/topics',
         {
           params: { path: { ...path, meetingId: id }, header: { cookie } },
-          body: { text: topic.data },
+          body: {
+            text: topic.data,
+            ...(source?.success ? { broughtFrom: source.data } : {}),
+          },
         },
       ),
     );
@@ -146,7 +169,7 @@ const TemplateKey = z.string().trim().min(1).max(100);
 
 /**
  * Uses a template for the next meeting while it is prepared, opening it first if needed: its
- * questions take the place of the last template's.
+ * questions are added after the agenda's topics (ADR 0099).
  */
 export async function chooseTemplateForMeeting(
   workspaceId: string,
@@ -173,6 +196,35 @@ export async function chooseTemplateForMeeting(
       },
     );
     return id;
+  });
+}
+
+/**
+ * Takes a template off the meeting being prepared: every question it asked leaves the agenda at once
+ * (ADR 0099). Only a meeting already open has a template on it to take off.
+ */
+export async function removeTemplateFromMeeting(
+  workspaceId: string,
+  oneOnOneId: string,
+  meetingId: string,
+  templateKey: string,
+): Promise<OneOnOneActionResult> {
+  const key = TemplateKey.safeParse(templateKey);
+  if (!key.success || !idsOf({ oneOnOneId, meetingId })) {
+    return { ok: false, message: COULD_NOT };
+  }
+  return act(workspaceId, async (workspace, cookie) => {
+    // Answered 204 with no body, so there is nothing to unwrap; a refusal throws.
+    await apiClient().DELETE(
+      '/v1/workspaces/{workspaceId}/one-on-ones/{oneOnOneId}/meetings/{meetingId}/template/{templateKey}',
+      {
+        params: {
+          path: { ...workspace, oneOnOneId, meetingId, templateKey: key.data },
+          header: { cookie },
+        },
+      },
+    );
+    return undefined;
   });
 }
 
@@ -423,6 +475,52 @@ export async function checkMeetingState(
           : null,
     };
   } catch (error) {
+    if (error instanceof ApiError) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** The next batch of one tab, checked whole before it is asked for. */
+const ContextBatch = z.strictObject({
+  aboutAccountId: Id,
+  tab: z.enum(MEETING_CONTEXT_TABS),
+  since: z.iso.datetime({ offset: true }),
+  cursor: z.string().min(1).max(500),
+});
+
+export type ContextBatchRequest = z.input<typeof ContextBatch>;
+
+/**
+ * The next batch of one tab of Before you meet, read when Next passes the last card loaded; `null`
+ * when it could not be read, and the page says so. A read, not a write: what the Profile's route
+ * answers for the signed-in reader, through the server, which holds the session.
+ */
+export async function readMoreMeetingContext(
+  workspaceId: string,
+  request: ContextBatchRequest,
+): Promise<{
+  readonly items: readonly MeetingContextCard[];
+  readonly nextCursor: string | null;
+} | null> {
+  const asked = ContextBatch.safeParse(request);
+  if (!asked.success) {
+    return null;
+  }
+  const { membership } = await requireMemberOf(workspaceId);
+  const cookie = (await headers()).get('cookie') ?? undefined;
+  try {
+    return await readContextPage(
+      membership,
+      asked.data.aboutAccountId,
+      asked.data.tab,
+      asked.data.since,
+      asked.data.cursor,
+      cookie,
+    );
+  } catch (error) {
+    // Only a refusal the API answered is said as a failed read; anything else is a fault.
     if (error instanceof ApiError) {
       return null;
     }

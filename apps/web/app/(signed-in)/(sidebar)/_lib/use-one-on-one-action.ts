@@ -2,6 +2,10 @@ import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import type { OneOnOneActionResult } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one.type';
+import {
+  sayNothingIsSent,
+  useIsSampleData,
+} from '@/components/organisms/sample-data-provider';
 
 export type RunOptions = {
   /** Said once it went; nothing is said when it is left out. */
@@ -20,11 +24,18 @@ export type RunOptions = {
 export function useOneOnOneAction() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const isSample = useIsSampleData();
 
   function run(
     action: () => Promise<OneOnOneActionResult>,
     { done, onSuccess, onRefused }: RunOptions = {},
   ) {
+    // Sample data, as in the showcase: its Workspace is made up, so nothing is sent.
+    if (isSample) {
+      sayNothingIsSent();
+      onRefused?.();
+      return;
+    }
     startTransition(async () => {
       const result = await action();
       if (!result.ok) {

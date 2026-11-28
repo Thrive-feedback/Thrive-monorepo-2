@@ -15,7 +15,9 @@ export const ONE_ON_ONES_LIST_COLUMN =
 
 /**
  * From `lg`, the open 1:1's column takes the rest. A panel taller than the window scrolls inside it,
- * and the room around it keeps the invitation's shadow from being cut off.
+ * and the room around it keeps the invitation's shadow from being cut off. Less room above than
+ * around, where a shadow barely reaches, so most of the page's gap stays between the head and where
+ * the panel scrolls: what scrolls never slides up against the title or Create 1:1.
  */
 export const ONE_ON_ONES_PANEL_COLUMN =
-  'min-w-0 lg:relative lg:-m-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:p-6';
+  'min-w-0 lg:relative lg:-mx-6 lg:-mt-1 lg:-mb-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-6 lg:pt-1 lg:pb-6';

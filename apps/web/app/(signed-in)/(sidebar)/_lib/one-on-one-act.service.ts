@@ -47,6 +47,9 @@ export const REFUSALS: Readonly<Record<string, string>> = {
   ONE_ON_ONE_TOPIC_CHANGED:
     'This note changed since you read it. Sync to see it.',
   ONE_ON_ONE_TOPIC_ORDER_INVALID: 'The agenda changed. Sync, then reorder.',
+  ONE_ON_ONE_TOPIC_ALREADY_ON_AGENDA: 'That’s already on the agenda.',
+  ONE_ON_ONE_TOPIC_SOURCE_NOT_FOUND:
+    'That isn’t something you can bring to this 1:1 any more.',
   ONE_ON_ONE_TEMPLATE_INVALID:
     'A template needs a name and at least one question, each short enough to read at a glance.',
   ONE_ON_ONE_TEMPLATE_NOT_YOURS:

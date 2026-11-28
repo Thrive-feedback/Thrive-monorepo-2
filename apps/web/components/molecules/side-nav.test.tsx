@@ -190,8 +190,8 @@ describe('SideNav', () => {
 
     const later = screen.getByText(', Under construction').parentElement;
     const someday = screen.getByText(', Idea').parentElement;
-    expect(later).toHaveClass('text-status-warning-hover');
-    expect(someday).toHaveClass('text-status-info');
+    expect(later).toHaveClass('text-status-warning-hover/60');
+    expect(someday).toHaveClass('text-status-info/60');
   });
 
   // jsdom cannot fold the sidebar, so the classes that colour the icon on the rail stand in for it.
@@ -211,10 +211,10 @@ describe('SideNav', () => {
 
     const iconOf = (label: string) =>
       screen.getByText(label).previousElementSibling;
-    expect(iconOf('Later')).toHaveClass('rail:text-status-warning-hover');
-    expect(iconOf('Someday')).toHaveClass('rail:text-status-info');
-    expect(iconOf('Home')).not.toHaveClass('rail:text-status-warning-hover');
-    expect(iconOf('Home')).not.toHaveClass('rail:text-status-info');
+    expect(iconOf('Later')).toHaveClass('rail:text-status-warning-hover/60');
+    expect(iconOf('Someday')).toHaveClass('rail:text-status-info/60');
+    expect(iconOf('Home')).not.toHaveClass('rail:text-status-warning-hover/60');
+    expect(iconOf('Home')).not.toHaveClass('rail:text-status-info/60');
   });
 
   it('names how far off a place not open yet is when pointed at, beside its label', async () => {

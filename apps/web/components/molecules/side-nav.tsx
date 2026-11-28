@@ -171,15 +171,16 @@ const foldedAway = cva('', {
 /**
  * A place not open yet, beside its label: the row is greyed, but its mark keeps its own colour at
  * every width, a deep yellow for one being built and a light blue for an idea, so how far off it is
- * reads at a glance, and on a phone, where no pointer can bring up the tooltip that names it.
+ * reads at a glance, and on a phone, where no pointer can bring up the tooltip that names it. Each is
+ * a light touch of its colour, so the marks never outweigh the places that are open.
  */
 const upcomingMark = cva(
   'inline-flex size-6 shrink-0 items-center justify-center',
   {
     variants: {
       upcoming: {
-        'under-construction': 'text-status-warning-hover',
-        idea: 'text-status-info',
+        'under-construction': 'text-status-warning-hover/60',
+        idea: 'text-status-info/60',
       },
       foldsToIcons: { true: 'rail:sr-only', false: '' },
     },
@@ -193,8 +194,8 @@ const upcomingMark = cva(
 const itemIcon = cva('size-4.5 shrink-0', {
   variants: {
     foldedUpcoming: {
-      'under-construction': 'rail:text-status-warning-hover',
-      idea: 'rail:text-status-info',
+      'under-construction': 'rail:text-status-warning-hover/60',
+      idea: 'rail:text-status-info/60',
       none: '',
     },
   },

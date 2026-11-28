@@ -8,6 +8,7 @@ import {
 } from '@/app/(signed-in)/(sidebar)/profile/[slug]/_lib/profile-shows.util';
 import { Text } from '@/components/atoms/text';
 import { Toggle } from '@/components/atoms/toggle';
+import { InfoTip } from '@/components/molecules/info-tip';
 import { type ProfileShow, ROUTES } from '@/lib/routes.constant';
 
 const SHOW_NAMES: Readonly<Record<ProfileShow, string>> = {
@@ -37,13 +38,15 @@ type ShowGroupProps = {
   title: string;
   /** One line under the title, saying who the group is for. */
   note?: string;
+  /** Said behind an "i" by the title, out of the way of the chips: what the group holds. */
+  about?: string;
   slug: string;
   shows: readonly ProfileShow[];
   show: ProfileShow;
 };
 
 /** One titled row of chips. Pressing one opens its list, whichever group the open one is in. */
-function ShowGroup({ title, note, slug, shows, show }: ShowGroupProps) {
+function ShowGroup({ title, note, about, slug, shows, show }: ShowGroupProps) {
   const router = useRouter();
   const noteId = useId();
 
@@ -52,11 +55,25 @@ function ShowGroup({ title, note, slug, shows, show }: ShowGroupProps) {
       className="flex min-w-0 flex-col gap-2"
       aria-describedby={note ? noteId : undefined}
     >
-      <legend className="contents">
+      <legend className={about ? 'sr-only' : 'contents'}>
         <Text as="span" variant="subtitle-4">
           {title}
         </Text>
       </legend>
+      {/* With an "i", the title is drawn again beside it and the legend only names the group, so its
+          name stays the title alone rather than taking in the button's. */}
+      {about && (
+        <div className="flex items-center gap-1">
+          <Text as="span" variant="subtitle-4" aria-hidden="true">
+            {title}
+          </Text>
+          {/* Of no height of its own, so the row is as tall as a title alone and the chips under
+              it line up with those of a group with no "i". */}
+          <span className="flex h-0 items-center">
+            <InfoTip about={title} words={about} />
+          </span>
+        </div>
+      )}
       {note && (
         <Text id={noteId} variant="body-3" tone="muted" className="-mt-1.5">
           {note}
@@ -97,8 +114,8 @@ export type ProfileFilterProps = {
 /**
  * Which of a Profile's lists is open, as chips in two titled groups with one chip pressed, kept in
  * the address so a reload or a shared link opens the same one. Each list is read on the server, so
- * choosing one navigates. What everyone sees comes first. What differs for each reader is set apart
- * under its own title, so a private piece never reads as public. One's own Profile has only the
+ * choosing one navigates. What everyone sees comes first; what differs for each reader is set apart
+ * beside it, past a rule and under its own title, so a private piece never reads as public. One's own Profile has only the
  * first group, as the mirror of what others see.
  */
 export function ProfileFilter({
@@ -107,7 +124,8 @@ export function ProfileFilter({
   isYou = false,
 }: ProfileFilterProps) {
   return (
-    <div className="flex flex-col gap-4">
+    // Side by side, with the rule, from `lg`, where the Profile's column has room for both; stacked, no rule, below.
+    <div className="flex flex-col gap-4 lg:flex-row lg:gap-5">
       <ShowGroup
         title="Everyone sees"
         note={isYou ? 'This is what everyone sees on your Profile.' : undefined}
@@ -116,13 +134,19 @@ export function ProfileFilter({
         show={show}
       />
       {!isYou && (
-        <ShowGroup
-          title="For you"
-          note="This part is different for everyone who opens it."
-          slug={slug}
-          shows={FOR_YOU}
-          show={show}
-        />
+        <>
+          <span
+            aria-hidden="true"
+            className="hidden w-px self-stretch bg-border-muted lg:block"
+          />
+          <ShowGroup
+            title="For you"
+            about="This part is different for everyone who opens it."
+            slug={slug}
+            shows={FOR_YOU}
+            show={show}
+          />
+        </>
       )}
     </div>
   );

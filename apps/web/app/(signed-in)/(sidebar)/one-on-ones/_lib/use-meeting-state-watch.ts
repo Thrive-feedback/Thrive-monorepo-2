@@ -5,6 +5,7 @@ import {
   checkMeetingState,
   type MeetingState,
 } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service';
+import { useIsSampleData } from '@/components/organisms/sample-data-provider';
 
 /** How often the page asks where the meeting stands, while it is in view. */
 export const WATCH_EVERY_MS = 10_000;
@@ -52,6 +53,8 @@ export function useMeetingStateWatch({
   paused,
 }: MeetingStateWatch) {
   const router = useRouter();
+  // Sample data, as in the showcase, has no server to ask.
+  const isSample = useIsSampleData();
   const shown = useRef<MeetingState>({ meetingId, state });
   shown.current = { meetingId, state };
   const isPaused = useRef(paused);
@@ -63,6 +66,9 @@ export function useMeetingStateWatch({
   const refreshedFrom = useRef<string | null>(null);
 
   useEffect(() => {
+    if (isSample) {
+      return;
+    }
     let cancelled = false;
 
     async function check() {
@@ -101,5 +107,5 @@ export function useMeetingStateWatch({
       clearInterval(timer);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [workspaceId, oneOnOneId, otherName, router]);
+  }, [workspaceId, oneOnOneId, otherName, router, isSample]);
 }

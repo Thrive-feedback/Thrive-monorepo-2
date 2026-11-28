@@ -1,8 +1,14 @@
 'use client';
 
 import { useOneOnOneAction } from '@/app/(signed-in)/(sidebar)/_lib/use-one-on-one-action';
-import { MeetingSummary } from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-summary';
-import type { Meeting } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
+import {
+  type MeetingPeople,
+  MeetingSummary,
+} from '@/app/(signed-in)/(sidebar)/one-on-ones/_components/meeting-summary';
+import type {
+  Meeting,
+  TemplateName,
+} from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
 import { finishMeeting } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting-actions.service';
 import { Button } from '@/components/atoms/button';
 import {
@@ -20,6 +26,9 @@ export type FinishMeetingDialogProps = {
   workspaceId: string;
   oneOnOneId: string;
   meeting: Meeting;
+  people: MeetingPeople;
+  /** What each template on its agenda is called, so each topic can say where it came from. */
+  templates: readonly TemplateName[];
   /**
    * What takes focus back when it closes without finishing: the button that opened it, which it
    * opens after saving and reading again rather than as a trigger. Gone after a finish, focus is then
@@ -38,6 +47,8 @@ export function FinishMeetingDialog({
   workspaceId,
   oneOnOneId,
   meeting,
+  people,
+  templates,
   returnFocusTo,
 }: FinishMeetingDialogProps) {
   const { isPending, run } = useOneOnOneAction();
@@ -59,7 +70,12 @@ export function FinishMeetingDialog({
             You’ll both find this summary in Past meetings.
           </DialogDescription>
         </DialogHeader>
-        <MeetingSummary meeting={meeting} />
+        <MeetingSummary
+          meeting={meeting}
+          people={people}
+          templates={templates}
+          headingLevel="h3"
+        />
         <DialogFooter>
           <Button
             variant="ghost"

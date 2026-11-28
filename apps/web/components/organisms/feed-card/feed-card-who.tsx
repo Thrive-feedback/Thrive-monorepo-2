@@ -29,7 +29,7 @@ function Receivers({
   const [onlyReceiver] = receivers;
 
   if (!onlyReceiver) {
-    return <span>the whole Workspace</span>;
+    return <span className="font-semibold">the whole Workspace</span>;
   }
   if (receivers.length === 1) {
     return (
@@ -38,14 +38,16 @@ function Receivers({
         photoUrl={onlyReceiver.photoUrl}
         size="sm"
       >
-        {onlyReceiver.accountId === readerAccountId ? (
-          'you'
-        ) : (
-          <PersonName
-            name={onlyReceiver.name ?? NO_NAME_IN_A_SENTENCE}
-            inactive={onlyReceiver.inactive}
-          />
-        )}
+        <span className="font-semibold text-fg-primary">
+          {onlyReceiver.accountId === readerAccountId ? (
+            'you'
+          ) : (
+            <PersonName
+              name={onlyReceiver.name ?? NO_NAME_IN_A_SENTENCE}
+              inactive={onlyReceiver.inactive}
+            />
+          )}
+        </span>
       </AvatarName>
     );
   }
@@ -73,7 +75,8 @@ export type FeedCardWhoProps = {
 
 /**
  * A card's opening line on Home, never anonymous (`ADR-0022` in the brain): who did what, to whom.
- * Each person in it wears the same small face beside their name.
+ * Each person in it wears the same small face beside their name, and the names are set apart from
+ * the words between them, so who is read first.
  */
 export function FeedCardWho({
   giver,
@@ -89,17 +92,20 @@ export function FeedCardWho({
       className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 break-words"
     >
       <AvatarName name={giver.name ?? ''} photoUrl={giver.photoUrl} size="sm">
-        {giver.accountId === readerAccountId ? (
-          'You'
-        ) : (
-          <PersonName
-            name={feedCardGiver(giver, readerAccountId)}
-            inactive={giver.inactive}
-          />
-        )}
+        <span className="font-semibold text-fg-primary">
+          {giver.accountId === readerAccountId ? (
+            'You'
+          ) : (
+            <PersonName
+              name={feedCardGiver(giver, readerAccountId)}
+              inactive={giver.inactive}
+            />
+          )}
+        </span>
       </AvatarName>
-      <span className="text-fg-secondary">{verb}</span>
-      <span className="text-action-secondary-active">to</span>
+      {/* The people stand out from the words between them, which read quieter: who, then what. */}
+      <span className="font-normal text-fg-muted">{verb}</span>
+      <span className="font-normal text-fg-muted">to</span>
       <Receivers
         receivers={receivers}
         peopleDescription={peopleDescription}

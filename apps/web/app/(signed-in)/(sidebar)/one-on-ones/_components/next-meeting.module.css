@@ -1,0 +1,35 @@
+/*
+ * A meeting under way reads as live at a glance: a dot that breathes beside "In progress". Its ring
+ * is a pseudo-element on a keyframe, which no utility draws, which is why this is CSS; the dot itself
+ * and the track along the card's foot are utilities. Whoever asked for less motion sees it still.
+ */
+
+/* The dot's ring swells and fades from it, as a light left on. */
+@keyframes breathe {
+  0% {
+    opacity: 0.6;
+    scale: 1;
+  }
+  70%,
+  100% {
+    opacity: 0;
+    scale: 2.6;
+  }
+}
+
+.breathes::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: breathe calc(var(--motion-duration-very-slow) * 4)
+    var(--motion-ease-smooth-out) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breathes::after {
+    animation: none;
+    opacity: 0;
+  }
+}

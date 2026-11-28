@@ -18,6 +18,10 @@ import {
 } from '@/components/atoms/dialog';
 import { Text } from '@/components/atoms/text';
 import { TextAreaField } from '@/components/molecules/text-area-field';
+import {
+  sayNothingIsSent,
+  useIsSampleData,
+} from '@/components/organisms/sample-data-provider';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { ROUTES } from '@/lib/routes.constant';
 import { ScheduleFields } from './schedule-fields';
@@ -49,6 +53,7 @@ export function CreateOneOnOneDialog({
   trigger,
 }: CreateOneOnOneDialogProps) {
   const router = useRouter();
+  const isSample = useIsSampleData();
   const [step, setStep] = useState<1 | 2>(1);
   const [chosen, setChosen] = useState<string | null>(null);
   const [schedule, setSchedule] =
@@ -73,6 +78,11 @@ export function CreateOneOnOneDialog({
 
   function send() {
     if (!chosen) {
+      return;
+    }
+    // Sample data, as in the showcase: its Workspace is made up, so nothing is sent.
+    if (isSample) {
+      sayNothingIsSent();
       return;
     }
     startSending(async () => {

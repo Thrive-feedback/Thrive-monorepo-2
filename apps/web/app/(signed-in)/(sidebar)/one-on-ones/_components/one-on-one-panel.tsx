@@ -13,6 +13,7 @@ import {
   wasSkipped,
   wasSuggested,
 } from '@/app/(signed-in)/(sidebar)/_lib/one-on-one-state.util';
+import { firstNameOf } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/meeting-context.util';
 import type { OneOnOneMeetings } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
 import {
   type OneOnOnePerson,
@@ -65,6 +66,8 @@ export type OneOnOnePanelProps = {
    * next meeting is today, or overdue, is said alike in both, on the server and in the browser.
    */
   today: string;
+  /** The reader's name, so words both people read can name them rather than say "you". */
+  readerName: string;
 };
 
 /** The reader's own account id: whichever of the two the 1:1 is not "with". */
@@ -72,6 +75,20 @@ function readerAccountOf(oneOnOne: OneOnOne): string {
   return oneOnOne.startedByAccountId === oneOnOne.withAccountId
     ? oneOnOne.invitedAccountId
     : oneOnOne.startedByAccountId;
+}
+
+/** The two people of a 1:1 as its meetings name them: each by first name. */
+function peopleOf(
+  oneOnOne: OneOnOne,
+  person: OneOnOnePerson,
+  readerName: string,
+): MeetingPeople {
+  return {
+    readerAccountId: readerAccountOf(oneOnOne),
+    readerName: firstNameOf(readerName),
+    otherAccountId: person.accountId,
+    otherName: person.shortName,
+  };
 }
 
 /**
@@ -162,6 +179,7 @@ function Running({
   meetings,
   compose,
   today,
+  readerName,
 }: {
   oneOnOne: OneOnOne;
   person: OneOnOnePerson;
@@ -172,17 +190,21 @@ function Running({
   meetings?: OneOnOneMeetings;
   compose?: PastMeetingsCompose;
   today: string;
+  readerName: string;
 }) {
   const headingId = headingIdOf(oneOnOne);
   const once = isOnce(oneOnOne);
-  const reader = readerAccountOf(oneOnOne);
-  const people: MeetingPeople = {
-    readerAccountId: reader,
-    otherAccountId: person.accountId,
-    otherName: person.shortName,
-  };
+  const people = peopleOf(oneOnOne, person, readerName);
   return (
-    <section aria-labelledby={headingId} className={PANEL}>
+    <section
+      aria-labelledby={headingId}
+      className={cn(
+        PANEL,
+        'transition-shadow duration-medium ease-smooth-out motion-reduce:transition-none',
+        // While the meeting runs it lifts off the page, which steps back around it.
+        oneOnOne.meetingInProgress && 'shadow-high',
+      )}
+    >
       <Head
         headingId={headingId}
         person={person}
@@ -238,12 +260,15 @@ function Running({
               today={today}
               people={people}
               templates={templates}
+              context={meetings.context}
             />
           </TabsContent>
           <TabsContent value="past">
             <PastMeetings
               meetings={meetings.past}
               skippedDays={meetings.skippedDays}
+              templates={meetings.pastTemplates}
+              people={people}
               other={teammates.find(
                 (teammate) => teammate.accountId === person.accountId,
               )}
@@ -319,6 +344,7 @@ function PanelBody({
   meetings,
   compose,
   today,
+  readerName,
 }: OneOnOnePanelProps) {
   const person = otherPersonOf(oneOnOne, teammates);
   const schedule = oneOnOne.schedule;
@@ -332,19 +358,18 @@ function PanelBody({
 
   if (isDrawnRunning(oneOnOne)) {
     return (
-      <>
-        <Running
-          oneOnOne={oneOnOne}
-          person={person}
-          schedule={schedule}
-          workspaceId={workspaceId}
-          templates={templates}
-          teammates={teammates}
-          meetings={meetings}
-          compose={compose}
-          today={today}
-        />
-      </>
+      <Running
+        oneOnOne={oneOnOne}
+        person={person}
+        schedule={schedule}
+        workspaceId={workspaceId}
+        templates={templates}
+        teammates={teammates}
+        meetings={meetings}
+        compose={compose}
+        today={today}
+        readerName={readerName}
+      />
     );
   }
 
@@ -382,6 +407,8 @@ function PanelBody({
             <PastMeetings
               meetings={meetings.past}
               skippedDays={skippedDays}
+              templates={meetings.pastTemplates}
+              people={peopleOf(oneOnOne, person, readerName)}
               other={teammates.find(
                 (teammate) => teammate.accountId === person.accountId,
               )}

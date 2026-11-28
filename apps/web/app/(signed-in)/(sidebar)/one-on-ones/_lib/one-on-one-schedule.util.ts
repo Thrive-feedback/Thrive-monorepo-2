@@ -182,3 +182,18 @@ export function nextDayOn(weekday: number, from: string): string {
   }
   return date.toISOString().slice(0, 10);
 }
+
+/** The day `days` before `day`, both `YYYY-MM-DD`. */
+export function daysBefore(day: string, days: number): string {
+  const date = new Date(`${day}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() - days);
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * When a day (`YYYY-MM-DD`) begins on the schedule's clock, as an instant. Bangkok keeps one offset
+ * all year, with no daylight saving, so the day's start is its date at 00:00 +07:00.
+ */
+export function startOfDayInBangkok(day: string): string {
+  return new Date(`${day}T00:00:00.000+07:00`).toISOString();
+}

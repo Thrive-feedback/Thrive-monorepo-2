@@ -30,6 +30,14 @@ const MINT: Teammate = {
   slug: 'mint',
 };
 
+const PEOPLE = {
+  readerAccountId: ME,
+  readerName: 'Krit',
+  otherAccountId: MINT.accountId,
+  otherName: 'Mint',
+};
+const TEMPLATE_NAMES = [{ key: 'weekly-check-in', name: 'Weekly check-in' }];
+
 function finished(id: string, day: string, overrides: Partial<Meeting> = {}) {
   return {
     id,
@@ -51,6 +59,8 @@ function finished(id: string, day: string, overrides: Partial<Meeting> = {}) {
         notesUpdatedAt: null,
         notesUpdatedByAccountId: null,
         discussedAt: `${day}T03:05:00.000Z`,
+        broughtFrom: null,
+        templateKey: null,
       },
       {
         id: `${id}-t2`,
@@ -62,6 +72,8 @@ function finished(id: string, day: string, overrides: Partial<Meeting> = {}) {
         notesUpdatedAt: null,
         notesUpdatedByAccountId: null,
         discussedAt: null,
+        broughtFrom: null,
+        templateKey: 'weekly-check-in',
       },
     ],
     ...overrides,
@@ -76,11 +88,33 @@ const COMPOSE = {
 };
 
 describe('PastMeetings', () => {
+  it('says where each topic of a summary came from, those carried over too', () => {
+    render(
+      <PastMeetings
+        meetings={[finished('m1', '2026-11-19')]}
+        other={MINT}
+        people={PEOPLE}
+        templates={TEMPLATE_NAMES}
+      />,
+    );
+
+    // Talked about, and carried from the meeting before.
+    expect(
+      screen.getByRole('heading', { name: /Launch retro/ }),
+    ).toHaveTextContent(/^Launch retro\s*,\s*From last time$/);
+    // Not reached, so it carries over, still saying which template asked it.
+    expect(screen.getByText('Hiring').closest('li')).toHaveTextContent(
+      /^Hiring\s*,\s*From Weekly check-in$/,
+    );
+  });
+
   it('lists finished meetings newest first, the newest open with its summary', () => {
     render(
       <PastMeetings
         meetings={[finished('m2', '2026-11-26'), finished('m1', '2026-11-19')]}
         other={MINT}
+        people={PEOPLE}
+        templates={TEMPLATE_NAMES}
         compose={COMPOSE}
       />,
     );
@@ -101,6 +135,8 @@ describe('PastMeetings', () => {
       <PastMeetings
         meetings={[finished('m1', '2026-11-19')]}
         other={MINT}
+        people={PEOPLE}
+        templates={TEMPLATE_NAMES}
         compose={COMPOSE}
       />,
     );
@@ -141,6 +177,8 @@ describe('PastMeetings', () => {
         ]}
         skippedDays={['2026-11-12', '2026-11-19']}
         other={MINT}
+        people={PEOPLE}
+        templates={TEMPLATE_NAMES}
       />,
     );
 
@@ -154,7 +192,14 @@ describe('PastMeetings', () => {
   });
 
   it('says so when no meeting has finished yet', () => {
-    render(<PastMeetings meetings={[]} other={MINT} />);
+    render(
+      <PastMeetings
+        meetings={[]}
+        other={MINT}
+        people={PEOPLE}
+        templates={TEMPLATE_NAMES}
+      />,
+    );
 
     expect(screen.getByText(/No past meetings yet/)).toBeVisible();
   });

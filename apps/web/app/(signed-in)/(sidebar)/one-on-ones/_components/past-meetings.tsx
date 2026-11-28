@@ -12,7 +12,10 @@ import {
   type ComposeChoice,
   PERSON_COMPOSE_ACTIONS,
 } from '@/app/(signed-in)/(sidebar)/_lib/compose-choice.constant';
-import type { Meeting } from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
+import type {
+  Meeting,
+  TemplateName,
+} from '@/app/(signed-in)/(sidebar)/one-on-ones/_lib/one-on-one-meeting.type';
 import {
   dayInBangkok,
   describeDay,
@@ -24,7 +27,7 @@ import { Text } from '@/components/atoms/text';
 import type { PostcardWriter } from '@/components/organisms/postcard-dialog/postcard-draft.type';
 import { cn } from '@/lib/cn.util';
 import type { Teammate } from '@/lib/feedback/teammate.type';
-import { MeetingSummary } from './meeting-summary';
+import { type MeetingPeople, MeetingSummary } from './meeting-summary';
 
 export type PastMeetingsCompose = {
   readonly workspaceId: string;
@@ -37,6 +40,9 @@ export type PastMeetingsProps = {
   meetings: readonly Meeting[];
   /** The meeting days skipped, `YYYY-MM-DD`, oldest first: listed among the meetings held. */
   skippedDays?: readonly string[];
+  /** What each template their topics came from is called, so each topic can say. */
+  templates: readonly TemplateName[];
+  people: MeetingPeople;
   /** The other person, whom Write as Feedback and Give Kudos are for. */
   other: Teammate | undefined;
   /** What the cards need; without it, the summary is read only. */
@@ -133,6 +139,8 @@ function rowsOf(
 export function PastMeetings({
   meetings,
   skippedDays = [],
+  templates,
+  people,
   other,
   compose,
 }: PastMeetingsProps) {
@@ -165,7 +173,7 @@ export function PastMeetings({
 
   return (
     <>
-      <ol className="flex flex-col gap-3">
+      <ol className="flex flex-col gap-2">
         {rowsOf(meetings, skippedDays).map((row) => {
           if (row.kind === 'skipped') {
             return (
@@ -197,34 +205,38 @@ export function PastMeetings({
               className="rounded-control border border-border-muted"
             >
               <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3">
-                <button
-                  type="button"
-                  aria-expanded={isOpen}
-                  aria-controls={`${ids}-${meeting.id}`}
-                  onClick={() => setOpenId(isOpen ? null : meeting.id)}
-                  className="group flex min-w-0 flex-1 items-center gap-3 rounded-control py-1 text-start focus-visible:outline-2 focus-visible:outline-action-primary"
-                >
-                  <span className="flex flex-col gap-0.5">
-                    <Text as="span" variant="subtitle-3">
-                      {forDay ? describeMeeting(forDay) : 'A meeting'}
-                    </Text>
-                    <Text
-                      as="span"
-                      variant="body-3"
-                      tone="muted"
-                      className="tabular-nums"
-                    >
-                      {metaOf(meeting, heldAt)}
-                    </Text>
-                  </span>
-                  <ChevronDownIcon
-                    aria-hidden="true"
-                    className={cn(
-                      'order-first size-4 shrink-0 text-fg-muted transition-transform duration-quick ease-smooth-out group-hover:text-fg-primary motion-reduce:transition-none',
-                      isOpen ? 'rotate-0' : '-rotate-90',
-                    )}
-                  />
-                </button>
+                {/* Each meeting is a heading, its button inside, so its topics sit one level under
+                    it rather than skipping one. */}
+                <h3 className="flex min-w-0 flex-1">
+                  <button
+                    type="button"
+                    aria-expanded={isOpen}
+                    aria-controls={`${ids}-${meeting.id}`}
+                    onClick={() => setOpenId(isOpen ? null : meeting.id)}
+                    className="group flex min-w-0 flex-1 items-center gap-3 rounded-control py-1 text-start focus-visible:outline-2 focus-visible:outline-action-primary"
+                  >
+                    <span className="flex flex-col gap-0.5">
+                      <Text as="span" variant="subtitle-3">
+                        {forDay ? describeMeeting(forDay) : 'A meeting'}
+                      </Text>
+                      <Text
+                        as="span"
+                        variant="body-3"
+                        tone="muted"
+                        className="tabular-nums"
+                      >
+                        {metaOf(meeting, heldAt)}
+                      </Text>
+                    </span>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className={cn(
+                        'order-first size-4 shrink-0 text-fg-muted transition-transform duration-quick ease-smooth-out group-hover:text-fg-primary motion-reduce:transition-none',
+                        isOpen ? 'rotate-0' : '-rotate-90',
+                      )}
+                    />
+                  </button>
+                </h3>
                 {compose && other && heldAt && (
                   <span className="flex shrink-0 gap-2">
                     {MEETING_CHOICES.map((each) =>
@@ -250,7 +262,11 @@ export function PastMeetings({
                   id={`${ids}-${meeting.id}`}
                   className="flex flex-col gap-5 border-border-subtle border-t px-4 py-4"
                 >
-                  <MeetingSummary meeting={meeting} />
+                  <MeetingSummary
+                    meeting={meeting}
+                    people={people}
+                    templates={templates}
+                  />
                 </div>
               )}
             </li>

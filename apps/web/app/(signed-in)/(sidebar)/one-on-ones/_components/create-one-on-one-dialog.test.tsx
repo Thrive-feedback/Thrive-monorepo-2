@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Toaster } from '@/components/atoms/toaster';
+import { SampleDataProvider } from '@/components/organisms/sample-data-provider';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import { ROUTES } from '@/lib/routes.constant';
 
@@ -68,6 +69,34 @@ beforeEach(() => {
 });
 
 describe('CreateOneOnOneDialog', () => {
+  it('sends no invitation on sample data, as in the showcase, and says so', async () => {
+    render(
+      <SampleDataProvider>
+        <CreateOneOnOneDialog
+          open
+          onOpenChange={() => {}}
+          workspaceId="workspace-acme"
+          teammates={TEAMMATES}
+          unavailable={new Map()}
+          trigger={<button type="button">Create 1:1</button>}
+        />
+        <Toaster />
+      </SampleDataProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('radio', { name: /Mint Boonmee/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Send invitation' }),
+    );
+
+    expect(inviteToOneOnOne).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText('In the showcase, nothing is sent.'),
+    ).toBeVisible();
+    expect(push).not.toHaveBeenCalled();
+  });
+
   it('creates a 1:1 in two steps, on the default schedule, and opens it', async () => {
     draw();
 
