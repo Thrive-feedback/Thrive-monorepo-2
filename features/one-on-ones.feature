@@ -4,8 +4,11 @@ Feature: 1:1s
   nothing runs until the person invited accepts, and then the two are equal. Each meeting has
   an agenda both prepare, notes both write once it starts, and a summary when either finishes
   it. A 1:1 is only ever read by its two people. An agenda opens with what was not reached last
-  time; while it is prepared, either person may use a template for it: one of Thrive's, one the
-  Workspace keeps for everyone, or one a Member keeps for themselves, which nobody else sees.
+  time; while it is prepared, either person may use templates for it, each adding its questions:
+  one of Thrive's, one the Workspace keeps for everyone, or one a Member keeps for themselves,
+  which nobody else sees.
+  Before a meeting, each reads the other's Profile as they would anyway, since the two last met, and
+  may bring any item of it onto the agenda.
 
   Background:
     Given Ann owns a Workspace called "Acme"
@@ -248,14 +251,35 @@ Feature: 1:1s
     And Cara does not see the template "Sprint retro"
 
   @api
-  Scenario: Using another template replaces the first one's questions, and keeps the rest
+  Scenario: Using another template adds its questions after the first one's
     Given Ben has kept a template "Sprint retro" asking "What slowed us?"
     And Ben has kept a template "Career chat" asking "Where next?"
     And Ann and Ben have a running weekly 1:1
     And Ben has added "Offsite" to the next meeting
     And Ben has used "Sprint retro" for the next meeting
     When Ben uses "Career chat" for the next meeting
-    Then Ben's next meeting has only "Offsite" and "Where next?"
+    Then Ben's next meeting has, in order:
+      | Offsite         |
+      | What slowed us? |
+      | Where next?     |
+    And Ann's next meeting uses the templates "Sprint retro" and "Career chat"
+
+  @api
+  Scenario: Taking a template off the agenda takes every question it asked, whoever used it
+    Given Ben has kept a template "Sprint retro" asking "What slowed us?"
+    And Ann and Ben have a running weekly 1:1
+    And Ann has added "Offsite" to the next meeting
+    And Ben has used "Sprint retro" for the next meeting
+    When Ann takes "Sprint retro" off the next meeting
+    Then Ben's next meeting has only "Offsite"
+
+  @api
+  Scenario: A template is used once while its questions are on the agenda
+    Given Ben has kept a template "Sprint retro" asking "What slowed us?"
+    And Ann and Ben have a running weekly 1:1
+    And Ben has used "Sprint retro" for the next meeting
+    When Ben uses "Sprint retro" for the next meeting
+    Then Ben is told the template is already on the agenda
 
   @api
   Scenario: A template is not used for a meeting that has started
@@ -295,3 +319,26 @@ Feature: 1:1s
     Given Ben has kept a template "Sprint retro" asking "What slowed us?"
     When Ben keeps a template "sprint retro" of their own
     Then Ben is told they keep one by that name already
+
+  @api
+  Scenario: Feedback brought onto the agenda names where it came from, and comes once
+    Given Ann and Ben have a running weekly 1:1
+    And Cara has given Ben Feedback: "You cut Nok off twice.", shared with Ann
+    And Ann brings "You cut Nok off twice." to the next meeting
+    When Ann tries to bring "You cut Nok off twice." to the next meeting
+    Then Ann is told it is already on the agenda
+    And Ben sees "You cut Nok off twice." on the next meeting, brought from Feedback
+
+  @api
+  Scenario: Nobody brings to a meeting what they could not already read
+    Given Ann and Ben have a running weekly 1:1
+    And Cara has given Ben Feedback: "Kept to Ben.", shared with nobody else
+    When Ann tries to bring the Feedback Cara wrote to the next meeting
+    Then Ann is told there is nothing like it to bring
+
+  @api
+  Scenario: A request still open between them can be brought onto the agenda
+    Given Ann and Ben have a running weekly 1:1
+    And Ben has asked Ann for Feedback: "How clear was the plan?", shared with nobody else
+    When Ann brings "How clear was the plan?" to the next meeting
+    Then Ben sees "How clear was the plan?" on the next meeting, brought from a request

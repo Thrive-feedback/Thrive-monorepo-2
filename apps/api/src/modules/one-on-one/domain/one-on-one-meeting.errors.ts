@@ -78,3 +78,23 @@ export class OneOnOneMeetingTextInvalidError extends DomainError {
     super(reason);
   }
 }
+
+/** One piece of Feedback, or one Kudos, is brought onto an agenda once. */
+export class OneOnOneTopicAlreadyOnAgendaError extends DomainError {
+  readonly code = 'ONE_ON_ONE_TOPIC_ALREADY_ON_AGENDA';
+  readonly category = 'conflict' as const;
+
+  constructor() {
+    super('This is already on the agenda.');
+  }
+}
+
+/** A template is used for an agenda once, while any question it asked is still on it (ADR 0099). */
+export class OneOnOneTemplateInUseError extends DomainError {
+  readonly code = 'ONE_ON_ONE_TEMPLATE_IN_USE';
+  readonly category = 'conflict' as const;
+
+  constructor() {
+    super('That template is already on the agenda.');
+  }
+}

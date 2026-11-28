@@ -5,11 +5,14 @@ import { PrismaTransactionContext } from '@app/infrastructure/database/prisma-tr
 import { v7 as uuidv7 } from 'uuid';
 import { OneOnOne } from '../../domain/entity/one-on-one.entity';
 import { OneOnOneMeeting } from '../../domain/entity/one-on-one-meeting.entity';
+import { OneOnOneTemplate } from '../../domain/entity/one-on-one-template.entity';
 import { OneOnOneSchedule } from '../../domain/value-object/one-on-one-schedule.vo';
+import { OneOnOneTemplateContent } from '../../domain/value-object/one-on-one-template-content.vo';
 import { PrismaOneOnOneQuery } from '../query/prisma-one-on-one.query';
 import { PrismaOneOnOneMeetingQuery } from '../query/prisma-one-on-one-meeting.query';
 import { PrismaOneOnOneRepository } from './prisma-one-on-one.repository';
 import { PrismaOneOnOneMeetingRepository } from './prisma-one-on-one-meeting.repository';
+import { PrismaOneOnOneTemplateRepository } from './prisma-one-on-one-template.repository';
 
 /** When the topics in these specs were put on the agenda. */
 const ADDED_AT = new Date('2026-11-26T03:00:00.000Z');
@@ -19,6 +22,7 @@ const prismaService = new PrismaService(configuration.database);
 const context = new PrismaTransactionContext(prismaService);
 const oneOnOnes = new PrismaOneOnOneRepository(context);
 const meetings = new PrismaOneOnOneMeetingRepository(context);
+const templates = new PrismaOneOnOneTemplateRepository(context);
 const query = new PrismaOneOnOneMeetingQuery(context);
 const oneOnOneQuery = new PrismaOneOnOneQuery(context);
 const NOW = new Date('2026-11-26T03:00:00.000Z');
@@ -70,6 +74,10 @@ afterAll(async () => {
   await prismaService.oneOnOne.deleteMany({
     where: { workspaceId: { in: workspaces } },
   });
+  // After the 1:1s, whose topics name them: a template is never deleted while one does.
+  await prismaService.oneOnOneTemplate.deleteMany({
+    where: { workspaceId: { in: workspaces } },
+  });
   await prismaService.$disconnect();
 });
 
@@ -80,6 +88,10 @@ describe('storing meetings', () => {
     await meetings.save(meeting);
     const [first, second] = meeting.snapshot().topics;
     meeting.addTopic(uuidv7(), 'ben', 'Career path', ADDED_AT);
+    meeting.addTopic(uuidv7(), 'ann', 'Kudos from Nok', ADDED_AT, {
+      kind: 'KUDOS',
+      id: uuidv7(),
+    });
     meeting.removeTopic(first?.id ?? '', 'ann');
     meeting.start('ann', NOW, NOW);
     meeting.writeTopicNote(second?.id ?? '', 'ben', 'Went well', null, NOW);
@@ -93,6 +105,75 @@ describe('storing meetings', () => {
 
     expect(found?.snapshot()).toEqual(meeting.snapshot());
     expect(await meetings.findLive(workspaceId, oneOnOneId)).not.toBeNull();
+  });
+
+  it('keeps the template each topic came from, one of Thrive’s by key and a kept one by id', async () => {
+    const { workspaceId, oneOnOneId } = await aRunningOneOnOne();
+    const retro = OneOnOneTemplate.keep({
+      id: uuidv7(),
+      workspaceId,
+      scope: 'PERSONAL',
+      by: { accountId: 'ann', isAdmin: false },
+      content: OneOnOneTemplateContent.of({
+        name: 'Sprint retro',
+        questions: ['What slowed us?'],
+      }),
+    });
+    await templates.save(retro);
+    const meeting = opened(workspaceId, oneOnOneId);
+    meeting.useTemplate({
+      templateKey: retro.snapshot().id,
+      questions: ['What slowed us?'],
+      newTopicId: () => uuidv7(),
+      at: ADDED_AT,
+    });
+    await meetings.save(meeting);
+
+    const found = await meetings.findById(
+      workspaceId,
+      oneOnOneId,
+      meeting.snapshot().id,
+    );
+    const rows = await prismaService.oneOnOneTopic.findMany({
+      where: { meetingId: meeting.snapshot().id, source: 'TEMPLATE' },
+      orderBy: { position: 'asc' },
+      select: { templateKey: true, templateId: true },
+    });
+
+    expect(found?.snapshot()).toEqual(meeting.snapshot());
+    expect(found?.templatesInUse()).toEqual([
+      'weekly-check-in',
+      retro.snapshot().id,
+    ]);
+    expect(rows).toEqual([
+      { templateKey: 'weekly-check-in', templateId: null },
+      { templateKey: null, templateId: retro.snapshot().id },
+    ]);
+  });
+
+  it('reads a template’s topic stored before topics named theirs as the meeting’s', async () => {
+    const { workspaceId, oneOnOneId } = await aRunningOneOnOne();
+    const meeting = opened(workspaceId, oneOnOneId);
+    await meetings.save(meeting);
+    await prismaService.oneOnOneTopic.updateMany({
+      where: { meetingId: meeting.snapshot().id },
+      data: { templateKey: null, templateId: null },
+    });
+
+    const found = await meetings.findById(
+      workspaceId,
+      oneOnOneId,
+      meeting.snapshot().id,
+    );
+
+    expect(
+      found
+        ?.snapshot()
+        .topics.map((topic) => [topic.source, topic.templateKey]),
+    ).toEqual([
+      ['CARRIED', null],
+      ['TEMPLATE', 'weekly-check-in'],
+    ]);
   });
 
   it('knows the live meeting from the last finished one', async () => {

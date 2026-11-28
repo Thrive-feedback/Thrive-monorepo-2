@@ -113,4 +113,15 @@ export abstract class KudosQuery {
 
   /** The months of one Workspace that hold a Kudos, newest first, each with how many. */
   abstract monthsIn(workspaceId: string): Promise<readonly KudosMonthRow[]>;
+
+  /**
+   * Whether one Kudos is on a Member's Profile for one reader: naming the Member, or between the two.
+   * The same filters as those lists, with the id added.
+   */
+  abstract isKudosOnProfileFor(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    kudosId: string,
+  ): Promise<boolean>;
 }

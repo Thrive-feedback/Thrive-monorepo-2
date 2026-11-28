@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { Given, Then, When } from '@cucumber/cucumber';
+import { type DataTable, Given, Then, When } from '@cucumber/cucumber';
 import { harness } from '../support/harness';
 import type { ApiResponse, ThriveWorld } from '../support/world';
 
@@ -45,6 +45,18 @@ const REFUSALS: Readonly<Record<string, { code: string; status: number }>> = {
     status: 409,
   },
   'its day has passed': { code: 'ONE_ON_ONE_TIME_PASSED', status: 409 },
+  'it is already on the agenda': {
+    code: 'ONE_ON_ONE_TOPIC_ALREADY_ON_AGENDA',
+    status: 409,
+  },
+  'there is nothing like it to bring': {
+    code: 'ONE_ON_ONE_TOPIC_SOURCE_NOT_FOUND',
+    status: 404,
+  },
+  'the template is already on the agenda': {
+    code: 'ONE_ON_ONE_TEMPLATE_IN_USE',
+    status: 409,
+  },
 };
 
 /** A weekly 1:1 on Thursdays, the schedule every scenario uses: a day, with no time of day. */
@@ -222,6 +234,49 @@ async function agendaOf(
   const next = await readNextMeeting(world, name);
   assert.ok(next.meeting, 'Nobody has written to the next meeting yet.');
   return next.meeting.topics.map((topic: { text: string }) => topic.text);
+}
+
+/** Every item on the other person's Profile for `name`, in every list it has, as Before you meet reads them. */
+async function profileItemsOf(
+  world: ThriveWorld,
+  name: string,
+): Promise<
+  readonly { kind: 'FEEDBACK' | 'KUDOS' | 'ASK'; id: string; message: string }[]
+> {
+  const oneOnOne = world.succeeded(
+    await world.as(name, 'GET', oneOnOnePath(world, name)),
+    `${name} reading the 1:1`,
+  );
+  const lists = await Promise.all(
+    ['FEEDBACK', 'KUDOS', 'BETWEEN_US', 'SHARED_WITH_ME', 'OPEN_ASKS'].map(
+      async (show) =>
+        world.succeeded(
+          await world.as(
+            name,
+            'GET',
+            `/v1/workspaces/${world.workspaceOf(name)}/members/${oneOnOne.body.withAccountId}/profile-items?show=${show}&limit=50`,
+          ),
+          `${name} reading ${show} on the other person's Profile`,
+        ).body.items,
+    ),
+  );
+  return lists.flat();
+}
+
+/** Brings one item onto the next meeting's agenda, as Add to agenda does. */
+async function bring(
+  world: ThriveWorld,
+  name: string,
+  item: { readonly kind: 'FEEDBACK' | 'KUDOS' | 'ASK'; readonly id: string },
+  text: string,
+): Promise<ApiResponse> {
+  const meetingId = await nextMeetingId(world, name);
+  return world.as(
+    name,
+    'POST',
+    `${meetingPath(world, name, meetingId)}/topics`,
+    { text, broughtFrom: { kind: item.kind, id: item.id } },
+  );
 }
 
 Given(
@@ -492,6 +547,18 @@ When(
   '{person} uses {string} for the next meeting',
   async function (this: ThriveWorld, name: string, template: string) {
     await useTemplate(this, name, template);
+  },
+);
+
+When(
+  '{person} takes {string} off the next meeting',
+  async function (this: ThriveWorld, name: string, template: string) {
+    const meetingId = await nextMeetingId(this, name);
+    await this.as(
+      name,
+      'DELETE',
+      `${meetingPath(this, name, meetingId)}/template/${templateIdOf(this, template)}`,
+    );
   },
 );
 
@@ -901,6 +968,32 @@ Then(
 );
 
 Then(
+  "{person}'s next meeting has, in order:",
+  async function (this: ThriveWorld, name: string, topics: DataTable) {
+    assert.deepEqual(
+      await agendaOf(this, name),
+      topics.raw().map(([text]) => text),
+    );
+  },
+);
+
+Then(
+  "{person}'s next meeting uses the templates {string} and {string}",
+  async function (
+    this: ThriveWorld,
+    name: string,
+    first: string,
+    second: string,
+  ) {
+    const next = await readNextMeeting(this, name);
+    assert.deepEqual(
+      next.templates.map((template: { name: string }) => template.name),
+      [first, second],
+    );
+  },
+);
+
+Then(
   '{person} sees the template {string}',
   async function (this: ThriveWorld, name: string, template: string) {
     assert.ok((await templatesSeenBy(this, name)).includes(template));
@@ -915,11 +1008,67 @@ Then(
 );
 
 Then(
-  /^(\w+) is told (there is no such 1:1|it is not theirs to answer|they already have one|the topic is not theirs|the meeting has not started|the meeting has already started|the topic changed|the 1:1 is not running|the template is not theirs|the template cannot be kept|they keep one by that name already|a meeting is in progress|its day has passed)$/,
+  /^(\w+) is told (there is no such 1:1|it is not theirs to answer|they already have one|the topic is not theirs|the meeting has not started|the meeting has already started|the topic changed|the 1:1 is not running|the template is not theirs|the template cannot be kept|they keep one by that name already|a meeting is in progress|its day has passed|it is already on the agenda|there is nothing like it to bring|the template is already on the agenda)$/,
   function (this: ThriveWorld, _name: string, reason: string) {
     const refusal = REFUSALS[reason];
     assert.ok(refusal, `No refusal is known as "${reason}".`);
     this.refusedWith(refusal.code);
     assert.equal(this.lastResponse?.status, refusal.status);
+  },
+);
+
+When(
+  /^(\w+) (tries to bring|brings) "([^"]+)" to the next meeting$/,
+  async function (
+    this: ThriveWorld,
+    name: string,
+    attempt: string,
+    message: string,
+  ) {
+    const item = (await profileItemsOf(this, name)).find(
+      (each) => each.message === message,
+    );
+    assert.ok(
+      item,
+      `"${message}" is not on the other person's Profile for ${name}.`,
+    );
+    const response = await bring(this, name, item, message);
+    if (attempt === 'brings') {
+      this.succeeded(response, `${name} bringing "${message}"`);
+    }
+  },
+);
+
+When(
+  '{person} tries to bring the Feedback {person} wrote to the next meeting',
+  async function (this: ThriveWorld, name: string, giver: string) {
+    const written = this.feedbackBy.get(giver);
+    assert.ok(written, `${giver} wrote no Feedback in this scenario.`);
+    await bring(
+      this,
+      name,
+      { kind: 'FEEDBACK', id: written.id },
+      'Something kept from them',
+    );
+  },
+);
+
+Then(
+  /^(\w+) sees "([^"]+)" on the next meeting, brought from (Feedback|a request)$/,
+  async function (
+    this: ThriveWorld,
+    name: string,
+    text: string,
+    source: string,
+  ) {
+    const next = await readNextMeeting(this, name);
+    const topic = next.meeting?.topics.find(
+      (each: { text: string }) => each.text === text,
+    );
+    assert.ok(topic, `"${text}" is not on the next meeting's agenda.`);
+    assert.equal(
+      topic.broughtFrom?.kind,
+      source === 'Feedback' ? 'FEEDBACK' : 'ASK',
+    );
   },
 );

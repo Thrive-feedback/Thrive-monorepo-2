@@ -711,6 +711,67 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     };
   }
 
+  async isFeedbackOnProfileFor(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    feedbackId: string,
+  ): Promise<boolean> {
+    const found = await this.prismaTransactionContext.client.feedback.findFirst(
+      {
+        where: {
+          AND: [
+            { id: feedbackId },
+            {
+              OR: [
+                feedbackToWhere(workspaceId, memberAccountId, EVERYONE_READS),
+                feedbackToWhere(
+                  workspaceId,
+                  memberAccountId,
+                  selectedToRead(readerAccountId),
+                ),
+                feedbackBetweenWhere(
+                  workspaceId,
+                  readerAccountId,
+                  memberAccountId,
+                  await this.feedbackWrittenToBoth(
+                    readerAccountId,
+                    memberAccountId,
+                  ),
+                ),
+              ],
+            },
+          ],
+        },
+        select: { id: true },
+      },
+    );
+    return found !== null;
+  }
+
+  async isAskOpenBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    askId: string,
+  ): Promise<boolean> {
+    const found =
+      await this.prismaTransactionContext.client.feedbackAsk.findFirst({
+        where: {
+          AND: [
+            { id: askId },
+            pendingAsksBetweenWhere(
+              workspaceId,
+              readerAccountId,
+              memberAccountId,
+            ),
+          ],
+        },
+        select: { id: true },
+      });
+    return found !== null;
+  }
+
   /**
    * The Feedback with both people among its Receivers, in any Workspace. Read on its own because
    * this branch of "between" has no Giver to look up by: asked inside the page read, it made Postgres

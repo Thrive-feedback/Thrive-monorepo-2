@@ -9,6 +9,7 @@ import { OneOnOneNotFoundError } from '../../one-on-one.errors';
 import { OneOnOneQuery } from '../../query-port/one-on-one.query-port';
 import { OneOnOneMeetingQuery } from '../../query-port/one-on-one-meeting.query-port';
 import { toMeetingView } from '../../service/one-on-one-meeting-view.service';
+import { OneOnOneTemplateNamesService } from '../../service/one-on-one-template-names.service';
 import type {
   OneOnOneMeetingCursorPageRequest,
   OneOnOneMeetingViewPage,
@@ -24,13 +25,15 @@ export interface ListPastMeetingsInput {
 /**
  * A query: the finished meetings of a 1:1, newest first, each whole: its topics and the notes on
  * them; and the meeting days skipped, oldest first: those kept from a schedule since changed or
- * ended, and those worked out from the one it runs on now. Readable after the 1:1 has ended.
+ * ended, and those worked out from the one it runs on now; and what each template its topics came
+ * from is called. Readable after the 1:1 has ended.
  */
 @Injectable()
 export class ListPastMeetingsUseCase {
   constructor(
     private readonly oneOnOneQuery: OneOnOneQuery,
     private readonly meetingQuery: OneOnOneMeetingQuery,
+    private readonly templateNames: OneOnOneTemplateNamesService,
     private readonly clock: Clock,
   ) {}
 
@@ -70,10 +73,21 @@ export class ListPastMeetingsUseCase {
     const skippedDays = [...new Set([...oneOnOne.skippedDays, ...workedOut])]
       .filter((day) => reachesBack === null || day >= reachesBack)
       .sort();
+    // What each template a topic on this page came from is called, read once for the whole page.
+    const templates = await this.templateNames.namesOf(input.workspaceId, [
+      ...new Set(
+        page.items.flatMap((meeting) =>
+          meeting.topics.flatMap((topic) =>
+            topic.templateKey === null ? [] : [topic.templateKey],
+          ),
+        ),
+      ),
+    ]);
     return {
       items: page.items.map(toMeetingView),
       nextAfterId: page.nextAfterId,
       skippedDays,
+      templates,
     };
   }
 }

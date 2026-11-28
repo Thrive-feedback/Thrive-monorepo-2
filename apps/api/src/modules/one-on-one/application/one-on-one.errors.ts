@@ -68,3 +68,18 @@ export class OneOnOneTemplateNotFoundError extends ApplicationError {
     super('No template with this id is kept for the caller.');
   }
 }
+
+/**
+ * A topic brought from Feedback or a Kudos the caller cannot read about the other person. The same
+ * answer whether it does not exist or is not theirs to read, so nobody learns what is there.
+ */
+export class OneOnOneTopicSourceNotFoundError extends ApplicationError {
+  readonly code = 'ONE_ON_ONE_TOPIC_SOURCE_NOT_FOUND';
+  readonly category = 'not_found' as const;
+
+  constructor() {
+    super(
+      'No Feedback or Kudos with this id is one you can bring to this 1:1.',
+    );
+  }
+}

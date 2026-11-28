@@ -19,8 +19,9 @@ export interface UseTemplateForMeetingInput {
 }
 
 /**
- * Either person uses a template for a meeting while it is prepared: its questions take the place of
- * the last template's on the agenda. Only a template the caller may choose is used.
+ * Either person uses a template for a meeting while it is prepared: its questions are added after the
+ * agenda's topics, and one already in use is refused (ADR 0099). Only a template the caller may
+ * choose is used.
  */
 @Injectable()
 export class UseTemplateForMeetingUseCase {

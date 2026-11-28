@@ -724,10 +724,11 @@ model OneOnOneTemplate {
   removedAt        DateTime?
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
-  /// The 1:1s starting from it, and the meetings opened from it: a template they name is never
-  /// deleted, only removed, so each keeps its name and questions (ADR 0096).
+  /// The 1:1s starting from it, the meetings opened from it and the topics it asked: a template
+  /// they name is never deleted, only removed, so each keeps its name and questions (ADR 0096).
   oneOnOnes        OneOnOne[]            @relation("OneOnOneStartsFrom")
   meetings         OneOnOneMeeting[]     @relation("OneOnOneMeetingOpenedFrom")
+  topics           OneOnOneTopic[]       @relation("OneOnOneTopicAskedBy")
 
   /// For a Workspace's templates, and one Member's own.
   @@index([workspaceId, scope, ownerAccountId])
@@ -741,6 +742,14 @@ enum OneOnOneTopicSource {
   PERSON
 }
 
+/// What a topic was brought from: an item of the other person's Profile — a piece of Feedback, a
+/// Kudos, or an Ask still open between the two — owned by the Feedback module.
+enum OneOnOneTopicBroughtFromKind {
+  FEEDBACK
+  KUDOS
+  ASK
+}
+
 /// One meeting of a 1:1 (brain ADR-0060 §5, ADR-0061, proposed), kept from the first write to its
 /// agenda: preparing until either person starts it, then in progress until either finishes it.
 /// A 1:1 has one meeting that is not finished at a time.
@@ -750,10 +759,11 @@ model OneOnOneMeeting {
   workspaceId         String
   oneOnOneId          String
   oneOnOne            OneOnOne        @relation(fields: [oneOnOneId], references: [id], onDelete: Cascade)
-  /// One of Thrive's templates, by its key, when its agenda opened from one of those; empty when it
-  /// opened from a kept one. Exactly one of this and `templateId` is set (ADR 0096).
+  /// One of Thrive's templates, by its key, when the template used last for its agenda was one of
+  /// those; empty when it was a kept one. At most one of this and `templateId` is set (ADR 0096);
+  /// each topic names the template that asked it (ADR 0099).
   templateKey         String?
-  /// The kept template its agenda opened from; empty for one of Thrive's.
+  /// The kept template used last for its agenda; empty for one of Thrive's.
   templateId          String?
   template            OneOnOneTemplate? @relation("OneOnOneMeetingOpenedFrom", fields: [templateId], references: [id], onDelete: Restrict)
   /// The occurrence it stood for, set when it starts.
@@ -796,6 +806,15 @@ model OneOnOneTopic {
   /// The meeting day it was written for, when that day was skipped and the schedule then changed,
   /// `YYYY-MM-DD`: kept at the change, as the new schedule can no longer work it out.
   carriedFrom             String?
+  /// What a person brought it from, named by id: Feedback's, with no foreign key across modules.
+  broughtFromKind         OneOnOneTopicBroughtFromKind?
+  broughtFromId           String?
+  /// The template that asked it, for one from a template: one of Thrive's by its key, or a kept one
+  /// by `templateId`; at most one is set (ADR 0096, ADR 0099). Both are empty on a topic from a
+  /// template stored before topics named theirs: it is read as the meeting's.
+  templateKey             String?
+  templateId              String?
+  template                OneOnOneTemplate?   @relation("OneOnOneTopicAskedBy", fields: [templateId], references: [id], onDelete: Restrict)
   @@index([meetingId, position])
   @@map("one_on_one_topic")
 }

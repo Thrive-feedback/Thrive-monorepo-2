@@ -4,6 +4,7 @@ import {
   OneOnOneMeetingFinishedError,
   OneOnOneMeetingNotStartedError,
   OneOnOneMeetingTextInvalidError,
+  OneOnOneTemplateInUseError,
   OneOnOneTopicChangedError,
   OneOnOneTopicNotFoundError,
   OneOnOneTopicNotYoursError,
@@ -79,25 +80,106 @@ describe('a meeting being prepared', () => {
     ]);
   });
 
-  it("replaces the last template's questions, and keeps what was carried and added", () => {
+  it("adds another template's questions after everything, keeping the first's, each naming its own", () => {
     const meeting = opened();
     meeting.addTopic('topic-9', MINT, 'Career path', ADDED_AT);
 
     meeting.useTemplate({
       templateKey: 'career-conversation',
-      questions: ['Where next?', ' Career path ', 'Launch retro'],
+      questions: [
+        'Where next?',
+        ' Career path ',
+        'Launch retro',
+        'What went well this week?',
+      ],
       newTopicId: () => 'topic-10',
       at: ADDED_AT,
     });
 
     const { templateKey, topics } = meeting.snapshot();
     expect(templateKey).toBe('career-conversation');
-    expect(topics.map((topic) => [topic.text, topic.source])).toEqual([
-      ['Launch retro', 'CARRIED'],
-      ['Career path', 'PERSON'],
-      ['Where next?', 'TEMPLATE'],
+    // A question already on the agenda, from a person, last time or another template, is not asked twice.
+    expect(
+      topics.map((topic) => [topic.text, topic.source, topic.templateKey]),
+    ).toEqual([
+      ['Launch retro', 'CARRIED', null],
+      ['What went well this week?', 'TEMPLATE', 'weekly-check-in'],
+      ['Career path', 'PERSON', null],
+      ['Where next?', 'TEMPLATE', 'career-conversation'],
     ]);
-    expect(topics.map((topic) => topic.position)).toEqual([0, 1, 2]);
+    expect(topics.map((topic) => topic.position)).toEqual([0, 1, 2, 3]);
+    expect(meeting.templatesInUse()).toEqual([
+      'weekly-check-in',
+      'career-conversation',
+    ]);
+  });
+
+  it('takes a template once while any question it asked is on the agenda, and again once none is', () => {
+    const meeting = opened();
+    const useAgain = () =>
+      meeting.useTemplate({
+        templateKey: 'weekly-check-in',
+        questions: ['What went well this week?'],
+        newTopicId: () => 'topic-11',
+        at: ADDED_AT,
+      });
+
+    expect(useAgain).toThrow(OneOnOneTemplateInUseError);
+
+    meeting.removeTopic('topic-2', KRIT);
+    useAgain();
+    expect(meeting.snapshot().topics.at(-1)).toMatchObject({
+      id: 'topic-11',
+      templateKey: 'weekly-check-in',
+    });
+  });
+
+  it('takes a template off with every question it asked, keeping the rest in order', () => {
+    const meeting = opened();
+    meeting.addTopic('topic-9', MINT, 'Career path', ADDED_AT);
+    meeting.useTemplate({
+      templateKey: 'career-conversation',
+      questions: ['Where next?'],
+      newTopicId: () => 'topic-10',
+      at: ADDED_AT,
+    });
+
+    meeting.removeTemplate('weekly-check-in');
+
+    const { templateKey, topics } = meeting.snapshot();
+    expect(
+      topics.map((topic) => [topic.text, topic.templateKey, topic.position]),
+    ).toEqual([
+      ['Launch retro', null, 0],
+      ['Career path', null, 1],
+      ['Where next?', 'career-conversation', 2],
+    ]);
+    // The template used last is the last still on the agenda.
+    expect(templateKey).toBe('career-conversation');
+
+    meeting.removeTemplate('career-conversation');
+    expect(meeting.snapshot().templateKey).toBeNull();
+    expect(meeting.templatesInUse()).toEqual([]);
+  });
+
+  it('leaves the agenda as it is when the template taken off is not on it', () => {
+    const meeting = opened();
+    const before = meeting.snapshot();
+
+    meeting.removeTemplate('career-conversation');
+
+    expect(meeting.snapshot()).toEqual(before);
+  });
+
+  it('takes no template off once it has started, or is finished', () => {
+    const meeting = started();
+    expect(() => meeting.removeTemplate('weekly-check-in')).toThrow(
+      OneOnOneMeetingAlreadyStartedError,
+    );
+    meeting.finish(MINT, LATER);
+    expect(() => meeting.removeTemplate('weekly-check-in')).toThrow(
+      OneOnOneMeetingFinishedError,
+    );
   });
 
   it('takes no template once it has started, or is finished', () => {

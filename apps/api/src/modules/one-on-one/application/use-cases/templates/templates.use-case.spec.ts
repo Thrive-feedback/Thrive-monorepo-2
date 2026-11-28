@@ -26,6 +26,7 @@ import { OneOnOneTemplateContent } from '../../../domain/value-object/one-on-one
 import { OneOnOneTemplateNotFoundError } from '../../one-on-one.errors';
 import { OneOnOneMeetingsSoFarService } from '../../service/one-on-one-meetings-so-far.service';
 import { OneOnOneTemplateCatalogService } from '../../service/one-on-one-template-catalog.service';
+import { OneOnOneTemplateNamesService } from '../../service/one-on-one-template-names.service';
 import { InviteToOneOnOneUseCase } from '../invite-to-one-on-one.use-case';
 import { RescheduleOneOnOneUseCase } from '../reschedule-one-on-one.use-case';
 import { KeepOneOnOneTemplateUseCase } from './keep-one-on-one-template.use-case';
@@ -354,9 +355,16 @@ describe('Starting a 1:1 from a kept template', () => {
       'What slowed us?',
       'What helped?',
     ]);
-    expect(await world.catalog.nameOf(WORKSPACE_ID, 'weekly-check-in')).toBe(
-      'Weekly check-in',
+    // Named as a meeting reads it, removed or not.
+    const names = new OneOnOneTemplateNamesService(
+      new FakeOneOnOneTemplateQuery(world.templates),
     );
+    expect(
+      await names.namesOf(WORKSPACE_ID, ['weekly-check-in', KRITS_ID]),
+    ).toEqual([
+      { key: 'weekly-check-in', name: 'Weekly check-in' },
+      { key: KRITS_ID, name: 'Sprint retro' },
+    ]);
     expect(await world.catalog.questionsOf(WORKSPACE_ID, MINTS_ID)).toEqual([
       'What is on your mind?',
     ]);

@@ -26,7 +26,26 @@ type MeetingWithTopics = MeetingRecord & {
 /** The columns of a meeting row that a save writes; the timestamps are the store's own. */
 type MeetingColumns = Omit<MeetingRecord, 'createdAt' | 'updatedAt'>;
 
-function toTopic(record: TopicRecord): OneOnOneTopicSnapshot {
+/** A template named by two columns as the wire carries it; `null` when neither is set. */
+function templateKeyOfColumns(record: {
+  readonly templateKey: string | null;
+  readonly templateId: string | null;
+}): string | null {
+  return record.templateKey === null && record.templateId === null
+    ? null
+    : templateKeyOf(storedTemplateRef(record));
+}
+
+/**
+ * One topic as the domain holds it. A topic from a template names the template that asked it; one
+ * stored before topics named theirs names neither, and is read as the meeting's, the only template
+ * an agenda could take then (ADR 0099).
+ */
+function toTopic(
+  record: TopicRecord,
+  meetingTemplateKey: string | null,
+): OneOnOneTopicSnapshot {
+  const ownTemplateKey = templateKeyOfColumns(record);
   return {
     id: record.id,
     text: record.text,
@@ -39,17 +58,23 @@ function toTopic(record: TopicRecord): OneOnOneTopicSnapshot {
     discussedAt: record.discussedAt,
     addedAt: record.addedAt,
     carriedFrom: record.carriedFrom,
+    broughtFrom:
+      record.broughtFromKind === null || record.broughtFromId === null
+        ? null
+        : { kind: record.broughtFromKind, id: record.broughtFromId },
+    templateKey:
+      record.source === 'TEMPLATE'
+        ? (ownTemplateKey ?? meetingTemplateKey)
+        : ownTemplateKey,
   };
 }
 
-/** The meeting's template as the wire carries it; `null` when nobody used one for it. */
+/** The meeting's template, used last, as the wire carries it; `null` when nobody used one for it. */
 function meetingTemplateKeyOf(record: {
   readonly templateKey: string | null;
   readonly templateId: string | null;
 }): string | null {
-  return record.templateKey === null && record.templateId === null
-    ? null
-    : templateKeyOf(storedTemplateRef(record));
+  return templateKeyOfColumns(record);
 }
 
 function inAgendaOrder(topics: readonly TopicRecord[]): TopicRecord[] {
@@ -69,7 +94,9 @@ export function toMeetingSnapshot(
     startedByAccountId: record.startedByAccountId,
     finishedAt: record.finishedAt,
     finishedByAccountId: record.finishedByAccountId,
-    topics: inAgendaOrder(record.topics).map(toTopic),
+    topics: inAgendaOrder(record.topics).map((topic) =>
+      toTopic(topic, meetingTemplateKeyOf(record)),
+    ),
   };
 }
 
@@ -86,7 +113,8 @@ export function toMeetingProjection(
     finishedAt: record.finishedAt,
     finishedByAccountId: record.finishedByAccountId,
     topics: inAgendaOrder(record.topics).map(
-      (topic): OneOnOneTopicProjection => toTopic(topic),
+      (topic): OneOnOneTopicProjection =>
+        toTopic(topic, meetingTemplateKeyOf(record)),
     ),
   };
 }
@@ -114,8 +142,13 @@ export function toMeetingRecord(
 export function toTopicRecords(
   snapshot: OneOnOneMeetingSnapshot,
 ): TopicRecord[] {
-  return snapshot.topics.map((topic) => ({
+  return snapshot.topics.map(({ broughtFrom, templateKey, ...topic }) => ({
     ...topic,
     meetingId: snapshot.id,
+    broughtFromKind: broughtFrom?.kind ?? null,
+    broughtFromId: broughtFrom?.id ?? null,
+    ...(templateKey === null
+      ? { templateKey: null, templateId: null }
+      : templateColumnsOf(templateRefOf(templateKey))),
   }));
 }

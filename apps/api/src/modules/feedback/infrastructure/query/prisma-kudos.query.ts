@@ -257,6 +257,29 @@ export class PrismaKudosQuery extends KudosQuery {
    * Raw because Prisma cannot group by a computed month. `createdAt` is UTC with no zone, so adding
    * the clock's offset to it gives the month `KudosMonth` would put it in (ADR 0076).
    */
+  async isKudosOnProfileFor(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    kudosId: string,
+  ): Promise<boolean> {
+    const found = await this.prismaTransactionContext.client.kudos.findFirst({
+      where: {
+        AND: [
+          { id: kudosId },
+          {
+            OR: [
+              kudosNamingWhere(workspaceId, memberAccountId),
+              kudosBetweenWhere(workspaceId, readerAccountId, memberAccountId),
+            ],
+          },
+        ],
+      },
+      select: { id: true },
+    });
+    return found !== null;
+  }
+
   async monthsIn(workspaceId: string): Promise<readonly KudosMonthRow[]> {
     return this.prismaTransactionContext.client.$queryRaw<KudosMonthRow[]>`
       SELECT

@@ -3,11 +3,17 @@ import {
   OneOnOneMeetingFinishedError,
   OneOnOneMeetingNotStartedError,
   OneOnOneMeetingTextInvalidError,
+  OneOnOneTemplateInUseError,
+  OneOnOneTopicAlreadyOnAgendaError,
   OneOnOneTopicChangedError,
   OneOnOneTopicNotFoundError,
   OneOnOneTopicNotYoursError,
   OneOnOneTopicOrderInvalidError,
 } from '../one-on-one-meeting.errors';
+import {
+  templateKeyOf,
+  templateRefOf,
+} from '../value-object/one-on-one-template-ref.vo';
 
 /** How long a topic may be: a line on an agenda. */
 export const MAX_TOPIC_LENGTH = 200;
@@ -18,6 +24,15 @@ export const MAX_MEETING_NOTE_LENGTH = 4000;
 export type OneOnOneTopicSource = 'CARRIED' | 'TEMPLATE' | 'PERSON';
 
 export type OneOnOneMeetingState = 'PREPARING' | 'IN_PROGRESS' | 'FINISHED';
+
+/**
+ * The item of the other person's Profile a person brought onto the agenda as a topic, named by id:
+ * a piece of Feedback, a Kudos, or an Ask still open between the two (brain ADR-0063).
+ */
+export interface OneOnOneTopicBroughtFrom {
+  readonly kind: 'FEEDBACK' | 'KUDOS' | 'ASK';
+  readonly id: string;
+}
 
 export interface OneOnOneTopicSnapshot {
   readonly id: string;
@@ -37,13 +52,17 @@ export interface OneOnOneTopicSnapshot {
    * changed, `YYYY-MM-DD`; `null` otherwise, when it is worked out from the schedule if at all.
    */
   readonly carriedFrom: string | null;
+  /** What it was brought from, for one a person added from what they read before the meeting. */
+  readonly broughtFrom: OneOnOneTopicBroughtFrom | null;
+  /** The template that asked it, by its key as the wire carries it; `null` unless from a template. */
+  readonly templateKey: string | null;
 }
 
 export interface OneOnOneMeetingSnapshot {
   readonly id: string;
   readonly workspaceId: string;
   readonly oneOnOneId: string;
-  /** The template used for it while it was prepared; `null` when none was. */
+  /** The template used last for it while it was prepared; `null` when none was. */
   readonly templateKey: string | null;
   readonly occursAt: Date | null;
   readonly startedAt: Date | null;
@@ -112,7 +131,7 @@ export function undiscussedOf(
  * at a time, and an open one stays open until somebody finishes it.
  *
  * Before Start the agenda is prepared: topics are added, removed and reordered, and either person
- * may use a template for it, whose questions take the place of the last template's. Notes on topics and
+ * may use templates for it, each adding its questions after the rest (ADR 0099). Notes on topics and
  * the "discussed" tick come with Start. Anyone reorders; a topic a person wrote is theirs to remove,
  * and what came from the template or from last time anyone may remove.
  */
@@ -156,6 +175,8 @@ export class OneOnOneMeeting {
         discussedAt: null,
         addedAt: details.at,
         carriedFrom: null,
+        broughtFrom: null,
+        templateKey: null,
       }),
     );
     return new OneOnOneMeeting(
@@ -222,9 +243,28 @@ export class OneOnOneMeeting {
     );
   }
 
-  /** Either person adds a topic, at the end of the agenda, before or during the meeting. */
-  addTopic(topicId: string, byAccountId: string, text: string, at: Date): void {
+  /**
+   * Either person adds a topic, at the end of the agenda, before or during the meeting. One brought
+   * from Feedback or a Kudos names it, and the same one is brought once.
+   */
+  addTopic(
+    topicId: string,
+    byAccountId: string,
+    text: string,
+    at: Date,
+    broughtFrom: OneOnOneTopicBroughtFrom | null = null,
+  ): void {
     this.assertNotFinished();
+    if (
+      broughtFrom &&
+      this.topics.some(
+        (topic) =>
+          topic.broughtFrom?.kind === broughtFrom.kind &&
+          topic.broughtFrom.id === broughtFrom.id,
+      )
+    ) {
+      throw new OneOnOneTopicAlreadyOnAgendaError();
+    }
     this.topics = [
       ...this.topics,
       {
@@ -239,6 +279,8 @@ export class OneOnOneMeeting {
         discussedAt: null,
         addedAt: at,
         carriedFrom: null,
+        broughtFrom,
+        templateKey: null,
       },
     ];
   }
@@ -265,10 +307,22 @@ export class OneOnOneMeeting {
     }
   }
 
+  /** The templates whose questions are on the agenda, each once, in agenda order. */
+  templatesInUse(): readonly string[] {
+    return [
+      ...new Set(
+        this.topics.flatMap((topic) =>
+          topic.templateKey === null ? [] : [topic.templateKey],
+        ),
+      ),
+    ];
+  }
+
   /**
-   * Either person uses a template for the agenda while it is prepared. Its questions take the place
-   * of the last template's, after everything else; one already on the agenda is not asked twice.
-   * What was carried over and what people added stay.
+   * Either person uses a template for the agenda while it is prepared (ADR 0099). Its questions are
+   * added after everything else, each naming it; one already on the agenda is not asked twice, and
+   * nothing already there goes. A template is used once while any question it asked is still on the
+   * agenda; once all are removed, it may be used again.
    */
   useTemplate(details: {
     readonly templateKey: string;
@@ -280,7 +334,12 @@ export class OneOnOneMeeting {
     if (this.state() === 'IN_PROGRESS') {
       throw new OneOnOneMeetingAlreadyStartedError();
     }
-    const kept = this.topics.filter((topic) => topic.source !== 'TEMPLATE');
+    // As it is stored, so the same template sent with its id in capitals is still the same one.
+    const templateKey = templateKeyOf(templateRefOf(details.templateKey));
+    if (this.templatesInUse().includes(templateKey)) {
+      throw new OneOnOneTemplateInUseError();
+    }
+    const kept = this.topics;
     const asked = new Set(kept.map((topic) => topic.text));
     const added: OneOnOneTopicSnapshot[] = [];
     for (const question of details.questions) {
@@ -299,6 +358,8 @@ export class OneOnOneMeeting {
           discussedAt: null,
           addedAt: details.at,
           carriedFrom: null,
+          broughtFrom: null,
+          templateKey,
         });
       }
     }
@@ -306,7 +367,26 @@ export class OneOnOneMeeting {
       ...topic,
       position,
     }));
-    this.templateKey = details.templateKey;
+    this.templateKey = templateKey;
+  }
+
+  /**
+   * Either person takes a template off the agenda while it is prepared: every question it asked goes
+   * at once, since what a template asked is anyone's to remove, and the rest close up in order
+   * (ADR 0099).
+   * One not on the agenda leaves it as it is. The template used last is then the last one still on
+   * it, or none.
+   */
+  removeTemplate(rawTemplateKey: string): void {
+    this.assertNotFinished();
+    if (this.state() === 'IN_PROGRESS') {
+      throw new OneOnOneMeetingAlreadyStartedError();
+    }
+    const templateKey = templateKeyOf(templateRefOf(rawTemplateKey));
+    this.topics = this.topics
+      .filter((topic) => topic.templateKey !== templateKey)
+      .map((topic, position) => ({ ...topic, position }));
+    this.templateKey = this.templatesInUse().at(-1) ?? null;
   }
 
   /**
