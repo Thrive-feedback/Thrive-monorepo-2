@@ -9,6 +9,7 @@ import {
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { FeedbackStyleProvider } from '@/components/organisms/feedback-style-provider';
 import { NO_TEXT_TAGS } from '@/lib/feedback/text-tags.type';
 import type {
   AnsweredPostcard,
@@ -733,5 +734,24 @@ describe('PostcardReadDialog', () => {
       expect(sticker('Thumbs up')).toBeInTheDocument();
       expect(postmark()).toBeInTheDocument();
     });
+  });
+});
+
+describe('PostcardReadDialog for someone who writes plain', () => {
+  it('still opens the postcard to read', () => {
+    render(
+      <FeedbackStyleProvider initialStyle="plain">
+        <PostcardReadDialog
+          title="Feedback from Ann Lee"
+          card={GIVEN}
+          open
+          onOpenChange={vi.fn()}
+        />
+      </FeedbackStyleProvider>,
+    );
+
+    expect(
+      screen.getByRole('region', { name: 'Back of the postcard' }),
+    ).toBeInTheDocument();
   });
 });

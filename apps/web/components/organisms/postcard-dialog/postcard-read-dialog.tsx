@@ -62,7 +62,8 @@ export type PostcardReadDialogProps = {
  * them, and puts them back; a note by hand points at it, and the stamp stays. Every opening starts
  * with them on.
  *
- * Nothing can be lost, so Close and Escape close it at once.
+ * Nothing can be lost, so Close and Escape close it at once. Read Feedback is always a postcard,
+ * whichever style the person writes in.
  */
 export function PostcardReadDialog({
   title,

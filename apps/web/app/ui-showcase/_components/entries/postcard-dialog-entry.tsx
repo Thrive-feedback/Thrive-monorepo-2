@@ -4,6 +4,7 @@ import {
 } from '@/app/ui-showcase/_components/showcase-entry';
 import { Button } from '@/components/atoms/button';
 import { Text } from '@/components/atoms/text';
+import { PlainStyleDemo } from './plain-style-demo';
 import { PostcardDialogDemo } from './postcard-dialog-demo';
 
 export function PostcardDialogEntry() {
@@ -120,6 +121,27 @@ export function PostcardDialogEntry() {
           title="Give feedback to Mali"
           defaultRecipientAccountIds={['mali']}
         />
+      </StateCell>
+      <StateCell
+        label="Plain: give feedback"
+        hint="The same Feedback typed on a sheet. The Plain style switch beside Close turns it back into the postcard, keeping what is written and who can read it."
+      >
+        <PlainStyleDemo>
+          <PostcardDialogDemo title="Give feedback" />
+        </PlainStyleDemo>
+      </StateCell>
+      <StateCell label="Plain: ask for feedback">
+        <PlainStyleDemo>
+          <PostcardDialogDemo kind="ask" title="Ask for feedback" />
+        </PlainStyleDemo>
+      </StateCell>
+      <StateCell
+        label="Plain: answer an Ask"
+        hint="Mali's request read-only above the answer."
+      >
+        <PlainStyleDemo>
+          <PostcardDialogDemo kind="answer" title="Answer" />
+        </PlainStyleDemo>
       </StateCell>
     </ShowcaseEntry>
   );

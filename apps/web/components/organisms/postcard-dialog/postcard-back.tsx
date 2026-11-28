@@ -1,33 +1,13 @@
 import { PostcardAddress } from './postcard-address';
 import { FULL_BACK, STAMP_CLEARANCE } from './postcard-back.constant';
-import type {
-  PostcardCard,
-  PostcardKind,
-  PostcardWriter,
-} from './postcard-draft.type';
+import type { PostcardCard, PostcardWriter } from './postcard-draft.type';
+import { RECIPIENTS } from './postcard-editor.constant';
 import {
   PostcardAnswerPlaceholder,
   PostcardAnswerTo,
   PostcardAskReadOnly,
   PostcardSplitBack,
 } from './postcard-split-back';
-
-/** Who is chosen after "To", for the cards that choose: what choosing means, and for whom. */
-const RECIPIENTS: Readonly<
-  Record<
-    Exclude<PostcardKind, 'answer'>,
-    { label: string; description: string }
-  >
-> = {
-  give: {
-    label: "Choose who it's for",
-    description: 'They can always read it.',
-  },
-  ask: {
-    label: 'Choose who to ask',
-    description: 'They each answer in their own words.',
-  },
-};
 
 export type PostcardBackProps = {
   card: PostcardCard;

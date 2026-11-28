@@ -1,8 +1,11 @@
 import { cva } from 'class-variance-authority';
+import { FeedbackText } from '@/components/organisms/feedback-text';
 import styles from '@/components/organisms/postcard-dialog/postcard.module.css';
+import { PostcardAddressReadOnly } from '@/components/organisms/postcard-dialog/postcard-address-read-only';
 import { PostcardPostmarkStill } from '@/components/organisms/postcard-dialog/postcard-postmark-still';
 import type {
   AskedPostcard,
+  GivenPostcard,
   ReadPostcard,
 } from '@/components/organisms/postcard-dialog/postcard-read.type';
 import {
@@ -19,6 +22,7 @@ import {
 } from '@/components/organisms/postcard-dialog/postcard-stamp';
 import { PostcardStickersReadOnly } from '@/components/organisms/postcard-dialog/postcard-sticker';
 import { PAPER_TONES } from '@/components/organisms/postcard-dialog/postcard-style.constant';
+import { calendarDay } from '@/lib/calendar-day.util';
 import { cn } from '@/lib/cn.util';
 import miniatureStyles from './postcard-miniature.module.css';
 
@@ -106,6 +110,8 @@ export type PostcardMiniatureProps = {
  * The back of a sent postcard, made small: its real paper, stamp, postmark and stickers. Its words
  * are the real ones where the card is large enough to keep its layout; the back lays itself out for
  * a phone below `md`, where the card is too small for them anyway, so lines stand in for them there.
+ *
+ * Read Feedback is always a postcard, whichever style the person writes in.
  */
 export function PostcardMiniature({
   card,
@@ -158,6 +164,49 @@ export function PostcardMiniature({
           )}
           <PostcardPostmarkStill date={sentOn} />
           <PostcardStickersReadOnly stickers={stickers} side="back" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export type PlainFeedbackMiniatureProps = {
+  /** Given Feedback, as Settings shows the style with. */
+  card: GivenPostcard;
+};
+
+/**
+ * The plain sheet made small, to show what writing in the plain style looks like beside a postcard,
+ * as Settings does: the same sheet the plain style writes on, from and to, the day, a rule, then the
+ * words, scaled as the postcard is. Below `md`, where it is too small to read, lines stand in for the
+ * words, as on the postcard.
+ */
+export function PlainFeedbackMiniature({ card }: PlainFeedbackMiniatureProps) {
+  return (
+    <div
+      aria-hidden="true"
+      inert
+      className={cn(stage({ size: 'fill' }), miniatureStyles.stage)}
+    >
+      <div className={miniatureStyles.sheet}>
+        <div className="relative flex aspect-3/2 flex-col overflow-hidden rounded-element border border-border-muted bg-surface-base">
+          <div className="hidden min-h-0 flex-1 flex-col md:flex">
+            <div className="flex items-start justify-between gap-6 border-border-subtle border-b px-10 pt-8 pb-5">
+              <PostcardAddressReadOnly
+                writer={card.giver}
+                receivers={card.receivers}
+              />
+              <span className="pt-2 text-body-3 text-fg-secondary tabular-nums">
+                {calendarDay(card.sentOn)}
+              </span>
+            </div>
+            <p className="line-clamp-5 whitespace-pre-wrap break-words px-10 pt-5 text-body-1">
+              <FeedbackText text={card.message} tags={card.messageTags} />
+            </p>
+          </div>
+          <div className="flex min-h-0 flex-1 md:hidden">
+            <WritingLines />
+          </div>
         </div>
       </div>
     </div>

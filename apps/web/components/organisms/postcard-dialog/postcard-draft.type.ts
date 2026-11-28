@@ -1,5 +1,7 @@
+import type { RefObject } from 'react';
 import type { Teammate } from '@/lib/feedback/teammate.type';
 import type { TextTags } from '@/lib/feedback/text-tags.type';
+import type { KeptAudience } from '@/lib/feedback/use-mentioned-audience';
 import type { Visibility } from '@/lib/feedback/visibility.type';
 import type { PaperTone, PostcardTextStyle } from './postcard-style.constant';
 
@@ -97,6 +99,46 @@ export type PostcardAnswer = {
   readonly textStyle: PostcardTextStyle;
 };
 
+/** What was written so far, carried to the other style when the writer switches mid-way. */
+export type WrittenSoFar = {
+  readonly message: string;
+  readonly recipientAccountIds: readonly string[];
+  /** Who else can read it, as chosen; a switch must never widen it. */
+  readonly audience: KeptAudience;
+};
+
+/** Where a page stood in its screen when the writer switched style, to hold the next one there. */
+export type PagePin = {
+  /** The top margin that holds the page where it was. */
+  readonly top: number;
+  /** How far the screen had scrolled. */
+  readonly scrollTop: number;
+  /** How tall the page was, so the next is no shorter and its screen can scroll as far. */
+  readonly height: number;
+};
+
+/**
+ * What one opening of the writing dialog shares between its two styles, the postcard and the plain
+ * sheet, so a switch from one to the other is one dialog carrying on, not a new one.
+ */
+export type StyleSwitching = {
+  /** The writer switched style: what they wrote, and where the page stood. */
+  readonly onSwitch: (written: WrittenSoFar, pin: PagePin | null) => void;
+  /** This editor took the other style's place in a dialog already open. */
+  readonly isSwitchedIn: boolean;
+  /** Where the page stood at the last switch; `null` until then, so it centres itself. */
+  readonly pin: PagePin | null;
+  /** What opened the dialog, so closing it from either style gives focus back there. */
+  readonly openerRef: RefObject<HTMLElement | null>;
+  /**
+   * Set as a switch takes one style's editor away, so its going does not hand focus out of a
+   * dialog that is still open.
+   */
+  readonly isSwitchingRef: RefObject<boolean>;
+  /** Who the opening was addressed to by its caller, before any switch carried a choice over. */
+  readonly openingRecipientAccountIds: readonly string[];
+};
+
 /** Which card is written, with what only that card needs. */
 export type PostcardCard =
   | {
@@ -107,6 +149,8 @@ export type PostcardCard =
       defaultRecipientAccountIds: readonly string[];
       /** What is already written as it opens, as typed before choosing this card. */
       defaultMessage: string;
+      /** Who else can read it as it opens, carried from the other style; Everyone unless given. */
+      defaultAudience?: KeptAudience;
       onSend: (postcard: PostcardDraft) => Promise<boolean>;
     }
   | {
@@ -114,5 +158,7 @@ export type PostcardCard =
       teammates: readonly Teammate[];
       workspaceGoals: readonly string[];
       ask: PostcardAsk;
+      /** What is already written as it opens: the answer so far, carried from the other style. */
+      defaultMessage?: string;
       onSend: (answer: PostcardAnswer) => Promise<boolean>;
     };
