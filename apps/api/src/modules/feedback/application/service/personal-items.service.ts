@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { AskStatus } from '../../domain/value-object/ask-status.vo';
+import { Visibility } from '../../domain/value-object/visibility.vo';
 import {
   FeedbackRequestQuery,
+  type GivenFeedbackRow,
+  type PendingAskPageRow,
+  type PendingAskRow,
   type ReceivedFeedbackPageRow,
   type ReceivedFeedbackRow,
   type SentRequestItemPageRow,
@@ -16,9 +20,11 @@ import {
   newestFirst,
 } from '../types/kudos.types';
 import {
+  type PendingAskItemView,
   type PersonalFeedbackView,
   type PersonalItemsPage,
   type PersonalItemView,
+  type ProfileItemView,
   positionOf,
   type ReceivedItemView,
   type SentRequestItemView,
@@ -40,9 +46,46 @@ export interface PersonalItemsRead {
   readonly requests?: (
     page: FeedPageRequest,
   ) => Promise<SentRequestItemPageRow>;
+  /** One page of the Asks still waiting that this list holds, past the same place. */
+  readonly asks?: (page: FeedPageRequest) => Promise<PendingAskPageRow>;
 }
 
+/** Anything one of these lists can hold. */
+type ListedItemView = ReceivedItemView | PendingAskItemView;
+
 const NONE = { items: [], hasMore: false } as const;
+
+/**
+ * The piece with only the answers its reader may read. Who was asked and where each stands stays, and
+ * another Giver's words go, by the rule that opens a postcard (ADR 0072, ADR 0081).
+ */
+export function withAnswersReadableBy(
+  readerAccountId: string,
+  row: GivenFeedbackRow,
+): ReceivedFeedbackRow {
+  const { request } = row;
+  return {
+    ...row,
+    request: request && {
+      ...request,
+      asks: request.asks.map(({ answerAudience, ...ask }) => ({
+        ...ask,
+        answer:
+          answerAudience &&
+          Visibility.of({
+            value: answerAudience.visibility,
+            selectedAccountIds: answerAudience.selectedAccountIds,
+          }).letsRead({
+            readerAccountId,
+            giverAccountId: ask.giverAccountId,
+            receiverAccountIds: [request.requesterAccountId],
+          })
+            ? ask.answer
+            : null,
+      })),
+    },
+  };
+}
 
 function everyoneIn(row: ReceivedFeedbackRow): readonly string[] {
   return [
@@ -115,16 +158,34 @@ function toSentRequestView(
   };
 }
 
+function toPendingAskView(
+  row: PendingAskRow,
+  people: People,
+): PendingAskItemView {
+  return {
+    kind: 'ASK',
+    id: row.id,
+    feedbackRequestId: row.feedbackRequestId,
+    message: row.message,
+    tags: row.tags,
+    requester: people.personOf(row.requesterAccountId),
+    asked: people.personOf(row.giverAccountId),
+    postcard: row.postcard,
+    createdAt: row.createdAt,
+  };
+}
+
 /** Newest first by where each item sits, which for a request is its latest activity. */
-function byPosition(a: ReceivedItemView, b: ReceivedItemView) {
+function byPosition(a: ListedItemView, b: ListedItemView) {
   return newestFirst(positionOf(a), positionOf(b));
 }
 
 /**
- * One Member's own list, Received or Given: Feedback, Kudos and, in Received, the requests the Member
- * sent, in one order, newest first, each with the card it was written on, under one cursor (ADR
- * 0077, ADR 0080, ADR 0081, ADR 0082). Which rows are in it is the caller's to read, so this holds
- * nothing about whose list it is.
+ * One Member's own list, Received or Given, or a Profile's: Feedback, Kudos and, in Received, the
+ * requests the Member sent, or, on a Profile, the Asks waiting between two people, in one order,
+ * newest first, each with the card it was written on, under one cursor (ADR 0077, ADR 0080,
+ * ADR 0081, ADR 0082, ADR 0097). Which rows are in it is the caller's to read, so this holds nothing
+ * about whose list it is.
  */
 @Injectable()
 export class PersonalItemsService {
@@ -134,19 +195,27 @@ export class PersonalItemsService {
     private readonly peopleService: PeopleService,
   ) {}
 
-  /** A page of a list that holds no requests, which is every list but Received. */
+  /** A page of a list that holds neither requests nor Asks, which is every list but two. */
+  read(
+    input: Omit<PersonalItemsRead, 'requests' | 'asks'>,
+  ): Promise<PersonalItemsPage<PersonalItemView>>;
+  /** A page of a Profile's list, which may hold the Asks waiting between two people. */
   read(
     input: Omit<PersonalItemsRead, 'requests'>,
-  ): Promise<PersonalItemsPage<PersonalItemView>>;
-  read(input: PersonalItemsRead): Promise<PersonalItemsPage<ReceivedItemView>>;
+  ): Promise<PersonalItemsPage<ProfileItemView>>;
+  /** A page of Received, which holds the requests its Member sent. */
+  read(
+    input: Omit<PersonalItemsRead, 'asks'>,
+  ): Promise<PersonalItemsPage<ReceivedItemView>>;
   async read(
     input: PersonalItemsRead,
-  ): Promise<PersonalItemsPage<ReceivedItemView>> {
+  ): Promise<PersonalItemsPage<ListedItemView>> {
     const page: FeedPageRequest = { after: input.after, limit: input.limit };
-    const [feedback, kudos, requests] = await Promise.all([
+    const [feedback, kudos, requests, asks] = await Promise.all([
       input.feedback?.(page) ?? NONE,
       input.kudos?.(page) ?? NONE,
       input.requests?.(page) ?? NONE,
+      input.asks?.(page) ?? NONE,
     ]);
     const people = await this.peopleService.peopleIn(input.workspaceId, [
       ...feedback.items.flatMap(everyoneIn),
@@ -158,6 +227,10 @@ export class PersonalItemsService {
         each.requesterAccountId,
         ...each.selectedAccountIds,
         ...each.asks.map((ask) => ask.giverAccountId),
+      ]),
+      ...asks.items.flatMap((each) => [
+        each.requesterAccountId,
+        each.giverAccountId,
       ]),
     ]);
 
@@ -179,18 +252,23 @@ export class PersonalItemsService {
     const requestViews = requests.items.map((row) =>
       toSentRequestView(row, people),
     );
+    const askViews = asks.items.map((row) => toPendingAskView(row, people));
 
     // Each read holds a page, so this holds one more than a page whenever more remain of any.
-    const merged = [...feedbackViews, ...kudosViews, ...requestViews].sort(
-      byPosition,
-    );
+    const merged = [
+      ...feedbackViews,
+      ...kudosViews,
+      ...requestViews,
+      ...askViews,
+    ].sort(byPosition);
     const items = merged.slice(0, input.limit);
     const last = items.at(-1);
     const hasMore =
       merged.length > items.length ||
       feedback.hasMore ||
       kudos.hasMore ||
-      requests.hasMore;
+      requests.hasMore ||
+      asks.hasMore;
     return {
       items,
       next: hasMore && last ? positionOf(last) : null,

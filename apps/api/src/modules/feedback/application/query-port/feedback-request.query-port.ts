@@ -256,6 +256,39 @@ export interface SentRequestItemPageRow {
   readonly hasMore: boolean;
 }
 
+/** One Ask still waiting, with the request it asks. Names are added above this port. */
+export interface PendingAskRow {
+  /** The Ask's own id. */
+  readonly id: string;
+  readonly feedbackRequestId: string;
+  readonly requesterAccountId: string;
+  readonly giverAccountId: string;
+  /** The Request message. */
+  readonly message: string;
+  readonly tags: TagsView;
+  readonly postcard: PostcardSnapshot | null;
+  /** When it was asked. */
+  readonly createdAt: Date;
+}
+
+export interface PendingAskPageRow {
+  readonly items: readonly PendingAskRow[];
+  /** Whether another page follows this one. */
+  readonly hasMore: boolean;
+}
+
+/** How many rows each of a Profile's Feedback reads holds, and how many Asks are open. */
+export interface ProfileFeedbackCountsRow {
+  /** To the Member, read by everyone. */
+  readonly everyoneFeedback: number;
+  /** To the Member, shared with the reader. */
+  readonly sharedFeedback: number;
+  /** Between the reader and the Member. */
+  readonly feedbackBetween: number;
+  /** Still open between the two, whenever asked. */
+  readonly openAsks: number;
+}
+
 export interface FeedItemPageRow {
   readonly items: readonly FeedItemRow[];
   /** Whether another page follows this one. */
@@ -335,6 +368,7 @@ export abstract class FeedbackRequestQuery {
     workspaceId: string,
     receiverAccountId: string,
     page: FeedPageRequest,
+    since: Date | null,
   ): Promise<ReceivedFeedbackPageRow>;
 
   /**
@@ -351,6 +385,7 @@ export abstract class FeedbackRequestQuery {
     receiverAccountId: string,
     readerAccountId: string,
     page: FeedPageRequest,
+    since: Date | null,
   ): Promise<ReceivedFeedbackPageRow>;
 
   /**
@@ -374,6 +409,54 @@ export abstract class FeedbackRequestQuery {
     giverAccountId: string,
     page: FeedPageRequest,
   ): Promise<GivenFeedbackPageRow>;
+
+  /**
+   * The Feedback between a reader and one Member, past a place in that Member's Profile, newest
+   * first, at every Visibility. It is either written by one of the two with the other among its
+   * Receivers, or written by somebody else to both of them. The reader is one of its two people, so
+   * every piece is one they wrote or received. Each Ask says who may read its answer, which is the
+   * use case's to apply, as in Given.
+   */
+  abstract feedbackBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    page: FeedPageRequest,
+    since: Date | null,
+  ): Promise<GivenFeedbackPageRow>;
+
+  /**
+   * The Asks still waiting between a reader and one Member, past a place in that Member's Profile,
+   * newest first by when each was asked. One asked the other, and the other has not answered.
+   */
+  abstract pendingAsksBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<PendingAskPageRow>;
+
+  /**
+   * How many rows each Profile read above holds for one reader and one Member: the Feedback from
+   * `since` on, and every Ask still open. Each count reads with its list's own filter, so the two
+   * cannot disagree (ADR 0095). With no reader, only what everyone reads is counted and the reader's
+   * own lists are `0`: that is the Member's own Profile, as nothing is between oneself.
+   */
+  abstract profileCounts(
+    workspaceId: string,
+    readerAccountId: string | null,
+    memberAccountId: string,
+    since: Date | null,
+  ): Promise<ProfileFeedbackCountsRow>;
+
+  /**
+   * Where one Ask of this Workspace sits, by when it was asked, or `null` if there is none. An Ask is
+   * kept once answered, so a page that ended on one still finds its place.
+   */
+  abstract askPositionOf(
+    workspaceId: string,
+    askId: string,
+  ): Promise<FeedPosition | null>;
 
   /** Where one piece of Feedback of this Workspace sits on Home, or `null` if it is not there. */
   abstract feedbackPositionOf(

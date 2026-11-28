@@ -436,8 +436,25 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the Feedback everyone reads, the Feedback shared with the caller, or the Kudos, written to a Member, as their Profile shows them */
+        /** List one of a Member's Profile lists: what everyone sees (Feedback, Kudos) or what the caller sees (between them, shared with them, open Asks), optionally from an instant on */
         get: operations["ProfileItemsController_listProfileItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspaceId}/members/{accountId}/profile-item-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Count each of a Member's Profile lists as the caller reads them, optionally from an instant on */
+        get: operations["ProfileItemCountsController_countProfileItems"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2676,8 +2693,76 @@ export interface components {
                 createdAt: string;
                 /** @enum {string} */
                 kind: "KUDOS";
+            } | {
+                /** @enum {string} */
+                kind: "ASK";
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                feedbackRequestId: string;
+                message: string;
+                tags: {
+                    workspaceGoals: {
+                        name: string;
+                    }[];
+                    mentions: {
+                        slug: string;
+                        displayName: string;
+                    }[];
+                };
+                requester: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                asked: {
+                    /** Format: uuid */
+                    accountId: string;
+                    name: string | null;
+                    /** Format: uri */
+                    photoUrl: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "DEACTIVATED";
+                };
+                postcard: {
+                    templateKey: string;
+                    /** @enum {string} */
+                    tone: "cream" | "sage" | "blush";
+                    textStyle: {
+                        /** @enum {string} */
+                        font: "modern" | "classic" | "signature";
+                        sizeStep: number;
+                        /** @enum {string} */
+                        align: "left" | "center" | "right";
+                        /** @enum {string} */
+                        ink: "ink" | "navy" | "forest" | "plum" | "brick";
+                    };
+                    stickers: {
+                        stickerKey: string;
+                        /** @enum {string} */
+                        side: "front" | "back";
+                        x: number;
+                        y: number;
+                        scale: number;
+                        rotation: number;
+                    }[];
+                    stampKey: string | null;
+                } | null;
+                /** Format: date-time */
+                createdAt: string;
             })[];
             nextCursor: string | null;
+        };
+        CountProfileItemsResponseDto_Output: {
+            feedback: number;
+            kudos: number;
+            betweenUs: number;
+            sharedWithMe: number;
+            openAsks: number;
         };
         ListWaitingAsksResponseDto_Output: {
             items: {
@@ -4460,7 +4545,8 @@ export interface operations {
     ProfileItemsController_listProfileItems: {
         parameters: {
             query?: {
-                show?: "FEEDBACK" | "SHARED_WITH_ME" | "KUDOS";
+                show?: "FEEDBACK" | "KUDOS" | "BETWEEN_US" | "SHARED_WITH_ME" | "OPEN_ASKS";
+                since?: string;
                 cursor?: string;
                 limit?: number;
             };
@@ -4482,6 +4568,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListProfileItemsResponseDto_Output"];
+                };
+            };
+            /** @description REQUEST_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NOT_SIGNED_IN */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description WORKSPACE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProfileItemCountsController_countProfileItems: {
+        parameters: {
+            query?: {
+                since?: string;
+            };
+            header?: {
+                /** @description The browser's cookie header, forwarded by the web server. */
+                cookie?: string;
+            };
+            path: {
+                workspaceId: string;
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountProfileItemsResponseDto_Output"];
                 };
             };
             /** @description REQUEST_INVALID */

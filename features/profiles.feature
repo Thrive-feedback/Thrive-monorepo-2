@@ -2,8 +2,9 @@ Feature: Profiles
   A person introduces themselves once, by their full name and the name their
   team calls them, and Thrive knows them by it from then on. Inside a Workspace,
   every Member can open anyone's Profile: who they are, where they stand there,
-  what was written to them that the whole Workspace reads, and what was written
-  to them that somebody chose to show the reader.
+  what was written to them that the whole Workspace reads, what was written
+  to them that somebody chose to show the reader, and what passed between the
+  reader and them.
 
   @api
   Scenario: A person introduces themselves
@@ -99,6 +100,73 @@ Feature: Profiles
     And Ben has given Ann Feedback: "The demo landed well.", shared with everyone in the Workspace
     When Cara reads the Feedback on Ann's Profile
     Then the Profile reads "The demo landed well." then "The order of the steps was clear."
+
+  @api
+  Scenario Outline: A Profile shows its reader what passed between them and the person, kept to the two of them too
+    Given Ann owns a Workspace called "Acme"
+    And Ben is a Member of Ann's Workspace
+    And Cara is a Member of Ann's Workspace
+    And Ben has introduced themselves
+    And Cara has introduced themselves
+    And Ben has given Ann Feedback: "Written to Ann.", shared with nobody else
+    When <reader> reads what is between them on <whose> Profile
+    Then the Profile reads <read>
+
+    Examples:
+      | reader | whose | read              |
+      | Ben    | Ann's | "Written to Ann." |
+      | Ann    | Ben's | "Written to Ann." |
+      | Cara   | Ann's | nothing           |
+      | Ann    | Ann's | nothing           |
+
+  @api
+  Scenario: A Profile shows its reader the Kudos between them and the person, apart from what is shared
+    Given Ann owns a Workspace called "Acme"
+    And Ben is a Member of Ann's Workspace
+    And Cara is a Member of Ann's Workspace
+    And Ben has introduced themselves
+    And Cara has introduced themselves
+    And Cara has given Kudos: "@Ann and @Ben carried the launch."
+    And Cara has given Kudos: "@Ann fixed the build."
+    When Ben reads what is between them on Ann's Profile
+    Then the Profile reads "@Ann and @Ben carried the launch."
+
+  @api
+  Scenario: A Profile shows its reader an Ask still open between them and the person, in a list of its own
+    Given Ann owns a Workspace called "Acme"
+    And Ben is a Member of Ann's Workspace
+    And Ben has introduced themselves
+    And Ann has asked Ben for Feedback: "How clear was the plan?", shared with nobody else
+    When Ann reads the open Asks between them on Ben's Profile
+    Then the Profile reads "How clear was the plan?"
+
+  @api
+  Scenario: The open Asks are every one still open, so they are not read from an instant on
+    Given Ann owns a Workspace called "Acme"
+    And Ben is a Member of Ann's Workspace
+    And Ben has introduced themselves
+    When Ann reads the open Asks between them on Ben's Profile from a week ago
+    Then the Profile refuses the choice
+
+  @api
+  Scenario: A Profile's lists are counted for its reader, as a 1:1 shows them
+    Given Ann owns a Workspace called "Acme"
+    And Ben is a Member of Ann's Workspace
+    And Ben has introduced themselves
+    And Ben has given Ann Feedback: "Written to Ann.", shared with nobody else
+    And Ann has asked Ben for Feedback: "How clear was the plan?", shared with nobody else
+    When Ann counts the lists on Ben's Profile from a week ago
+    Then the Profile counts 1 between them and 1 open Ask
+
+  @api
+  Scenario: Once answered, an Ask between them is shown as its answer
+    Given Ann owns a Workspace called "Acme"
+    And Ben is a Member of Ann's Workspace
+    And Ben has introduced themselves
+    And Ann has asked Ben for Feedback: "How clear was the plan?", shared with nobody else
+    And Ben has answered "The order of the steps was clear."
+    When Ann reads what is between them on Ben's Profile
+    Then the Profile reads "The order of the steps was clear."
 
   @api
   Scenario: A Profile shows only the Kudos that name the person

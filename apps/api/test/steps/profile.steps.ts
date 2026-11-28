@@ -38,7 +38,7 @@ Then(
   },
 );
 
-/** Which of a Profile's two lists to read, in the feature's words, as the route names it. */
+/** Which of a Profile's lists to read, in the feature's words, as the route names it. */
 const PROFILE_LISTS: Readonly<Record<string, string>> = {
   Feedback: 'FEEDBACK',
   'Feedback shared with them': 'SHARED_WITH_ME',
@@ -70,6 +70,24 @@ When(
   },
 );
 
+/** `reader` reads one of `name`'s Profile lists, as the route names it. */
+async function readProfileList(
+  world: ThriveWorld,
+  reader: string,
+  show: string,
+  name: string,
+) {
+  const { accountId } = world.person(name);
+  world.succeeded(
+    await world.as(
+      reader,
+      'GET',
+      `/v1/workspaces/${world.workspaceOf(reader)}/members/${accountId}/profile-items?show=${show}`,
+    ),
+    `${reader} reading ${show} on ${name}'s Profile`,
+  );
+}
+
 When(
   "{person} reads the {profileList} on {person}'s Profile",
   async function (
@@ -78,14 +96,68 @@ When(
     show: string,
     name: string,
   ) {
+    await readProfileList(this, reader, show, name);
+  },
+);
+
+When(
+  "{person} reads what is between them on {person}'s Profile",
+  async function (this: ThriveWorld, reader: string, name: string) {
+    await readProfileList(this, reader, 'BETWEEN_US', name);
+  },
+);
+
+When(
+  "{person} reads the open Asks between them on {person}'s Profile",
+  async function (this: ThriveWorld, reader: string, name: string) {
+    await readProfileList(this, reader, 'OPEN_ASKS', name);
+  },
+);
+
+/** A week before now: an instant a 1:1 might read a Profile's lists from. */
+function aWeekAgo(): string {
+  return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+}
+
+When(
+  "{person} reads the open Asks between them on {person}'s Profile from a week ago",
+  async function (this: ThriveWorld, reader: string, name: string) {
+    const { accountId } = this.person(name);
+    // Not `succeeded`: the answer is the outcome a later step checks.
+    await this.as(
+      reader,
+      'GET',
+      `/v1/workspaces/${this.workspaceOf(reader)}/members/${accountId}/profile-items?show=OPEN_ASKS&since=${encodeURIComponent(aWeekAgo())}`,
+    );
+  },
+);
+
+Then('the Profile refuses the choice', function (this: ThriveWorld) {
+  this.refusedWith('REQUEST_INVALID');
+});
+
+When(
+  "{person} counts the lists on {person}'s Profile from a week ago",
+  async function (this: ThriveWorld, reader: string, name: string) {
     const { accountId } = this.person(name);
     this.succeeded(
       await this.as(
         reader,
         'GET',
-        `/v1/workspaces/${this.workspaceOf(reader)}/members/${accountId}/profile-items?show=${show}`,
+        `/v1/workspaces/${this.workspaceOf(reader)}/members/${accountId}/profile-item-counts?since=${encodeURIComponent(aWeekAgo())}`,
       ),
-      `${reader} reading ${show} on ${name}'s Profile`,
+      `${reader} counting ${name}'s Profile`,
+    );
+  },
+);
+
+Then(
+  'the Profile counts {int} between them and {int} open Ask(s)',
+  function (this: ThriveWorld, between: number, openAsks: number) {
+    const response = openedProfile(this, 'the counted');
+    assert.deepEqual(
+      [response.body.betweenUs, response.body.openAsks],
+      [between, openAsks],
     );
   },
 );

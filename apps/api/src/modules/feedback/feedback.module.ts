@@ -16,6 +16,7 @@ import { SummaryPromptService } from './application/service/summary-prompt.servi
 import { SummaryRefreshService } from './application/service/summary-refresh.service';
 import { TagsService } from './application/service/tags.service';
 import { AnswerFeedbackAskUseCase } from './application/use-cases/answer-feedback-ask.use-case';
+import { CountProfileItemsUseCase } from './application/use-cases/count-profile-items.use-case';
 import { GetFeedbackUseCase } from './application/use-cases/get-feedback.use-case';
 import { GetFeedbackAskUseCase } from './application/use-cases/get-feedback-ask.use-case';
 import { GetMyFeedbackSummaryUseCase } from './application/use-cases/get-my-feedback-summary.use-case';
@@ -50,6 +51,7 @@ import { FeedbackRequestController } from './presentation/feedback-request.contr
 import { FeedbackSummaryController } from './presentation/feedback-summary.controller';
 import { GivenItemsController } from './presentation/given-items.controller';
 import { KudosController } from './presentation/kudos.controller';
+import { ProfileItemCountsController } from './presentation/profile-item-counts.controller';
 import { ProfileItemsController } from './presentation/profile-items.controller';
 import { ReceivedItemsController } from './presentation/received-items.controller';
 import { WaitingAsksController } from './presentation/waiting-asks.controller';
@@ -83,6 +85,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ReceivedItemsController,
     GivenItemsController,
     ProfileItemsController,
+    ProfileItemCountsController,
     WaitingAsksController,
     KudosController,
   ],
@@ -108,6 +111,7 @@ import { WorkspaceMemberGuard } from './presentation/workspace-member.guard';
     ListReceivedItemsUseCase,
     ListGivenItemsUseCase,
     ListProfileItemsUseCase,
+    CountProfileItemsUseCase,
     ListFeedItemsUseCase,
     ListFeedItemDaysUseCase,
     ListWaitingAsksUseCase,

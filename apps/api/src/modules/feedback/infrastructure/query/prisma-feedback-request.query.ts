@@ -10,7 +10,10 @@ import {
   type FeedbackWithVisibilityRow,
   type FeedItemPageRow,
   type GivenFeedbackPageRow,
+  type GivenFeedbackRow,
   type OpenedRequestRow,
+  type PendingAskPageRow,
+  type ProfileFeedbackCountsRow,
   type ReceivedFeedbackPageRow,
   type ReceivedFeedbackRow,
   type SentRequestItemPageRow,
@@ -30,7 +33,7 @@ import type {
 } from '../../application/types/kudos.types';
 import type { AskStatusValue } from '../../domain/value-object/ask-status.vo';
 import type { InstantRange } from '../../domain/value-object/calendar-clock.vo';
-import { olderThan } from '../mapper/feed-position.mapper';
+import { notBefore, olderThan } from '../mapper/feed-position.mapper';
 import {
   toAnswerPostcardSnapshot,
   toFeedbackPostcardSnapshot,
@@ -160,6 +163,10 @@ const GIVEN_ITEM_FIELDS = {
   },
 } as const;
 
+type GivenItemRecord = Prisma.FeedbackGetPayload<{
+  select: typeof GIVEN_ITEM_FIELDS;
+}>;
+
 /**
  * A request in its Requester's Received, with every Ask and what each sent back. The Requester reads
  * every answer to what they asked, so no answer needs its Visibility here.
@@ -240,6 +247,71 @@ function selectedToRead(readerAccountId: string) {
     visibility: 'SELECTED_PEOPLE',
     selectedPeople: { some: { accountId: readerAccountId } },
   } as const;
+}
+
+/**
+ * The Feedback given to one Member, asked for or not, that one Visibility filter lets through: the
+ * filter a Profile's list and its count both read. Through the Receivers, not
+ * `feedback.receiverAccountId`: that column holds only the first of several, and is kept for an
+ * older API mid-deploy (ADR 0061).
+ */
+function feedbackToWhere(
+  workspaceId: string,
+  receiverAccountId: string,
+  readable: typeof EVERYONE_READS | ReturnType<typeof selectedToRead>,
+): Prisma.FeedbackWhereInput {
+  return {
+    workspaceId,
+    ...readable,
+    receivers: { some: { accountId: receiverAccountId } },
+  };
+}
+
+/**
+ * The Feedback between a reader and one Member, at every Visibility: written by one of them with the
+ * other among its Receivers, or one of `writtenToBoth` (ADR 0097). A list and its count read this.
+ */
+function feedbackBetweenWhere(
+  workspaceId: string,
+  readerAccountId: string,
+  memberAccountId: string,
+  writtenToBoth: readonly string[],
+): Prisma.FeedbackWhereInput {
+  return {
+    workspaceId,
+    OR: [
+      {
+        giverAccountId: readerAccountId,
+        receivers: { some: { accountId: memberAccountId } },
+      },
+      {
+        giverAccountId: memberAccountId,
+        receivers: { some: { accountId: readerAccountId } },
+      },
+      { id: { in: [...writtenToBoth] } },
+    ],
+  };
+}
+
+/** The Asks still open between a reader and one Member, either way. A list and its count read this. */
+function pendingAsksBetweenWhere(
+  workspaceId: string,
+  readerAccountId: string,
+  memberAccountId: string,
+): Prisma.FeedbackAskWhereInput {
+  return {
+    status: 'PENDING',
+    OR: [
+      {
+        giverAccountId: memberAccountId,
+        feedbackRequest: { workspaceId, requesterAccountId: readerAccountId },
+      },
+      {
+        giverAccountId: readerAccountId,
+        feedbackRequest: { workspaceId, requesterAccountId: memberAccountId },
+      },
+    ],
+  };
 }
 
 function feedItemsWhere(
@@ -419,12 +491,12 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     workspaceId: string,
     receiverAccountId: string,
     page: FeedPageRequest,
+    since: Date | null,
   ): Promise<ReceivedFeedbackPageRow> {
     return this.feedbackToReadable(
-      workspaceId,
-      receiverAccountId,
-      EVERYONE_READS,
+      feedbackToWhere(workspaceId, receiverAccountId, EVERYONE_READS),
       page,
+      since,
     );
   }
 
@@ -433,37 +505,29 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
     receiverAccountId: string,
     readerAccountId: string,
     page: FeedPageRequest,
+    since: Date | null,
   ): Promise<ReceivedFeedbackPageRow> {
     return this.feedbackToReadable(
-      workspaceId,
-      receiverAccountId,
-      selectedToRead(readerAccountId),
+      feedbackToWhere(
+        workspaceId,
+        receiverAccountId,
+        selectedToRead(readerAccountId),
+      ),
       page,
+      since,
     );
   }
 
-  /** The Feedback given to one Member, asked for or not, that one Visibility filter lets through. */
+  /** One page of the Feedback given to one Member that one `feedbackToWhere` lets through. */
   private async feedbackToReadable(
-    workspaceId: string,
-    receiverAccountId: string,
-    readable: typeof EVERYONE_READS | ReturnType<typeof selectedToRead>,
+    readable: Prisma.FeedbackWhereInput,
     page: FeedPageRequest,
+    since: Date | null,
   ): Promise<ReceivedFeedbackPageRow> {
     // One row more than asked for, only to tell whether another page follows (ADR 0059).
     const records =
       await this.prismaTransactionContext.client.feedback.findMany({
-        where: {
-          AND: [
-            // Through the Receivers, not `feedback.receiverAccountId`: that column holds only the
-            // first of several, and is kept for an older API mid-deploy (ADR 0061).
-            {
-              workspaceId,
-              ...readable,
-              receivers: { some: { accountId: receiverAccountId } },
-            },
-            olderThan(page.after),
-          ],
-        },
+        where: { AND: [readable, notBefore(since), olderThan(page.after)] },
         orderBy: NEWEST_FIRST,
         take: page.limit + 1,
         select: FEED_ITEM_FIELDS,
@@ -556,30 +620,171 @@ export class PrismaFeedbackRequestQuery extends FeedbackRequestQuery {
         select: GIVEN_ITEM_FIELDS,
       });
     return {
-      items: records.slice(0, page.limit).map((record) => {
-        const received = toReceivedFeedbackRow(record);
-        const asks = record.feedbackAsk?.feedbackRequest.asks ?? [];
-        return {
-          ...received,
-          request: received.request && {
-            ...received.request,
-            asks: received.request.asks.map((ask, place) => {
-              const answer = asks[place]?.feedback;
-              return {
-                ...ask,
-                answerAudience: answer
-                  ? {
-                      visibility: answer.visibility,
-                      selectedAccountIds: accountIdsOf(answer.selectedPeople),
-                    }
-                  : null,
-              };
-            }),
-          },
-        };
-      }),
+      items: records.slice(0, page.limit).map(toGivenFeedbackRow),
       hasMore: records.length > page.limit,
     };
+  }
+
+  async feedbackBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    page: FeedPageRequest,
+    since: Date | null,
+  ): Promise<GivenFeedbackPageRow> {
+    const between = feedbackBetweenWhere(
+      workspaceId,
+      readerAccountId,
+      memberAccountId,
+      await this.feedbackWrittenToBoth(readerAccountId, memberAccountId),
+    );
+    // One row more than asked for, only to tell whether another page follows (ADR 0059).
+    const records =
+      await this.prismaTransactionContext.client.feedback.findMany({
+        where: { AND: [between, notBefore(since), olderThan(page.after)] },
+        orderBy: NEWEST_FIRST,
+        take: page.limit + 1,
+        select: GIVEN_ITEM_FIELDS,
+      });
+    return {
+      items: records.slice(0, page.limit).map(toGivenFeedbackRow),
+      hasMore: records.length > page.limit,
+    };
+  }
+
+  async profileCounts(
+    workspaceId: string,
+    readerAccountId: string | null,
+    memberAccountId: string,
+    since: Date | null,
+  ): Promise<ProfileFeedbackCountsRow> {
+    const { client } = this.prismaTransactionContext;
+    const from = notBefore(since);
+    const countFeedback = (where: Prisma.FeedbackWhereInput) =>
+      client.feedback.count({ where: { AND: [where, from] } });
+    const everyoneFeedback = countFeedback(
+      feedbackToWhere(workspaceId, memberAccountId, EVERYONE_READS),
+    );
+    if (readerAccountId === null) {
+      return {
+        everyoneFeedback: await everyoneFeedback,
+        sharedFeedback: 0,
+        feedbackBetween: 0,
+        openAsks: 0,
+      };
+    }
+    const writtenToBoth = await this.feedbackWrittenToBoth(
+      readerAccountId,
+      memberAccountId,
+    );
+    const [everyone, sharedFeedback, feedbackBetween, openAsks] =
+      await Promise.all([
+        everyoneFeedback,
+        countFeedback(
+          feedbackToWhere(
+            workspaceId,
+            memberAccountId,
+            selectedToRead(readerAccountId),
+          ),
+        ),
+        countFeedback(
+          feedbackBetweenWhere(
+            workspaceId,
+            readerAccountId,
+            memberAccountId,
+            writtenToBoth,
+          ),
+        ),
+        client.feedbackAsk.count({
+          where: pendingAsksBetweenWhere(
+            workspaceId,
+            readerAccountId,
+            memberAccountId,
+          ),
+        }),
+      ]);
+    return {
+      everyoneFeedback: everyone,
+      sharedFeedback,
+      feedbackBetween,
+      openAsks,
+    };
+  }
+
+  /**
+   * The Feedback with both people among its Receivers, in any Workspace. Read on its own because
+   * this branch of "between" has no Giver to look up by: asked inside the page read, it made Postgres
+   * read every piece in the Workspace and filter it, so a page cost what the Workspace's history held
+   * (ADR 0097). Read first through the Receivers' own index, its ids make every branch an index scan.
+   * An Account can be in another Workspace, so these are only candidates: the page read keeps this
+   * Workspace's.
+   */
+  private async feedbackWrittenToBoth(
+    readerAccountId: string,
+    memberAccountId: string,
+  ): Promise<readonly string[]> {
+    const rows =
+      await this.prismaTransactionContext.client.feedbackReceiver.groupBy({
+        by: ['feedbackId'],
+        where: { accountId: { in: [readerAccountId, memberAccountId] } },
+        having: { accountId: { _count: { equals: 2 } } },
+      });
+    return rows.map((row) => row.feedbackId);
+  }
+
+  async pendingAsksBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<PendingAskPageRow> {
+    // One row more than asked for, only to tell whether another page follows (ADR 0059).
+    const records =
+      await this.prismaTransactionContext.client.feedbackAsk.findMany({
+        where: {
+          AND: [
+            pendingAsksBetweenWhere(
+              workspaceId,
+              readerAccountId,
+              memberAccountId,
+            ),
+            olderThan(page.after),
+          ],
+        },
+        orderBy: NEWEST_FIRST,
+        take: page.limit + 1,
+        select: {
+          id: true,
+          giverAccountId: true,
+          createdAt: true,
+          feedbackRequest: {
+            select: { ...REQUEST_OF_ASK.select, postcard: true },
+          },
+        },
+      });
+    return {
+      items: records.slice(0, page.limit).map((record) => ({
+        id: record.id,
+        feedbackRequestId: record.feedbackRequest.id,
+        requesterAccountId: record.feedbackRequest.requesterAccountId,
+        giverAccountId: record.giverAccountId,
+        message: record.feedbackRequest.message,
+        tags: tagsOf(record.feedbackRequest),
+        postcard: toPostcardSnapshot(record.feedbackRequest.postcard),
+        createdAt: record.createdAt,
+      })),
+      hasMore: records.length > page.limit,
+    };
+  }
+
+  async askPositionOf(
+    workspaceId: string,
+    askId: string,
+  ): Promise<FeedPosition | null> {
+    return this.prismaTransactionContext.client.feedbackAsk.findFirst({
+      where: { id: askId, feedbackRequest: { workspaceId } },
+      select: { id: true, createdAt: true },
+    });
   }
 
   async feedbackPositionOf(
@@ -753,6 +958,30 @@ function tagsOf(record: StoredTags): TagsView {
       slug: mention.slug,
       displayName: mention.displayName,
     })),
+  };
+}
+
+/** A piece as its Giver reads it, with who may read each answer beside theirs. */
+function toGivenFeedbackRow(record: GivenItemRecord): GivenFeedbackRow {
+  const received = toReceivedFeedbackRow(record);
+  const asks = record.feedbackAsk?.feedbackRequest.asks ?? [];
+  return {
+    ...received,
+    request: received.request && {
+      ...received.request,
+      asks: received.request.asks.map((ask, place) => {
+        const answer = asks[place]?.feedback;
+        return {
+          ...ask,
+          answerAudience: answer
+            ? {
+                visibility: answer.visibility,
+                selectedAccountIds: accountIdsOf(answer.selectedPeople),
+              }
+            : null,
+        };
+      }),
+    },
   };
 }
 

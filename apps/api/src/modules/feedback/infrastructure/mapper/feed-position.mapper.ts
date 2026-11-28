@@ -15,3 +15,8 @@ export function olderThan(position: FeedPosition | null) {
         ],
       };
 }
+
+/** The rows written at or after an instant, or every row for `null`: a list read only from then. */
+export function notBefore(since: Date | null) {
+  return since === null ? {} : { createdAt: { gte: since } };
+}

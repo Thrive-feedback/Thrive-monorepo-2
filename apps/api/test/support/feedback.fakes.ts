@@ -10,6 +10,8 @@ import type {
   GivenFeedbackPageRow,
   GivenFeedbackRow,
   OpenedRequestRow,
+  PendingAskPageRow,
+  ProfileFeedbackCountsRow,
   ReceivedFeedbackPageRow,
   ReceivedFeedbackRow,
   SentRequestItemPageRow,
@@ -22,6 +24,7 @@ import {
   type KudosPageRow,
   KudosQuery,
   type KudosRow,
+  type ProfileKudosCountsRow,
 } from '@app/modules/feedback/application/query-port/kudos.query-port';
 import { TagsService } from '@app/modules/feedback/application/service/tags.service';
 import type { FeedbackGivenAt } from '@app/modules/feedback/application/types/feed-items.types';
@@ -409,12 +412,14 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     workspaceId: string,
     receiverAccountId: string,
     page: FeedPageRequest,
+    since: Date | null,
   ): Promise<ReceivedFeedbackPageRow> {
     return this.feedbackToReadable(
-      workspaceId,
-      receiverAccountId,
-      (row) => row.visibility === 'EVERYONE',
+      (row) =>
+        isFeedbackTo(row, workspaceId, receiverAccountId) &&
+        row.visibility === 'EVERYONE',
       page,
+      since,
     );
   }
 
@@ -423,32 +428,65 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
     receiverAccountId: string,
     readerAccountId: string,
     page: FeedPageRequest,
+    since: Date | null,
   ): Promise<ReceivedFeedbackPageRow> {
     return this.feedbackToReadable(
-      workspaceId,
-      receiverAccountId,
       (row) =>
-        row.visibility === 'SELECTED_PEOPLE' &&
-        (row.selectedAccountIds ?? []).includes(readerAccountId),
+        isFeedbackTo(row, workspaceId, receiverAccountId) &&
+        isSharedWith(row, readerAccountId),
       page,
+      since,
     );
   }
 
-  private feedbackToReadable(
+  async profileCounts(
     workspaceId: string,
-    receiverAccountId: string,
+    readerAccountId: string | null,
+    memberAccountId: string,
+    since: Date | null,
+  ): Promise<ProfileFeedbackCountsRow> {
+    const received = this.receivedItems.filter(
+      (row) =>
+        isFeedbackTo(row, workspaceId, memberAccountId) && isFrom(row, since),
+    );
+    const everyoneFeedback = received.filter(
+      (row) => row.visibility === 'EVERYONE',
+    ).length;
+    if (readerAccountId === null) {
+      return {
+        everyoneFeedback,
+        sharedFeedback: 0,
+        feedbackBetween: 0,
+        openAsks: 0,
+      };
+    }
+    return {
+      everyoneFeedback,
+      sharedFeedback: received.filter((row) =>
+        isSharedWith(row, readerAccountId),
+      ).length,
+      feedbackBetween: this.givenItems.filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          isBetween(row, readerAccountId, memberAccountId) &&
+          isFrom(row, since),
+      ).length,
+      openAsks: this.asksOf(workspaceId).filter((ask) =>
+        isOpenBetween(ask, readerAccountId, memberAccountId),
+      ).length,
+    };
+  }
+
+  private feedbackToReadable(
     readable: (
       row: FakeFeedbackRequestQuery['receivedItems'][number],
     ) => boolean,
     page: FeedPageRequest,
+    since: Date | null,
   ): ReceivedFeedbackPageRow {
     const rest = this.receivedItems
       .filter(
-        (row) =>
-          row.workspaceId === workspaceId &&
-          readable(row) &&
-          row.receiverAccountIds.includes(receiverAccountId) &&
-          isPast(row, page.after),
+        (row) => readable(row) && isFrom(row, since) && isPast(row, page.after),
       )
       .sort(
         (a, b) =>
@@ -509,6 +547,74 @@ export class FakeFeedbackRequestQuery extends FeedbackRequestQuery {
       items: rest.slice(0, page.limit),
       hasMore: rest.length > page.limit,
     };
+  }
+
+  /** Between the two, as the real read's three branches let it through, from what was written. */
+  async feedbackBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    page: FeedPageRequest,
+    since: Date | null,
+  ): Promise<GivenFeedbackPageRow> {
+    const rest = this.givenItems
+      .filter(
+        (row) =>
+          row.workspaceId === workspaceId &&
+          isBetween(row, readerAccountId, memberAccountId) &&
+          isFrom(row, since) &&
+          isPast(row, page.after),
+      )
+      .sort(
+        (a, b) =>
+          b.createdAt.getTime() - a.createdAt.getTime() ||
+          b.id.localeCompare(a.id),
+      );
+    return {
+      items: rest.slice(0, page.limit),
+      hasMore: rest.length > page.limit,
+    };
+  }
+
+  async pendingAsksBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    page: FeedPageRequest,
+  ): Promise<PendingAskPageRow> {
+    const rest = this.asksOf(workspaceId)
+      .map((ask) => ({ ...ask, id: ask.askId }))
+      .filter(
+        (ask) =>
+          isOpenBetween(ask, readerAccountId, memberAccountId) &&
+          isPast(ask, page.after),
+      )
+      .sort(
+        (a, b) =>
+          b.createdAt.getTime() - a.createdAt.getTime() ||
+          b.id.localeCompare(a.id),
+      );
+    return {
+      items: rest.slice(0, page.limit).map((ask) => ({
+        id: ask.id,
+        feedbackRequestId: ask.feedbackRequestId,
+        requesterAccountId: ask.requesterAccountId,
+        giverAccountId: ask.giverAccountId,
+        message: ask.message,
+        tags: ask.tags,
+        postcard: ask.postcard,
+        createdAt: ask.createdAt,
+      })),
+      hasMore: rest.length > page.limit,
+    };
+  }
+
+  async askPositionOf(
+    workspaceId: string,
+    askId: string,
+  ): Promise<FeedPosition | null> {
+    const ask = this.asksOf(workspaceId).find((held) => held.askId === askId);
+    return ask ? { createdAt: ask.createdAt, id: ask.askId } : null;
   }
 
   async feedbackPositionOf(
@@ -714,6 +820,70 @@ export class FakeKudosRepository extends KudosRepository {
 const HOUR = 60 * 60 * 1000;
 
 /** Whether a row comes after a place in a list ordered newest first, `id` breaking ties. */
+/** Written to one Member in one Workspace, at any Visibility. */
+function isFeedbackTo(
+  row: ReceivedFeedbackRow & { readonly workspaceId: string },
+  workspaceId: string,
+  receiverAccountId: string,
+) {
+  return (
+    row.workspaceId === workspaceId &&
+    row.receiverAccountIds.includes(receiverAccountId)
+  );
+}
+
+/** Kept to Selected people with the reader among them. */
+function isSharedWith(
+  row: {
+    readonly visibility: string;
+    readonly selectedAccountIds?: readonly string[];
+  },
+  readerAccountId: string,
+) {
+  return (
+    row.visibility === 'SELECTED_PEOPLE' &&
+    (row.selectedAccountIds ?? []).includes(readerAccountId)
+  );
+}
+
+/** Between the two, as the real read's three branches let it through. */
+function isBetween(
+  row: GivenFeedbackRow,
+  readerAccountId: string,
+  memberAccountId: string,
+) {
+  const to = row.receiverAccountIds;
+  return (
+    (row.giverAccountId === readerAccountId && to.includes(memberAccountId)) ||
+    (row.giverAccountId === memberAccountId && to.includes(readerAccountId)) ||
+    (to.includes(readerAccountId) && to.includes(memberAccountId))
+  );
+}
+
+/** Still open between the two, either way. */
+function isOpenBetween(
+  ask: {
+    readonly status: string;
+    readonly giverAccountId: string;
+    readonly requesterAccountId: string;
+  },
+  readerAccountId: string,
+  memberAccountId: string,
+) {
+  return (
+    ask.status === 'PENDING' &&
+    ((ask.giverAccountId === memberAccountId &&
+      ask.requesterAccountId === readerAccountId) ||
+      (ask.giverAccountId === readerAccountId &&
+        ask.requesterAccountId === memberAccountId))
+  );
+}
+
+/** Written at or after `since`, as `notBefore` keeps it; every row for `null`. */
+function isFrom(row: { readonly createdAt: Date }, since: Date | null) {
+  return since === null || row.createdAt >= since;
+}
+
 function isPast(row: FeedPosition, after: FeedPosition | null) {
   return (
     after === null ||
@@ -759,15 +929,84 @@ export class FakeKudosQuery extends KudosQuery {
     workspaceId: string,
     page: FeedPageRequest,
     recipientAccountId: string | null,
+    since: Date | null = null,
   ): Promise<KudosPageRow> {
-    const rest = this.rows
-      .filter(
+    return this.pageOf(
+      (row) =>
+        row.workspaceId === workspaceId &&
+        (recipientAccountId === null ||
+          row.recipientAccountIds.includes(recipientAccountId)) &&
+        isFrom(row, since),
+      page,
+    );
+  }
+
+  async kudosBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    page: FeedPageRequest,
+    since: Date | null,
+  ): Promise<KudosPageRow> {
+    return this.pageOf(
+      (row) =>
+        this.isBetween(row, workspaceId, readerAccountId, memberAccountId) &&
+        isFrom(row, since),
+      page,
+    );
+  }
+
+  async profileCounts(
+    workspaceId: string,
+    readerAccountId: string | null,
+    memberAccountId: string,
+    since: Date | null,
+  ): Promise<ProfileKudosCountsRow> {
+    const from = this.rows.filter((row) => isFrom(row, since));
+    return {
+      naming: from.filter(
         (row) =>
           row.workspaceId === workspaceId &&
-          (recipientAccountId === null ||
-            row.recipientAccountIds.includes(recipientAccountId)) &&
-          isPast(row, page.after),
-      )
+          row.recipientAccountIds.includes(memberAccountId),
+      ).length,
+      between:
+        readerAccountId === null
+          ? 0
+          : from.filter((row) =>
+              this.isBetween(
+                row,
+                workspaceId,
+                readerAccountId,
+                memberAccountId,
+              ),
+            ).length,
+    };
+  }
+
+  /** Given by one naming the other, or by somebody else naming both, as the real read's branches. */
+  private isBetween(
+    row: FakeKudosQuery['rows'][number],
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+  ): boolean {
+    const names = (accountId: string) =>
+      row.recipientAccountIds.includes(accountId);
+    return (
+      row.workspaceId === workspaceId &&
+      ((row.giverAccountId === readerAccountId && names(memberAccountId)) ||
+        (row.giverAccountId === memberAccountId && names(readerAccountId)) ||
+        (names(readerAccountId) && names(memberAccountId)))
+    );
+  }
+
+  /** One page newest first, past a place, of the rows `keeps` lets through. */
+  private pageOf(
+    keeps: (row: FakeKudosQuery['rows'][number]) => boolean,
+    page: FeedPageRequest,
+  ): KudosPageRow {
+    const rest = this.rows
+      .filter((row) => keeps(row) && isPast(row, page.after))
       .sort(
         (a, b) =>
           b.createdAt.getTime() - a.createdAt.getTime() ||

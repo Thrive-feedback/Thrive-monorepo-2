@@ -32,6 +32,14 @@ export interface KudosMonthRow {
   readonly count: number;
 }
 
+/** How many Kudos each of a Profile's Kudos reads holds. */
+export interface ProfileKudosCountsRow {
+  /** Naming the Member. */
+  readonly naming: number;
+  /** Between the reader and the Member. */
+  readonly between: number;
+}
+
 export abstract class KudosQuery {
   /**
    * The Kudos of one Workspace, newest first, after the one named — every Member reads them all,
@@ -46,13 +54,40 @@ export abstract class KudosQuery {
 
   /**
    * The Kudos of one Workspace past a place on Home, newest first. `recipientAccountId` narrows it to
-   * the Kudos that name that person, for Received; `null` reads them all.
+   * the Kudos that name that person, for Received and a Profile; `null` reads them all. `since`, for
+   * a Profile, keeps only those given at or after it.
    */
   abstract onHome(
     workspaceId: string,
     page: FeedPageRequest,
     recipientAccountId: string | null,
+    since?: Date | null,
   ): Promise<KudosPageRow>;
+
+  /**
+   * The Kudos between a reader and one Member, past a place in that Member's Profile, newest first:
+   * given by one of the two naming the other, or given by somebody else naming both (ADR 0097).
+   * `since` keeps only those given at or after it.
+   */
+  abstract kudosBetween(
+    workspaceId: string,
+    readerAccountId: string,
+    memberAccountId: string,
+    page: FeedPageRequest,
+    since: Date | null,
+  ): Promise<KudosPageRow>;
+
+  /**
+   * How many Kudos a Profile's two Kudos reads hold from `since` on, each counted with its list's own
+   * filter so the two cannot disagree (ADR 0095). With no reader, which is the Member's own
+   * Profile, `between` is `0`.
+   */
+  abstract profileCounts(
+    workspaceId: string,
+    readerAccountId: string | null,
+    memberAccountId: string,
+    since: Date | null,
+  ): Promise<ProfileKudosCountsRow>;
 
   /**
    * When each Kudos on Home was given, between two instants: the rows `onHome` reads for everyone,

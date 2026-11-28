@@ -6,6 +6,7 @@ import {
   FakeWorkspaceMembershipPort,
   NO_TAGS,
 } from '@test/support/feedback.fakes';
+import { betweenDanAndAnn, onDay } from '@test/support/profile-between.fixture';
 import { FakeAccountSummaryPort } from '@test/support/workspace.fakes';
 import { PeopleService } from '../service/people.service';
 import { PersonalItemsService } from '../service/personal-items.service';
@@ -76,11 +77,12 @@ function kudosRow(
   day: number,
   recipientAccountIds: readonly string[] = [ANN],
   workspaceId = WORKSPACE_ID,
+  giverAccountId = BEN,
 ) {
   return {
     workspaceId,
     id,
-    giverAccountId: BEN,
+    giverAccountId,
     recipientAccountIds,
     message: `Kudos ${id}`,
     tags: NO_TAGS,
@@ -139,6 +141,7 @@ const ANNS_FEEDBACK = {
   accountId: ANN,
   readerAccountId: DAN,
   show: 'FEEDBACK',
+  since: null,
   page: { afterId: null, limit: 20 },
 } as const;
 
@@ -227,6 +230,164 @@ describe('reading what a Profile shows', () => {
     expect([page.nextAfterId, next.items.map((item) => item.id)]).toEqual([
       'answer-everyone',
       ['offered-everyone'],
+    ]);
+  });
+});
+
+function setUpBetween() {
+  const { feedbackRequestQuery, kudosQuery } = betweenDanAndAnn();
+  const useCase = new ListProfileItemsUseCase(
+    feedbackRequestQuery,
+    kudosQuery,
+    new PersonalItemsService(
+      feedbackRequestQuery,
+      kudosQuery,
+      new PeopleService(
+        new FakeAccountSummaryPort(),
+        new FakeWorkspaceMembershipPort(),
+      ),
+    ),
+  );
+  return { useCase };
+}
+
+const BETWEEN_DAN_AND_ANN = {
+  ...ANNS_FEEDBACK,
+  readerAccountId: DAN,
+  show: 'BETWEEN_US',
+} as const;
+
+const OPEN_ASKS_OF_DAN_AND_ANN = {
+  ...BETWEEN_DAN_AND_ANN,
+  show: 'OPEN_ASKS',
+} as const;
+
+describe('reading what is between a Profile’s reader and its Member', () => {
+  it('lists the Feedback and Kudos the two gave each other, and what somebody gave both, at every Visibility, newest first', async () => {
+    const { useCase } = setUpBetween();
+
+    const page = await useCase.execute(BETWEEN_DAN_AND_ANN);
+
+    expect(page.items.map((item) => item.id)).toEqual([
+      'kudos-ben-to-both',
+      'kudos-ann-to-dan',
+      'kudos-dan-to-ann',
+      'dan-answers-ann',
+      'dan-to-ann-and-cara',
+      'ben-to-both',
+      'ann-to-dan-only',
+      'dan-to-ann-only',
+    ]);
+  });
+
+  it('leaves out what went to only one of them, the open Asks, and other Workspaces', async () => {
+    const { useCase } = setUpBetween();
+
+    const page = await useCase.execute(BETWEEN_DAN_AND_ANN);
+
+    expect(page.items.map((item) => item.id)).not.toContainAnyValues([
+      'ben-to-ann',
+      'ben-to-dan',
+      'kudos-ben-to-ann',
+      'ask-ann-dan',
+      'ask-dan-ann',
+      'elsewhere',
+      'kudos-elsewhere',
+    ]);
+  });
+
+  it('keeps from the reader another Giver’s answer on the same card that they may not read', async () => {
+    const { useCase } = setUpBetween();
+
+    const page = await useCase.execute(BETWEEN_DAN_AND_ANN);
+    const answer = page.items.find((item) => item.id === 'dan-answers-ann');
+
+    expect(
+      answer?.kind === 'FEEDBACK'
+        ? answer.request?.asked.map((ask) => ask.answer?.message ?? null)
+        : null,
+    ).toEqual([`${DAN} answered`, null]);
+  });
+
+  it('lists only what was written at or after `since`', async () => {
+    const { useCase } = setUpBetween();
+
+    const page = await useCase.execute({
+      ...BETWEEN_DAN_AND_ANN,
+      since: onDay(17),
+    });
+
+    expect(page.items.map((item) => item.id)).toEqual([
+      'kudos-ben-to-both',
+      'kudos-ann-to-dan',
+      'kudos-dan-to-ann',
+      'dan-answers-ann',
+    ]);
+  });
+
+  it('holds nothing for the Member reading their own Profile, private Feedback to them included', async () => {
+    const { useCase } = setUpBetween();
+
+    const page = await useCase.execute({
+      ...BETWEEN_DAN_AND_ANN,
+      readerAccountId: ANN,
+    });
+
+    expect(page.items).toEqual([]);
+  });
+});
+
+describe('reading the Asks open between a Profile’s reader and its Member', () => {
+  it('lists the Asks either sent the other that still wait, newest first', async () => {
+    const { useCase } = setUpBetween();
+
+    const page = await useCase.execute(OPEN_ASKS_OF_DAN_AND_ANN);
+
+    expect(page.items.map((item) => item.id)).toEqual([
+      'ask-dan-ann',
+      'ask-ann-dan',
+    ]);
+  });
+
+  it('names who asked and who was asked on an open Ask', async () => {
+    const { useCase } = setUpBetween();
+
+    const page = await useCase.execute(OPEN_ASKS_OF_DAN_AND_ANN);
+    const ask = page.items.find((item) => item.id === 'ask-dan-ann');
+
+    expect(
+      ask?.kind === 'ASK'
+        ? [ask.requester.accountId, ask.asked.accountId]
+        : null,
+    ).toEqual([DAN, ANN]);
+  });
+
+  it('holds nothing for the Member reading their own Profile', async () => {
+    const { useCase } = setUpBetween();
+
+    const page = await useCase.execute({
+      ...OPEN_ASKS_OF_DAN_AND_ANN,
+      readerAccountId: ANN,
+    });
+
+    expect(page.items).toEqual([]);
+  });
+
+  it('pages on from an open Ask a cursor names', async () => {
+    const { useCase } = setUpBetween();
+
+    const page = await useCase.execute({
+      ...OPEN_ASKS_OF_DAN_AND_ANN,
+      page: { afterId: null, limit: 1 },
+    });
+    const next = await useCase.execute({
+      ...OPEN_ASKS_OF_DAN_AND_ANN,
+      page: { afterId: page.nextAfterId, limit: 1 },
+    });
+
+    expect([page.nextAfterId, next.items.map((item) => item.id)]).toEqual([
+      'ask-dan-ann',
+      ['ask-ann-dan'],
     ]);
   });
 });

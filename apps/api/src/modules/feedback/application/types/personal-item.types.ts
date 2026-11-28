@@ -10,6 +10,7 @@ import type {
   PersonView,
   TagsView,
 } from './feedback-request.types';
+
 import type { FeedPosition } from './kudos.types';
 
 /**
@@ -81,19 +82,69 @@ export const RECEIVED_ITEM_SHOWS = [
 export type ReceivedItemShow = (typeof RECEIVED_ITEM_SHOWS)[number];
 
 /**
- * Which of a Profile's lists to read: what the whole Workspace was shown, what was shared with the
- * reader, or its Kudos.
+ * Which of a Profile's lists to read. What everyone sees: the Feedback the whole Workspace reads, and
+ * the Kudos that name the Member. What differs by reader: what passed between the reader and the
+ * Member, what was shared with the reader, and the Asks still open between the two.
  */
 export const PROFILE_ITEM_SHOWS = [
   'FEEDBACK',
-  'SHARED_WITH_ME',
   'KUDOS',
+  'BETWEEN_US',
+  'SHARED_WITH_ME',
+  'OPEN_ASKS',
 ] as const;
 
 export type ProfileItemShow = (typeof PROFILE_ITEM_SHOWS)[number];
 
+/** The lists that can be read from an instant on. The Asks open are every one still open. */
+export const PROFILE_ITEM_SHOWS_SINCE: readonly ProfileItemShow[] = [
+  'FEEDBACK',
+  'KUDOS',
+  'BETWEEN_US',
+  'SHARED_WITH_ME',
+];
+
+/**
+ * How many items each of a Profile's lists holds for one reader: from an instant on for the four
+ * that take one, and every Ask still open.
+ */
+export interface ProfileItemCountsView {
+  readonly feedback: number;
+  readonly kudos: number;
+  readonly betweenUs: number;
+  readonly sharedWithMe: number;
+  readonly openAsks: number;
+}
+
+/**
+ * An Ask still waiting between the reader and a Member: one of them asked, the other has not answered
+ * yet. It sits at when it was asked, which never moves; once answered, its answer is Feedback.
+ */
+export interface PendingAskItemView {
+  readonly kind: 'ASK';
+  /** The Ask's own id. */
+  readonly id: string;
+  readonly feedbackRequestId: string;
+  /** The Request message. */
+  readonly message: string;
+  readonly tags: TagsView;
+  /** Who asked. */
+  readonly requester: PersonView;
+  /** Who was asked, and has not answered. */
+  readonly asked: PersonView;
+  /** How the request looks, or `null` when it was not written on a postcard. */
+  readonly postcard: PostcardSnapshot | null;
+  readonly createdAt: Date;
+}
+
+/** One thing on a Profile: Feedback, a Kudos, or, between the reader and the Member, a waiting Ask. */
+export type ProfileItemView = PersonalItemView | PendingAskItemView;
+
+/** Any item a Member's own lists or a Profile hold. */
+type ListedItemView = ReceivedItemView | PendingAskItemView;
+
 /** Where an item sits in a Member's own list: when it was written, or a request's latest activity. */
-export function positionOf(item: ReceivedItemView): FeedPosition {
+export function positionOf(item: ListedItemView): FeedPosition {
   return {
     createdAt: item.kind === 'REQUEST' ? item.latestActivityAt : item.createdAt,
     id: item.id,
@@ -101,7 +152,7 @@ export function positionOf(item: ReceivedItemView): FeedPosition {
 }
 
 /** One page of a Member's own list, newest first across every kind it reads, by position. */
-export interface PersonalItemsPage<Item extends ReceivedItemView> {
+export interface PersonalItemsPage<Item extends ListedItemView> {
   readonly items: readonly Item[];
   /** Where the last item sat when it was read, which the next page starts after; `null` at the end. */
   readonly next: FeedPosition | null;
@@ -110,6 +161,13 @@ export interface PersonalItemsPage<Item extends ReceivedItemView> {
 /** One page of a Member's own list, newest first across both kinds. */
 export interface PersonalItemsView {
   readonly items: readonly PersonalItemView[];
+  /** The id the next page starts after, or `null` on the last page. */
+  readonly nextAfterId: string | null;
+}
+
+/** One page of a Profile's list, newest first across every kind it holds. */
+export interface ProfileItemsView {
+  readonly items: readonly ProfileItemView[];
   /** The id the next page starts after, or `null` on the last page. */
   readonly nextAfterId: string | null;
 }
