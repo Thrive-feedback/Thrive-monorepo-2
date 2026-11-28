@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority';
-import type { LucideIcon } from 'lucide-react';
+import { ConstructionIcon, LightbulbIcon, type LucideIcon } from 'lucide-react';
 import NextLink from 'next/link';
-import { Badge, CountBadge } from '@/components/atoms/badge';
+import { CountBadge } from '@/components/atoms/badge';
 import {
   Tooltip,
   TooltipContent,
@@ -9,9 +9,13 @@ import {
 } from '@/components/atoms/tooltip';
 import { cn } from '@/lib/cn.util';
 
-export type SideNavItem = {
-  /** Where it leads. */
-  readonly href: string;
+/**
+ * How far off a place not open yet is: `under-construction` is being built, `idea` is only being
+ * weighed.
+ */
+export type SideNavUpcoming = 'under-construction' | 'idea';
+
+type SideNavItemShared = {
   readonly label: string;
   readonly Icon: LucideIcon;
   /**
@@ -19,16 +23,37 @@ export type SideNavItem = {
    * `, 2 unread`. Nothing shows at zero.
    */
   readonly count?: number;
-  /**
-   * Set for a place that is not open yet: the row stays in the menu, greyed and not a link, with
-   * these words in a badge beside its label, such as "Coming soon".
-   */
-  readonly unavailableNote?: string;
   /** What the count is said to be after the label, as `, 2 to answer`; `unread` unless given. */
   readonly countSaid?: string;
   /** Items that belong to this one, listed under it with a branch line to each. */
   readonly children?: readonly SideNavItem[];
 };
+
+/** A place in the menu that is open, and leads somewhere. */
+export type SideNavLinkItem = SideNavItemShared & {
+  readonly href: string;
+  readonly upcoming?: undefined;
+};
+
+/**
+ * A place not open yet: it stays in the menu, greyed and not a link, marked beside its label with
+ * how far off it is.
+ */
+export type SideNavUpcomingItem = SideNavItemShared & {
+  readonly upcoming: SideNavUpcoming;
+  readonly href?: undefined;
+};
+
+export type SideNavItem = SideNavLinkItem | SideNavUpcomingItem;
+
+/** The words and the mark each kind of place not open yet carries. */
+const UPCOMING = {
+  'under-construction': { note: 'Under construction', Icon: ConstructionIcon },
+  idea: { note: 'Idea', Icon: LightbulbIcon },
+} as const satisfies Record<
+  SideNavUpcoming,
+  { note: string; Icon: LucideIcon }
+>;
 
 /**
  * A label over the items that follow it, until the next one, set off from the items above by a
@@ -143,6 +168,44 @@ const foldedAway = cva('', {
   variants: { foldsToIcons: { true: 'rail:sr-only', false: '' } },
 });
 
+/**
+ * A place not open yet, beside its label: the row is greyed, but its mark keeps its own colour at
+ * every width, a deep yellow for one being built and a light blue for an idea, so how far off it is
+ * reads at a glance, and on a phone, where no pointer can bring up the tooltip that names it.
+ */
+const upcomingMark = cva(
+  'inline-flex size-6 shrink-0 items-center justify-center',
+  {
+    variants: {
+      upcoming: {
+        'under-construction': 'text-status-warning-hover',
+        idea: 'text-status-info',
+      },
+      foldsToIcons: { true: 'rail:sr-only', false: '' },
+    },
+  },
+);
+
+/**
+ * An item's own icon. Folded to the rail, where the mark beside the label is hidden, the icon of a
+ * place not open yet takes the mark's colour instead, so how far off it is still reads at a glance.
+ */
+const itemIcon = cva('size-4.5 shrink-0', {
+  variants: {
+    foldedUpcoming: {
+      'under-construction': 'rail:text-status-warning-hover',
+      idea: 'rail:text-status-info',
+      none: '',
+    },
+  },
+  defaultVariants: { foldedUpcoming: 'none' },
+});
+
+/** Words a tooltip shows only while the sidebar is folded to its rail. */
+const shownFolded = cva('', {
+  variants: { foldsToIcons: { true: 'not-rail:hidden', false: 'hidden' } },
+});
+
 /** Beside the label, or folded, small on the icon's corner. */
 const sideNavCount = cva('', {
   variants: {
@@ -168,9 +231,9 @@ export const sideNavLink = cva(
       // A square around the icon, the count on its corner.
       foldsToIcons: { true: 'rail:justify-center rail:px-0', false: '' },
       /**
-       * A place not open yet keeps the row's shape but is greyed, and answers no pointer: nothing
-       * to press, nothing to focus. Its note sits in a badge beside the label and is read right
-       * after it; folded, the note goes with the label into the tooltip.
+       * A place not open yet keeps the row's shape but is greyed, and is not a link: nothing to
+       * press, nothing to focus. Its mark sits beside the label, its words read right after it and
+       * shown in a tooltip when pointed at; folded, the label goes into the tooltip with them.
        */
       available: {
         true: 'text-fg-secondary hover:bg-action-neutral-surface-hover hover:text-fg-primary',
@@ -189,7 +252,7 @@ export const sideNavLink = cva(
 );
 
 function SideNavLink({
-  item: { href, label, Icon, count, countSaid, unavailableNote },
+  item,
   currentHref,
   foldsToIcons,
   marksCurrentFromMd,
@@ -199,56 +262,72 @@ function SideNavLink({
   foldsToIcons: boolean;
   marksCurrentFromMd: boolean;
 }) {
-  const content = (
+  const { label, Icon, count, countSaid } = item;
+  const named = (
     <>
-      <Icon aria-hidden="true" className="size-4.5 shrink-0" />
+      <Icon
+        aria-hidden="true"
+        className={itemIcon({
+          foldedUpcoming: foldsToIcons ? item.upcoming : undefined,
+        })}
+      />
       <span
         className={cn('min-w-0 flex-1 truncate', foldedAway({ foldsToIcons }))}
       >
         {label}
       </span>
-      {unavailableNote ? (
-        <Badge
-          tone="neutral"
-          size="sm"
-          className={foldedAway({ foldsToIcons })}
-        >
-          {unavailableNote}
-        </Badge>
-      ) : (
+    </>
+  );
+
+  if (item.upcoming === undefined) {
+    const link = (
+      <NextLink
+        href={item.href}
+        aria-current={item.href === currentHref ? 'page' : undefined}
+        className={sideNavLink({ foldsToIcons, marksCurrentFromMd })}
+      >
+        {named}
         <CountBadge
           count={count ?? 0}
           said={countSaid}
           className={sideNavCount({ foldsToIcons })}
         />
-      )}
-    </>
-  );
-
-  const row = unavailableNote ? (
-    <span className={sideNavLink({ foldsToIcons, available: false })}>
-      {content}
-    </span>
-  ) : (
-    <NextLink
-      href={href}
-      aria-current={href === currentHref ? 'page' : undefined}
-      className={sideNavLink({ foldsToIcons, marksCurrentFromMd })}
-    >
-      {content}
-    </NextLink>
-  );
-
-  if (!foldsToIcons) {
-    return row;
+      </NextLink>
+    );
+    if (!foldsToIcons) {
+      return link;
+    }
+    // The tooltip names the icon where the label is hidden, and is never shown beside a label.
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipContent side="right" className="not-rail:hidden">
+          {label}
+        </TooltipContent>
+      </Tooltip>
+    );
   }
 
-  // The tooltip names the icon where the label is hidden, and is never shown beside a label.
+  const { note, Icon: Mark } = UPCOMING[item.upcoming];
   return (
     <Tooltip>
-      <TooltipTrigger asChild>{row}</TooltipTrigger>
-      <TooltipContent side="right" className="not-rail:hidden">
-        {unavailableNote ? `${label} · ${unavailableNote}` : label}
+      <TooltipTrigger asChild>
+        <span className={sideNavLink({ foldsToIcons, available: false })}>
+          {named}
+          <span
+            className={upcomingMark({
+              upcoming: item.upcoming,
+              foldsToIcons,
+            })}
+          >
+            <Mark aria-hidden="true" className="size-4" />
+            <span className="sr-only">, {note}</span>
+          </span>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="right">
+        <span className={shownFolded({ foldsToIcons })}>{label} · </span>
+        {note}
       </TooltipContent>
     </Tooltip>
   );

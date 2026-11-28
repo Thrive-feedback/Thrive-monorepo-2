@@ -158,27 +158,81 @@ describe('SideNav', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Waiting');
   });
 
-  it('keeps a place not open yet in the menu, greyed with its note, and not a link', () => {
+  it('keeps a place not open yet in the menu, greyed and marked, its note read, and not a link', () => {
     render(
       <SideNav
         label="Main"
         items={[
           { href: '/a', label: 'Home', Icon: HouseIcon },
-          {
-            href: '/b',
-            label: 'Later',
-            Icon: PaletteIcon,
-            unavailableNote: 'Coming soon',
-          },
+          { label: 'Later', Icon: PaletteIcon, upcoming: 'under-construction' },
+          { label: 'Someday', Icon: HashIcon, upcoming: 'idea' },
         ]}
-        currentHref="/b"
+        currentHref="/a"
       />,
     );
 
     expect(
       screen.getAllByRole('listitem').map((item) => item.textContent),
-    ).toEqual(['Home', 'LaterComing soon']);
-    expect(screen.queryByRole('link', { name: /Later/ })).toBeNull();
+    ).toEqual(['Home', 'Later, Under construction', 'Someday, Idea']);
+    expect(screen.queryByRole('link', { name: /Later|Someday/ })).toBeNull();
+  });
+
+  it('colours the mark of a place not open yet though its row is greyed: building in yellow, an idea in blue', () => {
+    render(
+      <SideNav
+        label="Main"
+        items={[
+          { label: 'Later', Icon: PaletteIcon, upcoming: 'under-construction' },
+          { label: 'Someday', Icon: HashIcon, upcoming: 'idea' },
+        ]}
+      />,
+    );
+
+    const later = screen.getByText(', Under construction').parentElement;
+    const someday = screen.getByText(', Idea').parentElement;
+    expect(later).toHaveClass('text-status-warning-hover');
+    expect(someday).toHaveClass('text-status-info');
+  });
+
+  // jsdom cannot fold the sidebar, so the classes that colour the icon on the rail stand in for it.
+  it('folded to its icons, colours the icon of a place not open yet in its mark’s colour', () => {
+    render(
+      <SideNav
+        label="Main"
+        items={[
+          { href: '/a', label: 'Home', Icon: HouseIcon },
+          { label: 'Later', Icon: PaletteIcon, upcoming: 'under-construction' },
+          { label: 'Someday', Icon: HashIcon, upcoming: 'idea' },
+        ]}
+        currentHref="/a"
+        foldsToIcons
+      />,
+    );
+
+    const iconOf = (label: string) =>
+      screen.getByText(label).previousElementSibling;
+    expect(iconOf('Later')).toHaveClass('rail:text-status-warning-hover');
+    expect(iconOf('Someday')).toHaveClass('rail:text-status-info');
+    expect(iconOf('Home')).not.toHaveClass('rail:text-status-warning-hover');
+    expect(iconOf('Home')).not.toHaveClass('rail:text-status-info');
+  });
+
+  it('names how far off a place not open yet is when pointed at, beside its label', async () => {
+    const user = userEvent.setup();
+    render(
+      <SideNav
+        label="Main"
+        items={[
+          { label: 'Later', Icon: PaletteIcon, upcoming: 'under-construction' },
+        ]}
+      />,
+    );
+
+    await user.hover(screen.getByText('Later'));
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Under construction',
+    );
   });
 
   it('folded to its icons, names a place not open yet with its note when pointed at', async () => {
@@ -187,12 +241,7 @@ describe('SideNav', () => {
       <SideNav
         label="Main"
         items={[
-          {
-            href: '/b',
-            label: 'Later',
-            Icon: PaletteIcon,
-            unavailableNote: 'Coming soon',
-          },
+          { label: 'Later', Icon: PaletteIcon, upcoming: 'under-construction' },
         ]}
         foldsToIcons
       />,
@@ -201,7 +250,7 @@ describe('SideNav', () => {
     await user.hover(screen.getByText('Later'));
 
     expect(await screen.findByRole('tooltip')).toHaveTextContent(
-      'Later · Coming soon',
+      'Later · Under construction',
     );
   });
 
